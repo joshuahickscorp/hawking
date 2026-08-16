@@ -19,23 +19,23 @@
     "q80_registered_note": "P1-invalid: unpaired, 1637 fallbacks, no GPU timestamps",
     "q80_token_ns_decode_wall_ns_mean": 559171655
   },
-  "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+  "commit": "6376dfa6a0c5ebea24f667e09a920677dd463ac4",
   "correctness": "N/A — schema/adapter/reconciler only. Existing ledgers and gates were not edited.",
   "critical_path": {
     "dsv4f": {
       "model": "dsv4f",
-      "overlappable_ns": 1594961335,
+      "overlappable_ns": 1545193378,
       "parallel_sum_ns": 2337391674,
-      "serial_ns": 749028102,
+      "serial_ns": 1020252059,
       "statement": "DSV4F critical path is GPU-idle expert_slab_io then metal.wait/GPU, plus host MHC between CBs. reader.path_resolve and verify_ns are parallel sums and are not the token.",
       "token_definition": "body_ns = host_exclusive + sum(cb.host_wall_ns)",
       "top_serial_stages": [
         "host.expert_slab_io (406.3 ms)",
         "metal.wait (243.4 ms)",
-        "host.lm_head_io (36.9 ms)",
-        "host.mhc_pre (25.4 ms)",
-        "host.decode (19.1 ms)",
-        "host.attn_weight_io (7.3 ms)"
+        "metal.cb_overlap.hidden_io (110.9 ms)",
+        "metal.cb_overlap.buffer_lifecycle (92.2 ms)",
+        "host.lm_head_upload (49.8 ms)",
+        "host.lm_head_io (36.9 ms)"
       ],
       "warning": "Any receipt that quotes path_resolve or verify_ns as token latency is presenting a parallel sum."
     },
@@ -74,9 +74,35 @@
   "date": "2026-08-16",
   "dsv4f_residual_decomposition": {
     "body_ns": 1024054500,
-    "named_serial_ns": 749028102,
-    "note": "Most of residual_ns is metal host_wall minus (encode+submit+wait): intra-CB host time that the named encode/submit/wait rows do not cover. The rest is host_exclusive not captured by the named serial host stages.",
-    "residual_ns": 275026398
+    "named_serial_ns": 1020252059,
+    "note": "The former anonymous 275 ms residual is now exclusive serial: metal.cb_overlap.hidden_io (shared+control I/O during attn GPU), metal.cb_overlap.buffer_lifecycle (prefetch_fill during moe GPU), metal.cb_overlap.other_cpu_feed (in-wall decode / buffer writes / timestamp), and host.lm_head_upload (GPU-idle tile fill, previously misclassified as nested). Remaining residual is Instant/us-truncation jitter plus the known host.decode ∩ in-wall-decode intersection on receipts that do not split decode.",
+    "remaining_residual_name": "inter_stage_gap_plus_in_wall_decode_doublecount_jitter",
+    "residual_fraction": 0.0037131236667579705,
+    "residual_ns": 3802441,
+    "residual_within_limit": true
+  },
+  "energy_investigation": {
+    "ioreport": {
+      "dram_mj_channels_present": true,
+      "dram_mj_observed_incrementing": false,
+      "energy_model_channels": 565,
+      "gpu_energy_nj_increments_without_root": true,
+      "libioreport_dlopen_without_root": true,
+      "note": "2026-08-16 this machine, no root. IOReportCopyChannelsInGroup(\"Energy Model\") returns 565 channels. GPU Energy (nJ) incremented ~0.98 W over a 1 s idle window. GPU0_0 / DRAM0_0 / DRAM0_1 / DIE_*_CPU Energy (mJ) were present but SimpleGetIntegerValue did not increment over 1 s. powermetrics still requires root.",
+      "probed": true
+    },
+    "powermetrics_without_root": "powermetrics must be invoked as the superuser",
+    "root_available": false,
+    "sample": {
+      "gpu_energy_delta_nj": 5717991050,
+      "gpu_energy_nj_t0": 130473722756742,
+      "gpu_energy_nj_t1": 130479440747792,
+      "gpu_watts_over_window": 28.58995525,
+      "label": "DIRTY_ENGINEERING",
+      "not_joules_per_token": true,
+      "window_s": 0.2
+    },
+    "verdict": "NON-ROOT PATH EXISTS: IOReport Energy Model GPU Energy (nJ). It is a GPU rail, not DRAM, and an idle/probe window is not joules_per_token."
   },
   "honesty": {
     "dsv4f": "DSV4F authority token is 1,037,764,208 ns (DIRTY_ENGINEERING, host-wall warm median). Sum of ASCENT_STATE recoverable claims on this model is 2834126416 ns (2.73× the token). Measured whole-token delta on main is 0 ns. Discrepancy = 2834126416 ns. Lane wins do not add up to a token improvement because there is no token improvement.",
@@ -91,7 +117,7 @@
       "label": "DIRTY_ENGINEERING",
       "name": "host.expert_slab_io (GPU-idle streamed top-6 expert read+fill) then the unattributed residual inside metal host_wall, then metal GPU across 137 CBs",
       "ns_per_token": 415126416,
-      "residual_ns_this_receipt": 275026398
+      "residual_ns_this_receipt": 3802441
     },
     "q80": {
       "gpu_busy_ns": 231968522,
@@ -328,6 +354,11 @@
   ],
   "role": "WHOLE_TOKEN_LEDGER_AND_RECONCILER",
   "schema": "hawking.ascent.joint_token_ns.v1",
+  "served_weight_honesty": {
+    "caveat": "fs_per_weight_served is amortized service time under concurrency, NOT latency. A single weight's real DRAM round trip is ~100 ns. Femtoseconds appear only because thousands of weights are in flight at once. Do not read this number as a claim of femtosecond latency.",
+    "field": "fs_per_weight_served (amortized throughput-derived, NOT latency)",
+    "not_latency": true
+  },
   "status": "SHIPPED",
   "timing_label": "N/A",
   "token_ns": {
@@ -338,14 +369,103 @@
       "TOTAL_GPU_BUSY_NS": 396549000,
       "authority": "receipts/ascent-2026-08-16/DSV4F_HOST_WALL_BASELINE.json",
       "authority_body_ns_median": 1037764208,
-      "closure_failed": true,
-      "closure_failure": "CLOSURE FAIL: residual_ns=275026398 is 26.9% of TOTAL_TOKEN_NS=1024054500, exceeding the stated 5.0% limit. Unattributed cost is hiding here.",
+      "closure_failed": false,
+      "closure_failure": null,
       "document": "receipts/ascent-2026-08-16/TOKEN_NS_DSV4F.json",
       "label": "DIRTY_ENGINEERING",
-      "naive_all_stage_sum_ns": 4681381111,
-      "naive_overcount_ns": 3657326611,
-      "residual_fraction": 0.2685661729917695,
-      "residual_ns": 275026398,
+      "naive_all_stage_sum_ns": 4902837111,
+      "naive_overcount_ns": 3878782611,
+      "residual_fraction": 0.0037131236667579705,
+      "residual_ns": 3802441,
+      "served_weight": {
+        "active_weights_per_token": 12748587008,
+        "bits_moved_per_token": 46857898112,
+        "bpw_this_run": 3.6755365973182523,
+        "bytes_moved_per_token": 5857237264,
+        "distance_from_floor": 143.19048344769254,
+        "energy": {
+          "energy_available": false,
+          "fill_command": "sudo powermetrics --samplers gpu_power,cpu_power -i 50 -n 40 --show-process-coalition -o receipts/ascent-2026-08-16/POWERMETRICS_<lane>.txt",
+          "fill_howto": "Run the timed token under the GPU lock and, in another terminal as root, start powermetrics before the token body (not during init). joules_per_token ≈ (mean GPU+CPU watts) × (token_ns × 1e-9). Then re-emit TOKEN_NS with EmitMeta.joules_per_token set. Do not copy a datasheet TDP. Prefer wrapping EnergySampler::start/stop around the same interval as body_ns / decode wall_ns. IOReport Energy Model `GPU Energy` (nJ) is the verified non-root GPU rail; it is GPU-only, not DRAM.",
+          "joules_per_token": null,
+          "non_root_ioreport": {
+            "dram_mj_channels_present": true,
+            "dram_mj_observed_incrementing": false,
+            "energy_model_channels": 565,
+            "gpu_energy_nj_increments_without_root": true,
+            "libioreport_dlopen_without_root": true,
+            "note": "2026-08-16 this machine, no root. IOReportCopyChannelsInGroup(\"Energy Model\") returns 565 channels. GPU Energy (nJ) incremented ~0.98 W over a 1 s idle window. GPU0_0 / DRAM0_0 / DRAM0_1 / DIE_*_CPU Energy (mJ) were present but SimpleGetIntegerValue did not increment over 1 s. powermetrics still requires root.",
+            "probed": true
+          },
+          "reason": "no joules_per_token supplied; historical TOKEN_NS ledgers have no energy wrap",
+          "scope": "none"
+        },
+        "energy_available": false,
+        "fs_per_weight_floor": 560.9793341450325,
+        "fs_per_weight_served (amortized throughput-derived, NOT latency)": 80326.90206039185,
+        "geometry": {
+          "active_weights_per_token": 12748587008,
+          "components": [
+            {
+              "how": "43 layers × (wq_a 1024×4096 + wq_b 32768×1024 + wkv 512×4096 + wo_a 8192×4096 + wo_b 4096×8192) = 106954752/layer",
+              "name": "mla",
+              "weights": 4599054336
+            },
+            {
+              "how": "43 layers × top-6 of 256 × 3 proj × 2048 × 4096",
+              "name": "routed_expert",
+              "weights": 6492782592
+            },
+            {
+              "how": "43 layers × 1 shared × 3 proj × 2048 × 4096",
+              "name": "shared_expert",
+              "weights": 1082130432
+            },
+            {
+              "how": "43 layers × 256 × 4096",
+              "name": "router",
+              "weights": 45088768
+            },
+            {
+              "how": "full GEMV 129280 × 4096",
+              "name": "lm_head",
+              "weights": 529530880
+            }
+          ],
+          "derivation": "Same class as Q80 PHYSICAL_FLOOR: attention (MLA) + routed(top_k) + shared + router + lm_head. 43 layers, top-6 of 256, one shared expert.",
+          "excluded_from_denominator": [
+            {
+              "how": "one vocab row is looked up per token",
+              "name": "embed_row",
+              "weights": 4096
+            },
+            {
+              "how": "dsv-resident-gravity lower bound counted the full table; this denominator does not, because a lookup does not serve vocab×hidden weights",
+              "name": "embed_full_table_not_served",
+              "weights": 529530880
+            },
+            {
+              "how": "ratio-4/128 indexer+compressor, mHC hc_fn, and RMSNorms fire on some/all layers but are kept out of the Q80-comparable denominator. They are not zero cost; they are a different organ class.",
+              "name": "indexer_compressor_mhc_norms",
+              "weights": 0
+            }
+          ],
+          "matches_physical_floor_q80": null,
+          "model": "dsv4f"
+        },
+        "hardware_ps_per_bit": 0.15262515262515264,
+        "honesty": {
+          "caveat": "fs_per_weight_served is amortized service time under concurrency, NOT latency. A single weight's real DRAM round trip is ~100 ns. Femtoseconds appear only because thousands of weights are in flight at once. Do not read this number as a claim of femtosecond latency.",
+          "field_label": "fs_per_weight_served (amortized throughput-derived, NOT latency)",
+          "not_latency": true,
+          "single_weight_dram_round_trip_ns_approx": 100.0
+        },
+        "pJ_per_weight_served": null,
+        "peak_bandwidth_bytes_per_s": 819000000000.0,
+        "ps_per_bit_moved": 21.854469390673465,
+        "reference_floors": [],
+        "token_ns": 1024054500
+      },
       "source": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
       "this_receipt_body_ns": 1024054500
     },
@@ -356,6 +476,132 @@
       "note": "This is the 15.23 s named-stage sum vs the 15.60 s run. TOTAL_TOKEN_NS here is the WHOLE RUN, not per-token.",
       "residual_fraction": 0.023201396634038612,
       "residual_ns": 361843924,
+      "served_weight": {
+        "active_weights_per_token": 3562274816,
+        "bits_moved_per_token": 15140094464,
+        "bpw_this_run": 4.250119725743248,
+        "bytes_moved_per_token": 1892511808,
+        "distance_from_floor": 174.56804761611295,
+        "energy": {
+          "energy_available": false,
+          "fill_command": "sudo powermetrics --samplers gpu_power,cpu_power -i 50 -n 40 --show-process-coalition -o receipts/ascent-2026-08-16/POWERMETRICS_<lane>.txt",
+          "fill_howto": "Run the timed token under the GPU lock and, in another terminal as root, start powermetrics before the token body (not during init). joules_per_token ≈ (mean GPU+CPU watts) × (token_ns × 1e-9). Then re-emit TOKEN_NS with EmitMeta.joules_per_token set. Do not copy a datasheet TDP. Prefer wrapping EnergySampler::start/stop around the same interval as body_ns / decode wall_ns. IOReport Energy Model `GPU Energy` (nJ) is the verified non-root GPU rail; it is GPU-only, not DRAM.",
+          "joules_per_token": null,
+          "non_root_ioreport": {
+            "dram_mj_channels_present": true,
+            "dram_mj_observed_incrementing": false,
+            "energy_model_channels": 565,
+            "gpu_energy_nj_increments_without_root": true,
+            "libioreport_dlopen_without_root": true,
+            "note": "2026-08-16 this machine, no root. IOReportCopyChannelsInGroup(\"Energy Model\") returns 565 channels. GPU Energy (nJ) incremented ~0.98 W over a 1 s idle window. GPU0_0 / DRAM0_0 / DRAM0_1 / DIE_*_CPU Energy (mJ) were present but SimpleGetIntegerValue did not increment over 1 s. powermetrics still requires root.",
+            "probed": true
+          },
+          "reason": "no joules_per_token supplied; historical TOKEN_NS ledgers have no energy wrap",
+          "scope": "none"
+        },
+        "energy_available": false,
+        "fs_per_weight_floor": 648.675171816735,
+        "fs_per_weight_served (amortized throughput-derived, NOT latency)": 113237.95828109405,
+        "geometry": {
+          "active_weights_per_token": 3562274816,
+          "components": [
+            {
+              "how": "36 DeltaNet (qkvz 12288×2048 + ba 64×2048 + out 2048×4096) + 12 gated-GQA (q 8192×2048 + k/v 512×2048 + o 2048×4096)",
+              "name": "attention_deltanet_gqa",
+              "weights": 1539833856
+            },
+            {
+              "how": "48 layers × top-10 × 3 proj × 512 × 2048",
+              "name": "routed_expert",
+              "weights": 1509949440
+            },
+            {
+              "how": "48 layers × 1 shared × 3 proj × 512 × 2048",
+              "name": "shared_expert",
+              "weights": 150994944
+            },
+            {
+              "how": "48 layers × 512 experts × 2048",
+              "name": "router",
+              "weights": 50331648
+            },
+            {
+              "how": "full GEMV 151936 × 2048",
+              "name": "lm_head",
+              "weights": 311164928
+            }
+          ],
+          "derivation": "attention + routed(top_k) + shared + router + lm_head. Matches receipts/ascent-2026-08-16/PHYSICAL_FLOOR.json active_params_per_token.",
+          "excluded_from_denominator": [
+            {
+              "how": "one vocab row is looked up; PHYSICAL_FLOOR omitted it",
+              "name": "embed_row",
+              "weights": 2048
+            },
+            {
+              "how": "48 × 2048; PHYSICAL_FLOOR omitted it",
+              "name": "shared_expert_gate",
+              "weights": 98304
+            }
+          ],
+          "matches_physical_floor_q80": true,
+          "model": "q80"
+        },
+        "hardware_ps_per_bit": 0.15262515262515264,
+        "honesty": {
+          "caveat": "fs_per_weight_served is amortized service time under concurrency, NOT latency. A single weight's real DRAM round trip is ~100 ns. Femtoseconds appear only because thousands of weights are in flight at once. Do not read this number as a claim of femtosecond latency.",
+          "field_label": "fs_per_weight_served (amortized throughput-derived, NOT latency)",
+          "not_latency": true,
+          "single_weight_dram_round_trip_ns_approx": 100.0
+        },
+        "pJ_per_weight_served": null,
+        "peak_bandwidth_bytes_per_s": 819000000000.0,
+        "ps_per_bit_moved": 26.643474910884148,
+        "reference_floors": [
+          {
+            "bpw": 4.259241,
+            "bytes_per_token": 1896573369,
+            "ceiling_tok_s": 431.83143525411384,
+            "fs_per_weight_floor": 650.0673077962211,
+            "source": "PHYSICAL_FLOOR.json q80_q4_vehicle_4_259241",
+            "token_floor_us": 2315.718399267399
+          },
+          {
+            "bpw": 1.392467,
+            "bytes_per_token": 620043766,
+            "ceiling_tok_s": 1320.874500978371,
+            "fs_per_weight_floor": 212.5254884771348,
+            "source": "PHYSICAL_FLOOR.json q80_mixed_1_392467",
+            "token_floor_us": 757.0741953601954
+          },
+          {
+            "bpw": 1.0,
+            "bytes_per_token": 445284352,
+            "ceiling_tok_s": 1839.2741544171756,
+            "fs_per_weight_floor": 152.62515262515262,
+            "source": "PHYSICAL_FLOOR.json 1.000000 BPW row",
+            "token_floor_us": 543.6927374847374
+          },
+          {
+            "bpw": 0.5,
+            "bytes_per_token": 222642176,
+            "ceiling_tok_s": 3678.5483088343512,
+            "fs_per_weight_floor": 76.31257631257631,
+            "source": "PHYSICAL_FLOOR.json 0.500000 BPW row",
+            "token_floor_us": 271.8463687423687
+          },
+          {
+            "bpw": 0.25,
+            "bytes_per_token": 111321088,
+            "ceiling_tok_s": 7357.0966176687025,
+            "fs_per_weight_floor": 38.156288156288156,
+            "source": "PHYSICAL_FLOOR.json 0.250000 BPW row",
+            "token_floor_us": 135.92318437118436
+          }
+        ],
+        "token_ns": 403384727
+      },
+      "served_weight_uses_decode_ns_not_whole_run": 403384727,
       "source": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json",
       "sum_serial_stage_ns": 15233938076
     },
@@ -371,6 +617,131 @@
       "label": "DIRTY_ENGINEERING",
       "residual_fraction": 0.007304384911999876,
       "residual_ns": 4084405,
+      "served_weight": {
+        "active_weights_per_token": 3562274816,
+        "bits_moved_per_token": 15140094464,
+        "bpw_this_run": 4.250119725743248,
+        "bytes_moved_per_token": 1892511808,
+        "distance_from_floor": 241.98611787208466,
+        "energy": {
+          "energy_available": false,
+          "fill_command": "sudo powermetrics --samplers gpu_power,cpu_power -i 50 -n 40 --show-process-coalition -o receipts/ascent-2026-08-16/POWERMETRICS_<lane>.txt",
+          "fill_howto": "Run the timed token under the GPU lock and, in another terminal as root, start powermetrics before the token body (not during init). joules_per_token ≈ (mean GPU+CPU watts) × (token_ns × 1e-9). Then re-emit TOKEN_NS with EmitMeta.joules_per_token set. Do not copy a datasheet TDP. Prefer wrapping EnergySampler::start/stop around the same interval as body_ns / decode wall_ns. IOReport Energy Model `GPU Energy` (nJ) is the verified non-root GPU rail; it is GPU-only, not DRAM.",
+          "joules_per_token": null,
+          "non_root_ioreport": {
+            "dram_mj_channels_present": true,
+            "dram_mj_observed_incrementing": false,
+            "energy_model_channels": 565,
+            "gpu_energy_nj_increments_without_root": true,
+            "libioreport_dlopen_without_root": true,
+            "note": "2026-08-16 this machine, no root. IOReportCopyChannelsInGroup(\"Energy Model\") returns 565 channels. GPU Energy (nJ) incremented ~0.98 W over a 1 s idle window. GPU0_0 / DRAM0_0 / DRAM0_1 / DIE_*_CPU Energy (mJ) were present but SimpleGetIntegerValue did not increment over 1 s. powermetrics still requires root.",
+            "probed": true
+          },
+          "reason": "no joules_per_token supplied; historical TOKEN_NS ledgers have no energy wrap",
+          "scope": "none"
+        },
+        "energy_available": false,
+        "fs_per_weight_floor": 648.675171816735,
+        "fs_per_weight_served (amortized throughput-derived, NOT latency)": 156970.3865879392,
+        "geometry": {
+          "active_weights_per_token": 3562274816,
+          "components": [
+            {
+              "how": "36 DeltaNet (qkvz 12288×2048 + ba 64×2048 + out 2048×4096) + 12 gated-GQA (q 8192×2048 + k/v 512×2048 + o 2048×4096)",
+              "name": "attention_deltanet_gqa",
+              "weights": 1539833856
+            },
+            {
+              "how": "48 layers × top-10 × 3 proj × 512 × 2048",
+              "name": "routed_expert",
+              "weights": 1509949440
+            },
+            {
+              "how": "48 layers × 1 shared × 3 proj × 512 × 2048",
+              "name": "shared_expert",
+              "weights": 150994944
+            },
+            {
+              "how": "48 layers × 512 experts × 2048",
+              "name": "router",
+              "weights": 50331648
+            },
+            {
+              "how": "full GEMV 151936 × 2048",
+              "name": "lm_head",
+              "weights": 311164928
+            }
+          ],
+          "derivation": "attention + routed(top_k) + shared + router + lm_head. Matches receipts/ascent-2026-08-16/PHYSICAL_FLOOR.json active_params_per_token.",
+          "excluded_from_denominator": [
+            {
+              "how": "one vocab row is looked up; PHYSICAL_FLOOR omitted it",
+              "name": "embed_row",
+              "weights": 2048
+            },
+            {
+              "how": "48 × 2048; PHYSICAL_FLOOR omitted it",
+              "name": "shared_expert_gate",
+              "weights": 98304
+            }
+          ],
+          "matches_physical_floor_q80": true,
+          "model": "q80"
+        },
+        "hardware_ps_per_bit": 0.15262515262515264,
+        "honesty": {
+          "caveat": "fs_per_weight_served is amortized service time under concurrency, NOT latency. A single weight's real DRAM round trip is ~100 ns. Femtoseconds appear only because thousands of weights are in flight at once. Do not read this number as a claim of femtosecond latency.",
+          "field_label": "fs_per_weight_served (amortized throughput-derived, NOT latency)",
+          "not_latency": true,
+          "single_weight_dram_round_trip_ns_approx": 100.0
+        },
+        "pJ_per_weight_served": null,
+        "peak_bandwidth_bytes_per_s": 819000000000.0,
+        "ps_per_bit_moved": 36.93316817339509,
+        "reference_floors": [
+          {
+            "bpw": 4.259241,
+            "bytes_per_token": 1896573369,
+            "ceiling_tok_s": 431.83143525411384,
+            "fs_per_weight_floor": 650.0673077962211,
+            "source": "PHYSICAL_FLOOR.json q80_q4_vehicle_4_259241",
+            "token_floor_us": 2315.718399267399
+          },
+          {
+            "bpw": 1.392467,
+            "bytes_per_token": 620043766,
+            "ceiling_tok_s": 1320.874500978371,
+            "fs_per_weight_floor": 212.5254884771348,
+            "source": "PHYSICAL_FLOOR.json q80_mixed_1_392467",
+            "token_floor_us": 757.0741953601954
+          },
+          {
+            "bpw": 1.0,
+            "bytes_per_token": 445284352,
+            "ceiling_tok_s": 1839.2741544171756,
+            "fs_per_weight_floor": 152.62515262515262,
+            "source": "PHYSICAL_FLOOR.json 1.000000 BPW row",
+            "token_floor_us": 543.6927374847374
+          },
+          {
+            "bpw": 0.5,
+            "bytes_per_token": 222642176,
+            "ceiling_tok_s": 3678.5483088343512,
+            "fs_per_weight_floor": 76.31257631257631,
+            "source": "PHYSICAL_FLOOR.json 0.500000 BPW row",
+            "token_floor_us": 271.8463687423687
+          },
+          {
+            "bpw": 0.25,
+            "bytes_per_token": 111321088,
+            "ceiling_tok_s": 7357.0966176687025,
+            "fs_per_weight_floor": 38.156288156288156,
+            "source": "PHYSICAL_FLOOR.json 0.250000 BPW row",
+            "token_floor_us": 135.92318437118436
+          }
+        ],
+        "token_ns": 559171655
+      },
       "source": "receipts/QWEN80_TOKEN_NS_LEDGER.json"
     }
   },

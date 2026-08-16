@@ -10,6 +10,7 @@
 //! oracle. Expert outputs are never read back or gathered on the host.
 //! The CPU oracle in `gravity_deepseek_v4_streamed_forward` is unchanged.
 
+use std::cell::Cell;
 use std::mem::size_of;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -21,6 +22,26 @@ static HOST_MEMCPY_CALLS: AtomicU64 = AtomicU64::new(0);
 static HOST_DECODE_NS: AtomicU64 = AtomicU64::new(0);
 static HOST_DECODE_BYTES: AtomicU64 = AtomicU64::new(0);
 static HOST_DECODE_CALLS: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_IN_OVERLAP_NS: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_IN_OVERLAP_BYTES: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_IN_OVERLAP_CALLS: AtomicU64 = AtomicU64::new(0);
+
+thread_local! {
+    static IN_CB_OVERLAP: Cell<bool> = const { Cell::new(false) };
+}
+
+struct CbOverlapGuard;
+
+impl Drop for CbOverlapGuard {
+    fn drop(&mut self) {
+        IN_CB_OVERLAP.with(|flag| flag.set(false));
+    }
+}
+
+fn enter_cb_overlap() -> CbOverlapGuard {
+    IN_CB_OVERLAP.with(|flag| flag.set(true));
+    CbOverlapGuard
+}
 
 fn reset_host_copy_stats() {
     HOST_MEMCPY_NS.store(0, Ordering::Relaxed);
@@ -29,6 +50,9 @@ fn reset_host_copy_stats() {
     HOST_DECODE_NS.store(0, Ordering::Relaxed);
     HOST_DECODE_BYTES.store(0, Ordering::Relaxed);
     HOST_DECODE_CALLS.store(0, Ordering::Relaxed);
+    HOST_DECODE_IN_OVERLAP_NS.store(0, Ordering::Relaxed);
+    HOST_DECODE_IN_OVERLAP_BYTES.store(0, Ordering::Relaxed);
+    HOST_DECODE_IN_OVERLAP_CALLS.store(0, Ordering::Relaxed);
 }
 
 fn note_memcpy(bytes: usize, ns: u64) {
@@ -38,9 +62,15 @@ fn note_memcpy(bytes: usize, ns: u64) {
 }
 
 fn note_decode(bytes: usize, ns: u64) {
-    HOST_DECODE_NS.fetch_add(ns, Ordering::Relaxed);
-    HOST_DECODE_BYTES.fetch_add(bytes as u64, Ordering::Relaxed);
-    HOST_DECODE_CALLS.fetch_add(1, Ordering::Relaxed);
+    if IN_CB_OVERLAP.with(Cell::get) {
+        HOST_DECODE_IN_OVERLAP_NS.fetch_add(ns, Ordering::Relaxed);
+        HOST_DECODE_IN_OVERLAP_BYTES.fetch_add(bytes as u64, Ordering::Relaxed);
+        HOST_DECODE_IN_OVERLAP_CALLS.fetch_add(1, Ordering::Relaxed);
+    } else {
+        HOST_DECODE_NS.fetch_add(ns, Ordering::Relaxed);
+        HOST_DECODE_BYTES.fetch_add(bytes as u64, Ordering::Relaxed);
+        HOST_DECODE_CALLS.fetch_add(1, Ordering::Relaxed);
+    }
 }
 
 use serde::Serialize;
@@ -2300,6 +2330,12 @@ mod macos {
             super::HOST_DECODE_BYTES.load(Ordering::Relaxed),
         );
         profiler.add_stage(
+            "host.decode_in_cb_overlap",
+            super::HOST_DECODE_IN_OVERLAP_NS.load(Ordering::Relaxed),
+            super::HOST_DECODE_IN_OVERLAP_CALLS.load(Ordering::Relaxed),
+            super::HOST_DECODE_IN_OVERLAP_BYTES.load(Ordering::Relaxed),
+        );
+        profiler.add_stage(
             "host.owned_copy",
             chunk_verification.host_read.owned_copy_ns,
             chunk_verification.host_read.owned_allocs,
@@ -2888,6 +2924,7 @@ mod macos {
         ledger: &mut ResidentLedger,
         profiler: &mut TokenNsCollector,
     ) -> Result<MoePreload> {
+        let _overlap = super::enter_cb_overlap();
         let mhc = layer.mhc_binding(DeepSeekV4LayerMhcStage::FeedForward);
         let ffn_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::FeedForwardNorm);
         let gate = layer.gate_binding();

@@ -94,6 +94,39 @@ fn dsv_class(name: &str) -> Class {
             method: "host Instant around wait_until_completed; includes GPU + queue delay",
         };
     }
+    if name == "metal.cb_overlap_host" || name.starts_with("metal.cb_overlap.") {
+        // Raw per-CB hole, or a derived exclusive partition. The adapter
+        // inserts the exclusive serial partitions under the three class
+        // names below; the raw total stays observational so it cannot
+        // double-count with the partition.
+        let exclusive = matches!(
+            name,
+            "metal.cb_overlap.hidden_io"
+                | "metal.cb_overlap.buffer_lifecycle"
+                | "metal.cb_overlap.other_cpu_feed"
+        );
+        return Class {
+            stage: "cb_overlap",
+            resource: if name.contains("hidden_io") {
+                ResourceClass::Io
+            } else if name.contains("buffer_lifecycle") {
+                ResourceClass::Dram
+            } else {
+                ResourceClass::Cpu
+            },
+            serial: if exclusive {
+                SerialOrOverlappable::Serial
+            } else {
+                SerialOrOverlappable::Overlappable
+            },
+            removable: RemovableOrNecessary::Removable,
+            method: if exclusive {
+                "derived exclusive partition of sum(cb.host_wall) − (encode+submit+wait); SERIAL on the token wall; GPU is concurrently busy"
+            } else {
+                "raw sum(cb.host_wall) − (encode+submit+wait); observational total, not exclusive"
+            },
+        };
+    }
     if name.contains("expert_slab") {
         return Class {
             stage: "routed_expert",
@@ -130,6 +163,15 @@ fn dsv_class(name: &str) -> Class {
             method: "shared/control I/O overlapped with attention GPU",
         };
     }
+    if name == "host.lm_head_upload" {
+        return Class {
+            stage: "lm_head",
+            resource: ResourceClass::Dram,
+            serial: SerialOrOverlappable::Serial,
+            removable: RemovableOrNecessary::Removable,
+            method: "host write of an LM-head tile into a Metal buffer; GPU-idle; not nested in host.lm_head_io",
+        };
+    }
     if name.contains("upload") {
         return Class {
             stage: if name.contains("lm_head") {
@@ -159,6 +201,15 @@ fn dsv_class(name: &str) -> Class {
             serial: SerialOrOverlappable::Serial,
             removable: RemovableOrNecessary::Necessary,
             method: "host Instant around RMSNorm",
+        };
+    }
+    if name == "host.decode_in_cb_overlap" {
+        return Class {
+            stage: "table",
+            resource: ResourceClass::Cpu,
+            serial: SerialOrOverlappable::Overlappable,
+            removable: RemovableOrNecessary::Necessary,
+            method: "MHC/norm table decode inside preload_moe_io (during attn GPU); already inside metal.cb_overlap.other_cpu_feed",
         };
     }
     if name == "host.decode" {
@@ -215,6 +266,144 @@ fn dsv_class(name: &str) -> Class {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct CbHole {
+    total: u64,
+    attn: u64,
+    moe: u64,
+    other: u64,
+}
+
+fn cb_holes_from_rows<'a, I>(rows: I) -> CbHole
+where
+    I: IntoIterator<Item = (&'a str, u64, u64, u64, u64)>,
+{
+    let mut holes = CbHole::default();
+    for (name, wall, encode, submit, wait) in rows {
+        let hole = wall.saturating_sub(encode.saturating_add(submit).saturating_add(wait));
+        holes.total = holes.total.saturating_add(hole);
+        if name == "attn" {
+            holes.attn = holes.attn.saturating_add(hole);
+        } else if name == "moe" {
+            holes.moe = holes.moe.saturating_add(hole);
+        } else {
+            holes.other = holes.other.saturating_add(hole);
+        }
+    }
+    holes
+}
+
+fn cb_holes_from_ledger(ledger: &DsvLedger) -> CbHole {
+    cb_holes_from_rows(ledger.command_buffers.iter().map(|cb| {
+        (
+            cb.name.as_str(),
+            cb.host_wall_ns,
+            cb.encode_ns,
+            cb.submit_ns,
+            cb.wait_ns,
+        )
+    }))
+}
+
+fn cb_holes_from_json(ledger: &Value) -> CbHole {
+    let Some(arr) = ledger.get("command_buffers").and_then(|v| v.as_array()) else {
+        return CbHole::default();
+    };
+    cb_holes_from_rows(arr.iter().map(|cb| {
+        (
+            json_str(cb, &["name"]),
+            json_u64(cb, &["host_wall_ns"]),
+            json_u64(cb, &["encode_ns"]),
+            json_u64(cb, &["submit_ns"]),
+            json_u64(cb, &["wait_ns"]),
+        )
+    }))
+}
+
+fn stage_ns_named(stages: &[TokenNsStage], name: &str) -> u64 {
+    stages
+        .iter()
+        .filter(|s| s.substage == name)
+        .map(|s| s.ns_per_token.round() as u64)
+        .sum()
+}
+
+/// Partition the already-measured CB host-wall hole into exclusive serial
+/// classes. The named overlappable rows (shared I/O, prefetch_fill) identify
+/// the class; they stay overlappable so they are not double-counted.
+fn ensure_dsv_overlap_serial(
+    stages: &mut Vec<TokenNsStage>,
+    holes: CbHole,
+    total_token_ns: u64,
+    commit: &str,
+) {
+    if holes.total == 0 {
+        return;
+    }
+    if stages
+        .iter()
+        .any(|s| s.substage == "metal.cb_overlap.hidden_io")
+    {
+        return;
+    }
+    let shared_and_control = stage_ns_named(stages, "host.shared.w1_io")
+        .saturating_add(stage_ns_named(stages, "host.shared.w2_io"))
+        .saturating_add(stage_ns_named(stages, "host.shared.w3_io"))
+        .saturating_add(stage_ns_named(stages, "host.moe_control_io"))
+        .saturating_add(stage_ns_named(stages, "host.expert_slab_io_overlapped"));
+    let prefetch_fill = stage_ns_named(stages, "host.mla.prefetch_fill");
+    let hidden_io = holes.attn.min(shared_and_control);
+    let buffer_lifecycle = holes.moe.min(prefetch_fill);
+    let other = holes
+        .total
+        .saturating_sub(hidden_io)
+        .saturating_sub(buffer_lifecycle);
+    let commit = commit.to_owned();
+    let push = |stages: &mut Vec<TokenNsStage>,
+                substage: &str,
+                ns: u64,
+                resource: ResourceClass,
+                method: &str| {
+        if ns == 0 {
+            return;
+        }
+        stages.push(TokenNsStage::new(
+            "cb_overlap",
+            substage,
+            holes.total.max(1) as f64,
+            ns as f64,
+            total_token_ns,
+            resource,
+            SerialOrOverlappable::Serial,
+            RemovableOrNecessary::Removable,
+            Confidence::Measured,
+            method,
+            commit.clone(),
+        ));
+    };
+    push(
+        stages,
+        "metal.cb_overlap.hidden_io",
+        hidden_io,
+        ResourceClass::Io,
+        "hidden IO: host.shared.w1/w2/w3 + moe_control (+ overlapped expert bind) during attn GPU; min(attn_hole, named I/O). GPU-overlapped but SERIAL on the token wall because body includes cb.host_wall",
+    );
+    push(
+        stages,
+        "metal.cb_overlap.buffer_lifecycle",
+        buffer_lifecycle,
+        ResourceClass::Dram,
+        "buffer lifecycle: host.mla.prefetch_fill of next-layer attn weights during moe GPU; min(moe_hole, prefetch_fill)",
+    );
+    push(
+        stages,
+        "metal.cb_overlap.other_cpu_feed",
+        other,
+        ResourceClass::Cpu,
+        "other, explicitly named: in-wall MHC/norm decode + Metal buffer writes + GPU-timestamp query after wait + Instant us truncation. remainder of host_wall − (encode+submit+wait) after hidden_io and buffer_lifecycle",
+    );
+}
+
 fn q80_host_work_class(name: &str) -> Class {
     if name.contains("slab") || name.contains("pack") || name.contains("expert") {
         Class {
@@ -262,6 +451,12 @@ pub fn from_dsv4f_ledger(ledger: &DsvLedger, meta: &EmitMeta) -> TokenNsDocument
             meta.commit.clone(),
         ));
     }
+    ensure_dsv_overlap_serial(
+        &mut stages,
+        cb_holes_from_ledger(ledger),
+        total,
+        &meta.commit,
+    );
     let gpu_busy = ledger.metal_vs_host.metal_gpu_ns;
     let gpu_gap = ledger.gpu_gaps.inter_cb_device_gap_ns.max(
         ledger
@@ -294,11 +489,12 @@ pub fn from_dsv4f_ledger(ledger: &DsvLedger, meta: &EmitMeta) -> TokenNsDocument
             ledger.body_ns, ledger.wall_ns, ledger.verify_ns
         ),
         format!(
-            "metal.encode+submit+wait={} ns; sum(cb.host_wall_ns) is typically larger. The gap stays in residual_ns — it is unattributed intra-CB host time.",
+            "metal.encode+submit+wait={} ns. The former residual hole sum(cb.host_wall)-(encode+submit+wait) is now exclusive serial metal.cb_overlap.* (hidden_io / buffer_lifecycle / other_cpu_feed).",
             ledger.metal_vs_host.metal_encode_ns
                 + ledger.metal_vs_host.metal_submit_ns
                 + ledger.metal_vs_host.metal_wait_ns
         ),
+        "host.lm_head_upload is serial GPU-idle tile fill, not nested in host.lm_head_io.".to_owned(),
         "reader.* rows are parallel-thread sums. A parallel sum is not token latency.".to_owned(),
         format!("source diagnosis: {:?}", ledger.diagnosis),
     ];
@@ -693,6 +889,12 @@ pub fn from_dsv4f_json(root: &Value, meta: &EmitMeta) -> Result<TokenNsDocument,
             ));
         }
     }
+    ensure_dsv_overlap_serial(
+        &mut stages,
+        cb_holes_from_json(ledger),
+        total,
+        &meta.commit,
+    );
     let gpu_busy = json_u64(ledger, &["metal_vs_host", "metal_gpu_ns"]);
     let gpu_gap = json_u64(ledger, &["gpu_gaps", "inter_cb_device_gap_ns"]).max(json_u64(
         ledger,
@@ -791,7 +993,7 @@ pub fn from_dsv4f_json(root: &Value, meta: &EmitMeta) -> Result<TokenNsDocument,
                     json_u64(ledger, &["verify_ns"]) as f64 * 100.0 / total as f64
                 }
             ),
-            "Named serial stages do not include metal.cb_host_wall − (encode+submit+wait). That hole is residual_ns."
+            "Named serial now includes metal.cb_overlap.* = sum(cb.host_wall) − (encode+submit+wait), partitioned into hidden_io / buffer_lifecycle / other_cpu_feed. host.lm_head_upload is serial GPU-idle tile fill."
                 .to_owned(),
         ],
     }
@@ -1223,5 +1425,168 @@ mod tests {
             "2.3% residual must pass the 5% gate: {:?}",
             doc.closure.failure
         );
+    }
+
+    #[test]
+    fn dsv_r6_shaped_residual_closes_under_five_percent() {
+        // Authority R6 body and the two holes this lane named:
+        //   sum(cb.host_wall)-(encode+submit+wait) = 221_456_000
+        //   host.lm_head_upload = 49_767_957 (was misclassified as nested)
+        let body = 1_024_054_500u64;
+        let json = serde_json::json!({
+            "schema": "hawking.gravity.deepseek_v4.token_ns_ledger.v1",
+            "body_ns": body,
+            "wall_ns": 1_183_504_667u64,
+            "init_ns": 159_000_000u64,
+            "verify_ns": 2_333_329_911u64,
+            "metal_vs_host": {
+                "metal_encode_ns": 4_674_000u64,
+                "metal_submit_ns": 753_000u64,
+                "metal_wait_ns": 243_374_000u64,
+                "metal_gpu_ns": 396_549_000u64,
+                "host_exclusive_ns": 553_797_500u64,
+                "production_command_buffers": 137u64,
+                "production_dispatches": 1857u64
+            },
+            "stages": [
+                {"name": "host.expert_slab_io", "ns_per_token": 406_314_919u64, "calls_per_token": 43, "bytes": 1},
+                {"name": "metal.wait", "ns_per_token": 243_374_000u64, "calls_per_token": 137, "bytes": 0},
+                {"name": "host.lm_head_io", "ns_per_token": 36_883_000u64, "calls_per_token": 1, "bytes": 1},
+                {"name": "host.mhc_pre", "ns_per_token": 25_438_623u64, "calls_per_token": 86, "bytes": 0},
+                {"name": "host.decode", "ns_per_token": 19_065_715u64, "calls_per_token": 345, "bytes": 0},
+                {"name": "host.attn_weight_io", "ns_per_token": 7_268_333u64, "calls_per_token": 1, "bytes": 1},
+                {"name": "metal.encode", "ns_per_token": 4_674_000u64, "calls_per_token": 137, "bytes": 0},
+                {"name": "host.mhc_post", "ns_per_token": 3_707_995u64, "calls_per_token": 86, "bytes": 0},
+                {"name": "metal.submit", "ns_per_token": 753_000u64, "calls_per_token": 137, "bytes": 0},
+                {"name": "host.rmsnorm", "ns_per_token": 726_175u64, "calls_per_token": 86, "bytes": 0},
+                {"name": "host.lm_head.mhc_merge", "ns_per_token": 481_958u64, "calls_per_token": 1, "bytes": 0},
+                {"name": "host.embed_io", "ns_per_token": 95_416u64, "calls_per_token": 1, "bytes": 1},
+                {"name": "host.route_id_readback_sync", "ns_per_token": 70_046u64, "calls_per_token": 40, "bytes": 0},
+                {"name": "host.moe_activation_readback", "ns_per_token": 49_085u64, "calls_per_token": 43, "bytes": 0},
+                {"name": "host.attn_activation_readback", "ns_per_token": 47_878u64, "calls_per_token": 43, "bytes": 0},
+                {"name": "host.lm_head_readback", "ns_per_token": 40_498u64, "calls_per_token": 8, "bytes": 0},
+                {"name": "host.route_id_readback", "ns_per_token": 37_461u64, "calls_per_token": 40, "bytes": 0},
+                {"name": "host.lm_head_upload", "ns_per_token": 49_767_957u64, "calls_per_token": 8, "bytes": 1},
+                {"name": "host.shared.w1_io", "ns_per_token": 35_250_879u64, "calls_per_token": 43, "bytes": 1},
+                {"name": "host.shared.w2_io", "ns_per_token": 32_568_457u64, "calls_per_token": 43, "bytes": 1},
+                {"name": "host.shared.w3_io", "ns_per_token": 33_002_714u64, "calls_per_token": 43, "bytes": 1},
+                {"name": "host.moe_control_io", "ns_per_token": 10_085_041u64, "calls_per_token": 43, "bytes": 1},
+                {"name": "host.mla.prefetch_fill", "ns_per_token": 92_228_375u64, "calls_per_token": 42, "bytes": 1},
+                {"name": "reader.path_resolve", "ns_per_token": 1_318_045_536u64, "calls_per_token": 3314, "bytes": 0}
+            ],
+            "command_buffers": [
+                {
+                    "name": "attn",
+                    "host_wall_ns": 216_670_000u64,
+                    "encode_ns": 1_510_000u64,
+                    "submit_ns": 200_000u64,
+                    "wait_ns": 85_910_000u64
+                },
+                {
+                    "name": "moe",
+                    "host_wall_ns": 191_530_000u64,
+                    "encode_ns": 1_990_000u64,
+                    "submit_ns": 300_000u64,
+                    "wait_ns": 96_910_000u64
+                },
+                {
+                    "name": "route",
+                    "host_wall_ns": 52_660_000u64,
+                    "encode_ns": 1_080_000u64,
+                    "submit_ns": 200_000u64,
+                    "wait_ns": 51_330_000u64
+                },
+                {
+                    "name": "lm_head.tile0",
+                    "host_wall_ns": 9_397_000u64,
+                    "encode_ns": 94_000u64,
+                    "submit_ns": 53_000u64,
+                    "wait_ns": 9_224_000u64
+                }
+            ]
+        });
+        let doc = from_dsv4f_json(&json, &meta()).expect("adapt");
+        let upload = doc
+            .stages
+            .iter()
+            .find(|s| s.substage == "host.lm_head_upload")
+            .expect("upload");
+        assert_eq!(upload.serial_or_overlappable, SerialOrOverlappable::Serial);
+        let hidden = doc
+            .stages
+            .iter()
+            .find(|s| s.substage == "metal.cb_overlap.hidden_io")
+            .expect("hidden_io");
+        assert_eq!(hidden.serial_or_overlappable, SerialOrOverlappable::Serial);
+        let resolve = doc
+            .stages
+            .iter()
+            .find(|s| s.substage == "reader.path_resolve")
+            .expect("resolve");
+        assert_eq!(
+            resolve.serial_or_overlappable,
+            SerialOrOverlappable::ParallelSumNotLatency
+        );
+        assert!(
+            doc.closure.identity_holds,
+            "identity broken: {:?}",
+            doc.closure
+        );
+        assert!(
+            doc.closure.residual_within_limit,
+            "residual {} (frac {}) must be under 5%: {:?}",
+            doc.closure.residual_ns,
+            doc.closure.residual_fraction,
+            doc.closure.failure
+        );
+        assert!(!doc.closure.failed, "{:?}", doc.closure.failure);
+        assert!(
+            doc.closure.residual_ns >= 0,
+            "exclusive set overcounted: {}",
+            doc.closure.residual_ns
+        );
+    }
+
+    #[test]
+    fn collector_records_raw_cb_overlap_as_observation() {
+        let mut c = TokenNsCollector::new();
+        c.record_cb(
+            "attn",
+            Some(0),
+            "test",
+            1,
+            &crate::metal::MetalBatchTiming {
+                encode_us: 100,
+                submit_us: 10,
+                wait_us: 1_000,
+                host_wall_us: 4_000,
+                gpu_duration_us: Some(2_000),
+                ..crate::metal::MetalBatchTiming::default()
+            },
+        );
+        let ledger = c.finish(10_000_000, 0, 12_000_000, 0);
+        let overlap = ledger
+            .stages
+            .iter()
+            .find(|s| s.name == "metal.cb_overlap_host")
+            .expect("raw overlap");
+        assert_eq!(overlap.ns, 2_890_000);
+        let doc = from_dsv4f_ledger(&ledger, &meta());
+        let raw = doc
+            .stages
+            .iter()
+            .find(|s| s.substage == "metal.cb_overlap_host")
+            .expect("raw");
+        assert_eq!(
+            raw.serial_or_overlappable,
+            SerialOrOverlappable::Overlappable
+        );
+        let other = doc
+            .stages
+            .iter()
+            .find(|s| s.substage == "metal.cb_overlap.other_cpu_feed")
+            .expect("partition");
+        assert_eq!(other.serial_or_overlappable, SerialOrOverlappable::Serial);
+        assert_eq!(other.ns_per_token, 2_890_000.0);
     }
 }

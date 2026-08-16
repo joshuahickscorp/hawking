@@ -1,0 +1,216 @@
+{
+  "schema": "hawking.ascent.dsv_close_residual.v1",
+  "lane": "dsv-close-residual",
+  "date": "2026-08-16",
+  "status": "SHIPPED",
+  "role": "DSV4F TOKEN_NS residual attribution. Instrumentation / accounting only. No operator, kernel, or residency change.",
+  "label": "DIRTY_ENGINEERING",
+  "label_reason": "Authority numbers are the host-wall warm R6 body already on disk. Other ascent lanes were running. The one GPU confirmation was page-cache cold and is not a timing claim.",
+  "gpu_lock": "tools/gpu_lane_lock.sh dsv-close-residual",
+  "gpu_time_definition": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait. CPU wait is not GPU time.",
+  "theory_only": true,
+  "did_not_optimize": [
+    "No DSV4F operator or kernel change.",
+    "Did not open the resident <=1.5 path.",
+    "Did not re-attack host IO.",
+    "Did not weaken a gate, assertion, or seal."
+  ],
+  "open_number": {
+    "source": "receipts/ascent-2026-08-16/TOKEN_NS_DSV4F.json before this lane",
+    "authority_receipt": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+    "TOTAL_TOKEN_NS": 1024054500,
+    "sum_serial_stage_ns": 749028102,
+    "residual_ns": 275026398,
+    "residual_fraction": 0.2685661729917695,
+    "residual_limit": 0.05,
+    "residual_within_limit": false,
+    "identity_holds": true,
+    "note": "Identity balanced only because 26.86% of the token was an unnamed residual. Q80 residual is 0.73% and named inter_phase_gap_plus_seal_jitter."
+  },
+  "result": {
+    "document": "receipts/ascent-2026-08-16/TOKEN_NS_DSV4F.json",
+    "TOTAL_TOKEN_NS": 1024054500,
+    "sum_serial_stage_ns": 1020252059,
+    "residual_ns": 3802441,
+    "residual_fraction": 0.0037131236667579705,
+    "residual_limit": 0.05,
+    "residual_within_limit": true,
+    "closure_failed": false,
+    "identity_holds": true,
+    "remaining_residual_name": "inter_stage_gap_plus_in_wall_decode_doublecount_jitter",
+    "token_moved": false
+  },
+  "class_split_of_former_275026398_ns": {
+    "note": "SERIAL on the token wall. Parallel-thread sums (reader.path_resolve, verify_ns) are not in this table. Named overlappable rows (shared I/O, prefetch_fill) identify the class but stay overlappable so they are not double-counted.",
+    "hidden_io": {
+      "ns": 110907091,
+      "fraction_of_former_residual": 0.4033,
+      "stage": "metal.cb_overlap.hidden_io",
+      "serial_or_overlappable": "serial",
+      "what": "host.shared.w1/w2/w3_io + host.moe_control_io during attn GPU. min(attn_hole=129055000, named shared+control=110907091).",
+      "standing_class": "hidden IO",
+      "finding_for_later": "Streamed shared/control reads exist because the 148 GiB model is not resident. dsv-resident-gravity owns deleting them."
+    },
+    "buffer_lifecycle": {
+      "ns": 92228375,
+      "fraction_of_former_residual": 0.3353,
+      "stage": "metal.cb_overlap.buffer_lifecycle",
+      "serial_or_overlappable": "serial",
+      "what": "host.mla.prefetch_fill of next-layer attn weights during moe GPU. min(moe_hole=92330000, prefetch_fill=92228375).",
+      "standing_class": "buffer lifecycle (bind / fill)",
+      "finding_for_later": "Prefetch fill is a Metal scratch write of already-read attn weights. Residency deletes it."
+    },
+    "other_cpu_feed": {
+      "ns": 18320534,
+      "fraction_of_former_residual": 0.0666,
+      "stage": "metal.cb_overlap.other_cpu_feed",
+      "serial_or_overlappable": "serial",
+      "what": "Remainder of sum(cb.host_wall)-(encode+submit+wait) after hidden_io and buffer_lifecycle: in-wall MHC/norm decode, Metal buffer writes in preload_moe_io, GPU-timestamp query after wait, Instant microsecond truncation.",
+      "standing_class": "other, explicitly named: in-wall table construction + CPU feed + timestamp query"
+    },
+    "lm_head_upload": {
+      "ns": 49767957,
+      "fraction_of_former_residual": 0.1810,
+      "stage": "host.lm_head_upload",
+      "serial_or_overlappable": "serial",
+      "what": "GPU-idle host write of LM-head tiles into a Metal buffer after host.lm_head_io returns and before each lm_head CB. Previously classified as overlappable because name.contains(\"upload\") assumed nesting in a parent I/O wall. It is not nested.",
+      "standing_class": "buffer lifecycle / CPU feed (GPU-idle DRAM fill)",
+      "finding_for_later": "49.8 ms GPU-idle tile fill. Removable under a resident packed head. Not fixed here."
+    },
+    "remaining_residual": {
+      "ns": 3802441,
+      "fraction_of_former_residual": 0.0138,
+      "fraction_of_token": 0.0037131236667579705,
+      "name": "inter_stage_gap_plus_in_wall_decode_doublecount_jitter",
+      "standing_class": "other, explicitly named",
+      "what": "3.80 ms left on the authority R6 token (0.37%, under the 0.05 limit). On receipts that do not split decode, host.decode (19.1 ms serial) intersects the in-wall decode that also lives inside other_cpu_feed, so residual is slightly understated. New runs split host.decode vs host.decode_in_cb_overlap."
+    },
+    "not_this_residual": {
+      "CPU_feed_already_named_serial": "host.mhc_pre 25.4 ms, host.decode 19.1 ms, host.rmsnorm 0.73 ms",
+      "wait_synchronization_already_named_serial": "metal.wait 243.4 ms, readbacks 0.25 ms",
+      "address_construction": "reader.path_resolve 1318 ms is a parallel-thread sum, not token latency. Not this residual.",
+      "Rust_Python_boundary": "0. This vehicle is Rust-only.",
+      "state_movement_already_named_serial": "host.mhc_pre/post, host.rmsnorm, host.lm_head.mhc_merge"
+    }
+  },
+  "critical_path_honesty": {
+    "token_definition": "body_ns = host_exclusive + sum(cb.host_wall_ns)",
+    "trap_avoided_1": "reader.path_resolve and verify_ns are parallel sums. They were not added to the exclusive serial set.",
+    "trap_avoided_2": "Copied the host-wall baseline shape: SERIAL vs OVERLAPPABLE vs parallel_sum_not_latency. Did not treat DSV4F_TOKEN_NS_LEDGER parallel sums as token latency.",
+    "overlap_is_on_the_wall": "Host work between commit and wait is inside cb.host_wall, so it is on the token even though the GPU is concurrently busy. metal.gpu stays overlappable. The hole is exclusive serial because body includes host_wall."
+  },
+  "authority_r6_arithmetic": {
+    "body_ns": 1024054500,
+    "sum_cb_host_wall_ns": 470257000,
+    "encode_plus_submit_plus_wait_ns": 248801000,
+    "host_wall_minus_encode_submit_wait_ns": 221456000,
+    "attn_hole_ns": 129055000,
+    "moe_hole_ns": 92330000,
+    "other_cb_hole_ns": 71000,
+    "host_exclusive_ns": 553797500,
+    "named_serial_host_before_this_lane_ns": 500227102,
+    "unnamed_host_exclusive_before_this_lane_ns": 53570398,
+    "of_which_lm_head_upload_ns": 49767957,
+    "leftover_after_upload_ns": 3802441
+  },
+  "gpu_confirmation": {
+    "label": "DIRTY_ENGINEERING",
+    "note": "One GPU-locked token. Page-cache COLD (body 10.689 s vs warm authority 1.024 s). Discarded as a timing number. Used only to confirm new collector stages and that closure still holds.",
+    "binary": "workspace/ops/build/rust/release-fast/examples/gravity_deepseek_v4_native_token_graph",
+    "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "verify_mode": "admission",
+    "receipt": "receipts/ascent-2026-08-16/dsv-close-residual/rep1.json",
+    "ledger": "receipts/ascent-2026-08-16/dsv-close-residual/DSV4F_TOKEN_NS_LEDGER.json",
+    "token_ns": "receipts/ascent-2026-08-16/dsv-close-residual/TOKEN_NS.json",
+    "wall_ms": 14316,
+    "init_ms": 3563,
+    "body_ms": 10689,
+    "body_ns": 10689545541,
+    "metal_gpu_ns": 441089000,
+    "metal_wait_ns": 1002680000,
+    "gpu_timestamps_observed_cbs": 134,
+    "gpu_timestamps_missing_cbs": 0,
+    "command_buffers": 134,
+    "dispatches": 1642,
+    "isolated_kernels": 42,
+    "isolated_probe_overhead_ns": 37700334,
+    "residual_ns": 499952048,
+    "residual_fraction": 0.04677018738377813,
+    "residual_within_limit": true,
+    "decode_split": {
+      "host.decode_ns_out_of_wall": 175932913,
+      "host.decode_in_cb_overlap_ns": 247623707,
+      "host.decode_in_cb_overlap_calls": 172,
+      "host.decode_calls": 173
+    }
+  },
+  "correctness": {
+    "gate": "e2e |delta| <= 0.05 on greedy logit; token_id match; 0 fallbacks. Native HC SHA is the pre-existing native constant, not the CPU-oracle constant.",
+    "gpu_confirmation": {
+      "fallbacks": 0,
+      "admission_trust_fallbacks": 0,
+      "hash_invocations": 0,
+      "admission_trust_hits": 3314,
+      "greedy_token_id": 5,
+      "greedy_token_id_oracle": 5,
+      "greedy_logit": 16.7818546295166,
+      "greedy_logit_oracle": 16.767437,
+      "greedy_logit_abs_delta": 0.0144176295166,
+      "logit_gate": "PASS",
+      "hc_sha_native": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "hc_sha_matches_prior_native_receipts": true,
+      "hc_sha_bit_identical_to_cpu_oracle": false
+    },
+    "authority_r6_unchanged": "This lane did not change operators or the oracle. R6 numbers are the same token."
+  },
+  "findings_for_later": [
+    {
+      "name": "host.lm_head_upload is 49.8 ms GPU-idle on the warm token",
+      "ns": 49767957,
+      "do_not_fix_here": true,
+      "why": "DSV4F is theory-only. Resident packed head deletes the fill."
+    },
+    {
+      "name": "221.5 ms of host work sits between commit and wait (shared I/O + prefetch_fill)",
+      "ns": 221456000,
+      "do_not_fix_here": true,
+      "why": "Streamed source. dsv-resident-gravity owns deleting it. dsv-cb-collapse owns CB topology."
+    }
+  ],
+  "next_bottleneck": {
+    "name": "host.expert_slab_io (GPU-idle streamed top-6 expert read+fill)",
+    "ns_per_token": 406314919,
+    "ms_per_token": 406.3,
+    "label": "DIRTY_ENGINEERING",
+    "source": "authority R6 / TOKEN_NS_DSV4F after this lane",
+    "then": [
+      {"name": "metal.wait", "ns": 243374000},
+      {"name": "metal.cb_overlap.hidden_io", "ns": 110907091},
+      {"name": "metal.cb_overlap.buffer_lifecycle", "ns": 92228375}
+    ]
+  },
+  "reps": {
+    "note": "This lane is accounting, not a paired timing experiment. Token body is unchanged. Residual is the measured object.",
+    "authority_warm_body_ns": {
+      "R2": 1067674625,
+      "R3": 1033458375,
+      "R4": 1040717792,
+      "R5": 1037764208,
+      "R6": 1024054500,
+      "median": 1037764208,
+      "label": "DIRTY_ENGINEERING"
+    },
+    "residual_on_r6": {
+      "before_ns": 275026398,
+      "after_ns": 3802441,
+      "before_fraction": 0.2685661729917695,
+      "after_fraction": 0.0037131236667579705
+    },
+    "gpu_confirmation_cold_body_ns": 10689545541
+  },
+  "tests": {
+    "token_ns_adapter": "22 passed (cargo test -p hawking-core --lib token_ns::)",
+    "ledger": "3 passed (cargo test -p hawking-core --lib gravity_deepseek_v4_token_ns_ledger)",
+    "r6_shaped_fixture": "dsv_r6_shaped_residual_closes_under_five_percent PASS"
+  }
+}
