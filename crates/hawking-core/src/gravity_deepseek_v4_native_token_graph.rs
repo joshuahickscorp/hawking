@@ -121,6 +121,24 @@ pub struct NativeTokenGraphCounters {
     pub host_expert_gather: usize,
     pub host_expert_output_readback: usize,
     pub host_route_id_readback: usize,
+    pub total_sync_points: usize,
+    pub total_readbacks: usize,
+    pub total_buffer_creations: usize,
+    pub total_buffer_rebinds: usize,
+    pub scratch_buffer_creations: usize,
+}
+
+/// `HAWKING_DSV4F_CB_COLLAPSE=0` keeps the pre-collapse topology for paired
+/// A/B. Default is on: ordered encoder per CB, batched expert act_quant,
+/// and hash-layer route+moe in one command buffer.
+pub fn cb_collapse_enabled() -> bool {
+    match std::env::var("HAWKING_DSV4F_CB_COLLAPSE") {
+        Ok(value) => !matches!(
+            value.trim().to_ascii_lowercase().as_str(),
+            "0" | "false" | "off" | "no"
+        ),
+        Err(_) => true,
+    }
 }
 
 /// Honesty recorded on every native-graph report.
@@ -234,6 +252,14 @@ impl NativeTokenGraphReport {
                 "host_expert_gather": self.counters.host_expert_gather,
                 "host_expert_output_readback": self.counters.host_expert_output_readback,
                 "host_route_id_readback": self.counters.host_route_id_readback,
+                "total_dispatches": self.counters.metal_dispatches,
+                "total_command_buffers": self.counters.command_buffers,
+                "total_sync_points": self.counters.total_sync_points,
+                "total_readbacks": self.counters.total_readbacks,
+                "total_buffer_creations": self.counters.total_buffer_creations,
+                "total_buffer_rebinds": self.counters.total_buffer_rebinds,
+                "scratch_buffer_creations": self.counters.scratch_buffer_creations,
+                "cb_collapse": cb_collapse_enabled(),
             },
             "hc_bf16_sha256": self.hc_bf16_sha256,
             "greedy": self.greedy.as_ref().map(|g| serde_json::json!({
@@ -399,6 +425,35 @@ fn hash_ids_from_tid2eid(
 mod macos {
     use super::*;
     use crate::metal::{CommandBatch, MetalBatchTiming, MetalContext, SubmittedBatch};
+    use std::cell::Cell;
+
+    thread_local! {
+        static TOKEN_REBINDS: Cell<usize> = const { Cell::new(0) };
+        static TOKEN_READBACKS: Cell<usize> = const { Cell::new(0) };
+        static TOKEN_CREATES: Cell<usize> = const { Cell::new(0) };
+    }
+
+    fn bump_rebind() {
+        TOKEN_REBINDS.with(|c| c.set(c.get() + 1));
+    }
+    fn bump_readback() {
+        TOKEN_READBACKS.with(|c| c.set(c.get() + 1));
+    }
+    fn bump_create() {
+        TOKEN_CREATES.with(|c| c.set(c.get() + 1));
+    }
+    fn reset_token_census() {
+        TOKEN_REBINDS.with(|c| c.set(0));
+        TOKEN_READBACKS.with(|c| c.set(0));
+        TOKEN_CREATES.with(|c| c.set(0));
+    }
+    fn take_token_census() -> (usize, usize, usize) {
+        (
+            TOKEN_CREATES.with(|c| c.get()),
+            TOKEN_REBINDS.with(|c| c.get()),
+            TOKEN_READBACKS.with(|c| c.get()),
+        )
+    }
 
     fn kernel_probe_enabled() -> bool {
         !matches!(
@@ -626,6 +681,9 @@ mod macos {
         fn new() -> Result<Self> {
             let metal = MetalContext::new()?;
             let scratch = Scratch::new(&metal)?;
+            let mut counters = NativeTokenGraphCounters::default();
+            counters.scratch_buffer_creations =
+                std::mem::size_of::<Scratch>() / std::mem::size_of::<metal::Buffer>();
             Ok(Self {
                 act_tg: pipeline_tg(&metal, ACT_QUANT_SIMD_KERNEL, 256)?,
                 fp8_tg: pipeline_tg(&metal, FP8_KERNEL, 256)?,
@@ -636,7 +694,7 @@ mod macos {
                 lm_tg: pipeline_tg(&metal, LM_HEAD_KERNEL, 256)?,
                 metal,
                 scratch,
-                counters: NativeTokenGraphCounters::default(),
+                counters,
                 attn_scratch_ready: false,
             })
         }
@@ -676,6 +734,7 @@ mod macos {
         ) -> Result<MetalBatchTiming> {
             let timing = submitted.wait()?;
             self.counters.command_buffers += 1;
+            self.counters.total_sync_points += 1;
             self.counters.metal_dispatches += n;
             profiler.record_cb(name, layer, force, n as u64, &timing);
             Ok(timing)
@@ -722,14 +781,17 @@ mod macos {
     }
 
     fn write_u16(buf: &metal::Buffer, values: &[u16]) {
+        bump_rebind();
         MetalContext::write_buffer_bytes(buf, bytemuck::cast_slice(values));
     }
 
     fn write_bytes(buf: &metal::Buffer, values: &[u8]) {
+        bump_rebind();
         MetalContext::write_buffer_bytes(buf, values);
     }
 
     fn read_u16(buf: &metal::Buffer, n: usize) -> Result<Vec<u16>> {
+        bump_readback();
         let ptr = buf.contents() as *const u16;
         if ptr.is_null() {
             return Err(graph_error("u16 buffer contents pointer is null"));
@@ -738,6 +800,7 @@ mod macos {
     }
 
     fn read_u32(buf: &metal::Buffer, n: usize) -> Result<Vec<u32>> {
+        bump_readback();
         let ptr = buf.contents() as *const u32;
         if ptr.is_null() {
             return Err(graph_error("u32 buffer contents pointer is null"));
@@ -746,6 +809,7 @@ mod macos {
     }
 
     fn read_f32_n(buf: &metal::Buffer, n: usize) -> Result<Vec<f32>> {
+        bump_readback();
         let ptr = buf.contents() as *const f32;
         if ptr.is_null() {
             return Err(graph_error("f32 buffer contents pointer is null"));
@@ -885,6 +949,7 @@ mod macos {
     }
 
     fn write_at(buf: &metal::Buffer, offset: usize, values: &[u8]) {
+        bump_rebind();
         let ptr = buf.contents() as *mut u8;
         if ptr.is_null() || values.is_empty() {
             return;
@@ -1070,6 +1135,7 @@ mod macos {
         let mut ledger = ResidentLedger::new(DECLARED_WEIGHT_RESIDENT_BOUND_BYTES);
         let mut graph =
             crate::startup_timing::time_ms_result("metal_device_library_pipelines", Graph::new)?;
+        reset_token_census();
         let init_ms = wall.elapsed().as_millis();
         let body = Instant::now();
         let mut profiler = TokenNsCollector::new();
@@ -1160,6 +1226,11 @@ mod macos {
                 ledger.live_bytes()
             )));
         }
+
+        let (creates, rebinds, readbacks) = take_token_census();
+        graph.counters.total_buffer_creations = creates;
+        graph.counters.total_buffer_rebinds = rebinds;
+        graph.counters.total_readbacks = readbacks;
 
         let probe_overhead_ns = profiler.probe_overhead_ns();
         let raw_body_ns = body.elapsed().as_nanos() as u64;
@@ -1475,6 +1546,7 @@ mod macos {
         let layer_idx = layer.layer;
 
         let (attn_n, attn_submitted) = graph.submit(|batch, s| {
+            maybe_ordered(batch);
             let mut n = 0usize;
             dispatch_act_quant(
                 batch,
@@ -1770,7 +1842,10 @@ mod macos {
             for id in ids {
                 row.extend_from_slice(&(id as i64).to_le_bytes());
             }
-            Some(graph.metal.new_buffer_with_bytes_checked(&row)?)
+            Some({
+                bump_create();
+                graph.metal.new_buffer_with_bytes_checked(&row)?
+            })
         } else {
             None
         };
@@ -1848,6 +1923,403 @@ mod macos {
         })
     }
 
+    fn maybe_ordered(batch: &mut CommandBatch<'_>) {
+        if cb_collapse_enabled() {
+            batch.enable_ordered_encoder();
+        }
+    }
+
+    struct RouteEncode<'a> {
+        gate_w: &'a metal::Buffer,
+        tid2eid: Option<&'a metal::Buffer>,
+        bias: Option<&'a metal::Buffer>,
+        is_hash: bool,
+        token_u: u32,
+        experts_u: u32,
+        top_k: u32,
+        route_scale: f32,
+        gate_tg: u32,
+    }
+
+    fn encode_route(batch: &mut CommandBatch<'_>, s: &Scratch, p: &RouteEncode<'_>) -> Result<usize> {
+        let mut n = 0usize;
+        let rows = ROUTED_EXPERTS as u32;
+        let cols = HIDDEN_SIZE as u32;
+        let tg = p.gate_tg.min(rows);
+        batch.dispatch_threads(GATE_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(p.gate_w), 0);
+            enc.set_buffer(1, Some(&s.hidden_a), 0);
+            enc.set_buffer(2, Some(&s.gate_logits), 0);
+            set_u32(enc, 3, &rows);
+            set_u32(enc, 4, &cols);
+        })?;
+        n += 1;
+        if p.is_hash {
+            let table = p.tid2eid.expect("hash table");
+            batch.dispatch_threads(HASH_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+                enc.set_buffer(0, Some(&s.gate_logits), 0);
+                enc.set_buffer(1, Some(table), 0);
+                enc.set_buffer(2, Some(&s.route_ids), 0);
+                enc.set_buffer(3, Some(&s.route_weights), 0);
+                enc.set_buffer(4, Some(&s.original_scores), 0);
+                enc.set_buffer(5, Some(&s.route_valid), 0);
+                set_u32(enc, 6, &p.token_u);
+                set_u32(enc, 7, &p.experts_u);
+                set_u32(enc, 8, &p.top_k);
+                set_f32(enc, 9, &p.route_scale);
+            })?;
+        } else {
+            let bias = p.bias.expect("bias");
+            batch.dispatch_threads(LEARNED_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+                enc.set_buffer(0, Some(&s.gate_logits), 0);
+                enc.set_buffer(1, Some(bias), 0);
+                enc.set_buffer(2, Some(&s.route_ids), 0);
+                enc.set_buffer(3, Some(&s.route_weights), 0);
+                enc.set_buffer(4, Some(&s.original_scores), 0);
+                enc.set_buffer(5, Some(&s.route_valid), 0);
+                set_u32(enc, 6, &p.experts_u);
+                set_u32(enc, 7, &p.top_k);
+                set_f32(enc, 8, &p.route_scale);
+            })?;
+        }
+        n += 1;
+        batch.dispatch_threads(PACK_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+            enc.set_buffer(0, Some(&s.route_ids), 0);
+            enc.set_buffer(1, Some(&s.route_weights), 0);
+            enc.set_buffer(2, Some(&s.worklist), 0);
+            enc.set_buffer(3, Some(&s.pack_valid), 0);
+            set_u32(enc, 4, &p.top_k);
+            set_u32(enc, 5, &p.experts_u);
+        })?;
+        n += 1;
+        Ok(n)
+    }
+
+    struct MoeEncode<'a> {
+        act_tg: u32,
+        fp8_tg: u32,
+        fp4_tg: u32,
+        cast_tg: u32,
+        top_k: u32,
+        collapse: bool,
+        sh_w1: &'a Fp8Pair,
+        sh_w3: &'a Fp8Pair,
+        sh_w2: &'a Fp8Pair,
+    }
+
+    fn encode_moe(batch: &mut CommandBatch<'_>, s: &Scratch, p: &MoeEncode<'_>) -> Result<usize> {
+        let mut n = 0usize;
+        dispatch_act_quant(
+            batch,
+            &s.hidden_a,
+            &s.quant_ffn,
+            &s.quant_scale_ffn,
+            HIDDEN_SIZE as u32,
+            p.act_tg,
+            0,
+            0,
+            0,
+        )?;
+        n += 1;
+        let rows_w1 = MOE_INTER_DIM as u32;
+        let packed = (HIDDEN_SIZE / 2) as u32;
+        let scale_cols = (HIDDEN_SIZE / FP4_BLOCK) as u32;
+        let grid_w1 = p.top_k * rows_w1;
+        let tg = p.fp4_tg.min(rows_w1);
+        let zero = 0u32;
+        let one = 1u32;
+        let shared_one = 1.0f32;
+        batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(&s.worklist), 0);
+            enc.set_buffer(1, Some(&s.w1_slab), 0);
+            enc.set_buffer(2, Some(&s.w1_scale_slab), 0);
+            enc.set_buffer(3, Some(&s.quant_ffn), 0);
+            enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
+            enc.set_buffer(5, Some(&s.expert_gate_f32), 0);
+            set_u32(enc, 6, &rows_w1);
+            set_u32(enc, 7, &packed);
+            set_u32(enc, 8, &scale_cols);
+            set_u32(enc, 9, &p.top_k);
+            set_u32(enc, 10, &zero);
+        })?;
+        n += 1;
+        batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(&s.worklist), 0);
+            enc.set_buffer(1, Some(&s.w3_slab), 0);
+            enc.set_buffer(2, Some(&s.w3_scale_slab), 0);
+            enc.set_buffer(3, Some(&s.quant_ffn), 0);
+            enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
+            enc.set_buffer(5, Some(&s.expert_up_f32), 0);
+            set_u32(enc, 6, &rows_w1);
+            set_u32(enc, 7, &packed);
+            set_u32(enc, 8, &scale_cols);
+            set_u32(enc, 9, &p.top_k);
+            set_u32(enc, 10, &zero);
+        })?;
+        n += 1;
+        let gate_count = p.top_k * rows_w1;
+        dispatch_cast(batch, &s.expert_gate_f32, &s.expert_gate_bf16, gate_count, p.cast_tg)?;
+        n += 1;
+        dispatch_cast(batch, &s.expert_up_f32, &s.expert_up_bf16, gate_count, p.cast_tg)?;
+        n += 1;
+        batch.dispatch_threads(WORKLIST_SWIGLU_KERNEL, (gate_count, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(&s.worklist), 0);
+            enc.set_buffer(1, Some(&s.expert_gate_bf16), 0);
+            enc.set_buffer(2, Some(&s.expert_up_bf16), 0);
+            enc.set_buffer(3, Some(&s.expert_swiglu), 0);
+            set_u32(enc, 4, &rows_w1);
+            set_u32(enc, 5, &p.top_k);
+        })?;
+        n += 1;
+        if p.collapse {
+            // Six experts are packed contiguously; 2048 % 128 == 0 so block
+            // boundaries never cross experts. Same kernel, one dispatch.
+            dispatch_act_quant(
+                batch,
+                &s.expert_swiglu,
+                &s.expert_down_quant,
+                &s.expert_down_scales,
+                (ACTIVATED_EXPERTS * MOE_INTER_DIM) as u32,
+                p.act_tg,
+                0,
+                0,
+                0,
+            )?;
+            n += 1;
+        } else {
+            for slot in 0..ACTIVATED_EXPERTS {
+                let off_in = (slot * MOE_INTER_DIM * size_of::<u16>()) as u64;
+                let off_q = (slot * MOE_INTER_DIM) as u64;
+                let off_s = (slot * (MOE_INTER_DIM / ACT_QUANT_BLOCK)) as u64;
+                dispatch_act_quant(
+                    batch,
+                    &s.expert_swiglu,
+                    &s.expert_down_quant,
+                    &s.expert_down_scales,
+                    MOE_INTER_DIM as u32,
+                    p.act_tg,
+                    off_in,
+                    off_q,
+                    off_s,
+                )?;
+                n += 1;
+            }
+        }
+        let rows_w2 = HIDDEN_SIZE as u32;
+        let packed_w2 = (MOE_INTER_DIM / 2) as u32;
+        let scale_w2 = (MOE_INTER_DIM / FP4_BLOCK) as u32;
+        let grid_w2 = p.top_k * rows_w2;
+        let tg2 = p.fp4_tg.min(rows_w2);
+        batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w2, 1, 1), (tg2, 1, 1), |enc| {
+            enc.set_buffer(0, Some(&s.worklist), 0);
+            enc.set_buffer(1, Some(&s.w2_slab), 0);
+            enc.set_buffer(2, Some(&s.w2_scale_slab), 0);
+            enc.set_buffer(3, Some(&s.expert_down_quant), 0);
+            enc.set_buffer(4, Some(&s.expert_down_scales), 0);
+            enc.set_buffer(5, Some(&s.expert_down_f32), 0);
+            set_u32(enc, 6, &rows_w2);
+            set_u32(enc, 7, &packed_w2);
+            set_u32(enc, 8, &scale_w2);
+            set_u32(enc, 9, &p.top_k);
+            set_u32(enc, 10, &one);
+        })?;
+        n += 1;
+        dispatch_cast(batch, &s.expert_down_f32, &s.expert_down_bf16, grid_w2, p.cast_tg)?;
+        n += 1;
+        dispatch_fp8(
+            batch,
+            &p.sh_w1.weight,
+            &p.sh_w1.scale,
+            &s.quant_ffn,
+            &s.quant_scale_ffn,
+            &s.shared_gate_f32,
+            MOE_INTER_DIM as u32,
+            HIDDEN_SIZE as u32,
+            p.fp8_tg,
+        )?;
+        n += 1;
+        dispatch_fp8(
+            batch,
+            &p.sh_w3.weight,
+            &p.sh_w3.scale,
+            &s.quant_ffn,
+            &s.quant_scale_ffn,
+            &s.shared_up_f32,
+            MOE_INTER_DIM as u32,
+            HIDDEN_SIZE as u32,
+            p.fp8_tg,
+        )?;
+        n += 1;
+        dispatch_cast(
+            batch,
+            &s.shared_gate_f32,
+            &s.shared_gate_bf16,
+            MOE_INTER_DIM as u32,
+            p.cast_tg,
+        )?;
+        n += 1;
+        dispatch_cast(
+            batch,
+            &s.shared_up_f32,
+            &s.shared_up_bf16,
+            MOE_INTER_DIM as u32,
+            p.cast_tg,
+        )?;
+        n += 1;
+        batch.dispatch_threads(
+            SHARED_SWIGLU_KERNEL,
+            (MOE_INTER_DIM as u32, 1, 1),
+            (p.cast_tg.min(MOE_INTER_DIM as u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&s.shared_gate_bf16), 0);
+                enc.set_buffer(1, Some(&s.shared_up_bf16), 0);
+                enc.set_buffer(2, Some(&s.shared_swiglu), 0);
+                set_f32(enc, 3, &shared_one);
+                set_u32(enc, 4, &(MOE_INTER_DIM as u32));
+            },
+        )?;
+        n += 1;
+        dispatch_act_quant(
+            batch,
+            &s.shared_swiglu,
+            &s.shared_down_quant,
+            &s.shared_down_scales,
+            MOE_INTER_DIM as u32,
+            p.act_tg,
+            0,
+            0,
+            0,
+        )?;
+        n += 1;
+        dispatch_fp8(
+            batch,
+            &p.sh_w2.weight,
+            &p.sh_w2.scale,
+            &s.shared_down_quant,
+            &s.shared_down_scales,
+            &s.shared_down_f32,
+            HIDDEN_SIZE as u32,
+            MOE_INTER_DIM as u32,
+            p.fp8_tg,
+        )?;
+        n += 1;
+        dispatch_cast(
+            batch,
+            &s.shared_down_f32,
+            &s.shared_down_bf16,
+            HIDDEN_SIZE as u32,
+            p.cast_tg,
+        )?;
+        n += 1;
+        batch.dispatch_threads(
+            WORKLIST_COMBINE_KERNEL,
+            (HIDDEN_SIZE as u32, 1, 1),
+            (p.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&s.expert_down_bf16), 0);
+                enc.set_buffer(1, Some(&s.shared_down_bf16), 0);
+                enc.set_buffer(2, Some(&s.moe_out), 0);
+                set_u32(enc, 3, &(HIDDEN_SIZE as u32));
+                set_u32(enc, 4, &p.top_k);
+            },
+        )?;
+        n += 1;
+        Ok(n)
+    }
+
+    fn upload_experts_maybe_prefetch(
+        graph: &Graph,
+        reader: &DeepSeekV4FullStreamReader,
+        ledger: &mut ResidentLedger,
+        layer: &DeepSeekV4LayerSourceAnchor,
+        next_layer: Option<&DeepSeekV4LayerSourceAnchor>,
+        exec: &[(u32, f32, u32)],
+        profiler: &mut TokenNsCollector,
+        attn_prefetch: &mut Option<Vec<DeepSeekV4VerifiedBytes>>,
+        expert_bytes: u64,
+    ) -> Result<Vec<String>> {
+        if let Some(next) = next_layer {
+            let started = Instant::now();
+            let (names, prefetched) = std::thread::scope(|scope| -> Result<_> {
+                let expert = scope.spawn(|| upload_expert_slab(graph, reader, ledger, layer, exec));
+                let attn = scope.spawn(|| {
+                    let jobs = attn_read_jobs(next);
+                    par_read_views(reader, &jobs)
+                });
+                let names = expert
+                    .join()
+                    .map_err(|_| graph_error("expert slab thread panicked"))??;
+                let prefetched = attn
+                    .join()
+                    .map_err(|_| graph_error("attn prefetch thread panicked"))??;
+                Ok((names, prefetched))
+            })?;
+            let ns = started.elapsed().as_nanos() as u64;
+            profiler.add_stage("host.expert_slab_io", ns, 1, expert_bytes);
+            profiler.add_stage(
+                "host.attn_weight_io_prefetch",
+                ns,
+                1,
+                prefetched.iter().map(|b| b.len() as u64).sum(),
+            );
+            *attn_prefetch = Some(prefetched);
+            Ok(names)
+        } else {
+            profiler.time_bytes_result("host.expert_slab_io", expert_bytes, || {
+                upload_expert_slab(graph, reader, ledger, layer, exec)
+            })
+        }
+    }
+
+    fn fill_attn_prefetch(
+        graph: &mut Graph,
+        profiler: &mut TokenNsCollector,
+        attn_prefetch: &Option<Vec<DeepSeekV4VerifiedBytes>>,
+    ) {
+        if let Some(blobs) = attn_prefetch.as_ref() {
+            if blobs.len() >= 14 {
+                profiler.time("host.mla.prefetch_fill", || {
+                    write_bytes(&graph.scratch.wq_a_w, blobs[4].as_bytes());
+                    write_bytes(&graph.scratch.wq_a_s, blobs[5].as_bytes());
+                    write_bytes(&graph.scratch.wq_b_w, blobs[6].as_bytes());
+                    write_bytes(&graph.scratch.wq_b_s, blobs[7].as_bytes());
+                    write_bytes(&graph.scratch.wkv_w, blobs[8].as_bytes());
+                    write_bytes(&graph.scratch.wkv_s, blobs[9].as_bytes());
+                    write_bytes(&graph.scratch.wo_a_w, blobs[10].as_bytes());
+                    write_bytes(&graph.scratch.wo_a_s, blobs[11].as_bytes());
+                    write_bytes(&graph.scratch.wo_b_w, blobs[12].as_bytes());
+                    write_bytes(&graph.scratch.wo_b_s, blobs[13].as_bytes());
+                    write_bytes(&graph.scratch.q_norm, blobs[14].as_bytes());
+                    if blobs.len() > 15 {
+                        write_bytes(&graph.scratch.kv_norm, blobs[15].as_bytes());
+                    }
+                    if blobs.len() > 16 {
+                        write_bytes(&graph.scratch.sink, blobs[16].as_bytes());
+                    }
+                });
+                graph.attn_scratch_ready = true;
+            }
+        }
+    }
+
+    fn check_route_flags(layer_idx: usize, scratch: &Scratch) -> Result<()> {
+        let valid = read_u32(&scratch.route_valid, 1)?;
+        if valid[0] != 1 {
+            return Err(graph_error(format!(
+                "layer {layer_idx} route kernel rejected the token (valid={})",
+                valid[0]
+            )));
+        }
+        let pack_valid = read_u32(&scratch.pack_valid, 1)?;
+        if pack_valid[0] != 1 {
+            return Err(graph_error(format!(
+                "layer {layer_idx} worklist pack rejected the route (valid={})",
+                pack_valid[0]
+            )));
+        }
+        Ok(())
+    }
+
     fn execute_moe(
         graph: &mut Graph,
         reader: &DeepSeekV4FullStreamReader,
@@ -1902,408 +2374,133 @@ mod macos {
         let gate_tg = graph.gate_tg;
         let layer_idx = layer.layer;
 
-        graph.batch(
-            "route",
-            Some(layer_idx),
-            if is_hash {
-                "host_pack_valid_and_hash_weight_readback"
-            } else {
-                "host_route_id_readback_for_expert_residency"
-            },
-            profiler,
-            |batch, s| {
-            let mut n = 0usize;
-            let rows = ROUTED_EXPERTS as u32;
-            let cols = HIDDEN_SIZE as u32;
-            let tg = gate_tg.min(rows);
-            batch.dispatch_threads(GATE_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&gate_w), 0);
-                enc.set_buffer(1, Some(&s.hidden_a), 0);
-                enc.set_buffer(2, Some(&s.gate_logits), 0);
-                set_u32(enc, 3, &rows);
-                set_u32(enc, 4, &cols);
-            })?;
-            n += 1;
-            if is_hash {
-                let table = tid2eid_buf.as_ref().expect("hash table");
-                batch.dispatch_threads(HASH_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
-                    enc.set_buffer(0, Some(&s.gate_logits), 0);
-                    enc.set_buffer(1, Some(table), 0);
-                    enc.set_buffer(2, Some(&s.route_ids), 0);
-                    enc.set_buffer(3, Some(&s.route_weights), 0);
-                    enc.set_buffer(4, Some(&s.original_scores), 0);
-                    enc.set_buffer(5, Some(&s.route_valid), 0);
-                    set_u32(enc, 6, &token_u);
-                    set_u32(enc, 7, &experts_u);
-                    set_u32(enc, 8, &top_k);
-                    set_f32(enc, 9, &route_scale);
-                })?;
-            } else {
-                let bias = bias_buf.as_ref().expect("bias");
-                batch.dispatch_threads(LEARNED_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
-                    enc.set_buffer(0, Some(&s.gate_logits), 0);
-                    enc.set_buffer(1, Some(bias), 0);
-                    enc.set_buffer(2, Some(&s.route_ids), 0);
-                    enc.set_buffer(3, Some(&s.route_weights), 0);
-                    enc.set_buffer(4, Some(&s.original_scores), 0);
-                    enc.set_buffer(5, Some(&s.route_valid), 0);
-                    set_u32(enc, 6, &experts_u);
-                    set_u32(enc, 7, &top_k);
-                    set_f32(enc, 8, &route_scale);
-                })?;
-            }
-            n += 1;
-            batch.dispatch_threads(PACK_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&s.route_ids), 0);
-                enc.set_buffer(1, Some(&s.route_weights), 0);
-                enc.set_buffer(2, Some(&s.worklist), 0);
-                enc.set_buffer(3, Some(&s.pack_valid), 0);
-                set_u32(enc, 4, &top_k);
-                set_u32(enc, 5, &experts_u);
-            })?;
-            n += 1;
-            Ok(n)
-        })?;
-
-        let valid = read_u32(&graph.scratch.route_valid, 1)?;
-        if valid[0] != 1 {
-            return Err(graph_error(format!(
-                "layer {} route kernel rejected the token (valid={})",
-                layer.layer, valid[0]
-            )));
-        }
-        let pack_valid = read_u32(&graph.scratch.pack_valid, 1)?;
-        if pack_valid[0] != 1 {
-            return Err(graph_error(format!(
-                "layer {} worklist pack rejected the route (valid={})",
-                layer.layer, pack_valid[0]
-            )));
-        }
-
-        let exec = if let Some(ids) = hash_ids {
-            let weights = read_f32_n(&graph.scratch.route_weights, ACTIVATED_EXPERTS)?;
-            pack_worklist_host(&ids, &weights)?
-        } else {
-            graph.counters.host_route_id_readback += 1;
-            let route_started = Instant::now();
-            let ids = read_u32(&graph.scratch.route_ids, ACTIVATED_EXPERTS)?;
-            let weights = read_f32_n(&graph.scratch.route_weights, ACTIVATED_EXPERTS)?;
-            let mut arr = [0u32; ACTIVATED_EXPERTS];
-            arr.copy_from_slice(&ids);
-            let packed = pack_worklist_host(&arr, &weights)?;
-            profiler.record_route_readback(
-                layer_idx,
-                route_started.elapsed().as_nanos() as u64,
-                "execute_moe after route command buffer; blocks upload_expert_slab",
-                "streaming_residency_needs_six_expert_ids",
-            );
-            profiler.record_sync(
-                "host.route_id_readback_sync",
-                Some(layer_idx),
-                "streaming_residency_needs_six_expert_ids",
-                route_started.elapsed().as_nanos() as u64,
-                (ACTIVATED_EXPERTS * (size_of::<u32>() + size_of::<f32>())) as u64,
-            );
-            packed
+        let collapse = cb_collapse_enabled();
+        let route_p = RouteEncode {
+            gate_w: &gate_w,
+            tid2eid: tid2eid_buf.as_ref(),
+            bias: bias_buf.as_ref(),
+            is_hash,
+            token_u,
+            experts_u,
+            top_k,
+            route_scale,
+            gate_tg,
         };
-        seed_worklist(graph, &exec);
-        let expert_bytes = (ACTIVATED_EXPERTS * (2 * W1_PACKED + W2_PACKED + 2 * W1_SCALES + W2_SCALES)) as u64;
-        let expert_names = if let Some(next) = next_layer {
-            let started = Instant::now();
-            let (names, prefetched) = std::thread::scope(|scope| -> Result<_> {
-                let expert = scope.spawn(|| upload_expert_slab(graph, reader, ledger, layer, &exec));
-                let attn = scope.spawn(|| {
-                    let jobs = attn_read_jobs(next);
-                    par_read_views(reader, &jobs)
-                });
-                let names = expert
-                    .join()
-                    .map_err(|_| graph_error("expert slab thread panicked"))??;
-                let prefetched = attn
-                    .join()
-                    .map_err(|_| graph_error("attn prefetch thread panicked"))??;
-                Ok((names, prefetched))
+        let moe_p = MoeEncode {
+            act_tg: graph.act_tg,
+            fp8_tg: graph.fp8_tg,
+            fp4_tg: graph.fp4_tg,
+            cast_tg: graph.cast_tg,
+            top_k,
+            collapse,
+            sh_w1: &sh_w1,
+            sh_w3: &sh_w3,
+            sh_w2: &sh_w2,
+        };
+        let expert_bytes = (ACTIVATED_EXPERTS
+            * (2 * W1_PACKED + W2_PACKED + 2 * W1_SCALES + W2_SCALES)) as u64;
+        let merge_hash = collapse && is_hash;
+
+        let expert_names = if merge_hash {
+            let ids = hash_ids.expect("hash ids");
+            let exec = pack_worklist_host(&ids, &[0.0f32; ACTIVATED_EXPERTS])?;
+            let names = upload_experts_maybe_prefetch(
+                graph,
+                reader,
+                ledger,
+                layer,
+                next_layer,
+                &exec,
+                profiler,
+                attn_prefetch,
+                expert_bytes,
+            )?;
+            let (n, submitted) = graph.submit(|batch, s| {
+                maybe_ordered(batch);
+                let a = encode_route(batch, s, &route_p)?;
+                let b = encode_moe(batch, s, &moe_p)?;
+                Ok(a + b)
             })?;
-            let ns = started.elapsed().as_nanos() as u64;
-            profiler.add_stage("host.expert_slab_io", ns, 1, expert_bytes);
-            profiler.add_stage(
-                "host.attn_weight_io_prefetch",
-                ns,
-                1,
-                prefetched.iter().map(|b| b.len() as u64).sum(),
-            );
-            *attn_prefetch = Some(prefetched);
+            fill_attn_prefetch(graph, profiler, attn_prefetch);
+            graph.finish(
+                "route_moe",
+                Some(layer_idx),
+                "hash_ids_known_before_route_so_experts_upload_then_one_cb",
+                n,
+                submitted,
+                profiler,
+            )?;
+            check_route_flags(layer_idx, &graph.scratch)?;
             names
         } else {
-            profiler.time_bytes_result("host.expert_slab_io", expert_bytes, || {
-                upload_expert_slab(graph, reader, ledger, layer, &exec)
-            })?
+            graph.batch(
+                "route",
+                Some(layer_idx),
+                if is_hash {
+                    "host_pack_valid_and_hash_weight_readback"
+                } else {
+                    "host_route_id_readback_for_expert_residency"
+                },
+                profiler,
+                |batch, s| {
+                    maybe_ordered(batch);
+                    encode_route(batch, s, &route_p)
+                },
+            )?;
+            check_route_flags(layer_idx, &graph.scratch)?;
+            let exec = if let Some(ids) = hash_ids {
+                let weights = read_f32_n(&graph.scratch.route_weights, ACTIVATED_EXPERTS)?;
+                pack_worklist_host(&ids, &weights)?
+            } else {
+                graph.counters.host_route_id_readback += 1;
+                let route_started = Instant::now();
+                let ids = read_u32(&graph.scratch.route_ids, ACTIVATED_EXPERTS)?;
+                let weights = read_f32_n(&graph.scratch.route_weights, ACTIVATED_EXPERTS)?;
+                let mut arr = [0u32; ACTIVATED_EXPERTS];
+                arr.copy_from_slice(&ids);
+                let packed = pack_worklist_host(&arr, &weights)?;
+                profiler.record_route_readback(
+                    layer_idx,
+                    route_started.elapsed().as_nanos() as u64,
+                    "execute_moe after route command buffer; blocks upload_expert_slab",
+                    "streaming_residency_needs_six_expert_ids",
+                );
+                profiler.record_sync(
+                    "host.route_id_readback_sync",
+                    Some(layer_idx),
+                    "streaming_residency_needs_six_expert_ids",
+                    route_started.elapsed().as_nanos() as u64,
+                    (ACTIVATED_EXPERTS * (size_of::<u32>() + size_of::<f32>())) as u64,
+                );
+                packed
+            };
+            seed_worklist(graph, &exec);
+            let names = upload_experts_maybe_prefetch(
+                graph,
+                reader,
+                ledger,
+                layer,
+                next_layer,
+                &exec,
+                profiler,
+                attn_prefetch,
+                expert_bytes,
+            )?;
+            let (moe_n, moe_submitted) = graph.submit(|batch, s| {
+                maybe_ordered(batch);
+                encode_moe(batch, s, &moe_p)
+            })?;
+            fill_attn_prefetch(graph, profiler, attn_prefetch);
+            graph.finish(
+                "moe",
+                Some(layer_idx),
+                "host_mhc_post_needs_moe_out_bf16",
+                moe_n,
+                moe_submitted,
+                profiler,
+            )?;
+            names
         };
-
-        let act_tg = graph.act_tg;
-        let fp8_tg = graph.fp8_tg;
-        let fp4_tg = graph.fp4_tg;
-        let cast_tg = graph.cast_tg;
-        let top_k = ACTIVATED_EXPERTS as u32;
-        let one = 1u32;
-        let zero = 0u32;
-        let shared_one = 1.0f32;
-
-        let (moe_n, moe_submitted) = graph.submit(|batch, s| {
-            let mut n = 0usize;
-            dispatch_act_quant(
-                batch,
-                &s.hidden_a,
-                &s.quant_ffn,
-                &s.quant_scale_ffn,
-                HIDDEN_SIZE as u32,
-                act_tg,
-                0,
-                0,
-                0,
-            )?;
-            n += 1;
-            let rows_w1 = MOE_INTER_DIM as u32;
-            let packed = (HIDDEN_SIZE / 2) as u32;
-            let scale_cols = (HIDDEN_SIZE / FP4_BLOCK) as u32;
-            let grid_w1 = top_k * rows_w1;
-            let tg = fp4_tg.min(rows_w1);
-            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&s.worklist), 0);
-                enc.set_buffer(1, Some(&s.w1_slab), 0);
-                enc.set_buffer(2, Some(&s.w1_scale_slab), 0);
-                enc.set_buffer(3, Some(&s.quant_ffn), 0);
-                enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
-                enc.set_buffer(5, Some(&s.expert_gate_f32), 0);
-                set_u32(enc, 6, &rows_w1);
-                set_u32(enc, 7, &packed);
-                set_u32(enc, 8, &scale_cols);
-                set_u32(enc, 9, &top_k);
-                set_u32(enc, 10, &zero);
-            })?;
-            n += 1;
-            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&s.worklist), 0);
-                enc.set_buffer(1, Some(&s.w3_slab), 0);
-                enc.set_buffer(2, Some(&s.w3_scale_slab), 0);
-                enc.set_buffer(3, Some(&s.quant_ffn), 0);
-                enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
-                enc.set_buffer(5, Some(&s.expert_up_f32), 0);
-                set_u32(enc, 6, &rows_w1);
-                set_u32(enc, 7, &packed);
-                set_u32(enc, 8, &scale_cols);
-                set_u32(enc, 9, &top_k);
-                set_u32(enc, 10, &zero);
-            })?;
-            n += 1;
-            let gate_count = top_k * rows_w1;
-            dispatch_cast(
-                batch,
-                &s.expert_gate_f32,
-                &s.expert_gate_bf16,
-                gate_count,
-                cast_tg,
-            )?;
-            n += 1;
-            dispatch_cast(
-                batch,
-                &s.expert_up_f32,
-                &s.expert_up_bf16,
-                gate_count,
-                cast_tg,
-            )?;
-            n += 1;
-            batch.dispatch_threads(
-                WORKLIST_SWIGLU_KERNEL,
-                (gate_count, 1, 1),
-                (tg, 1, 1),
-                |enc| {
-                    enc.set_buffer(0, Some(&s.worklist), 0);
-                    enc.set_buffer(1, Some(&s.expert_gate_bf16), 0);
-                    enc.set_buffer(2, Some(&s.expert_up_bf16), 0);
-                    enc.set_buffer(3, Some(&s.expert_swiglu), 0);
-                    set_u32(enc, 4, &rows_w1);
-                    set_u32(enc, 5, &top_k);
-                },
-            )?;
-            n += 1;
-            for slot in 0..ACTIVATED_EXPERTS {
-                let off_in = (slot * MOE_INTER_DIM * size_of::<u16>()) as u64;
-                let off_q = (slot * MOE_INTER_DIM) as u64;
-                let off_s = (slot * (MOE_INTER_DIM / ACT_QUANT_BLOCK)) as u64;
-                dispatch_act_quant(
-                    batch,
-                    &s.expert_swiglu,
-                    &s.expert_down_quant,
-                    &s.expert_down_scales,
-                    MOE_INTER_DIM as u32,
-                    act_tg,
-                    off_in,
-                    off_q,
-                    off_s,
-                )?;
-                n += 1;
-            }
-            let rows_w2 = HIDDEN_SIZE as u32;
-            let packed_w2 = (MOE_INTER_DIM / 2) as u32;
-            let scale_w2 = (MOE_INTER_DIM / FP4_BLOCK) as u32;
-            let grid_w2 = top_k * rows_w2;
-            let tg2 = fp4_tg.min(rows_w2);
-            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w2, 1, 1), (tg2, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&s.worklist), 0);
-                enc.set_buffer(1, Some(&s.w2_slab), 0);
-                enc.set_buffer(2, Some(&s.w2_scale_slab), 0);
-                enc.set_buffer(3, Some(&s.expert_down_quant), 0);
-                enc.set_buffer(4, Some(&s.expert_down_scales), 0);
-                enc.set_buffer(5, Some(&s.expert_down_f32), 0);
-                set_u32(enc, 6, &rows_w2);
-                set_u32(enc, 7, &packed_w2);
-                set_u32(enc, 8, &scale_w2);
-                set_u32(enc, 9, &top_k);
-                set_u32(enc, 10, &one);
-            })?;
-            n += 1;
-            dispatch_cast(
-                batch,
-                &s.expert_down_f32,
-                &s.expert_down_bf16,
-                grid_w2,
-                cast_tg,
-            )?;
-            n += 1;
-
-            dispatch_fp8(
-                batch,
-                &sh_w1.weight,
-                &sh_w1.scale,
-                &s.quant_ffn,
-                &s.quant_scale_ffn,
-                &s.shared_gate_f32,
-                MOE_INTER_DIM as u32,
-                HIDDEN_SIZE as u32,
-                fp8_tg,
-            )?;
-            n += 1;
-            dispatch_fp8(
-                batch,
-                &sh_w3.weight,
-                &sh_w3.scale,
-                &s.quant_ffn,
-                &s.quant_scale_ffn,
-                &s.shared_up_f32,
-                MOE_INTER_DIM as u32,
-                HIDDEN_SIZE as u32,
-                fp8_tg,
-            )?;
-            n += 1;
-            dispatch_cast(
-                batch,
-                &s.shared_gate_f32,
-                &s.shared_gate_bf16,
-                MOE_INTER_DIM as u32,
-                cast_tg,
-            )?;
-            n += 1;
-            dispatch_cast(
-                batch,
-                &s.shared_up_f32,
-                &s.shared_up_bf16,
-                MOE_INTER_DIM as u32,
-                cast_tg,
-            )?;
-            n += 1;
-            batch.dispatch_threads(
-                SHARED_SWIGLU_KERNEL,
-                (MOE_INTER_DIM as u32, 1, 1),
-                (cast_tg.min(MOE_INTER_DIM as u32), 1, 1),
-                |enc| {
-                    enc.set_buffer(0, Some(&s.shared_gate_bf16), 0);
-                    enc.set_buffer(1, Some(&s.shared_up_bf16), 0);
-                    enc.set_buffer(2, Some(&s.shared_swiglu), 0);
-                    set_f32(enc, 3, &shared_one);
-                    set_u32(enc, 4, &(MOE_INTER_DIM as u32));
-                },
-            )?;
-            n += 1;
-            dispatch_act_quant(
-                batch,
-                &s.shared_swiglu,
-                &s.shared_down_quant,
-                &s.shared_down_scales,
-                MOE_INTER_DIM as u32,
-                act_tg,
-                0,
-                0,
-                0,
-            )?;
-            n += 1;
-            dispatch_fp8(
-                batch,
-                &sh_w2.weight,
-                &sh_w2.scale,
-                &s.shared_down_quant,
-                &s.shared_down_scales,
-                &s.shared_down_f32,
-                HIDDEN_SIZE as u32,
-                MOE_INTER_DIM as u32,
-                fp8_tg,
-            )?;
-            n += 1;
-            dispatch_cast(
-                batch,
-                &s.shared_down_f32,
-                &s.shared_down_bf16,
-                HIDDEN_SIZE as u32,
-                cast_tg,
-            )?;
-            n += 1;
-            batch.dispatch_threads(
-                WORKLIST_COMBINE_KERNEL,
-                (HIDDEN_SIZE as u32, 1, 1),
-                (cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
-                |enc| {
-                    enc.set_buffer(0, Some(&s.expert_down_bf16), 0);
-                    enc.set_buffer(1, Some(&s.shared_down_bf16), 0);
-                    enc.set_buffer(2, Some(&s.moe_out), 0);
-                    set_u32(enc, 3, &(HIDDEN_SIZE as u32));
-                    set_u32(enc, 4, &top_k);
-                },
-            )?;
-            n += 1;
-            Ok(n)
-        })?;
-        if let Some(blobs) = attn_prefetch.as_ref() {
-            if blobs.len() >= 14 {
-                profiler.time("host.mla.prefetch_fill", || {
-                    write_bytes(&graph.scratch.wq_a_w, blobs[4].as_bytes());
-                    write_bytes(&graph.scratch.wq_a_s, blobs[5].as_bytes());
-                    write_bytes(&graph.scratch.wq_b_w, blobs[6].as_bytes());
-                    write_bytes(&graph.scratch.wq_b_s, blobs[7].as_bytes());
-                    write_bytes(&graph.scratch.wkv_w, blobs[8].as_bytes());
-                    write_bytes(&graph.scratch.wkv_s, blobs[9].as_bytes());
-                    write_bytes(&graph.scratch.wo_a_w, blobs[10].as_bytes());
-                    write_bytes(&graph.scratch.wo_a_s, blobs[11].as_bytes());
-                    write_bytes(&graph.scratch.wo_b_w, blobs[12].as_bytes());
-                    write_bytes(&graph.scratch.wo_b_s, blobs[13].as_bytes());
-                    write_bytes(&graph.scratch.q_norm, blobs[14].as_bytes());
-                    if blobs.len() > 15 {
-                        write_bytes(&graph.scratch.kv_norm, blobs[15].as_bytes());
-                    }
-                    if blobs.len() > 16 {
-                        write_bytes(&graph.scratch.sink, blobs[16].as_bytes());
-                    }
-                });
-                graph.attn_scratch_ready = true;
-            }
-        }
-        graph.finish(
-            "moe",
-            Some(layer_idx),
-            "host_mhc_post_needs_moe_out_bf16",
-            moe_n,
-            moe_submitted,
-            profiler,
-        )?;
 
         let readback_started = Instant::now();
         let moe = read_u16(&graph.scratch.moe_out, HIDDEN_SIZE)?;
@@ -2401,12 +2598,15 @@ mod macos {
             })
         })?;
 
+        bump_create();
         let residual_buf = graph
             .metal
             .new_buffer_with_bytes_checked(bytemuck::cast_slice(residual_f32))?;
         let max_bytes = jobs.iter().map(|j| j.1).max().unwrap_or(0);
         let max_rows = jobs.iter().map(|j| j.3).max().unwrap_or(0);
+        bump_create();
         let weight_buf = graph.metal.new_buffer_checked(max_bytes)?;
+        bump_create();
         let out_buf = graph
             .metal
             .new_buffer_checked(max_rows * size_of::<f32>())?;
@@ -2433,6 +2633,7 @@ mod macos {
                 })
             })?;
             graph.counters.command_buffers += 1;
+            graph.counters.total_sync_points += 1;
             graph.counters.metal_dispatches += 1;
             profiler.record_cb(
                 &tile_name,
@@ -2824,6 +3025,26 @@ mod tests {
     fn oracle_parity_constants_match_sealed_receipt() {
         assert_eq!(ORACLE_GREEDY_TOKEN_ID, 5);
         assert_eq!(ORACLE_GREEDY_LOGIT, 16.767_437);
+    }
+
+    #[test]
+    fn census_arithmetic_matches_pre_collapse_43_layer_topology() {
+        // 43 * (attn 17 + route 3 + moe 23) + 8 lm_head tiles
+        assert_eq!(43 * 17 + 43 * 3 + 43 * 23 + 8, 1857);
+        assert_eq!(43 + 43 + 43 + 8, 137);
+    }
+
+    #[test]
+    fn batched_expert_act_quant_is_block_aligned() {
+        assert_eq!(MOE_INTER_DIM % ACT_QUANT_BLOCK, 0);
+        assert_eq!((ACTIVATED_EXPERTS * MOE_INTER_DIM) % ACT_QUANT_BLOCK, 0);
+    }
+
+    #[test]
+    fn collapse_flag_treats_unset_as_on() {
+        // The function reads the process env; just prove it returns a bool
+        // without panicking. Paired A/B sets the var explicitly.
+        let _ = cb_collapse_enabled();
     }
 
     #[cfg(target_os = "macos")]

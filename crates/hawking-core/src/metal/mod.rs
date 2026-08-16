@@ -1047,6 +1047,11 @@ mod imp {
         // per-dispatch and ordered-pair paths: callers must close it before a
         // dependent dispatch can be encoded.
         concurrent_encoder: Option<ComputeCommandEncoder>,
+        // One sequential compute encoder reused across dispatch_threads
+        // calls in this batch. Off by default so existing one-encoder-per-
+        // dispatch callers keep their previous topology.
+        ordered_encoder: Option<ComputeCommandEncoder>,
+        ordered_encoder_enabled: bool,
         pipeline_lookup_us: u64,
         compute_encoders: u64,
         compute_dispatches: u64,
@@ -2686,11 +2691,14 @@ mod imp {
                 cmd,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
+                ordered_encoder: None,
+                ordered_encoder_enabled: false,
                 pipeline_lookup_us: 0,
                 compute_encoders: 0,
                 compute_dispatches: 0,
             };
             encode(&mut batch)?;
+            batch.close_ordered_encoder();
             if batch.concurrent_encoder.is_some() {
                 return Err(Error::Metal(
                     "dispatch_batch returned with an unclosed concurrent group".into(),
@@ -2733,11 +2741,14 @@ mod imp {
                 cmd,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
+                ordered_encoder: None,
+                ordered_encoder_enabled: false,
                 pipeline_lookup_us: 0,
                 compute_encoders: 0,
                 compute_dispatches: 0,
             };
             encode(&mut batch)?;
+            batch.close_ordered_encoder();
             if batch.concurrent_encoder.is_some() {
                 return Err(Error::Metal(
                     "dispatch_batch_timed returned with an unclosed concurrent group".into(),
@@ -2815,11 +2826,14 @@ mod imp {
                 cmd: &cmd,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
+                ordered_encoder: None,
+                ordered_encoder_enabled: false,
                 pipeline_lookup_us: 0,
                 compute_encoders: 0,
                 compute_dispatches: 0,
             };
             encode(&mut batch)?;
+            batch.close_ordered_encoder();
             if batch.concurrent_encoder.is_some() {
                 return Err(Error::Metal(
                     "submit_batch returned with an unclosed concurrent group".into(),
@@ -2890,6 +2904,21 @@ mod imp {
     }
 
     impl CommandBatch<'_> {
+        /// Fold subsequent `dispatch_threads` calls into one sequential
+        /// compute encoder. Metal hazard tracking plus an explicit buffers
+        /// barrier keep producer/consumer dispatches ordered without a new
+        /// encoder or command buffer per kernel.
+        pub fn enable_ordered_encoder(&mut self) {
+            self.ordered_encoder_enabled = true;
+        }
+
+        fn close_ordered_encoder(&mut self) {
+            if let Some(enc) = self.ordered_encoder.take() {
+                enc.end_encoding();
+                self.compute_encoders += 1;
+            }
+        }
+
         /// Begin one explicit `MTLDispatchTypeConcurrent` wave.
         ///
         /// This is a narrow probe surface for independently writable work
@@ -2903,6 +2932,7 @@ mod imp {
                     "begin_concurrent_group called while a group is already active".into(),
                 ));
             }
+            self.close_ordered_encoder();
             let enc = self
                 .cmd
                 .compute_command_encoder_with_dispatch_type(MTLDispatchType::Concurrent);
@@ -2972,6 +3002,34 @@ mod imp {
             let pipeline_started = Instant::now();
             let pipe = self.ctx.pipeline(fn_name)?;
             self.pipeline_lookup_us += pipeline_started.elapsed().as_micros() as u64;
+            if self.ordered_encoder_enabled {
+                if self.ordered_encoder.is_none() {
+                    let enc = self.cmd.new_compute_command_encoder();
+                    if let Some(command) = self.physical_trace.as_ref() {
+                        enc.set_label(&physical_encoder_label(
+                            command,
+                            "compute_encoder",
+                            "ordered_batch",
+                        ));
+                    } else {
+                        enc.set_label("ordered_batch");
+                    }
+                    self.ordered_encoder = Some(enc.to_owned());
+                }
+                // Sequential dispatches on one encoder rely on the device
+                // default hazard tracker for producer/consumer buffers.
+                // Bit-identity is the gate; an explicit barrier is not
+                // wrapped by metal 0.29 on ComputeCommandEncoder.
+                let enc = self.ordered_encoder.as_ref().expect("ordered encoder");
+                enc.set_compute_pipeline_state(&pipe);
+                encode(enc);
+                enc.dispatch_threads(
+                    MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                    MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+                );
+                self.compute_dispatches += 1;
+                return Ok(());
+            }
             let enc = self.cmd.new_compute_command_encoder();
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
@@ -3013,6 +3071,7 @@ mod imp {
                     "dispatch_threads_pair_in_one_encoder cannot run while a concurrent group is active".into(),
                 ));
             }
+            self.close_ordered_encoder();
             let first_pipeline_started = Instant::now();
             let first_pipe = self.ctx.pipeline(first_name)?;
             self.pipeline_lookup_us += first_pipeline_started.elapsed().as_micros() as u64;

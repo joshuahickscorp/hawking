@@ -107,7 +107,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let greedy = report.greedy.as_ref();
     eprintln!(
-        "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} hash_invocations={} admission_trust_hits={} bytes_hashed={} admission_receipt_loaded={} artifact_index_loaded={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
+        "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} sync_points={} readbacks={} buffer_creates={} buffer_rebinds={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} hash_invocations={} admission_trust_hits={} bytes_hashed={} admission_receipt_loaded={} artifact_index_loaded={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
         report.deepest_layer,
         report.layers_executed,
         report.wall_ms,
@@ -119,6 +119,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         report.peak_weight_resident_bytes,
         report.counters.metal_dispatches,
         report.counters.command_buffers,
+        report.counters.total_sync_points,
+        report.counters.total_readbacks,
+        report.counters.total_buffer_creations,
+        report.counters.total_buffer_rebinds,
         report.counters.fallbacks,
         report.counters.host_expert_gather,
         report.counters.host_expert_output_readback,
@@ -137,7 +141,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     if let Some(ledger) = report.token_ns_ledger.as_ref() {
         eprintln!(
-            "token_ns_ledger diagnosis={:?} body_ns={} host_exclusive_ns={} metal_gpu_ns={} metal_wait_ns={} verify_ns={} cbs={} isolated={} proof={}",
+            "token_ns_ledger diagnosis={:?} body_ns={} host_exclusive_ns={} metal_gpu_ns={} metal_wait_ns={} verify_ns={} cbs={} isolated={} inter_cb_gap_ns={} gpu_idle_frac={:?} encoders={} proof={}",
             ledger.diagnosis,
             ledger.body_ns,
             ledger.metal_vs_host.host_exclusive_ns,
@@ -146,6 +150,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             ledger.verify_ns,
             ledger.metal_vs_host.production_command_buffers,
             ledger.isolated_kernels.len(),
+            ledger.gpu_gaps.inter_cb_device_gap_ns,
+            ledger.gpu_gaps.gpu_idle_fraction_of_span,
+            ledger.gpu_gaps.production_encoders,
             ledger.diagnosis_proof,
         );
     }
