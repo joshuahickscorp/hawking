@@ -41,7 +41,9 @@ LANES = REPO / "workspace" / "ops" / "ascent-lanes"
 
 DISK_FLOOR_GIB = 15.0
 DISK_WARN_GIB = 90.0   # raised after a 0-byte stall: lanes cost 1-19 GiB each
-MAX_CONCURRENT = 4     # cut after the 0-byte stall; 7 lanes filled 926 GiB
+MAX_CONCURRENT = 10    # raised again per user steer: the 0-byte stall is now guarded
+                       # by the governor reaping the grok worktree pool, which is the
+                       # real protection - the cap was only ever a blunt proxy for it
 POLL_SECONDS = 300
 
 # Real Tier-1 gates. Reject-only: passing here is NOT promotion.
