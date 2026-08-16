@@ -47,6 +47,93 @@ pub const QWEN80_MIXED_EXPECTED_MANIFEST_SEAL: &str =
 pub const QWEN80_MIXED_NUMERIC_TOL: f32 = 2.0e-5;
 const MIXED_DEFAULT_ROOT_ABS: &str = "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1";
 
+/// Requested, logged capability-bar probe. Not a silent fallback.
+/// Identity (rank 160, mix 1) keeps the fused incumbent generate path.
+#[derive(Clone, Debug, Serialize)]
+pub struct MixedDegradeConfig {
+    pub hgravs_rank_cap: u32,
+    pub gate_mix: f32,
+    pub up_mix: f32,
+    pub down_mix: f32,
+    pub mix_seed: u64,
+}
+
+impl Default for MixedDegradeConfig {
+    fn default() -> Self {
+        Self {
+            hgravs_rank_cap: Q80_HGRAVS_RANK as u32,
+            gate_mix: 1.0,
+            up_mix: 1.0,
+            down_mix: 1.0,
+            mix_seed: 0xC0B1_7C11,
+        }
+    }
+}
+
+impl MixedDegradeConfig {
+    pub fn is_identity(&self) -> bool {
+        self.hgravs_rank_cap >= Q80_HGRAVS_RANK as u32
+            && (self.gate_mix - 1.0).abs() < 1.0e-6
+            && (self.up_mix - 1.0).abs() < 1.0e-6
+            && (self.down_mix - 1.0).abs() < 1.0e-6
+    }
+
+    pub fn rank_cap(&self) -> usize {
+        (self.hgravs_rank_cap as usize).clamp(1, Q80_HGRAVS_RANK)
+    }
+}
+
+fn mix_seed(base: u64, layer: usize, expert: u16, organ: u8) -> u64 {
+    base.wrapping_mul(0x9E37_79B9_7F4A_7C15)
+        .wrapping_add((layer as u64) << 32)
+        .wrapping_add((expert as u64) << 8)
+        .wrapping_add(u64::from(organ))
+}
+
+/// y <- α y + sqrt(1-α²) n, with n same-energy and orthogonalized against y.
+/// Gives cos(y_orig, y_new) = α when ||y|| > 0.
+pub fn mix_matched_cosine(y: &mut [f32], alpha: f32, seed: u64) {
+    if y.is_empty() || (alpha - 1.0).abs() < 1.0e-6 {
+        return;
+    }
+    let alpha = alpha.clamp(-1.0, 1.0) as f64;
+    let mut rng = if seed == 0 { 1 } else { seed };
+    let mut noise = vec![0.0f64; y.len()];
+    let mut energy_y = 0.0f64;
+    let mut energy_n = 0.0f64;
+    let mut dot = 0.0f64;
+    for (i, &yi) in y.iter().enumerate() {
+        rng ^= rng << 13;
+        rng ^= rng >> 7;
+        rng ^= rng << 17;
+        let u = ((rng >> 11) as f64) * (1.0 / ((1u64 << 53) as f64)) * 2.0 - 1.0;
+        let yv = yi as f64;
+        noise[i] = u;
+        energy_y += yv * yv;
+        energy_n += u * u;
+        dot += yv * u;
+    }
+    if energy_y > 1.0e-20 {
+        let scale = dot / energy_y;
+        energy_n = 0.0;
+        for (i, &yi) in y.iter().enumerate() {
+            let v = noise[i] - scale * (yi as f64);
+            noise[i] = v;
+            energy_n += v * v;
+        }
+    }
+    let ny = energy_y.sqrt();
+    let nn = energy_n.sqrt();
+    if ny < 1.0e-20 || nn < 1.0e-20 {
+        return;
+    }
+    let beta = (1.0 - alpha * alpha).max(0.0).sqrt();
+    let n_scale = beta * (ny / nn);
+    for (slot, dest) in y.iter_mut().enumerate() {
+        *dest = (alpha * (*dest as f64) + n_scale * noise[slot]) as f32;
+    }
+}
+
 fn mixed_error(message: impl Into<String>) -> Error {
     Error::Model(format!("qwen80 mixed hybrid decode: {}", message.into()))
 }
@@ -669,6 +756,7 @@ impl MetalMixedAccel {
         combined: &mut [f32],
         native: &mut Qwen80MixedNativeCounts,
         stages: &mut Qwen80MixedStageTimes,
+        degrade: &MixedDegradeConfig,
     ) -> Result<()> {
         if ids.len() != 10 || weights.len() != 10 || input.len() != QWEN80_HIDDEN {
             return Err(mixed_error("routed wave expects top-10 and hidden=2048"));
@@ -716,8 +804,24 @@ impl MetalMixedAccel {
         let timing = tcb.commit_and_wait_timed()?;
         Self::note_timing(stages, native, &timing);
 
-        let gate = read_f32(&self.wave.gate, 10 * QWEN80_MOE_INTERMEDIATE);
-        let up = read_f32(&self.wave.up, 10 * QWEN80_MOE_INTERMEDIATE);
+        let mut gate = read_f32(&self.wave.gate, 10 * QWEN80_MOE_INTERMEDIATE);
+        let mut up = read_f32(&self.wave.up, 10 * QWEN80_MOE_INTERMEDIATE);
+        if !degrade.is_identity() {
+            for (slot, &expert) in ids.iter().enumerate() {
+                let a = slot * QWEN80_MOE_INTERMEDIATE;
+                let b = a + QWEN80_MOE_INTERMEDIATE;
+                mix_matched_cosine(
+                    &mut gate[a..b],
+                    degrade.gate_mix,
+                    mix_seed(degrade.mix_seed, layer, expert, 0),
+                );
+                mix_matched_cosine(
+                    &mut up[a..b],
+                    degrade.up_mix,
+                    mix_seed(degrade.mix_seed, layer, expert, 1),
+                );
+            }
+        }
         let mut act = vec![0.0f32; 10 * QWEN80_MOE_INTERMEDIATE];
         for slot in 0..10 {
             let a = slot * QWEN80_MOE_INTERMEDIATE;
@@ -726,6 +830,8 @@ impl MetalMixedAccel {
         }
         write_f32(&self.wave.act, &act);
 
+        let rank_cap = degrade.rank_cap();
+        let fused = degrade.is_identity();
         let mut tcb = crate::metal::TokenCommandBuffer::new(&self.context);
         for (slot, &expert) in ids.iter().enumerate() {
             let trip = self
@@ -734,7 +840,6 @@ impl MetalMixedAccel {
                 .ok_or_else(|| mixed_error("expert missing after ensure"))?;
             let act_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
             let mid_off = (slot * Q80_HGRAVS_RANK * 4) as u64;
-            let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
             tcb.dispatch_threads(
                 "q80_hgravs01_factor_matvec",
                 (trip.down.right_rows, 1, 1),
@@ -756,32 +861,93 @@ impl MetalMixedAccel {
                     )
                 },
             )?;
-            tcb.dispatch_threads(
-                "q80_hgravs01_factor_matvec",
-                (trip.down.left_rows, 1, 1),
-                (256, 1, 1),
-                |enc| {
-                    encode_factor(
-                        enc,
-                        &trip.down.left_codes,
-                        &trip.down.left_scales,
-                        &self.wave.mid,
-                        mid_off,
-                        &self.wave.down,
-                        down_off,
-                        trip.down.left_rows,
-                        trip.down.left_cols,
-                        trip.down.group_size,
-                        trip.down.bits,
-                        trip.down.bound,
-                    )
-                },
-            )?;
-            native.hgravs_factor_dispatches = native.hgravs_factor_dispatches.saturating_add(2);
+            if fused {
+                let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
+                tcb.dispatch_threads(
+                    "q80_hgravs01_factor_matvec",
+                    (trip.down.left_rows, 1, 1),
+                    (256, 1, 1),
+                    |enc| {
+                        encode_factor(
+                            enc,
+                            &trip.down.left_codes,
+                            &trip.down.left_scales,
+                            &self.wave.mid,
+                            mid_off,
+                            &self.wave.down,
+                            down_off,
+                            trip.down.left_rows,
+                            trip.down.left_cols,
+                            trip.down.group_size,
+                            trip.down.bits,
+                            trip.down.bound,
+                        )
+                    },
+                )?;
+            }
+            native.hgravs_factor_dispatches = native.hgravs_factor_dispatches.saturating_add(1);
         }
         let timing = tcb.commit_and_wait_timed()?;
         Self::note_timing(stages, native, &timing);
-        let down = read_f32(&self.wave.down, 10 * QWEN80_HIDDEN);
+
+        if !fused {
+            if rank_cap < Q80_HGRAVS_RANK {
+                let mut mid = read_f32(&self.wave.mid, 10 * Q80_HGRAVS_RANK);
+                for slot in 0..10 {
+                    let base = slot * Q80_HGRAVS_RANK;
+                    mid[base + rank_cap..base + Q80_HGRAVS_RANK].fill(0.0);
+                }
+                write_f32(&self.wave.mid, &mid);
+            }
+            let mut tcb = crate::metal::TokenCommandBuffer::new(&self.context);
+            for (slot, &expert) in ids.iter().enumerate() {
+                let trip = self
+                    .experts
+                    .get(&(layer, expert))
+                    .ok_or_else(|| mixed_error("expert missing after ensure"))?;
+                let mid_off = (slot * Q80_HGRAVS_RANK * 4) as u64;
+                let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
+                tcb.dispatch_threads(
+                    "q80_hgravs01_factor_matvec",
+                    (trip.down.left_rows, 1, 1),
+                    (256, 1, 1),
+                    |enc| {
+                        encode_factor(
+                            enc,
+                            &trip.down.left_codes,
+                            &trip.down.left_scales,
+                            &self.wave.mid,
+                            mid_off,
+                            &self.wave.down,
+                            down_off,
+                            trip.down.left_rows,
+                            trip.down.left_cols,
+                            trip.down.group_size,
+                            trip.down.bits,
+                            trip.down.bound,
+                        )
+                    },
+                )?;
+                native.hgravs_factor_dispatches =
+                    native.hgravs_factor_dispatches.saturating_add(1);
+            }
+            let timing = tcb.commit_and_wait_timed()?;
+            Self::note_timing(stages, native, &timing);
+        } else {
+            native.hgravs_factor_dispatches = native.hgravs_factor_dispatches.saturating_add(10);
+        }
+
+        let mut down = read_f32(&self.wave.down, 10 * QWEN80_HIDDEN);
+        if !degrade.is_identity() {
+            for (slot, &expert) in ids.iter().enumerate() {
+                let base = slot * QWEN80_HIDDEN;
+                mix_matched_cosine(
+                    &mut down[base..base + QWEN80_HIDDEN],
+                    degrade.down_mix,
+                    mix_seed(degrade.mix_seed, layer, expert, 2),
+                );
+            }
+        }
         combined.fill(0.0);
         for slot in 0..10 {
             let weight = weights[slot];
@@ -804,6 +970,7 @@ pub struct Qwen80MixedHybridDecodeSession {
     pub stages: Qwen80MixedStageTimes,
     pub activation_counts: Qwen80ActivationClassCounts,
     pub parity: Qwen80MixedParityReport,
+    pub degrade: MixedDegradeConfig,
     #[cfg(target_os = "macos")]
     metal: Option<MetalMixedAccel>,
     pub metal_error: Option<String>,
@@ -833,6 +1000,7 @@ impl Qwen80MixedHybridDecodeSession {
             stages: Qwen80MixedStageTimes::default(),
             activation_counts: Qwen80ActivationClassCounts::default(),
             parity: Qwen80MixedParityReport::default(),
+            degrade: MixedDegradeConfig::default(),
             #[cfg(target_os = "macos")]
             metal,
             metal_error,
@@ -843,6 +1011,10 @@ impl Qwen80MixedHybridDecodeSession {
 
     pub fn catalog(&self) -> &Qwen80MixedStreamingCatalog {
         &self.catalog
+    }
+
+    pub fn set_degrade(&mut self, degrade: MixedDegradeConfig) {
+        self.degrade = degrade;
     }
 
     pub fn reset_state(&mut self) {
@@ -1365,6 +1537,7 @@ impl Qwen80MixedHybridDecodeSession {
         let routed_started = Instant::now();
         #[cfg(target_os = "macos")]
         {
+            let degrade = self.degrade.clone();
             let Some(metal) = self.metal.as_mut() else {
                 return Err(mixed_error("Metal required for routed mixed experts"));
             };
@@ -1377,6 +1550,7 @@ impl Qwen80MixedHybridDecodeSession {
                 &mut combined,
                 &mut self.native,
                 &mut self.stages,
+                &degrade,
             )?;
         }
         #[cfg(not(target_os = "macos"))]

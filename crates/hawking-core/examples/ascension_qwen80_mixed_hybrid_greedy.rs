@@ -11,7 +11,7 @@
 use hawking_core::model::qwen80_complete_runtime::qwen80_assert_native_operator_composition_complete;
 use hawking_core::model::qwen80_mixed_catalog::Qwen80MixedStreamingCatalog;
 use hawking_core::model::qwen80_mixed_hybrid_decode::{
-    discover_qwen80_mixed_root, generate_mixed_greedy, load_mixed_tokenizer,
+    discover_qwen80_mixed_root, generate_mixed_greedy, load_mixed_tokenizer, MixedDegradeConfig,
     Qwen80MixedHybridDecodeSession, QWEN80_MIXED_CLAIM, QWEN80_MIXED_EXPECTED_MANIFEST_SEAL,
 };
 use hawking_core::model::qwen80_uniform_q4_hybrid_decode::{
@@ -32,6 +32,12 @@ struct Arguments {
     max_seq_len: usize,
     reps: usize,
     out: Option<PathBuf>,
+    plan: Option<PathBuf>,
+    hgravs_rank_cap: u32,
+    gate_mix: f32,
+    up_mix: f32,
+    down_mix: f32,
+    mix_seed: u64,
 }
 
 fn usage() -> &'static str {
@@ -39,7 +45,8 @@ fn usage() -> &'static str {
         [--artifact-root DIR] [--tokenizer PATH] \
         [--prompt TEXT] [--raw-prompt] \
         [--max-new-tokens N] [--max-seq-len N] [--reps N] \
-        [--out RECEIPT.json]"
+        [--hgravs-rank-cap N] [--gate-mix C] [--up-mix C] [--down-mix C] \
+        [--mix-seed N] [--plan PLAN.json] [--out RECEIPT.json]"
 }
 
 fn parse_args() -> Result<Arguments, String> {
@@ -51,6 +58,12 @@ fn parse_args() -> Result<Arguments, String> {
     let mut max_seq_len = 64usize;
     let mut reps = 1usize;
     let mut out = None;
+    let mut plan = None;
+    let mut hgravs_rank_cap = 160u32;
+    let mut gate_mix = 1.0f32;
+    let mut up_mix = 1.0f32;
+    let mut down_mix = 1.0f32;
+    let mut mix_seed = 0xC0B1_7C11u64;
     let mut args = env::args().skip(1);
     while let Some(flag) = args.next() {
         match flag.as_str() {
@@ -94,6 +107,46 @@ fn parse_args() -> Result<Arguments, String> {
                     args.next().ok_or_else(|| usage().to_owned())?,
                 ));
             }
+            "--plan" => {
+                plan = Some(PathBuf::from(
+                    args.next().ok_or_else(|| usage().to_owned())?,
+                ));
+            }
+            "--hgravs-rank-cap" => {
+                hgravs_rank_cap = args
+                    .next()
+                    .ok_or_else(|| usage().to_owned())?
+                    .parse()
+                    .map_err(|_| usage().to_owned())?;
+            }
+            "--gate-mix" => {
+                gate_mix = args
+                    .next()
+                    .ok_or_else(|| usage().to_owned())?
+                    .parse()
+                    .map_err(|_| usage().to_owned())?;
+            }
+            "--up-mix" => {
+                up_mix = args
+                    .next()
+                    .ok_or_else(|| usage().to_owned())?
+                    .parse()
+                    .map_err(|_| usage().to_owned())?;
+            }
+            "--down-mix" => {
+                down_mix = args
+                    .next()
+                    .ok_or_else(|| usage().to_owned())?
+                    .parse()
+                    .map_err(|_| usage().to_owned())?;
+            }
+            "--mix-seed" => {
+                mix_seed = args
+                    .next()
+                    .ok_or_else(|| usage().to_owned())?
+                    .parse()
+                    .map_err(|_| usage().to_owned())?;
+            }
             "--help" | "-h" => return Err(usage().to_owned()),
             other => return Err(format!("unknown flag {other}; {}", usage())),
         }
@@ -110,10 +163,16 @@ fn parse_args() -> Result<Arguments, String> {
         max_seq_len,
         reps,
         out,
+        plan,
+        hgravs_rank_cap,
+        gate_mix,
+        up_mix,
+        down_mix,
+        mix_seed,
     })
 }
 
-fn classify_text(text: &str) -> &'static str {
+fn classify_text(text: &str, needles: &[&str]) -> &'static str {
     let trimmed = text.trim();
     if trimmed.is_empty() {
         return "INCOHERENT";
@@ -127,9 +186,7 @@ fn classify_text(text: &str) -> &'static str {
         return "INCOHERENT";
     }
     let lower = trimmed.to_ascii_lowercase();
-    let has_answer = ["def ", "function", "reverse", "string", "python", "here's", "here is"]
-        .iter()
-        .any(|needle| lower.contains(needle));
+    let has_answer = needles.iter().any(|needle| lower.contains(needle));
     let repeated = {
         let words: Vec<&str> = lower.split_whitespace().collect();
         words.len() >= 6 && words.windows(3).any(|w| words.iter().filter(|x| **x == w[0]).count() >= 4)
@@ -139,6 +196,30 @@ fn classify_text(text: &str) -> &'static str {
     } else {
         "DEGRADED"
     }
+}
+
+const DEFAULT_NEEDLES: &[&str] = &[
+    "def ", "function", "reverse", "string", "python", "here's", "here is",
+];
+
+fn degrade_from_json(value: &serde_json::Value) -> Result<MixedDegradeConfig, String> {
+    let mut cfg = MixedDegradeConfig::default();
+    if let Some(v) = value.get("hgravs_rank_cap").and_then(|x| x.as_u64()) {
+        cfg.hgravs_rank_cap = v as u32;
+    }
+    if let Some(v) = value.get("gate_mix").and_then(|x| x.as_f64()) {
+        cfg.gate_mix = v as f32;
+    }
+    if let Some(v) = value.get("up_mix").and_then(|x| x.as_f64()) {
+        cfg.up_mix = v as f32;
+    }
+    if let Some(v) = value.get("down_mix").and_then(|x| x.as_f64()) {
+        cfg.down_mix = v as f32;
+    }
+    if let Some(v) = value.get("mix_seed").and_then(|x| x.as_u64()) {
+        cfg.mix_seed = v;
+    }
+    Ok(cfg)
 }
 
 fn main() {
@@ -154,10 +235,12 @@ fn run() -> Result<(), String> {
     let args = parse_args()?;
     let root = args
         .artifact_root
+        .clone()
         .or_else(discover_qwen80_mixed_root)
         .ok_or_else(|| "qwen80 mixed artifact root not found; pass --artifact-root".to_owned())?;
     let tokenizer_path = args
         .tokenizer
+        .clone()
         .or_else(discover_qwen80_tokenizer)
         .unwrap_or_else(qwen80_default_tokenizer_path);
     let rendered = if args.raw_prompt {
@@ -191,6 +274,26 @@ fn run() -> Result<(), String> {
         session.fallbacks.silent_or_invalid()
     );
 
+    if let Some(plan_path) = args.plan.as_ref() {
+        return run_plan(&mut session, &tokenizer, &root, &args, plan_path);
+    }
+
+    session.set_degrade(MixedDegradeConfig {
+        hgravs_rank_cap: args.hgravs_rank_cap,
+        gate_mix: args.gate_mix,
+        up_mix: args.up_mix,
+        down_mix: args.down_mix,
+        mix_seed: args.mix_seed,
+    });
+    eprintln!(
+        "degrade rank_cap={} gate_mix={} up_mix={} down_mix={} identity={}",
+        args.hgravs_rank_cap,
+        args.gate_mix,
+        args.up_mix,
+        args.down_mix,
+        session.degrade.is_identity()
+    );
+
     let mut reps = Vec::new();
     let mut first_text = String::new();
     let mut first_ids = Vec::new();
@@ -211,7 +314,10 @@ fn run() -> Result<(), String> {
             println!("prompt_token_ids={:?}", result.prompt_token_ids);
             println!("generated_token_ids={:?}", result.generated_token_ids);
             println!("generated_text={:?}", result.generated_text);
-            println!("coherence_class={}", classify_text(&result.generated_text));
+            println!(
+                "coherence_class={}",
+                classify_text(&result.generated_text, DEFAULT_NEEDLES)
+            );
             println!("prefill_secs={:.6}", result.prefill_secs);
             println!(
                 "first_token_latency_secs={:.6}",
@@ -284,7 +390,7 @@ fn run() -> Result<(), String> {
         let receipt = json!({
             "schema": "hawking.ascent.q80_mixed_generate.v1",
             "lane": "q80-mixed-generate",
-            "status": classify_text(&first.generated_text),
+            "status": classify_text(&first.generated_text, DEFAULT_NEEDLES),
             "claim": first.claim,
             "claim_boundary": {
                 "generation_is_the_gate": true,
@@ -303,7 +409,8 @@ fn run() -> Result<(), String> {
             "generated_text": first.generated_text,
             "generated_token_ids": first.generated_token_ids,
             "prompt_token_ids": first.prompt_token_ids,
-            "coherence_class": classify_text(&first.generated_text),
+            "coherence_class": classify_text(&first.generated_text, DEFAULT_NEEDLES),
+            "degrade": session.degrade,
             "correctness": {
                 "gate_kind": "numeric_equivalence_vs_artifact_oracle",
                 "tolerance": 2e-5,
@@ -338,5 +445,154 @@ fn run() -> Result<(), String> {
         eprintln!("wrote {}", path.display());
         let _ = first_text;
     }
+    Ok(())
+}
+
+fn run_plan(
+    session: &mut Qwen80MixedHybridDecodeSession,
+    tokenizer: &hawking_core::tokenizer::Tokenizer,
+    root: &std::path::Path,
+    args: &Arguments,
+    plan_path: &std::path::Path,
+) -> Result<(), String> {
+    let raw = fs::read_to_string(plan_path).map_err(|e| e.to_string())?;
+    let plan: serde_json::Value = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
+    let max_new = plan
+        .get("max_new_tokens")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize)
+        .unwrap_or(args.max_new_tokens);
+    let reps = plan
+        .get("reps")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize)
+        .unwrap_or(1)
+        .max(1);
+    let prompts = plan
+        .get("prompts")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .ok_or_else(|| "plan.prompts must be an array".to_owned())?;
+    let points = plan
+        .get("points")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .ok_or_else(|| "plan.points must be an array".to_owned())?;
+    let mut rows = Vec::new();
+    for prompt_spec in &prompts {
+        let name = prompt_spec
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("prompt")
+            .to_owned();
+        let text = prompt_spec
+            .get("text")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| format!("prompt {name} missing text"))?
+            .to_owned();
+        let raw_prompt = prompt_spec
+            .get("raw")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let rendered = if raw_prompt {
+            text.clone()
+        } else {
+            render_qwen80_source_user_chat(&text)
+        };
+        let needles_owned: Vec<String> = prompt_spec
+            .get("needles")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_owned()))
+                    .collect()
+            })
+            .unwrap_or_else(|| DEFAULT_NEEDLES.iter().map(|s| (*s).to_owned()).collect());
+        let needle_refs: Vec<&str> = needles_owned.iter().map(|s| s.as_str()).collect();
+        for point in &points {
+            let point_name = point
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("point")
+                .to_owned();
+            let degrade = degrade_from_json(point)?;
+            session.set_degrade(degrade.clone());
+            eprintln!(
+                "plan prompt={name} point={point_name} rank_cap={} gate={} up={} down={} identity={}",
+                degrade.hgravs_rank_cap,
+                degrade.gate_mix,
+                degrade.up_mix,
+                degrade.down_mix,
+                degrade.is_identity()
+            );
+            let mut texts = Vec::new();
+            let mut ids = Vec::new();
+            let mut walls = Vec::new();
+            let mut gpus = Vec::new();
+            let mut first_ids: Option<Vec<u32>> = None;
+            let mut first = None;
+            for rep in 0..reps {
+                let result = generate_mixed_greedy(session, tokenizer, &rendered, max_new)
+                    .map_err(|e| e.to_string())?;
+                if first.is_none() {
+                    println!(
+                        "[{name}/{point_name}] text={:?} class={} tokens={:?}",
+                        result.generated_text,
+                        classify_text(&result.generated_text, &needle_refs),
+                        result.generated_token_ids
+                    );
+                    first_ids = Some(result.generated_token_ids.clone());
+                    first = Some(result.clone());
+                }
+                texts.push(result.generated_text.clone());
+                ids.push(result.generated_token_ids.clone());
+                walls.push(result.wall_ns_per_token);
+                gpus.push(result.gpu_matvec_ns_per_token);
+                let _ = rep;
+            }
+            let first = first.expect("reps>=1");
+            rows.push(json!({
+                "prompt_name": name,
+                "prompt": text,
+                "rendered_prompt": rendered,
+                "point": point_name,
+                "degrade": degrade,
+                "generated_text": first.generated_text,
+                "generated_token_ids": first.generated_token_ids,
+                "prompt_token_ids": first.prompt_token_ids,
+                "coherence_class": classify_text(&first.generated_text, &needle_refs),
+                "reps_generated_text": texts,
+                "reps_ids": ids,
+                "reps_ids_match_first": ids.iter().map(|got| Some(got) == first_ids.as_ref()).collect::<Vec<_>>(),
+                "silent_fallback_count": first.fallbacks.silent_or_invalid(),
+                "dense_w_materialized": first.dense_w_materialized,
+                "prefill_secs": first.prefill_secs,
+                "decode_secs": first.decode_secs,
+                "wall_ns_per_token_reps": walls,
+                "gpu_matvec_ns_per_token_reps": gpus,
+                "gpu_timestamps_missing": first.stages.gpu_matvec_timestamps_missing,
+                "peak_rss_bytes": first.peak_rss_bytes,
+                "native": first.native,
+            }));
+        }
+    }
+    let out = args.out.clone().unwrap_or_else(|| {
+        PathBuf::from("receipts/ascent-2026-08-16/q80-recalibrate-generate-sweep.json")
+    });
+    if let Some(parent) = out.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let receipt = json!({
+        "schema": "hawking.ascent.q80_recalibrate_generate_sweep.v1",
+        "lane": "q80-recalibrate-capability-bar",
+        "artifact_root": root,
+        "complete_physical_bpw": session.catalog().complete_physical_bpw,
+        "manifest_seal_sha256": session.catalog().manifest_seal_sha256,
+        "parity": session.parity,
+        "timing_label": "DIRTY_ENGINEERING",
+        "rows": rows,
+    });
+    fs::write(&out, serde_json::to_string_pretty(&receipt).unwrap()).map_err(|e| e.to_string())?;
+    eprintln!("wrote {}", out.display());
     Ok(())
 }

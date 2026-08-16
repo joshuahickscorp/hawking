@@ -1,0 +1,38 @@
+{
+  "max_new_tokens": 24,
+  "reps": 1,
+  "prompts": [
+    {
+      "name": "eight_primes",
+      "text": "List the first eight prime numbers.",
+      "raw": false,
+      "needles": ["prime", "2", "3", "5", "7", "11", "13"]
+    }
+  ],
+  "points": [
+    {
+      "name": "mix_best_subbit_analog",
+      "hgravs_rank_cap": 160,
+      "gate_mix": 0.8251844270872919,
+      "up_mix": 0.7940310701783475,
+      "down_mix": 1.0,
+      "kind": "all_organ_mix"
+    },
+    {
+      "name": "mix_all_hgravs_r40_analog",
+      "hgravs_rank_cap": 160,
+      "gate_mix": 0.8674300317740716,
+      "up_mix": 0.7940310701783475,
+      "down_mix": 0.7832600245475769,
+      "kind": "all_organ_mix"
+    },
+    {
+      "name": "mix_all_hgravs_r16_analog",
+      "hgravs_rank_cap": 160,
+      "gate_mix": 0.8251844270872919,
+      "up_mix": 0.70783937,
+      "down_mix": 0.65110016,
+      "kind": "all_organ_mix"
+    }
+  ]
+}
