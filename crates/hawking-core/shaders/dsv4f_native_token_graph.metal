@@ -33,59 +33,32 @@ static_assert(sizeof(Dsv4fExpertRef) == 16, "Dsv4fExpertRef ABI drift");
 
 static inline float dsv4f_tg_bf16_value(ushort bits)
 {
-    return as_type<float>(((uint)bits) << 16u);
+    return gk_bf16_value(bits);
 }
 
 static inline ushort dsv4f_tg_bf16_encode_rne(float value)
 {
-    const uint bits = as_type<uint>(value);
-    const uint low_lsb = (bits >> 16u) & 1u;
-    return (ushort)((bits + 0x7fffu + low_lsb) >> 16u);
+    return gk_bf16_encode_rne(value);
 }
 
 static inline float dsv4f_tg_e4m3fn_value(uchar bits)
 {
-    const uint raw = (uint)bits;
-    const uint exponent = (raw >> 3u) & 0x0fu;
-    const uint mantissa = raw & 0x07u;
-    if (exponent == 0x0fu && mantissa == 0x07u) return 0.0f;
-    const float magnitude = exponent == 0u
-        ? (float)mantissa * 0.001953125f
-        : as_type<float>(((exponent + 120u) << 23u) | (mantissa << 20u));
-    return (raw & 0x80u) != 0u ? -magnitude : magnitude;
+    return gk_e4m3fn_value(bits);
 }
 
 static inline float dsv4f_tg_e8m0fnu_value(uchar bits)
 {
-    if ((uint)bits == 0xffu) return 0.0f;
-    return (uint)bits == 0u
-        ? as_type<float>(0x00400000u)
-        : as_type<float>(((uint)bits) << 23u);
+    return gk_e8m0fnu_value(bits);
 }
 
 static inline float dsv4f_tg_e2m1fn_value(uchar packed, bool high_nibble)
 {
-    const uint nibble = high_nibble ? (((uint)packed >> 4u) & 0x0fu)
-                                     : ((uint)packed & 0x0fu);
-    float magnitude = 0.0f;
-    switch (nibble & 0x07u) {
-        case 0u: magnitude = 0.0f; break;
-        case 1u: magnitude = 0.5f; break;
-        case 2u: magnitude = 1.0f; break;
-        case 3u: magnitude = 1.5f; break;
-        case 4u: magnitude = 2.0f; break;
-        case 5u: magnitude = 3.0f; break;
-        case 6u: magnitude = 4.0f; break;
-        default: magnitude = 6.0f; break;
-    }
-    return (nibble & 0x08u) != 0u ? -magnitude : magnitude;
+    return gk_e2m1fn_value(packed, high_nibble);
 }
 
 static inline float dsv4f_tg_silu(float value)
 {
-    if (value >= 0.0f) return value / (1.0f + exp(-value));
-    const float e = exp(value);
-    return value * e / (1.0f + e);
+    return gk_silu_dsv4f(value);
 }
 
 // Sort the six device route IDs into execution order (ascending expert id,

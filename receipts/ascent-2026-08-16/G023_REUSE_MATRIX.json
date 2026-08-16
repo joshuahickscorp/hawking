@@ -1,0 +1,384 @@
+{
+  "schema": "hawking.g023.reuse_matrix.v1",
+  "date": "2026-08-16",
+  "lane": "generalized-kernel-20260816-143026",
+  "steer": "G023: ONE kernel family for Qwen (Q80 + Qwen3.8) AND DSV4F. Census before build.",
+  "class": "STATIC / CENSUS",
+  "gpu_touched": false,
+  "source_of_truth": "SUPERWAVE_STATE.md (parent hawking root) + shaders in crates/hawking-core/shaders/",
+  "file_count_before": {
+    "qwen_family_metal": 24,
+    "dsv4f_family_metal": 4,
+    "qwen_family_files": [
+      "megakernel_qwen3b.metal",
+      "q80_codec_activity.metal",
+      "q80_matvec_geometry_gen.metal",
+      "q80_mixed_decode.metal",
+      "qwen30_device_expert_table.metal",
+      "qwen30_quality_repack_sparse_gate_up.metal",
+      "qwen80_all_ten_routed_expert_wave.metal",
+      "qwen80_device_activations.metal",
+      "qwen80_device_expert_table.metal",
+      "qwen80_direct_packed_attention_stage.metal",
+      "qwen80_direct_packed_terminal_head_preflight.metal",
+      "qwen80_gqa_kv_cache_preflight.metal",
+      "qwen80_moe_wave_aggregate_second_residual.metal",
+      "qwen80_postnorm_router_top10.metal",
+      "qwen80_routed_expert_wave.metal",
+      "qwen80_shared_expert_wave.metal",
+      "qwen_binary.metal",
+      "qwen_binary_precision_safe_tiled_candidate.metal",
+      "qwen_complete_runtime.metal",
+      "qwen_direct_packed_gate_up_pair.metal",
+      "qwen_direct_packed_gate_up_swiglu_fused.metal",
+      "qwen_direct_packed_gate_up_swiglu_paired_scalar_order.metal",
+      "qwen_next.metal",
+      "qwen_uniform_q4.metal"
+    ],
+    "dsv4f_family_files": [
+      "deepseek_v4_mhc_control_exp.metal",
+      "deepseek_v4_p7.metal",
+      "dsv4f_activation_x_batch.metal",
+      "dsv4f_native_token_graph.metal"
+    ],
+    "note": "qwen_uniform_qn.metal exists but is outside the SUPERWAVE 24-file qwen*+q80* count. matmul.metal/moe.metal host additional DeepSeek kernels but are not dsv4f-family files."
+  },
+  "q4_status": "DE-AUTHORISED. qwen80_device_expert_table.metal and qwen_uniform_q4.metal are census-only. Do not build, unify, or benchmark uniform-q4-group64.",
+  "qwen38_from_g014": {
+    "census": "receipts/ascent-2026-08-16/QWEN38_ARCH_CENSUS.json",
+    "reuse": "receipts/ascent-2026-08-16/QWEN38_REUSE_MATRIX.json",
+    "verdict": "Qwen3.8 linear_attention IS Q80 Gated DeltaNet. Dense SwiGLU, no experts. Geometry constants only (hidden 5120, value heads 48, GQA 24:4, rope 1e7). Do not write a new recurrence."
+  },
+  "shipping_graphs": {
+    "q80": "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs dispatches q80_binary_group_matvec / q80_sparse_q1_apply_csr / q80_hgravs01_factor_matvec (serial, TG 256). Mixed-1p5-v1 is the sealing vehicle.",
+    "dsv4f": "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs dispatches dsv4f_pack_worklist / dsv4f_worklist_fp4_matvec(_simd) / dsv4f_worklist_swiglu / dsv4f_worklist_combine. Act-quant + FP8 linears stay on the DeepSeek authority kernels in matmul.metal.",
+    "qwen38": "No runtime yet. Family must admit 48 value heads / 24:4 GQA / dense SwiGLU via parameters. Artifacts are not a gate."
+  },
+  "hot_path": [
+    {
+      "kernel": "q80_binary_group_matvec",
+      "family": "qwen",
+      "computation": "y[r] = sum_c sign(r,c) * fp16_scale(r, c/128) * x[c]; left-to-right f32; scale applied per element",
+      "tile": "1 thread / row; grid (rows), TG 256",
+      "dtype": "1-bit LSB signs + fp16 scale / group 128; x,y f32",
+      "dispatch": "qwen80_mixed_hybrid_decode::matvec Binary and Residual (binary half)",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "q80_binary_group_matvec_simd",
+      "family": "qwen",
+      "computation": "same as serial binary; 32-wide column tiles; simd_sum (association differs from serial)",
+      "tile": "1 simdgroup / row; 8 SG / TG 256; grid ceil(rows/8)*256",
+      "dtype": "same binary_group",
+      "dispatch": "throughput probes, not mixed hybrid shipping serial",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "q80_binary_group_matvec_rowblock4",
+      "family": "qwen",
+      "computation": "same binary; 4 independent FMA chains share x[col]",
+      "tile": "4 rows / SG; 32 rows / TG 256",
+      "dtype": "same binary_group",
+      "dispatch": "throughput probes",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "q80_binary_group_matvec_{simd_bytes,chunk,tg256,interleaved}",
+      "family": "qwen",
+      "computation": "same binary decode; different column walk / DRAM layout",
+      "tile": "bytes=8-col/lane; chunk=contiguous 64; tg256=1 TG/row; interleaved=scale|signs record",
+      "dtype": "same binary_group",
+      "dispatch": "geometry / DRAM-row experiments, not shipping mixed graph",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "q80_rice_q1_residual_apply / q80_sparse_q1_apply_csr / fused csr",
+      "family": "qwen",
+      "computation": "scatter-add rice-coded 2% outliers on top of binary matvec; serial add order = packed index order",
+      "tile": "1 thread whole stream OR 1 thread / row CSR OR fused after binary reduce",
+      "dtype": "rice bitstream + 1-bit residual signs + fp16 rms scale; x,y f32",
+      "dispatch": "up_proj in mixed hybrid (binary then CSR)",
+      "verdict": "STRUCTURAL"
+    },
+    {
+      "kernel": "q80_hgravs01_factor_matvec",
+      "family": "qwen",
+      "computation": "y[r] = sum_c (code-bound) * fp16_scale(flat/64) * x[c]; groups along flattened factor, not row-aligned",
+      "tile": "1 thread / row; TG 256",
+      "dtype": "unsigned 3-bit LSB codes + fp16 scale / group 64; bound=3; x,y f32",
+      "dispatch": "down_proj two-stage L@(R@x) and uniform-8 organs",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "q80_hgravs01_two_stage_matvec(_rowblock4)",
+      "family": "qwen",
+      "computation": "y = L @ (R @ x); mid[rank<=160] in threadgroup; never dense W",
+      "tile": "TG recomputes mid[160]; then 1 or 4 L-rows / SG",
+      "dtype": "same hgravs01 3-bit",
+      "dispatch": "throughput probes; shipping mixed uses two factor dispatches",
+      "verdict": "STRUCTURAL"
+    },
+    {
+      "kernel": "qwen80_routed_expert_wave_{gate_up,swiglu,down_weighted}",
+      "family": "qwen",
+      "computation": "paired binary gate/up; silu(g)*up; binary down * route_weight. Hardcoded 2048/512/128",
+      "tile": "1 TG / row, 256-thread tree reduce",
+      "dtype": "HQ30G1B1 signs+fp16 scale; f32 activations",
+      "dispatch": "unregistered isolated probe; not the mixed shipping graph",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "qwen80_shared_expert_wave_*",
+      "family": "qwen",
+      "computation": "same binary gate/up/swiglu/down plus scalar sigmoid shared gate",
+      "tile": "same 1 TG / row",
+      "dtype": "same HQ30G1B1; f32",
+      "dispatch": "unregistered isolated probe",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "qwen80_device_expert_table_uniform_q4_*",
+      "family": "qwen",
+      "computation": "uniform q4 group-64 expert table",
+      "tile": "serial / rowblock / simdgroup / vecgroup",
+      "dtype": "uniform-q4-group64",
+      "dispatch": "DE-AUTHORISED vehicle",
+      "verdict": "STRUCTURAL"
+    },
+    {
+      "kernel": "qwen80_residual_rmsnorm_f32",
+      "family": "qwen",
+      "computation": "x * rsqrt(mean(x^2)+eps) * (1+w); 256-thread TG reduce then apply",
+      "tile": "1 TG, 256 threads, tree reduce",
+      "dtype": "f32 in/out/weight",
+      "dispatch": "qwen80 hybrid activations",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "qwen80_silu_mul_f32 / routed/shared swiglu",
+      "family": "qwen",
+      "computation": "silu(g)*up = g/(1+exp(-g))*up; no clamp; no route weight in the silu kernel",
+      "tile": "1 thread / element",
+      "dtype": "f32",
+      "dispatch": "hybrid activations / isolated waves",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "qwen_next_gated_delta_decode_single / qwen80_gated_delta_decode_tg",
+      "family": "qwen",
+      "computation": "S*=d; delta=(v-S^T k)*b; S+=k⊗delta; o=S^T q. Same recurrence as Qwen3.8.",
+      "tile": "1 thread / value head; serial 128x128",
+      "dtype": "f32 state",
+      "dispatch": "Q80 hybrid; Q38 port is parameterization (heads 48 vs 32)",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "qwen80_attention_qk_norm_rope_cache / qwen80_gqa_qk_norm_rope_cache_f32",
+      "family": "qwen",
+      "computation": "per-head RMSNorm *(1+w), partial RoPE rotate_half dim 64, KV append. Hard-refuses unless 16:2, theta=5e6.",
+      "tile": "1 thread / query head",
+      "dtype": "f32; q_norm may be packed binary",
+      "dispatch": "Q80 GQA layers. Q38 is 24:4, theta=1e7 — same algebra.",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "dsv4f_worklist_fp4_matvec",
+      "family": "dsv4f",
+      "computation": "for each 32-col block: acc_blk = sum (e2m1(W)*e4m3(A)); y += acc_blk * e8m0(Ws) * e8m0(As). Post-block scale. fp contract off.",
+      "tile": "1 thread / (slot, row); grid top_k*rows, TG min(256,rows)",
+      "dtype": "W: e2m1 nibble + e8m0 /32; A: e4m3 + e8m0 /128; y f32; worklist K=6",
+      "dispatch": "native token graph MoE w1/w3/w2",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "dsv4f_worklist_fp4_matvec_simd",
+      "family": "dsv4f",
+      "computation": "same FP4 block association; one lane owns one of 32 weights; simd_sum then scale on lane 0",
+      "tile": "1 SG / (slot,row); 8 SG / TG 256; grid top_k*ceil(rows/8)*256",
+      "dtype": "same FP4/E4M3/E8M0",
+      "dispatch": "HAWKING_DSV4F_FP4_OCCUPANCY opt-in",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "dsv4f_fp4_matvec_split / _simd / _simd_r4 / _interleaved",
+      "family": "dsv4f",
+      "computation": "same FP4 math, isolated (no worklist). r4 = 4 rows/SG sharing activations. interleaved = [e8m0|16 packed] records.",
+      "tile": "serial 1/row; simd 1 SG/row; r4 4 rows/SG; interleaved 1/row",
+      "dtype": "same FP4",
+      "dispatch": "DRAM-row / occupancy probes; not the no-copy worklist default",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "dsv4f_worklist_swiglu",
+      "family": "dsv4f",
+      "computation": "silu(min(g,10)) * clamp(u,-10,10) * route_weight; overflow-safe silu; BF16 RNE I/O",
+      "tile": "1 thread / (slot, element); grid K*width",
+      "dtype": "bf16 in/out; route_weight f32 from worklist",
+      "dispatch": "native token graph after w1/w3",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "dsv4f_worklist_combine",
+      "family": "dsv4f",
+      "computation": "y = 0; for slot in 0..6: y += routed[slot]; y += shared; BF16 RNE; fp contract off",
+      "tile": "1 thread / hidden",
+      "dtype": "bf16",
+      "dispatch": "native token graph after down + shared",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "dsv4f_pack_worklist",
+      "family": "dsv4f",
+      "computation": "sort 6 (id,weight,slot) by id then slot; reject dups/nonfinite",
+      "tile": "1 thread",
+      "dtype": "u32 ids, f32 weights, Dsv4fWorklistEntry ABI 16B",
+      "dispatch": "native token graph after route",
+      "verdict": "CONSTANT-DIFF"
+    },
+    {
+      "kernel": "deepseek_v4_act_quant_bf16_ue8m0_* / dsv4f_ax_act_quant_*",
+      "family": "dsv4f",
+      "computation": "per 128-col block: amax -> ue8m0 scale; x/scale clamped to [-448,448] -> e4m3 RNE",
+      "tile": "1 thread / (token, block) or simdgroup-block candidate",
+      "dtype": "bf16 -> e4m3 + e8m0",
+      "dispatch": "required DSV4F stage before every FP4/FP8 matvec. Q80 has no analogue (f32 x).",
+      "verdict": "STRUCTURAL"
+    },
+    {
+      "kernel": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_*",
+      "family": "dsv4f",
+      "computation": "block-128 e4m3*e4m3 then *(As*Ws); same post-block scale as FP4 but 8-bit weights",
+      "tile": "authority serial / simdgroup v4 splitk / occupancy",
+      "dtype": "W e4m3+e8m0/128; A e4m3+e8m0/128",
+      "dispatch": "DSV4F dense / attention linears, not MoE experts",
+      "verdict": "STRUCTURAL"
+    },
+    {
+      "kernel": "deepseek_v4_p3a_rmsnorm_bf16_authority",
+      "family": "dsv4f",
+      "computation": "single-thread left-fold sumsq; y = bf16_rne(x * rsqrt * w)  [NO +1]",
+      "tile": "1 thread owns whole vector",
+      "dtype": "bf16",
+      "dispatch": "native token graph norms",
+      "verdict": "STRUCTURAL"
+    },
+    {
+      "kernel": "deepseek_v4_p4a/p4b MHC + sparse attention + learned-bias route",
+      "family": "dsv4f",
+      "computation": "Hyper-Connection mix, compressed indexer, sinkhorn, sparse attn. Not GQA, not DeltaNet.",
+      "tile": "stage-specific",
+      "dtype": "bf16 / qat",
+      "dispatch": "native token graph attention / routing",
+      "verdict": "STRUCTURAL"
+    },
+    {
+      "kernel": "dsv4f_ax_* batched GEMM / CSR",
+      "family": "dsv4f",
+      "computation": "M=N token GEMM counterparts of M=1 authority linears; activation-X capture",
+      "tile": "1 thread / (token, row)",
+      "dtype": "same FP4/FP8/BF16 as M=1",
+      "dispatch": "not batch=1 decode hot path",
+      "verdict": "STRUCTURAL"
+    }
+  ],
+  "cross_family_verdicts": {
+    "IDENTICAL": [
+      {
+        "what": "BF16 encode RNE / decode shift-16",
+        "where": "duplicated as dsv4f_tg_*, dsv4f_ax_*, dsv4f_p7_*, deepseek_v4_* in matmul.metal"
+      },
+      {
+        "what": "E4M3FN / E8M0FNU / E2M1FN decode tables",
+        "where": "duplicated in dsv4f_native_token_graph.metal and dsv4f_activation_x_batch.metal (and matmul.metal authority)"
+      },
+      {
+        "what": "Gated DeltaNet recurrence S/delta/S/o",
+        "where": "qwen_next.metal == qwen80_device_activations.metal == Qwen3.8 Qwen3_5GatedDeltaNet. Not present in DSV4F."
+      }
+    ],
+    "CONSTANT-DIFF": [
+      {
+        "what": "Packed matvec tile skeleton (serial / 1-SG-per-row / 4-rows-per-SG, TG 256, 8 SG)",
+        "differs_by": "codec decode + scale association + activation dtype. Tile shape is the same.",
+        "unify": "one source family, function-constant kCodec + kTile. Each specialization keeps its own inner loop. No runtime branch in the FMA."
+      },
+      {
+        "what": "SwiGLU",
+        "differs_by": "dtype f32 vs bf16; clamp off vs (gate<=10, up in [-10,10]); route_weight none vs per-slot; silu overflow handling",
+        "unify": "gk_swiglu with kIo / kClamp / kRoute as function constants"
+      },
+      {
+        "what": "Expert combine",
+        "differs_by": "K=10 vs K=6; f32 vs bf16 RNE; Q80 also adds shared via a separate residual kernel",
+        "unify": "gk_combine with kWorklistK + kIo"
+      },
+      {
+        "what": "Worklist pack",
+        "differs_by": "K=6 vs K=10. Same sort key (id, then original slot).",
+        "unify": "gk_pack_worklist with kWorklistK. Q80 mixed does not yet use a device worklist (host binds)."
+      },
+      {
+        "what": "Binary sign-scale decode",
+        "differs_by": "duplicated across q80_mixed, routed wave, shared wave, qwen_binary, qwen_next. Group size 128 is a parameter.",
+        "unify": "one gk_binary_group helper. Serves Q80 and Q38."
+      },
+      {
+        "what": "Q80 vs Q38 GQA / DeltaNet / dense SwiGLU geometry",
+        "differs_by": "heads 16:2 vs 24:4; value heads 32 vs 48; hidden 2048 vs 5120; rope 5e6 vs 1e7; MoE vs dense",
+        "unify": "open the refuse gates. Do not rewrite the Metal recurrence."
+      }
+    ],
+    "STRUCTURAL": [
+      {
+        "what": "Weight codec math",
+        "why": "Q80 mixed is 1-bit sign * fp16 group scale (element-wise). DSV4F is e2m1 nibble * e8m0 after a 32-wide block sum, times a separate e4m3 activation scale. Different association. A shared inner FMA would change hc_sha / greedy logits."
+      },
+      {
+        "what": "Activation path",
+        "why": "Q80 consumes f32 x (intensity ~1 flop/byte, no extra traffic). DSV4F must act-quant bf16->e4m3+e8m0 (extra bytes + extra kernel) before the matvec. Folding act-quant into Q80 would cost bandwidth. Forbidden."
+      },
+      {
+        "what": "Q80 rice_q1 residual / CSR",
+        "why": "No DSV4F equivalent. Serial bitstream decode + scatter-add."
+      },
+      {
+        "what": "Q80 hgravs01 two-stage L@(R@x)",
+        "why": "Factorized rank-160 down_proj. DSV4F down is a single FP4 matvec. The *factor* matvec is CONSTANT-DIFF; the fused two-stage is not."
+      },
+      {
+        "what": "DSV4F MHC + sparse attention vs Qwen GQA / DeltaNet",
+        "why": "Different operators. G014 already said Q38 DeltaNet is Q80 DeltaNet. DSV4F attention is MHC. Do not abstract."
+      },
+      {
+        "what": "DSV4F learned-bias / hash route vs Q80 softmax top-10",
+        "why": "Different router math. Worklist *envelope* is CONSTANT-DIFF; the score function is not."
+      },
+      {
+        "what": "RMSNorm reduction order",
+        "why": "Q80 is 256-thread tree reduce, f32, *(1+w). DSV4F authority is single-thread left-fold, bf16 RNE, *w. Same formula family, different association. Unifying the reduction would change bits."
+      },
+      {
+        "what": "uniform-q4-group64",
+        "why": "DE-AUTHORISED. Leave the source. Do not put it in the family."
+      }
+    ]
+  },
+  "unify_plan": {
+    "do": [
+      "Extract IDENTICAL codecs (bf16, e2m1, e4m3, e8m0, silu, binary_group, hgravs uniform) into gk_family.metal.",
+      "One matvec family with kCodec in {BINARY_GROUP, HGRAVS01, FP4_E2M1} and kTile in {SERIAL, SIMD, ROWBLOCK4}. Each combo is a compiled specialization with its own inner loop (function constants, not runtime branch).",
+      "SwiGLU / combine / pack_worklist as CONSTANT-DIFF specializations.",
+      "Wire qwen80_mixed_hybrid_decode and dsv4f native token graph through decode_family (same Rust path, specialized Metal).",
+      "Relax Q38 refuse gates: DeltaNet 32 or 48 heads; GQA 16:2@5e6 or 24:4@1e7; values_per_key_head 2 or 3."
+    ],
+    "do_not": [
+      "Do not merge rice CSR, two-stage L@(R@x), MHC, act-quant, FP8 block-128, or Q4 into the family.",
+      "Do not put a codec switch inside the FMA.",
+      "Do not add dummy weight/activation traffic to make ABIs look the same.",
+      "Do not wait for model artifacts."
+    ]
+  },
+  "bandwidth_note": "batch=1 decode is ~1 flop/byte. Shared source that compiles out unused codecs does not move extra bytes. A runtime codec branch or a union-of-all-buffers inner loop would. Family specializations bind only the pointers that specialization reads.",
+  "status": "CENSUS_COMPLETE_BEFORE_BUILD",
+  "build": "receipts/ascent-2026-08-16/G023_FAMILY_RECEIPT.json"
+}

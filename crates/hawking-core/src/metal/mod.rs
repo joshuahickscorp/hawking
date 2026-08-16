@@ -280,6 +280,9 @@ pub const SHADER_MOE: &str = include_str!("../../shaders/moe.metal");
 pub const SHADER_ATTN: &str = include_str!("../../shaders/attn.metal");
 pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
+/// G023 shared decode family (Q80 + Qwen3.8 + DSV4F). Concatenated before
+/// the per-family wrappers so `gk_*` inlines are visible in one TU.
+pub const SHADER_GK_FAMILY: &str = include_str!("../../shaders/gk_family.metal");
 pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
 pub const SHADER_MEGAKERNEL: &str = include_str!("../../shaders/megakernel_qwen3b.metal");
 /// Exact single-token Gated DeltaNet recurrence for Qwen3-Next.  The initial
@@ -421,6 +424,7 @@ pub fn all_shader_sources() -> String {
         // mHC control exp must precede matmul/P7 kernels that call it.
         SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP,
         SHADER_MATMUL,
+        SHADER_GK_FAMILY,
         SHADER_MHA,
         SHADER_MEGAKERNEL,
         SHADER_QWEN_NEXT,
@@ -627,9 +631,9 @@ mod imp {
     use metal::objc::{class, msg_send, sel, sel_impl};
     use metal::{
         Buffer, CommandBufferRef, CommandQueue, ComputeCommandEncoder, ComputePipelineDescriptor,
-        ComputePipelineState, Device, IndirectCommandBuffer, IndirectCommandBufferDescriptor,
-        Library, MTLDispatchType, MTLIndirectCommandType, MTLResourceOptions, MTLResourceUsage,
-        MTLSize, NSRange,
+        ComputePipelineState, Device, FunctionConstantValues, IndirectCommandBuffer,
+        IndirectCommandBufferDescriptor, Library, MTLDispatchType, MTLIndirectCommandType,
+        MTLResourceOptions, MTLResourceUsage, MTLSize, NSRange,
     };
 
     /// Read `GPUStartTime` / `GPUEndTime` on an MTLCommandBuffer via raw
@@ -1505,6 +1509,17 @@ mod imp {
                 "deepseek_v4_p7_ffn_rmsnorm_bf16_authority"
             }
             "deepseek_v4_p7_mhc_ffn_post_authority" => "deepseek_v4_p7_mhc_ffn_post_authority",
+            "gk_matvec_binary" => "gk_matvec_binary",
+            "gk_matvec_binary_simd" => "gk_matvec_binary_simd",
+            "gk_matvec_hgravs" => "gk_matvec_hgravs",
+            "gk_matvec_hgravs_simd" => "gk_matvec_hgravs_simd",
+            "gk_matvec_fp4" => "gk_matvec_fp4",
+            "gk_worklist_fp4" => "gk_worklist_fp4",
+            "gk_worklist_fp4_simd" => "gk_worklist_fp4_simd",
+            "gk_swiglu_f32" => "gk_swiglu_f32",
+            "gk_swiglu_bf16_worklist" => "gk_swiglu_bf16_worklist",
+            "gk_combine_bf16" => "gk_combine_bf16",
+            "gk_pack_worklist" => "gk_pack_worklist",
             "dsv4f_pack_worklist" => "dsv4f_pack_worklist",
             "dsv4f_worklist_fp4_matvec" => "dsv4f_worklist_fp4_matvec",
             "dsv4f_fp4_matvec_split" => "dsv4f_fp4_matvec_split",
@@ -1781,8 +1796,20 @@ mod imp {
         use super::static_kernel_name;
         use crate::metal::{
             SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP, SHADER_DEEPSEEK_V4_P7,
-            SHADER_DSV4F_ACTIVATION_X_BATCH, SHADER_GRAVITY_PQ, SHADER_MATMUL, SHADER_MOE,
+            SHADER_DSV4F_ACTIVATION_X_BATCH, SHADER_GK_FAMILY, SHADER_GRAVITY_PQ,
+            SHADER_MATMUL, SHADER_MOE,
         };
+
+        #[test]
+        fn gk_family_kernels_have_static_trace_names() {
+            for &name in crate::decode_family::FAMILY_KERNELS {
+                assert_eq!(static_kernel_name(name), name);
+                assert!(
+                    SHADER_GK_FAMILY.contains(&format!("kernel void {name}(")),
+                    "{name} missing from gk_family.metal"
+                );
+            }
+        }
         #[test]
         fn compiled_dormant_resident_kernels_have_static_trace_names() {
             const DORMANT_RESIDENT_KERNELS: &[&str] = &[
@@ -2400,10 +2427,18 @@ mod imp {
                 return Ok(p.clone());
             }
             let start = std::time::Instant::now();
+            // G023 family kernels declare function constants with defaults.
+            // Metal will abort pipeline creation if those functions are
+            // fetched with `None`; an empty dictionary selects the default.
+            let constants = if fn_name.starts_with("gk_") {
+                Some(FunctionConstantValues::new())
+            } else {
+                None
+            };
             let f = self
                 .inner
                 .library
-                .get_function(fn_name, None)
+                .get_function(fn_name, constants)
                 .map_err(|e| Error::Metal(format!("kernel `{fn_name}` not found: {e}")))?;
             let p = self
                 .inner

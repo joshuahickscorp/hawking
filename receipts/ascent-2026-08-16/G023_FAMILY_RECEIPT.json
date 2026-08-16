@@ -1,0 +1,64 @@
+{
+  "schema": "hawking.g023.decode_family.receipt.v1",
+  "date": "2026-08-16",
+  "lane": "generalized-kernel-20260816-143026",
+  "census": "receipts/ascent-2026-08-16/G023_REUSE_MATRIX.json",
+  "status": "SHIPPED",
+  "gpu_touched": true,
+  "timing_label": "MTLCommandBuffer GPUStartTime/GPUEndTime",
+  "shared_path": {
+    "metal": "crates/hawking-core/shaders/gk_family.metal",
+    "rust": "crates/hawking-core/src/decode_family.rs",
+    "q80_graph": "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs dispatches gk_matvec_binary + gk_matvec_hgravs",
+    "dsv4f_graph": "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs dispatches gk_pack_worklist + gk_worklist_fp4(_simd) + gk_swiglu_bf16_worklist + gk_combine_bf16",
+    "qwen38": "Gated DeltaNet / GQA refuse gates now admit 48 value heads and 24:4 @ 1e7. Dense SwiGLU is gk_swiglu_f32. No Q38 artifact required."
+  },
+  "kernel_count": {
+    "qwen_family_metal_files_before": 24,
+    "dsv4f_family_metal_files_before": 4,
+    "metal_files_after": "28 + gk_family.metal = 29. Old files remain as wrappers/STRUCTURAL leftovers.",
+    "shipping_graph_entry_points_before": {
+      "q80_mixed": ["q80_binary_group_matvec", "q80_sparse_q1_apply_csr", "q80_hgravs01_factor_matvec"],
+      "dsv4f_native": ["dsv4f_pack_worklist", "dsv4f_worklist_fp4_matvec", "dsv4f_worklist_fp4_matvec_simd", "dsv4f_worklist_swiglu", "dsv4f_worklist_combine"]
+    },
+    "shipping_graph_entry_points_after": {
+      "q80_mixed": ["gk_matvec_binary", "q80_sparse_q1_apply_csr", "gk_matvec_hgravs"],
+      "dsv4f_native": ["gk_pack_worklist", "gk_worklist_fp4", "gk_worklist_fp4_simd", "gk_swiglu_bf16_worklist", "gk_combine_bf16"]
+    },
+    "family_named_kernels": 11,
+    "unique_codec_helpers_before": "bf16/e2m1/e4m3/e8m0/silu/binary/hgravs each copied 2-5 times",
+    "unique_codec_helpers_after": 1,
+    "structural_not_unified": [
+      "q80 rice CSR residual",
+      "q80 hgravs two-stage L@(R@x) (factors use the family; the fused mid[160] kernel does not)",
+      "DSV4F act-quant",
+      "DSV4F FP8 block-128",
+      "DSV4F MHC / sparse attention / learned-bias route scores",
+      "RMSNorm reduction order (Q80 tree-256 *(1+w) vs DSV4F serial *w)",
+      "uniform-q4-group64 (DE-AUTHORISED)"
+    ]
+  },
+  "numerics": {
+    "q80_binary": "gk_matvec_binary bit-identical to q80_binary_group_matvec",
+    "q80_hgravs": "gk_matvec_hgravs bit-identical to q80_hgravs01_factor_matvec",
+    "dsv4f_fp4": "gk_matvec_fp4 bit-identical to dsv4f_fp4_matvec_split and to the CPU e2m1/e4m3/e8m0 association",
+    "swiglu_f32": "gk_swiglu_f32 bit-identical to qwen80_silu_mul_f32",
+    "swiglu_bf16": "gk_swiglu_bf16_worklist bit-identical to dsv4f_worklist_swiglu",
+    "full_token_graphs": "Not re-run. Q80 mixed and DSV4F native now dispatch the family kernels that matched the previous kernels bit-identically. 43-layer DSV4F e2e remains HAWKING_DSV4F_NATIVE_GRAPH_E2E=1. hc_sha / greedy token are therefore unchanged at the operator boundary. 0 fallbacks added."
+  },
+  "perf": {
+    "method": "same-buffer serial binary 512x2048, min of 4 completed-CB GPUStart/GPUEnd after warmup, two independent cargo-test reps",
+    "reps": [
+      {"family_gpu_ns": 106791, "legacy_gpu_ns": 108124, "delta_pct": -1.2},
+      {"family_gpu_ns": 110250, "legacy_gpu_ns": 106833, "delta_pct": 3.2}
+    ],
+    "delta": "Inside noise both ways. No systematic generality tax. Specializations bind only the pointers that specialization reads; unused codecs compile out.",
+    "bandwidth": "No extra activation traffic. Q80 still consumes f32 x. DSV4F still act-quants. Act-quant was NOT folded into Q80."
+  },
+  "tests": [
+    "cargo test -p hawking-core --test gk_family_parity",
+    "cargo test -p hawking-core --test qwen80_direct_packed_attention_stage",
+    "cargo test -p hawking-core --lib decode_family",
+    "cargo test -p hawking-core --lib new_kernels_are_publicly_enumerated"
+  ]
+}

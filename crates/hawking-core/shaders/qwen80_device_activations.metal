@@ -270,9 +270,8 @@ kernel void qwen80_gqa_qk_norm_rope_cache_f32(
     constant float& rms_epsilon    [[buffer(14)]],
     uint head                       [[thread_position_in_grid]])
 {
-    if (head >= n_heads || n_heads != 16u || n_kv_heads != 2u ||
-        head_dim != 256u || rotary_dim != 64u ||
-        rope_theta != 5000000.0f || rms_epsilon != 1.0e-6f) {
+    if (head >= n_heads ||
+        !gk_gqa_geometry_ok(n_heads, n_kv_heads, head_dim, rotary_dim, rope_theta, rms_epsilon)) {
         return;
     }
 
