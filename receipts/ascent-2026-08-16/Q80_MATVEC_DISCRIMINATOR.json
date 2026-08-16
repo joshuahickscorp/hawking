@@ -1,0 +1,2906 @@
+{
+  "control": {
+    "gbps": 439.9140827768307,
+    "gpu_ns": [
+      2288249,
+      2383500,
+      2268374
+    ],
+    "kernel": "disc_stream_control",
+    "median_gpu_ns": 2288249,
+    "threadgroups": 60,
+    "threads_per_threadgroup": 256,
+    "traffic_bytes": 1006632960
+  },
+  "device_name": "Apple M3 Ultra",
+  "diagnosis": {
+    "saturated_resource": "issue-bound Q8 reconstruction ALU (gk_uniform_extract 8-iteration bit loop), with occupancy starvation as a co-limiter on organs with fewer than ~2k rows",
+    "not": [
+      "memory-bound: uncompressed f32 at the SAME 1-thread/row launch reaches 402 GB/s on qkvz and 545 GB/s on lm_head, at or above this-run control 440 GB/s and the 411.51 honest ceiling",
+      "register-pressure-bound: every shipped mixed/gk pipeline reports max_total_threads_per_threadgroup=1024, thread_execution_width=32, static_threadgroup_memory=0 (tg256 kernels use 32 B reduce)",
+      "pure occupancy-bound on the byte mass: qkvz launches 48 threadgroups (occ proxy 0.80) and lm_head 594 (occ proxy 9.89); both still sit at 16 GB/s shipped"
+    ],
+    "regime_split": {
+      "large_Q8_qkvz_lm_head_gqa_q": "reconstruction/issue. Uncompressed same-launch is 6-9x faster in time and 16-34x in packed-GB/s. Occupancy is already enough for f32 serial to hit the ceiling.",
+      "medium_Q8_out_2048x4096": "reconstruction first (6.8x vs f32 serial), occupancy second (f32 serial only 67 GB/s; f32 coalesced 616 GB/s). This organ alone is 163 ms/token at 2.55 GB/s \u2014 the number that matches the 2.57 whole-token figure.",
+      "small_Q8_ba_router_shared_kv": "occupancy + reconstruction. 64-512 rows launch 1-2 threadgroups. ba is 4.9 MB and 56 ms/token (0.09 GB/s).",
+      "binary_gate": "occupancy/access, NOT reconstruction. Binary serial is FASTER in wall time than f32 serial (63 us vs 192 us) because it moves 28x fewer bytes. Packed 2.35 GB/s is the 2-threadgroup launch, same as Q4 serial.",
+      "hgravs_R_160x512": "occupancy-starved (160 threads, 1 TG) plus 3-bit extract. 0.16 GB/s, 100 ms/token across 480 downs."
+    },
+    "this_run_control_gbps": 439.9140827768307,
+    "honest_ceiling_gbps": 411.51,
+    "q8_shipped_vs_f32_serial": {
+      "qkvz": {
+        "shipped_gbps": 16.36,
+        "f32_serial_gbps": 402.25,
+        "byte_serial_gbps": 90.45,
+        "byte_tg256_gbps": 233.72
+      },
+      "lm_head": {
+        "shipped_gbps": 16.19,
+        "f32_serial_gbps": 545.18,
+        "byte_serial_gbps": 97.01,
+        "byte_tg256_gbps": 247.34
+      },
+      "out": {
+        "shipped_gbps": 2.55,
+        "f32_serial_gbps": 66.88,
+        "byte_serial_gbps": 13.33,
+        "byte_tg256_gbps": 204.75
+      },
+      "router_512": {
+        "shipped_gbps": 0.69,
+        "f32_serial_gbps": 22.46,
+        "byte_serial_gbps": 3.68,
+        "byte_tg256_gbps": 93.7
+      },
+      "ba_64": {
+        "shipped_gbps": 0.09,
+        "f32_serial_gbps": 2.97,
+        "byte_serial_gbps": 0.48,
+        "byte_tg256_gbps": 17.16
+      }
+    },
+    "token_attribution_isolated_gpu_ms": {
+      "method": "isolated organ median GPU ns * count per token. Missing routed-up (~38 ms from prior 80 us isolated). Sum 817.6 + 38 = 856 vs wall gpu_matvec 863.4.",
+      "deltanet_out_36": 121.9,
+      "routed_down_R_480": 100.0,
+      "router_48": 75.6,
+      "shared_gate_48": 75.6,
+      "shared_up_48": 75.6,
+      "shared_down_48": 75.6,
+      "deltanet_qkvz_36": 57.1,
+      "deltanet_ba_36": 56.2,
+      "gqa_o_12": 40.6,
+      "routed_down_L_480": 30.8,
+      "routed_gate_binary_480": 30.1,
+      "gqa_q_12": 20.7,
+      "lm_head_1": 19.8,
+      "gqa_k_12": 18.9,
+      "gqa_v_12": 18.9,
+      "isolated_sum_ms": 817.6,
+      "plus_routed_up_estimate_ms": 38.0,
+      "vs_wall_gpu_matvec_ms": 863.4
+    },
+    "fix_lane_premise": {
+      "stated_in_Q80_MIXED_RECONSTRUCTION_WALL": "mixed codecs (binary / rice_q1 / low-rank) need expensive per-weight reconstruction; that is why mixed is 5.9x slower per byte than Q4",
+      "verdict": "CONTRADICTED as stated. The 863 ms is not binary/rice/hgravs reconstruction on routed experts.",
+      "why": "Attention+lm_head+shared+router are HGRAVU01 q8 and are dispatched through q80_hgravs01_factor_matvec / gk_matvec_hgravs, whose serial extract walks 8 bits per byte. Routed mixed organs are ~23% of GPU time (and down-R is occupancy, not decode). Binary gate is faster in us than uncompressed f32 at the same launch.",
+      "their_actual_code_is_closer": "q80_uniform8_matvec_tg256 / simd_bytes is the right kernel. Keep that. Do not spend the lane on binary/rice fusion as the 863 ms lever."
+    },
+    "gk_vs_q80": "gk_matvec_binary and gk_matvec_hgravs match q80_* serial to within noise on every organ. The merge did not change the limiter."
+  },
+  "diagnostic_pipeline_occupancy": {
+    "disc_f32_serial": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "disc_f32_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "disc_f32_tg256": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 32,
+      "thread_execution_width": 32
+    },
+    "disc_load_only_serial": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "disc_q8_bit_serial": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "disc_q8_byte_serial": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "disc_q8_byte_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "disc_q8_byte_tg256": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 32,
+      "thread_execution_width": 32
+    },
+    "disc_stream_control": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "disc_x_only_serial": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    }
+  },
+  "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+  "honest_ceiling_gbps": 411.51,
+  "lane": "q80-matvec-diagnosis",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "organs": {
+    "binary_gate_512x2048": {
+      "catalog_nbytes": 147708,
+      "correctness": {
+        "gk_matvec_binary_max_abs": 2.682209014892578e-07,
+        "passed": true,
+        "q80_binary_group_matvec_max_abs": 2.682209014892578e-07,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "kind": "binary_group",
+      "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "packed_weight_bytes": 147456,
+      "shape": [
+        512,
+        2048
+      ],
+      "uncompressed_f32_bytes": 4194304,
+      "variants": [
+        {
+          "dram_gbps": 2.5180998003992014,
+          "frac_of_honest_ceiling_packed": 0.005721821647948546,
+          "gpu_ns": [
+            62625,
+            62750,
+            62625
+          ],
+          "kernel": "q80_binary_group_matvec",
+          "max_abs_error": 2.682209014892578e-07,
+          "median_gpu_ns": 62625,
+          "note": "shipped serial 1-thread/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.354586826347306
+        },
+        {
+          "dram_gbps": 2.5537813765182187,
+          "frac_of_honest_ceiling_packed": 0.005802900092352674,
+          "gpu_ns": [
+            61750,
+            61459,
+            62334
+          ],
+          "kernel": "gk_matvec_binary",
+          "max_abs_error": 2.682209014892578e-07,
+          "median_gpu_ns": 61750,
+          "note": "gk family serial; same association",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.387951417004049
+        },
+        {
+          "dram_gbps": 5.461333333333333,
+          "frac_of_honest_ceiling_packed": 0.012409665132563726,
+          "gpu_ns": [
+            28959,
+            28875,
+            28709
+          ],
+          "kernel": "gk_matvec_binary_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 28875,
+          "note": "gk family 1-SG/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 1.0666666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 16384,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 5.1067012987012985
+        },
+        {
+          "dram_gbps": 21.860751925046664,
+          "frac_of_honest_ceiling_packed": 0.05299387847576342,
+          "gpu_ns": [
+            191874,
+            194874,
+            192333
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 192333,
+          "note": "uncompressed SAME launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 21.807510931561406
+        },
+        {
+          "dram_gbps": 165.7028454323323,
+          "frac_of_honest_ceiling_packed": 0.40168958890513934,
+          "gpu_ns": [
+            25583,
+            25374,
+            24458
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 25374,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 1.0666666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 16384,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 165.2992827303539
+        },
+        {
+          "dram_gbps": 418.7375759386515,
+          "frac_of_honest_ceiling_packed": 1.0150853131041735,
+          "gpu_ns": [
+            10249,
+            9999,
+            10041
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 10041,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 8.533333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 131072,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 417.71775719549845
+        },
+        {
+          "dram_gbps": 0.05644788975021533,
+          "frac_of_honest_ceiling_packed": 0.0001371725832913303,
+          "gpu_ns": [
+            145125,
+            144999,
+            145375
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 145125,
+          "note": "no weight traffic; issue/latency of the serial loop",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.05644788975021533
+        }
+      ]
+    },
+    "hgravs_down_2048x512_L": {
+      "bits": 3,
+      "bound": 3,
+      "correctness": {
+        "gk_matvec_hgravs_max_abs": 3.725290298461914e-09,
+        "passed": true,
+        "q80_hgravs01_factor_matvec_max_abs": 3.725290298461914e-09,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "group_size": 64,
+      "kind": "hgravs_L_3bit",
+      "name": "model.layers.0.mlp.experts.0.down_proj.weight#L",
+      "packed_weight_bytes": 133120,
+      "shape": [
+        2048,
+        160
+      ],
+      "uncompressed_f32_bytes": 1310720,
+      "variants": [
+        {
+          "dram_gbps": 2.2093696498054474,
+          "frac_of_honest_ceiling_packed": 0.005034887644980662,
+          "gpu_ns": [
+            64250,
+            63541,
+            64625
+          ],
+          "kernel": "q80_hgravs01_factor_matvec",
+          "max_abs_error": 3.725290298461914e-09,
+          "median_gpu_ns": 64250,
+          "note": "shipped serial; Q8 uses 8-iteration bit extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.071906614785992
+        },
+        {
+          "dram_gbps": 2.274288643937452,
+          "frac_of_honest_ceiling_packed": 0.005182830222859644,
+          "gpu_ns": [
+            61166,
+            62416,
+            72250
+          ],
+          "kernel": "gk_matvec_hgravs",
+          "max_abs_error": 3.725290298461914e-09,
+          "median_gpu_ns": 62416,
+          "note": "gk family serial",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.132786465008972
+        },
+        {
+          "dram_gbps": 18.025650793650794,
+          "frac_of_honest_ceiling_packed": 0.041078289674921595,
+          "gpu_ns": [
+            7875,
+            7709,
+            8000
+          ],
+          "kernel": "gk_matvec_hgravs_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 7875,
+          "note": "gk family 1-SG/row, wide extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 4.266666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 65536,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 16.904126984126986
+        },
+        {
+          "dram_gbps": 1.974984347826087,
+          "frac_of_honest_ceiling_packed": 0.004500751738295757,
+          "gpu_ns": [
+            72958,
+            71166,
+            71875
+          ],
+          "kernel": "disc_q8_bit_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 71875,
+          "note": "same bit-serial extract, diagnostic lib",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 1.852104347826087
+        },
+        {
+          "dram_gbps": 53.769284055254474,
+          "frac_of_honest_ceiling_packed": 0.12978881806057982,
+          "gpu_ns": [
+            24541,
+            25375,
+            24250
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 24541,
+          "note": "uncompressed SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 53.409396520109205
+        },
+        {
+          "dram_gbps": 206.98854901960783,
+          "frac_of_honest_ceiling_packed": 0.4996309621999513,
+          "gpu_ns": [
+            6375,
+            6624,
+            6374
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 6375,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 4.266666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 65536,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 205.60313725490195
+        },
+        {
+          "dram_gbps": 167.58343916687832,
+          "frac_of_honest_ceiling_packed": 0.4045145268001892,
+          "gpu_ns": [
+            7874,
+            7749,
+            7874
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 7874,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 34.13333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 524288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 166.46177292354585
+        },
+        {
+          "dram_gbps": 0.04491543266194119,
+          "frac_of_honest_ceiling_packed": 0.00010914785220757986,
+          "gpu_ns": [
+            14499,
+            13374,
+            14249
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 14249,
+          "note": "serial loop, no weight traffic",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.04491543266194119
+        }
+      ]
+    },
+    "hgravs_down_2048x512_R": {
+      "bits": 3,
+      "bound": 3,
+      "correctness": {
+        "gk_matvec_hgravs_max_abs": 3.0517578125e-05,
+        "passed": true,
+        "q80_hgravs01_factor_matvec_max_abs": 3.0517578125e-05,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "group_size": 64,
+      "kind": "hgravs_R_3bit",
+      "name": "model.layers.0.mlp.experts.0.down_proj.weight#R",
+      "packed_weight_bytes": 33280,
+      "shape": [
+        160,
+        512
+      ],
+      "uncompressed_f32_bytes": 327680,
+      "variants": [
+        {
+          "dram_gbps": 0.17261187762447514,
+          "frac_of_honest_ceiling_packed": 0.0003881122149850121,
+          "gpu_ns": [
+            207959,
+            208375,
+            216541
+          ],
+          "kernel": "q80_hgravs01_factor_matvec",
+          "max_abs_error": 3.0517578125e-05,
+          "median_gpu_ns": 208375,
+          "note": "shipped serial; Q8 uses 8-iteration bit extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.010416666666666666,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 160,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.1597120575884823
+        },
+        {
+          "dram_gbps": 0.1725779210809151,
+          "frac_of_honest_ceiling_packed": 0.00038803586479685767,
+          "gpu_ns": [
+            206875,
+            209000,
+            208416
+          ],
+          "kernel": "gk_matvec_hgravs",
+          "max_abs_error": 3.0517578125e-05,
+          "median_gpu_ns": 208416,
+          "note": "gk family serial",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.010416666666666666,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 160,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.1596806387225549
+        },
+        {
+          "dram_gbps": 3.1506657323055363,
+          "frac_of_honest_ceiling_packed": 0.007084169831596171,
+          "gpu_ns": [
+            11416,
+            11625,
+            11416
+          ],
+          "kernel": "gk_matvec_hgravs_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 11416,
+          "note": "gk family 1-SG/row, wide extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.3333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 5120,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.91520672740014
+        },
+        {
+          "dram_gbps": 0.15706550218340612,
+          "frac_of_honest_ceiling_packed": 0.0003531566934388728,
+          "gpu_ns": [
+            229208,
+            228333,
+            229000
+          ],
+          "kernel": "disc_q8_bit_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 229000,
+          "note": "same bit-serial extract, diagnostic lib",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.010416666666666666,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 160,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.14532751091703056
+        },
+        {
+          "dram_gbps": 6.955262216046654,
+          "frac_of_honest_ceiling_packed": 0.016764286532478,
+          "gpu_ns": [
+            47874,
+            46874,
+            47499
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 47499,
+          "note": "uncompressed SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.010416666666666666,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 160,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 6.898671550980021
+        },
+        {
+          "dram_gbps": 37.40156232310653,
+          "frac_of_honest_ceiling_packed": 0.09014908253211507,
+          "gpu_ns": [
+            8833,
+            8333,
+            8875
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 8833,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.3333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 5120,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 37.09724895279067
+        },
+        {
+          "dram_gbps": 60.52913155001832,
+          "frac_of_honest_ceiling_packed": 0.14589352253685828,
+          "gpu_ns": [
+            5416,
+            5666,
+            5458
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 5458,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 2.6666666666666665,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 40960,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 60.036643459142546
+        },
+        {
+          "dram_gbps": 0.05302265372168285,
+          "frac_of_honest_ceiling_packed": 0.00012884900420811853,
+          "gpu_ns": [
+            38625,
+            38874,
+            38499
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 38625,
+          "note": "serial loop, no weight traffic",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.010416666666666666,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 160,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.05302265372168285
+        }
+      ]
+    },
+    "q8_ba_64x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_matvec_hgravs_max_abs": 2.384185791015625e-07,
+        "passed": true,
+        "q80_hgravs01_factor_matvec_max_abs": 2.384185791015625e-07,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "kind": "uniform8",
+      "name": "model.layers.0.linear_attn.in_proj_ba.weight",
+      "packed_weight_bytes": 135168,
+      "shape": [
+        64,
+        2048
+      ],
+      "uncompressed_f32_bytes": 524288,
+      "variants": [
+        {
+          "dram_gbps": 0.09200256245996156,
+          "frac_of_honest_ceiling_packed": 0.0002104217322085497,
+          "gpu_ns": [
+            1561000,
+            1558750,
+            1563166
+          ],
+          "kernel": "q80_hgravs01_factor_matvec",
+          "max_abs_error": 2.384185791015625e-07,
+          "median_gpu_ns": 1561000,
+          "note": "shipped serial; Q8 uses 8-iteration bit extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.004166666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 64,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.08659064702114029
+        },
+        {
+          "dram_gbps": 0.09279767385510056,
+          "frac_of_honest_ceiling_packed": 0.00021224025456912762,
+          "gpu_ns": [
+            1559125,
+            1547416,
+            1547625
+          ],
+          "kernel": "gk_matvec_hgravs",
+          "max_abs_error": 2.384185791015625e-07,
+          "median_gpu_ns": 1547625,
+          "note": "gk family serial",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.004166666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 64,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.0873389871577417
+        },
+        {
+          "dram_gbps": 4.162782608695652,
+          "frac_of_honest_ceiling_packed": 0.00952082098485641,
+          "gpu_ns": [
+            34500,
+            33791,
+            34625
+          ],
+          "kernel": "gk_matvec_hgravs_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 34500,
+          "note": "gk family 1-SG/row, wide extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 3.917913043478261
+        },
+        {
+          "dram_gbps": 0.08701147078442766,
+          "frac_of_honest_ceiling_packed": 0.00019900646150416507,
+          "gpu_ns": [
+            1637250,
+            1650541,
+            1675791
+          ],
+          "kernel": "disc_q8_bit_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 1650541,
+          "note": "same bit-serial extract, diagnostic lib",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.004166666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 64,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.08189314897357897
+        },
+        {
+          "dram_gbps": 0.5063587483472896,
+          "frac_of_honest_ceiling_packed": 0.0011581077971883512,
+          "gpu_ns": [
+            284708,
+            283625,
+            282125
+          ],
+          "kernel": "disc_q8_byte_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 283625,
+          "note": "byte load, SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.004166666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 64,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.4765729396209784
+        },
+        {
+          "dram_gbps": 3.0169155581228093,
+          "frac_of_honest_ceiling_packed": 0.007215071403305391,
+          "gpu_ns": [
+            176499,
+            177625,
+            176583
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 176583,
+          "note": "uncompressed SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.004166666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 64,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.969074033174201
+        },
+        {
+          "dram_gbps": 23.546342541436463,
+          "frac_of_honest_ceiling_packed": 0.05631199794960777,
+          "gpu_ns": [
+            22749,
+            21833,
+            22625
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 22625,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 23.172950276243093
+        },
+        {
+          "dram_gbps": 75.66197983241017,
+          "frac_of_honest_ceiling_packed": 0.18094858025988864,
+          "gpu_ns": [
+            7000,
+            7374,
+            7041
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 7041,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 1.0666666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 16384,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 74.46215026274677
+        },
+        {
+          "dram_gbps": 0.05929099778527279,
+          "frac_of_honest_ceiling_packed": 0.00014408154792173409,
+          "gpu_ns": [
+            137875,
+            140416,
+            138166
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 138166,
+          "note": "serial loop, no weight traffic",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.004166666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 64,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.05929099778527279
+        },
+        {
+          "dram_gbps": 5.773507537688443,
+          "frac_of_honest_ceiling_packed": 0.013204756742815925,
+          "gpu_ns": [
+            24500,
+            25833,
+            24875
+          ],
+          "kernel": "disc_q8_byte_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 24875,
+          "note": "byte load + coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 5.433889447236181
+        },
+        {
+          "dram_gbps": 18.23695238095238,
+          "frac_of_honest_ceiling_packed": 0.04171026336222808,
+          "gpu_ns": [
+            7875,
+            7999,
+            7874
+          ],
+          "kernel": "disc_q8_byte_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 7875,
+          "note": "byte load + 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 1.0666666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 16384,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 17.164190476190477
+        },
+        {
+          "dram_gbps": 0.7801948470299553,
+          "frac_of_honest_ceiling_packed": 0.0017844062902451496,
+          "gpu_ns": [
+            181874,
+            178499,
+            176999
+          ],
+          "kernel": "disc_load_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 178499,
+          "note": "load packed bytes, no scale/decode",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.004166666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 1,
+            "threads_launched": 64,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.7343010324987815
+        }
+      ]
+    },
+    "q8_gqa_q_8192x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_matvec_hgravs_max_abs": 6.556510925292969e-07,
+        "passed": true,
+        "q80_hgravs01_factor_matvec_max_abs": 6.556510925292969e-07,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "kind": "uniform8",
+      "name": "model.layers.3.self_attn.q_proj.weight",
+      "packed_weight_bytes": 17301504,
+      "shape": [
+        8192,
+        2048
+      ],
+      "uncompressed_f32_bytes": 67108864,
+      "variants": [
+        {
+          "dram_gbps": 10.068193904208998,
+          "frac_of_honest_ceiling_packed": 0.024408676614877157,
+          "gpu_ns": [
+            1722500,
+            1741625,
+            1705791
+          ],
+          "kernel": "q80_hgravs01_factor_matvec",
+          "max_abs_error": 6.556510925292969e-07,
+          "median_gpu_ns": 1722500,
+          "note": "shipped serial; Q8 uses 8-iteration bit extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.5333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 8192,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 10.044414513788098
+        },
+        {
+          "dram_gbps": 10.208955997056659,
+          "frac_of_honest_ceiling_packed": 0.02474993110765322,
+          "gpu_ns": [
+            1698750,
+            1697750,
+            1707000
+          ],
+          "kernel": "gk_matvec_hgravs",
+          "max_abs_error": 6.556510925292969e-07,
+          "median_gpu_ns": 1698750,
+          "note": "gk family serial",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.5333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 8192,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 10.184844150110376
+        },
+        {
+          "dram_gbps": 144.87184756367523,
+          "frac_of_honest_ceiling_packed": 0.3512179156882599,
+          "gpu_ns": [
+            119584,
+            119709,
+            121041
+          ],
+          "kernel": "gk_matvec_hgravs_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 119709,
+          "note": "gk family 1-SG/row, wide extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 17.066666666666666,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 262144,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 144.52968448487582
+        },
+        {
+          "dram_gbps": 9.826226290656326,
+          "frac_of_honest_ceiling_packed": 0.02382206601851074,
+          "gpu_ns": [
+            1764916,
+            1823291,
+            1763875
+          ],
+          "kernel": "disc_q8_bit_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 1764916,
+          "note": "same bit-serial extract, diagnostic lib",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.5333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 8192,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 9.803018387277355
+        },
+        {
+          "dram_gbps": 53.340911956939635,
+          "frac_of_honest_ceiling_packed": 0.1293162490399874,
+          "gpu_ns": [
+            327958,
+            325125,
+            324416
+          ],
+          "kernel": "disc_q8_byte_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 325125,
+          "note": "byte load, SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.5333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 8192,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 53.21492964244521
+        },
+        {
+          "dram_gbps": 266.0726699263791,
+          "frac_of_honest_ceiling_packed": 0.6461820396002128,
+          "gpu_ns": [
+            252374,
+            250000,
+            263500
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 252374,
+          "note": "uncompressed SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.5333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 8192,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 265.91037111588355
+        },
+        {
+          "dram_gbps": 726.2738108113955,
+          "frac_of_honest_ceiling_packed": 1.7638229905693839,
+          "gpu_ns": [
+            92458,
+            94750,
+            87416
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 92458,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 17.066666666666666,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 262144,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 725.8307988492071
+        },
+        {
+          "dram_gbps": 854.9652283520709,
+          "frac_of_honest_ceiling_packed": 2.076361977337494,
+          "gpu_ns": [
+            82499,
+            78166,
+            78541
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 78541,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 136.53333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 2097152,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 854.4437172941521
+        },
+        {
+          "dram_gbps": 0.05920187318426872,
+          "frac_of_honest_ceiling_packed": 0.0001438649684923057,
+          "gpu_ns": [
+            138375,
+            138124,
+            138374
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 138374,
+          "note": "serial loop, no weight traffic",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.5333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 8192,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.05920187318426872
+        },
+        {
+          "dram_gbps": 211.60184484736084,
+          "frac_of_honest_ceiling_packed": 0.5129937952259194,
+          "gpu_ns": [
+            84125,
+            81958,
+            81624
+          ],
+          "kernel": "disc_q8_byte_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 81958,
+          "note": "byte load + coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 17.066666666666666,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 262144,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 211.10207667341808
+        },
+        {
+          "dram_gbps": 221.74795417348608,
+          "frac_of_honest_ceiling_packed": 0.5375913649387006,
+          "gpu_ns": [
+            78208,
+            76874,
+            79291
+          ],
+          "kernel": "disc_q8_byte_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 78208,
+          "note": "byte load + 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 136.53333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 2097152,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 221.2242225859247
+        },
+        {
+          "dram_gbps": 84.08512002564822,
+          "frac_of_honest_ceiling_packed": 0.20423339135332436,
+          "gpu_ns": [
+            198624,
+            200208,
+            199624
+          ],
+          "kernel": "disc_load_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 199624,
+          "note": "load packed bytes, no scale/decode",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.5333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 32,
+            "threads_launched": 8192,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 84.04408287580651
+        }
+      ]
+    },
+    "q8_lm_head_151936x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_matvec_hgravs_max_abs": 6.556510925292969e-07,
+        "passed": true,
+        "q80_hgravs01_factor_matvec_max_abs": 6.556510925292969e-07,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "kind": "uniform8",
+      "name": "lm_head.weight",
+      "packed_weight_bytes": 320888832,
+      "shape": [
+        151936,
+        2048
+      ],
+      "uncompressed_f32_bytes": 1244659712,
+      "variants": [
+        {
+          "dram_gbps": 16.21918365493757,
+          "frac_of_honest_ceiling_packed": 0.03933831762505711,
+          "gpu_ns": [
+            19967041,
+            19822500,
+            19369834
+          ],
+          "kernel": "q80_hgravs01_factor_matvec",
+          "max_abs_error": 6.556510925292969e-07,
+          "median_gpu_ns": 19822500,
+          "note": "shipped serial; Q8 uses 8-iteration bit extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 9.891666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 151936,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 16.18811108588725
+        },
+        {
+          "dram_gbps": 16.697715890214482,
+          "frac_of_honest_ceiling_packed": 0.040498958842620544,
+          "gpu_ns": [
+            18977250,
+            19425625,
+            19254416
+          ],
+          "kernel": "gk_matvec_hgravs",
+          "max_abs_error": 6.556510925292969e-07,
+          "median_gpu_ns": 19254416,
+          "note": "gk family serial",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 9.891666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 151936,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 16.66572655332678
+        },
+        {
+          "dram_gbps": 179.23610759581882,
+          "frac_of_honest_ceiling_packed": 0.43472267658408054,
+          "gpu_ns": [
+            1793750,
+            1801459,
+            1793750
+          ],
+          "kernel": "gk_matvec_hgravs_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 1793750,
+          "note": "gk family 1-SG/row, wide extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 316.53333333333336,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 4861952,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 178.89272864111499
+        },
+        {
+          "dram_gbps": 16.55342633080237,
+          "frac_of_honest_ceiling_packed": 0.040148996191053596,
+          "gpu_ns": [
+            19669916,
+            19422249,
+            19396041
+          ],
+          "kernel": "disc_q8_bit_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 19422249,
+          "note": "same bit-serial extract, diagnostic lib",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 9.891666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 151936,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 16.521713422580465
+        },
+        {
+          "dram_gbps": 97.198654778475,
+          "frac_of_honest_ceiling_packed": 0.23574747260722362,
+          "gpu_ns": [
+            3454916,
+            3307708,
+            3284208
+          ],
+          "kernel": "disc_q8_byte_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 3307708,
+          "note": "byte load, SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 9.891666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 151936,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 97.01244245259859
+        },
+        {
+          "dram_gbps": 545.4460292215514,
+          "frac_of_honest_ceiling_packed": 1.3248189392436864,
+          "gpu_ns": [
+            2238666,
+            2297749,
+            2283041
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 2283041,
+          "note": "uncompressed SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 9.891666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 151936,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 545.1762416881694
+        },
+        {
+          "dram_gbps": 641.398737058975,
+          "frac_of_honest_ceiling_packed": 1.557875846443392,
+          "gpu_ns": [
+            1943875,
+            1941500,
+            1861208
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 1941500,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 316.53333333333336,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 4861952,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 641.0814895699202
+        },
+        {
+          "dram_gbps": 668.215822960394,
+          "frac_of_honest_ceiling_packed": 1.6230111327855241,
+          "gpu_ns": [
+            1859333,
+            1916625,
+            1863583
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 1863583,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 2532.266666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 38895616,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 667.885311252571
+        },
+        {
+          "dram_gbps": 0.020317057201246005,
+          "frac_of_honest_ceiling_packed": 4.937196471834465e-05,
+          "gpu_ns": [
+            403125,
+            403250,
+            403208
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 403208,
+          "note": "serial loop, no weight traffic",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 9.891666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 151936,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.020317057201246005
+        },
+        {
+          "dram_gbps": 263.67265381975227,
+          "frac_of_honest_ceiling_packed": 0.6395166875026711,
+          "gpu_ns": [
+            1210875,
+            1219333,
+            1241874
+          ],
+          "kernel": "disc_q8_byte_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 1219333,
+          "note": "byte load + coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 316.53333333333336,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 4861952,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 263.1675120742242
+        },
+        {
+          "dram_gbps": 247.81194011904046,
+          "frac_of_honest_ceiling_packed": 0.6010478097469923,
+          "gpu_ns": [
+            1298124,
+            1297374,
+            1297041
+          ],
+          "kernel": "disc_q8_byte_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 1297374,
+          "note": "byte load + 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 2532.266666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 38895616,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 247.33718418898482
+        },
+        {
+          "dram_gbps": 289.0825851715322,
+          "frac_of_honest_ceiling_packed": 0.7024737545404947,
+          "gpu_ns": [
+            1057374,
+            1076416,
+            1107083
+          ],
+          "kernel": "disc_load_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 1076416,
+          "note": "load packed bytes, no scale/decode",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 9.891666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 594,
+            "threads_launched": 151936,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 289.07497473095896
+        }
+      ]
+    },
+    "q8_out_2048x4096": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_matvec_hgravs_max_abs": 1.9073486328125e-06,
+        "passed": true,
+        "q80_hgravs01_factor_matvec_max_abs": 1.9073486328125e-06,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "kind": "uniform8",
+      "name": "model.layers.0.linear_attn.out_proj.weight",
+      "packed_weight_bytes": 8650752,
+      "shape": [
+        2048,
+        4096
+      ],
+      "uncompressed_f32_bytes": 33554432,
+      "variants": [
+        {
+          "dram_gbps": 2.5611714517676583,
+          "frac_of_honest_ceiling_packed": 0.00620620643134193,
+          "gpu_ns": [
+            3387250,
+            3441500,
+            3377000
+          ],
+          "kernel": "q80_hgravs01_factor_matvec",
+          "max_abs_error": 1.9073486328125e-06,
+          "median_gpu_ns": 3387250,
+          "note": "shipped serial; Q8 uses 8-iteration bit extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.5539160085615173
+        },
+        {
+          "dram_gbps": 2.7404060196309894,
+          "frac_of_honest_ceiling_packed": 0.006640525940496411,
+          "gpu_ns": [
+            3166500,
+            3165709,
+            3140250
+          ],
+          "kernel": "gk_matvec_hgravs",
+          "max_abs_error": 1.9073486328125e-06,
+          "median_gpu_ns": 3165709,
+          "note": "gk family serial",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.732642829773678
+        },
+        {
+          "dram_gbps": 116.90398738697462,
+          "frac_of_honest_ceiling_packed": 0.2832806362376929,
+          "gpu_ns": [
+            74041,
+            74209,
+            74250
+          ],
+          "kernel": "gk_matvec_hgravs_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 74209,
+          "note": "gk family 1-SG/row, wide extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 4.266666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 65536,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 116.572814618173
+        },
+        {
+          "dram_gbps": 2.476808244333391,
+          "frac_of_honest_ceiling_packed": 0.006001778305225725,
+          "gpu_ns": [
+            3561291,
+            3502624,
+            3311208
+          ],
+          "kernel": "disc_q8_bit_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 3502624,
+          "note": "same bit-serial extract, diagnostic lib",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 2.469791790383438
+        },
+        {
+          "dram_gbps": 13.369819102013642,
+          "frac_of_honest_ceiling_packed": 0.032397619159594854,
+          "gpu_ns": [
+            578000,
+            648874,
+            652375
+          ],
+          "kernel": "disc_q8_byte_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 648874,
+          "note": "byte load, SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 13.331944260364878
+        },
+        {
+          "dram_gbps": 66.92938522008818,
+          "frac_of_honest_ceiling_packed": 0.1625243628386074,
+          "gpu_ns": [
+            503916,
+            501499,
+            501708
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 501708,
+          "note": "uncompressed SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 66.88040055171534
+        },
+        {
+          "dram_gbps": 616.1285871559633,
+          "frac_of_honest_ceiling_packed": 1.4961426244226064,
+          "gpu_ns": [
+            55541,
+            54500,
+            54125
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 54500,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 4.266666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 65536,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 615.6776513761467
+        },
+        {
+          "dram_gbps": 1157.9367564398772,
+          "frac_of_honest_ceiling_packed": 2.8118132704931917,
+          "gpu_ns": [
+            29541,
+            28999,
+            28833
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 28999,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 34.13333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 524288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 1157.0892789406532
+        },
+        {
+          "dram_gbps": 0.05958728242131526,
+          "frac_of_honest_ceiling_packed": 0.000144801541691126,
+          "gpu_ns": [
+            274375,
+            274958,
+            282291
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 274958,
+          "note": "serial loop, no weight traffic",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.05958728242131526
+        },
+        {
+          "dram_gbps": 141.64032065829647,
+          "frac_of_honest_ceiling_packed": 0.34322148499670113,
+          "gpu_ns": [
+            61249,
+            51208,
+            64374
+          ],
+          "kernel": "disc_q8_byte_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 61249,
+          "note": "byte load + coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 4.266666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 65536,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 141.23907329099248
+        },
+        {
+          "dram_gbps": 205.33320710059175,
+          "frac_of_honest_ceiling_packed": 0.4975614848417267,
+          "gpu_ns": [
+            42250,
+            42416,
+            42166
+          ],
+          "kernel": "disc_q8_byte_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 42250,
+          "note": "byte load + 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 34.13333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 524288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 204.75152662721894
+        },
+        {
+          "dram_gbps": 23.858094586577575,
+          "frac_of_honest_ceiling_packed": 0.05786393424117566,
+          "gpu_ns": [
+            353458,
+            352291,
+            347083
+          ],
+          "kernel": "disc_load_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 352291,
+          "note": "load packed bytes, no scale/decode",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.13333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 8,
+            "threads_launched": 2048,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 23.811587579586195
+        }
+      ]
+    },
+    "q8_qkvz_12288x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_matvec_hgravs_max_abs": 4.76837158203125e-07,
+        "passed": true,
+        "q80_hgravs01_factor_matvec_max_abs": 4.76837158203125e-07,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "kind": "uniform8",
+      "name": "model.layers.0.linear_attn.in_proj_qkvz.weight",
+      "packed_weight_bytes": 25952256,
+      "shape": [
+        12288,
+        2048
+      ],
+      "uncompressed_f32_bytes": 100663296,
+      "variants": [
+        {
+          "dram_gbps": 16.39820316809835,
+          "frac_of_honest_ceiling_packed": 0.03976100131054542,
+          "gpu_ns": [
+            1589875,
+            1585459,
+            1586125
+          ],
+          "kernel": "q80_hgravs01_factor_matvec",
+          "max_abs_error": 4.76837158203125e-07,
+          "median_gpu_ns": 1586125,
+          "note": "shipped serial; Q8 uses 8-iteration bit extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 12288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 16.362049649302545
+        },
+        {
+          "dram_gbps": 16.47437817925235,
+          "frac_of_honest_ceiling_packed": 0.03994570415190412,
+          "gpu_ns": [
+            1589750,
+            1575334,
+            1578791
+          ],
+          "kernel": "gk_matvec_hgravs",
+          "max_abs_error": 4.76837158203125e-07,
+          "median_gpu_ns": 1578791,
+          "note": "gk family serial",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 12288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 16.438056715550065
+        },
+        {
+          "dram_gbps": 158.07367160768442,
+          "frac_of_honest_ceiling_packed": 0.38328391223882713,
+          "gpu_ns": [
+            164625,
+            163916,
+            164541
+          ],
+          "kernel": "gk_matvec_hgravs_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 164541,
+          "note": "gk family 1-SG/row, wide extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 25.6,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 393216,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 157.72516272539974
+        },
+        {
+          "dram_gbps": 15.529287576259469,
+          "frac_of_honest_ceiling_packed": 0.03765412693951238,
+          "gpu_ns": [
+            1668666,
+            1674874,
+            1715624
+          ],
+          "kernel": "disc_q8_bit_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 1674874,
+          "note": "same bit-serial extract, diagnostic lib",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 12288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 15.495049776878739
+        },
+        {
+          "dram_gbps": 90.65231635740078,
+          "frac_of_honest_ceiling_packed": 0.21980620879870366,
+          "gpu_ns": [
+            287041,
+            286374,
+            286916
+          ],
+          "kernel": "disc_q8_byte_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 286916,
+          "note": "byte load, SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 12288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 90.45245298275454
+        },
+        {
+          "dram_gbps": 402.4816882385145,
+          "frac_of_honest_ceiling_packed": 0.977503682704411,
+          "gpu_ns": [
+            270000,
+            250249,
+            249249
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 250249,
+          "note": "uncompressed SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 12288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 402.2525404696922
+        },
+        {
+          "dram_gbps": 596.4247900801781,
+          "frac_of_honest_ceiling_packed": 1.4485315625442414,
+          "gpu_ns": [
+            163499,
+            192500,
+            168874
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 168874,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 25.6,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 393216,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 596.0852233025807
+        },
+        {
+          "dram_gbps": 651.5634966328769,
+          "frac_of_honest_ceiling_packed": 1.582446446847947,
+          "gpu_ns": [
+            148916,
+            154583,
+            155041
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 154583,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 204.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 3145728,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 651.1925373423987
+        },
+        {
+          "dram_gbps": 0.059362749005427574,
+          "frac_of_honest_ceiling_packed": 0.0001442559087395873,
+          "gpu_ns": [
+            137958,
+            137999,
+            138208
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 137999,
+          "note": "serial loop, no weight traffic",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 12288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.059362749005427574
+        },
+        {
+          "dram_gbps": 228.8248024915102,
+          "frac_of_honest_ceiling_packed": 0.554835379125586,
+          "gpu_ns": [
+            113666,
+            112416,
+            113791
+          ],
+          "kernel": "disc_q8_byte_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 113666,
+          "note": "byte load + coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 25.6,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 393216,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 228.32030686396988
+        },
+        {
+          "dram_gbps": 234.234201781324,
+          "frac_of_honest_ceiling_packed": 0.5679516413188719,
+          "gpu_ns": [
+            111000,
+            111125,
+            111041
+          ],
+          "kernel": "disc_q8_byte_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 111041,
+          "note": "byte load + 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 204.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 3145728,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 233.71777991912896
+        },
+        {
+          "dram_gbps": 144.16126076598863,
+          "frac_of_honest_ceiling_packed": 0.3502086183644519,
+          "gpu_ns": [
+            174374,
+            174624,
+            174750
+          ],
+          "kernel": "disc_load_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 174624,
+          "note": "load packed bytes, no scale/decode",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.8,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 48,
+            "threads_launched": 12288,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 144.1143485431556
+        }
+      ]
+    },
+    "q8_router_512x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_matvec_hgravs_max_abs": 8.344650268554688e-07,
+        "passed": true,
+        "q80_hgravs01_factor_matvec_max_abs": 8.344650268554688e-07,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "kind": "uniform8",
+      "name": "model.layers.0.mlp.gate.weight",
+      "packed_weight_bytes": 1081344,
+      "shape": [
+        512,
+        2048
+      ],
+      "uncompressed_f32_bytes": 4194304,
+      "variants": [
+        {
+          "dram_gbps": 0.6929222628344212,
+          "frac_of_honest_ceiling_packed": 0.0016680568005390407,
+          "gpu_ns": [
+            1604250,
+            1575334,
+            1574541
+          ],
+          "kernel": "q80_hgravs01_factor_matvec",
+          "max_abs_error": 8.344650268554688e-07,
+          "median_gpu_ns": 1575334,
+          "note": "shipped serial; Q8 uses 8-iteration bit extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.6864220539898206
+        },
+        {
+          "dram_gbps": 0.6913134895503483,
+          "frac_of_honest_ceiling_packed": 0.001664184035351722,
+          "gpu_ns": [
+            1579000,
+            1578625,
+            1585084
+          ],
+          "kernel": "gk_matvec_hgravs",
+          "max_abs_error": 8.344650268554688e-07,
+          "median_gpu_ns": 1579000,
+          "note": "gk family serial",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.6848283723875871
+        },
+        {
+          "dram_gbps": 31.75517090909091,
+          "frac_of_honest_ceiling_packed": 0.07644353721659256,
+          "gpu_ns": [
+            34375,
+            34334,
+            34375
+          ],
+          "kernel": "gk_matvec_hgravs_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 34375,
+          "note": "gk family 1-SG/row, wide extract",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 1.0666666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 16384,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 31.45728
+        },
+        {
+          "dram_gbps": 0.6587549734738006,
+          "frac_of_honest_ceiling_packed": 0.0015858066226607363,
+          "gpu_ns": [
+            1657041,
+            1658791,
+            1656750
+          ],
+          "kernel": "disc_q8_bit_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 1657041,
+          "note": "same bit-serial extract, diagnostic lib",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.6525752832911196
+        },
+        {
+          "dram_gbps": 3.719208583334185,
+          "frac_of_honest_ceiling_packed": 0.00895317051104218,
+          "gpu_ns": [
+            293499,
+            293374,
+            294125
+          ],
+          "kernel": "disc_q8_byte_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 293499,
+          "note": "byte load, SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 3.6843191969989677
+        },
+        {
+          "dram_gbps": 22.514412393105182,
+          "frac_of_honest_ceiling_packed": 0.054578453586787645,
+          "gpu_ns": [
+            186749,
+            187874,
+            184666
+          ],
+          "kernel": "disc_f32_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 186749,
+          "note": "uncompressed SAME 1-thread/row launch",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 22.459579435498984
+        },
+        {
+          "dram_gbps": 171.62104575696966,
+          "frac_of_honest_ceiling_packed": 0.41603623122898925,
+          "gpu_ns": [
+            24250,
+            24499,
+            25125
+          ],
+          "kernel": "disc_f32_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 24499,
+          "note": "uncompressed coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 1.0666666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 16384,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 171.20306951304136
+        },
+        {
+          "dram_gbps": 429.42947604943316,
+          "frac_of_honest_ceiling_packed": 1.041004149614851,
+          "gpu_ns": [
+            9791,
+            9916,
+            9625
+          ],
+          "kernel": "disc_f32_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 9791,
+          "note": "uncompressed 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 8.533333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 131072,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 428.38361760800734
+        },
+        {
+          "dram_gbps": 0.058741700010038866,
+          "frac_of_honest_ceiling_packed": 0.00014274671334849425,
+          "gpu_ns": [
+            140083,
+            139458,
+            139374
+          ],
+          "kernel": "disc_x_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 139458,
+          "note": "serial loop, no weight traffic",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 0.058741700010038866
+        },
+        {
+          "dram_gbps": 42.60006244146113,
+          "frac_of_honest_ceiling_packed": 0.10255021042071373,
+          "gpu_ns": [
+            25750,
+            25624,
+            25583
+          ],
+          "kernel": "disc_q8_byte_simd",
+          "max_abs_error": null,
+          "median_gpu_ns": 25624,
+          "note": "byte load + coalesced",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 1.0666666666666667,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 16384,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 42.20043709022791
+        },
+        {
+          "dram_gbps": 94.58313837622391,
+          "frac_of_honest_ceiling_packed": 0.22768794660951122,
+          "gpu_ns": [
+            11583,
+            11125,
+            11541
+          ],
+          "kernel": "disc_q8_byte_tg256",
+          "max_abs_error": null,
+          "median_gpu_ns": 11541,
+          "note": "byte load + 256 threads/row",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 8.533333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 32,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 131072,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 93.69586690927996
+        },
+        {
+          "dram_gbps": 5.98453984811675,
+          "frac_of_honest_ceiling_packed": 0.014430142806610782,
+          "gpu_ns": [
+            176458,
+            176583,
+            177041
+          ],
+          "kernel": "disc_load_only_serial",
+          "max_abs_error": null,
+          "median_gpu_ns": 176583,
+          "note": "load packed bytes, no scale/decode",
+          "occupancy": {
+            "max_total_threads_per_threadgroup": 1024,
+            "occupancy_proxy_vs_control_15360": 0.03333333333333333,
+            "occupancy_vs_1024_from_registers_or_tgmem": 1.0,
+            "register_count_exposed": false,
+            "register_pressure_limits_tg": false,
+            "static_threadgroup_memory_length": 0,
+            "thread_execution_width": 32,
+            "threadgroups": 2,
+            "threads_launched": 512,
+            "threads_per_threadgroup_launched": 256
+          },
+          "packed_gbps": 5.938148066348402
+        }
+      ]
+    }
+  },
+  "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+  "schema": "hawking.ascension.q80_matvec_discriminator.v1",
+  "shipped_pipeline_occupancy": {
+    "gk_matvec_binary": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "gk_matvec_binary_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "gk_matvec_hgravs": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "gk_matvec_hgravs_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "q80_binary_group_matvec": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "q80_binary_group_matvec_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "q80_binary_group_matvec_tg256": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 32,
+      "thread_execution_width": 32
+    },
+    "q80_hgravs01_factor_matvec": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "q80_hgravs01_factor_matvec_simd": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "q80_hgravs01_factor_matvec_simd3": {
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_vs_1024": 1.0,
+      "register_pressure_limits_tg": false,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    }
+  },
+  "sibling_reconstruction_lane_premise": {
+    "mass_fact_from_catalog": "attention + lm_head on mixed-1p5-v1 are HGRAVU01 q8, not binary/rice/hgravs. Routed mixed organs are ~0.10 GB of the 2.218 GB token.",
+    "stated": "mixed codecs (binary/rice/low-rank) need expensive per-weight reconstruction; that is why mixed is 5.9x slower per byte than Q4"
+  }
+}
