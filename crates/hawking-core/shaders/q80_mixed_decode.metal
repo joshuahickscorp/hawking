@@ -1070,3 +1070,80 @@ kernel void q80_hgravs01_two_stage_matvec_rowblock4(
         if (has3) output[row3] = a3;
     }
 }
+
+// ── DRAM-row execution-order layouts ──────────────────────────────────────
+// Per-group [fp16 scale | sign bytes]. Same decoded values as the split
+// scales+signs pair. Grid: (rows, 1, 1), TG 256.
+
+kernel void q80_binary_group_matvec_interleaved(
+    device const uchar* records     [[buffer(0)]],
+    device const float* input       [[buffer(1)]],
+    device float* output            [[buffer(2)]],
+    constant uint& rows             [[buffer(3)]],
+    constant uint& cols             [[buffer(4)]],
+    constant uint& group_size       [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint row                         [[thread_position_in_grid]])
+{
+    if (row >= rows || group_size == 0u || (group_size & 7u) != 0u) return;
+    const uint sign_bytes = group_size >> 3u;
+    const uint stride = 2u + sign_bytes;
+    float sum = 0.0f;
+    const uint row_base = row * groups_per_row;
+    for (uint group = 0u; group < groups_per_row; ++group) {
+        const uint rec = (row_base + group) * stride;
+        const float scale = float(*((device const half*)(records + rec)));
+        device const uchar* signs = records + rec + 2u;
+        const uint group_start = group * group_size;
+        const uint group_end = min(group_start + group_size, cols);
+        uint col = group_start;
+        while (col + 8u <= group_end) {
+            const uchar byte = signs[(col - group_start) >> 3u];
+            sum += ((byte & 0x01u) ? scale : -scale) * input[col];
+            sum += ((byte & 0x02u) ? scale : -scale) * input[col + 1u];
+            sum += ((byte & 0x04u) ? scale : -scale) * input[col + 2u];
+            sum += ((byte & 0x08u) ? scale : -scale) * input[col + 3u];
+            sum += ((byte & 0x10u) ? scale : -scale) * input[col + 4u];
+            sum += ((byte & 0x20u) ? scale : -scale) * input[col + 5u];
+            sum += ((byte & 0x40u) ? scale : -scale) * input[col + 6u];
+            sum += ((byte & 0x80u) ? scale : -scale) * input[col + 7u];
+            col += 8u;
+        }
+        while (col < group_end) {
+            const uint local = col - group_start;
+            const uchar byte = signs[local >> 3u];
+            const bool positive = ((byte >> (local & 7u)) & 1u) != 0u;
+            sum += (positive ? scale : -scale) * input[col];
+            col += 1u;
+        }
+    }
+    output[row] = sum;
+}
+
+// Sequential vs row-conflict read. `stride` is the per-thread step in bytes.
+// Sequential probe uses stride = nthreads * 16; conflict probe uses 8192+64.
+// Each thread issues `iters` float4 loads. Writes acc so the loads stay live.
+kernel void dram_row_locality_read_reduce(
+    device const uchar* data        [[buffer(0)]],
+    device float* out               [[buffer(1)]],
+    constant uint& nbytes           [[buffer(2)]],
+    constant uint& stride           [[buffer(3)]],
+    constant uint& iters            [[buffer(4)]],
+    uint tid                         [[thread_position_in_grid]],
+    uint nthreads                    [[threads_per_grid]])
+{
+    if (tid >= nthreads || stride < 16u || nbytes < 16u) {
+        return;
+    }
+    float acc = 0.0f;
+    uint off = (tid * 16u) % (nbytes - 15u);
+    for (uint i = 0u; i < iters; ++i) {
+        const float4 v = *((device const float4*)(data + off));
+        acc += v.x + v.y + v.z + v.w;
+        off += stride;
+        if (off + 16u > nbytes) {
+            off = off % (nbytes - 15u);
+        }
+    }
+    out[tid] = acc;
+}

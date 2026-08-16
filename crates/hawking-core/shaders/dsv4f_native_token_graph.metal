@@ -256,3 +256,92 @@ kernel void dsv4f_worklist_combine(
     output_bf16[index] = dsv4f_tg_bf16_encode_rne(value);
 }
 #pragma clang fp contract(on)
+
+// Isolated FP4 matvec against the current split packed+scale pair.
+// Same association as one slot of dsv4f_worklist_fp4_matvec.
+// Grid: (rows, 1, 1), TG 256.
+#pragma clang fp contract(off)
+kernel void dsv4f_fp4_matvec_split(
+    device const uchar* packed_weights [[buffer(0)]],
+    device const uchar* weight_scales  [[buffer(1)]],
+    device const uchar* quantized      [[buffer(2)]],
+    device const uchar* act_scales     [[buffer(3)]],
+    device       float* output         [[buffer(4)]],
+    constant uint& rows                 [[buffer(5)]],
+    constant uint& packed_cols          [[buffer(6)]],
+    constant uint& scale_cols           [[buffer(7)]],
+    uint row                            [[thread_position_in_grid]])
+{
+    if (rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * DSV4F_FP4_BLOCK) {
+        return;
+    }
+    if (row >= rows) return;
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        float block_accumulator = 0.0f;
+        const uint start = block * DSV4F_FP4_BLOCK;
+        for (uint offset = 0u; offset < DSV4F_FP4_BLOCK; ++offset) {
+            const uint col = start + offset;
+            const uchar packed = packed_weights[weight_base + (ulong)(col >> 1u)];
+            const float activation = dsv4f_tg_e4m3fn_value(quantized[col]);
+            const float weight = dsv4f_tg_e2m1fn_value(packed, (col & 1u) != 0u);
+            block_accumulator = block_accumulator + activation * weight;
+        }
+        const float activation_scale = dsv4f_tg_e8m0fnu_value(
+            act_scales[block / (DSV4F_ACT_BLOCK / DSV4F_FP4_BLOCK)]);
+        const float weight_scale = dsv4f_tg_e8m0fnu_value(
+            weight_scales[scale_base + (ulong)block]);
+        row_accumulator = row_accumulator
+            + block_accumulator * (activation_scale * weight_scale);
+    }
+    output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)
+
+// Isolated FP4 matvec against an execution-order interleaved organ:
+// per 32-logical-weight block, [e8m0 scale | 16 packed bytes].
+// Same association as dsv4f_worklist_fp4_matvec for one expert.
+// Grid: (rows, 1, 1), TG 256. Not the default no-copy worklist path.
+#pragma clang fp contract(off)
+kernel void dsv4f_fp4_matvec_interleaved(
+    device const uchar* records     [[buffer(0)]],
+    device const uchar* quantized   [[buffer(1)]],
+    device const uchar* act_scales  [[buffer(2)]],
+    device       float* output      [[buffer(3)]],
+    constant uint& rows              [[buffer(4)]],
+    constant uint& packed_cols       [[buffer(5)]],
+    constant uint& scale_cols        [[buffer(6)]],
+    uint row                         [[thread_position_in_grid]])
+{
+    if (rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * DSV4F_FP4_BLOCK) {
+        return;
+    }
+    if (row >= rows) return;
+    const uint packed_per_block = DSV4F_FP4_BLOCK / 2u;
+    const uint stride = 1u + packed_per_block;
+    const ulong row_base = (ulong)row * (ulong)scale_cols * (ulong)stride;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const ulong rec = row_base + (ulong)block * (ulong)stride;
+        const float weight_scale = dsv4f_tg_e8m0fnu_value(records[rec]);
+        float block_accumulator = 0.0f;
+        const uint start = block * DSV4F_FP4_BLOCK;
+        for (uint offset = 0u; offset < DSV4F_FP4_BLOCK; ++offset) {
+            const uint col = start + offset;
+            const uchar packed = records[rec + 1u + (ulong)(offset >> 1u)];
+            const float activation = dsv4f_tg_e4m3fn_value(quantized[col]);
+            const float weight = dsv4f_tg_e2m1fn_value(packed, (offset & 1u) != 0u);
+            block_accumulator = block_accumulator + activation * weight;
+        }
+        const float activation_scale = dsv4f_tg_e8m0fnu_value(
+            act_scales[block / (DSV4F_ACT_BLOCK / DSV4F_FP4_BLOCK)]);
+        row_accumulator = row_accumulator
+            + block_accumulator * (activation_scale * weight_scale);
+    }
+    output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)

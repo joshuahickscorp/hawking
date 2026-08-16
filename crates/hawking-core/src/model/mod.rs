@@ -44,6 +44,9 @@ pub mod qwen80_48_layer_execution_schedule;
 /// graph has real capability evidence.
 pub mod qwen80_complete_runtime;
 pub mod qwen_complete_binary;
+/// Derived DRAM-row address-stream model and value-preserving execution-order
+/// layouts. Pack-time contract; not an Engine and not a default runtime path.
+pub mod dram_row_locality;
 pub mod qwen_dense;
 pub mod qwen_moe;
 pub mod rwkv7;
