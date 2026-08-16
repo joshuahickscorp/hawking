@@ -360,6 +360,26 @@
       "skew": "UNKNOWN",
       "disposition": "MERGE_READY",
       "promoted": false
+    },
+    {
+      "lane": "auto-q80-dsv4f-host-expert-slab-20260816-022954",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "metal GPU 284622000 ns (DIRTY_ENGINEERING, hoistB3 true GPU timestamps); remaining host exclusive 289363167 ns, of which expert mmap is now 86-91 ms. Attn prefetch full work is still ~406-414 ms but is off the critical path.",
+      "branch": "grok/auto-q80-dsv4f-host-expert-slab-20260816-022954",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "auto-q80-not-dram-rows-q80-20260816-023959",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "98 CBs / 1155 dispatches per token; GPU idle 50705310 ns (45% busy). Suffix moe_combine 33982886 ns; DeltaNet prefix 32727027 ns. moe_table_build now 15097311 ns.",
+      "branch": "grok/auto-q80-not-dram-rows-q80-20260816-023959",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
     }
   ]
 }
