@@ -1,0 +1,38 @@
+opening streaming catalog at /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/uniform-q4-group64-v1
+catalog tensors=74391 complete_physical_bpw=4.259241 claim=VELOCITY_BASELINE_NOT_BASE_TRUE_TPS
+running greedy decode prompt_chars=90 max_new_tokens=12
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+wrote /Users/scammermike/.claude-grok/worktrees/q80-integrate-graph-20260816-012855/receipts/ascent-2026-08-16/integrate-q80/D3.json
+wrote compact ledger /Users/scammermike/.claude-grok/worktrees/q80-integrate-graph-20260816-012855/receipts/ascent-2026-08-16/integrate-q80/D3.ledger.json (64391 bytes)
+stage                    substage                      status           calls  ns/call        ns/token    %    class            identity
+embed                    gather_cb                     measured           1.0     265512         265512   0.1 GPU              SUM
+deltanet                 prefix_cb_mixed               measured          36.0    2196701       79081238  43.6 GPU              SUM
+gqa                      prefix_cb_mixed               measured          12.0    2317743       27812912  15.3 GPU              SUM
+moe_norm_router          gpu_in_prefix                 absorbed          48.0       3037         145788   0.1 GPU              nested
+moe_shared               gpu_in_prefix                 absorbed          48.0       6801         326424   0.2 GPU              nested
+moe_table_build          host_address_table            measured          48.0     602632       28926345  16.0 CPU              SUM
+moe_routed               gpu_in_suffix                 absorbed          -0.0          0             -0  -0.0 GPU              nested
+moe_combine              suffix_cb_mixed               measured          48.0     892804       42854568  23.7 GPU              SUM
+terminal                 norm_lm_head_cb               measured           1.0    1596693        1596693   0.9 GPU              SUM
+q4_matvec                fused_into_mixed_cbs          absorbed         397.0       1734         688429   0.4 GPU              nested
+host_expert_bind         host_payload_fallback         not_applicable     0.0          0              0   0.0 CPU              nested
+router_readback          memcpy_512_f32                measured          48.0       1233          59175   0.0 synchronization  SUM
+host_topk                softmax_top10                 measured          48.0       9974         478739   0.3 CPU              SUM
+logits_readback          memcpy_vocab_f32              measured           1.0      22553          22553   0.0 synchronization  SUM
+host_argmax              lowest_id_greedy              measured           1.0      84011          84011   0.0 CPU              SUM
+inter_phase_gap          unmarked_host                 measured           1.0       4265           4265   0.0 CPU              SUM
+activation               shared_swiglu                 measured          48.0       1032          49550   0.0 CPU              nested
+activation               shared_mlp_sandwich           measured          48.0       6697         321472   0.2 CPU              nested
+activation               deltanet_conv                 measured          36.0       1915          68931   0.0 CPU              nested
+activation               deltanet_recurrent            measured          36.0       3369         121272   0.1 CPU              nested
+activation               gqa_input_layernorm           measured          12.0       6146          73750   0.0 CPU              nested
+activation               gqa_norm_rope                 measured          12.0       2883          34591   0.0 CPU              nested
+activation               other_host_activation         measured          48.0       9974         478739   0.3 CPU              nested
+activation               metal_matvec_sync             not_applicable     0.0          0              0   0.0 synchronization  nested
+SUM(identity stages)=181186011 ns   wall=181192871 ns   residual=6860 ns (0.004% of wall)
+identity n=11 mean_wall_ns=181192871 mean_sum_ns=181186011 mean_residual_ns=6860 holds_all=true residual=inter_phase_gap_plus_seal_jitter
+totals token_ns=181192871 gpu_busy_ns=110947295 gpu_idle_ns=70245575 gpu_gap_ns=69795342 cpu_critical_ns=29575088 cbs=98 disp=1155 syncs=98 readbacks=49 buf_create=0 buf_rebind=0 dram=1892511808 temp=83787012
+catalog_complete=true silent_zero_stages=[]
+wrote /Users/scammermike/.claude-grok/worktrees/q80-integrate-graph-20260816-012855/receipts/ascent-2026-08-16/integrate-q80/TOKEN_NS.json
+token_ns_ledger verdict=mixed wall_ms=181.2 gpu_ms=110.9 wait_ms=148.0 cbs=98 disp=1155 weight_gib=1.763 implied_gb_s_gpu=Some(17.057755176404793)
+rationale=GPU 61% of wall, wait-minus-gpu 37.1 ms, host work 37.9 ms, 98 CBs. No single class exceeds the decision thresholds.
