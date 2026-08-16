@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.ascent.session_close_2026_08_16.v1",
+  "date": "2026-08-16",
+  "VERIFIED_THIS_SESSION": {
+    "G001": "Qwen3.8 complete TOKEN_NS decomposition - 12 components, sum == wall to 1 ns, residual NAMED",
+    "G002": "ONE generalized kernel family serving all three graphs - closed by moving the occupancy tiles into decode_family; gk_family_parity 8/8"
+  },
+  "Q80_THE_HEADLINE": {
+    "morning_ms": 1376.3,
+    "now_ms": 108.306,
+    "improvement_x": 12.7,
+    "measured_by": "controller, 3 reps under gpu_lane_lock, median of 111.451/106.945/108.306",
+    "four_eliminations_none_of_them_compute": [
+      "serial 1-thread-per-row extract doing 8 bit-loads per weight -> in-register consumption on occupancy tiles (gpu_matvec 867 -> 36.6 ms)",
+      "catalog re-parsed 289 times per token for geometry the session already held (host_preparation 84.79 -> 25.0 ms)",
+      "337 command buffers where 49 suffice (synchronization 83.4 -> 15.9 ms)",
+      "Gated-Delta recurrence running on the host between two GPU stages (46.94 -> 4.449 ms)"
+    ],
+    "fs_per_weight": "386,270 -> ~30,400",
+    "gate_distance_x": 5.4
+  },
+  "BLOCKED_WITH_NAMED_INPUTS": {
+    "G004_dsv4f": "24.98 ms DRAM floor exceeds the 20 ms gate; roof 40.03 TPS is below the gate itself. Needs an artifact under 8.230 GB/token; the only route (C2, 7.042 GB) requires RESEALING hc_sha - a USER DECISION about what correctness means for that model.",
+    "G006_qwen38": "coherence floor above 2.0856 BPW, verified natively once the reader removed the double-quantisation confound. Needs an attention codec holding coherence below Q4 - attention is 74% of the artifact at 4.250 BPW while the MLP is already 0.848.",
+    "G007": "inherits both"
+  },
+  "FOUR_UNREACHABLE_BARS_FOUND": [
+    "G006 'coherent' with no measurable definition",
+    "G015 'capability' with no test named",
+    "G005 0.50 displacement against a 0.35 ceiling",
+    "G008 TG3/333 claimed reachable at 1.44445 BPW when it needs ~0.805"
+  ],
+  "FIVE_SYSTEMS_REPORTING_SUCCESS_WHILE_MEASURING_NOTHING": [
+    "DSV4F e2e printed divergence and asserted nothing",
+    "gk_family_parity asserts on source text",
+    "CLAUDE_OFFLOAD_BENCH scored 1.0 with the model untouched",
+    "grok-run status reports dead lanes as running",
+    "the ascent daemon logged healthy ticks while five faults starved it"
+  ],
+  "AUTONOMOUS_LOOP": "Repaired and launching again after five distinct faults, all of which presented identically as 'queue dry'. G011 still open - it needs a full unattended cycle, not one launch.",
+  "OPEN_FOR_THE_USER": "The DSV4F hc_sha reseal decision. C1 keeps bit-identity and misses at 46.56 TPS; C2 reseals and clears at 58.44. That single choice gates G004 and G007."
+}
