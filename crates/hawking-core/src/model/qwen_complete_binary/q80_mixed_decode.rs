@@ -1080,6 +1080,258 @@ pub enum MixedPackedTensor {
     Uniform8(UniformFactorPacked),
 }
 
+/// Byte-window description of a mixed payload. Offsets are from the
+/// start of the catalogued container (magic). Used to pin mmap pages
+/// as MTLBuffers without copying weight bytes onto the token path.
+#[derive(Clone, Debug)]
+pub struct MixedGpuLayout {
+    pub rows: u32,
+    pub cols: u32,
+    pub kind: MixedGpuKind,
+}
+
+#[derive(Clone, Debug)]
+pub enum MixedGpuKind {
+    Binary {
+        scale_off: usize,
+        scale_bytes: usize,
+        sign_off: usize,
+        sign_bytes: usize,
+        group_size: u32,
+        groups_per_row: u32,
+    },
+    Residual {
+        binary: Box<MixedGpuKind>,
+        residual_sign_off: usize,
+        residual_sign_bytes: usize,
+        residual_scale_f16: u32,
+        rice_k: u32,
+        first_index: u32,
+        rice_off: usize,
+        rice_bytes: usize,
+        outlier_count: usize,
+    },
+    Hgravs {
+        left: MixedFactorLayout,
+        right: MixedFactorLayout,
+    },
+    Uniform(MixedFactorLayout),
+}
+
+#[derive(Clone, Debug)]
+pub struct MixedFactorLayout {
+    pub rows: u32,
+    pub cols: u32,
+    pub group_size: u32,
+    pub bits: u32,
+    pub bound: u32,
+    pub scale_off: usize,
+    pub scale_bytes: usize,
+    pub code_off: usize,
+    pub code_bytes: usize,
+}
+
+fn factor_layout_from_meta(
+    rows: usize,
+    cols: usize,
+    bits: u8,
+    group_size: usize,
+    body_off: usize,
+    body_len: usize,
+    label: &str,
+) -> Result<MixedFactorLayout> {
+    if bits < 2 || bits > 8 || group_size == 0 || rows == 0 || cols == 0 {
+        return Err(Error::Model(format!("{label} uniform geometry is invalid")));
+    }
+    let elements = rows
+        .checked_mul(cols)
+        .ok_or_else(|| Error::Model(format!("{label} element count overflows")))?;
+    let groups = elements.div_ceil(group_size);
+    let scale_bytes = groups
+        .checked_mul(2)
+        .ok_or_else(|| Error::Model(format!("{label} scale bytes overflow")))?;
+    let code_bytes = packed_byte_count(groups * group_size, bits)?;
+    if body_len != scale_bytes + code_bytes {
+        return Err(Error::Model(format!(
+            "{label} body {body_len} != scales {scale_bytes} + codes {code_bytes}"
+        )));
+    }
+    Ok(MixedFactorLayout {
+        rows: rows as u32,
+        cols: cols as u32,
+        group_size: group_size as u32,
+        bits: u32::from(bits),
+        bound: u32::from((1u16 << (bits - 1)) - 1),
+        scale_off: body_off,
+        scale_bytes,
+        code_off: body_off + scale_bytes,
+        code_bytes,
+    })
+}
+
+/// Inspect a mixed container without copying weight bytes. Rice indices
+/// stay packed; the caller expands them only when building a CSR.
+pub fn mixed_gpu_layout(codec: u8, payload: &[u8]) -> Result<MixedGpuLayout> {
+    match codec {
+        0 => {
+            let (header_bytes, body) = split_gravity_container(payload, &MAGIC_BINARY)?;
+            let header = header_object(header_bytes, "HGRAVB01")?;
+            require_header_str(&header, "schema", SCHEMA_BINARY, "HGRAVB01")?;
+            let shape = header_shape(&header, "shape", "HGRAVB01")?;
+            let elements = header_usize(&header, "elements", "HGRAVB01")?;
+            let group_size = header_usize(&header, "group_size", "HGRAVB01")?;
+            let groups = header_usize(&header, "groups", "HGRAVB01")?;
+            let scale_bytes = header_usize(&header, "scale_bytes", "HGRAVB01")?;
+            let sign_bytes = header_usize(&header, "sign_bytes", "HGRAVB01")?;
+            if body.len() != scale_bytes + sign_bytes {
+                return Err(Error::Model("HGRAVB01 body length disagrees with ledger".into()));
+            }
+            let (rows, cols) = matrix_rows_cols(&shape, elements, "HGRAVB01")?;
+            if cols % group_size != 0 {
+                return Err(Error::Model(
+                    "HGRAVB01 kernel requires cols to be a multiple of group_size".into(),
+                ));
+            }
+            let body_off = 12 + header_bytes.len();
+            Ok(MixedGpuLayout {
+                rows: rows as u32,
+                cols: cols as u32,
+                kind: MixedGpuKind::Binary {
+                    scale_off: body_off,
+                    scale_bytes,
+                    sign_off: body_off + scale_bytes,
+                    sign_bytes,
+                    group_size: group_size as u32,
+                    groups_per_row: (cols / group_size) as u32,
+                },
+            })
+        }
+        1 => {
+            let (header_bytes, body) = split_gravity_container(payload, &MAGIC_RESIDUAL_COMPACT)?;
+            let header = header_object(header_bytes, "HGRAVR02")?;
+            require_header_str(&header, "schema", SCHEMA_RESIDUAL, "HGRAVR02")?;
+            let shape = header_shape(&header, "shape", "HGRAVR02")?;
+            let elements = header_usize(&header, "elements", "HGRAVR02")?;
+            let group_size = header_usize(&header, "group_size", "HGRAVR02")?;
+            let scale_bytes = header_usize(&header, "scale_bytes", "HGRAVR02")?;
+            let sign_bytes = header_usize(&header, "sign_bytes", "HGRAVR02")?;
+            let rice_bytes_len = header_usize(&header, "rice_bytes", "HGRAVR02")?;
+            let residual_bytes = header_usize(&header, "residual_bytes", "HGRAVR02")?;
+            let outlier_count = header_usize(&header, "outlier_count", "HGRAVR02")?;
+            let rice_k = header_u64(&header, "rice_k", "HGRAVR02")? as u32;
+            let (rows, cols) = matrix_rows_cols(&shape, elements, "HGRAVR02")?;
+            let body_off = 12 + header_bytes.len();
+            let first_off = body_off + scale_bytes + sign_bytes;
+            let first_index = read_u32_le(body, scale_bytes + sign_bytes, "HGRAVR02")?;
+            let rice_off = first_off + 4;
+            let residual_scale_off = rice_off + rice_bytes_len;
+            let residual_scale_f16 = u32::from(read_u16_le(body, residual_scale_off - body_off, "HGRAVR02")?);
+            let residual_sign_off = residual_scale_off + 2;
+            Ok(MixedGpuLayout {
+                rows: rows as u32,
+                cols: cols as u32,
+                kind: MixedGpuKind::Residual {
+                    binary: Box::new(MixedGpuKind::Binary {
+                        scale_off: body_off,
+                        scale_bytes,
+                        sign_off: body_off + scale_bytes,
+                        sign_bytes,
+                        group_size: group_size as u32,
+                        groups_per_row: (cols / group_size) as u32,
+                    }),
+                    residual_sign_off,
+                    residual_sign_bytes: residual_bytes,
+                    residual_scale_f16,
+                    rice_k,
+                    first_index,
+                    rice_off,
+                    rice_bytes: rice_bytes_len,
+                    outlier_count,
+                },
+            })
+        }
+        2 => {
+            let (header_bytes, body) = split_gravity_container(payload, &MAGIC_HGRAVS01)?;
+            let header = header_object(header_bytes, "HGRAVS01")?;
+            require_header_str(&header, "schema", SCHEMA_HGRAVS01, "HGRAVS01")?;
+            let matrix_shape = header_shape(&header, "matrix_shape", "HGRAVS01")?;
+            let rank = header_usize(&header, "rank", "HGRAVS01")?;
+            let factor_bits = u8::try_from(header_u64(&header, "factor_bits", "HGRAVS01")?)
+                .map_err(|_| Error::Model("HGRAVS01 factor_bits do not fit u8".into()))?;
+            let factor_group_size = header_usize(&header, "factor_group_size", "HGRAVS01")?;
+            let left_body_bytes = header_usize(&header, "left_body_bytes", "HGRAVS01")?;
+            let right_body_bytes = header_usize(&header, "right_body_bytes", "HGRAVS01")?;
+            if left_body_bytes + right_body_bytes != body.len() {
+                return Err(Error::Model(
+                    "HGRAVS01 physical body disagrees with factor ledgers".into(),
+                ));
+            }
+            let left_meta = header
+                .get("left")
+                .and_then(serde_json::Value::as_object)
+                .ok_or_else(|| Error::Model("HGRAVS01 missing left".into()))?;
+            let right_meta = header
+                .get("right")
+                .and_then(serde_json::Value::as_object)
+                .ok_or_else(|| Error::Model("HGRAVS01 missing right".into()))?;
+            let left_shape = header_shape(left_meta, "shape", "HGRAVS01 left")?;
+            let right_shape = header_shape(right_meta, "shape", "HGRAVS01 right")?;
+            let body_off = 12 + header_bytes.len();
+            let left = factor_layout_from_meta(
+                left_shape[0],
+                left_shape[1],
+                factor_bits,
+                factor_group_size,
+                body_off,
+                left_body_bytes,
+                "HGRAVS01 left",
+            )?;
+            let right = factor_layout_from_meta(
+                right_shape[0],
+                right_shape[1],
+                factor_bits,
+                factor_group_size,
+                body_off + left_body_bytes,
+                right_body_bytes,
+                "HGRAVS01 right",
+            )?;
+            let _ = (matrix_shape, rank);
+            Ok(MixedGpuLayout {
+                rows: left.rows,
+                cols: right.cols,
+                kind: MixedGpuKind::Hgravs { left, right },
+            })
+        }
+        3 => {
+            let (header_bytes, body) = split_gravity_container(payload, &MAGIC_UNIFORM)?;
+            let header = header_object(header_bytes, "HGRAVU01")?;
+            require_header_str(&header, "schema", SCHEMA_UNIFORM, "HGRAVU01")?;
+            let bits = u8::try_from(header_u64(&header, "bits", "HGRAVU01")?)
+                .map_err(|_| Error::Model("HGRAVU01 bits do not fit u8".into()))?;
+            let group_size = header_usize(&header, "group_size", "HGRAVU01")?;
+            let shape = header_shape(&header, "shape", "HGRAVU01")?;
+            let elements = header_usize(&header, "elements", "HGRAVU01")?;
+            let (rows, cols) = matrix_rows_cols(&shape, elements, "HGRAVU01")?;
+            let body_off = 12 + header_bytes.len();
+            let layout = factor_layout_from_meta(
+                rows,
+                cols,
+                bits,
+                group_size,
+                body_off,
+                body.len(),
+                "HGRAVU01",
+            )?;
+            Ok(MixedGpuLayout {
+                rows: rows as u32,
+                cols: cols as u32,
+                kind: MixedGpuKind::Uniform(layout),
+            })
+        }
+        other => Err(Error::Model(format!("unknown mixed codec {other}"))),
+    }
+}
+
 impl MixedPackedTensor {
     pub fn from_codec_payload(codec: u8, payload: &[u8]) -> Result<Self> {
         match codec {
