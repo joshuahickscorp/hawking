@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.ascent.femtosecond_progress_q80.v1",
+  "date": "2026-08-16",
+  "metric": "fs_per_weight_served = wall_seconds / active_weights_served, an AMORTIZED THROUGHPUT figure under concurrency - never physical latency (S004 s1)",
+  "q80_active_weights_per_token": 3.563,
+  "trajectory": {
+    "morning_serial_reconstruction": {
+      "ms": 1376.3,
+      "fs": 386270,
+      "gb_s": 1.61,
+      "pct_of_ceiling": 0.39
+    },
+    "after_reconstruction_fix": {
+      "ms": 301.4,
+      "fs": 84590,
+      "gb_s": 7.36,
+      "pct_of_ceiling": 1.79
+    },
+    "current_measured": {
+      "ms": 250.7,
+      "fs": 70361,
+      "gb_s": 8.85,
+      "pct_of_ceiling": 2.15
+    },
+    "with_all_identified_work": {
+      "ms": 85.5,
+      "fs": 23996,
+      "gb_s": 25.94,
+      "pct_of_ceiling": 6.3,
+      "note": "projection, not measured - deltanet rebase pending"
+    }
+  },
+  "measured_improvement_today": 5.49,
+  "projected_with_identified_work": 16.1,
+  "floor_at_this_bpw": {
+    "active_bpw": 4.98,
+    "fs_floor_at_ceiling": 760.07,
+    "note": "152.6252 x active BPW. At 4.980 active BPW the floor is 760 fs, so even the projected 23,996 fs is 32x above it - the gap is execution, not representation."
+  },
+  "CORRECTION_CARRIED": "This morning's campaign baseline of 156,970 fs at 0.135% efficiency was itself wrong twice: the efficiency figure divided a mixed-artifact floor by a Q4 runtime (a category error), and the ceiling used was the cache-resident 535-637 GB/s reuse band rather than the honest 411.51 GB/s unique-once decode ceiling. Both corrected today; the trajectory above uses the corrected ceiling throughout.",
+  "honest_scope": "All figures DIRTY_ENGINEERING with lanes running. The metric is Q80-only; Qwen3.8 and DSV4F have their own trajectories and DSV4F is blocked by a DRAM floor above its gate."
+}
