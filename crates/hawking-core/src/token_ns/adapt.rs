@@ -1146,6 +1146,8 @@ mod tests {
                     command_buffers: 10.0,
                     dispatches: 20.0,
                     weight_bytes: 1_000.0,
+                    gpu_gap_ns: 0.0,
+                    gpu_gap_edges: 0.0,
                 },
             ),
             ranked_aggregate: Vec::new(),
