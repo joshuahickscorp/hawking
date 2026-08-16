@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.special_unit.qwen38_active_budget_measured.v1",
+  "date": "2026-08-16",
+  "source": "per-tensor bytes summed from workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1/manifest.json (755 tensors). This is MEASURED from the artifact, not derived.",
+  "by_class_bytes": {
+    "mlp": 9091161600,
+    "linear_attn": 2961704064,
+    "full_attn": 891325184,
+    "lm_head": 675430440,
+    "embed_table": 675430440,
+    "norms": 2642952
+  },
+  "active_bytes_per_token": 13622264240,
+  "embed_excluded_why": "Dense model reads every weight per token EXCEPT the embedding table, from which exactly one row is gathered.",
+  "achieved_gb_s": 406.2,
+  "pct_of_819_peak": 49.6,
+  "lane_floor_was_wrong": {
+    "lane_said_ms": 14.414,
+    "lane_said_ratio": 3.0,
+    "true_floor_ms": 16.63,
+    "true_ratio": 2.02,
+    "why": "The lane's floor excluded lm_head. Greedy argmax over a 248,320 vocabulary must read the full lm_head each token, and at 675 MB it cannot be cached. Its 1.817 GB shortfall is lm_head plus the embed table."
+  },
+  "CORRECTION_TO_MY_OWN_CLAIM": {
+    "i_claimed": "Qwen3.8 is AT the bandwidth wall with essentially no kernel headroom.",
+    "the_error": "I compared it against the 320-411 GB/s control, but that control was measured in Q80's 10-of-512 GATHER shape. A gather is near the worst case for bandwidth; Qwen3.8 reads dense and sequential, the best case. The gather control does NOT bound a dense-sequential model, so it cannot establish that Qwen3.8 is at its wall.",
+    "what_is_actually_true": "Qwen3.8 achieves 49.6% of the 819 GB/s peak. Whether that is its ceiling is UNMEASURED.",
+    "exact_missing_measurement": "A no-model DENSE SEQUENTIAL bandwidth control on this box. If it lands near peak, Qwen3.8 has ~2x kernel headroom on top of the density lever; if it lands near 406 GB/s, my original claim was right for the wrong reason."
+  },
+  "what_survives_unchanged": "The TPS projection. ms_at_target = measured_ms * (target_bpw/current_bpw) uses only measured time and the BPW ratio, so 2.0 BPW -> 15.77 ms -> 63.4 TPS regardless of ceilings. If kernel headroom does exist, 63.4 TPS is a FLOOR rather than an estimate."
+}
