@@ -290,6 +290,26 @@
       "skew": "SKEWED",
       "disposition": "NEEDS_COMPOSITION",
       "promoted": false
+    },
+    {
+      "lane": "qwen38-reuse-matrix-20260816-021330",
+      "model": "qwen38",
+      "status": "PARTIAL",
+      "next_bottleneck": "unmeasured \u2014 next cost is the Q80 dispatch locks (DeltaNet 32\u00d7128\u00d7128, GQA 16/2/\u03b8=5e6) plus pack-time fuse of split in_proj_qkv/z/a/b; no Q38 token-ns exists yet. Git commit of this receipt is blocked in-sandbox.",
+      "branch": "grok/qwen38-reuse-matrix-20260816-021330",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-subbit-capability-curve-20260816-020047",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "down_proj capability, holdout cosine 0.768 vs bar 0.8604 (not a token-ns figure; Q4 path remains ~5.59e8 ns/token on TOKEN_NS_Q80)",
+      "branch": "grok/q80-subbit-capability-curve-20260816-020047",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
     }
   ]
 }
