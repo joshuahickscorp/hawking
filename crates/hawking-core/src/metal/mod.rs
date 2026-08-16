@@ -362,6 +362,10 @@ pub const SHADER_QWEN80_DEVICE_EXPERT_TABLE: &str =
 /// DeltaNet / GQA) that sit between the already-native Q4 matvecs.
 pub const SHADER_QWEN80_DEVICE_ACTIVATIONS: &str =
     include_str!("../../shaders/qwen80_device_activations.metal");
+/// Qwen3.8 forks: rearrange with values_per_key=3 and GQA 24:4 θ=1e7.
+/// Does not change the Q80-locked kernels above.
+pub const SHADER_QWEN38_DEVICE_ACTIVATIONS: &str =
+    include_str!("../../shaders/qwen38_device_activations.metal");
 /// Exact packed uniform-Q4 + FP16 group-scale Qwen component matvec. The
 /// fixed group-64 layout is a bounded operator primitive, not a complete
 /// decoder or model TPS surface.
@@ -444,6 +448,7 @@ pub fn all_shader_sources() -> String {
     ];
     srcs.push(SHADER_DSV4F_NATIVE_TOKEN_GRAPH);
     srcs.push(SHADER_DSV4F_ACTIVATION_X_BATCH);
+    srcs.push(SHADER_QWEN38_DEVICE_ACTIVATIONS);
     // The TQ bitslice family is feature-gated: only compiled into the library
     // when `tq` is on.
     #[cfg(feature = "tq")]
@@ -1265,6 +1270,9 @@ mod imp {
             "qwen80_deltanet_gated_rmsnorm_f32" => "qwen80_deltanet_gated_rmsnorm_f32",
             "qwen80_gated_delta_decode_tg" => "qwen80_gated_delta_decode_tg",
             "qwen80_gqa_qk_norm_rope_cache_f32" => "qwen80_gqa_qk_norm_rope_cache_f32",
+            "qwen38_qkvz_rearrange_conv_l2_f32" => "qwen38_qkvz_rearrange_conv_l2_f32",
+            "qwen38_gqa_qk_norm_rope_cache_f32" => "qwen38_gqa_qk_norm_rope_cache_f32",
+            "qwen38_attention_apply_sigmoid_gate" => "qwen38_attention_apply_sigmoid_gate",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen30_expert_table_hgravs_gemv_rowblock2" => {
                 "qwen30_expert_table_hgravs_gemv_rowblock2"

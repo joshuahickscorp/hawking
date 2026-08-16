@@ -42,6 +42,12 @@ pub mod qwen30_quality_repack_diagnostic;
 /// Exact 48-layer execution schedule (mixer assignment, state slots, kernel
 /// sequences). CPU/build authority only — not an Engine dispatch.
 pub mod qwen80_48_layer_execution_schedule;
+/// Qwen3.8-27B (qwen3_5 text) geometry, pack-time in_proj fusion, and native
+/// hybrid decode. Language-only; vision is skipped.
+pub mod qwen38_geometry;
+pub mod qwen38_64_layer_execution_schedule;
+pub mod qwen38_pack;
+pub mod qwen38_hybrid_decode;
 /// Strict Qwen3-Coder-Next complete-binary hybrid catalog and native-state
 /// bootstrap.  It deliberately is not an Engine dispatch until its full token
 /// graph has real capability evidence.
