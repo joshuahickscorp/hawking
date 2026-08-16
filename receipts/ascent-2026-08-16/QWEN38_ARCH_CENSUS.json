@@ -77,5 +77,70 @@
     "resident_at_3bpw_gb": 10.12,
     "resident_at_4bpw_gb": 13.5,
     "note": "27B at 3 BPW is ~10.1 GB - comfortably resident alongside Q80's 13.4 GiB artifact on 96 GB."
+  },
+  "download": {
+    "status": "COMPLETE_VERIFIED",
+    "shards": "11/11",
+    "bytes": 54710000000,
+    "path": "workspace/campaign/records/runs/qwen38-27b/bf16",
+    "index_integrity": "1184 tensors, all mapped shards present, none missing",
+    "required_files": [
+      "config.json",
+      "model.safetensors.index.json",
+      "tokenizer.json",
+      "tokenizer_config.json",
+      "vocab.json",
+      "chat_template.jinja"
+    ]
+  },
+  "tensor_naming": {
+    "roots": {
+      "language_model": 851,
+      "vision_tower": 333
+    },
+    "distinct_patterns": 44,
+    "linear_attn_48x": [
+      "A_log",
+      "conv1d.weight",
+      "dt_bias",
+      "in_proj_a.weight",
+      "in_proj_b.weight",
+      "in_proj_qkv.weight",
+      "in_proj_z.weight",
+      "norm.weight",
+      "out_proj.weight"
+    ],
+    "full_attn_16x": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "q_norm",
+      "k_norm"
+    ],
+    "mlp_64x": [
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "vision_tower": "27 blocks: attn.qkv, attn.proj, mlp.linear_fc1/fc2, norm1/norm2 (all with biases)"
+  },
+  "DECISIVE_REUSE_FINDING": {
+    "claim": "Qwen3.8's linear_attention is the SAME gated-DeltaNet recurrence Hawking already implements for Q80.",
+    "evidence": "Q80 (Qwen3-Coder-Next) source index and Qwen3.8 index share IDENTICAL tensor names for the entire recurrence: linear_attn.A_log, linear_attn.conv1d.weight, linear_attn.dt_bias, linear_attn.norm.weight, linear_attn.out_proj.weight.",
+    "only_difference": "projection FUSION. Q80 fuses in_proj_ba (b,a) and in_proj_qkvz (q,k,v,z). Qwen3.8 SPLITS these into in_proj_a, in_proj_b, in_proj_qkv, in_proj_z. That is an ADAPTER (concat or 4-way bind), not a new implementation.",
+    "already_implemented_in": [
+      "crates/hawking-core/shaders/qwen_next.metal",
+      "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs",
+      "crates/hawking-core/src/model/qwen80_complete_runtime.rs",
+      "crates/hawking-core/src/model/qwen80_uniform_q4_hybrid_decode.rs"
+    ],
+    "consequence": "48 of 64 layers - the architecturally hardest part - are PARAMETRIC_REUSE with a projection adapter. The remaining 16 full-attention layers are standard GQA with q_norm/k_norm, and all 64 MLPs are plain dense SwiGLU. Bring-up is materially smaller than a new architecture."
+  },
+  "VISION_SKIP_DECISION": {
+    "verdict": "CLEANLY SKIPPABLE",
+    "evidence": "vision_tower.* is a separate top-level root with 333 of 1184 tensors. No text tensor references it; language_model.* is self-contained at 851 tensors.",
+    "action": "load language_model.* only for the developer unit. Saves bytes and all vision bring-up work.",
+    "note": "config has language_model_only:false, but that is a config default - the tensor graph shows the text path stands alone."
   }
 }
