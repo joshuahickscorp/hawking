@@ -1,0 +1,21 @@
+{
+  "schema": "hawking.q80.gpu_vs_host_split_now.v1",
+  "date": "2026-08-16",
+  "measured_by_controller": "3 reps under gpu_lane_lock.sh on merged main, both fields from the same runs",
+  "split": {
+    "median_wall_ms": 108.306,
+    "median_gpu_matvec_ms": 39.189,
+    "gpu_share_pct": 36.2,
+    "non_gpu_ms": 69.117,
+    "non_gpu_share_pct": 63.8,
+    "per_rep_gpu_share_pct": [
+      37.4,
+      35.1,
+      36.2
+    ]
+  },
+  "THE_INVERSION": "This morning gpu_matvec was 867 ms of a 1376 ms token - 63.0 percent, and the model was compute-dominated in appearance. Now it is 39.2 of 108.3 - 36.2 percent. HOST WORK IS AGAIN THE MAJORITY at 63.8 percent, exactly as it was before the reconstruction fix inverted it.",
+  "why_that_is_not_a_regression": "gpu_matvec fell from 867 to 39 ms in absolute terms, a 22x cut. The share rose only because the non-GPU side fell less far, and because the DeltaNet port's fused suffix CB is now ATTRIBUTED to the gpu_matvec bucket - the rebase lane flagged that explicitly as accounting rather than a matvec change.",
+  "what_it_aims_next": "69.1 ms of the 108.3 ms token is still outside gpu_matvec. The named candidates from the last decomposition were residual host_preparation ~25 ms (an autonomous lane is on it now), weight_addressing 18.6 and moe_routed 14.0 - which sum to about 58 ms and would plausibly account for most of the non-GPU side. But that table is STALE against this measurement, so those figures are indicative, not budgeted.",
+  "honest_caveat": "This is a two-field split, not a decomposition. It says how much is gpu_matvec and how much is not; it does not attribute the 69.1 ms. Only a re-run of the 14-component ledger on current main can do that, and it is the single most useful next measurement for G003."
+}
