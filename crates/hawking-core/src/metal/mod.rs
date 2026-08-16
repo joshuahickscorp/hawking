@@ -1044,11 +1044,12 @@ mod imp {
         ctx: &'a MetalContext,
         cmd: &'a CommandBufferRef,
         physical_trace: Option<PhysicalCommandIdentity>,
-        // An opt-in `MTLDispatchTypeConcurrent` encoder for a caller-proved
-        // independent wave.  It is intentionally separate from the ordinary
-        // per-dispatch and ordered-pair paths: callers must close it before a
-        // dependent dispatch can be encoded.
+        // An opt-in shared compute encoder. Concurrent waves use
+        // `begin_concurrent_group`; dependent MLA/attention chains use
+        // `begin_serial_group`. Callers must close the group before the
+        // batch closure returns.
         concurrent_encoder: Option<ComputeCommandEncoder>,
+        serial_group_active: bool,
         // One sequential compute encoder reused across dispatch_threads
         // calls in this batch. Off by default so existing one-encoder-per-
         // dispatch callers keep their previous topology.
@@ -1338,6 +1339,9 @@ mod imp {
             // source-authority probes, not Engine/HCLI runtime kernels.
             "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority" => {
                 "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority"
+            }
+            "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate" => {
+                "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate"
             }
             "deepseek_v4_p4a_sparse_attention_position0_sink_authority" => {
                 "deepseek_v4_p4a_sparse_attention_position0_sink_authority"
@@ -1863,6 +1867,7 @@ mod imp {
         fn deepseek_v4_p4a_layer0_attention_kernels_are_trace_named_and_compiled() {
             const KERNELS: &[&str] = &[
                 "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority",
+                "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate",
                 "deepseek_v4_p4a_sparse_attention_position0_sink_authority",
                 "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority",
                 "deepseek_v4_p4a_hc_attn_post_authority",
@@ -2698,6 +2703,7 @@ mod imp {
                 cmd,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
+                serial_group_active: false,
                 ordered_encoder: None,
                 ordered_encoder_enabled: false,
                 pipeline_lookup_us: 0,
@@ -2748,6 +2754,7 @@ mod imp {
                 cmd,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
+                serial_group_active: false,
                 ordered_encoder: None,
                 ordered_encoder_enabled: false,
                 pipeline_lookup_us: 0,
@@ -2833,6 +2840,7 @@ mod imp {
                 cmd: &cmd,
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
+                serial_group_active: false,
                 ordered_encoder: None,
                 ordered_encoder_enabled: false,
                 pipeline_lookup_us: 0,
@@ -2926,6 +2934,40 @@ mod imp {
             }
         }
 
+        /// Begin one ordered `MTLDispatchTypeSerial` encoder for a dependent
+        /// dispatch chain. Subsequent `dispatch_threads` calls record into
+        /// this encoder (no per-dispatch encoder create/end). Metal serial
+        /// dispatch preserves WAR/WAW by command order; this is not a
+        /// command-buffer topology change.
+        ///
+        /// Mutually exclusive with [`Self::enable_ordered_encoder`]: the
+        /// collapse path uses the sequential ordered encoder; this serial
+        /// group is the MLA A/B when collapse is off.
+        pub fn begin_serial_group(&mut self) -> Result<()> {
+            if self.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "begin_serial_group called while a group is already active".into(),
+                ));
+            }
+            self.close_ordered_encoder();
+            self.ordered_encoder_enabled = false;
+            let enc = self
+                .cmd
+                .compute_command_encoder_with_dispatch_type(MTLDispatchType::Serial);
+            if let Some(command) = self.physical_trace.as_ref() {
+                enc.set_label(&physical_encoder_label(
+                    command,
+                    "compute_encoder",
+                    "serial_group",
+                ));
+            } else {
+                enc.set_label("serial_group");
+            }
+            self.concurrent_encoder = Some(enc.to_owned());
+            self.serial_group_active = true;
+            Ok(())
+        }
+
         /// Begin one explicit `MTLDispatchTypeConcurrent` wave.
         ///
         /// This is a narrow probe surface for independently writable work
@@ -2991,7 +3033,13 @@ mod imp {
             })?;
             enc.end_encoding();
             self.compute_encoders += 1;
+            self.serial_group_active = false;
             Ok(())
+        }
+
+        /// Close an open serial group. Alias of [`Self::end_concurrent_group`].
+        pub fn end_serial_group(&mut self) -> Result<()> {
+            self.end_concurrent_group()
         }
 
         pub fn dispatch_threads(
@@ -3001,7 +3049,7 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
-            if self.concurrent_encoder.is_some() {
+            if self.concurrent_encoder.is_some() && !self.serial_group_active {
                 return Err(Error::Metal(
                     "dispatch_threads cannot run while a concurrent group is active".into(),
                 ));
@@ -3009,6 +3057,19 @@ mod imp {
             let pipeline_started = Instant::now();
             let pipe = self.ctx.pipeline(fn_name)?;
             self.pipeline_lookup_us += pipeline_started.elapsed().as_micros() as u64;
+            if self.serial_group_active {
+                let enc = self.concurrent_encoder.as_ref().ok_or_else(|| {
+                    Error::Metal("serial group marked active without an encoder".into())
+                })?;
+                enc.set_compute_pipeline_state(&pipe);
+                encode(enc);
+                enc.dispatch_threads(
+                    MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                    MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+                );
+                self.compute_dispatches += 1;
+                return Ok(());
+            }
             if self.ordered_encoder_enabled {
                 if self.ordered_encoder.is_none() {
                     let enc = self.cmd.new_compute_command_encoder();

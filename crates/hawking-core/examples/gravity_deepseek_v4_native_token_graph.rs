@@ -107,7 +107,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let greedy = report.greedy.as_ref();
     eprintln!(
-        "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} sync_points={} readbacks={} buffer_creates={} buffer_rebinds={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} hash_invocations={} admission_trust_hits={} bytes_hashed={} admission_receipt_loaded={} artifact_index_loaded={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
+        "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} sync_points={} readbacks={} buffer_creates={} buffer_rebinds={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} expert_nocopy_binds={} expert_slab_packs={} hash_invocations={} admission_trust_hits={} bytes_hashed={} admission_receipt_loaded={} artifact_index_loaded={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
         report.deepest_layer,
         report.layers_executed,
         report.wall_ms,
@@ -127,6 +127,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         report.counters.host_expert_gather,
         report.counters.host_expert_output_readback,
         report.counters.host_route_id_readback,
+        report.counters.expert_nocopy_binds,
+        report.counters.expert_slab_packs,
         report.chunk_verification.hash_invocations,
         report.chunk_verification.admission_trust_hits,
         report.chunk_verification.bytes_hashed,

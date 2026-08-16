@@ -21,6 +21,16 @@ struct Dsv4fWorklistEntry {
 
 static_assert(sizeof(Dsv4fWorklistEntry) == 16, "Dsv4fWorklistEntry ABI drift");
 
+// One selected expert's packed-FP4 projection. Host writes Metal gpuAddress
+// values (Q80 device-expert-table transfer). The kernel never walks 256
+// experts and never assumes a compact host-packed slab.
+struct Dsv4fExpertRef {
+    device const uchar* packed_weights;
+    device const uchar* weight_scales;
+};
+
+static_assert(sizeof(Dsv4fExpertRef) == 16, "Dsv4fExpertRef ABI drift");
+
 static inline float dsv4f_tg_bf16_value(ushort bits)
 {
     return as_type<float>(((uint)bits) << 16u);
@@ -144,21 +154,21 @@ kernel void dsv4f_pack_worklist(
 }
 #pragma clang fp contract(on)
 
-// One dispatch covers all six compact-slab experts. Thread owns (slot, row).
-// Device worklist supplies expert_id + slab_slot; the kernel never scans 256.
+// One dispatch covers all six selected experts. Thread owns (slot, row).
+// Device worklist supplies slab_slot; refs[slot] is that expert's gpuAddress
+// pair. Indirect buffers must also be declared via useResources.
 #pragma clang fp contract(off)
 kernel void dsv4f_worklist_fp4_matvec(
     device const Dsv4fWorklistEntry* worklist [[buffer(0)]],
-    device const uchar* packed_weights        [[buffer(1)]],
-    device const uchar* weight_scales         [[buffer(2)]],
-    device const uchar* quantized             [[buffer(3)]],
-    device const uchar* act_scales            [[buffer(4)]],
-    device       float* output                [[buffer(5)]],
-    constant uint& rows                        [[buffer(6)]],
-    constant uint& packed_cols                 [[buffer(7)]],
-    constant uint& scale_cols                  [[buffer(8)]],
-    constant uint& top_k                       [[buffer(9)]],
-    constant uint& act_is_per_slot             [[buffer(10)]],
+    device const Dsv4fExpertRef* refs         [[buffer(1)]],
+    device const uchar* quantized             [[buffer(2)]],
+    device const uchar* act_scales            [[buffer(3)]],
+    device       float* output                [[buffer(4)]],
+    constant uint& rows                        [[buffer(5)]],
+    constant uint& packed_cols                 [[buffer(6)]],
+    constant uint& scale_cols                  [[buffer(7)]],
+    constant uint& top_k                       [[buffer(8)]],
+    constant uint& act_is_per_slot             [[buffer(9)]],
     uint tid                                   [[thread_position_in_grid]])
 {
     if (top_k != DSV4F_WORKLIST_K || rows == 0u || packed_cols == 0u
@@ -170,6 +180,8 @@ kernel void dsv4f_worklist_fp4_matvec(
     if (slot >= DSV4F_WORKLIST_K) return;
     const Dsv4fWorklistEntry entry = worklist[slot];
     if (entry.ready != 1u || entry.slab_slot >= DSV4F_WORKLIST_K) return;
+    const Dsv4fExpertRef ref = refs[entry.slab_slot];
+    if (ref.packed_weights == nullptr || ref.weight_scales == nullptr) return;
 
     const uint logical_k = packed_cols * 2u;
     const ulong act_base = act_is_per_slot != 0u
@@ -178,19 +190,15 @@ kernel void dsv4f_worklist_fp4_matvec(
     const ulong act_scale_base = act_is_per_slot != 0u
         ? (ulong)entry.slab_slot * (ulong)(logical_k / DSV4F_ACT_BLOCK)
         : 0ul;
-    const ulong weight_base =
-        (ulong)entry.slab_slot * (ulong)rows * (ulong)packed_cols
-        + (ulong)row * (ulong)packed_cols;
-    const ulong scale_base =
-        (ulong)entry.slab_slot * (ulong)rows * (ulong)scale_cols
-        + (ulong)row * (ulong)scale_cols;
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
     float row_accumulator = 0.0f;
     for (uint block = 0u; block < scale_cols; ++block) {
         float block_accumulator = 0.0f;
         const uint start = block * DSV4F_FP4_BLOCK;
         for (uint offset = 0u; offset < DSV4F_FP4_BLOCK; ++offset) {
             const uint col = start + offset;
-            const uchar packed = packed_weights[weight_base + (ulong)(col >> 1u)];
+            const uchar packed = ref.packed_weights[weight_base + (ulong)(col >> 1u)];
             const float activation = dsv4f_tg_e4m3fn_value(quantized[act_base + (ulong)col]);
             const float weight = dsv4f_tg_e2m1fn_value(packed, (col & 1u) != 0u);
             block_accumulator = block_accumulator + activation * weight;
@@ -198,7 +206,7 @@ kernel void dsv4f_worklist_fp4_matvec(
         const float activation_scale = dsv4f_tg_e8m0fnu_value(
             act_scales[act_scale_base + (ulong)(block / (DSV4F_ACT_BLOCK / DSV4F_FP4_BLOCK))]);
         const float weight_scale = dsv4f_tg_e8m0fnu_value(
-            weight_scales[scale_base + (ulong)block]);
+            ref.weight_scales[scale_base + (ulong)block]);
         row_accumulator = row_accumulator
             + block_accumulator * (activation_scale * weight_scale);
     }

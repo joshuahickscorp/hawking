@@ -121,6 +121,7 @@ const CAST_KERNEL: &str = "deepseek_v4_p3a_fp32_to_bf16_authority";
 const RMSNORM_KERNEL: &str = "deepseek_v4_p3a_rmsnorm_bf16_authority";
 const PER_HEAD_RMS_KERNEL: &str = "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority";
 const KV_QAT_KERNEL: &str = "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority";
+const KV_QAT_SIMD_KERNEL: &str = "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate";
 const ATTN_KERNEL: &str = "deepseek_v4_p4a_sparse_attention_position0_sink_authority";
 const WO_A_KERNEL: &str = "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority";
 const GATE_KERNEL: &str = "deepseek_v4_p6a_gate_bf16_matvec_authority";
@@ -154,6 +155,8 @@ pub struct NativeTokenGraphCounters {
     pub total_buffer_creations: usize,
     pub total_buffer_rebinds: usize,
     pub scratch_buffer_creations: usize,
+    pub expert_nocopy_binds: usize,
+    pub expert_slab_packs: usize,
 }
 
 /// `HAWKING_DSV4F_CB_COLLAPSE=0` keeps the pre-collapse topology for paired
@@ -332,6 +335,13 @@ impl NativeTokenGraphReport {
                 "total_buffer_rebinds": self.counters.total_buffer_rebinds,
                 "scratch_buffer_creations": self.counters.scratch_buffer_creations,
                 "cb_collapse": cb_collapse_enabled(),
+                "expert_nocopy_binds": self.counters.expert_nocopy_binds,
+                "expert_slab_packs": self.counters.expert_slab_packs,
+                "expert_payload_path": if self.counters.expert_slab_packs > 0 {
+                    "compact_slab_pack"
+                } else {
+                    "device_address_table_nocopy"
+                },
             },
             "hc_bf16_sha256": self.hc_bf16_sha256,
             "greedy": self.greedy.as_ref().map(|g| serde_json::json!({
@@ -533,6 +543,45 @@ mod macos {
                 .as_str(),
             "0" | "false" | "off" | "no"
         )
+    }
+
+    fn mla_serial_group_enabled() -> bool {
+        !matches!(
+            std::env::var("HAWKING_DSV4F_MLA_SERIAL_GROUP")
+                .unwrap_or_else(|_| "1".to_owned())
+                .trim()
+                .to_ascii_lowercase()
+                .as_str(),
+            "0" | "false" | "off" | "no"
+        )
+    }
+
+    fn mla_kv_qat_simd_enabled() -> bool {
+        !matches!(
+            std::env::var("HAWKING_DSV4F_MLA_KV_QAT_SIMD")
+                .unwrap_or_else(|_| "1".to_owned())
+                .trim()
+                .to_ascii_lowercase()
+                .as_str(),
+            "0" | "false" | "off" | "no"
+        )
+    }
+
+    /// Default **off**. Set `HAWKING_DSV4F_EXPERT_SLAB_PACK=1` to restore the
+    /// host memcpy of six expert payloads into compact slabs (pre-address-table
+    /// path) for A/B. Address-table no-copy bind is the default.
+    fn expert_compact_slab_pack_enabled() -> bool {
+        match std::env::var("HAWKING_DSV4F_EXPERT_SLAB_PACK") {
+            Ok(raw) => {
+                let trimmed = raw.trim();
+                !(trimmed.is_empty()
+                    || trimmed.eq_ignore_ascii_case("0")
+                    || trimmed.eq_ignore_ascii_case("false")
+                    || trimmed.eq_ignore_ascii_case("off")
+                    || trimmed.eq_ignore_ascii_case("no"))
+            }
+            Err(_) => false,
+        }
     }
 
     static FIRST_LAYER_BIND_TIMED: AtomicBool = AtomicBool::new(false);
@@ -744,6 +793,7 @@ mod macos {
         wo_a_tg: u32,
         lm_tg: u32,
         attn_scratch_ready: bool,
+        mla_pipeline_limits: Vec<crate::gravity_deepseek_v4_token_ns_ledger::MlaPipelineLimit>,
     }
 
     impl Graph {
@@ -753,6 +803,7 @@ mod macos {
             let mut counters = NativeTokenGraphCounters::default();
             counters.scratch_buffer_creations =
                 std::mem::size_of::<Scratch>() / std::mem::size_of::<metal::Buffer>();
+            let mla_pipeline_limits = mla_pipeline_limits(&metal)?;
             Ok(Self {
                 act_tg: pipeline_tg(&metal, ACT_QUANT_SIMD_KERNEL, 256)?,
                 fp8_tg: pipeline_tg(&metal, FP8_KERNEL, 256)?,
@@ -765,6 +816,7 @@ mod macos {
                 scratch,
                 counters,
                 attn_scratch_ready: false,
+                mla_pipeline_limits,
             })
         }
 
@@ -831,6 +883,340 @@ mod macos {
             )));
         }
         Ok(preferred.min(max).max(1))
+    }
+
+    fn mla_pipeline_limits(
+        metal: &MetalContext,
+    ) -> Result<Vec<crate::gravity_deepseek_v4_token_ns_ledger::MlaPipelineLimit>> {
+        let names = [
+            ACT_QUANT_SIMD_KERNEL,
+            FP8_KERNEL,
+            CAST_KERNEL,
+            RMSNORM_KERNEL,
+            PER_HEAD_RMS_KERNEL,
+            KV_QAT_KERNEL,
+            KV_QAT_SIMD_KERNEL,
+            ATTN_KERNEL,
+            WO_A_KERNEL,
+        ];
+        let mut out = Vec::with_capacity(names.len());
+        for kernel in names {
+            let pipe = metal.pipeline(kernel)?;
+            out.push(
+                crate::gravity_deepseek_v4_token_ns_ledger::MlaPipelineLimit {
+                    kernel: kernel.to_owned(),
+                    thread_execution_width: pipe.thread_execution_width() as u64,
+                    max_total_threads_per_threadgroup: pipe.max_total_threads_per_threadgroup()
+                        as u64,
+                    static_threadgroup_memory_length: pipe.static_threadgroup_memory_length()
+                        as u64,
+                },
+            );
+        }
+        Ok(out)
+    }
+
+    fn act_quant_geometry(cols: u32, simd_tg: u32) -> (u32, u32, u32, u32) {
+        let blocks = cols / ACT_QUANT_BLOCK as u32;
+        if blocks == 0 {
+            return (0, 0, 0, 0);
+        }
+        let threads_x = simd_tg.max(ACT_QUANT_SIMD_WIDTH);
+        let threads_x = threads_x - (threads_x % ACT_QUANT_SIMD_WIDTH);
+        let simdgroups = threads_x / ACT_QUANT_SIMD_WIDTH;
+        let groups = (blocks + simdgroups - 1) / simdgroups;
+        (groups * threads_x, groups, threads_x, simdgroups)
+    }
+
+    fn occupancy_proxy(threads: u64) -> f64 {
+        (threads as f64 / 32_768.0).min(1.0)
+    }
+
+    fn mla_dispatch_specs(
+        layers: u64,
+        act_tg: u32,
+        fp8_tg: u32,
+        cast_tg: u32,
+        wo_a_tg: u32,
+    ) -> Vec<crate::gravity_deepseek_v4_token_ns_ledger::MlaDispatchSpec> {
+        use crate::gravity_deepseek_v4_token_ns_ledger::MlaDispatchSpec;
+        let spec = |name: &str,
+                    kernel: &str,
+                    threads: u64,
+                    threadgroups: u64,
+                    tptg: u64,
+                    sgs: u64,
+                    bytes_read: u64,
+                    bytes_written: u64,
+                    flops: u64| {
+            MlaDispatchSpec {
+                name: name.to_owned(),
+                kernel: kernel.to_owned(),
+                invocations_per_layer: 1,
+                invocations_per_token: layers,
+                threads,
+                threadgroups,
+                threads_per_threadgroup: tptg,
+                simdgroups_per_threadgroup: sgs,
+                bytes_read,
+                bytes_written,
+                approx_flops: flops,
+                occupancy_proxy: occupancy_proxy(threads),
+                isolated_gpu_ns_mean: None,
+                isolated_ns_per_invocation: None,
+                memory_stall_proxy_gbps: None,
+            }
+        };
+        let (aq_h_th, aq_h_tg, aq_h_tptg, aq_h_sg) =
+            act_quant_geometry(HIDDEN_SIZE as u32, act_tg);
+        let (aq_q_th, aq_q_tg, aq_q_tptg, aq_q_sg) =
+            act_quant_geometry(Q_LORA_RANK as u32, act_tg);
+        let (aq_o_th, aq_o_tg, aq_o_tptg, aq_o_sg) =
+            act_quant_geometry(WO_B_COLS as u32, act_tg);
+        let fp8_tg = fp8_tg.max(1);
+        let cast_tg = cast_tg.max(1);
+        let wo_tg = wo_a_tg.min(WO_A_ROWS as u32).max(1);
+        let qat_blocks = ((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK) as u64;
+        let kv_qat_simd = mla_kv_qat_simd_enabled();
+        let kv_qat_threads = if kv_qat_simd {
+            qat_blocks.max(1) * ACT_QUANT_SIMD_WIDTH as u64
+        } else {
+            qat_blocks.max(1)
+        };
+        let kv_qat_kernel = if kv_qat_simd {
+            KV_QAT_SIMD_KERNEL
+        } else {
+            KV_QAT_KERNEL
+        };
+        let scale_bytes = |rows: usize, cols: usize| -> u64 {
+            ((rows / ACT_QUANT_BLOCK) * (cols / ACT_QUANT_BLOCK)) as u64
+        };
+        vec![
+            spec(
+                "act_quant.hidden",
+                ACT_QUANT_SIMD_KERNEL,
+                aq_h_th as u64,
+                aq_h_tg as u64,
+                aq_h_tptg as u64,
+                aq_h_sg as u64,
+                (HIDDEN_SIZE * 2) as u64,
+                (HIDDEN_SIZE + HIDDEN_SIZE / ACT_QUANT_BLOCK) as u64,
+                (HIDDEN_SIZE * 256) as u64,
+            ),
+            spec(
+                "mla.wq_a",
+                FP8_KERNEL,
+                Q_LORA_RANK as u64,
+                ((Q_LORA_RANK as u32 + fp8_tg - 1) / fp8_tg) as u64,
+                fp8_tg.min(Q_LORA_RANK as u32) as u64,
+                (fp8_tg.min(Q_LORA_RANK as u32) / 32) as u64,
+                (Q_LORA_RANK * HIDDEN_SIZE) as u64
+                    + scale_bytes(Q_LORA_RANK, HIDDEN_SIZE)
+                    + HIDDEN_SIZE as u64
+                    + (HIDDEN_SIZE / ACT_QUANT_BLOCK) as u64,
+                (Q_LORA_RANK * 4) as u64,
+                2 * Q_LORA_RANK as u64 * HIDDEN_SIZE as u64,
+            ),
+            spec(
+                "cast.q_lora",
+                CAST_KERNEL,
+                Q_LORA_RANK as u64,
+                ((Q_LORA_RANK as u32 + cast_tg - 1) / cast_tg) as u64,
+                cast_tg.min(Q_LORA_RANK as u32) as u64,
+                (cast_tg.min(Q_LORA_RANK as u32) / 32) as u64,
+                (Q_LORA_RANK * 4) as u64,
+                (Q_LORA_RANK * 2) as u64,
+                Q_LORA_RANK as u64,
+            ),
+            spec(
+                "rmsnorm.q",
+                RMSNORM_KERNEL,
+                1,
+                1,
+                1,
+                1,
+                (Q_LORA_RANK * 4) as u64,
+                (Q_LORA_RANK * 2) as u64,
+                (Q_LORA_RANK * 3) as u64,
+            ),
+            spec(
+                "act_quant.q",
+                ACT_QUANT_SIMD_KERNEL,
+                aq_q_th as u64,
+                aq_q_tg as u64,
+                aq_q_tptg as u64,
+                aq_q_sg as u64,
+                (Q_LORA_RANK * 2) as u64,
+                (Q_LORA_RANK + Q_LORA_RANK / ACT_QUANT_BLOCK) as u64,
+                (Q_LORA_RANK * 256) as u64,
+            ),
+            spec(
+                "mla.wq_b",
+                FP8_KERNEL,
+                WQ_B_ROWS as u64,
+                ((WQ_B_ROWS as u32 + fp8_tg - 1) / fp8_tg) as u64,
+                fp8_tg.min(WQ_B_ROWS as u32) as u64,
+                (fp8_tg.min(WQ_B_ROWS as u32) / 32) as u64,
+                (WQ_B_ROWS * Q_LORA_RANK) as u64
+                    + scale_bytes(WQ_B_ROWS, Q_LORA_RANK)
+                    + Q_LORA_RANK as u64
+                    + (Q_LORA_RANK / ACT_QUANT_BLOCK) as u64,
+                (WQ_B_ROWS * 4) as u64,
+                2 * WQ_B_ROWS as u64 * Q_LORA_RANK as u64,
+            ),
+            spec(
+                "cast.wq_b",
+                CAST_KERNEL,
+                WQ_B_ROWS as u64,
+                ((WQ_B_ROWS as u32 + cast_tg - 1) / cast_tg) as u64,
+                cast_tg.min(WQ_B_ROWS as u32) as u64,
+                (cast_tg.min(WQ_B_ROWS as u32) / 32) as u64,
+                (WQ_B_ROWS * 4) as u64,
+                (WQ_B_ROWS * 2) as u64,
+                WQ_B_ROWS as u64,
+            ),
+            spec(
+                "per_head_rms",
+                PER_HEAD_RMS_KERNEL,
+                NUM_HEADS as u64,
+                1,
+                NUM_HEADS.min(64) as u64,
+                (NUM_HEADS.min(64) / 32) as u64,
+                (NUM_HEADS * HEAD_DIM * 2) as u64,
+                (NUM_HEADS * HEAD_DIM * 2) as u64,
+                (NUM_HEADS * HEAD_DIM * 3) as u64,
+            ),
+            spec(
+                "mla.wkv",
+                FP8_KERNEL,
+                WKV_ROWS as u64,
+                ((WKV_ROWS as u32 + fp8_tg - 1) / fp8_tg) as u64,
+                fp8_tg.min(WKV_ROWS as u32) as u64,
+                (fp8_tg.min(WKV_ROWS as u32) / 32).max(1) as u64,
+                (WKV_ROWS * HIDDEN_SIZE) as u64
+                    + scale_bytes(WKV_ROWS, HIDDEN_SIZE)
+                    + HIDDEN_SIZE as u64
+                    + (HIDDEN_SIZE / ACT_QUANT_BLOCK) as u64,
+                (WKV_ROWS * 4) as u64,
+                2 * WKV_ROWS as u64 * HIDDEN_SIZE as u64,
+            ),
+            spec(
+                "cast.wkv",
+                CAST_KERNEL,
+                WKV_ROWS as u64,
+                1,
+                WKV_ROWS.min(cast_tg as usize) as u64,
+                1,
+                (WKV_ROWS * 4) as u64,
+                (WKV_ROWS * 2) as u64,
+                WKV_ROWS as u64,
+            ),
+            spec(
+                "rmsnorm.kv",
+                RMSNORM_KERNEL,
+                1,
+                1,
+                1,
+                1,
+                (HEAD_DIM * 4) as u64,
+                (HEAD_DIM * 2) as u64,
+                (HEAD_DIM * 3) as u64,
+            ),
+            spec(
+                "kv_qat",
+                kv_qat_kernel,
+                kv_qat_threads,
+                1,
+                kv_qat_threads,
+                if kv_qat_simd { qat_blocks.max(1) } else { 1 },
+                (HEAD_DIM * 2) as u64,
+                (HEAD_DIM * 2 + (HEAD_DIM - ROPE_HEAD_DIM) + qat_blocks as usize) as u64,
+                ((HEAD_DIM - ROPE_HEAD_DIM) * 256) as u64,
+            ),
+            spec(
+                "attn.sparse_pos0",
+                ATTN_KERNEL,
+                NUM_HEADS as u64,
+                1,
+                NUM_HEADS.min(64) as u64,
+                (NUM_HEADS.min(64) / 32) as u64,
+                ((NUM_HEADS * HEAD_DIM + HEAD_DIM) * 2 + NUM_HEADS * 4) as u64,
+                ((NUM_HEADS * HEAD_DIM) * 2 + NUM_HEADS * 8) as u64,
+                (NUM_HEADS * HEAD_DIM * 2) as u64,
+            ),
+            spec(
+                "mla.wo_a",
+                WO_A_KERNEL,
+                WO_A_ROWS as u64,
+                ((WO_A_ROWS as u32 + wo_tg - 1) / wo_tg) as u64,
+                wo_tg as u64,
+                (wo_tg / 32) as u64,
+                (WO_A_ROWS * WO_A_COLS) as u64
+                    + scale_bytes(WO_A_ROWS, WO_A_COLS)
+                    + (NUM_HEADS * HEAD_DIM * 2) as u64,
+                (WO_A_ROWS * 2) as u64,
+                2 * WO_A_ROWS as u64 * WO_A_COLS as u64,
+            ),
+            spec(
+                "act_quant.wo",
+                ACT_QUANT_SIMD_KERNEL,
+                aq_o_th as u64,
+                aq_o_tg as u64,
+                aq_o_tptg as u64,
+                aq_o_sg as u64,
+                (WO_B_COLS * 2) as u64,
+                (WO_B_COLS + WO_B_COLS / ACT_QUANT_BLOCK) as u64,
+                (WO_B_COLS * 256) as u64,
+            ),
+            spec(
+                "mla.wo_b",
+                FP8_KERNEL,
+                WO_B_ROWS as u64,
+                ((WO_B_ROWS as u32 + fp8_tg - 1) / fp8_tg) as u64,
+                fp8_tg.min(WO_B_ROWS as u32) as u64,
+                (fp8_tg.min(WO_B_ROWS as u32) / 32) as u64,
+                (WO_B_ROWS * WO_B_COLS) as u64
+                    + scale_bytes(WO_B_ROWS, WO_B_COLS)
+                    + WO_B_COLS as u64
+                    + (WO_B_COLS / ACT_QUANT_BLOCK) as u64,
+                (WO_B_ROWS * 4) as u64,
+                2 * WO_B_ROWS as u64 * WO_B_COLS as u64,
+            ),
+            spec(
+                "cast.hidden_b",
+                CAST_KERNEL,
+                WO_B_ROWS as u64,
+                ((WO_B_ROWS as u32 + cast_tg - 1) / cast_tg) as u64,
+                cast_tg.min(WO_B_ROWS as u32) as u64,
+                (cast_tg.min(WO_B_ROWS as u32) / 32) as u64,
+                (WO_B_ROWS * 4) as u64,
+                (WO_B_ROWS * 2) as u64,
+                WO_B_ROWS as u64,
+            ),
+        ]
+    }
+
+    fn mla_kv_state(layers: u64) -> crate::gravity_deepseek_v4_token_ns_ledger::MlaKvState {
+        let kv_bf16 = (HEAD_DIM * size_of::<u16>()) as u64;
+        let qat_bytes = (HEAD_DIM - ROPE_HEAD_DIM) as u64;
+        let qat_scales = ((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK) as u64;
+        let written = kv_bf16 + qat_bytes + qat_scales;
+        let read = kv_bf16;
+        crate::gravity_deepseek_v4_token_ns_ledger::MlaKvState {
+            persistent_device_addressable: false,
+            compressed_indexer_loaded: false,
+            bos_window_only: true,
+            bytes_written_per_layer: written,
+            bytes_read_per_layer: read,
+            bytes_written_per_token: written.saturating_mul(layers),
+            bytes_read_per_token: read.saturating_mul(layers),
+            device_copies_per_token: 0,
+            host_syncs_per_token: layers,
+            host_sync_bytes_per_token: (HIDDEN_SIZE * size_of::<u16>()) as u64 * layers,
+            scratch_overwritten_per_layer: true,
+            rebuild_rebind_reallocate_per_token: true,
+            note: "BOS position-0 graph: compressed indexer is not loaded and window KV is empty. scratch.wkv / kv_qat_bytes are per-layer scratch overwritten on the next layer; they are not a device-addressable cache that survives the token. The only host sync in this region is wo_b activation readback for host MHC post (HIDDEN_SIZE bf16 / layer). A second token would rebuild latent KV from streamed WKV weights — the standing anti-pattern.".to_owned(),
+        }
     }
 
     fn set_u32(encoder: &metal::ComputeCommandEncoderRef, index: u64, value: &u32) {
@@ -981,6 +1367,51 @@ mod macos {
         })
     }
 
+    fn dispatch_kv_qat(
+        batch: &mut CommandBatch<'_>,
+        input: &metal::Buffer,
+        output: &metal::Buffer,
+        quantized: &metal::Buffer,
+        scales: &metal::Buffer,
+    ) -> Result<()> {
+        let dim = HEAD_DIM as u32;
+        let rope = ROPE_HEAD_DIM as u32;
+        let block = KV_QAT_BLOCK as u32;
+        let qat_blocks = ((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK) as u32;
+        if mla_kv_qat_simd_enabled() {
+            let threads_x = (qat_blocks.max(1) * ACT_QUANT_SIMD_WIDTH).max(ACT_QUANT_SIMD_WIDTH);
+            batch.dispatch_threads(
+                KV_QAT_SIMD_KERNEL,
+                (threads_x, 1, 1),
+                (threads_x, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(input), 0);
+                    enc.set_buffer(1, Some(output), 0);
+                    enc.set_buffer(2, Some(quantized), 0);
+                    enc.set_buffer(3, Some(scales), 0);
+                    set_u32(enc, 4, &dim);
+                    set_u32(enc, 5, &rope);
+                    set_u32(enc, 6, &block);
+                },
+            )
+        } else {
+            batch.dispatch_threads(
+                KV_QAT_KERNEL,
+                (qat_blocks.max(1), 1, 1),
+                (qat_blocks.max(1), 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(input), 0);
+                    enc.set_buffer(1, Some(output), 0);
+                    enc.set_buffer(2, Some(quantized), 0);
+                    enc.set_buffer(3, Some(scales), 0);
+                    set_u32(enc, 4, &dim);
+                    set_u32(enc, 5, &rope);
+                    set_u32(enc, 6, &block);
+                },
+            )
+        }
+    }
+
     struct Fp8Pair {
         weight: metal::Buffer,
         scale: metal::Buffer,
@@ -1031,6 +1462,109 @@ mod macos {
                 .copy_from_nonoverlapping(values.as_ptr(), values.len());
         }
         super::note_memcpy(values.len(), started.elapsed().as_nanos() as u64);
+    }
+
+    const PAGE_ALIGN: usize = 16 * 1024;
+
+    #[repr(C)]
+    #[derive(Clone, Copy)]
+    struct ExpertRef {
+        packed_weights: u64,
+        weight_scales: u64,
+    }
+
+    const _: () = assert!(size_of::<ExpertRef>() == 16);
+
+    struct ExpertAddressBind {
+        names: Vec<String>,
+        _views: Vec<DeepSeekV4VerifiedBytes>,
+        w1_refs: metal::Buffer,
+        w3_refs: metal::Buffer,
+        w2_refs: metal::Buffer,
+        w1_resources: Vec<metal::Buffer>,
+        w3_resources: Vec<metal::Buffer>,
+        w2_resources: Vec<metal::Buffer>,
+        nocopy: bool,
+    }
+
+    fn use_read_resources(enc: &metal::ComputeCommandEncoderRef, resources: &[metal::Buffer]) {
+        if resources.is_empty() {
+            return;
+        }
+        let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
+        for resource in resources {
+            refs.push(resource);
+        }
+        enc.use_resources(&refs, metal::MTLResourceUsage::Read);
+    }
+
+    fn no_copy_verified(
+        metal: &MetalContext,
+        bytes: &[u8],
+        name: &str,
+    ) -> Result<metal::Buffer> {
+        if bytes.is_empty()
+            || (bytes.as_ptr() as usize) % PAGE_ALIGN != 0
+            || bytes.len() % PAGE_ALIGN != 0
+        {
+            return Err(graph_error(format!(
+                "{name} is not a 16KiB-aligned mmap window (ptr={:p} len={}); \
+                 compact-slab pack is opt-in via HAWKING_DSV4F_EXPERT_SLAB_PACK=1",
+                bytes.as_ptr(),
+                bytes.len()
+            )));
+        }
+        bump_create();
+        let buf = metal.new_buffer_from_verified_bytes(bytes)?;
+        if buf.contents() as usize != bytes.as_ptr() as usize {
+            return Err(graph_error(format!(
+                "{name} no-copy bind copied {} bytes; refusing a silent host pack",
+                bytes.len()
+            )));
+        }
+        Ok(buf)
+    }
+
+    fn write_expert_refs(buf: &metal::Buffer, refs: &[ExpertRef; ACTIVATED_EXPERTS]) {
+        let bytes = unsafe {
+            std::slice::from_raw_parts(
+                refs.as_ptr() as *const u8,
+                ACTIVATED_EXPERTS * size_of::<ExpertRef>(),
+            )
+        };
+        write_bytes(buf, bytes);
+    }
+
+    fn dispatch_worklist_fp4(
+        batch: &mut CommandBatch<'_>,
+        worklist: &metal::Buffer,
+        refs: &metal::Buffer,
+        resources: &[metal::Buffer],
+        quant: &metal::Buffer,
+        act_scale: &metal::Buffer,
+        output: &metal::Buffer,
+        rows: u32,
+        packed_cols: u32,
+        scale_cols: u32,
+        top_k: u32,
+        act_is_per_slot: u32,
+        tg: u32,
+    ) -> Result<()> {
+        let grid = top_k * rows;
+        let tg = tg.min(rows.max(1));
+        batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(worklist), 0);
+            enc.set_buffer(1, Some(refs), 0);
+            enc.set_buffer(2, Some(quant), 0);
+            enc.set_buffer(3, Some(act_scale), 0);
+            enc.set_buffer(4, Some(output), 0);
+            set_u32(enc, 5, &rows);
+            set_u32(enc, 6, &packed_cols);
+            set_u32(enc, 7, &scale_cols);
+            set_u32(enc, 8, &top_k);
+            set_u32(enc, 9, &act_is_per_slot);
+            use_read_resources(enc, resources);
+        })
     }
 
     fn refill_fp8(
@@ -1096,13 +1630,14 @@ mod macos {
         ledger.release(&pair.name_s)
     }
 
-    fn upload_expert_slab(
+    fn bind_expert_payloads(
         graph: &Graph,
         reader: &DeepSeekV4FullStreamReader,
         ledger: &mut ResidentLedger,
         layer: &DeepSeekV4LayerSourceAnchor,
         exec: &[(u32, f32, u32)],
-    ) -> Result<Vec<String>> {
+    ) -> Result<ExpertAddressBind> {
+        let pack = expert_compact_slab_pack_enabled();
         let mut names = Vec::new();
         let mut jobs = Vec::with_capacity(ACTIVATED_EXPERTS * 6);
         for &(expert_id, _, _) in exec {
@@ -1136,28 +1671,174 @@ mod macos {
             ledger.acquire(&names[base + 3], blobs[base + 3].len())?;
             ledger.acquire(&names[base + 4], blobs[base + 4].len())?;
             ledger.acquire(&names[base + 5], blobs[base + 5].len())?;
-            write_at(&graph.scratch.w1_slab, slot * W1_PACKED, blobs[base].as_bytes());
-            write_at(
-                &graph.scratch.w1_scale_slab,
-                slot * W1_SCALES,
-                blobs[base + 1].as_bytes(),
-            );
-            write_at(&graph.scratch.w3_slab, slot * W1_PACKED, blobs[base + 2].as_bytes());
-            write_at(
-                &graph.scratch.w3_scale_slab,
-                slot * W1_SCALES,
-                blobs[base + 3].as_bytes(),
-            );
-            write_at(&graph.scratch.w2_slab, slot * W2_PACKED, blobs[base + 4].as_bytes());
-            write_at(
-                &graph.scratch.w2_scale_slab,
-                slot * W2_SCALES,
-                blobs[base + 5].as_bytes(),
-            );
         }
-        Ok(names)
+        let ref_bytes = ACTIVATED_EXPERTS * size_of::<ExpertRef>();
+        bump_create();
+        let w1_refs = graph.metal.new_buffer_checked(ref_bytes)?;
+        bump_create();
+        let w3_refs = graph.metal.new_buffer_checked(ref_bytes)?;
+        bump_create();
+        let w2_refs = graph.metal.new_buffer_checked(ref_bytes)?;
+        if pack {
+            for slot in 0..ACTIVATED_EXPERTS {
+                let base = slot * 6;
+                write_at(
+                    &graph.scratch.w1_slab,
+                    slot * W1_PACKED,
+                    blobs[base].as_bytes(),
+                );
+                write_at(
+                    &graph.scratch.w1_scale_slab,
+                    slot * W1_SCALES,
+                    blobs[base + 1].as_bytes(),
+                );
+                write_at(
+                    &graph.scratch.w3_slab,
+                    slot * W1_PACKED,
+                    blobs[base + 2].as_bytes(),
+                );
+                write_at(
+                    &graph.scratch.w3_scale_slab,
+                    slot * W1_SCALES,
+                    blobs[base + 3].as_bytes(),
+                );
+                write_at(
+                    &graph.scratch.w2_slab,
+                    slot * W2_PACKED,
+                    blobs[base + 4].as_bytes(),
+                );
+                write_at(
+                    &graph.scratch.w2_scale_slab,
+                    slot * W2_SCALES,
+                    blobs[base + 5].as_bytes(),
+                );
+            }
+            let mut w1 = [ExpertRef {
+                packed_weights: 0,
+                weight_scales: 0,
+            }; ACTIVATED_EXPERTS];
+            let mut w3 = w1;
+            let mut w2 = w1;
+            let w1_base = graph.scratch.w1_slab.gpu_address();
+            let w1s_base = graph.scratch.w1_scale_slab.gpu_address();
+            let w3_base = graph.scratch.w3_slab.gpu_address();
+            let w3s_base = graph.scratch.w3_scale_slab.gpu_address();
+            let w2_base = graph.scratch.w2_slab.gpu_address();
+            let w2s_base = graph.scratch.w2_scale_slab.gpu_address();
+            for slot in 0..ACTIVATED_EXPERTS {
+                w1[slot] = ExpertRef {
+                    packed_weights: w1_base + (slot * W1_PACKED) as u64,
+                    weight_scales: w1s_base + (slot * W1_SCALES) as u64,
+                };
+                w3[slot] = ExpertRef {
+                    packed_weights: w3_base + (slot * W1_PACKED) as u64,
+                    weight_scales: w3s_base + (slot * W1_SCALES) as u64,
+                };
+                w2[slot] = ExpertRef {
+                    packed_weights: w2_base + (slot * W2_PACKED) as u64,
+                    weight_scales: w2s_base + (slot * W2_SCALES) as u64,
+                };
+            }
+            write_expert_refs(&w1_refs, &w1);
+            write_expert_refs(&w3_refs, &w3);
+            write_expert_refs(&w2_refs, &w2);
+            Ok(ExpertAddressBind {
+                names,
+                _views: Vec::new(),
+                w1_refs,
+                w3_refs,
+                w2_refs,
+                w1_resources: vec![
+                    graph.scratch.w1_slab.clone(),
+                    graph.scratch.w1_scale_slab.clone(),
+                ],
+                w3_resources: vec![
+                    graph.scratch.w3_slab.clone(),
+                    graph.scratch.w3_scale_slab.clone(),
+                ],
+                w2_resources: vec![
+                    graph.scratch.w2_slab.clone(),
+                    graph.scratch.w2_scale_slab.clone(),
+                ],
+                nocopy: false,
+            })
+        } else {
+            for (i, blob) in blobs.iter().enumerate() {
+                if !blob.is_zero_copy() {
+                    return Err(graph_error(format!(
+                        "{} spanned chunks; no-copy expert bind requires a single mmap window",
+                        names[i]
+                    )));
+                }
+            }
+            let mut w1_w = Vec::with_capacity(ACTIVATED_EXPERTS);
+            let mut w1_s = Vec::with_capacity(ACTIVATED_EXPERTS);
+            let mut w3_w = Vec::with_capacity(ACTIVATED_EXPERTS);
+            let mut w3_s = Vec::with_capacity(ACTIVATED_EXPERTS);
+            let mut w2_w = Vec::with_capacity(ACTIVATED_EXPERTS);
+            let mut w2_s = Vec::with_capacity(ACTIVATED_EXPERTS);
+            let mut w1 = [ExpertRef {
+                packed_weights: 0,
+                weight_scales: 0,
+            }; ACTIVATED_EXPERTS];
+            let mut w3 = w1;
+            let mut w2 = w1;
+            for slot in 0..ACTIVATED_EXPERTS {
+                let base = slot * 6;
+                let bw1 = no_copy_verified(&graph.metal, blobs[base].as_bytes(), &names[base])?;
+                let bs1 =
+                    no_copy_verified(&graph.metal, blobs[base + 1].as_bytes(), &names[base + 1])?;
+                let bw3 =
+                    no_copy_verified(&graph.metal, blobs[base + 2].as_bytes(), &names[base + 2])?;
+                let bs3 =
+                    no_copy_verified(&graph.metal, blobs[base + 3].as_bytes(), &names[base + 3])?;
+                let bw2 =
+                    no_copy_verified(&graph.metal, blobs[base + 4].as_bytes(), &names[base + 4])?;
+                let bs2 =
+                    no_copy_verified(&graph.metal, blobs[base + 5].as_bytes(), &names[base + 5])?;
+                w1[slot] = ExpertRef {
+                    packed_weights: bw1.gpu_address(),
+                    weight_scales: bs1.gpu_address(),
+                };
+                w3[slot] = ExpertRef {
+                    packed_weights: bw3.gpu_address(),
+                    weight_scales: bs3.gpu_address(),
+                };
+                w2[slot] = ExpertRef {
+                    packed_weights: bw2.gpu_address(),
+                    weight_scales: bs2.gpu_address(),
+                };
+                w1_w.push(bw1);
+                w1_s.push(bs1);
+                w3_w.push(bw3);
+                w3_s.push(bs3);
+                w2_w.push(bw2);
+                w2_s.push(bs2);
+            }
+            write_expert_refs(&w1_refs, &w1);
+            write_expert_refs(&w3_refs, &w3);
+            write_expert_refs(&w2_refs, &w2);
+            let mut w1_resources = w1_w;
+            w1_resources.extend(w1_s);
+            let mut w3_resources = w3_w;
+            w3_resources.extend(w3_s);
+            let mut w2_resources = w2_w;
+            w2_resources.extend(w2_s);
+            Ok(ExpertAddressBind {
+                names,
+                _views: blobs,
+                w1_refs,
+                w3_refs,
+                w2_refs,
+                w1_resources,
+                w3_resources,
+                w2_resources,
+                nocopy: true,
+            })
+        }
     }
 
+    #[allow(dead_code)]
     fn seed_worklist(graph: &Graph, exec: &[(u32, f32, u32)]) {
         let mut entries = [WorklistEntry {
             expert_id: 0,
@@ -1213,6 +1894,18 @@ mod macos {
         let init_ms = wall.elapsed().as_millis();
         let body = Instant::now();
         let mut profiler = TokenNsCollector::new();
+        profiler.record_mla_static(
+            cb_collapse_enabled() || mla_serial_group_enabled(),
+            mla_dispatch_specs(
+                (max_layer + 1) as u64,
+                graph.act_tg,
+                graph.fp8_tg,
+                graph.cast_tg,
+                graph.wo_a_tg,
+            ),
+            mla_kv_state((max_layer + 1) as u64),
+            graph.mla_pipeline_limits.clone(),
+        );
         let mut peak_rss = peak_rss_bytes();
         let mut layers_executed = Vec::new();
         let mut stop_reason = None;
@@ -1691,8 +2384,14 @@ mod macos {
         let wo_a_tg = graph.wo_a_tg;
         let layer_idx = layer.layer;
 
+        let collapse = cb_collapse_enabled();
+        let serial = !collapse && mla_serial_group_enabled();
         let (attn_n, attn_submitted) = graph.submit(|batch, s| {
-            maybe_ordered(batch);
+            if collapse {
+                maybe_ordered(batch);
+            } else if serial {
+                batch.begin_serial_group()?;
+            }
             let mut n = 0usize;
             dispatch_act_quant(
                 batch,
@@ -1786,22 +2485,12 @@ mod macos {
             n += 1;
             dispatch_rmsnorm(batch, &s.wkv, &kv_norm_buf, &s.wkv, HEAD_DIM as u32, eps)?;
             n += 1;
-            let rope = ROPE_HEAD_DIM as u32;
-            let block = KV_QAT_BLOCK as u32;
-            let qat_blocks = ((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK) as u32;
-            batch.dispatch_threads(
-                KV_QAT_KERNEL,
-                (qat_blocks.max(1), 1, 1),
-                (qat_blocks.max(1), 1, 1),
-                |enc| {
-                    enc.set_buffer(0, Some(&s.wkv), 0);
-                    enc.set_buffer(1, Some(&s.wkv), 0);
-                    enc.set_buffer(2, Some(&s.kv_qat_bytes), 0);
-                    enc.set_buffer(3, Some(&s.kv_qat_scales), 0);
-                    set_u32(enc, 4, &dim);
-                    set_u32(enc, 5, &rope);
-                    set_u32(enc, 6, &block);
-                },
+            dispatch_kv_qat(
+                batch,
+                &s.wkv,
+                &s.wkv,
+                &s.kv_qat_bytes,
+                &s.kv_qat_scales,
             )?;
             n += 1;
             batch.dispatch_threads(ATTN_KERNEL, (heads, 1, 1), (heads.min(64), 1, 1), |enc| {
@@ -1858,6 +2547,9 @@ mod macos {
             n += 1;
             dispatch_cast(batch, &s.f32_tmp, &s.hidden_b, WO_B_ROWS as u32, cast_tg)?;
             n += 1;
+            if serial {
+                batch.end_serial_group()?;
+            }
             Ok(n)
         })?;
         let overlapped = preload_moe_io(graph, reader, layer, token_id, ledger, profiler)?;
@@ -1923,6 +2615,7 @@ mod macos {
         sh_w3: Fp8Pair,
         sh_w2: Fp8Pair,
         is_hash: bool,
+        expert_bind: Option<ExpertAddressBind>,
     }
 
     fn preload_moe_io(
@@ -2053,6 +2746,20 @@ mod macos {
                 )
             },
         )?;
+        // Hash layers know the six expert IDs from tid2eid before the route
+        // kernel. Bind those payloads while attention GPU is still running.
+        let expert_bytes =
+            (ACTIVATED_EXPERTS * (2 * W1_PACKED + W2_PACKED + 2 * W1_SCALES + W2_SCALES)) as u64;
+        let expert_bind = if let Some(ids) = hash_ids {
+            let exec = pack_worklist_host(&ids, &[1.0f32; ACTIVATED_EXPERTS])?;
+            Some(profiler.time_bytes_result(
+                "host.expert_slab_io_overlapped",
+                expert_bytes,
+                || bind_expert_payloads(graph, reader, ledger, layer, &exec),
+            )?)
+        } else {
+            None
+        };
         Ok(MoePreload {
             hc_fn,
             hc_base,
@@ -2066,6 +2773,7 @@ mod macos {
             sh_w3,
             sh_w2,
             is_hash,
+            expert_bind,
         })
     }
 
@@ -2151,6 +2859,7 @@ mod macos {
         sh_w1: &'a Fp8Pair,
         sh_w3: &'a Fp8Pair,
         sh_w2: &'a Fp8Pair,
+        experts: &'a ExpertAddressBind,
     }
 
     fn encode_moe(batch: &mut CommandBatch<'_>, s: &Scratch, p: &MoeEncode<'_>) -> Result<usize> {
@@ -2170,38 +2879,41 @@ mod macos {
         let rows_w1 = MOE_INTER_DIM as u32;
         let packed = (HIDDEN_SIZE / 2) as u32;
         let scale_cols = (HIDDEN_SIZE / FP4_BLOCK) as u32;
-        let grid_w1 = p.top_k * rows_w1;
         let tg = p.fp4_tg.min(rows_w1);
         let zero = 0u32;
         let one = 1u32;
         let shared_one = 1.0f32;
-        batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(&s.worklist), 0);
-            enc.set_buffer(1, Some(&s.w1_slab), 0);
-            enc.set_buffer(2, Some(&s.w1_scale_slab), 0);
-            enc.set_buffer(3, Some(&s.quant_ffn), 0);
-            enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
-            enc.set_buffer(5, Some(&s.expert_gate_f32), 0);
-            set_u32(enc, 6, &rows_w1);
-            set_u32(enc, 7, &packed);
-            set_u32(enc, 8, &scale_cols);
-            set_u32(enc, 9, &p.top_k);
-            set_u32(enc, 10, &zero);
-        })?;
+        dispatch_worklist_fp4(
+            batch,
+            &s.worklist,
+            &p.experts.w1_refs,
+            &p.experts.w1_resources,
+            &s.quant_ffn,
+            &s.quant_scale_ffn,
+            &s.expert_gate_f32,
+            rows_w1,
+            packed,
+            scale_cols,
+            p.top_k,
+            zero,
+            p.fp4_tg,
+        )?;
         n += 1;
-        batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(&s.worklist), 0);
-            enc.set_buffer(1, Some(&s.w3_slab), 0);
-            enc.set_buffer(2, Some(&s.w3_scale_slab), 0);
-            enc.set_buffer(3, Some(&s.quant_ffn), 0);
-            enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
-            enc.set_buffer(5, Some(&s.expert_up_f32), 0);
-            set_u32(enc, 6, &rows_w1);
-            set_u32(enc, 7, &packed);
-            set_u32(enc, 8, &scale_cols);
-            set_u32(enc, 9, &p.top_k);
-            set_u32(enc, 10, &zero);
-        })?;
+        dispatch_worklist_fp4(
+            batch,
+            &s.worklist,
+            &p.experts.w3_refs,
+            &p.experts.w3_resources,
+            &s.quant_ffn,
+            &s.quant_scale_ffn,
+            &s.expert_up_f32,
+            rows_w1,
+            packed,
+            scale_cols,
+            p.top_k,
+            zero,
+            p.fp4_tg,
+        )?;
         n += 1;
         let gate_count = p.top_k * rows_w1;
         dispatch_cast(batch, &s.expert_gate_f32, &s.expert_gate_bf16, gate_count, p.cast_tg)?;
@@ -2255,20 +2967,21 @@ mod macos {
         let packed_w2 = (MOE_INTER_DIM / 2) as u32;
         let scale_w2 = (MOE_INTER_DIM / FP4_BLOCK) as u32;
         let grid_w2 = p.top_k * rows_w2;
-        let tg2 = p.fp4_tg.min(rows_w2);
-        batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w2, 1, 1), (tg2, 1, 1), |enc| {
-            enc.set_buffer(0, Some(&s.worklist), 0);
-            enc.set_buffer(1, Some(&s.w2_slab), 0);
-            enc.set_buffer(2, Some(&s.w2_scale_slab), 0);
-            enc.set_buffer(3, Some(&s.expert_down_quant), 0);
-            enc.set_buffer(4, Some(&s.expert_down_scales), 0);
-            enc.set_buffer(5, Some(&s.expert_down_f32), 0);
-            set_u32(enc, 6, &rows_w2);
-            set_u32(enc, 7, &packed_w2);
-            set_u32(enc, 8, &scale_w2);
-            set_u32(enc, 9, &p.top_k);
-            set_u32(enc, 10, &one);
-        })?;
+        dispatch_worklist_fp4(
+            batch,
+            &s.worklist,
+            &p.experts.w2_refs,
+            &p.experts.w2_resources,
+            &s.expert_down_quant,
+            &s.expert_down_scales,
+            &s.expert_down_f32,
+            rows_w2,
+            packed_w2,
+            scale_w2,
+            p.top_k,
+            one,
+            p.fp4_tg,
+        )?;
         n += 1;
         dispatch_cast(batch, &s.expert_down_f32, &s.expert_down_bf16, grid_w2, p.cast_tg)?;
         n += 1;
@@ -2373,7 +3086,7 @@ mod macos {
         Ok(n)
     }
 
-    fn upload_experts_maybe_prefetch(
+    fn bind_experts_maybe_prefetch(
         graph: &Graph,
         reader: &DeepSeekV4FullStreamReader,
         ledger: &mut ResidentLedger,
@@ -2383,22 +3096,23 @@ mod macos {
         profiler: &mut TokenNsCollector,
         attn_prefetch: &mut Option<Vec<DeepSeekV4VerifiedBytes>>,
         expert_bytes: u64,
-    ) -> Result<Vec<String>> {
+    ) -> Result<ExpertAddressBind> {
         if let Some(next) = next_layer {
             let started = Instant::now();
-            let (names, prefetched) = std::thread::scope(|scope| -> Result<_> {
-                let expert = scope.spawn(|| upload_expert_slab(graph, reader, ledger, layer, exec));
+            let (bind, prefetched) = std::thread::scope(|scope| -> Result<_> {
+                let expert =
+                    scope.spawn(|| bind_expert_payloads(graph, reader, ledger, layer, exec));
                 let attn = scope.spawn(|| {
                     let jobs = attn_read_jobs(next);
                     par_read_views(reader, &jobs)
                 });
-                let names = expert
+                let bind = expert
                     .join()
                     .map_err(|_| graph_error("expert slab thread panicked"))??;
                 let prefetched = attn
                     .join()
                     .map_err(|_| graph_error("attn prefetch thread panicked"))??;
-                Ok((names, prefetched))
+                Ok((bind, prefetched))
             })?;
             let ns = started.elapsed().as_nanos() as u64;
             profiler.add_stage("host.expert_slab_io", ns, 1, expert_bytes);
@@ -2409,12 +3123,33 @@ mod macos {
                 prefetched.iter().map(|b| b.len() as u64).sum(),
             );
             *attn_prefetch = Some(prefetched);
-            Ok(names)
+            Ok(bind)
         } else {
             profiler.time_bytes_result("host.expert_slab_io", expert_bytes, || {
-                upload_expert_slab(graph, reader, ledger, layer, exec)
+                bind_expert_payloads(graph, reader, ledger, layer, exec)
             })
         }
+    }
+
+    fn prefetch_next_attn_only(
+        reader: &DeepSeekV4FullStreamReader,
+        next_layer: Option<&DeepSeekV4LayerSourceAnchor>,
+        profiler: &mut TokenNsCollector,
+        attn_prefetch: &mut Option<Vec<DeepSeekV4VerifiedBytes>>,
+    ) -> Result<()> {
+        if let Some(next) = next_layer {
+            let started = Instant::now();
+            let prefetched = par_read_views(reader, &attn_read_jobs(next))?;
+            let ns = started.elapsed().as_nanos() as u64;
+            profiler.add_stage(
+                "host.attn_weight_io_prefetch",
+                ns,
+                1,
+                prefetched.iter().map(|b| b.len() as u64).sum(),
+            );
+            *attn_prefetch = Some(prefetched);
+        }
+        Ok(())
     }
 
     fn fill_attn_prefetch(
@@ -2496,6 +3231,7 @@ mod macos {
             sh_w3,
             sh_w2,
             is_hash,
+            expert_bind: preloaded_experts,
         } = preload;
         let (_, _, _, post_f32, comb_f32, reduced) = profiler.time_result("host.mhc_pre", || {
             hc_attn_pre_source_algorithm(
@@ -2532,35 +3268,46 @@ mod macos {
             route_scale,
             gate_tg,
         };
-        let moe_p = MoeEncode {
-            act_tg: graph.act_tg,
-            fp8_tg: graph.fp8_tg,
-            fp4_tg: graph.fp4_tg,
-            cast_tg: graph.cast_tg,
-            top_k,
-            collapse,
-            sh_w1: &sh_w1,
-            sh_w3: &sh_w3,
-            sh_w2: &sh_w2,
-        };
         let expert_bytes = (ACTIVATED_EXPERTS
             * (2 * W1_PACKED + W2_PACKED + 2 * W1_SCALES + W2_SCALES)) as u64;
         let merge_hash = collapse && is_hash;
 
-        let expert_names = if merge_hash {
-            let ids = hash_ids.expect("hash ids");
-            let exec = pack_worklist_host(&ids, &[0.0f32; ACTIVATED_EXPERTS])?;
-            let names = upload_experts_maybe_prefetch(
-                graph,
-                reader,
-                ledger,
-                layer,
-                next_layer,
-                &exec,
-                profiler,
-                attn_prefetch,
-                expert_bytes,
-            )?;
+        let expert_bind = if merge_hash {
+            let bind = if let Some(bind) = preloaded_experts {
+                prefetch_next_attn_only(reader, next_layer, profiler, attn_prefetch)?;
+                bind
+            } else {
+                let ids = hash_ids.expect("hash ids");
+                let exec = pack_worklist_host(&ids, &[0.0f32; ACTIVATED_EXPERTS])?;
+                bind_experts_maybe_prefetch(
+                    graph,
+                    reader,
+                    ledger,
+                    layer,
+                    next_layer,
+                    &exec,
+                    profiler,
+                    attn_prefetch,
+                    expert_bytes,
+                )?
+            };
+            if bind.nocopy {
+                graph.counters.expert_nocopy_binds += 1;
+            } else {
+                graph.counters.expert_slab_packs += 1;
+            }
+            let moe_p = MoeEncode {
+                act_tg: graph.act_tg,
+                fp8_tg: graph.fp8_tg,
+                fp4_tg: graph.fp4_tg,
+                cast_tg: graph.cast_tg,
+                top_k,
+                collapse,
+                sh_w1: &sh_w1,
+                sh_w3: &sh_w3,
+                sh_w2: &sh_w2,
+                experts: &bind,
+            };
             let (n, submitted) = graph.submit(|batch, s| {
                 maybe_ordered(batch);
                 let a = encode_route(batch, s, &route_p)?;
@@ -2577,7 +3324,7 @@ mod macos {
                 profiler,
             )?;
             check_route_flags(layer_idx, &graph.scratch)?;
-            names
+            bind
         } else {
             graph.batch(
                 "route",
@@ -2608,7 +3355,7 @@ mod macos {
                 profiler.record_route_readback(
                     layer_idx,
                     route_started.elapsed().as_nanos() as u64,
-                    "execute_moe after route command buffer; blocks upload_expert_slab",
+                    "execute_moe after route command buffer; blocks bind_expert_payloads",
                     "streaming_residency_needs_six_expert_ids",
                 );
                 profiler.record_sync(
@@ -2620,18 +3367,42 @@ mod macos {
                 );
                 packed
             };
-            seed_worklist(graph, &exec);
-            let names = upload_experts_maybe_prefetch(
-                graph,
-                reader,
-                ledger,
-                layer,
-                next_layer,
-                &exec,
-                profiler,
-                attn_prefetch,
-                expert_bytes,
-            )?;
+            // Device pack_worklist already wrote slab_slot 0..5 in the same
+            // (expert_id, source_slot) order as pack_worklist_host. Do not
+            // overwrite it; the address table is indexed by that slab_slot.
+            let bind = if let Some(bind) = preloaded_experts {
+                prefetch_next_attn_only(reader, next_layer, profiler, attn_prefetch)?;
+                bind
+            } else {
+                bind_experts_maybe_prefetch(
+                    graph,
+                    reader,
+                    ledger,
+                    layer,
+                    next_layer,
+                    &exec,
+                    profiler,
+                    attn_prefetch,
+                    expert_bytes,
+                )?
+            };
+            if bind.nocopy {
+                graph.counters.expert_nocopy_binds += 1;
+            } else {
+                graph.counters.expert_slab_packs += 1;
+            }
+            let moe_p = MoeEncode {
+                act_tg: graph.act_tg,
+                fp8_tg: graph.fp8_tg,
+                fp4_tg: graph.fp4_tg,
+                cast_tg: graph.cast_tg,
+                top_k,
+                collapse,
+                sh_w1: &sh_w1,
+                sh_w3: &sh_w3,
+                sh_w2: &sh_w2,
+                experts: &bind,
+            };
             let (moe_n, moe_submitted) = graph.submit(|batch, s| {
                 maybe_ordered(batch);
                 encode_moe(batch, s, &moe_p)
@@ -2645,7 +3416,7 @@ mod macos {
                 moe_submitted,
                 profiler,
             )?;
-            names
+            bind
         };
 
         let readback_started = Instant::now();
@@ -2671,11 +3442,12 @@ mod macos {
                 tid2eid_buf.as_ref(),
                 is_hash,
                 token_u,
+                &expert_bind,
             )?;
         }
 
         // Residual readback is the layer HC handoff for host MHC, not an expert gather.
-        for name in expert_names {
+        for name in expert_bind.names {
             ledger.release(&name)?;
         }
         release_fp8(ledger, &sh_w1)?;
@@ -2941,7 +3713,12 @@ mod macos {
                 set_f32(enc, 8, &softmax_scale);
             })
         })?;
-        let _ = kv_norm;
+        probe_one(&graph.metal, profiler, "isolated.kv_qat", layer_idx, |batch| {
+            dispatch_kv_qat(batch, &s.wkv, &s.wkv, &s.kv_qat_bytes, &s.kv_qat_scales)
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.rmsnorm.kv", layer_idx, |batch| {
+            dispatch_rmsnorm(batch, &s.wkv, kv_norm, &s.wkv, HEAD_DIM as u32, RMS_NORM_EPS)
+        })?;
         Ok(())
     }
 
@@ -2957,6 +3734,7 @@ mod macos {
         tid2eid: Option<&metal::Buffer>,
         is_hash: bool,
         token_u: u32,
+        experts: &ExpertAddressBind,
     ) -> Result<()> {
         let s = &graph.scratch;
         let fp8_tg = graph.fp8_tg;
@@ -2966,8 +3744,6 @@ mod macos {
         let rows_w1 = MOE_INTER_DIM as u32;
         let packed = (HIDDEN_SIZE / 2) as u32;
         let scale_cols = (HIDDEN_SIZE / FP4_BLOCK) as u32;
-        let grid_w1 = top_k * rows_w1;
-        let tg = fp4_tg.min(rows_w1);
         let zero = 0u32;
         let one = 1u32;
         let experts_u = ROUTED_EXPERTS as u32;
@@ -3016,54 +3792,58 @@ mod macos {
             })?;
         }
         probe_one(&graph.metal, profiler, "isolated.routed.w1", layer_idx, |batch| {
-            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&s.worklist), 0);
-                enc.set_buffer(1, Some(&s.w1_slab), 0);
-                enc.set_buffer(2, Some(&s.w1_scale_slab), 0);
-                enc.set_buffer(3, Some(&s.quant_ffn), 0);
-                enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
-                enc.set_buffer(5, Some(&s.expert_gate_f32), 0);
-                set_u32(enc, 6, &rows_w1);
-                set_u32(enc, 7, &packed);
-                set_u32(enc, 8, &scale_cols);
-                set_u32(enc, 9, &top_k);
-                set_u32(enc, 10, &zero);
-            })
+            dispatch_worklist_fp4(
+                batch,
+                &s.worklist,
+                &experts.w1_refs,
+                &experts.w1_resources,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.expert_gate_f32,
+                rows_w1,
+                packed,
+                scale_cols,
+                top_k,
+                zero,
+                fp4_tg,
+            )
         })?;
         probe_one(&graph.metal, profiler, "isolated.routed.w3", layer_idx, |batch| {
-            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&s.worklist), 0);
-                enc.set_buffer(1, Some(&s.w3_slab), 0);
-                enc.set_buffer(2, Some(&s.w3_scale_slab), 0);
-                enc.set_buffer(3, Some(&s.quant_ffn), 0);
-                enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
-                enc.set_buffer(5, Some(&s.expert_up_f32), 0);
-                set_u32(enc, 6, &rows_w1);
-                set_u32(enc, 7, &packed);
-                set_u32(enc, 8, &scale_cols);
-                set_u32(enc, 9, &top_k);
-                set_u32(enc, 10, &zero);
-            })
+            dispatch_worklist_fp4(
+                batch,
+                &s.worklist,
+                &experts.w3_refs,
+                &experts.w3_resources,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.expert_up_f32,
+                rows_w1,
+                packed,
+                scale_cols,
+                top_k,
+                zero,
+                fp4_tg,
+            )
         })?;
         let rows_w2 = HIDDEN_SIZE as u32;
         let packed_w2 = (MOE_INTER_DIM / 2) as u32;
         let scale_w2 = (MOE_INTER_DIM / FP4_BLOCK) as u32;
-        let grid_w2 = top_k * rows_w2;
-        let tg2 = fp4_tg.min(rows_w2);
         probe_one(&graph.metal, profiler, "isolated.routed.w2", layer_idx, |batch| {
-            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w2, 1, 1), (tg2, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&s.worklist), 0);
-                enc.set_buffer(1, Some(&s.w2_slab), 0);
-                enc.set_buffer(2, Some(&s.w2_scale_slab), 0);
-                enc.set_buffer(3, Some(&s.expert_down_quant), 0);
-                enc.set_buffer(4, Some(&s.expert_down_scales), 0);
-                enc.set_buffer(5, Some(&s.expert_down_f32), 0);
-                set_u32(enc, 6, &rows_w2);
-                set_u32(enc, 7, &packed_w2);
-                set_u32(enc, 8, &scale_w2);
-                set_u32(enc, 9, &top_k);
-                set_u32(enc, 10, &one);
-            })
+            dispatch_worklist_fp4(
+                batch,
+                &s.worklist,
+                &experts.w2_refs,
+                &experts.w2_resources,
+                &s.expert_down_quant,
+                &s.expert_down_scales,
+                &s.expert_down_f32,
+                rows_w2,
+                packed_w2,
+                scale_w2,
+                top_k,
+                one,
+                fp4_tg,
+            )
         })?;
         probe_one(&graph.metal, profiler, "isolated.shared.w1", layer_idx, |batch| {
             dispatch_fp8(
@@ -3191,6 +3971,14 @@ mod tests {
         // The function reads the process env; just prove it returns a bool
         // without panicking. Paired A/B sets the var explicitly.
         let _ = cb_collapse_enabled();
+    }
+
+    #[test]
+    fn expert_payload_counters_default_to_zero() {
+        let counters = NativeTokenGraphCounters::default();
+        assert_eq!(counters.expert_nocopy_binds, 0);
+        assert_eq!(counters.expert_slab_packs, 0);
+        assert_eq!(counters.total_sync_points, 0);
     }
 
     #[cfg(target_os = "macos")]

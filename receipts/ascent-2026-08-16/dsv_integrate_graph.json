@@ -1,0 +1,104 @@
+{
+  "schema": "hawking.ascent.dsv_integrate_graph.v1",
+  "lane": "dsv-integrate-graph",
+  "date": "2026-08-16",
+  "status": "SHIPPED",
+  "timing_label": "DIRTY_ENGINEERING",
+  "note": "Hand-composed grok/dsv-expert-20260816-003212 (858894e3) and grok/dsv-mla-20260816-003211 (1983ec3b) onto main after dsv-cb-collapse. No wholesale file copy. No-copy address-table bind lives inside the collapsed single-encoder-per-CB topology. MLA serial-group is the collapse-off A/B; default collapse uses enable_ordered_encoder. Simdgroup KV QAT is default on.",
+  "sources": {
+    "main_at_start": "6200f315",
+    "cb_collapse": "already on main (e148070f / 84f3ae27)",
+    "expert": "858894e3",
+    "mla": "1983ec3b"
+  },
+  "env_escapes": {
+    "HAWKING_DSV4F_CB_COLLAPSE": "default on; 0 restores pre-collapse multi-encoder topology",
+    "HAWKING_DSV4F_EXPERT_SLAB_PACK": "default off; 1 restores host compact-slab pack",
+    "HAWKING_DSV4F_MLA_KV_QAT_SIMD": "default on; 0 uses one-thread-per-block authority QAT",
+    "HAWKING_DSV4F_MLA_SERIAL_GROUP": "default on; used only when collapse is off"
+  },
+  "four_combinations_executed": {
+    "defaults_collapse_on_nocopy": "correctness_defaults + pair*_nocopy; 43/43 nocopy, collapse=true, cbs=134",
+    "collapse_off_nocopy": "smoke_collapse0_l0; collapse=false, nocopy=1, cbs=3",
+    "collapse_on_pack": "pair*_pack + smoke_pack_l0; packs=43/1, collapse=true",
+    "collapse_off_pack": "smoke_both_off_l0; collapse=false, packs=1, cbs=3"
+  },
+  "correctness": {
+    "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "hc_sha_match": true,
+    "greedy_token": 5,
+    "greedy_logit": 16.7818546295166,
+    "logit_delta": 0.0,
+    "logit_gate": 0.05,
+    "fallbacks": 0,
+    "expert_nocopy_binds": 43,
+    "expert_slab_packs": 0,
+    "expert_payload_path": "device_address_table_nocopy",
+    "layers_executed": 43,
+    "bit_identical_on_all_warm_full_token_runs": true
+  },
+  "cold_first_touch": {
+    "label": "DIRTY_ENGINEERING",
+    "run": "integrate/correctness_defaults.json",
+    "body_ms": 7075,
+    "expert_slab_io_ms": 2606.05,
+    "attn_gpu_ms": 208.787,
+    "metal_gpu_ms": 497.782,
+    "note": "page-cache confounded; not used as the result number"
+  },
+  "paired_ab_same_binary_pack_vs_nocopy": {
+    "method": "GPU-locked via ./tools/gpu_lane_lock.sh dsv-integrate-graph; 3 alternating pairs pack then nocopy; collapse default on; KERNEL_PROBE=0; VERIFY=admission",
+    "label": "DIRTY_ENGINEERING",
+    "pack_body_ms": [1029, 937, 995],
+    "nocopy_body_ms": [829, 816, 880],
+    "pack_expert_slab_io_ms": [472.80, 403.56, 450.44],
+    "nocopy_expert_slab_io_ms": [239.43, 230.01, 271.61],
+    "pack_attn_gpu_ms": [127.154, 127.261, 126.945],
+    "nocopy_attn_gpu_ms": [127.236, 132.136, 129.521],
+    "pack_median_body_ns": 995810500,
+    "nocopy_median_body_ns": 829958833,
+    "pack_median_expert_slab_io_ns": 450441958,
+    "nocopy_median_expert_slab_io_ns": 239426001,
+    "flipped_pairs": 0,
+    "win_survived": true,
+    "note": "Prior expert lane measured pack 481 -> nocopy 262 ms expert_slab_io. Integrated warm median 450.4 -> 239.4 ms. One nocopy slab (271.6 ms) is above 262; report it, do not hide it. No pair flipped."
+  },
+  "attention_gpu": {
+    "authority": "sum of attn CB GPUEndTime-GPUStartTime after wait",
+    "warm_spread_ms": [126.945, 127.154, 127.236, 127.261, 129.521, 132.136],
+    "warm_median_ms": 127.236,
+    "mla_lane_prior_B_ms": [127.84, 161.74, 168.68],
+    "encoders_per_attn_cb": 1,
+    "limit_class": "occupancy",
+    "realized_gbps_warm": [36.4, 35.1, 36.5]
+  },
+  "result": {
+    "baseline_ns_per_token": 995810500,
+    "baseline_source": "same-binary compact-slab pack median body, DIRTY_ENGINEERING",
+    "result_ns_per_token": 829958833,
+    "result_source": "same-binary no-copy median body, DIRTY_ENGINEERING",
+    "attn_gpu_ns_warm_median": 127236000,
+    "expert_slab_io_ns_warm_median": 239426001
+  },
+  "next_bottleneck": {
+    "what": "host file-source reads after the pack memcpy is gone: host.attn_weight_io_prefetch + leftover host.expert_slab_io (40 learned-layer mmap binds, not write_at). host.memcpy of FP8/attn fills is the next sibling. GPU 302 ms is not the wall.",
+    "measured_ns": 252900000,
+    "measured_stage": "host.attn_weight_io_prefetch on pair1_nocopy (239426001 ns leftover expert_slab_io; 232630000 ns host.memcpy)",
+    "diagnosis": "io_bound"
+  },
+  "incompatibility": "none. Address-table bind is expressed inside encode_moe under maybe_ordered. Collapse act_quant batching kept. Hash layers still preload during attention GPU then share the route+moe CB.",
+  "binary": "workspace/ops/build/rust/release-fast/examples/gravity_deepseek_v4_native_token_graph",
+  "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+  "evidence_files": [
+    "receipts/ascent-2026-08-16/integrate/correctness_defaults.json",
+    "receipts/ascent-2026-08-16/integrate/pair1_pack.json",
+    "receipts/ascent-2026-08-16/integrate/pair1_nocopy.json",
+    "receipts/ascent-2026-08-16/integrate/pair2_pack.json",
+    "receipts/ascent-2026-08-16/integrate/pair2_nocopy.json",
+    "receipts/ascent-2026-08-16/integrate/pair3_pack.json",
+    "receipts/ascent-2026-08-16/integrate/pair3_nocopy.json",
+    "receipts/ascent-2026-08-16/integrate/smoke_collapse0_l0.json",
+    "receipts/ascent-2026-08-16/integrate/smoke_pack_l0.json",
+    "receipts/ascent-2026-08-16/integrate/smoke_both_off_l0.json"
+  ]
+}
