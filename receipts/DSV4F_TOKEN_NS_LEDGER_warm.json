@@ -1,0 +1,3392 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.token_ns_ledger.v1",
+  "body_ns": 3425250417,
+  "init_ns": 175000000,
+  "wall_ns": 3601050625,
+  "verify_ns": 1790030530,
+  "diagnosis": "io_bound",
+  "diagnosis_proof": "host_exclusive=1187699417ns (34.7% of body) verify_ns=1790030530 (52.3%); metal_gpu=2082931000ns (60.8%) metal_wait=2230012000ns (65.1%). Weight streaming / host memcpy / MHC sit outside GPU occupancy.",
+  "stages": [
+    {
+      "name": "metal.wait",
+      "ns": 2230012000,
+      "ns_per_token": 2230012000,
+      "pct_body": 65.10507929382729,
+      "calls": 137,
+      "calls_per_token": 137,
+      "bytes": 0
+    },
+    {
+      "name": "metal.gpu",
+      "ns": 2082931000,
+      "ns_per_token": 2082931000,
+      "pct_body": 60.81105748245793,
+      "calls": 137,
+      "calls_per_token": 137,
+      "bytes": 0
+    },
+    {
+      "name": "host.expert_slab_io",
+      "ns": 253541127,
+      "ns_per_token": 253541127,
+      "pct_body": 7.4021194404251345,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 3449290752
+    },
+    {
+      "name": "host.attn_weight_io",
+      "ns": 224265459,
+      "ns_per_token": 224265459,
+      "pct_body": 6.547417902263115,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 4667468196
+    },
+    {
+      "name": "host.mla.wq_b_upload",
+      "ns": 118681624,
+      "ns_per_token": 118681624,
+      "pct_body": 3.464903570581771,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 1442928640
+    },
+    {
+      "name": "host.mla.wo_a_upload",
+      "ns": 114960750,
+      "ns_per_token": 114960750,
+      "pct_body": 3.3562728561226827,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 1442928640
+    },
+    {
+      "name": "host.mla.wo_b_upload",
+      "ns": 114529373,
+      "ns_per_token": 114529373,
+      "pct_body": 3.343678828023043,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 1442928640
+    },
+    {
+      "name": "host.shared.w1_io",
+      "ns": 65850579,
+      "ns_per_token": 65850579,
+      "pct_body": 1.9225040795024593,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 360710144
+    },
+    {
+      "name": "host.shared.w3_io",
+      "ns": 61692582,
+      "ns_per_token": 61692582,
+      "pct_body": 1.8011115827856272,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 360710144
+    },
+    {
+      "name": "host.shared.w2_io",
+      "ns": 61556745,
+      "ns_per_token": 61556745,
+      "pct_body": 1.797145828943928,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 360710144
+    },
+    {
+      "name": "host.lm_head_io",
+      "ns": 37290667,
+      "ns_per_token": 37290667,
+      "pct_body": 1.0886989989088438,
+      "calls": 1,
+      "calls_per_token": 1,
+      "bytes": 1059061760
+    },
+    {
+      "name": "host.mhc_pre",
+      "ns": 27757787,
+      "ns_per_token": 27757787,
+      "pct_body": 0.8103870847583639,
+      "calls": 86,
+      "calls_per_token": 86,
+      "bytes": 0
+    },
+    {
+      "name": "host.lm_head_upload",
+      "ns": 23710959,
+      "ns_per_token": 23710959,
+      "pct_body": 0.6922401609622226,
+      "calls": 8,
+      "calls_per_token": 8,
+      "bytes": 1059061760
+    },
+    {
+      "name": "host.moe_control_io",
+      "ns": 23161710,
+      "ns_per_token": 23161710,
+      "pct_body": 0.6762048662207345,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 158208548
+    },
+    {
+      "name": "host.mla.wq_a_upload",
+      "ns": 17583750,
+      "ns_per_token": 17583750,
+      "pct_body": 0.5133566267952081,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 180366080
+    },
+    {
+      "name": "host.mla.wkv_upload",
+      "ns": 8204878,
+      "ns_per_token": 8204878,
+      "pct_body": 0.2395409678450964,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 90183040
+    },
+    {
+      "name": "host.router.gate_upload",
+      "ns": 7596625,
+      "ns_per_token": 7596625,
+      "pct_body": 0.2217830545263751,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 90177536
+    },
+    {
+      "name": "metal.encode",
+      "ns": 6182000,
+      "ns_per_token": 6182000,
+      "pct_body": 0.18048315443793142,
+      "calls": 137,
+      "calls_per_token": 137,
+      "bytes": 0
+    },
+    {
+      "name": "host.mhc_post",
+      "ns": 3123422,
+      "ns_per_token": 3123422,
+      "pct_body": 0.09118813574908324,
+      "calls": 86,
+      "calls_per_token": 86,
+      "bytes": 0
+    },
+    {
+      "name": "metal.submit",
+      "ns": 1167000,
+      "ns_per_token": 1167000,
+      "pct_body": 0.03407050165465318,
+      "calls": 137,
+      "calls_per_token": 137,
+      "bytes": 0
+    },
+    {
+      "name": "host.rmsnorm",
+      "ns": 783917,
+      "ns_per_token": 783917,
+      "pct_body": 0.022886414263591053,
+      "calls": 86,
+      "calls_per_token": 86,
+      "bytes": 0
+    },
+    {
+      "name": "host.lm_head.mhc_merge",
+      "ns": 532208,
+      "ns_per_token": 532208,
+      "pct_body": 0.015537783671482142,
+      "calls": 1,
+      "calls_per_token": 1,
+      "bytes": 0
+    },
+    {
+      "name": "host.embed_io",
+      "ns": 142250,
+      "ns_per_token": 142250,
+      "pct_body": 0.004152981028598471,
+      "calls": 1,
+      "calls_per_token": 1,
+      "bytes": 0
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "ns": 62586,
+      "ns_per_token": 62586,
+      "pct_body": 0.001827194872800449,
+      "calls": 40,
+      "calls_per_token": 40,
+      "bytes": 1920
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "ns": 58962,
+      "ns_per_token": 58962,
+      "pct_body": 0.0017213923895129913,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 352256
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "ns": 57707,
+      "ns_per_token": 57707,
+      "pct_body": 0.0016847527326350224,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 352256
+    },
+    {
+      "name": "host.route_id_readback",
+      "ns": 34334,
+      "ns_per_token": 34334,
+      "pct_body": 0.0010023792663332153,
+      "calls": 40,
+      "calls_per_token": 40,
+      "bytes": 960
+    },
+    {
+      "name": "host.lm_head_readback",
+      "ns": 27666,
+      "ns_per_token": 27666,
+      "pct_body": 0.0008077073682756083,
+      "calls": 8,
+      "calls_per_token": 8,
+      "bytes": 517120
+    },
+    {
+      "name": "host.mla.wkv_bytes",
+      "ns": 0,
+      "ns_per_token": 0,
+      "pct_body": 0.0,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 90177536
+    },
+    {
+      "name": "host.mla.wo_a_bytes",
+      "ns": 0,
+      "ns_per_token": 0,
+      "pct_body": 0.0,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 1442840576
+    },
+    {
+      "name": "host.mla.wo_b_bytes",
+      "ns": 0,
+      "ns_per_token": 0,
+      "pct_body": 0.0,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 1442840576
+    },
+    {
+      "name": "host.mla.wq_a_bytes",
+      "ns": 0,
+      "ns_per_token": 0,
+      "pct_body": 0.0,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 180355072
+    },
+    {
+      "name": "host.mla.wq_b_bytes",
+      "ns": 0,
+      "ns_per_token": 0,
+      "pct_body": 0.0,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 1442840576
+    }
+  ],
+  "operator_classes": [
+    {
+      "name": "mla",
+      "ns": 373960375,
+      "ns_per_token": 373960375,
+      "pct_body": 10.917752849367801,
+      "calls": 430,
+      "calls_per_token": 430,
+      "bytes": 9198389376
+    },
+    {
+      "name": "routed_experts",
+      "ns": 253541127,
+      "ns_per_token": 253541127,
+      "pct_body": 7.4021194404251345,
+      "calls": 43,
+      "calls_per_token": 43,
+      "bytes": 3449290752
+    },
+    {
+      "name": "shared_expert",
+      "ns": 189099906,
+      "ns_per_token": 189099906,
+      "pct_body": 5.520761491232014,
+      "calls": 129,
+      "calls_per_token": 129,
+      "bytes": 1082130432
+    },
+    {
+      "name": "lm_head",
+      "ns": 61561500,
+      "ns_per_token": 61561500,
+      "pct_body": 1.7972846509108242,
+      "calls": 18,
+      "calls_per_token": 18,
+      "bytes": 2118640640
+    },
+    {
+      "name": "mhc_host",
+      "ns": 30881209,
+      "ns_per_token": 30881209,
+      "pct_body": 0.9015752205074471,
+      "calls": 172,
+      "calls_per_token": 172,
+      "bytes": 0
+    },
+    {
+      "name": "router_gate",
+      "ns": 7693545,
+      "ns_per_token": 7693545,
+      "pct_body": 0.22461262866550874,
+      "calls": 123,
+      "calls_per_token": 123,
+      "bytes": 90180416
+    },
+    {
+      "name": "norms",
+      "ns": 783917,
+      "ns_per_token": 783917,
+      "pct_body": 0.022886414263591053,
+      "calls": 86,
+      "calls_per_token": 86,
+      "bytes": 0
+    }
+  ],
+  "command_buffers": [
+    {
+      "name": "attn",
+      "layer": 0,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 475000,
+      "submit_ns": 29000,
+      "wait_ns": 22221000,
+      "host_wall_ns": 22729000,
+      "gpu_ns": 14619000,
+      "cpu_minus_gpu_ns": 7602000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 0,
+      "force": "host_pack_valid_and_hash_weight_readback",
+      "encode_ns": 176000,
+      "submit_ns": 7000,
+      "wait_ns": 1068000,
+      "host_wall_ns": 1252000,
+      "gpu_ns": 429000,
+      "cpu_minus_gpu_ns": 639000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 0,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 242000,
+      "submit_ns": 8000,
+      "wait_ns": 31144000,
+      "host_wall_ns": 31396000,
+      "gpu_ns": 29656000,
+      "cpu_minus_gpu_ns": 1488000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 1,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 11000,
+      "wait_ns": 16345000,
+      "host_wall_ns": 16405000,
+      "gpu_ns": 14587000,
+      "cpu_minus_gpu_ns": 1758000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 1,
+      "force": "host_pack_valid_and_hash_weight_readback",
+      "encode_ns": 23000,
+      "submit_ns": 6000,
+      "wait_ns": 1028000,
+      "host_wall_ns": 1058000,
+      "gpu_ns": 430000,
+      "cpu_minus_gpu_ns": 598000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 1,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 40000,
+      "submit_ns": 7000,
+      "wait_ns": 30226000,
+      "host_wall_ns": 30274000,
+      "gpu_ns": 29807000,
+      "cpu_minus_gpu_ns": 419000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 2,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 54000,
+      "submit_ns": 12000,
+      "wait_ns": 15758000,
+      "host_wall_ns": 15826000,
+      "gpu_ns": 14541000,
+      "cpu_minus_gpu_ns": 1217000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 2,
+      "force": "host_pack_valid_and_hash_weight_readback",
+      "encode_ns": 25000,
+      "submit_ns": 8000,
+      "wait_ns": 954000,
+      "host_wall_ns": 988000,
+      "gpu_ns": 443000,
+      "cpu_minus_gpu_ns": 511000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 2,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 9000,
+      "wait_ns": 30888000,
+      "host_wall_ns": 30947000,
+      "gpu_ns": 29910000,
+      "cpu_minus_gpu_ns": 978000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 3,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 50000,
+      "submit_ns": 12000,
+      "wait_ns": 16224000,
+      "host_wall_ns": 16287000,
+      "gpu_ns": 14554000,
+      "cpu_minus_gpu_ns": 1670000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 3,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 153000,
+      "submit_ns": 6000,
+      "wait_ns": 1469000,
+      "host_wall_ns": 1629000,
+      "gpu_ns": 916000,
+      "cpu_minus_gpu_ns": 553000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 3,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 8000,
+      "wait_ns": 30349000,
+      "host_wall_ns": 30407000,
+      "gpu_ns": 29815000,
+      "cpu_minus_gpu_ns": 534000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 4,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 11000,
+      "wait_ns": 15835000,
+      "host_wall_ns": 15895000,
+      "gpu_ns": 14535000,
+      "cpu_minus_gpu_ns": 1300000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 4,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 31000,
+      "submit_ns": 14000,
+      "wait_ns": 1756000,
+      "host_wall_ns": 1802000,
+      "gpu_ns": 925000,
+      "cpu_minus_gpu_ns": 831000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 4,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 10000,
+      "wait_ns": 30681000,
+      "host_wall_ns": 30742000,
+      "gpu_ns": 29924000,
+      "cpu_minus_gpu_ns": 757000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 5,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 42000,
+      "submit_ns": 10000,
+      "wait_ns": 16392000,
+      "host_wall_ns": 16445000,
+      "gpu_ns": 14542000,
+      "cpu_minus_gpu_ns": 1850000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 5,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 21000,
+      "submit_ns": 5000,
+      "wait_ns": 1513000,
+      "host_wall_ns": 1540000,
+      "gpu_ns": 919000,
+      "cpu_minus_gpu_ns": 594000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 5,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 44000,
+      "submit_ns": 7000,
+      "wait_ns": 30173000,
+      "host_wall_ns": 30225000,
+      "gpu_ns": 29651000,
+      "cpu_minus_gpu_ns": 522000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 6,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 43000,
+      "submit_ns": 9000,
+      "wait_ns": 16119000,
+      "host_wall_ns": 16172000,
+      "gpu_ns": 14533000,
+      "cpu_minus_gpu_ns": 1586000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 6,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 25000,
+      "submit_ns": 8000,
+      "wait_ns": 1514000,
+      "host_wall_ns": 1549000,
+      "gpu_ns": 904000,
+      "cpu_minus_gpu_ns": 610000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 6,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 44000,
+      "submit_ns": 7000,
+      "wait_ns": 30048000,
+      "host_wall_ns": 30100000,
+      "gpu_ns": 29527000,
+      "cpu_minus_gpu_ns": 521000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 7,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 10000,
+      "wait_ns": 16153000,
+      "host_wall_ns": 16210000,
+      "gpu_ns": 14559000,
+      "cpu_minus_gpu_ns": 1594000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 7,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 28000,
+      "submit_ns": 8000,
+      "wait_ns": 1572000,
+      "host_wall_ns": 1610000,
+      "gpu_ns": 902000,
+      "cpu_minus_gpu_ns": 670000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 7,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 8000,
+      "wait_ns": 30429000,
+      "host_wall_ns": 30484000,
+      "gpu_ns": 29638000,
+      "cpu_minus_gpu_ns": 791000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 8,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 43000,
+      "submit_ns": 11000,
+      "wait_ns": 16311000,
+      "host_wall_ns": 16366000,
+      "gpu_ns": 14591000,
+      "cpu_minus_gpu_ns": 1720000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 8,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 25000,
+      "submit_ns": 7000,
+      "wait_ns": 1493000,
+      "host_wall_ns": 1527000,
+      "gpu_ns": 903000,
+      "cpu_minus_gpu_ns": 590000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 8,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 8000,
+      "wait_ns": 31058000,
+      "host_wall_ns": 31114000,
+      "gpu_ns": 29919000,
+      "cpu_minus_gpu_ns": 1139000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 9,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 53000,
+      "submit_ns": 10000,
+      "wait_ns": 15894000,
+      "host_wall_ns": 15958000,
+      "gpu_ns": 14500000,
+      "cpu_minus_gpu_ns": 1394000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 9,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 27000,
+      "submit_ns": 7000,
+      "wait_ns": 1470000,
+      "host_wall_ns": 1505000,
+      "gpu_ns": 908000,
+      "cpu_minus_gpu_ns": 562000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 9,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 50000,
+      "submit_ns": 9000,
+      "wait_ns": 30499000,
+      "host_wall_ns": 30560000,
+      "gpu_ns": 29671000,
+      "cpu_minus_gpu_ns": 828000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 10,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 40000,
+      "submit_ns": 8000,
+      "wait_ns": 16343000,
+      "host_wall_ns": 16392000,
+      "gpu_ns": 14591000,
+      "cpu_minus_gpu_ns": 1752000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 10,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 15000,
+      "submit_ns": 4000,
+      "wait_ns": 1496000,
+      "host_wall_ns": 1517000,
+      "gpu_ns": 922000,
+      "cpu_minus_gpu_ns": 574000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 10,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 12000,
+      "wait_ns": 30526000,
+      "host_wall_ns": 30587000,
+      "gpu_ns": 29708000,
+      "cpu_minus_gpu_ns": 818000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 11,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 54000,
+      "submit_ns": 11000,
+      "wait_ns": 16130000,
+      "host_wall_ns": 16197000,
+      "gpu_ns": 14551000,
+      "cpu_minus_gpu_ns": 1579000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 11,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 24000,
+      "submit_ns": 7000,
+      "wait_ns": 1532000,
+      "host_wall_ns": 1565000,
+      "gpu_ns": 905000,
+      "cpu_minus_gpu_ns": 627000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 11,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 7000,
+      "wait_ns": 30268000,
+      "host_wall_ns": 30324000,
+      "gpu_ns": 29836000,
+      "cpu_minus_gpu_ns": 432000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 12,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 10000,
+      "wait_ns": 16165000,
+      "host_wall_ns": 16225000,
+      "gpu_ns": 14542000,
+      "cpu_minus_gpu_ns": 1623000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 12,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 22000,
+      "submit_ns": 7000,
+      "wait_ns": 2212000,
+      "host_wall_ns": 2242000,
+      "gpu_ns": 899000,
+      "cpu_minus_gpu_ns": 1313000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 12,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 50000,
+      "submit_ns": 10000,
+      "wait_ns": 30472000,
+      "host_wall_ns": 30534000,
+      "gpu_ns": 29923000,
+      "cpu_minus_gpu_ns": 549000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 13,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 11000,
+      "wait_ns": 16306000,
+      "host_wall_ns": 16368000,
+      "gpu_ns": 14556000,
+      "cpu_minus_gpu_ns": 1750000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 13,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 24000,
+      "submit_ns": 6000,
+      "wait_ns": 1554000,
+      "host_wall_ns": 1586000,
+      "gpu_ns": 921000,
+      "cpu_minus_gpu_ns": 633000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 13,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 55000,
+      "submit_ns": 8000,
+      "wait_ns": 30828000,
+      "host_wall_ns": 30893000,
+      "gpu_ns": 29471000,
+      "cpu_minus_gpu_ns": 1357000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 14,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 40000,
+      "submit_ns": 9000,
+      "wait_ns": 16763000,
+      "host_wall_ns": 16813000,
+      "gpu_ns": 14564000,
+      "cpu_minus_gpu_ns": 2199000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 14,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 23000,
+      "submit_ns": 5000,
+      "wait_ns": 2184000,
+      "host_wall_ns": 2213000,
+      "gpu_ns": 917000,
+      "cpu_minus_gpu_ns": 1267000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 14,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 8000,
+      "wait_ns": 30989000,
+      "host_wall_ns": 31045000,
+      "gpu_ns": 29610000,
+      "cpu_minus_gpu_ns": 1379000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 15,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 9000,
+      "wait_ns": 16316000,
+      "host_wall_ns": 16375000,
+      "gpu_ns": 14496000,
+      "cpu_minus_gpu_ns": 1820000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 15,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 25000,
+      "submit_ns": 6000,
+      "wait_ns": 1518000,
+      "host_wall_ns": 1550000,
+      "gpu_ns": 903000,
+      "cpu_minus_gpu_ns": 615000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 15,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 7000,
+      "wait_ns": 30421000,
+      "host_wall_ns": 30477000,
+      "gpu_ns": 29968000,
+      "cpu_minus_gpu_ns": 453000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 16,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 83000,
+      "submit_ns": 9000,
+      "wait_ns": 16635000,
+      "host_wall_ns": 16728000,
+      "gpu_ns": 14572000,
+      "cpu_minus_gpu_ns": 2063000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 16,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 23000,
+      "submit_ns": 6000,
+      "wait_ns": 1468000,
+      "host_wall_ns": 1498000,
+      "gpu_ns": 922000,
+      "cpu_minus_gpu_ns": 546000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 16,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 12000,
+      "wait_ns": 30938000,
+      "host_wall_ns": 30997000,
+      "gpu_ns": 29783000,
+      "cpu_minus_gpu_ns": 1155000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 17,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 42000,
+      "submit_ns": 10000,
+      "wait_ns": 16260000,
+      "host_wall_ns": 16313000,
+      "gpu_ns": 14433000,
+      "cpu_minus_gpu_ns": 1827000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 17,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 23000,
+      "submit_ns": 6000,
+      "wait_ns": 1528000,
+      "host_wall_ns": 1559000,
+      "gpu_ns": 919000,
+      "cpu_minus_gpu_ns": 609000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 17,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 7000,
+      "wait_ns": 30438000,
+      "host_wall_ns": 30492000,
+      "gpu_ns": 29457000,
+      "cpu_minus_gpu_ns": 981000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 18,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 40000,
+      "submit_ns": 8000,
+      "wait_ns": 16771000,
+      "host_wall_ns": 16821000,
+      "gpu_ns": 14534000,
+      "cpu_minus_gpu_ns": 2237000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 18,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 28000,
+      "submit_ns": 9000,
+      "wait_ns": 2235000,
+      "host_wall_ns": 2273000,
+      "gpu_ns": 915000,
+      "cpu_minus_gpu_ns": 1320000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 18,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 8000,
+      "wait_ns": 30324000,
+      "host_wall_ns": 30382000,
+      "gpu_ns": 29429000,
+      "cpu_minus_gpu_ns": 895000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 19,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 10000,
+      "wait_ns": 16224000,
+      "host_wall_ns": 16281000,
+      "gpu_ns": 14475000,
+      "cpu_minus_gpu_ns": 1749000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 19,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 27000,
+      "submit_ns": 8000,
+      "wait_ns": 1513000,
+      "host_wall_ns": 1549000,
+      "gpu_ns": 909000,
+      "cpu_minus_gpu_ns": 604000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 19,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 43000,
+      "submit_ns": 7000,
+      "wait_ns": 30399000,
+      "host_wall_ns": 30449000,
+      "gpu_ns": 29948000,
+      "cpu_minus_gpu_ns": 451000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 20,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 11000,
+      "wait_ns": 16775000,
+      "host_wall_ns": 16836000,
+      "gpu_ns": 14595000,
+      "cpu_minus_gpu_ns": 2180000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 20,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 20000,
+      "submit_ns": 5000,
+      "wait_ns": 1536000,
+      "host_wall_ns": 1562000,
+      "gpu_ns": 904000,
+      "cpu_minus_gpu_ns": 632000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 20,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 7000,
+      "wait_ns": 30120000,
+      "host_wall_ns": 30177000,
+      "gpu_ns": 29665000,
+      "cpu_minus_gpu_ns": 455000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 21,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 45000,
+      "submit_ns": 10000,
+      "wait_ns": 16273000,
+      "host_wall_ns": 16330000,
+      "gpu_ns": 14529000,
+      "cpu_minus_gpu_ns": 1744000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 21,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 30000,
+      "submit_ns": 9000,
+      "wait_ns": 1515000,
+      "host_wall_ns": 1555000,
+      "gpu_ns": 907000,
+      "cpu_minus_gpu_ns": 608000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 21,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 53000,
+      "submit_ns": 8000,
+      "wait_ns": 30787000,
+      "host_wall_ns": 30849000,
+      "gpu_ns": 30049000,
+      "cpu_minus_gpu_ns": 738000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 22,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 9000,
+      "wait_ns": 16101000,
+      "host_wall_ns": 16158000,
+      "gpu_ns": 14498000,
+      "cpu_minus_gpu_ns": 1603000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 22,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 25000,
+      "submit_ns": 8000,
+      "wait_ns": 1516000,
+      "host_wall_ns": 1549000,
+      "gpu_ns": 906000,
+      "cpu_minus_gpu_ns": 610000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 22,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 8000,
+      "wait_ns": 30428000,
+      "host_wall_ns": 30486000,
+      "gpu_ns": 29651000,
+      "cpu_minus_gpu_ns": 777000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 23,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 51000,
+      "submit_ns": 13000,
+      "wait_ns": 15825000,
+      "host_wall_ns": 15890000,
+      "gpu_ns": 14443000,
+      "cpu_minus_gpu_ns": 1382000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 23,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 21000,
+      "submit_ns": 6000,
+      "wait_ns": 1638000,
+      "host_wall_ns": 1666000,
+      "gpu_ns": 913000,
+      "cpu_minus_gpu_ns": 725000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 23,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 45000,
+      "submit_ns": 9000,
+      "wait_ns": 32386000,
+      "host_wall_ns": 32441000,
+      "gpu_ns": 29890000,
+      "cpu_minus_gpu_ns": 2496000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 24,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 13000,
+      "wait_ns": 15797000,
+      "host_wall_ns": 15859000,
+      "gpu_ns": 14523000,
+      "cpu_minus_gpu_ns": 1274000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 24,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 26000,
+      "submit_ns": 9000,
+      "wait_ns": 1507000,
+      "host_wall_ns": 1543000,
+      "gpu_ns": 908000,
+      "cpu_minus_gpu_ns": 599000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 24,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 7000,
+      "wait_ns": 30630000,
+      "host_wall_ns": 30686000,
+      "gpu_ns": 29844000,
+      "cpu_minus_gpu_ns": 786000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 25,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 57000,
+      "submit_ns": 10000,
+      "wait_ns": 18321000,
+      "host_wall_ns": 18389000,
+      "gpu_ns": 16986000,
+      "cpu_minus_gpu_ns": 1335000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 25,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 25000,
+      "submit_ns": 6000,
+      "wait_ns": 3800000,
+      "host_wall_ns": 3833000,
+      "gpu_ns": 3221000,
+      "cpu_minus_gpu_ns": 579000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 25,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 9000,
+      "wait_ns": 37024000,
+      "host_wall_ns": 37082000,
+      "gpu_ns": 35951000,
+      "cpu_minus_gpu_ns": 1073000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 26,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 17000,
+      "wait_ns": 16128000,
+      "host_wall_ns": 16192000,
+      "gpu_ns": 14551000,
+      "cpu_minus_gpu_ns": 1577000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 26,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 28000,
+      "submit_ns": 6000,
+      "wait_ns": 1507000,
+      "host_wall_ns": 1543000,
+      "gpu_ns": 908000,
+      "cpu_minus_gpu_ns": 599000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 26,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 51000,
+      "submit_ns": 7000,
+      "wait_ns": 32724000,
+      "host_wall_ns": 32783000,
+      "gpu_ns": 32280000,
+      "cpu_minus_gpu_ns": 444000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 27,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 9000,
+      "wait_ns": 16375000,
+      "host_wall_ns": 16435000,
+      "gpu_ns": 14452000,
+      "cpu_minus_gpu_ns": 1923000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 27,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 24000,
+      "submit_ns": 5000,
+      "wait_ns": 1502000,
+      "host_wall_ns": 1532000,
+      "gpu_ns": 906000,
+      "cpu_minus_gpu_ns": 596000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 27,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 60000,
+      "submit_ns": 9000,
+      "wait_ns": 29833000,
+      "host_wall_ns": 29903000,
+      "gpu_ns": 29336000,
+      "cpu_minus_gpu_ns": 497000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 28,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 45000,
+      "submit_ns": 14000,
+      "wait_ns": 16247000,
+      "host_wall_ns": 16307000,
+      "gpu_ns": 14556000,
+      "cpu_minus_gpu_ns": 1691000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 28,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 24000,
+      "submit_ns": 6000,
+      "wait_ns": 1608000,
+      "host_wall_ns": 1640000,
+      "gpu_ns": 909000,
+      "cpu_minus_gpu_ns": 699000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 28,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 7000,
+      "wait_ns": 30835000,
+      "host_wall_ns": 30890000,
+      "gpu_ns": 29726000,
+      "cpu_minus_gpu_ns": 1109000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 29,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 42000,
+      "submit_ns": 11000,
+      "wait_ns": 15987000,
+      "host_wall_ns": 16041000,
+      "gpu_ns": 14493000,
+      "cpu_minus_gpu_ns": 1494000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 29,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 14000,
+      "submit_ns": 5000,
+      "wait_ns": 1766000,
+      "host_wall_ns": 1786000,
+      "gpu_ns": 901000,
+      "cpu_minus_gpu_ns": 865000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 29,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 52000,
+      "submit_ns": 9000,
+      "wait_ns": 60416000,
+      "host_wall_ns": 60478000,
+      "gpu_ns": 59527000,
+      "cpu_minus_gpu_ns": 889000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 30,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 45000,
+      "submit_ns": 9000,
+      "wait_ns": 24002000,
+      "host_wall_ns": 24056000,
+      "gpu_ns": 19036000,
+      "cpu_minus_gpu_ns": 4966000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 30,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 27000,
+      "submit_ns": 8000,
+      "wait_ns": 6274000,
+      "host_wall_ns": 6310000,
+      "gpu_ns": 5673000,
+      "cpu_minus_gpu_ns": 601000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 30,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 8000,
+      "wait_ns": 46043000,
+      "host_wall_ns": 46100000,
+      "gpu_ns": 45604000,
+      "cpu_minus_gpu_ns": 439000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 31,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 55000,
+      "submit_ns": 12000,
+      "wait_ns": 16054000,
+      "host_wall_ns": 16122000,
+      "gpu_ns": 14521000,
+      "cpu_minus_gpu_ns": 1533000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 31,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 24000,
+      "submit_ns": 7000,
+      "wait_ns": 1532000,
+      "host_wall_ns": 1563000,
+      "gpu_ns": 910000,
+      "cpu_minus_gpu_ns": 622000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 31,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 7000,
+      "wait_ns": 30261000,
+      "host_wall_ns": 30318000,
+      "gpu_ns": 29660000,
+      "cpu_minus_gpu_ns": 601000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 32,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 8000,
+      "wait_ns": 16008000,
+      "host_wall_ns": 16065000,
+      "gpu_ns": 14528000,
+      "cpu_minus_gpu_ns": 1480000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 32,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 28000,
+      "submit_ns": 7000,
+      "wait_ns": 1503000,
+      "host_wall_ns": 1541000,
+      "gpu_ns": 906000,
+      "cpu_minus_gpu_ns": 597000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 32,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 46000,
+      "submit_ns": 7000,
+      "wait_ns": 30726000,
+      "host_wall_ns": 30781000,
+      "gpu_ns": 29807000,
+      "cpu_minus_gpu_ns": 919000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 33,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 40000,
+      "submit_ns": 9000,
+      "wait_ns": 16182000,
+      "host_wall_ns": 16233000,
+      "gpu_ns": 14506000,
+      "cpu_minus_gpu_ns": 1676000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 33,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 19000,
+      "submit_ns": 6000,
+      "wait_ns": 1543000,
+      "host_wall_ns": 1570000,
+      "gpu_ns": 925000,
+      "cpu_minus_gpu_ns": 618000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 33,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 44000,
+      "submit_ns": 8000,
+      "wait_ns": 45828000,
+      "host_wall_ns": 45880000,
+      "gpu_ns": 45016000,
+      "cpu_minus_gpu_ns": 812000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 34,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 44000,
+      "submit_ns": 7000,
+      "wait_ns": 27493000,
+      "host_wall_ns": 27546000,
+      "gpu_ns": 26146000,
+      "cpu_minus_gpu_ns": 1347000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 34,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 21000,
+      "submit_ns": 7000,
+      "wait_ns": 1440000,
+      "host_wall_ns": 1470000,
+      "gpu_ns": 908000,
+      "cpu_minus_gpu_ns": 532000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 34,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 11000,
+      "wait_ns": 30519000,
+      "host_wall_ns": 30581000,
+      "gpu_ns": 30110000,
+      "cpu_minus_gpu_ns": 409000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 35,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 39000,
+      "submit_ns": 5000,
+      "wait_ns": 15828000,
+      "host_wall_ns": 15873000,
+      "gpu_ns": 14483000,
+      "cpu_minus_gpu_ns": 1345000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 35,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 18000,
+      "submit_ns": 5000,
+      "wait_ns": 1445000,
+      "host_wall_ns": 1469000,
+      "gpu_ns": 917000,
+      "cpu_minus_gpu_ns": 528000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 35,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 7000,
+      "wait_ns": 35035000,
+      "host_wall_ns": 35092000,
+      "gpu_ns": 34361000,
+      "cpu_minus_gpu_ns": 674000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 36,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 43000,
+      "submit_ns": 7000,
+      "wait_ns": 15877000,
+      "host_wall_ns": 15928000,
+      "gpu_ns": 14634000,
+      "cpu_minus_gpu_ns": 1243000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 36,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 21000,
+      "submit_ns": 7000,
+      "wait_ns": 1568000,
+      "host_wall_ns": 1597000,
+      "gpu_ns": 923000,
+      "cpu_minus_gpu_ns": 645000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 36,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 47000,
+      "submit_ns": 7000,
+      "wait_ns": 30491000,
+      "host_wall_ns": 30547000,
+      "gpu_ns": 30117000,
+      "cpu_minus_gpu_ns": 374000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 37,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 48000,
+      "submit_ns": 10000,
+      "wait_ns": 16132000,
+      "host_wall_ns": 16191000,
+      "gpu_ns": 14514000,
+      "cpu_minus_gpu_ns": 1618000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 37,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 22000,
+      "submit_ns": 6000,
+      "wait_ns": 1523000,
+      "host_wall_ns": 1552000,
+      "gpu_ns": 906000,
+      "cpu_minus_gpu_ns": 617000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 37,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 37000,
+      "submit_ns": 5000,
+      "wait_ns": 30732000,
+      "host_wall_ns": 30775000,
+      "gpu_ns": 30294000,
+      "cpu_minus_gpu_ns": 438000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 38,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 49000,
+      "submit_ns": 11000,
+      "wait_ns": 16128000,
+      "host_wall_ns": 16189000,
+      "gpu_ns": 14534000,
+      "cpu_minus_gpu_ns": 1594000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 38,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 15000,
+      "submit_ns": 3000,
+      "wait_ns": 1490000,
+      "host_wall_ns": 1509000,
+      "gpu_ns": 914000,
+      "cpu_minus_gpu_ns": 576000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 38,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 44000,
+      "submit_ns": 6000,
+      "wait_ns": 38987000,
+      "host_wall_ns": 39038000,
+      "gpu_ns": 38186000,
+      "cpu_minus_gpu_ns": 801000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 39,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 40000,
+      "submit_ns": 9000,
+      "wait_ns": 16199000,
+      "host_wall_ns": 16250000,
+      "gpu_ns": 14586000,
+      "cpu_minus_gpu_ns": 1613000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 39,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 28000,
+      "submit_ns": 6000,
+      "wait_ns": 1500000,
+      "host_wall_ns": 1536000,
+      "gpu_ns": 937000,
+      "cpu_minus_gpu_ns": 563000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 39,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 43000,
+      "submit_ns": 7000,
+      "wait_ns": 30672000,
+      "host_wall_ns": 30723000,
+      "gpu_ns": 29757000,
+      "cpu_minus_gpu_ns": 915000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 40,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 36000,
+      "submit_ns": 7000,
+      "wait_ns": 23471000,
+      "host_wall_ns": 23516000,
+      "gpu_ns": 21837000,
+      "cpu_minus_gpu_ns": 1634000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 40,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 24000,
+      "submit_ns": 7000,
+      "wait_ns": 6352000,
+      "host_wall_ns": 6385000,
+      "gpu_ns": 5690000,
+      "cpu_minus_gpu_ns": 662000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 40,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 50000,
+      "submit_ns": 8000,
+      "wait_ns": 38043000,
+      "host_wall_ns": 38103000,
+      "gpu_ns": 37602000,
+      "cpu_minus_gpu_ns": 441000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 41,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 50000,
+      "submit_ns": 13000,
+      "wait_ns": 16354000,
+      "host_wall_ns": 16419000,
+      "gpu_ns": 14602000,
+      "cpu_minus_gpu_ns": 1752000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 41,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 27000,
+      "submit_ns": 7000,
+      "wait_ns": 1579000,
+      "host_wall_ns": 1615000,
+      "gpu_ns": 932000,
+      "cpu_minus_gpu_ns": 647000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 41,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 52000,
+      "submit_ns": 10000,
+      "wait_ns": 34916000,
+      "host_wall_ns": 34980000,
+      "gpu_ns": 34412000,
+      "cpu_minus_gpu_ns": 504000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "attn",
+      "layer": 42,
+      "force": "host_mhc_post_needs_wo_b_bf16",
+      "encode_ns": 44000,
+      "submit_ns": 11000,
+      "wait_ns": 20234000,
+      "host_wall_ns": 20291000,
+      "gpu_ns": 18741000,
+      "cpu_minus_gpu_ns": 1493000,
+      "dispatches": 17,
+      "encoders": 17
+    },
+    {
+      "name": "route",
+      "layer": 42,
+      "force": "host_route_id_readback_for_expert_residency",
+      "encode_ns": 31000,
+      "submit_ns": 9000,
+      "wait_ns": 1551000,
+      "host_wall_ns": 1593000,
+      "gpu_ns": 912000,
+      "cpu_minus_gpu_ns": 639000,
+      "dispatches": 3,
+      "encoders": 3
+    },
+    {
+      "name": "moe",
+      "layer": 42,
+      "force": "host_mhc_post_needs_moe_out_bf16",
+      "encode_ns": 43000,
+      "submit_ns": 7000,
+      "wait_ns": 29646000,
+      "host_wall_ns": 29697000,
+      "gpu_ns": 29237000,
+      "cpu_minus_gpu_ns": 409000,
+      "dispatches": 23,
+      "encoders": 23
+    },
+    {
+      "name": "lm_head.tile0",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "encode_ns": 33000,
+      "submit_ns": 12000,
+      "wait_ns": 2837000,
+      "host_wall_ns": 2884000,
+      "gpu_ns": 422000,
+      "cpu_minus_gpu_ns": 2415000,
+      "dispatches": 1,
+      "encoders": 1
+    },
+    {
+      "name": "lm_head.tile1",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "encode_ns": 13000,
+      "submit_ns": 7000,
+      "wait_ns": 712000,
+      "host_wall_ns": 734000,
+      "gpu_ns": 452000,
+      "cpu_minus_gpu_ns": 260000,
+      "dispatches": 1,
+      "encoders": 1
+    },
+    {
+      "name": "lm_head.tile2",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "encode_ns": 27000,
+      "submit_ns": 8000,
+      "wait_ns": 626000,
+      "host_wall_ns": 662000,
+      "gpu_ns": 400000,
+      "cpu_minus_gpu_ns": 226000,
+      "dispatches": 1,
+      "encoders": 1
+    },
+    {
+      "name": "lm_head.tile3",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "encode_ns": 22000,
+      "submit_ns": 14000,
+      "wait_ns": 881000,
+      "host_wall_ns": 918000,
+      "gpu_ns": 406000,
+      "cpu_minus_gpu_ns": 475000,
+      "dispatches": 1,
+      "encoders": 1
+    },
+    {
+      "name": "lm_head.tile4",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "encode_ns": 25000,
+      "submit_ns": 9000,
+      "wait_ns": 790000,
+      "host_wall_ns": 825000,
+      "gpu_ns": 428000,
+      "cpu_minus_gpu_ns": 362000,
+      "dispatches": 1,
+      "encoders": 1
+    },
+    {
+      "name": "lm_head.tile5",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "encode_ns": 19000,
+      "submit_ns": 8000,
+      "wait_ns": 1355000,
+      "host_wall_ns": 1384000,
+      "gpu_ns": 448000,
+      "cpu_minus_gpu_ns": 907000,
+      "dispatches": 1,
+      "encoders": 1
+    },
+    {
+      "name": "lm_head.tile6",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "encode_ns": 20000,
+      "submit_ns": 8000,
+      "wait_ns": 652000,
+      "host_wall_ns": 681000,
+      "gpu_ns": 425000,
+      "cpu_minus_gpu_ns": 227000,
+      "dispatches": 1,
+      "encoders": 1
+    },
+    {
+      "name": "lm_head.tile7",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "encode_ns": 28000,
+      "submit_ns": 11000,
+      "wait_ns": 751000,
+      "host_wall_ns": 791000,
+      "gpu_ns": 401000,
+      "cpu_minus_gpu_ns": 350000,
+      "dispatches": 1,
+      "encoders": 1
+    }
+  ],
+  "host_syncs": [
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 0,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 3750,
+      "bytes": 8192
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 0,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 3917,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 1,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1208,
+      "bytes": 8192
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 1,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 834,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 2,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1042,
+      "bytes": 8192
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 2,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1375,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 3,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1084,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 3,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1542,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 3,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1333,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 4,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1167,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 4,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1208,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 4,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1292,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 5,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 875,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 5,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1375,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 5,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1291,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 6,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1166,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 6,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1042,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 6,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1166,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 7,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1500,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 7,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 2750,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 7,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 917,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 8,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 792,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 8,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1125,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 8,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1333,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 9,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1375,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 9,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 917,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 9,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1125,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 10,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1125,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 10,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1125,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 10,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1417,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 11,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1250,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 11,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1500,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 11,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1500,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 12,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1417,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 12,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 5625,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 12,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1417,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 13,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1500,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 13,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1125,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 13,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1084,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 14,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1459,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 14,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1375,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 14,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1250,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 15,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 875,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 15,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1166,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 15,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1375,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 16,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1458,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 16,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1167,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 16,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1209,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 17,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1208,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 17,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1334,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 17,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1291,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 18,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1500,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 18,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 959,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 18,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1500,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 19,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1125,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 19,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1791,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 19,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1125,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 20,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1167,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 20,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 2292,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 20,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1208,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 21,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1500,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 21,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1375,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 21,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1167,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 22,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1250,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 22,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1333,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 22,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1417,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 23,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1041,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 23,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1250,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 23,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1209,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 24,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1791,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 24,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1125,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 24,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1458,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 25,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1584,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 25,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1416,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 25,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1250,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 26,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1500,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 26,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1167,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 26,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1250,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 27,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1042,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 27,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1209,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 27,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1250,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 28,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1250,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 28,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1083,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 28,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1292,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 29,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 2000,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 29,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1209,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 29,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1292,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 30,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1375,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 30,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1791,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 30,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1584,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 31,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1000,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 31,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1000,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 31,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1208,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 32,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1625,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 32,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1459,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 32,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1584,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 33,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1041,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 33,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1167,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 33,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1541,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 34,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1167,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 34,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1167,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 34,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1417,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 35,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1000,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 35,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 5625,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 35,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1500,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 36,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1541,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 36,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1417,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 36,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1250,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 37,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1125,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 37,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1125,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 37,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 917,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 38,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1208,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 38,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1292,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 38,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1042,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 39,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1333,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 39,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1375,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 39,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1334,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 40,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1333,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 40,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1583,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 40,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1791,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 41,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1083,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 41,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1458,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 41,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1792,
+      "bytes": 8192
+    },
+    {
+      "name": "host.attn_activation_readback",
+      "layer": 42,
+      "force": "host_source_mhc_post_requires_wo_b",
+      "block_ns": 1875,
+      "bytes": 8192
+    },
+    {
+      "name": "host.route_id_readback_sync",
+      "layer": 42,
+      "force": "streaming_residency_needs_six_expert_ids",
+      "block_ns": 1542,
+      "bytes": 48
+    },
+    {
+      "name": "host.moe_activation_readback",
+      "layer": 42,
+      "force": "host_source_mhc_post_requires_moe_out",
+      "block_ns": 1458,
+      "bytes": 8192
+    },
+    {
+      "name": "host.lm_head_readback",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "block_ns": 9166,
+      "bytes": 65536
+    },
+    {
+      "name": "host.lm_head_readback",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "block_ns": 2875,
+      "bytes": 65536
+    },
+    {
+      "name": "host.lm_head_readback",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "block_ns": 2458,
+      "bytes": 65536
+    },
+    {
+      "name": "host.lm_head_readback",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "block_ns": 2958,
+      "bytes": 65536
+    },
+    {
+      "name": "host.lm_head_readback",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "block_ns": 2084,
+      "bytes": 65536
+    },
+    {
+      "name": "host.lm_head_readback",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "block_ns": 2833,
+      "bytes": 65536
+    },
+    {
+      "name": "host.lm_head_readback",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "block_ns": 2667,
+      "bytes": 65536
+    },
+    {
+      "name": "host.lm_head_readback",
+      "layer": null,
+      "force": "host_greedy_reduction_needs_tile_logits",
+      "block_ns": 2625,
+      "bytes": 58368
+    }
+  ],
+  "route_id_readbacks": [
+    {
+      "layer": 3,
+      "index": 0,
+      "ns": 584,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 4,
+      "index": 1,
+      "ns": 583,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 5,
+      "index": 2,
+      "ns": 792,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 6,
+      "index": 3,
+      "ns": 667,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 7,
+      "index": 4,
+      "ns": 1167,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 8,
+      "index": 5,
+      "ns": 667,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 9,
+      "index": 6,
+      "ns": 542,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 10,
+      "index": 7,
+      "ns": 750,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 11,
+      "index": 8,
+      "ns": 542,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 12,
+      "index": 9,
+      "ns": 4917,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 13,
+      "index": 10,
+      "ns": 667,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 14,
+      "index": 11,
+      "ns": 666,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 15,
+      "index": 12,
+      "ns": 666,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 16,
+      "index": 13,
+      "ns": 750,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 17,
+      "index": 14,
+      "ns": 667,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 18,
+      "index": 15,
+      "ns": 625,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 19,
+      "index": 16,
+      "ns": 625,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 20,
+      "index": 17,
+      "ns": 1250,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 21,
+      "index": 18,
+      "ns": 833,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 22,
+      "index": 19,
+      "ns": 666,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 23,
+      "index": 20,
+      "ns": 875,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 24,
+      "index": 21,
+      "ns": 583,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 25,
+      "index": 22,
+      "ns": 833,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 26,
+      "index": 23,
+      "ns": 667,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 27,
+      "index": 24,
+      "ns": 584,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 28,
+      "index": 25,
+      "ns": 667,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 29,
+      "index": 26,
+      "ns": 667,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 30,
+      "index": 27,
+      "ns": 1041,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 31,
+      "index": 28,
+      "ns": 708,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 32,
+      "index": 29,
+      "ns": 1000,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 33,
+      "index": 30,
+      "ns": 875,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 34,
+      "index": 31,
+      "ns": 583,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 35,
+      "index": 32,
+      "ns": 750,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 36,
+      "index": 33,
+      "ns": 917,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 37,
+      "index": 34,
+      "ns": 625,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 38,
+      "index": 35,
+      "ns": 792,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 39,
+      "index": 36,
+      "ns": 792,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 40,
+      "index": 37,
+      "ns": 958,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 41,
+      "index": 38,
+      "ns": 1041,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    },
+    {
+      "layer": 42,
+      "index": 39,
+      "ns": 750,
+      "blocks": "execute_moe after route command buffer; blocks upload_expert_slab",
+      "force": "streaming_residency_needs_six_expert_ids"
+    }
+  ],
+  "isolated_kernels": [],
+  "metal_vs_host": {
+    "metal_encode_ns": 6182000,
+    "metal_submit_ns": 1167000,
+    "metal_wait_ns": 2230012000,
+    "metal_gpu_ns": 2082931000,
+    "metal_gpu_ns_observed_cbs": 137,
+    "metal_gpu_ns_missing_cbs": 0,
+    "host_exclusive_ns": 1187699417,
+    "host_between_first_last_cb_gap_ns": 3383850243,
+    "production_command_buffers": 137,
+    "production_dispatches": 1857,
+    "isolated_probe_overhead_ns": 0
+  }
+}

@@ -90,6 +90,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         file.write_all(&json)?;
         file.write_all(b"\n")?;
     }
+    if let Some(ledger) = report.token_ns_ledger.as_ref() {
+        let ledger_path = args
+            .out
+            .as_ref()
+            .and_then(|path| path.parent().map(|parent| parent.join("DSV4F_TOKEN_NS_LEDGER.json")))
+            .unwrap_or_else(|| PathBuf::from("receipts/DSV4F_TOKEN_NS_LEDGER.json"));
+        if let Some(parent) = ledger_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let ledger_json = serde_json::to_vec_pretty(ledger)?;
+        let mut file = fs::File::create(&ledger_path)?;
+        file.write_all(&ledger_json)?;
+        file.write_all(b"\n")?;
+        eprintln!("wrote {}", ledger_path.display());
+    }
     let greedy = report.greedy.as_ref();
     eprintln!(
         "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} hash_invocations={} admission_trust_hits={} bytes_hashed={} admission_receipt_loaded={} artifact_index_loaded={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
@@ -120,6 +135,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         ORACLE_HC_BF16_SHA256,
         report.stop_reason,
     );
+    if let Some(ledger) = report.token_ns_ledger.as_ref() {
+        eprintln!(
+            "token_ns_ledger diagnosis={:?} body_ns={} host_exclusive_ns={} metal_gpu_ns={} metal_wait_ns={} verify_ns={} cbs={} isolated={} proof={}",
+            ledger.diagnosis,
+            ledger.body_ns,
+            ledger.metal_vs_host.host_exclusive_ns,
+            ledger.metal_vs_host.metal_gpu_ns,
+            ledger.metal_vs_host.metal_wait_ns,
+            ledger.verify_ns,
+            ledger.metal_vs_host.production_command_buffers,
+            ledger.isolated_kernels.len(),
+            ledger.diagnosis_proof,
+        );
+    }
     hawking_core::startup_timing::emit_stderr_json();
     if let Some(path) = args.out.as_ref() {
         eprintln!("wrote {}", path.display());

@@ -1,0 +1,633 @@
+//! Per-token nanosecond ledger for the DeepSeek-V4-Flash native BOS graph.
+//!
+//! This is a diagnostic surface. It does not change operator semantics.
+//! GPU timestamps are command-buffer `GPUStartTime`/`GPUEndTime` after wait;
+//! missing timestamps are reported, never proxied from CPU wait.
+
+use std::collections::BTreeMap;
+use std::time::Instant;
+
+use serde::Serialize;
+
+use crate::metal::MetalBatchTiming;
+
+pub const TOKEN_NS_LEDGER_SCHEMA: &str = "hawking.gravity.deepseek_v4.token_ns_ledger.v1";
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TokenBodyDiagnosis {
+    GpuBound,
+    DispatchLatencyBound,
+    SyncBound,
+    IoBound,
+    Mixed,
+    Insufficient,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct StageRow {
+    pub name: String,
+    pub ns: u64,
+    pub ns_per_token: u64,
+    pub pct_body: f64,
+    pub calls: u64,
+    pub calls_per_token: u64,
+    pub bytes: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CommandBufferRow {
+    pub name: String,
+    pub layer: Option<usize>,
+    pub force: String,
+    pub encode_ns: u64,
+    pub submit_ns: u64,
+    pub wait_ns: u64,
+    pub host_wall_ns: u64,
+    pub gpu_ns: Option<u64>,
+    pub cpu_minus_gpu_ns: Option<i64>,
+    pub dispatches: u64,
+    pub encoders: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct HostSyncRow {
+    pub name: String,
+    pub layer: Option<usize>,
+    pub force: String,
+    pub block_ns: u64,
+    pub bytes: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct RouteReadbackRow {
+    pub layer: usize,
+    pub index: usize,
+    pub ns: u64,
+    pub blocks: String,
+    pub force: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct IsolatedKernelRow {
+    pub name: String,
+    pub layer: usize,
+    pub encode_ns: u64,
+    pub submit_ns: u64,
+    pub wait_ns: u64,
+    pub gpu_ns: Option<u64>,
+    pub dispatches: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct MetalVsHost {
+    pub metal_encode_ns: u64,
+    pub metal_submit_ns: u64,
+    pub metal_wait_ns: u64,
+    pub metal_gpu_ns: u64,
+    pub metal_gpu_ns_observed_cbs: u64,
+    pub metal_gpu_ns_missing_cbs: u64,
+    pub host_exclusive_ns: u64,
+    pub host_between_first_last_cb_gap_ns: u64,
+    pub production_command_buffers: u64,
+    pub production_dispatches: u64,
+    pub isolated_probe_overhead_ns: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TokenNsLedger {
+    pub schema: &'static str,
+    pub body_ns: u64,
+    pub init_ns: u64,
+    pub wall_ns: u64,
+    pub verify_ns: u64,
+    pub diagnosis: TokenBodyDiagnosis,
+    pub diagnosis_proof: String,
+    pub stages: Vec<StageRow>,
+    pub operator_classes: Vec<StageRow>,
+    pub command_buffers: Vec<CommandBufferRow>,
+    pub host_syncs: Vec<HostSyncRow>,
+    pub route_id_readbacks: Vec<RouteReadbackRow>,
+    pub isolated_kernels: Vec<IsolatedKernelRow>,
+    pub metal_vs_host: MetalVsHost,
+}
+
+#[derive(Debug, Clone, Default)]
+struct StageAccum {
+    ns: u64,
+    calls: u64,
+    bytes: u64,
+}
+
+#[derive(Debug)]
+pub struct TokenNsCollector {
+    stages: BTreeMap<String, StageAccum>,
+    command_buffers: Vec<CommandBufferRow>,
+    host_syncs: Vec<HostSyncRow>,
+    route_id_readbacks: Vec<RouteReadbackRow>,
+    isolated_kernels: Vec<IsolatedKernelRow>,
+    probe_overhead_ns: u64,
+    last_cb_end: Option<Instant>,
+    between_cb_gap_ns: u64,
+}
+
+impl Default for TokenNsCollector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl TokenNsCollector {
+    pub fn new() -> Self {
+        Self {
+            stages: BTreeMap::new(),
+            command_buffers: Vec::new(),
+            host_syncs: Vec::new(),
+            route_id_readbacks: Vec::new(),
+            isolated_kernels: Vec::new(),
+            probe_overhead_ns: 0,
+            last_cb_end: None,
+            between_cb_gap_ns: 0,
+        }
+    }
+
+    pub fn add_stage(&mut self, name: &str, ns: u64, calls: u64, bytes: u64) {
+        let row = self.stages.entry(name.to_owned()).or_default();
+        row.ns = row.ns.saturating_add(ns);
+        row.calls = row.calls.saturating_add(calls);
+        row.bytes = row.bytes.saturating_add(bytes);
+    }
+
+    pub fn time<T>(&mut self, name: &str, f: impl FnOnce() -> T) -> T {
+        self.time_bytes(name, 0, f)
+    }
+
+    pub fn time_bytes<T>(&mut self, name: &str, bytes: u64, f: impl FnOnce() -> T) -> T {
+        let started = Instant::now();
+        let out = f();
+        self.add_stage(name, started.elapsed().as_nanos() as u64, 1, bytes);
+        out
+    }
+
+    pub fn time_result<T, E>(
+        &mut self,
+        name: &str,
+        f: impl FnOnce() -> Result<T, E>,
+    ) -> Result<T, E> {
+        self.time_bytes_result(name, 0, f)
+    }
+
+    pub fn time_bytes_result<T, E>(
+        &mut self,
+        name: &str,
+        bytes: u64,
+        f: impl FnOnce() -> Result<T, E>,
+    ) -> Result<T, E> {
+        let started = Instant::now();
+        let out = f();
+        self.add_stage(name, started.elapsed().as_nanos() as u64, 1, bytes);
+        out
+    }
+
+    pub fn record_cb(
+        &mut self,
+        name: &str,
+        layer: Option<usize>,
+        force: &str,
+        dispatches: u64,
+        timing: &MetalBatchTiming,
+    ) {
+        if let Some(prev) = self.last_cb_end.take() {
+            self.between_cb_gap_ns = self
+                .between_cb_gap_ns
+                .saturating_add(prev.elapsed().as_nanos() as u64);
+        }
+        let encode_ns = timing.encode_us.saturating_mul(1_000);
+        let submit_ns = timing.submit_us.saturating_mul(1_000);
+        let wait_ns = timing.wait_us.saturating_mul(1_000);
+        let host_wall_ns = timing.host_wall_us.saturating_mul(1_000);
+        let gpu_ns = timing.gpu_duration_us.map(|us| us.saturating_mul(1_000));
+        let cpu_minus_gpu_ns = gpu_ns.map(|gpu| wait_ns as i64 - gpu as i64);
+        self.add_stage("metal.encode", encode_ns, 1, 0);
+        self.add_stage("metal.submit", submit_ns, 1, 0);
+        self.add_stage("metal.wait", wait_ns, 1, 0);
+        if let Some(gpu) = gpu_ns {
+            self.add_stage("metal.gpu", gpu, 1, 0);
+        } else {
+            self.add_stage("metal.gpu_missing", 0, 1, 0);
+        }
+        self.command_buffers.push(CommandBufferRow {
+            name: name.to_owned(),
+            layer,
+            force: force.to_owned(),
+            encode_ns,
+            submit_ns,
+            wait_ns,
+            host_wall_ns,
+            gpu_ns,
+            cpu_minus_gpu_ns,
+            dispatches,
+            encoders: timing.compute_encoders,
+        });
+        self.last_cb_end = Some(Instant::now());
+    }
+
+    pub fn record_sync(&mut self, name: &str, layer: Option<usize>, force: &str, block_ns: u64, bytes: u64) {
+        self.add_stage(name, block_ns, 1, bytes);
+        self.host_syncs.push(HostSyncRow {
+            name: name.to_owned(),
+            layer,
+            force: force.to_owned(),
+            block_ns,
+            bytes,
+        });
+    }
+
+    pub fn record_route_readback(
+        &mut self,
+        layer: usize,
+        ns: u64,
+        blocks: &str,
+        force: &str,
+    ) {
+        let index = self.route_id_readbacks.len();
+        self.route_id_readbacks.push(RouteReadbackRow {
+            layer,
+            index,
+            ns,
+            blocks: blocks.to_owned(),
+            force: force.to_owned(),
+        });
+        self.add_stage("host.route_id_readback", ns, 1, 6 * 4);
+    }
+
+    pub fn record_isolated(&mut self, name: &str, layer: usize, overhead_ns: u64, timing: &MetalBatchTiming) {
+        self.probe_overhead_ns = self.probe_overhead_ns.saturating_add(overhead_ns);
+        self.isolated_kernels.push(IsolatedKernelRow {
+            name: name.to_owned(),
+            layer,
+            encode_ns: timing.encode_us.saturating_mul(1_000),
+            submit_ns: timing.submit_us.saturating_mul(1_000),
+            wait_ns: timing.wait_us.saturating_mul(1_000),
+            gpu_ns: timing.gpu_duration_us.map(|us| us.saturating_mul(1_000)),
+            dispatches: timing.compute_dispatches,
+        });
+    }
+
+    pub fn probe_overhead_ns(&self) -> u64 {
+        self.probe_overhead_ns
+    }
+
+    pub fn finish(
+        self,
+        body_ns: u64,
+        init_ns: u64,
+        wall_ns: u64,
+        verify_ns: u64,
+    ) -> TokenNsLedger {
+        let production_command_buffers = self.command_buffers.len() as u64;
+        let production_dispatches = self
+            .command_buffers
+            .iter()
+            .map(|cb| cb.dispatches)
+            .sum::<u64>();
+        let metal_encode_ns = stage_ns(&self.stages, "metal.encode");
+        let metal_submit_ns = stage_ns(&self.stages, "metal.submit");
+        let metal_wait_ns = stage_ns(&self.stages, "metal.wait");
+        let metal_gpu_ns = stage_ns(&self.stages, "metal.gpu");
+        let metal_gpu_ns_observed_cbs = self
+            .command_buffers
+            .iter()
+            .filter(|cb| cb.gpu_ns.is_some())
+            .count() as u64;
+        let metal_gpu_ns_missing_cbs = production_command_buffers
+            .saturating_sub(metal_gpu_ns_observed_cbs);
+        let metal_host_wall_ns = self
+            .command_buffers
+            .iter()
+            .map(|cb| cb.host_wall_ns)
+            .sum::<u64>();
+        let host_exclusive_ns = body_ns.saturating_sub(metal_host_wall_ns);
+
+        let stages = finalize_stages(&self.stages, body_ns);
+        let operator_classes = operator_class_rows(&self.stages, &self.isolated_kernels, body_ns);
+        let (diagnosis, diagnosis_proof) = diagnose(
+            body_ns,
+            host_exclusive_ns,
+            metal_wait_ns,
+            metal_gpu_ns,
+            metal_gpu_ns_observed_cbs,
+            production_command_buffers,
+            verify_ns,
+            &self.command_buffers,
+            &self.isolated_kernels,
+        );
+
+        TokenNsLedger {
+            schema: TOKEN_NS_LEDGER_SCHEMA,
+            body_ns,
+            init_ns,
+            wall_ns,
+            verify_ns,
+            diagnosis,
+            diagnosis_proof,
+            stages,
+            operator_classes,
+            command_buffers: self.command_buffers,
+            host_syncs: self.host_syncs,
+            route_id_readbacks: self.route_id_readbacks,
+            isolated_kernels: self.isolated_kernels,
+            metal_vs_host: MetalVsHost {
+                metal_encode_ns,
+                metal_submit_ns,
+                metal_wait_ns,
+                metal_gpu_ns,
+                metal_gpu_ns_observed_cbs,
+                metal_gpu_ns_missing_cbs,
+                host_exclusive_ns,
+                host_between_first_last_cb_gap_ns: self.between_cb_gap_ns,
+                production_command_buffers,
+                production_dispatches,
+                isolated_probe_overhead_ns: self.probe_overhead_ns,
+            },
+        }
+    }
+}
+
+fn stage_ns(stages: &BTreeMap<String, StageAccum>, name: &str) -> u64 {
+    stages.get(name).map(|s| s.ns).unwrap_or(0)
+}
+
+fn pct(part: u64, whole: u64) -> f64 {
+    if whole == 0 {
+        0.0
+    } else {
+        (part as f64) * 100.0 / (whole as f64)
+    }
+}
+
+fn finalize_stages(stages: &BTreeMap<String, StageAccum>, body_ns: u64) -> Vec<StageRow> {
+    let mut rows: Vec<StageRow> = stages
+        .iter()
+        .map(|(name, acc)| StageRow {
+            name: name.clone(),
+            ns: acc.ns,
+            ns_per_token: acc.ns,
+            pct_body: pct(acc.ns, body_ns),
+            calls: acc.calls,
+            calls_per_token: acc.calls,
+            bytes: acc.bytes,
+        })
+        .collect();
+    rows.sort_by(|a, b| b.ns.cmp(&a.ns).then_with(|| a.name.cmp(&b.name)));
+    rows
+}
+
+fn operator_class_rows(
+    stages: &BTreeMap<String, StageAccum>,
+    isolated: &[IsolatedKernelRow],
+    body_ns: u64,
+) -> Vec<StageRow> {
+    let mut classes: BTreeMap<&'static str, StageAccum> = BTreeMap::new();
+    let bump = |map: &mut BTreeMap<&'static str, StageAccum>, name: &'static str, ns: u64, calls: u64, bytes: u64| {
+        let row = map.entry(name).or_default();
+        row.ns = row.ns.saturating_add(ns);
+        row.calls = row.calls.saturating_add(calls);
+        row.bytes = row.bytes.saturating_add(bytes);
+    };
+    for (name, acc) in stages {
+        let class = if name.starts_with("host.mla.") || name.starts_with("cb.attn") {
+            Some("mla")
+        } else if name.starts_with("host.routed") || name.starts_with("host.expert") {
+            Some("routed_experts")
+        } else if name.starts_with("host.shared") {
+            Some("shared_expert")
+        } else if name.contains("rmsnorm") || name.contains("norm") {
+            Some("norms")
+        } else if name.starts_with("host.router")
+            || name.starts_with("cb.route")
+            || name.contains("route_id")
+        {
+            Some("router_gate")
+        } else if name.contains("moe_combine") || name.starts_with("cb.moe") {
+            Some("moe_combine_and_ffn")
+        } else if name.starts_with("host.lm_head") || name.starts_with("cb.lm_head") {
+            Some("lm_head")
+        } else if name.starts_with("host.mhc") {
+            Some("mhc_host")
+        } else {
+            None
+        };
+        if let Some(class) = class {
+            bump(&mut classes, class, acc.ns, acc.calls, acc.bytes);
+        }
+    }
+    for row in isolated {
+        let class = isolated_class(&row.name);
+        bump(
+            &mut classes,
+            class,
+            row.gpu_ns.unwrap_or(row.wait_ns),
+            1,
+            0,
+        );
+        let fine = isolated_fine(&row.name);
+        bump(&mut classes, fine, row.gpu_ns.unwrap_or(row.wait_ns), 1, 0);
+    }
+    let mut rows: Vec<StageRow> = classes
+        .into_iter()
+        .map(|(name, acc)| StageRow {
+            name: name.to_owned(),
+            ns: acc.ns,
+            ns_per_token: acc.ns,
+            pct_body: pct(acc.ns, body_ns),
+            calls: acc.calls,
+            calls_per_token: acc.calls,
+            bytes: acc.bytes,
+        })
+        .collect();
+    rows.sort_by(|a, b| b.ns.cmp(&a.ns).then_with(|| a.name.cmp(&b.name)));
+    rows
+}
+
+fn isolated_class(name: &str) -> &'static str {
+    if name.contains("wq_a")
+        || name.contains("wq_b")
+        || name.contains("wkv")
+        || name.contains("wo_")
+        || name.contains("attn.")
+        || name.contains("kv_qat")
+        || name.contains("per_head")
+    {
+        "isolated.mla"
+    } else if name.contains("w1") || name.contains("w2") || name.contains("w3") || name.contains("swiglu")
+    {
+        if name.contains("shared") {
+            "isolated.shared_expert"
+        } else {
+            "isolated.routed_experts"
+        }
+    } else if name.contains("gate") || name.contains("route") || name.contains("pack") {
+        "isolated.router_gate"
+    } else if name.contains("combine") {
+        "isolated.moe_combine"
+    } else if name.contains("rmsnorm") || name.contains("act_quant") || name.contains("cast") {
+        "isolated.ephemeral"
+    } else if name.contains("lm_head") {
+        "isolated.lm_head"
+    } else {
+        "isolated.other"
+    }
+}
+
+fn isolated_fine(name: &str) -> &'static str {
+    if name.contains("wq_a") {
+        "isolated.mla.wq_a"
+    } else if name.contains("wq_b") {
+        "isolated.mla.wq_b"
+    } else if name.contains("wkv") {
+        "isolated.mla.wkv"
+    } else if name.contains("wo_a") {
+        "isolated.mla.wo_a"
+    } else if name.contains("wo_b") {
+        "isolated.mla.wo_b"
+    } else if name.contains("w1") && name.contains("shared") {
+        "isolated.shared.w1"
+    } else if name.contains("w3") && name.contains("shared") {
+        "isolated.shared.w3"
+    } else if name.contains("w2") && name.contains("shared") {
+        "isolated.shared.w2"
+    } else if name.contains("w1") {
+        "isolated.routed.w1"
+    } else if name.contains("w3") {
+        "isolated.routed.w3"
+    } else if name.contains("w2") {
+        "isolated.routed.w2"
+    } else if name.contains("combine") {
+        "isolated.moe_combine"
+    } else if name.contains("gate") {
+        "isolated.router.gate"
+    } else if name.contains("lm_head") {
+        "isolated.lm_head"
+    } else {
+        "isolated.other_fine"
+    }
+}
+
+fn diagnose(
+    body_ns: u64,
+    host_exclusive_ns: u64,
+    metal_wait_ns: u64,
+    metal_gpu_ns: u64,
+    gpu_observed: u64,
+    command_buffers: u64,
+    verify_ns: u64,
+    cbs: &[CommandBufferRow],
+    isolated: &[IsolatedKernelRow],
+) -> (TokenBodyDiagnosis, String) {
+    if body_ns == 0 {
+        return (
+            TokenBodyDiagnosis::Insufficient,
+            "body_ns is 0; no token body was measured".to_owned(),
+        );
+    }
+    if gpu_observed == 0 && !cbs.is_empty() {
+        return (
+            TokenBodyDiagnosis::Insufficient,
+            format!(
+                "GPU timestamps missing on all {command_buffers} production command buffers; cannot separate GPU-bound from wait-bound"
+            ),
+        );
+    }
+    let isolated_gpu: u64 = isolated.iter().filter_map(|k| k.gpu_ns).sum();
+    let isolated_wait: u64 = isolated.iter().map(|k| k.wait_ns).sum();
+    let mean_cb_gpu = if gpu_observed == 0 {
+        0
+    } else {
+        metal_gpu_ns / gpu_observed
+    };
+    let mean_cb_wait = if command_buffers == 0 {
+        0
+    } else {
+        metal_wait_ns / command_buffers
+    };
+    let wait_minus_gpu = metal_wait_ns.saturating_sub(metal_gpu_ns);
+    let host_pct = pct(host_exclusive_ns, body_ns);
+    let gpu_pct = pct(metal_gpu_ns, body_ns);
+    let wait_pct = pct(metal_wait_ns, body_ns);
+    let verify_pct = pct(verify_ns, body_ns);
+    let extra_wait_pct = pct(wait_minus_gpu, body_ns);
+
+    // Host exclusive = body time not inside commit+wait. I/O, MHC, memcpy, upload.
+    if host_pct >= 55.0 || verify_pct >= 35.0 {
+        return (
+            TokenBodyDiagnosis::IoBound,
+            format!(
+                "host_exclusive={host_exclusive_ns}ns ({host_pct:.1}% of body) verify_ns={verify_ns} ({verify_pct:.1}%); metal_gpu={metal_gpu_ns}ns ({gpu_pct:.1}%) metal_wait={metal_wait_ns}ns ({wait_pct:.1}%). Weight streaming / host memcpy / MHC sit outside GPU occupancy."
+            ),
+        );
+    }
+    if extra_wait_pct >= 25.0 && metal_gpu_ns > 0 && wait_minus_gpu > metal_gpu_ns {
+        return (
+            TokenBodyDiagnosis::SyncBound,
+            format!(
+                "CPU wait {metal_wait_ns}ns exceeds GPU execution {metal_gpu_ns}ns by {wait_minus_gpu}ns ({extra_wait_pct:.1}% of body) across {command_buffers} CBs (mean wait {mean_cb_wait}ns, mean gpu {mean_cb_gpu}ns). GPU is idle while the CPU blocks on readbacks."
+            ),
+        );
+    }
+    if gpu_pct >= 55.0 {
+        let isolated_note = if isolated_gpu > 0 {
+            format!(
+                " isolated-kernel GPU sum={isolated_gpu}ns wait={isolated_wait}ns"
+            )
+        } else {
+            String::new()
+        };
+        // Many tiny CBs with high GPU occupancy can still be dispatch-bound
+        // inside the CB (encoder gaps). Isolated kernels distinguish that.
+        if !isolated.is_empty() {
+            let isolated_gpu_per = isolated_gpu / isolated.len().max(1) as u64;
+            if isolated_gpu_per < 200_000 && command_buffers >= 40 {
+                return (
+                    TokenBodyDiagnosis::DispatchLatencyBound,
+                    format!(
+                        "production GPU occupies {gpu_pct:.1}% of body but isolated kernels average {isolated_gpu_per}ns GPU each; {command_buffers} CBs / many encoders are the cost, not arithmetic.{isolated_note}"
+                    ),
+                );
+            }
+        }
+        return (
+            TokenBodyDiagnosis::GpuBound,
+            format!(
+                "metal_gpu={metal_gpu_ns}ns is {gpu_pct:.1}% of body ({mean_cb_gpu}ns/CB); host_exclusive only {host_pct:.1}%.{isolated_note}"
+            ),
+        );
+    }
+    if command_buffers >= 40 && mean_cb_gpu < 2_000_000 && gpu_pct < 55.0 {
+        return (
+            TokenBodyDiagnosis::DispatchLatencyBound,
+            format!(
+                "{command_buffers} command buffers, mean GPU {mean_cb_gpu}ns, GPU {gpu_pct:.1}% of body, host {host_pct:.1}%, extra wait {extra_wait_pct:.1}%. Many small submits; GPU is not doing 3s of arithmetic."
+            ),
+        );
+    }
+    (
+        TokenBodyDiagnosis::Mixed,
+        format!(
+            "no single class clears the bar: host_exclusive={host_pct:.1}% gpu={gpu_pct:.1}% wait={wait_pct:.1}% extra_wait={extra_wait_pct:.1}% verify={verify_pct:.1}% cbs={command_buffers} isolated_gpu={isolated_gpu}"
+        ),
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn io_bound_when_host_exclusive_dominates() {
+        let mut c = TokenNsCollector::new();
+        c.add_stage("host.attn_weight_io", 2_000_000_000, 43, 8_000_000_000);
+        let ledger = c.finish(3_000_000_000, 200_000_000, 3_200_000_000, 1_200_000_000);
+        assert_eq!(ledger.diagnosis, TokenBodyDiagnosis::IoBound);
+    }
+}

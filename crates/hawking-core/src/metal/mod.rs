@@ -2780,6 +2780,98 @@ mod imp {
                 compute_dispatches,
             })
         }
+
+        /// Encode and `commit` a command buffer without waiting. The
+        /// returned handle must be waited before any host read of its
+        /// outputs. GPU timestamps are resolved on wait.
+        pub fn submit_batch(
+            &self,
+            encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
+        ) -> Result<SubmittedBatch> {
+            let total_started = Instant::now();
+            let encode_started = Instant::now();
+            let cmd = self.inner.queue.new_command_buffer().to_owned();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
+            let mut batch = CommandBatch {
+                ctx: self,
+                cmd: &cmd,
+                physical_trace: physical_trace.map(|(identity, _)| identity),
+                concurrent_encoder: None,
+                pipeline_lookup_us: 0,
+                compute_encoders: 0,
+                compute_dispatches: 0,
+            };
+            encode(&mut batch)?;
+            if batch.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "submit_batch returned with an unclosed concurrent group".into(),
+                ));
+            }
+            let encode_us = encode_started.elapsed().as_micros() as u64;
+            let pipeline_lookup_us = batch.pipeline_lookup_us;
+            let compute_encoders = batch.compute_encoders;
+            let compute_dispatches = batch.compute_dispatches;
+            let submit_started = Instant::now();
+            cmd.commit();
+            let submit_us = submit_started.elapsed().as_micros() as u64;
+            if self.trace_dispatch {
+                self.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
+            Ok(SubmittedBatch {
+                cmd,
+                encode_us,
+                submit_us,
+                pipeline_lookup_us,
+                compute_encoders,
+                compute_dispatches,
+                started: total_started,
+            })
+        }
+    }
+
+    /// A committed command buffer waiting to be drained.
+    pub struct SubmittedBatch {
+        cmd: metal::CommandBuffer,
+        encode_us: u64,
+        submit_us: u64,
+        pipeline_lookup_us: u64,
+        compute_encoders: u64,
+        compute_dispatches: u64,
+        started: Instant,
+    }
+
+    impl SubmittedBatch {
+        pub fn wait(self) -> Result<super::MetalBatchTiming> {
+            let wait_started = Instant::now();
+            self.cmd.wait_until_completed();
+            let wait_us = wait_started.elapsed().as_micros() as u64;
+            let (gpu_start_s, gpu_end_s) = unsafe { cb_gpu_start_end_s(&self.cmd) };
+            let (gpu_duration_us, gpu_start_ns, gpu_end_ns) = match (gpu_start_s, gpu_end_s) {
+                (Some(start), Some(end)) if end > start => (
+                    Some(((end - start) * 1_000_000.0) as u64),
+                    Some((start * 1_000_000_000.0) as u64),
+                    Some((end * 1_000_000_000.0) as u64),
+                ),
+                _ => (None, None, None),
+            };
+            let host_wall_us = self.started.elapsed().as_micros() as u64;
+            Ok(super::MetalBatchTiming {
+                pipeline_lookup_us: self.pipeline_lookup_us,
+                encode_us: self.encode_us,
+                submit_us: self.submit_us,
+                wait_us,
+                host_wall_us,
+                gpu_duration_us,
+                gpu_start_ns,
+                gpu_end_ns,
+                command_buffers: 1,
+                compute_encoders: self.compute_encoders,
+                compute_dispatches: self.compute_dispatches,
+            })
+        }
     }
 
     impl CommandBatch<'_> {
@@ -5043,7 +5135,7 @@ pub use imp::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 #[cfg(target_os = "macos")]
 pub use imp::{
     CommandBatch, ReplayBufferBinding, ReplayComputeStage, ReplayResourceDeclaration,
-    ReplayableComputeGraph,
+    ReplayableComputeGraph, SubmittedBatch,
 };
 
 pub mod argbuf;

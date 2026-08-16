@@ -1,0 +1,585 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.token_ns_ledger.v1",
+  "target_body_s": 1.0,
+  "diagnosis": "mixed_io_and_gpu_act_quant",
+  "diagnosis_plain": "Warm baseline body is ~3.3s. It is NOT sync-bound on the 40 route-id readbacks (those memcpy 62us total). It is NOT a 23ms/CB GPU tax: that average folded host I/O into CB count. Split: GPU occupancy ~2.08s (61%) with wait\u2248gpu (extra wait only 0.15s); host exclusive ~1.19s (35%). Isolated kernels: FP8/FP4 matvecs are 0.2-0.7ms; serial act_quant authority is 3.5ms x ~9/layer \u2248 1.35s of the GPU. Host I/O is mmap+memcpy of ~8GB/token (attn 4.7GB, experts 3.4GB, shared 1.1GB). verify_ns ~1.7s is the SUM of parallel mmap-verify threads, not wall. Right fixes: (1) replace serial act_quant, (2) remove host copies / overlap I/O with GPU. Route-id readbacks force a CB split for streaming residency but are not the dominant cost.",
+  "classes": {
+    "a_gpu_bound": {
+      "true": true,
+      "evidence": "warm metal_gpu 2083ms = 60.8% of 3425ms body; wait 2230ms so GPU is busy, not starved"
+    },
+    "b_dispatch_latency_bound": {
+      "true": "partial",
+      "evidence": "1857 encoders; isolated act_quant 3.5ms for 32 serial threads is a slow kernel, not just launch tax. Casts/combine are 3-6us GPU."
+    },
+    "c_sync_bound": {
+      "true": false,
+      "evidence": "40 route-id readbacks memcpy 0.062ms total; extra wait (wait-gpu) 150ms; route CB wait 78ms/50ms gpu"
+    },
+    "d_io_bound": {
+      "true": true,
+      "evidence": "host exclusive 1188ms (34.7%); attn_io 224ms + expert 254ms + shared 189ms + uploads 360ms + lm_head 61ms"
+    }
+  },
+  "baseline_warm": {
+    "source": "instrumented production topology, HAWKING_DSV4F_KERNEL_PROBE=0, page-warm",
+    "reps_body_ms": [
+      3275,
+      3323,
+      3425
+    ],
+    "init_ms": [
+      172,
+      175,
+      175
+    ],
+    "metal_gpu_ms": 2082.9,
+    "metal_wait_ms": 2230.0,
+    "host_exclusive_ms": 1187.7,
+    "verify_ns_sum_ms": 1790.0,
+    "command_buffers": 137,
+    "dispatches": 1857,
+    "host_route_id_readback": 40,
+    "stages": [
+      {
+        "name": "metal.wait",
+        "ns": 2230012000,
+        "pct_body": 65.10507929382729,
+        "calls": 137,
+        "bytes": 0
+      },
+      {
+        "name": "metal.gpu",
+        "ns": 2082931000,
+        "pct_body": 60.81105748245793,
+        "calls": 137,
+        "bytes": 0
+      },
+      {
+        "name": "host.expert_slab_io",
+        "ns": 253541127,
+        "pct_body": 7.4021194404251345,
+        "calls": 43,
+        "bytes": 3449290752
+      },
+      {
+        "name": "host.attn_weight_io",
+        "ns": 224265459,
+        "pct_body": 6.547417902263115,
+        "calls": 43,
+        "bytes": 4667468196
+      },
+      {
+        "name": "host.mla.wq_b_upload",
+        "ns": 118681624,
+        "pct_body": 3.464903570581771,
+        "calls": 43,
+        "bytes": 1442928640
+      },
+      {
+        "name": "host.mla.wo_a_upload",
+        "ns": 114960750,
+        "pct_body": 3.3562728561226827,
+        "calls": 43,
+        "bytes": 1442928640
+      },
+      {
+        "name": "host.mla.wo_b_upload",
+        "ns": 114529373,
+        "pct_body": 3.343678828023043,
+        "calls": 43,
+        "bytes": 1442928640
+      },
+      {
+        "name": "host.shared.w1_io",
+        "ns": 65850579,
+        "pct_body": 1.9225040795024593,
+        "calls": 43,
+        "bytes": 360710144
+      },
+      {
+        "name": "host.shared.w3_io",
+        "ns": 61692582,
+        "pct_body": 1.8011115827856272,
+        "calls": 43,
+        "bytes": 360710144
+      },
+      {
+        "name": "host.shared.w2_io",
+        "ns": 61556745,
+        "pct_body": 1.797145828943928,
+        "calls": 43,
+        "bytes": 360710144
+      },
+      {
+        "name": "host.lm_head_io",
+        "ns": 37290667,
+        "pct_body": 1.0886989989088438,
+        "calls": 1,
+        "bytes": 1059061760
+      },
+      {
+        "name": "host.mhc_pre",
+        "ns": 27757787,
+        "pct_body": 0.8103870847583639,
+        "calls": 86,
+        "bytes": 0
+      },
+      {
+        "name": "host.lm_head_upload",
+        "ns": 23710959,
+        "pct_body": 0.6922401609622226,
+        "calls": 8,
+        "bytes": 1059061760
+      },
+      {
+        "name": "host.moe_control_io",
+        "ns": 23161710,
+        "pct_body": 0.6762048662207345,
+        "calls": 43,
+        "bytes": 158208548
+      },
+      {
+        "name": "host.mla.wq_a_upload",
+        "ns": 17583750,
+        "pct_body": 0.5133566267952081,
+        "calls": 43,
+        "bytes": 180366080
+      }
+    ]
+  },
+  "isolated_kernels_ms": [
+    {
+      "name": "isolated.act_quant.hidden",
+      "layer": 0,
+      "gpu_ms": 0.205,
+      "wait_ms": 0.493
+    },
+    {
+      "name": "isolated.mla.wq_a",
+      "layer": 0,
+      "gpu_ms": 0.51,
+      "wait_ms": 0.779
+    },
+    {
+      "name": "isolated.cast.q_lora",
+      "layer": 0,
+      "gpu_ms": 0.005,
+      "wait_ms": 0.241
+    },
+    {
+      "name": "isolated.rmsnorm.q",
+      "layer": 0,
+      "gpu_ms": 0.277,
+      "wait_ms": 0.536
+    },
+    {
+      "name": "isolated.mla.wq_b",
+      "layer": 0,
+      "gpu_ms": 0.33,
+      "wait_ms": 0.735
+    },
+    {
+      "name": "isolated.mla.wkv",
+      "layer": 0,
+      "gpu_ms": 0.295,
+      "wait_ms": 1.057
+    },
+    {
+      "name": "isolated.mla.wo_a",
+      "layer": 0,
+      "gpu_ms": 0.626,
+      "wait_ms": 0.886
+    },
+    {
+      "name": "isolated.mla.wo_b",
+      "layer": 0,
+      "gpu_ms": 0.607,
+      "wait_ms": 0.913
+    },
+    {
+      "name": "isolated.attn.sparse_pos0",
+      "layer": 0,
+      "gpu_ms": 0.104,
+      "wait_ms": 0.309
+    },
+    {
+      "name": "isolated.router.gate",
+      "layer": 0,
+      "gpu_ms": 0.378,
+      "wait_ms": 0.645
+    },
+    {
+      "name": "isolated.router.hash",
+      "layer": 0,
+      "gpu_ms": 0.056,
+      "wait_ms": 0.324
+    },
+    {
+      "name": "isolated.routed.w1",
+      "layer": 0,
+      "gpu_ms": 0.688,
+      "wait_ms": 0.932
+    },
+    {
+      "name": "isolated.routed.w3",
+      "layer": 0,
+      "gpu_ms": 0.685,
+      "wait_ms": 0.912
+    },
+    {
+      "name": "isolated.routed.w2",
+      "layer": 0,
+      "gpu_ms": 0.386,
+      "wait_ms": 0.642
+    },
+    {
+      "name": "isolated.shared.w1",
+      "layer": 0,
+      "gpu_ms": 0.524,
+      "wait_ms": 0.761
+    },
+    {
+      "name": "isolated.shared.w3",
+      "layer": 0,
+      "gpu_ms": 0.298,
+      "wait_ms": 0.651
+    },
+    {
+      "name": "isolated.shared.w2",
+      "layer": 0,
+      "gpu_ms": 0.161,
+      "wait_ms": 0.74
+    },
+    {
+      "name": "isolated.moe_combine",
+      "layer": 0,
+      "gpu_ms": 0.024,
+      "wait_ms": 0.278
+    },
+    {
+      "name": "isolated.act_quant.hidden",
+      "layer": 3,
+      "gpu_ms": 0.119,
+      "wait_ms": 1.761
+    },
+    {
+      "name": "isolated.mla.wq_a",
+      "layer": 3,
+      "gpu_ms": 0.297,
+      "wait_ms": 0.532
+    },
+    {
+      "name": "isolated.cast.q_lora",
+      "layer": 3,
+      "gpu_ms": 0.003,
+      "wait_ms": 0.213
+    },
+    {
+      "name": "isolated.rmsnorm.q",
+      "layer": 3,
+      "gpu_ms": 0.156,
+      "wait_ms": 0.387
+    },
+    {
+      "name": "isolated.mla.wq_b",
+      "layer": 3,
+      "gpu_ms": 0.194,
+      "wait_ms": 0.421
+    },
+    {
+      "name": "isolated.mla.wkv",
+      "layer": 3,
+      "gpu_ms": 0.292,
+      "wait_ms": 0.532
+    },
+    {
+      "name": "isolated.mla.wo_a",
+      "layer": 3,
+      "gpu_ms": 0.618,
+      "wait_ms": 0.848
+    },
+    {
+      "name": "isolated.mla.wo_b",
+      "layer": 3,
+      "gpu_ms": 0.587,
+      "wait_ms": 0.817
+    },
+    {
+      "name": "isolated.attn.sparse_pos0",
+      "layer": 3,
+      "gpu_ms": 0.093,
+      "wait_ms": 0.314
+    },
+    {
+      "name": "isolated.router.gate",
+      "layer": 3,
+      "gpu_ms": 0.374,
+      "wait_ms": 0.609
+    },
+    {
+      "name": "isolated.router.learned",
+      "layer": 3,
+      "gpu_ms": 0.538,
+      "wait_ms": 0.771
+    },
+    {
+      "name": "isolated.routed.w1",
+      "layer": 3,
+      "gpu_ms": 0.688,
+      "wait_ms": 0.886
+    },
+    {
+      "name": "isolated.routed.w3",
+      "layer": 3,
+      "gpu_ms": 0.695,
+      "wait_ms": 0.874
+    },
+    {
+      "name": "isolated.routed.w2",
+      "layer": 3,
+      "gpu_ms": 0.388,
+      "wait_ms": 0.644
+    },
+    {
+      "name": "isolated.shared.w1",
+      "layer": 3,
+      "gpu_ms": 0.598,
+      "wait_ms": 0.787
+    },
+    {
+      "name": "isolated.shared.w3",
+      "layer": 3,
+      "gpu_ms": 0.527,
+      "wait_ms": 0.718
+    },
+    {
+      "name": "isolated.shared.w2",
+      "layer": 3,
+      "gpu_ms": 0.152,
+      "wait_ms": 0.374
+    },
+    {
+      "name": "isolated.moe_combine",
+      "layer": 3,
+      "gpu_ms": 0.007,
+      "wait_ms": 0.237
+    }
+  ],
+  "route_id_readbacks": {
+    "count": 40,
+    "layers": "3..42 learned-bias (0..2 hash, ids from tid2eid host table)",
+    "memcpy_total_ms": 0.062,
+    "blocks": "upload_expert_slab \u2014 streaming residency cannot select 6 of 256 experts without host ids",
+    "forced_cb": "one extra route command buffer per learned layer (43 route CBs total, 3 of them hash)"
+  },
+  "optimization": {
+    "changes": [
+      "act_quant: serial authority kernel -> simdgroup_block_candidate (threads=256, vector_width=4); isolated 3.52ms -> 0.12-0.21ms; hc_sha bit-identical",
+      "weight path: read_verified_full_view (no into_owned) + persistent MTLBuffers + write_at pack of expert slabs (drop per-layer new_buffer_with_data)",
+      "overlap: submit attn CB, load moe-control+shared while it runs, then wait",
+      "prefetch: during expert slab I/O, parallel-read next layer attn tensors; during moe GPU, fill next layer persistent attn buffers"
+    ],
+    "not_done": [
+      "did not keep routing entirely on device \u2014 256-expert working set is ~3.3GB/layer vs 384MB weight bound; streaming still needs host ids",
+      "did not fuse 137 CBs into one token graph \u2014 host MHC (exact SHA) still requires wo_b and moe_out readback twice per layer",
+      "did not touch admission/index/Q80/capture"
+    ]
+  },
+  "paired_reps": {
+    "method": "alternating BASE (arc/300k-integration mmap-index binary) vs OURS, 3 each, same artifact, VERIFY=admission INDEX=1, KERNEL_PROBE=0",
+    "base_body_ms": [
+      3268,
+      3286,
+      3382
+    ],
+    "ours_body_ms": [
+      1083,
+      1234,
+      1109
+    ],
+    "base_init_ms": [
+      183,
+      174,
+      178
+    ],
+    "ours_init_ms": [
+      171,
+      176,
+      176
+    ],
+    "base_median_body_ms": 3286,
+    "ours_median_body_ms": 1109,
+    "base_mean_body_ms": 3312.0,
+    "ours_mean_body_ms": 1142.0,
+    "median_speedup": 2.96
+  },
+  "after_ledger": {
+    "body_ns": 1175643417,
+    "init_ns": 189000000,
+    "wall_ns": 1365122583,
+    "verify_ns": 4803380315,
+    "diagnosis": "io_bound",
+    "metal_vs_host": {
+      "metal_encode_ns": 6170000,
+      "metal_submit_ns": 1051000,
+      "metal_wait_ns": 206625000,
+      "metal_gpu_ns": 410239000,
+      "metal_gpu_ns_observed_cbs": 137,
+      "metal_gpu_ns_missing_cbs": 0,
+      "host_exclusive_ns": 696497417,
+      "host_between_first_last_cb_gap_ns": 1146617122,
+      "production_command_buffers": 137,
+      "production_dispatches": 1857,
+      "isolated_probe_overhead_ns": 0
+    },
+    "stages": [
+      {
+        "name": "host.expert_slab_io",
+        "ns": 523344252,
+        "pct_body": 44.51556011222066,
+        "calls": 43,
+        "bytes": 3449290752
+      },
+      {
+        "name": "host.attn_weight_io_prefetch",
+        "ns": 514199085,
+        "pct_body": 43.737673988948984,
+        "calls": 42,
+        "bytes": 4558922424
+      },
+      {
+        "name": "metal.gpu",
+        "ns": 410239000,
+        "pct_body": 34.89484941334044,
+        "calls": 137,
+        "bytes": 0
+      },
+      {
+        "name": "metal.wait",
+        "ns": 206625000,
+        "pct_body": 17.575482243354408,
+        "calls": 137,
+        "bytes": 0
+      },
+      {
+        "name": "host.mla.prefetch_fill",
+        "ns": 98534959,
+        "pct_body": 8.381364415023132,
+        "calls": 42,
+        "bytes": 0
+      },
+      {
+        "name": "host.lm_head_upload",
+        "ns": 66854167,
+        "pct_body": 5.68660241985602,
+        "calls": 8,
+        "bytes": 1059061760
+      },
+      {
+        "name": "host.shared.w1_io",
+        "ns": 41190872,
+        "pct_body": 3.5036875471229725,
+        "calls": 43,
+        "bytes": 360710144
+      },
+      {
+        "name": "host.shared.w2_io",
+        "ns": 41129792,
+        "pct_body": 3.4984920942231583,
+        "calls": 43,
+        "bytes": 360710144
+      },
+      {
+        "name": "host.lm_head_io",
+        "ns": 40719625,
+        "pct_body": 3.4636033691157904,
+        "calls": 1,
+        "bytes": 1059061760
+      },
+      {
+        "name": "host.shared.w3_io",
+        "ns": 40588376,
+        "pct_body": 3.4524393547469674,
+        "calls": 43,
+        "bytes": 360710144
+      },
+      {
+        "name": "host.mhc_pre",
+        "ns": 27614713,
+        "pct_body": 2.348902107619253,
+        "calls": 86,
+        "bytes": 0
+      },
+      {
+        "name": "host.moe_control_io",
+        "ns": 21331957,
+        "pct_body": 1.8144921063254675,
+        "calls": 43,
+        "bytes": 158208548
+      },
+      {
+        "name": "host.attn_weight_io",
+        "ns": 7754541,
+        "pct_body": 0.6595997466466483,
+        "calls": 1,
+        "bytes": 108545772
+      },
+      {
+        "name": "metal.encode",
+        "ns": 6170000,
+        "pct_body": 0.5248189979019804,
+        "calls": 137,
+        "bytes": 0
+      },
+      {
+        "name": "host.mhc_post",
+        "ns": 3100874,
+        "pct_body": 0.26375973829826665,
+        "calls": 86,
+        "bytes": 0
+      },
+      {
+        "name": "host.mla.wq_b_upload",
+        "ns": 2155250,
+        "pct_body": 0.1833251450937185,
+        "calls": 43,
+        "bytes": 1442928640
+      },
+      {
+        "name": "host.mla.wo_a_upload",
+        "ns": 2034204,
+        "pct_body": 0.17302899591705026,
+        "calls": 43,
+        "bytes": 1442928640
+      },
+      {
+        "name": "host.mla.wo_b_upload",
+        "ns": 1989336,
+        "pct_body": 0.16921253257866029,
+        "calls": 43,
+        "bytes": 1442928640
+      }
+    ],
+    "command_buffer_count": 137,
+    "route_id_readback_count": 40
+  },
+  "correctness": {
+    "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "hc_sha_match": true,
+    "greedy_token": 5,
+    "greedy_logit": 16.781855,
+    "oracle_token": 5,
+    "oracle_logit": 16.767437,
+    "fallbacks": 0,
+    "bytes_hashed": 0,
+    "numeric_contract": "bit-identical hc_sha vs pre-change native graph; greedy token/logit unchanged"
+  },
+  "target": {
+    "wanted_body_s": 1.0,
+    "achieved_median_body_s": 1.109,
+    "achieved_best_body_s": 1.083,
+    "met": false,
+    "remainder": "expert slab I/O is still ~0.38-0.44s wall (76MB x 43 of FP4 pack + mmap remap). GPU arithmetic after act_quant fix is ~0.40s. Hitting <1.0s needs either a reader mmap cache (out of token-graph scope) or keeping more expert bytes resident."
+  }
+}

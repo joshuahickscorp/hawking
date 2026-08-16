@@ -128,6 +128,8 @@ pub mod gravity_deepseek_v4_streamed_native;
 /// Minimum complete native BOS token graph: device-resident top-6 worklist,
 /// batched Metal command buffers, streaming residency. Not an Engine or TPS claim.
 pub mod gravity_deepseek_v4_native_token_graph;
+/// Per-token nanosecond ledger for the native BOS graph body.
+pub mod gravity_deepseek_v4_token_ns_ledger;
 
 pub mod gravity_glm;
 #[cfg(target_os = "macos")]

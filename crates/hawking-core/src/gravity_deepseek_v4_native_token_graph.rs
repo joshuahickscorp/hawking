@@ -19,8 +19,8 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 
 use crate::gravity_deepseek_v4::{
-    DeepSeekV4ChunkVerificationStats, DeepSeekV4FullStreamReader, NativeScalePairKind,
-    PINNED_REPOSITORY, PINNED_REVISION,
+    DeepSeekV4ChunkVerificationStats, DeepSeekV4FullStreamReader, DeepSeekV4VerifiedBytes,
+    NativeScalePairKind, PINNED_REPOSITORY, PINNED_REVISION,
 };
 use crate::gravity_deepseek_v4_act_quant::ACT_QUANT_BLOCK;
 use crate::gravity_deepseek_v4_final_head::{
@@ -49,6 +49,7 @@ use crate::gravity_deepseek_v4_streamed_forward::{
     open_admitted_dsv4f_reader, peak_rss_bytes, ResidentLedger, DECLARED_PEAK_RSS_BOUND_BYTES,
     DECLARED_WEIGHT_RESIDENT_BOUND_BYTES, SCHEDULE_STREAMED_DECODE_PEAK_BYTES,
 };
+use crate::gravity_deepseek_v4_token_ns_ledger::{TokenNsCollector, TokenNsLedger};
 use crate::{Error, Result};
 
 /// Host-oracle greedy token from the sealed BOS streamed receipt.
@@ -82,7 +83,11 @@ pub const NATIVE_TOKEN_GRAPH_KERNELS: &[&str] = &[
 pub const NATIVE_TOKEN_GRAPH_SCHEMA: &str = "hawking.gravity.deepseek_v4.native_token_graph.v1";
 pub const NATIVE_TOKEN_GRAPH_PATH: &str = "device_worklist_bos_token";
 
+#[allow(dead_code)]
 const ACT_QUANT_KERNEL: &str = "deepseek_v4_act_quant_bf16_ue8m0_authority";
+const ACT_QUANT_SIMD_KERNEL: &str = "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate";
+const ACT_QUANT_SIMD_WIDTH: u32 = 32;
+const ACT_QUANT_VECTOR_WIDTH: u32 = 4;
 const FP8_KERNEL: &str = "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority";
 const CAST_KERNEL: &str = "deepseek_v4_p3a_fp32_to_bf16_authority";
 const RMSNORM_KERNEL: &str = "deepseek_v4_p3a_rmsnorm_bf16_authority";
@@ -189,6 +194,7 @@ pub struct NativeTokenGraphReport {
     pub wall_ms: u128,
     pub init_ms: u128,
     pub body_ms: u128,
+    pub token_ns_ledger: Option<TokenNsLedger>,
     pub chunk_verification: DeepSeekV4ChunkVerificationStats,
 }
 
@@ -242,6 +248,7 @@ impl NativeTokenGraphReport {
             "wall_ms": self.wall_ms,
             "init_ms": self.init_ms,
             "body_ms": self.body_ms,
+            "token_ns_ledger": self.token_ns_ledger,
             "startup_timing": crate::startup_timing::snapshot().to_json(),
             "chunk_verification": {
                 "hash_invocations": self.chunk_verification.hash_invocations,
@@ -391,7 +398,18 @@ fn hash_ids_from_tid2eid(
 #[cfg(target_os = "macos")]
 mod macos {
     use super::*;
-    use crate::metal::{CommandBatch, MetalContext};
+    use crate::metal::{CommandBatch, MetalBatchTiming, MetalContext, SubmittedBatch};
+
+    fn kernel_probe_enabled() -> bool {
+        !matches!(
+            std::env::var("HAWKING_DSV4F_KERNEL_PROBE")
+                .unwrap_or_default()
+                .trim()
+                .to_ascii_lowercase()
+                .as_str(),
+            "0" | "false" | "off" | "no"
+        )
+    }
 
     static FIRST_LAYER_BIND_TIMED: AtomicBool = AtomicBool::new(false);
 
@@ -458,6 +476,27 @@ mod macos {
         attn_denoms: metal::Buffer,
         kv_qat_bytes: metal::Buffer,
         kv_qat_scales: metal::Buffer,
+        wq_a_w: metal::Buffer,
+        wq_a_s: metal::Buffer,
+        wq_b_w: metal::Buffer,
+        wq_b_s: metal::Buffer,
+        wkv_w: metal::Buffer,
+        wkv_s: metal::Buffer,
+        wo_a_w: metal::Buffer,
+        wo_a_s: metal::Buffer,
+        wo_b_w: metal::Buffer,
+        wo_b_s: metal::Buffer,
+        gate_w: metal::Buffer,
+        gate_bias: metal::Buffer,
+        q_norm: metal::Buffer,
+        kv_norm: metal::Buffer,
+        sink: metal::Buffer,
+        sh_w1_w: metal::Buffer,
+        sh_w1_s: metal::Buffer,
+        sh_w3_w: metal::Buffer,
+        sh_w3_s: metal::Buffer,
+        sh_w2_w: metal::Buffer,
+        sh_w2_s: metal::Buffer,
     }
 
     impl Scratch {
@@ -527,6 +566,44 @@ mod macos {
                 kv_qat_bytes: metal.new_buffer_checked(HEAD_DIM)?,
                 kv_qat_scales: metal
                     .new_buffer_checked((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK)?,
+                wq_a_w: metal.new_buffer_checked(Q_LORA_RANK * HIDDEN_SIZE)?,
+                wq_a_s: metal.new_buffer_checked(
+                    (Q_LORA_RANK / ACT_QUANT_BLOCK) * (HIDDEN_SIZE / ACT_QUANT_BLOCK),
+                )?,
+                wq_b_w: metal.new_buffer_checked(WQ_B_ROWS * Q_LORA_RANK)?,
+                wq_b_s: metal.new_buffer_checked(
+                    (WQ_B_ROWS / ACT_QUANT_BLOCK) * (Q_LORA_RANK / ACT_QUANT_BLOCK),
+                )?,
+                wkv_w: metal.new_buffer_checked(WKV_ROWS * HIDDEN_SIZE)?,
+                wkv_s: metal.new_buffer_checked(
+                    (WKV_ROWS / ACT_QUANT_BLOCK) * (HIDDEN_SIZE / ACT_QUANT_BLOCK),
+                )?,
+                wo_a_w: metal.new_buffer_checked(WO_A_ROWS * WO_A_COLS)?,
+                wo_a_s: metal.new_buffer_checked(
+                    (WO_A_ROWS / ACT_QUANT_BLOCK) * (WO_A_COLS / ACT_QUANT_BLOCK),
+                )?,
+                wo_b_w: metal.new_buffer_checked(WO_B_ROWS * WO_B_COLS)?,
+                wo_b_s: metal.new_buffer_checked(
+                    (WO_B_ROWS / ACT_QUANT_BLOCK) * (WO_B_COLS / ACT_QUANT_BLOCK),
+                )?,
+                gate_w: metal
+                    .new_buffer_checked(ROUTED_EXPERTS * HIDDEN_SIZE * size_of::<u16>())?,
+                gate_bias: metal.new_buffer_checked(ROUTED_EXPERTS * size_of::<f32>())?,
+                q_norm: metal.new_buffer_checked(Q_LORA_RANK * size_of::<u16>())?,
+                kv_norm: metal.new_buffer_checked(HEAD_DIM * size_of::<u16>())?,
+                sink: metal.new_buffer_checked(NUM_HEADS * size_of::<f32>())?,
+                sh_w1_w: metal.new_buffer_checked(MOE_INTER_DIM * HIDDEN_SIZE)?,
+                sh_w1_s: metal.new_buffer_checked(
+                    (MOE_INTER_DIM / ACT_QUANT_BLOCK) * (HIDDEN_SIZE / ACT_QUANT_BLOCK),
+                )?,
+                sh_w3_w: metal.new_buffer_checked(MOE_INTER_DIM * HIDDEN_SIZE)?,
+                sh_w3_s: metal.new_buffer_checked(
+                    (MOE_INTER_DIM / ACT_QUANT_BLOCK) * (HIDDEN_SIZE / ACT_QUANT_BLOCK),
+                )?,
+                sh_w2_w: metal.new_buffer_checked(HIDDEN_SIZE * MOE_INTER_DIM)?,
+                sh_w2_s: metal.new_buffer_checked(
+                    (HIDDEN_SIZE / ACT_QUANT_BLOCK) * (MOE_INTER_DIM / ACT_QUANT_BLOCK),
+                )?,
             })
         }
     }
@@ -542,6 +619,7 @@ mod macos {
         gate_tg: u32,
         wo_a_tg: u32,
         lm_tg: u32,
+        attn_scratch_ready: bool,
     }
 
     impl Graph {
@@ -549,7 +627,7 @@ mod macos {
             let metal = MetalContext::new()?;
             let scratch = Scratch::new(&metal)?;
             Ok(Self {
-                act_tg: pipeline_tg(&metal, ACT_QUANT_KERNEL, 32)?,
+                act_tg: pipeline_tg(&metal, ACT_QUANT_SIMD_KERNEL, 256)?,
                 fp8_tg: pipeline_tg(&metal, FP8_KERNEL, 256)?,
                 fp4_tg: pipeline_tg(&metal, WORKLIST_FP4_KERNEL, 256)?,
                 cast_tg: pipeline_tg(&metal, CAST_KERNEL, 256)?,
@@ -559,22 +637,62 @@ mod macos {
                 metal,
                 scratch,
                 counters: NativeTokenGraphCounters::default(),
+                attn_scratch_ready: false,
             })
         }
 
         fn batch(
             &mut self,
+            name: &str,
+            layer: Option<usize>,
+            force: &str,
+            profiler: &mut TokenNsCollector,
             encode: impl FnOnce(&mut CommandBatch<'_>, &Scratch) -> Result<usize>,
-        ) -> Result<()> {
+        ) -> Result<MetalBatchTiming> {
+            let (n, submitted) = self.submit(encode)?;
+            self.finish(name, layer, force, n, submitted, profiler)
+        }
+
+        fn submit(
+            &mut self,
+            encode: impl FnOnce(&mut CommandBatch<'_>, &Scratch) -> Result<usize>,
+        ) -> Result<(usize, SubmittedBatch)> {
             let mut n = 0usize;
-            self.metal.dispatch_batch(|batch| {
+            let submitted = self.metal.submit_batch(|batch| {
                 n = encode(batch, &self.scratch)?;
                 Ok(())
             })?;
+            Ok((n, submitted))
+        }
+
+        fn finish(
+            &mut self,
+            name: &str,
+            layer: Option<usize>,
+            force: &str,
+            n: usize,
+            submitted: SubmittedBatch,
+            profiler: &mut TokenNsCollector,
+        ) -> Result<MetalBatchTiming> {
+            let timing = submitted.wait()?;
             self.counters.command_buffers += 1;
             self.counters.metal_dispatches += n;
-            Ok(())
+            profiler.record_cb(name, layer, force, n as u64, &timing);
+            Ok(timing)
         }
+    }
+
+    fn probe_one(
+        metal: &MetalContext,
+        profiler: &mut TokenNsCollector,
+        name: &str,
+        layer: usize,
+        encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
+    ) -> Result<()> {
+        let started = Instant::now();
+        let timing = metal.dispatch_batch_timed(encode)?;
+        profiler.record_isolated(name, layer, started.elapsed().as_nanos() as u64, &timing);
+        Ok(())
     }
 
     fn pipeline_tg(metal: &MetalContext, kernel: &str, preferred: u32) -> Result<u32> {
@@ -641,19 +759,34 @@ mod macos {
         quant: &metal::Buffer,
         scales: &metal::Buffer,
         cols: u32,
-        tg: u32,
+        simd_tg: u32,
         input_off: u64,
         quant_off: u64,
         scale_off: u64,
     ) -> Result<()> {
         let blocks = cols / ACT_QUANT_BLOCK as u32;
-        let tg = tg.min(blocks.max(1));
-        batch.dispatch_threads(ACT_QUANT_KERNEL, (blocks, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(input), input_off);
-            enc.set_buffer(1, Some(quant), quant_off);
-            enc.set_buffer(2, Some(scales), scale_off);
-            set_u32(enc, 3, &cols);
-        })
+        if blocks == 0 {
+            return Ok(());
+        }
+        let threads_x = simd_tg.max(ACT_QUANT_SIMD_WIDTH);
+        let threads_x = threads_x - (threads_x % ACT_QUANT_SIMD_WIDTH);
+        let simdgroups = threads_x / ACT_QUANT_SIMD_WIDTH;
+        let groups = (blocks + simdgroups - 1) / simdgroups;
+        let grid = groups * threads_x;
+        let vw = ACT_QUANT_VECTOR_WIDTH;
+        batch.dispatch_threads(
+            ACT_QUANT_SIMD_KERNEL,
+            (grid, 1, 1),
+            (threads_x, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), input_off);
+                enc.set_buffer(1, Some(quant), quant_off);
+                enc.set_buffer(2, Some(scales), scale_off);
+                set_u32(enc, 3, &cols);
+                set_u32(enc, 4, &threads_x);
+                set_u32(enc, 5, &vw);
+            },
+        )
     }
 
     fn dispatch_fp8(
@@ -720,14 +853,14 @@ mod macos {
         name_s: String,
     }
 
-    fn par_read_full(
+    fn par_read_views(
         reader: &DeepSeekV4FullStreamReader,
         jobs: &[(String, usize)],
-    ) -> Result<Vec<Vec<u8>>> {
+    ) -> Result<Vec<DeepSeekV4VerifiedBytes>> {
         std::thread::scope(|scope| {
             let mut joins = Vec::with_capacity(jobs.len());
             for (name, bytes) in jobs {
-                joins.push(scope.spawn(move || reader.read_verified_full(name, *bytes)));
+                joins.push(scope.spawn(move || reader.read_verified_full_view(name, *bytes)));
             }
             let mut out = Vec::with_capacity(joins.len());
             for join in joins {
@@ -740,26 +873,52 @@ mod macos {
         })
     }
 
-    fn upload_fp8(
-        metal: &MetalContext,
+    #[allow(dead_code)]
+    fn par_read_full(
+        reader: &DeepSeekV4FullStreamReader,
+        jobs: &[(String, usize)],
+    ) -> Result<Vec<Vec<u8>>> {
+        Ok(par_read_views(reader, jobs)?
+            .into_iter()
+            .map(|view| view.into_owned())
+            .collect())
+    }
+
+    fn write_at(buf: &metal::Buffer, offset: usize, values: &[u8]) {
+        let ptr = buf.contents() as *mut u8;
+        if ptr.is_null() || values.is_empty() {
+            return;
+        }
+        unsafe {
+            ptr.add(offset)
+                .copy_from_nonoverlapping(values.as_ptr(), values.len());
+        }
+    }
+
+    fn refill_fp8(
+        dest_w: &metal::Buffer,
+        dest_s: &metal::Buffer,
         ledger: &mut ResidentLedger,
         weight_name: &str,
         scale_name: &str,
-        weight: Vec<u8>,
-        scale: Vec<u8>,
+        weight: &[u8],
+        scale: &[u8],
     ) -> Result<Fp8Pair> {
         ledger.acquire(weight_name, weight.len())?;
         ledger.acquire(scale_name, scale.len())?;
+        write_bytes(dest_w, weight);
+        write_bytes(dest_s, scale);
         Ok(Fp8Pair {
-            weight: metal.new_buffer_with_bytes_checked(&weight)?,
-            scale: metal.new_buffer_with_bytes_checked(&scale)?,
+            weight: dest_w.clone(),
+            scale: dest_s.clone(),
             name_w: weight_name.to_owned(),
             name_s: scale_name.to_owned(),
         })
     }
 
     fn load_fp8(
-        metal: &MetalContext,
+        dest_w: &metal::Buffer,
+        dest_s: &metal::Buffer,
         reader: &DeepSeekV4FullStreamReader,
         ledger: &mut ResidentLedger,
         weight_name: &str,
@@ -780,10 +939,18 @@ mod macos {
                 (rows / ACT_QUANT_BLOCK) * (cols / ACT_QUANT_BLOCK),
             ),
         ];
-        let mut blobs = par_read_full(reader, &jobs)?;
+        let mut blobs = par_read_views(reader, &jobs)?;
         let scale = blobs.pop().expect("scale");
         let weight = blobs.pop().expect("weight");
-        upload_fp8(metal, ledger, weight_name, scale_name, weight, scale)
+        refill_fp8(
+            dest_w,
+            dest_s,
+            ledger,
+            weight_name,
+            scale_name,
+            weight.as_bytes(),
+            scale.as_bytes(),
+        )
     }
 
     fn release_fp8(ledger: &mut ResidentLedger, pair: &Fp8Pair) -> Result<()> {
@@ -822,13 +989,7 @@ mod macos {
                 p2.scale.name,
             ]);
         }
-        let blobs = par_read_full(reader, &jobs)?;
-        let mut w1 = vec![0u8; ACTIVATED_EXPERTS * W1_PACKED];
-        let mut s1 = vec![0u8; ACTIVATED_EXPERTS * W1_SCALES];
-        let mut w3 = vec![0u8; ACTIVATED_EXPERTS * W1_PACKED];
-        let mut s3 = vec![0u8; ACTIVATED_EXPERTS * W1_SCALES];
-        let mut w2 = vec![0u8; ACTIVATED_EXPERTS * W2_PACKED];
-        let mut s2 = vec![0u8; ACTIVATED_EXPERTS * W2_SCALES];
+        let blobs = par_read_views(reader, &jobs)?;
         for slot in 0..ACTIVATED_EXPERTS {
             let base = slot * 6;
             ledger.acquire(&names[base], blobs[base].len())?;
@@ -837,19 +998,25 @@ mod macos {
             ledger.acquire(&names[base + 3], blobs[base + 3].len())?;
             ledger.acquire(&names[base + 4], blobs[base + 4].len())?;
             ledger.acquire(&names[base + 5], blobs[base + 5].len())?;
-            w1[slot * W1_PACKED..(slot + 1) * W1_PACKED].copy_from_slice(&blobs[base]);
-            s1[slot * W1_SCALES..(slot + 1) * W1_SCALES].copy_from_slice(&blobs[base + 1]);
-            w3[slot * W1_PACKED..(slot + 1) * W1_PACKED].copy_from_slice(&blobs[base + 2]);
-            s3[slot * W1_SCALES..(slot + 1) * W1_SCALES].copy_from_slice(&blobs[base + 3]);
-            w2[slot * W2_PACKED..(slot + 1) * W2_PACKED].copy_from_slice(&blobs[base + 4]);
-            s2[slot * W2_SCALES..(slot + 1) * W2_SCALES].copy_from_slice(&blobs[base + 5]);
+            write_at(&graph.scratch.w1_slab, slot * W1_PACKED, blobs[base].as_bytes());
+            write_at(
+                &graph.scratch.w1_scale_slab,
+                slot * W1_SCALES,
+                blobs[base + 1].as_bytes(),
+            );
+            write_at(&graph.scratch.w3_slab, slot * W1_PACKED, blobs[base + 2].as_bytes());
+            write_at(
+                &graph.scratch.w3_scale_slab,
+                slot * W1_SCALES,
+                blobs[base + 3].as_bytes(),
+            );
+            write_at(&graph.scratch.w2_slab, slot * W2_PACKED, blobs[base + 4].as_bytes());
+            write_at(
+                &graph.scratch.w2_scale_slab,
+                slot * W2_SCALES,
+                blobs[base + 5].as_bytes(),
+            );
         }
-        write_bytes(&graph.scratch.w1_slab, &w1);
-        write_bytes(&graph.scratch.w1_scale_slab, &s1);
-        write_bytes(&graph.scratch.w3_slab, &w3);
-        write_bytes(&graph.scratch.w3_scale_slab, &s3);
-        write_bytes(&graph.scratch.w2_slab, &w2);
-        write_bytes(&graph.scratch.w2_scale_slab, &s2);
         Ok(names)
     }
 
@@ -905,21 +1072,33 @@ mod macos {
             crate::startup_timing::time_ms_result("metal_device_library_pipelines", Graph::new)?;
         let init_ms = wall.elapsed().as_millis();
         let body = Instant::now();
+        let mut profiler = TokenNsCollector::new();
         let mut peak_rss = peak_rss_bytes();
         let mut layers_executed = Vec::new();
         let mut stop_reason = None;
 
-        let mut hc = load_bos_embed_hc(&reader, &mut ledger, PREFIX_TOKEN_ID)?;
+        let mut hc = profiler.time_result("host.embed_io", || {
+            load_bos_embed_hc(&reader, &mut ledger, PREFIX_TOKEN_ID)
+        })?;
+        let mut attn_prefetch: Option<Vec<DeepSeekV4VerifiedBytes>> = None;
 
         for layer_idx in 0..=max_layer {
             let layer = anchors.layer(layer_idx)?.clone();
+            let next_layer = if layer_idx < max_layer {
+                Some(anchors.layer(layer_idx + 1)?.clone())
+            } else {
+                None
+            };
             match execute_layer(
                 &mut graph,
                 &reader,
                 &layer,
+                next_layer.as_ref(),
                 &hc,
                 PREFIX_TOKEN_ID,
                 &mut ledger,
+                &mut profiler,
+                &mut attn_prefetch,
             ) {
                 Ok(next) => {
                     hc = next;
@@ -951,8 +1130,16 @@ mod macos {
             && deepest_layer == Some(max_layer)
             && max_layer + 1 == DSV4F_LAYER_SOURCE_ANCHOR_BASE_LAYER_COUNT
         {
-            let merged = host_merge_final_head_from_hc_bf16(&reader, &hc)?;
-            match metal_lm_head(&mut graph, &reader, &mut ledger, &merged.merged_f32) {
+            let merged = profiler.time_result("host.lm_head.mhc_merge", || {
+                host_merge_final_head_from_hc_bf16(&reader, &hc)
+            })?;
+            match metal_lm_head(
+                &mut graph,
+                &reader,
+                &mut ledger,
+                &merged.merged_f32,
+                &mut profiler,
+            ) {
                 Ok(token) => {
                     lm_head_on_device = token.lm_head_on_device;
                     Some(token)
@@ -973,6 +1160,19 @@ mod macos {
                 ledger.live_bytes()
             )));
         }
+
+        let probe_overhead_ns = profiler.probe_overhead_ns();
+        let raw_body_ns = body.elapsed().as_nanos() as u64;
+        let body_ns = raw_body_ns.saturating_sub(probe_overhead_ns);
+        let wall_ns = wall.elapsed().as_nanos() as u64;
+        let init_ns = (init_ms as u64).saturating_mul(1_000_000);
+        let chunk_verification = reader.chunk_verification_stats();
+        let token_ns_ledger = Some(profiler.finish(
+            body_ns,
+            init_ns,
+            wall_ns,
+            chunk_verification.verify_ns,
+        ));
 
         Ok(NativeTokenGraphReport {
             schema: NATIVE_TOKEN_GRAPH_SCHEMA,
@@ -996,8 +1196,9 @@ mod macos {
             manifest_seal_sha256: reader.manifest_seal_sha256().to_owned(),
             wall_ms: wall.elapsed().as_millis(),
             init_ms,
-            body_ms: body.elapsed().as_millis(),
-            chunk_verification: reader.chunk_verification_stats(),
+            body_ms: (body_ns / 1_000_000) as u128,
+            token_ns_ledger,
+            chunk_verification,
         })
     }
 
@@ -1005,21 +1206,39 @@ mod macos {
         graph: &mut Graph,
         reader: &DeepSeekV4FullStreamReader,
         layer: &DeepSeekV4LayerSourceAnchor,
+        next_layer: Option<&DeepSeekV4LayerSourceAnchor>,
         hc_in: &[u16],
         token_id: u64,
         ledger: &mut ResidentLedger,
+        profiler: &mut TokenNsCollector,
+        attn_prefetch: &mut Option<Vec<DeepSeekV4VerifiedBytes>>,
     ) -> Result<Vec<u16>> {
-        let attn_hc = execute_attention(graph, reader, layer, hc_in, ledger)?;
-        execute_moe(graph, reader, layer, &attn_hc, token_id, ledger)
+        let preloaded = attn_prefetch.take();
+        let (attn_hc, preload) = execute_attention(
+            graph,
+            reader,
+            layer,
+            hc_in,
+            token_id,
+            ledger,
+            profiler,
+            preloaded,
+        )?;
+        execute_moe(
+            graph,
+            reader,
+            layer,
+            next_layer,
+            &attn_hc,
+            token_id,
+            ledger,
+            profiler,
+            Some(preload),
+            attn_prefetch,
+        )
     }
 
-    fn execute_attention(
-        graph: &mut Graph,
-        reader: &DeepSeekV4FullStreamReader,
-        layer: &DeepSeekV4LayerSourceAnchor,
-        hc_in: &[u16],
-        ledger: &mut ResidentLedger,
-    ) -> Result<Vec<u16>> {
+    fn attn_read_jobs(layer: &DeepSeekV4LayerSourceAnchor) -> Vec<(String, usize)> {
         let mhc = layer.mhc_binding(DeepSeekV4LayerMhcStage::Attention);
         let attn_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionNorm);
         let wq_a = layer.control_pair(DeepSeekV4LayerControlProjection::WqA);
@@ -1030,7 +1249,7 @@ mod macos {
         let q_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionQNorm);
         let kv_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionKvNorm);
         let sink = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionSink);
-        let jobs = vec![
+        vec![
             (
                 mhc.fn_tensor.name.clone(),
                 HC_MIX_WIDTH * HC_FLAT_WIDTH * size_of::<f32>(),
@@ -1069,78 +1288,182 @@ mod macos {
             (q_norm.name.clone(), Q_LORA_RANK * size_of::<u16>()),
             (kv_norm.name.clone(), HEAD_DIM * size_of::<u16>()),
             (sink.name.clone(), NUM_HEADS * size_of::<f32>()),
-        ];
-        let blobs = if FIRST_LAYER_BIND_TIMED
+        ]
+    }
+
+    fn execute_attention(
+        graph: &mut Graph,
+        reader: &DeepSeekV4FullStreamReader,
+        layer: &DeepSeekV4LayerSourceAnchor,
+        hc_in: &[u16],
+        token_id: u64,
+        ledger: &mut ResidentLedger,
+        profiler: &mut TokenNsCollector,
+        preloaded: Option<Vec<DeepSeekV4VerifiedBytes>>,
+    ) -> Result<(Vec<u16>, MoePreload)> {
+        let mhc = layer.mhc_binding(DeepSeekV4LayerMhcStage::Attention);
+        let attn_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionNorm);
+        let wq_a = layer.control_pair(DeepSeekV4LayerControlProjection::WqA);
+        let wq_b = layer.control_pair(DeepSeekV4LayerControlProjection::WqB);
+        let wkv = layer.control_pair(DeepSeekV4LayerControlProjection::Wkv);
+        let wo_a = layer.control_pair(DeepSeekV4LayerControlProjection::WoA);
+        let wo_b = layer.control_pair(DeepSeekV4LayerControlProjection::WoB);
+        let q_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionQNorm);
+        let kv_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionKvNorm);
+        let sink = layer.common_tensor(DeepSeekV4LayerCommonTensor::AttentionSink);
+        let jobs = attn_read_jobs(layer);
+        let attn_io_bytes: usize = jobs.iter().map(|job| job.1).sum();
+        let blobs = if let Some(preloaded) = preloaded {
+            profiler.add_stage("host.attn_weight_io_prefetched", 0, 1, attn_io_bytes as u64);
+            preloaded
+        } else if FIRST_LAYER_BIND_TIMED
             .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
             .is_ok()
         {
             crate::startup_timing::time_ms_result("first_layer_weight_bind", || {
-                par_read_full(reader, &jobs)
+                profiler.time_bytes_result("host.attn_weight_io", attn_io_bytes as u64, || {
+                    par_read_views(reader, &jobs)
+                })
             })?
         } else {
-            par_read_full(reader, &jobs)?
+            profiler.time_bytes_result("host.attn_weight_io", attn_io_bytes as u64, || {
+                par_read_views(reader, &jobs)
+            })?
         };
-        let hc_fn = decode_f32_le(&blobs[0], &mhc.fn_tensor.name)?;
-        let hc_base = decode_f32_le(&blobs[1], &mhc.base_tensor.name)?;
-        let hc_scale = decode_f32_le(&blobs[2], &mhc.scale_tensor.name)?;
-        let attn_norm_w = decode_u16_le(&blobs[3], &attn_norm.name)?;
-        let (_, _, _, post_f32, comb_f32, reduced) = hc_attn_pre_source_algorithm(
-            hc_in,
-            &hc_fn,
-            &hc_scale,
-            &hc_base,
-            RMS_NORM_EPS,
-            HC_EPS,
-            HC_SINKHORN_ITERS,
+        profiler.add_stage("host.mla.wq_a_bytes", 0, 1, (Q_LORA_RANK * HIDDEN_SIZE) as u64);
+        profiler.add_stage(
+            "host.mla.wq_b_bytes",
+            0,
+            1,
+            (WQ_B_ROWS * Q_LORA_RANK) as u64,
+        );
+        profiler.add_stage("host.mla.wkv_bytes", 0, 1, (WKV_ROWS * HIDDEN_SIZE) as u64);
+        profiler.add_stage("host.mla.wo_a_bytes", 0, 1, (WO_A_ROWS * WO_A_COLS) as u64);
+        profiler.add_stage("host.mla.wo_b_bytes", 0, 1, (WO_B_ROWS * WO_B_COLS) as u64);
+        let hc_fn = decode_f32_le(blobs[0].as_bytes(), &mhc.fn_tensor.name)?;
+        let hc_base = decode_f32_le(blobs[1].as_bytes(), &mhc.base_tensor.name)?;
+        let hc_scale = decode_f32_le(blobs[2].as_bytes(), &mhc.scale_tensor.name)?;
+        let attn_norm_w = decode_u16_le(blobs[3].as_bytes(), &attn_norm.name)?;
+        let (_, _, _, post_f32, comb_f32, reduced) = profiler.time_result("host.mhc_pre", || {
+            hc_attn_pre_source_algorithm(
+                hc_in,
+                &hc_fn,
+                &hc_scale,
+                &hc_base,
+                RMS_NORM_EPS,
+                HC_EPS,
+                HC_SINKHORN_ITERS,
+            )
+        })?;
+        let attn_norm_row = profiler.time_result("host.rmsnorm", || {
+            rms_norm_bf16_source_algorithm(&reduced, &attn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)
+        })?;
+        let attn_ready = graph.attn_scratch_ready;
+        graph.attn_scratch_ready = false;
+        let mut bind_or_fill = |dest_w: &metal::Buffer,
+                            dest_s: &metal::Buffer,
+                            w_name: &str,
+                            s_name: &str,
+                            weight: &[u8],
+                            scale: &[u8]| {
+            if attn_ready {
+                ledger.acquire(w_name, weight.len())?;
+                ledger.acquire(s_name, scale.len())?;
+                Ok(Fp8Pair {
+                    weight: dest_w.clone(),
+                    scale: dest_s.clone(),
+                    name_w: w_name.to_owned(),
+                    name_s: s_name.to_owned(),
+                })
+            } else {
+                refill_fp8(dest_w, dest_s, ledger, w_name, s_name, weight, scale)
+            }
+        };
+        let wq_a_p = profiler.time_bytes_result(
+            "host.mla.wq_a_upload",
+            blobs[4].len() as u64 + blobs[5].len() as u64,
+            || {
+                bind_or_fill(
+                    &graph.scratch.wq_a_w,
+                    &graph.scratch.wq_a_s,
+                    &wq_a.weight.name,
+                    &wq_a.scale.name,
+                    blobs[4].as_bytes(),
+                    blobs[5].as_bytes(),
+                )
+            },
         )?;
-        let attn_norm_row =
-            rms_norm_bf16_source_algorithm(&reduced, &attn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)?;
-        let wq_a_p = upload_fp8(
-            &graph.metal,
-            ledger,
-            &wq_a.weight.name,
-            &wq_a.scale.name,
-            blobs[4].clone(),
-            blobs[5].clone(),
+        let wq_b_p = profiler.time_bytes_result(
+            "host.mla.wq_b_upload",
+            blobs[6].len() as u64 + blobs[7].len() as u64,
+            || {
+                bind_or_fill(
+                    &graph.scratch.wq_b_w,
+                    &graph.scratch.wq_b_s,
+                    &wq_b.weight.name,
+                    &wq_b.scale.name,
+                    blobs[6].as_bytes(),
+                    blobs[7].as_bytes(),
+                )
+            },
         )?;
-        let wq_b_p = upload_fp8(
-            &graph.metal,
-            ledger,
-            &wq_b.weight.name,
-            &wq_b.scale.name,
-            blobs[6].clone(),
-            blobs[7].clone(),
+        let wkv_p = profiler.time_bytes_result(
+            "host.mla.wkv_upload",
+            blobs[8].len() as u64 + blobs[9].len() as u64,
+            || {
+                bind_or_fill(
+                    &graph.scratch.wkv_w,
+                    &graph.scratch.wkv_s,
+                    &wkv.weight.name,
+                    &wkv.scale.name,
+                    blobs[8].as_bytes(),
+                    blobs[9].as_bytes(),
+                )
+            },
         )?;
-        let wkv_p = upload_fp8(
-            &graph.metal,
-            ledger,
-            &wkv.weight.name,
-            &wkv.scale.name,
-            blobs[8].clone(),
-            blobs[9].clone(),
+        let wo_a_p = profiler.time_bytes_result(
+            "host.mla.wo_a_upload",
+            blobs[10].len() as u64 + blobs[11].len() as u64,
+            || {
+                bind_or_fill(
+                    &graph.scratch.wo_a_w,
+                    &graph.scratch.wo_a_s,
+                    &wo_a.weight.name,
+                    &wo_a.scale.name,
+                    blobs[10].as_bytes(),
+                    blobs[11].as_bytes(),
+                )
+            },
         )?;
-        let wo_a_p = upload_fp8(
-            &graph.metal,
-            ledger,
-            &wo_a.weight.name,
-            &wo_a.scale.name,
-            blobs[10].clone(),
-            blobs[11].clone(),
-        )?;
-        let wo_b_p = upload_fp8(
-            &graph.metal,
-            ledger,
-            &wo_b.weight.name,
-            &wo_b.scale.name,
-            blobs[12].clone(),
-            blobs[13].clone(),
+        let wo_b_p = profiler.time_bytes_result(
+            "host.mla.wo_b_upload",
+            blobs[12].len() as u64 + blobs[13].len() as u64,
+            || {
+                bind_or_fill(
+                    &graph.scratch.wo_b_w,
+                    &graph.scratch.wo_b_s,
+                    &wo_b.weight.name,
+                    &wo_b.scale.name,
+                    blobs[12].as_bytes(),
+                    blobs[13].as_bytes(),
+                )
+            },
         )?;
         ledger.acquire(&q_norm.name, blobs[14].len())?;
-        let q_norm_buf = graph.metal.new_buffer_with_bytes_checked(&blobs[14])?;
+        if !attn_ready {
+            write_bytes(&graph.scratch.q_norm, blobs[14].as_bytes());
+        }
+        let q_norm_buf = graph.scratch.q_norm.clone();
         ledger.acquire(&kv_norm.name, blobs[15].len())?;
-        let kv_norm_buf = graph.metal.new_buffer_with_bytes_checked(&blobs[15])?;
+        if !attn_ready {
+            write_bytes(&graph.scratch.kv_norm, blobs[15].as_bytes());
+        }
+        let kv_norm_buf = graph.scratch.kv_norm.clone();
         ledger.acquire(&sink.name, blobs[16].len())?;
-        let sink_buf = graph.metal.new_buffer_with_bytes_checked(&blobs[16])?;
+        if !attn_ready {
+            write_bytes(&graph.scratch.sink, blobs[16].as_bytes());
+        }
+        let sink_buf = graph.scratch.sink.clone();
 
         write_u16(&graph.scratch.hidden_a, &attn_norm_row);
         let softmax_scale = (HEAD_DIM as f32).powf(-0.5);
@@ -1149,8 +1472,9 @@ mod macos {
         let fp8_tg = graph.fp8_tg;
         let cast_tg = graph.cast_tg;
         let wo_a_tg = graph.wo_a_tg;
+        let layer_idx = layer.layer;
 
-        graph.batch(|batch, s| {
+        let (attn_n, attn_submitted) = graph.submit(|batch, s| {
             let mut n = 0usize;
             dispatch_act_quant(
                 batch,
@@ -1318,8 +1642,42 @@ mod macos {
             n += 1;
             Ok(n)
         })?;
+        let overlapped = preload_moe_io(graph, reader, layer, token_id, ledger, profiler)?;
+        graph.finish(
+            "attn",
+            Some(layer_idx),
+            "host_mhc_post_needs_wo_b_bf16",
+            attn_n,
+            attn_submitted,
+            profiler,
+        )?;
 
+        let readback_started = Instant::now();
         let wo_b_out = read_u16(&graph.scratch.hidden_b, HIDDEN_SIZE)?;
+        profiler.record_sync(
+            "host.attn_activation_readback",
+            Some(layer_idx),
+            "host_source_mhc_post_requires_wo_b",
+            readback_started.elapsed().as_nanos() as u64,
+            (HIDDEN_SIZE * size_of::<u16>()) as u64,
+        );
+
+        if kernel_probe_enabled() && (layer_idx == 0 || layer_idx == 3) {
+            probe_attention_kernels(
+                graph,
+                profiler,
+                layer_idx,
+                &wq_a_p,
+                &wq_b_p,
+                &wkv_p,
+                &wo_a_p,
+                &wo_b_p,
+                &q_norm_buf,
+                &kv_norm_buf,
+                &sink_buf,
+            )?;
+        }
+
         release_fp8(ledger, &wq_a_p)?;
         release_fp8(ledger, &wq_b_p)?;
         release_fp8(ledger, &wkv_p)?;
@@ -1328,17 +1686,35 @@ mod macos {
         ledger.release(&q_norm.name)?;
         ledger.release(&kv_norm.name)?;
         ledger.release(&sink.name)?;
-        hc_attn_post_source_algorithm(&wo_b_out, hc_in, &post_f32, &comb_f32)
+        let hc = profiler.time_result("host.mhc_post", || {
+            hc_attn_post_source_algorithm(&wo_b_out, hc_in, &post_f32, &comb_f32)
+        })?;
+        Ok((hc, overlapped))
     }
 
-    fn execute_moe(
-        graph: &mut Graph,
+    struct MoePreload {
+        hc_fn: Vec<f32>,
+        hc_base: Vec<f32>,
+        hc_scale: Vec<f32>,
+        ffn_norm_w: Vec<u16>,
+        gate_w: metal::Buffer,
+        hash_ids: Option<[u32; ACTIVATED_EXPERTS]>,
+        tid2eid_buf: Option<metal::Buffer>,
+        bias_buf: Option<metal::Buffer>,
+        sh_w1: Fp8Pair,
+        sh_w3: Fp8Pair,
+        sh_w2: Fp8Pair,
+        is_hash: bool,
+    }
+
+    fn preload_moe_io(
+        graph: &Graph,
         reader: &DeepSeekV4FullStreamReader,
         layer: &DeepSeekV4LayerSourceAnchor,
-        attn_hc: &[u16],
         token_id: u64,
         ledger: &mut ResidentLedger,
-    ) -> Result<Vec<u16>> {
+        profiler: &mut TokenNsCollector,
+    ) -> Result<MoePreload> {
         let mhc = layer.mhc_binding(DeepSeekV4LayerMhcStage::FeedForward);
         let ffn_norm = layer.common_tensor(DeepSeekV4LayerCommonTensor::FeedForwardNorm);
         let gate = layer.gate_binding();
@@ -1368,26 +1744,17 @@ mod macos {
                 ROUTED_EXPERTS * size_of::<f32>(),
             ));
         }
-        let blobs = par_read_full(reader, &jobs)?;
-        let hc_fn = decode_f32_le(&blobs[0], &mhc.fn_tensor.name)?;
-        let hc_base = decode_f32_le(&blobs[1], &mhc.base_tensor.name)?;
-        let hc_scale = decode_f32_le(&blobs[2], &mhc.scale_tensor.name)?;
-        let ffn_norm_w = decode_u16_le(&blobs[3], &ffn_norm.name)?;
-        let (_, _, _, post_f32, comb_f32, reduced) = hc_attn_pre_source_algorithm(
-            attn_hc,
-            &hc_fn,
-            &hc_scale,
-            &hc_base,
-            RMS_NORM_EPS,
-            HC_EPS,
-            HC_SINKHORN_ITERS,
-        )?;
-        let ffn_norm_row =
-            rms_norm_bf16_source_algorithm(&reduced, &ffn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)?;
-        write_u16(&graph.scratch.hidden_a, &ffn_norm_row);
+        let moe_io_bytes: usize = jobs.iter().map(|job| job.1).sum();
+        let blobs = profiler.time_bytes_result("host.moe_control_io", moe_io_bytes as u64, || {
+            par_read_views(reader, &jobs)
+        })?;
+        let hc_fn = decode_f32_le(blobs[0].as_bytes(), &mhc.fn_tensor.name)?;
+        let hc_base = decode_f32_le(blobs[1].as_bytes(), &mhc.base_tensor.name)?;
+        let hc_scale = decode_f32_le(blobs[2].as_bytes(), &mhc.scale_tensor.name)?;
+        let ffn_norm_w = decode_u16_le(blobs[3].as_bytes(), &ffn_norm.name)?;
         ledger.acquire(&gate.score_weight.name, blobs[4].len())?;
-        let gate_w = graph.metal.new_buffer_with_bytes_checked(&blobs[4])?;
-
+        write_bytes(&graph.scratch.gate_w, blobs[4].as_bytes());
+        let gate_w = graph.scratch.gate_w.clone();
         let hash_ids = if is_hash {
             Some(hash_ids_from_tid2eid(
                 reader,
@@ -1409,18 +1776,142 @@ mod macos {
         };
         let bias_buf = if !is_hash {
             ledger.acquire(&gate.route_data.name, blobs[5].len())?;
-            Some(graph.metal.new_buffer_with_bytes_checked(&blobs[5])?)
+            write_bytes(&graph.scratch.gate_bias, blobs[5].as_bytes());
+            Some(graph.scratch.gate_bias.clone())
         } else {
             None
         };
+        let shared_w1 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W1);
+        let shared_w3 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W3);
+        let shared_w2 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W2);
+        let sh_w1 = profiler.time_bytes_result(
+            "host.shared.w1_io",
+            (MOE_INTER_DIM * HIDDEN_SIZE) as u64,
+            || {
+                load_fp8(
+                    &graph.scratch.sh_w1_w,
+                    &graph.scratch.sh_w1_s,
+                    reader,
+                    ledger,
+                    &shared_w1.weight.name,
+                    &shared_w1.scale.name,
+                    MOE_INTER_DIM,
+                    HIDDEN_SIZE,
+                )
+            },
+        )?;
+        let sh_w3 = profiler.time_bytes_result(
+            "host.shared.w3_io",
+            (MOE_INTER_DIM * HIDDEN_SIZE) as u64,
+            || {
+                load_fp8(
+                    &graph.scratch.sh_w3_w,
+                    &graph.scratch.sh_w3_s,
+                    reader,
+                    ledger,
+                    &shared_w3.weight.name,
+                    &shared_w3.scale.name,
+                    MOE_INTER_DIM,
+                    HIDDEN_SIZE,
+                )
+            },
+        )?;
+        let sh_w2 = profiler.time_bytes_result(
+            "host.shared.w2_io",
+            (HIDDEN_SIZE * MOE_INTER_DIM) as u64,
+            || {
+                load_fp8(
+                    &graph.scratch.sh_w2_w,
+                    &graph.scratch.sh_w2_s,
+                    reader,
+                    ledger,
+                    &shared_w2.weight.name,
+                    &shared_w2.scale.name,
+                    HIDDEN_SIZE,
+                    MOE_INTER_DIM,
+                )
+            },
+        )?;
+        Ok(MoePreload {
+            hc_fn,
+            hc_base,
+            hc_scale,
+            ffn_norm_w,
+            gate_w,
+            hash_ids,
+            tid2eid_buf,
+            bias_buf,
+            sh_w1,
+            sh_w3,
+            sh_w2,
+            is_hash,
+        })
+    }
+
+    fn execute_moe(
+        graph: &mut Graph,
+        reader: &DeepSeekV4FullStreamReader,
+        layer: &DeepSeekV4LayerSourceAnchor,
+        next_layer: Option<&DeepSeekV4LayerSourceAnchor>,
+        attn_hc: &[u16],
+        token_id: u64,
+        ledger: &mut ResidentLedger,
+        profiler: &mut TokenNsCollector,
+        preload: Option<MoePreload>,
+        attn_prefetch: &mut Option<Vec<DeepSeekV4VerifiedBytes>>,
+    ) -> Result<Vec<u16>> {
+        let gate = layer.gate_binding();
+        let preload = match preload {
+            Some(prep) => prep,
+            None => preload_moe_io(graph, reader, layer, token_id, ledger, profiler)?,
+        };
+        let MoePreload {
+            hc_fn,
+            hc_base,
+            hc_scale,
+            ffn_norm_w,
+            gate_w,
+            hash_ids,
+            tid2eid_buf,
+            bias_buf,
+            sh_w1,
+            sh_w3,
+            sh_w2,
+            is_hash,
+        } = preload;
+        let (_, _, _, post_f32, comb_f32, reduced) = profiler.time_result("host.mhc_pre", || {
+            hc_attn_pre_source_algorithm(
+                attn_hc,
+                &hc_fn,
+                &hc_scale,
+                &hc_base,
+                RMS_NORM_EPS,
+                HC_EPS,
+                HC_SINKHORN_ITERS,
+            )
+        })?;
+        let ffn_norm_row = profiler.time_result("host.rmsnorm", || {
+            rms_norm_bf16_source_algorithm(&reduced, &ffn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)
+        })?;
+        write_u16(&graph.scratch.hidden_a, &ffn_norm_row);
 
         let token_u = if is_hash { 0u32 } else { token_id as u32 };
         let experts_u = ROUTED_EXPERTS as u32;
         let top_k = ACTIVATED_EXPERTS as u32;
         let route_scale = ROUTE_SCALE;
         let gate_tg = graph.gate_tg;
+        let layer_idx = layer.layer;
 
-        graph.batch(|batch, s| {
+        graph.batch(
+            "route",
+            Some(layer_idx),
+            if is_hash {
+                "host_pack_valid_and_hash_weight_readback"
+            } else {
+                "host_route_id_readback_for_expert_residency"
+            },
+            profiler,
+            |batch, s| {
             let mut n = 0usize;
             let rows = ROUTED_EXPERTS as u32;
             let cols = HIDDEN_SIZE as u32;
@@ -1494,45 +1985,60 @@ mod macos {
             pack_worklist_host(&ids, &weights)?
         } else {
             graph.counters.host_route_id_readback += 1;
+            let route_started = Instant::now();
             let ids = read_u32(&graph.scratch.route_ids, ACTIVATED_EXPERTS)?;
             let weights = read_f32_n(&graph.scratch.route_weights, ACTIVATED_EXPERTS)?;
             let mut arr = [0u32; ACTIVATED_EXPERTS];
             arr.copy_from_slice(&ids);
-            pack_worklist_host(&arr, &weights)?
+            let packed = pack_worklist_host(&arr, &weights)?;
+            profiler.record_route_readback(
+                layer_idx,
+                route_started.elapsed().as_nanos() as u64,
+                "execute_moe after route command buffer; blocks upload_expert_slab",
+                "streaming_residency_needs_six_expert_ids",
+            );
+            profiler.record_sync(
+                "host.route_id_readback_sync",
+                Some(layer_idx),
+                "streaming_residency_needs_six_expert_ids",
+                route_started.elapsed().as_nanos() as u64,
+                (ACTIVATED_EXPERTS * (size_of::<u32>() + size_of::<f32>())) as u64,
+            );
+            packed
         };
         seed_worklist(graph, &exec);
-        let expert_names = upload_expert_slab(graph, reader, ledger, layer, &exec)?;
-
-        let shared_w1 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W1);
-        let shared_w3 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W3);
-        let shared_w2 = layer.shared_expert_pair(DeepSeekV4LayerExpertProjection::W2);
-        let sh_w1 = load_fp8(
-            &graph.metal,
-            reader,
-            ledger,
-            &shared_w1.weight.name,
-            &shared_w1.scale.name,
-            MOE_INTER_DIM,
-            HIDDEN_SIZE,
-        )?;
-        let sh_w3 = load_fp8(
-            &graph.metal,
-            reader,
-            ledger,
-            &shared_w3.weight.name,
-            &shared_w3.scale.name,
-            MOE_INTER_DIM,
-            HIDDEN_SIZE,
-        )?;
-        let sh_w2 = load_fp8(
-            &graph.metal,
-            reader,
-            ledger,
-            &shared_w2.weight.name,
-            &shared_w2.scale.name,
-            HIDDEN_SIZE,
-            MOE_INTER_DIM,
-        )?;
+        let expert_bytes = (ACTIVATED_EXPERTS * (2 * W1_PACKED + W2_PACKED + 2 * W1_SCALES + W2_SCALES)) as u64;
+        let expert_names = if let Some(next) = next_layer {
+            let started = Instant::now();
+            let (names, prefetched) = std::thread::scope(|scope| -> Result<_> {
+                let expert = scope.spawn(|| upload_expert_slab(graph, reader, ledger, layer, &exec));
+                let attn = scope.spawn(|| {
+                    let jobs = attn_read_jobs(next);
+                    par_read_views(reader, &jobs)
+                });
+                let names = expert
+                    .join()
+                    .map_err(|_| graph_error("expert slab thread panicked"))??;
+                let prefetched = attn
+                    .join()
+                    .map_err(|_| graph_error("attn prefetch thread panicked"))??;
+                Ok((names, prefetched))
+            })?;
+            let ns = started.elapsed().as_nanos() as u64;
+            profiler.add_stage("host.expert_slab_io", ns, 1, expert_bytes);
+            profiler.add_stage(
+                "host.attn_weight_io_prefetch",
+                ns,
+                1,
+                prefetched.iter().map(|b| b.len() as u64).sum(),
+            );
+            *attn_prefetch = Some(prefetched);
+            names
+        } else {
+            profiler.time_bytes_result("host.expert_slab_io", expert_bytes, || {
+                upload_expert_slab(graph, reader, ledger, layer, &exec)
+            })?
+        };
 
         let act_tg = graph.act_tg;
         let fp8_tg = graph.fp8_tg;
@@ -1543,7 +2049,7 @@ mod macos {
         let zero = 0u32;
         let shared_one = 1.0f32;
 
-        graph.batch(|batch, s| {
+        let (moe_n, moe_submitted) = graph.submit(|batch, s| {
             let mut n = 0usize;
             dispatch_act_quant(
                 batch,
@@ -1766,8 +2272,65 @@ mod macos {
             n += 1;
             Ok(n)
         })?;
+        if let Some(blobs) = attn_prefetch.as_ref() {
+            if blobs.len() >= 14 {
+                profiler.time("host.mla.prefetch_fill", || {
+                    write_bytes(&graph.scratch.wq_a_w, blobs[4].as_bytes());
+                    write_bytes(&graph.scratch.wq_a_s, blobs[5].as_bytes());
+                    write_bytes(&graph.scratch.wq_b_w, blobs[6].as_bytes());
+                    write_bytes(&graph.scratch.wq_b_s, blobs[7].as_bytes());
+                    write_bytes(&graph.scratch.wkv_w, blobs[8].as_bytes());
+                    write_bytes(&graph.scratch.wkv_s, blobs[9].as_bytes());
+                    write_bytes(&graph.scratch.wo_a_w, blobs[10].as_bytes());
+                    write_bytes(&graph.scratch.wo_a_s, blobs[11].as_bytes());
+                    write_bytes(&graph.scratch.wo_b_w, blobs[12].as_bytes());
+                    write_bytes(&graph.scratch.wo_b_s, blobs[13].as_bytes());
+                    write_bytes(&graph.scratch.q_norm, blobs[14].as_bytes());
+                    if blobs.len() > 15 {
+                        write_bytes(&graph.scratch.kv_norm, blobs[15].as_bytes());
+                    }
+                    if blobs.len() > 16 {
+                        write_bytes(&graph.scratch.sink, blobs[16].as_bytes());
+                    }
+                });
+                graph.attn_scratch_ready = true;
+            }
+        }
+        graph.finish(
+            "moe",
+            Some(layer_idx),
+            "host_mhc_post_needs_moe_out_bf16",
+            moe_n,
+            moe_submitted,
+            profiler,
+        )?;
 
+        let readback_started = Instant::now();
         let moe = read_u16(&graph.scratch.moe_out, HIDDEN_SIZE)?;
+        profiler.record_sync(
+            "host.moe_activation_readback",
+            Some(layer_idx),
+            "host_source_mhc_post_requires_moe_out",
+            readback_started.elapsed().as_nanos() as u64,
+            (HIDDEN_SIZE * size_of::<u16>()) as u64,
+        );
+
+        if kernel_probe_enabled() && (layer_idx == 0 || layer_idx == 3) {
+            probe_moe_kernels(
+                graph,
+                profiler,
+                layer_idx,
+                &sh_w1,
+                &sh_w3,
+                &sh_w2,
+                &gate_w,
+                bias_buf.as_ref(),
+                tid2eid_buf.as_ref(),
+                is_hash,
+                token_u,
+            )?;
+        }
+
         // Residual readback is the layer HC handoff for host MHC, not an expert gather.
         for name in expert_names {
             ledger.release(&name)?;
@@ -1779,7 +2342,9 @@ mod macos {
         if !is_hash {
             ledger.release(&gate.route_data.name)?;
         }
-        hc_attn_post_source_algorithm(&moe, attn_hc, &post_f32, &comb_f32)
+        profiler.time_result("host.mhc_post", || {
+            hc_attn_post_source_algorithm(&moe, attn_hc, &post_f32, &comb_f32)
+        })
     }
 
     fn metal_lm_head(
@@ -1787,6 +2352,7 @@ mod macos {
         reader: &DeepSeekV4FullStreamReader,
         ledger: &mut ResidentLedger,
         residual_f32: &[f32],
+        profiler: &mut TokenNsCollector,
     ) -> Result<DeepSeekV4GreedyTokenResult> {
         const ROWS_PER_BLOCK: usize = 16_384;
         let meta = reader.tensor_metadata(LM_HEAD_WEIGHT)?;
@@ -1814,22 +2380,25 @@ mod macos {
                 )
             })
             .collect();
-        let blobs = std::thread::scope(|scope| {
-            let mut joins = Vec::with_capacity(jobs.len());
-            for (name, bytes, start, _) in &jobs {
-                let end = *start + *bytes as u64;
-                joins.push(
-                    scope.spawn(move || reader.read_verified_range(name, *start..end, *bytes)),
-                );
-            }
-            let mut out = Vec::with_capacity(joins.len());
-            for join in joins {
-                out.push(
-                    join.join()
-                        .map_err(|_| graph_error("lm_head parallel read panicked"))??,
-                );
-            }
-            Ok::<_, Error>(out)
+        let lm_io_bytes: u64 = jobs.iter().map(|j| j.1 as u64).sum();
+        let blobs = profiler.time_bytes_result("host.lm_head_io", lm_io_bytes, || {
+            std::thread::scope(|scope| {
+                let mut joins = Vec::with_capacity(jobs.len());
+                for (name, bytes, start, _) in &jobs {
+                    let end = *start + *bytes as u64;
+                    joins.push(
+                        scope.spawn(move || reader.read_verified_range(name, *start..end, *bytes)),
+                    );
+                }
+                let mut out = Vec::with_capacity(joins.len());
+                for join in joins {
+                    out.push(
+                        join.join()
+                            .map_err(|_| graph_error("lm_head parallel read panicked"))??,
+                    );
+                }
+                Ok::<_, Error>(out)
+            })
         })?;
 
         let residual_buf = graph
@@ -1847,11 +2416,14 @@ mod macos {
         let lm_tg = graph.lm_tg;
         for (tile, bytes) in tiles.iter().zip(blobs.iter()) {
             ledger.acquire(LM_HEAD_WEIGHT, bytes.len())?;
-            write_bytes(&weight_buf, bytes);
+            profiler.time_bytes("host.lm_head_upload", bytes.len() as u64, || {
+                write_bytes(&weight_buf, bytes);
+            });
             let rows_u = tile.1 as u32;
             let cols_u = HIDDEN_SIZE as u32;
             let tg = lm_tg.min(rows_u.max(1));
-            graph.metal.dispatch_batch(|batch| {
+            let tile_name = format!("lm_head.tile{}", tile.0 / ROWS_PER_BLOCK);
+            let timing = graph.metal.dispatch_batch_timed(|batch| {
                 batch.dispatch_threads(LM_HEAD_KERNEL, (rows_u, 1, 1), (tg, 1, 1), |enc| {
                     enc.set_buffer(0, Some(&weight_buf), 0);
                     enc.set_buffer(1, Some(&residual_buf), 0);
@@ -1862,7 +2434,22 @@ mod macos {
             })?;
             graph.counters.command_buffers += 1;
             graph.counters.metal_dispatches += 1;
+            profiler.record_cb(
+                &tile_name,
+                None,
+                "host_greedy_reduction_needs_tile_logits",
+                1,
+                &timing,
+            );
+            let readback_started = Instant::now();
             let logits = read_f32_n(&out_buf, tile.1)?;
+            profiler.record_sync(
+                "host.lm_head_readback",
+                None,
+                "host_greedy_reduction_needs_tile_logits",
+                readback_started.elapsed().as_nanos() as u64,
+                (tile.1 * size_of::<f32>()) as u64,
+            );
             ledger.release(LM_HEAD_WEIGHT)?;
             let (block_id, block_logit) = greedy_from_logits(&logits, tile.0);
             if block_logit > best_logit || (block_logit == best_logit && block_id < best_id) {
@@ -1882,6 +2469,309 @@ mod macos {
             metal_dispatches: graph.counters.metal_dispatches - before,
             command_buffers: graph.counters.command_buffers,
         })
+    }
+
+    fn probe_attention_kernels(
+        graph: &Graph,
+        profiler: &mut TokenNsCollector,
+        layer_idx: usize,
+        wq_a: &Fp8Pair,
+        wq_b: &Fp8Pair,
+        wkv: &Fp8Pair,
+        wo_a: &Fp8Pair,
+        wo_b: &Fp8Pair,
+        q_norm: &metal::Buffer,
+        kv_norm: &metal::Buffer,
+        sink: &metal::Buffer,
+    ) -> Result<()> {
+        let s = &graph.scratch;
+        let act_tg = graph.act_tg;
+        let fp8_tg = graph.fp8_tg;
+        let cast_tg = graph.cast_tg;
+        let wo_a_tg = graph.wo_a_tg;
+        let eps = RMS_NORM_EPS;
+        let softmax_scale = (HEAD_DIM as f32).powf(-0.5);
+        let heads = NUM_HEADS as u32;
+        let dim = HEAD_DIM as u32;
+        probe_one(&graph.metal, profiler, "isolated.act_quant.hidden", layer_idx, |batch| {
+            dispatch_act_quant(
+                batch,
+                &s.hidden_a,
+                &s.quant_k,
+                &s.quant_scale_k,
+                HIDDEN_SIZE as u32,
+                act_tg,
+                0,
+                0,
+                0,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.mla.wq_a", layer_idx, |batch| {
+            dispatch_fp8(
+                batch,
+                &wq_a.weight,
+                &wq_a.scale,
+                &s.quant_k,
+                &s.quant_scale_k,
+                &s.f32_tmp,
+                Q_LORA_RANK as u32,
+                HIDDEN_SIZE as u32,
+                fp8_tg,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.cast.q_lora", layer_idx, |batch| {
+            dispatch_cast(batch, &s.f32_tmp, &s.q_lora, Q_LORA_RANK as u32, cast_tg)
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.rmsnorm.q", layer_idx, |batch| {
+            dispatch_rmsnorm(batch, &s.q_lora, q_norm, &s.q_lora, Q_LORA_RANK as u32, eps)
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.mla.wq_b", layer_idx, |batch| {
+            dispatch_fp8(
+                batch,
+                &wq_b.weight,
+                &wq_b.scale,
+                &s.quant_q,
+                &s.quant_scale_q,
+                &s.f32_tmp,
+                WQ_B_ROWS as u32,
+                Q_LORA_RANK as u32,
+                fp8_tg,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.mla.wkv", layer_idx, |batch| {
+            dispatch_fp8(
+                batch,
+                &wkv.weight,
+                &wkv.scale,
+                &s.quant_k,
+                &s.quant_scale_k,
+                &s.f32_tmp,
+                WKV_ROWS as u32,
+                HIDDEN_SIZE as u32,
+                fp8_tg,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.mla.wo_a", layer_idx, |batch| {
+            let rows = WO_A_ROWS as u32;
+            let cols = WO_A_COLS as u32;
+            let scale_cols = (WO_A_COLS / ACT_QUANT_BLOCK) as u32;
+            let ranks = O_LORA_RANK as u32;
+            let tg = wo_a_tg.min(rows);
+            batch.dispatch_threads(WO_A_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
+                enc.set_buffer(0, Some(&wo_a.weight), 0);
+                enc.set_buffer(1, Some(&wo_a.scale), 0);
+                enc.set_buffer(2, Some(&s.attn), 0);
+                enc.set_buffer(3, Some(&s.wo_a), 0);
+                set_u32(enc, 4, &rows);
+                set_u32(enc, 5, &cols);
+                set_u32(enc, 6, &scale_cols);
+                set_u32(enc, 7, &ranks);
+            })
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.mla.wo_b", layer_idx, |batch| {
+            dispatch_fp8(
+                batch,
+                &wo_b.weight,
+                &wo_b.scale,
+                &s.quant_wo,
+                &s.quant_scale_wo,
+                &s.f32_tmp,
+                WO_B_ROWS as u32,
+                WO_B_COLS as u32,
+                fp8_tg,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.attn.sparse_pos0", layer_idx, |batch| {
+            batch.dispatch_threads(ATTN_KERNEL, (heads, 1, 1), (heads.min(64), 1, 1), |enc| {
+                enc.set_buffer(0, Some(&s.attn), 0);
+                enc.set_buffer(1, Some(&s.wkv), 0);
+                enc.set_buffer(2, Some(sink), 0);
+                enc.set_buffer(3, Some(&s.attn), 0);
+                enc.set_buffer(4, Some(&s.attn_scores), 0);
+                enc.set_buffer(5, Some(&s.attn_denoms), 0);
+                set_u32(enc, 6, &heads);
+                set_u32(enc, 7, &dim);
+                set_f32(enc, 8, &softmax_scale);
+            })
+        })?;
+        let _ = kv_norm;
+        Ok(())
+    }
+
+    fn probe_moe_kernels(
+        graph: &Graph,
+        profiler: &mut TokenNsCollector,
+        layer_idx: usize,
+        sh_w1: &Fp8Pair,
+        sh_w3: &Fp8Pair,
+        sh_w2: &Fp8Pair,
+        gate_w: &metal::Buffer,
+        bias: Option<&metal::Buffer>,
+        tid2eid: Option<&metal::Buffer>,
+        is_hash: bool,
+        token_u: u32,
+    ) -> Result<()> {
+        let s = &graph.scratch;
+        let fp8_tg = graph.fp8_tg;
+        let fp4_tg = graph.fp4_tg;
+        let gate_tg = graph.gate_tg;
+        let top_k = ACTIVATED_EXPERTS as u32;
+        let rows_w1 = MOE_INTER_DIM as u32;
+        let packed = (HIDDEN_SIZE / 2) as u32;
+        let scale_cols = (HIDDEN_SIZE / FP4_BLOCK) as u32;
+        let grid_w1 = top_k * rows_w1;
+        let tg = fp4_tg.min(rows_w1);
+        let zero = 0u32;
+        let one = 1u32;
+        let experts_u = ROUTED_EXPERTS as u32;
+        probe_one(&graph.metal, profiler, "isolated.router.gate", layer_idx, |batch| {
+            let rows = ROUTED_EXPERTS as u32;
+            let cols = HIDDEN_SIZE as u32;
+            let tg = gate_tg.min(rows);
+            batch.dispatch_threads(GATE_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
+                enc.set_buffer(0, Some(gate_w), 0);
+                enc.set_buffer(1, Some(&s.hidden_a), 0);
+                enc.set_buffer(2, Some(&s.gate_logits), 0);
+                set_u32(enc, 3, &rows);
+                set_u32(enc, 4, &cols);
+            })
+        })?;
+        if is_hash {
+            if let Some(table) = tid2eid {
+                probe_one(&graph.metal, profiler, "isolated.router.hash", layer_idx, |batch| {
+                    batch.dispatch_threads(HASH_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+                        enc.set_buffer(0, Some(&s.gate_logits), 0);
+                        enc.set_buffer(1, Some(table), 0);
+                        enc.set_buffer(2, Some(&s.route_ids), 0);
+                        enc.set_buffer(3, Some(&s.route_weights), 0);
+                        enc.set_buffer(4, Some(&s.original_scores), 0);
+                        enc.set_buffer(5, Some(&s.route_valid), 0);
+                        set_u32(enc, 6, &token_u);
+                        set_u32(enc, 7, &experts_u);
+                        set_u32(enc, 8, &top_k);
+                        set_f32(enc, 9, &ROUTE_SCALE);
+                    })
+                })?;
+            }
+        } else if let Some(bias) = bias {
+            probe_one(&graph.metal, profiler, "isolated.router.learned", layer_idx, |batch| {
+                batch.dispatch_threads(LEARNED_ROUTE_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+                    enc.set_buffer(0, Some(&s.gate_logits), 0);
+                    enc.set_buffer(1, Some(bias), 0);
+                    enc.set_buffer(2, Some(&s.route_ids), 0);
+                    enc.set_buffer(3, Some(&s.route_weights), 0);
+                    enc.set_buffer(4, Some(&s.original_scores), 0);
+                    enc.set_buffer(5, Some(&s.route_valid), 0);
+                    set_u32(enc, 6, &experts_u);
+                    set_u32(enc, 7, &top_k);
+                    set_f32(enc, 8, &ROUTE_SCALE);
+                })
+            })?;
+        }
+        probe_one(&graph.metal, profiler, "isolated.routed.w1", layer_idx, |batch| {
+            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
+                enc.set_buffer(0, Some(&s.worklist), 0);
+                enc.set_buffer(1, Some(&s.w1_slab), 0);
+                enc.set_buffer(2, Some(&s.w1_scale_slab), 0);
+                enc.set_buffer(3, Some(&s.quant_ffn), 0);
+                enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
+                enc.set_buffer(5, Some(&s.expert_gate_f32), 0);
+                set_u32(enc, 6, &rows_w1);
+                set_u32(enc, 7, &packed);
+                set_u32(enc, 8, &scale_cols);
+                set_u32(enc, 9, &top_k);
+                set_u32(enc, 10, &zero);
+            })
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.routed.w3", layer_idx, |batch| {
+            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w1, 1, 1), (tg, 1, 1), |enc| {
+                enc.set_buffer(0, Some(&s.worklist), 0);
+                enc.set_buffer(1, Some(&s.w3_slab), 0);
+                enc.set_buffer(2, Some(&s.w3_scale_slab), 0);
+                enc.set_buffer(3, Some(&s.quant_ffn), 0);
+                enc.set_buffer(4, Some(&s.quant_scale_ffn), 0);
+                enc.set_buffer(5, Some(&s.expert_up_f32), 0);
+                set_u32(enc, 6, &rows_w1);
+                set_u32(enc, 7, &packed);
+                set_u32(enc, 8, &scale_cols);
+                set_u32(enc, 9, &top_k);
+                set_u32(enc, 10, &zero);
+            })
+        })?;
+        let rows_w2 = HIDDEN_SIZE as u32;
+        let packed_w2 = (MOE_INTER_DIM / 2) as u32;
+        let scale_w2 = (MOE_INTER_DIM / FP4_BLOCK) as u32;
+        let grid_w2 = top_k * rows_w2;
+        let tg2 = fp4_tg.min(rows_w2);
+        probe_one(&graph.metal, profiler, "isolated.routed.w2", layer_idx, |batch| {
+            batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid_w2, 1, 1), (tg2, 1, 1), |enc| {
+                enc.set_buffer(0, Some(&s.worklist), 0);
+                enc.set_buffer(1, Some(&s.w2_slab), 0);
+                enc.set_buffer(2, Some(&s.w2_scale_slab), 0);
+                enc.set_buffer(3, Some(&s.expert_down_quant), 0);
+                enc.set_buffer(4, Some(&s.expert_down_scales), 0);
+                enc.set_buffer(5, Some(&s.expert_down_f32), 0);
+                set_u32(enc, 6, &rows_w2);
+                set_u32(enc, 7, &packed_w2);
+                set_u32(enc, 8, &scale_w2);
+                set_u32(enc, 9, &top_k);
+                set_u32(enc, 10, &one);
+            })
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.shared.w1", layer_idx, |batch| {
+            dispatch_fp8(
+                batch,
+                &sh_w1.weight,
+                &sh_w1.scale,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.shared_gate_f32,
+                MOE_INTER_DIM as u32,
+                HIDDEN_SIZE as u32,
+                fp8_tg,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.shared.w3", layer_idx, |batch| {
+            dispatch_fp8(
+                batch,
+                &sh_w3.weight,
+                &sh_w3.scale,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.shared_up_f32,
+                MOE_INTER_DIM as u32,
+                HIDDEN_SIZE as u32,
+                fp8_tg,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.shared.w2", layer_idx, |batch| {
+            dispatch_fp8(
+                batch,
+                &sh_w2.weight,
+                &sh_w2.scale,
+                &s.shared_down_quant,
+                &s.shared_down_scales,
+                &s.shared_down_f32,
+                HIDDEN_SIZE as u32,
+                MOE_INTER_DIM as u32,
+                fp8_tg,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.moe_combine", layer_idx, |batch| {
+            batch.dispatch_threads(
+                WORKLIST_COMBINE_KERNEL,
+                (HIDDEN_SIZE as u32, 1, 1),
+                (graph.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&s.expert_down_bf16), 0);
+                    enc.set_buffer(1, Some(&s.shared_down_bf16), 0);
+                    enc.set_buffer(2, Some(&s.moe_out), 0);
+                    set_u32(enc, 3, &(HIDDEN_SIZE as u32));
+                    set_u32(enc, 4, &top_k);
+                },
+            )
+        })?;
+        Ok(())
     }
 }
 
