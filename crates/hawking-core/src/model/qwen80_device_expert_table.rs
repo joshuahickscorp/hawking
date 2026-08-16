@@ -22,7 +22,9 @@ use super::device_residency::{AddressTableGeometry, PayloadLayout};
 use super::qwen80_complete_runtime::{
     QWEN80_EXPERTS, QWEN80_HIDDEN, QWEN80_LAYERS, QWEN80_MOE_INTERMEDIATE,
 };
-use super::qwen80_uniform_q4_hybrid_decode::Qwen80UniformQ4StreamingCatalog;
+use super::qwen80_uniform_q4_hybrid_decode::{
+    qwen80_expert_nocopy_enabled, Qwen80MappedTensor, Qwen80UniformQ4StreamingCatalog,
+};
 use super::qwen_complete_binary::UNIFORM_Q4_GROUP_SIZE;
 use crate::{Error, Result};
 use std::time::Instant;
@@ -218,6 +220,13 @@ pub struct Qwen80ExpertGpuTriplet {
     pub up_scales: crate::metal::PinnedBuffer,
     pub down_codes: crate::metal::PinnedBuffer,
     pub down_scales: crate::metal::PinnedBuffer,
+    pub gate_code_off: u64,
+    pub gate_scale_off: u64,
+    pub up_code_off: u64,
+    pub up_scale_off: u64,
+    pub down_code_off: u64,
+    pub down_scale_off: u64,
+    _keep_alive: Vec<std::sync::Arc<memmap2::Mmap>>,
 }
 
 #[cfg(target_os = "macos")]
@@ -518,13 +527,36 @@ fn copy_proj(
 }
 
 #[cfg(target_os = "macos")]
+struct UploadedProj {
+    codes: crate::metal::PinnedBuffer,
+    scales: crate::metal::PinnedBuffer,
+    code_off: u64,
+    scale_off: u64,
+    keep_alive: Option<std::sync::Arc<memmap2::Mmap>>,
+}
+
+#[cfg(target_os = "macos")]
 fn upload_proj(
     context: &crate::metal::MetalContext,
     catalog: &Qwen80UniformQ4StreamingCatalog,
     name: &str,
     expected_rows: usize,
     expected_cols: usize,
-) -> Result<(crate::metal::PinnedBuffer, crate::metal::PinnedBuffer)> {
+) -> Result<UploadedProj> {
+    if qwen80_expert_nocopy_enabled() {
+        return upload_proj_nocopy(context, catalog, name, expected_rows, expected_cols);
+    }
+    upload_proj_copy(context, catalog, name, expected_rows, expected_cols)
+}
+
+#[cfg(target_os = "macos")]
+fn upload_proj_copy(
+    context: &crate::metal::MetalContext,
+    catalog: &Qwen80UniformQ4StreamingCatalog,
+    name: &str,
+    expected_rows: usize,
+    expected_cols: usize,
+) -> Result<UploadedProj> {
     let packed = catalog.load_packed(name)?;
     let (rows, cols) = packed.rows_cols()?;
     if rows != expected_rows || cols != expected_cols {
@@ -541,10 +573,65 @@ fn upload_proj(
             scales.len()
         )));
     }
-    Ok((
-        context.new_buffer_with_bytes_checked(codes)?,
-        context.new_buffer_with_bytes_checked(scales)?,
-    ))
+    let copy_started = Instant::now();
+    let code_buf = context.new_buffer_with_bytes_checked(codes)?;
+    let scale_buf = context.new_buffer_with_bytes_checked(scales)?;
+    let copy_ns = copy_started.elapsed().as_nanos() as u64;
+    catalog.add_first_touch(|split| {
+        split.metal_copy_ns = split.metal_copy_ns.saturating_add(copy_ns);
+        split.copy_binds = split.copy_binds.saturating_add(1);
+    });
+    Ok(UploadedProj {
+        codes: code_buf,
+        scales: scale_buf,
+        code_off: 0,
+        scale_off: 0,
+        keep_alive: None,
+    })
+}
+
+#[cfg(target_os = "macos")]
+fn upload_proj_nocopy(
+    context: &crate::metal::MetalContext,
+    catalog: &Qwen80UniformQ4StreamingCatalog,
+    name: &str,
+    expected_rows: usize,
+    expected_cols: usize,
+) -> Result<UploadedProj> {
+    let mapped: Qwen80MappedTensor = catalog.map_payload(name)?;
+    let (rows, cols) = mapped.rows_cols()?;
+    if rows != expected_rows || cols != expected_cols {
+        return Err(table_error(format!(
+            "{name} geometry {rows}x{cols} != {expected_rows}x{expected_cols}"
+        )));
+    }
+    let codes = mapped.codes()?;
+    let scales = mapped.scales()?;
+    if codes.len() != QWEN80_EXPERT_CODE_BYTES || scales.len() != QWEN80_EXPERT_SCALE_BYTES {
+        return Err(table_error(format!(
+            "{name} payload sizes codes={} scales={} drifted",
+            codes.len(),
+            scales.len()
+        )));
+    }
+    // Codes/scales sit 40 bytes past a 16 KiB boundary (header is 40 B).
+    // Pin the whole page-rounded mmap window and address the slices by
+    // gpuAddress + offset — the dsv-expert pattern, adapted to this layout.
+    let window = mapped.window();
+    let bind_started = Instant::now();
+    let buf = context.new_buffer_no_copy_checked(window, name)?;
+    let bind_ns = bind_started.elapsed().as_nanos() as u64;
+    catalog.add_first_touch(|split| {
+        split.metal_nocopy_ns = split.metal_nocopy_ns.saturating_add(bind_ns);
+        split.nocopy_binds = split.nocopy_binds.saturating_add(1);
+    });
+    Ok(UploadedProj {
+        codes: buf.clone(),
+        scales: buf,
+        code_off: mapped.header.sign_offset as u64,
+        scale_off: mapped.header.scale_offset as u64,
+        keep_alive: Some(mapped.mmap_arc()),
+    })
 }
 
 /// Upload one expert's three Q4 projections. Used by the paged selected-10 cache.
@@ -555,34 +642,47 @@ pub fn upload_qwen80_expert_triplet(
     layer: usize,
     expert: usize,
 ) -> Result<Qwen80ExpertGpuTriplet> {
-    let (gate_codes, gate_scales) = upload_proj(
+    let gate = upload_proj(
         context,
         catalog,
         &expert_proj_name(layer, expert, "gate_proj"),
         QWEN80_MOE_INTERMEDIATE,
         QWEN80_HIDDEN,
     )?;
-    let (up_codes, up_scales) = upload_proj(
+    let up = upload_proj(
         context,
         catalog,
         &expert_proj_name(layer, expert, "up_proj"),
         QWEN80_MOE_INTERMEDIATE,
         QWEN80_HIDDEN,
     )?;
-    let (down_codes, down_scales) = upload_proj(
+    let down = upload_proj(
         context,
         catalog,
         &expert_proj_name(layer, expert, "down_proj"),
         QWEN80_HIDDEN,
         QWEN80_MOE_INTERMEDIATE,
     )?;
+    let mut keep_alive = Vec::new();
+    for slot in [&gate, &up, &down] {
+        if let Some(mapped) = slot.keep_alive.clone() {
+            keep_alive.push(mapped);
+        }
+    }
     Ok(Qwen80ExpertGpuTriplet {
-        gate_codes,
-        gate_scales,
-        up_codes,
-        up_scales,
-        down_codes,
-        down_scales,
+        gate_codes: gate.codes,
+        gate_scales: gate.scales,
+        up_codes: up.codes,
+        up_scales: up.scales,
+        down_codes: down.codes,
+        down_scales: down.scales,
+        gate_code_off: gate.code_off,
+        gate_scale_off: gate.scale_off,
+        up_code_off: up.code_off,
+        up_scale_off: up.scale_off,
+        down_code_off: down.code_off,
+        down_scale_off: down.scale_off,
+        _keep_alive: keep_alive,
     })
 }
 
@@ -590,22 +690,22 @@ pub fn upload_qwen80_expert_triplet(
 fn triplet_from_gpu(trip: &Qwen80ExpertGpuTriplet, generation: u32) -> Qwen80DeviceExpertTriplet {
     Qwen80DeviceExpertTriplet {
         gate: tensor_ref(
-            trip.gate_codes.gpu_address(),
-            trip.gate_scales.gpu_address(),
+            trip.gate_codes.gpu_address() + trip.gate_code_off,
+            trip.gate_scales.gpu_address() + trip.gate_scale_off,
             QWEN80_MOE_INTERMEDIATE as u32,
             QWEN80_HIDDEN as u32,
             generation,
         ),
         up: tensor_ref(
-            trip.up_codes.gpu_address(),
-            trip.up_scales.gpu_address(),
+            trip.up_codes.gpu_address() + trip.up_code_off,
+            trip.up_scales.gpu_address() + trip.up_scale_off,
             QWEN80_MOE_INTERMEDIATE as u32,
             QWEN80_HIDDEN as u32,
             generation,
         ),
         down: tensor_ref(
-            trip.down_codes.gpu_address(),
-            trip.down_scales.gpu_address(),
+            trip.down_codes.gpu_address() + trip.down_code_off,
+            trip.down_scales.gpu_address() + trip.down_scale_off,
             QWEN80_HIDDEN as u32,
             QWEN80_MOE_INTERMEDIATE as u32,
             generation,
