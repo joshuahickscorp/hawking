@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.ascent.cross_lane_conflict_lmhead.v1",
+  "date": "2026-08-16",
+  "conflict": "Two lanes run today reached OPPOSITE conclusions about dropping lm_head from Q8 to Q4 on mixed-1p5.",
+  "lane_a": {
+    "name": "qwen38-attention-density",
+    "action": "mixed-1p5: attention+lm_head Q8->Q4",
+    "basis": "34 CPU probes on real BF16 weights and real captured activations; cosine-based quality screen",
+    "own_caveat": "states 'lm_head q3 only after a greedy generate-and-compare on both models. Cosine is not enough.'"
+  },
+  "lane_b": {
+    "name": "q80-terminal-head",
+    "action": "leave lm_head and embed at HGRAVU01 bits=8; Q4 overlay FORBIDDEN",
+    "basis": "CPU quality screen n=384 measuring GREEDY FLIPS vs source BF16",
+    "measurement": "Q4 lm_head produces 11-13 greedy flips; Q3 37; Q2/binary ~100; SVD r256 349"
+  },
+  "RESOLUTION": "Lane B wins ON LM_HEAD. It measured emitted-token behaviour directly; lane A screened on cosine and says itself that cosine is not enough for this tensor. A logit error becomes the emitted token with no downstream layer to absorb it, so behavioural evidence outranks a distance metric here.",
+  "NOT_IN_CONFLICT": "Attention. Lane B scoped itself to lm_head and embed and did not evaluate attention. Lane A's attention finding stands: mixed-1p5 OVER-PROTECTS attention at Q8, and dropping attention alone to Q4 is a large cheap byte win.",
+  "agreed_action": {
+    "attention": "Q8 -> Q4 on mixed-1p5. Supported by lane A, not contradicted by lane B.",
+    "lm_head": "STAYS Q8. Lane B's 11-13 greedy flips at Q4 is decisive.",
+    "embed": "STAYS Q8, same basis."
+  },
+  "why_this_matters_for_G003": "Q80 mixed moves 2.218 GB/token. The rung instrument put rung C (200 TPS) at <=2.06 GB, so it was the one rung blocked by bytes. Dropping attention to Q4 moves that budget - but the exact saving must be recomputed with lm_head HELD at Q8, since the -925 MB figure bundles both tensors.",
+  "method_note": "This is the disagreement-protocol case: two lanes disagreeing is more informative than either alone, and the resolution is by evidence QUALITY - behavioural greedy-id measurement over a cosine proxy - not by averaging or by recency."
+}
