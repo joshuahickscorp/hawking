@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.special_unit.qwen38_arch_census.v1",
+  "date": "2026-08-16",
+  "steer": "S002 \u00a74",
+  "source": "https://huggingface.co/PocketAiHub/Qwen3.8-27B-Abliterated-MLX/tree/main/bf16",
+  "download_bytes": 54740000000,
+  "download_gb": 54.74,
+  "shards": 11,
+  "identity": {
+    "architectures": [
+      "Qwen3_5ForConditionalGeneration"
+    ],
+    "model_type": "qwen3_5",
+    "multimodal": true,
+    "image_token_id": 248056,
+    "video_token_id": 248057,
+    "vision_config_present": true
+  },
+  "text": {
+    "num_hidden_layers": 64,
+    "hidden_size": 5120,
+    "intermediate_size": 17408,
+    "head_dim": 256,
+    "num_attention_heads": 24,
+    "num_key_value_heads": 4,
+    "gqa_ratio": 6,
+    "vocab_size": 248320,
+    "tie_word_embeddings": false,
+    "hidden_act": "silu",
+    "rms_norm_eps": 1e-06,
+    "attn_output_gate": true,
+    "max_position_embeddings": 262144,
+    "DENSE_NOT_MOE": "no num_experts / moe_intermediate_size key present"
+  },
+  "hybrid_attention": {
+    "full_attention_interval": 4,
+    "linear_attention_layers": 48,
+    "full_attention_layers": 16,
+    "total": 64,
+    "linear_conv_kernel_dim": 4,
+    "linear_key_head_dim": 128,
+    "linear_value_head_dim": 128,
+    "linear_num_key_heads": 16,
+    "linear_num_value_heads": 48
+  },
+  "vision": {
+    "keys": [
+      "deepstack_visual_indexes",
+      "depth",
+      "hidden_act",
+      "hidden_size",
+      "in_channels",
+      "initializer_range",
+      "intermediate_size",
+      "model_type",
+      "num_heads",
+      "num_position_embeddings",
+      "out_hidden_size",
+      "patch_size",
+      "spatial_merge_size",
+      "temporal_patch_size"
+    ],
+    "deepstack": "deepstack_visual_indexes present"
+  },
+  "CENSUS_FINDINGS": [
+    "NOT Q30-compatible. model_type is qwen3_5 / Qwen3_5ForConditionalGeneration, a different architecture family. S002 \u00a74's warning was correct.",
+    "DENSE, NOT MoE. No num_experts key. Therefore the entire Q80 expert machinery - moe_table_build, expert residency, device top-k, expert address tables, first-touch upload - is NOT NEEDED. Every wall that dominated Q80 this session is absent here.",
+    "HYBRID linear/full attention, 48 linear + 16 full on a 4-interval schedule. This is the SAME STRUCTURAL FAMILY as Q80's DeltaNet(36)+GQA(12) hybrid. qwen80_hybrid_token_graph.rs and the DeltaNet/GQA schedule machinery are strong PARAMETRIC_REUSE candidates - far better starting point than qwen_dense.rs.",
+    "Linear attention is gated-deltanet shaped: conv_kernel_dim 4, key/value head dim 128, 16 key heads / 48 value heads. Compare directly against Q80 DeltaNet before writing anything new.",
+    "Full attention is GQA 24:4 (ratio 6) with head_dim 256 - Q80 GQA machinery is a parametric fit.",
+    "MULTIMODAL with vision AND video preprocessors. For a DEVELOPER model the vision tower can likely be SKIPPED entirely on a text-only path, saving both bytes and bring-up work. Confirm the text path runs standalone before porting any vision code.",
+    "vocab 248,320 with tie_word_embeddings FALSE - the LM head is a separate 248320x5120 matrix, ~1.27 G params on its own.",
+    "max_position_embeddings 262144."
+  ],
+  "representation_budget": {
+    "steer_allowance": "3 BPW, double the conventional gravity allowance",
+    "resident_at_3bpw_gb": 10.12,
+    "resident_at_4bpw_gb": 13.5,
+    "note": "27B at 3 BPW is ~10.1 GB - comfortably resident alongside Q80's 13.4 GiB artifact on 96 GB."
+  }
+}
