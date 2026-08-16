@@ -1,0 +1,613 @@
+{
+  "any_organ_speedup_gt_1_05": true,
+  "correctness_all_passed": false,
+  "device_name": "Apple M3 Ultra",
+  "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+  "lane": "q80-wire-gk-simd",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "organs": {
+    "binary_gate_512x2048": {
+      "correctness": {
+        "gk_simd_max_abs": 5.364418029785156e-07,
+        "passed": true,
+        "shipping_max_abs": 5.066394805908203e-07,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "honest_ceiling_gbps": 411.51,
+      "kind": "binary_group",
+      "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "ours_kernel": "gk_matvec_binary_simd",
+      "ours_note": "gk_matvec_binary_simd 1-SG/row, 1 sign/lane",
+      "ours_packed_gbps": 5.1216005001562985,
+      "packed_weight_bytes": 147456,
+      "pairs": {
+        "base_gpu_ns": [
+          6916,
+          6625,
+          6959
+        ],
+        "base_max_ns": 6959,
+        "base_median_ns": 6916,
+        "base_min_ns": 6625,
+        "base_spread_ns": 334,
+        "ours_gpu_ns": [
+          29000,
+          28791,
+          28709
+        ],
+        "ours_max_ns": 29000,
+        "ours_median_ns": 28791,
+        "ours_min_ns": 28709,
+        "ours_spread_ns": 291,
+        "pair_speedup_x": [
+          0.23848275862068966,
+          0.2301066305442673,
+          0.24239785433139432
+        ],
+        "speedup_x_median": 0.24021395575006077
+      },
+      "shape": [
+        512,
+        2048
+      ],
+      "shipping_kernel": "q80_binary_group_matvec_tg256",
+      "shipping_note": "recon-fuse default: tg256, 8 signs/byte in-register",
+      "shipping_packed_gbps": 21.320994794679006
+    },
+    "hgravs_down_2048x512_L": {
+      "bits": 3,
+      "bound": 3,
+      "correctness": {
+        "gk_simd_max_abs": 1.4901161193847656e-08,
+        "passed": true,
+        "shipping_max_abs": 1.4901161193847656e-08,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "hgravs_L_3bit",
+      "name": "model.layers.0.mlp.experts.0.down_proj.weight#L",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 16.64,
+      "packed_weight_bytes": 133120,
+      "pairs": {
+        "base_gpu_ns": [
+          8666,
+          8459,
+          7916
+        ],
+        "base_max_ns": 8666,
+        "base_median_ns": 8459,
+        "base_min_ns": 7916,
+        "base_spread_ns": 750,
+        "ours_gpu_ns": [
+          7916,
+          8209,
+          8000
+        ],
+        "ours_max_ns": 8209,
+        "ours_median_ns": 8000,
+        "ours_min_ns": 7916,
+        "ours_spread_ns": 293,
+        "pair_speedup_x": [
+          1.094744820616473,
+          1.0304543793397491,
+          0.9895
+        ],
+        "speedup_x_median": 1.057375
+      },
+      "shape": [
+        2048,
+        160
+      ],
+      "shipping_kernel": "q80_hgravs01_factor_matvec_simd3",
+      "shipping_note": "shipping 3-bit simd3 (1 SG/row, 8-unpack)",
+      "shipping_packed_gbps": 15.737084761792174
+    },
+    "hgravs_down_2048x512_R": {
+      "bits": 3,
+      "bound": 3,
+      "correctness": {
+        "gk_simd_max_abs": 3.0517578125e-05,
+        "passed": false,
+        "shipping_max_abs": 3.0517578125e-05,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "hgravs_R_3bit",
+      "name": "model.layers.0.mlp.experts.0.down_proj.weight#R",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 2.8025263157894735,
+      "packed_weight_bytes": 33280,
+      "pairs": {
+        "base_gpu_ns": [
+          7125,
+          7416,
+          7625
+        ],
+        "base_max_ns": 7625,
+        "base_median_ns": 7416,
+        "base_min_ns": 7125,
+        "base_spread_ns": 500,
+        "ours_gpu_ns": [
+          11625,
+          11875,
+          11916
+        ],
+        "ours_max_ns": 11916,
+        "ours_median_ns": 11875,
+        "ours_min_ns": 11625,
+        "ours_spread_ns": 291,
+        "pair_speedup_x": [
+          0.6129032258064516,
+          0.6245052631578948,
+          0.6398959382343068
+        ],
+        "speedup_x_median": 0.6245052631578948
+      },
+      "shape": [
+        160,
+        512
+      ],
+      "shipping_kernel": "q80_hgravs01_factor_matvec_simd3",
+      "shipping_note": "shipping 3-bit simd3 (1 SG/row, 8-unpack)",
+      "shipping_packed_gbps": 4.487594390507012
+    },
+    "q8_ba_64x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_simd_max_abs": 7.152557373046875e-07,
+        "passed": true,
+        "shipping_max_abs": 7.152557373046875e-07,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "uniform8",
+      "name": "model.layers.0.linear_attn.in_proj_ba.weight",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 3.8075492957746477,
+      "packed_weight_bytes": 135168,
+      "pairs": {
+        "base_gpu_ns": [
+          5875,
+          5791,
+          5875
+        ],
+        "base_max_ns": 5875,
+        "base_median_ns": 5875,
+        "base_min_ns": 5791,
+        "base_spread_ns": 84,
+        "ours_gpu_ns": [
+          35625,
+          34250,
+          35500
+        ],
+        "ours_max_ns": 35625,
+        "ours_median_ns": 35500,
+        "ours_min_ns": 34250,
+        "ours_spread_ns": 1375,
+        "pair_speedup_x": [
+          0.1649122807017544,
+          0.16908029197080293,
+          0.16549295774647887
+        ],
+        "speedup_x_median": 0.16549295774647887
+      },
+      "shape": [
+        64,
+        2048
+      ],
+      "shipping_kernel": "q80_uniform8_matvec_tg256",
+      "shipping_note": "shipping Q8 tg256 (256 threads/row, byte extract)",
+      "shipping_packed_gbps": 23.00731914893617
+    },
+    "q8_out_2048x4096": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_simd_max_abs": 7.62939453125e-06,
+        "passed": true,
+        "shipping_max_abs": 7.152557373046875e-06,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "uniform8",
+      "name": "model.layers.0.linear_attn.out_proj.weight",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 77.84703712035996,
+      "packed_weight_bytes": 8650752,
+      "pairs": {
+        "base_gpu_ns": [
+          19166,
+          23125,
+          22709
+        ],
+        "base_max_ns": 23125,
+        "base_median_ns": 22709,
+        "base_min_ns": 19166,
+        "base_spread_ns": 3959,
+        "ours_gpu_ns": [
+          111625,
+          110875,
+          111125
+        ],
+        "ours_max_ns": 111625,
+        "ours_median_ns": 111125,
+        "ours_min_ns": 110875,
+        "ours_spread_ns": 750,
+        "pair_speedup_x": [
+          0.17169988801791713,
+          0.20856820744081173,
+          0.20435545556805398
+        ],
+        "speedup_x_median": 0.20435545556805398
+      },
+      "shape": [
+        2048,
+        4096
+      ],
+      "shipping_kernel": "q80_uniform8_matvec_tg256",
+      "shipping_note": "shipping Q8 tg256 (256 threads/row, byte extract)",
+      "shipping_packed_gbps": 380.93936324805145
+    },
+    "q8_qkvz_12288x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_simd_max_abs": 3.0994415283203125e-06,
+        "passed": true,
+        "shipping_max_abs": 3.2186508178710938e-06,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "uniform8",
+      "name": "model.layers.0.linear_attn.in_proj_qkvz.weight",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 90.90107180385289,
+      "packed_weight_bytes": 25952256,
+      "pairs": {
+        "base_gpu_ns": [
+          69084,
+          69250,
+          69291
+        ],
+        "base_max_ns": 69291,
+        "base_median_ns": 69250,
+        "base_min_ns": 69084,
+        "base_spread_ns": 207,
+        "ours_gpu_ns": [
+          285500,
+          285500,
+          285166
+        ],
+        "ours_max_ns": 285500,
+        "ours_median_ns": 285500,
+        "ours_min_ns": 285166,
+        "ours_spread_ns": 334,
+        "pair_speedup_x": [
+          0.2419754816112084,
+          0.2425569176882662,
+          0.24298478780780317
+        ],
+        "speedup_x_median": 0.2425569176882662
+      },
+      "shape": [
+        12288,
+        2048
+      ],
+      "shipping_kernel": "q80_uniform8_matvec_tg256",
+      "shipping_note": "shipping Q8 tg256 (256 threads/row, byte extract)",
+      "shipping_packed_gbps": 374.7618194945848
+    },
+    "q8_router_512x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_simd_max_abs": 2.5033950805664062e-06,
+        "passed": true,
+        "shipping_max_abs": 2.5033950805664062e-06,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "uniform8",
+      "name": "model.layers.0.mlp.gate.weight",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 29.32458305084746,
+      "packed_weight_bytes": 1081344,
+      "pairs": {
+        "base_gpu_ns": [
+          7125,
+          7250,
+          7375
+        ],
+        "base_max_ns": 7375,
+        "base_median_ns": 7250,
+        "base_min_ns": 7125,
+        "base_spread_ns": 250,
+        "ours_gpu_ns": [
+          35084,
+          36875,
+          36875
+        ],
+        "ours_max_ns": 36875,
+        "ours_median_ns": 36875,
+        "ours_min_ns": 35084,
+        "ours_spread_ns": 1791,
+        "pair_speedup_x": [
+          0.20308402690685212,
+          0.19661016949152543,
+          0.2
+        ],
+        "speedup_x_median": 0.19661016949152543
+      },
+      "shape": [
+        512,
+        2048
+      ],
+      "shipping_kernel": "q80_uniform8_matvec_tg256",
+      "shipping_note": "shipping Q8 tg256 (256 threads/row, byte extract)",
+      "shipping_packed_gbps": 149.15089655172414
+    },
+    "q8_shared_down_2048x512": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_simd_max_abs": 7.152557373046875e-07,
+        "passed": true,
+        "shipping_max_abs": 6.556510925292969e-07,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "uniform8",
+      "name": "model.layers.0.mlp.shared_expert.down_proj.weight",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 67.06009302325582,
+      "packed_weight_bytes": 1081344,
+      "pairs": {
+        "base_gpu_ns": [
+          8125,
+          7416,
+          7334
+        ],
+        "base_max_ns": 8125,
+        "base_median_ns": 7416,
+        "base_min_ns": 7334,
+        "base_spread_ns": 791,
+        "ours_gpu_ns": [
+          16125,
+          16334,
+          15791
+        ],
+        "ours_max_ns": 16334,
+        "ours_median_ns": 16125,
+        "ours_min_ns": 15791,
+        "ours_spread_ns": 543,
+        "pair_speedup_x": [
+          0.5038759689922481,
+          0.45402228480470186,
+          0.46444177062883923
+        ],
+        "speedup_x_median": 0.45990697674418607
+      },
+      "shape": [
+        2048,
+        512
+      ],
+      "shipping_kernel": "q80_uniform8_matvec_simd_bytes",
+      "shipping_note": "shipping Q8 simd_bytes (1 SG/row, byte extract)",
+      "shipping_packed_gbps": 145.81229773462783
+    },
+    "q8_shared_gate_512x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_simd_max_abs": 1.0728836059570312e-06,
+        "passed": true,
+        "shipping_max_abs": 1.0132789611816406e-06,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "uniform8",
+      "name": "model.layers.0.mlp.shared_expert.gate_proj.weight",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 29.127111111111113,
+      "packed_weight_bytes": 1081344,
+      "pairs": {
+        "base_gpu_ns": [
+          7125,
+          7125,
+          7625
+        ],
+        "base_max_ns": 7625,
+        "base_median_ns": 7125,
+        "base_min_ns": 7125,
+        "base_spread_ns": 500,
+        "ours_gpu_ns": [
+          36916,
+          37166,
+          37125
+        ],
+        "ours_max_ns": 37166,
+        "ours_median_ns": 37125,
+        "ours_min_ns": 36916,
+        "ours_spread_ns": 250,
+        "pair_speedup_x": [
+          0.19300574276736374,
+          0.19170747457353496,
+          0.2053872053872054
+        ],
+        "speedup_x_median": 0.1919191919191919
+      },
+      "shape": [
+        512,
+        2048
+      ],
+      "shipping_kernel": "q80_uniform8_matvec_tg256",
+      "shipping_note": "shipping Q8 tg256 (256 threads/row, byte extract)",
+      "shipping_packed_gbps": 151.76757894736843
+    },
+    "q8_shared_up_512x2048": {
+      "bits": 8,
+      "bound": 127,
+      "correctness": {
+        "gk_simd_max_abs": 1.4901161193847656e-06,
+        "passed": true,
+        "shipping_max_abs": 1.5497207641601562e-06,
+        "tolerance": 0.00019999999494757503
+      },
+      "group_size": 64,
+      "honest_ceiling_gbps": 411.51,
+      "kind": "uniform8",
+      "name": "model.layers.0.mlp.shared_expert.up_proj.weight",
+      "ours_kernel": "gk_matvec_hgravs_simd",
+      "ours_note": "gk_matvec_hgravs_simd 1-SG/row, wide extract (still bit-unpacks Q8)",
+      "ours_packed_gbps": 29.225513513513512,
+      "packed_weight_bytes": 1081344,
+      "pairs": {
+        "base_gpu_ns": [
+          7166,
+          7500,
+          7166
+        ],
+        "base_max_ns": 7500,
+        "base_median_ns": 7166,
+        "base_min_ns": 7166,
+        "base_spread_ns": 334,
+        "ours_gpu_ns": [
+          37000,
+          37041,
+          36916
+        ],
+        "ours_max_ns": 37041,
+        "ours_median_ns": 37000,
+        "ours_min_ns": 36916,
+        "ours_spread_ns": 125,
+        "pair_speedup_x": [
+          0.19367567567567567,
+          0.20247833481817445,
+          0.19411637230469173
+        ],
+        "speedup_x_median": 0.19367567567567567
+      },
+      "shape": [
+        512,
+        2048
+      ],
+      "shipping_kernel": "q80_uniform8_matvec_tg256",
+      "shipping_note": "shipping Q8 tg256 (256 threads/row, byte extract)",
+      "shipping_packed_gbps": 150.89924644152944
+    }
+  },
+  "protocol": "warmup=2; 3 alternating BASE(shipping tile) then OURS(gk_*_simd) pairs per organ",
+  "question": "Does gk_*_simd still help after in-register occupancy tiles deleted the serial bit-walk?",
+  "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+  "schema": "hawking.ascension.q80_gk_simd_after_recon.v1",
+  "token_projection_isolated_ms": {
+    "gk_simd_sum_ms": 46.351679999999995,
+    "method": "isolated organ median GPU ns * count per token. Not a wall. Residual up omitted.",
+    "organs": {
+      "binary_gate_512x2048": {
+        "count_per_token": 480,
+        "gk_simd_isolated_ns": 28791.0,
+        "gk_simd_token_ms": 13.81968,
+        "shipping_isolated_ns": 6916.0,
+        "shipping_token_ms": 3.31968,
+        "speedup_x": 0.24021395575006077
+      },
+      "hgravs_down_2048x512_L": {
+        "count_per_token": 480,
+        "gk_simd_isolated_ns": 8000.0,
+        "gk_simd_token_ms": 3.84,
+        "shipping_isolated_ns": 8459.0,
+        "shipping_token_ms": 4.06032,
+        "speedup_x": 1.057375
+      },
+      "hgravs_down_2048x512_R": {
+        "count_per_token": 480,
+        "gk_simd_isolated_ns": 11875.0,
+        "gk_simd_token_ms": 5.7,
+        "shipping_isolated_ns": 7416.0,
+        "shipping_token_ms": 3.55968,
+        "speedup_x": 0.6245052631578948
+      },
+      "q8_ba_64x2048": {
+        "count_per_token": 36,
+        "gk_simd_isolated_ns": 35500.0,
+        "gk_simd_token_ms": 1.278,
+        "shipping_isolated_ns": 5875.0,
+        "shipping_token_ms": 0.2115,
+        "speedup_x": 0.16549295774647887
+      },
+      "q8_out_2048x4096": {
+        "count_per_token": 48,
+        "gk_simd_isolated_ns": 111125.0,
+        "gk_simd_token_ms": 5.334,
+        "shipping_isolated_ns": 22709.0,
+        "shipping_token_ms": 1.090032,
+        "speedup_x": 0.20435545556805398
+      },
+      "q8_qkvz_12288x2048": {
+        "count_per_token": 36,
+        "gk_simd_isolated_ns": 285500.0,
+        "gk_simd_token_ms": 10.278,
+        "shipping_isolated_ns": 69250.0,
+        "shipping_token_ms": 2.493,
+        "speedup_x": 0.2425569176882662
+      },
+      "q8_router_512x2048": {
+        "count_per_token": 48,
+        "gk_simd_isolated_ns": 36875.0,
+        "gk_simd_token_ms": 1.77,
+        "shipping_isolated_ns": 7250.0,
+        "shipping_token_ms": 0.348,
+        "speedup_x": 0.19661016949152543
+      },
+      "q8_shared_down_2048x512": {
+        "count_per_token": 48,
+        "gk_simd_isolated_ns": 16125.0,
+        "gk_simd_token_ms": 0.774,
+        "shipping_isolated_ns": 7416.0,
+        "shipping_token_ms": 0.355968,
+        "speedup_x": 0.45990697674418607
+      },
+      "q8_shared_gate_512x2048": {
+        "count_per_token": 48,
+        "gk_simd_isolated_ns": 37125.0,
+        "gk_simd_token_ms": 1.782,
+        "shipping_isolated_ns": 7125.0,
+        "shipping_token_ms": 0.342,
+        "speedup_x": 0.1919191919191919
+      },
+      "q8_shared_up_512x2048": {
+        "count_per_token": 48,
+        "gk_simd_isolated_ns": 37000.0,
+        "gk_simd_token_ms": 1.776,
+        "shipping_isolated_ns": 7166.0,
+        "shipping_token_ms": 0.343968,
+        "speedup_x": 0.19367567567567567
+      }
+    },
+    "shipping_sum_ms": 16.124147999999998
+  },
+  "vehicle": "mixed-1p5-v1",
+  "verdict": "NEGATIVE_SUBSUMED",
+  "correctness_all_passed_except_preexisting_hgravs_R": true,
+  "hgravs_R_numeric_note": "Both shipping simd3 and gk_simd report 3.0517578125e-05. Same as Q80_MATVEC_DISCRIMINATOR. Not a gk_simd regression.",
+  "any_organ_speedup_gt_1_05_after_noise_filter": false
+}
