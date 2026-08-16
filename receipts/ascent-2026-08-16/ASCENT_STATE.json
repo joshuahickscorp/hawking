@@ -1330,10 +1330,11 @@
       "information_gain": 150000000,
       "transfer_value": 50000000,
       "experiment_cost": 1.5,
-      "status": "pending",
+      "status": "running",
       "auto_generated": true,
       "from_bottleneck": "down_proj hgravs01 two-stage factor matvec, 259000 ns/organ (124320000 ns at 48\u00d710)",
-      "from_lane": "q80-decode-kernels-20260816-002157"
+      "from_lane": "q80-decode-kernels-20260816-002157",
+      "task_id": "auto-q80-down-proj-hgravs01-two-20260816-033402"
     },
     {
       "id": "auto-q80-up-proj-fused-binary",
@@ -1348,10 +1349,11 @@
       "information_gain": 150000000,
       "transfer_value": 50000000,
       "experiment_cost": 1.5,
-      "status": "pending",
+      "status": "running",
       "auto_generated": true,
       "from_bottleneck": "up_proj fused binary+CSR, 17250 ns (8280000 ns at 48\u00d710)",
-      "from_lane": "q80-decode-throughput-20260816-004451"
+      "from_lane": "q80-decode-throughput-20260816-004451",
+      "task_id": "auto-q80-up-proj-fused-binary-20260816-033715"
     },
     {
       "id": "auto-q80-host-top-expert-address",
@@ -1730,6 +1732,24 @@
       "auto_generated": true,
       "from_bottleneck": "host.expert_slab_read 104433834 ns (DIRTY_ENGINEERING) \u2014 GPU-idle mmap of the six routed experts after route; metal.gpu 287662000\u2013307519000 ns across 134 CBs (wait 161686000\u2013172327000 ns)",
       "from_lane": "auto-q80-dsv4f-host-expert-slab-20260816-031154"
+    },
+    {
+      "id": "auto-q80-probe-attn-prefetch-thread",
+      "model": "q80",
+      "hypothesis": "probe.attn_prefetch_thread (next-layer attn I/O on the GPU-idle joint wall) 267869705 ns/token; after that leftover expert-only I/O ~155 ms and Metal GPU 274317000\u2013280577000 ns across 134 CBs",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-probe-attn-prefetch-thread.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "probe.attn_prefetch_thread (next-layer attn I/O on the GPU-idle joint wall) 267869705 ns/token; after that leftover expert-only I/O ~155 ms and Metal GPU 274317000\u2013280577000 ns across 134 CBs",
+      "from_lane": "auto-dsv4f-host-expert-slab-io-20260816-025622"
     }
   ],
   "history": [
