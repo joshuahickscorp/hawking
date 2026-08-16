@@ -59,3 +59,18 @@ Qwen3.8: 64 layers (48 linear + 16 full, rule (layer+1)%4==0), hidden 5120,
   tables, first-touch upload, routed/shared expert waves.
   qwen38-27b/uniform-q4-v1 (13.65 GB) is ~4.3 BPW: bring-up vehicle ONLY, it cannot
   satisfy G016's 2.0 target or 3.0 hard limit.
+
+## CORRECTION 2026-08-16 — THE DENSITY CAMPAIGN HAS BEEN COMPRESSING THE WRONG 9%
+(receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json — supersedes v1, which was wrong)
+Per-token bytes moved, VERIFIED against QWEN80_TOKEN_NS_LEDGER to within 0.03%/class:
+  attention      818,151,424   73.0%
+  lm_head        165,329,552   14.7%   <- attention + lm_head = 86-88% of traffic
+  routed experts 100,915,200    9.0%   <- the entire density campaign compresses THIS
+  router          26,742,448    2.4%
+  shared expert    10,091,520    0.9%
+STORAGE BPW IS NOT ACTIVE BPW. At batch=1 only 10 of 512 experts are read, so
+mixed-sub655's 0.6462 storage figure is really 2.518 ACTIVE BPW; mixed-1p5 is 4.980.
+MEASURED no-model control in the real decode shape (98 CBs, 10-of-512 gather, unique
+bytes once) = 320-411 GB/s. NOT 560-647, NOT 819 peak.
+Consequence: compressing unused experts cannot move fs/weight OR token time.
+Attention is the only mass whose compression changes anything.
