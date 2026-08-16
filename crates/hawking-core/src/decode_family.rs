@@ -10,11 +10,25 @@ pub const SCHEMA: &str = "hawking.decode_family.v1";
 
 /// Q80 / Qwen3.8 binary_group serial matvec (shipping mixed graph).
 pub const MATVEC_BINARY: &str = "gk_matvec_binary";
-/// Occupancy tile of [`MATVEC_BINARY`].
+/// Family 1-SG/row tile of [`MATVEC_BINARY`]. Opt-in via
+/// `HAWKING_Q80_GK_SIMD=1`; 2.5× slower than [`MATVEC_BINARY_TILES`].
 pub const MATVEC_BINARY_SIMD: &str = "gk_matvec_binary_simd";
+/// Occupancy tile of [`MATVEC_BINARY`]. Shipping Q80 recon-fuse default
+/// (256 threads/row, in-register consume). Lives in `q80_mixed_decode.metal`.
+pub const MATVEC_BINARY_TILES: &str = "q80_binary_group_matvec_tg256";
+/// Occupancy tile of fused binary + rice CSR residual.
+pub const MATVEC_BINARY_CSR_TILES: &str = "q80_binary_group_csr_matvec_tg256";
 /// Q80 / Qwen3.8 hgravs01 / uniform-n factor serial matvec.
 pub const MATVEC_HGRAVS: &str = "gk_matvec_hgravs";
 pub const MATVEC_HGRAVS_SIMD: &str = "gk_matvec_hgravs_simd";
+/// Occupancy tile of 3-bit hgravs / uniform factor (8-unpack).
+pub const MATVEC_HGRAVS_TILES: &str = "q80_hgravs01_factor_matvec_simd3";
+/// Occupancy tile of n-bit hgravs / uniform factor (not 3-bit, not wide Q8).
+pub const MATVEC_HGRAVS_NBIT_TILES: &str = "q80_hgravs01_factor_matvec_simd";
+/// Occupancy tile of uniform-q8 for wide columns (`cols >= 2048`).
+pub const MATVEC_UNIFORM8_TILES: &str = "q80_uniform8_matvec_tg256";
+/// Occupancy tile of uniform-q8 for narrow columns (byte extract).
+pub const MATVEC_UNIFORM8_SIMD_BYTES: &str = "q80_uniform8_matvec_simd_bytes";
 /// Isolated DSV4F FP4 row (same association as one worklist slot).
 pub const MATVEC_FP4: &str = "gk_matvec_fp4";
 /// DSV4F compact-K worklist FP4 (default K=6).
@@ -31,10 +45,21 @@ pub const PACK_WORKLIST: &str = "gk_pack_worklist";
 
 /// Kernels the Q80 mixed hybrid graph must dispatch after G023.
 /// Serial names are the `HAWKING_Q80_RECON_FUSE=0` fallback. Occupancy
-/// tiles live in `q80_mixed_decode.metal` (default). `*_SIMD` is the
-/// unused family 1-SG/row tile, opt-in via `HAWKING_Q80_GK_SIMD=1`.
+/// tiles ([`Q80_TILE_KERNELS`]) are the default. `*_SIMD` is the unused
+/// family 1-SG/row tile, opt-in via `HAWKING_Q80_GK_SIMD=1`.
 pub const Q80_GRAPH_KERNELS: &[&str] = &[MATVEC_BINARY, MATVEC_HGRAVS];
 pub const Q80_GRAPH_SIMD_KERNELS: &[&str] = &[MATVEC_BINARY_SIMD, MATVEC_HGRAVS_SIMD];
+/// Shipping Q80 recon-fuse occupancy tiles. Same codecs as
+/// [`Q80_GRAPH_KERNELS`]; better launch geometry. Not in
+/// [`FAMILY_KERNELS`] — the Metal lives in `q80_mixed_decode.metal`.
+pub const Q80_TILE_KERNELS: &[&str] = &[
+    MATVEC_BINARY_TILES,
+    MATVEC_BINARY_CSR_TILES,
+    MATVEC_HGRAVS_TILES,
+    MATVEC_HGRAVS_NBIT_TILES,
+    MATVEC_UNIFORM8_TILES,
+    MATVEC_UNIFORM8_SIMD_BYTES,
+];
 
 /// Dense Qwen3.8 mixed graph. Same family matvecs as Q80; no worklist,
 /// pack, or expert combine. Occupancy tiles stay in `q80_mixed_decode.metal`.
@@ -100,8 +125,32 @@ pub fn matvec_binary() -> &'static str {
     pick(MATVEC_BINARY, LEGACY_MATVEC_BINARY)
 }
 
+pub fn matvec_binary_tiles() -> &'static str {
+    MATVEC_BINARY_TILES
+}
+
+pub fn matvec_binary_csr_tiles() -> &'static str {
+    MATVEC_BINARY_CSR_TILES
+}
+
 pub fn matvec_hgravs() -> &'static str {
     pick(MATVEC_HGRAVS, LEGACY_MATVEC_HGRAVS)
+}
+
+pub fn matvec_hgravs_tiles() -> &'static str {
+    MATVEC_HGRAVS_TILES
+}
+
+pub fn matvec_hgravs_nbit_tiles() -> &'static str {
+    MATVEC_HGRAVS_NBIT_TILES
+}
+
+pub fn matvec_uniform8_tiles() -> &'static str {
+    MATVEC_UNIFORM8_TILES
+}
+
+pub fn matvec_uniform8_simd_bytes() -> &'static str {
+    MATVEC_UNIFORM8_SIMD_BYTES
 }
 
 pub fn pack_worklist() -> &'static str {
@@ -153,6 +202,41 @@ mod tests {
             assert!(is_family_kernel(kernel), "{kernel} is not a family kernel");
         }
         assert_eq!(QWEN38_GRAPH_KERNELS, Q80_GRAPH_KERNELS);
+    }
+
+    #[test]
+    fn occupancy_tiles_keep_the_shipping_q80_names() {
+        assert_eq!(MATVEC_BINARY_TILES, "q80_binary_group_matvec_tg256");
+        assert_eq!(
+            MATVEC_BINARY_CSR_TILES,
+            "q80_binary_group_csr_matvec_tg256"
+        );
+        assert_eq!(MATVEC_HGRAVS_TILES, "q80_hgravs01_factor_matvec_simd3");
+        assert_eq!(
+            MATVEC_HGRAVS_NBIT_TILES,
+            "q80_hgravs01_factor_matvec_simd"
+        );
+        assert_eq!(MATVEC_UNIFORM8_TILES, "q80_uniform8_matvec_tg256");
+        assert_eq!(
+            MATVEC_UNIFORM8_SIMD_BYTES,
+            "q80_uniform8_matvec_simd_bytes"
+        );
+        assert_eq!(matvec_binary_tiles(), MATVEC_BINARY_TILES);
+        assert_eq!(matvec_binary_csr_tiles(), MATVEC_BINARY_CSR_TILES);
+        assert_eq!(matvec_hgravs_tiles(), MATVEC_HGRAVS_TILES);
+        assert_eq!(matvec_hgravs_nbit_tiles(), MATVEC_HGRAVS_NBIT_TILES);
+        assert_eq!(matvec_uniform8_tiles(), MATVEC_UNIFORM8_TILES);
+        assert_eq!(matvec_uniform8_simd_bytes(), MATVEC_UNIFORM8_SIMD_BYTES);
+        let src = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/shaders/q80_mixed_decode.metal"
+        ));
+        for &kernel in Q80_TILE_KERNELS {
+            assert!(
+                src.contains(&format!("kernel void {kernel}(")),
+                "{kernel} missing from q80_mixed_decode.metal"
+            );
+        }
     }
 
     #[test]
