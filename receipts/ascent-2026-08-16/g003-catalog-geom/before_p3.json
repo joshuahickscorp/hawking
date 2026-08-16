@@ -1,0 +1,377 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 1.4444456847927971,
+    "manifest_seal_sha256": "6a09fa747af1431b67e53691bc24dfa421c0a7643c5befb297b2eed0f4a95af6",
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+    "tensor_count": 74391
+  },
+  "claim": "MIXED_1P5_GENERATION_GATE_NOT_BASE_TRUE_TPS",
+  "claim_boundary": {
+    "dense_w_materialized": false,
+    "generation_is_the_gate": true,
+    "graded_against": "artifact CPU/numpy oracle, never BF16 parent",
+    "not_bit_exact_vs_q4": true,
+    "packing_is_not_a_coherence_claim": true
+  },
+  "coherence_class": "COHERENT",
+  "correctness": {
+    "dense_w_materialized": false,
+    "designed_host_ops": 12781,
+    "fallbacks": {
+      "dense_w_materialized": 0,
+      "host_activation": 12460,
+      "host_expert_payload_bind": 0,
+      "host_mixed_matvec": 0,
+      "host_q8_embed_gather": 28,
+      "host_q8_vector_decode": 265,
+      "host_sample": 28
+    },
+    "gate_kind": "numeric_equivalence_vs_artifact_oracle",
+    "greedy_bit_identical": true,
+    "greedy_oracle_12": [
+      8420,
+      748,
+      264,
+      729,
+      429,
+      17431,
+      288,
+      264,
+      914,
+      320,
+      72,
+      1734
+    ],
+    "parity": {
+      "dense_w_materialized": false,
+      "passed": true,
+      "samples": [
+        {
+          "codec": 0,
+          "dense_w_materialized": false,
+          "max_abs_error": 9.5367431640625e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.gate_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 1,
+          "dense_w_materialized": false,
+          "max_abs_error": 8.493661880493164e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.up_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 2,
+          "dense_w_materialized": false,
+          "max_abs_error": 2.086162567138672e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.down_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "dense_w_materialized": false,
+          "max_abs_error": 1.9073486328125e-6,
+          "passed": true,
+          "tensor": "model.layers.3.self_attn.q_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "note": "1d HGRAVU01 host decode, not a weight GEMV",
+          "passed": true,
+          "tensor": "model.layers.0.input_layernorm.weight",
+          "vector_elements": 2048
+        }
+      ]
+    },
+    "silent_fallback_count": 0,
+    "tolerance": 0.00002
+  },
+  "degrade": {
+    "down_mix": 1.0,
+    "gate_mix": 1.0,
+    "hgravs_rank_cap": 160,
+    "mix_seed": 3232857105,
+    "up_mix": 1.0
+  },
+  "execution": {
+    "metal_error": null,
+    "native": {
+      "binary_dispatches": 26880,
+      "command_buffers": 9436,
+      "compute_dispatches": 67564,
+      "expert_copy_binds": 0,
+      "expert_nocopy_binds": 13098,
+      "hgravs_factor_dispatches": 26880,
+      "packed_calls": 11409,
+      "packed_skipped": 0,
+      "residual_dispatches": 13440,
+      "routed_expert_waves": 1344,
+      "segment_nocopy_binds": 0,
+      "uniform8_dispatches": 11116
+    },
+    "peak_rss_bytes": 9805135872,
+    "stages": {
+      "cb_encode_ns": 66877243,
+      "cb_submit_ns": 39307975,
+      "cb_wait_minus_gpu_ns": 2669766683,
+      "cb_wait_ns": 3662156654,
+      "deltanet_secs": 3.2309781730000013,
+      "embed_secs": 0.2559174979999999,
+      "gpu_matvec_ns": 992389971,
+      "gpu_matvec_timestamps_missing": 0,
+      "gpu_organ": {
+        "deltanet": 107147531,
+        "gqa": 32775869,
+        "moe_combine_gate": 13653475,
+        "moe_routed": 753603010,
+        "moe_router": 17321941,
+        "moe_shared": 46711117,
+        "other": 0,
+        "terminal": 21177028
+      },
+      "gqa_secs": 0.5691323209999997,
+      "host_excl": {
+        "argmax": 1784497,
+        "buffer_prep": 129380824,
+        "catalog_reparse": 1973770825,
+        "combine": 1972771,
+        "dn_conv": 63053158,
+        "dn_gated": 10527779,
+        "dn_rearrange_l2": 16878460,
+        "dn_recurrent": 1204259087,
+        "dn_residual": 393915,
+        "dn_rms": 2596900,
+        "embed": 255918163,
+        "expert_bind": 2078368885,
+        "final_rms": 71084,
+        "gqa_attn": 15904923,
+        "gqa_interleave": 583713,
+        "gqa_kv_copy": 747229,
+        "gqa_residual": 126339,
+        "gqa_rms": 862541,
+        "gqa_rope": 4695202,
+        "post_rms": 3333789,
+        "silu": 1261001,
+        "topk": 11727793,
+        "vector_clone": 4995173
+      },
+      "host_expert_bind_ns": 2078368885,
+      "host_expert_bind_secs": 2.078368884999998,
+      "mixed_matvec_secs": 4.524523940000004,
+      "moe_combine_secs": 0.4080727220000002,
+      "moe_norm_router_secs": 0.45324854900000067,
+      "moe_routed_secs": 3.4275603000000006,
+      "moe_shared_secs": 0.9461461119999997,
+      "terminal_secs": 0.307431002
+    },
+    "weight_codec": "mixed_gate_binary_up_rice_q1_down_hgravs01_r160_b3_nonexpert_q8"
+  },
+  "generated_text": "Here’s a function that reverses a string (i.e",
+  "generated_token_ids": [
+    8420,
+    748,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    320,
+    72,
+    1734
+  ],
+  "lane": "q80-mixed-generate",
+  "prompt": "<|im_start|>user\nWrite a function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    7985,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "reps_generated_text": [
+    "Here’s a function that reverses a string (i.e",
+    "Here’s a function that reverses a string (i.e"
+  ],
+  "reps_ids_match_first": [
+    true,
+    true
+  ],
+  "schema": "hawking.ascent.q80_mixed_generate.v1",
+  "status": "COHERENT",
+  "timing": {
+    "authority": "wall decode_secs/generated_tokens; GPU is MTLCommandBuffer.GPUEndTime-GPUStartTime of weight GEMVs only",
+    "cache_geom_enabled": false,
+    "command_buffers_per_token_reps": [
+      337.0,
+      337.0
+    ],
+    "decode_family_binary": "gk_matvec_binary",
+    "decode_family_enabled": true,
+    "decode_family_hgravs": "gk_matvec_hgravs",
+    "decode_secs": 3.240043792,
+    "dispatches_per_token_reps": [
+      2413.0,
+      2413.0
+    ],
+    "facet1_enabled": true,
+    "facet2_enabled": true,
+    "gk_simd_enabled": false,
+    "gpu_matvec_ns_per_token_reps": [
+      35522520.54545455,
+      35581190.18181818
+    ],
+    "gpu_timestamps_missing": 0,
+    "host_expert_bind_ns_per_token_reps": [
+      42622251.81818182,
+      0.0
+    ],
+    "host_preparation_decode": {
+      "buffer_prep_ns_median": 4892512,
+      "catalog_reparse_ns_median": 64388011,
+      "catalog_reparse_ns_reps": [
+        65553838,
+        64728831,
+        65047791,
+        63376048,
+        64023407,
+        64020807,
+        63537198,
+        65221085,
+        64388011,
+        64422587,
+        63945250
+      ],
+      "decode_tokens": 11,
+      "embed_ns_median": 8395000,
+      "encode_ns_median": 2302241,
+      "expert_bind_ns_median": 37927834,
+      "gpu_ns_median": 35510413,
+      "host_preparation_ns_median": 117713679,
+      "host_preparation_ns_reps": [
+        162635414,
+        130587646,
+        121185597,
+        115624439,
+        117713679,
+        105608848,
+        95706421,
+        104321742,
+        113198106,
+        149652816,
+        133292116
+      ],
+      "vector_clone_ns_median": 183753,
+      "wall_ns_median": 288099250
+    },
+    "label": "DIRTY_ENGINEERING",
+    "packed_calls": 11409,
+    "packed_skipped": 0,
+    "prefill_secs": 6.36072925,
+    "recon_fuse_enabled": true,
+    "reps_host_preparation_decode": [
+      {
+        "buffer_prep_ns_median": 4892512,
+        "catalog_reparse_ns_median": 64388011,
+        "catalog_reparse_ns_reps": [
+          65553838,
+          64728831,
+          65047791,
+          63376048,
+          64023407,
+          64020807,
+          63537198,
+          65221085,
+          64388011,
+          64422587,
+          63945250
+        ],
+        "decode_tokens": 11,
+        "embed_ns_median": 8395000,
+        "encode_ns_median": 2302241,
+        "expert_bind_ns_median": 37927834,
+        "gpu_ns_median": 35510413,
+        "host_preparation_ns_median": 117713679,
+        "host_preparation_ns_reps": [
+          162635414,
+          130587646,
+          121185597,
+          115624439,
+          117713679,
+          105608848,
+          95706421,
+          104321742,
+          113198106,
+          149652816,
+          133292116
+        ],
+        "vector_clone_ns_median": 183753,
+        "wall_ns_median": 288099250
+      },
+      {
+        "buffer_prep_ns_median": 4840505,
+        "catalog_reparse_ns_median": 64508837,
+        "catalog_reparse_ns_reps": [
+          63645500,
+          64339570,
+          68138870,
+          70414824,
+          68336507,
+          65482289,
+          64453993,
+          64259671,
+          64528072,
+          64508837,
+          63888288
+        ],
+        "decode_tokens": 11,
+        "embed_ns_median": 8591791,
+        "encode_ns_median": 2114214,
+        "expert_bind_ns_median": 0,
+        "gpu_ns_median": 35585414,
+        "host_preparation_ns_median": 80128179,
+        "host_preparation_ns_reps": [
+          79268054,
+          79869315,
+          83902469,
+          89687672,
+          85374342,
+          81593499,
+          80128179,
+          79883177,
+          80270407,
+          79914840,
+          79386453
+        ],
+        "vector_clone_ns_median": 177832,
+        "wall_ns_median": 254296959
+      }
+    ],
+    "steady_state_tok_s": 3.395016452078433,
+    "wait_minus_gpu_ns_per_token_reps": [
+      90668916.45454545,
+      94770097.45454545
+    ],
+    "wall_ns_per_token_reps": [
+      294549382.6363636,
+      256897609.90909094
+    ]
+  }
+}

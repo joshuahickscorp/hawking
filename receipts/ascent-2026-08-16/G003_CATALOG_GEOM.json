@@ -1,0 +1,206 @@
+{
+  "schema": "hawking.special_unit.g003_catalog_geom.v1",
+  "date": "2026-08-16",
+  "lane": "q80-kill-catalog-reparse",
+  "status": "CLOSED",
+  "claim": "Skip catalog.load_packed on the GEMV path after ensure_named_weight. Cache (rows, cols) on the session from the already-bound MTLBuffer. Warm decode host_preparation fell 54.568 ms (79.555 → 24.987). catalog.load_packed is no longer the dominant host_prep term.",
+  "mechanism": "Qwen80MixedHybridDecodeSession.cache.geometry plus GpuWeight rows/cols. Default-on HAWKING_Q80_CACHE_GEOM; set 0 to restore per-GEMV mmap-header reparse. Facet1 bind still uses upload_from_catalog on first touch. embed() still calls packed() once per token (gather needs codes).",
+  "not_a_kernel_win": true,
+  "numerics_risk": "none in the skip: geometry is copied off the already-uploaded GpuWeight; kernels and payloads unchanged",
+  "commit_files": [
+    "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs",
+    "crates/hawking-core/examples/ascension_qwen80_mixed_hybrid_greedy.rs"
+  ],
+  "measurement": {
+    "label": "DIRTY_ENGINEERING",
+    "regime": "3 alternating process pairs (before=HAWKING_Q80_CACHE_GEOM=0, after=unset/default-on); each process --reps 2. Warm numbers are in-process rep 2 (expert_bind=0, matching G003's warm-after-discarded-tokens regime). GPU is completed MTLCommandBuffer GPUStartTime/GPUEndTime.",
+    "gpu_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "vehicle": "qwen80/mixed-1p5-v1",
+    "prompt": "Write a function that reverses a string.",
+    "max_new_tokens": 12,
+    "decode_tokens_per_rep": 11,
+    "lock": "./tools/gpu_lane_lock.sh q80-kill-catalog-reparse",
+    "binary": "target/release/examples/ascension_qwen80_mixed_hybrid_greedy",
+    "build": "cargo build --release -p hawking-core --example ascension_qwen80_mixed_hybrid_greedy → exit 0"
+  },
+  "g003_reference_ns": {
+    "source": "receipts/ascent-2026-08-16/G003_Q80_TOKEN_NS.json",
+    "host_preparation": 84789436,
+    "catalog_reparse": 68416159,
+    "embed_row_gather": 8861500,
+    "buffer_prep": 4877777,
+    "encode": 2442913,
+    "note": "G003 catalog was 68.416 ms. This A/B's before-arm catalog median is 64.183 ms on the same vehicle; 4.2 ms of the G003 figure did not reproduce on this run. Recovery is reported against the paired before arm, not against the historical 68.416 ms."
+  },
+  "correctness": {
+    "greedy_oracle_12": [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734],
+    "greedy_bit_identical_all_six_processes": true,
+    "silent_fallbacks": {
+      "dense_w_materialized": 0,
+      "host_expert_payload_bind": 0,
+      "host_mixed_matvec": 0
+    },
+    "gpu_timestamps_missing": 0
+  },
+  "warm_rep2": {
+    "before": {
+      "host_preparation_ns": [79555059, 78441154, 80128179],
+      "host_preparation_ns_median": 79555059,
+      "catalog_reparse_ns": [64182729, 63137538, 64508837],
+      "catalog_reparse_ns_median": 64182729,
+      "embed_ns": [8521417, 7960875, 8591791],
+      "embed_ns_median": 8521417,
+      "buffer_prep_ns": [4462137, 4711172, 4840505],
+      "buffer_prep_ns_median": 4711172,
+      "encode_ns": [2096710, 2122686, 2114214],
+      "encode_ns_median": 2114214,
+      "expert_bind_ns_median": 0,
+      "vector_clone_ns_median": 177832,
+      "wall_ns_per_token": [253235250, 252058383, 256897610],
+      "wall_ns_per_token_median": 253235250,
+      "gpu_ns_per_token": [35563734, 35562378, 35581190],
+      "gpu_ns_per_token_median": 35563734,
+      "packed_calls": 11144,
+      "packed_skipped": 0
+    },
+    "after": {
+      "host_preparation_ns": [22544260, 25500341, 24986896],
+      "host_preparation_ns_median": 24986896,
+      "catalog_reparse_ns": [8433625, 8678458, 8596625],
+      "catalog_reparse_ns_median": 8596625,
+      "embed_ns": [8445667, 8690791, 8608417],
+      "embed_ns_median": 8608417,
+      "buffer_prep_ns": [3906256, 5296205, 4868165],
+      "buffer_prep_ns_median": 4868165,
+      "encode_ns": [1996465, 2679039, 2487640],
+      "encode_ns_median": 2487640,
+      "expert_bind_ns_median": 0,
+      "vector_clone_ns_median": 200252,
+      "wall_ns_per_token": [192074799, 198238583, 198246792],
+      "wall_ns_per_token_median": 198238583,
+      "gpu_ns_per_token": [35489046, 35568841, 35480432],
+      "gpu_ns_per_token_median": 35489046,
+      "packed_calls": 28,
+      "packed_skipped": 11116
+    }
+  },
+  "host_preparation_before_after": {
+    "before_median_ns": 79555059,
+    "after_median_ns": 24986896,
+    "recovered_ns": 54568163,
+    "recovered_ms": 54.568,
+    "acceptance_floor_ms": 40.0,
+    "clears_40ms": true
+  },
+  "catalog_reparse_before_after": {
+    "before_median_ns": 64182729,
+    "after_median_ns": 8596625,
+    "recovered_ns": 55586104,
+    "recovered_ms": 55.586,
+    "remainder_ns": 8596625,
+    "remainder_is": "one embed packed() per decode token (gather_row still needs codes). GEMV packed() is 0. 28 packed_calls/generate = 16 prompt embeds + 12 decode embeds.",
+    "dominates_host_prep_before": true,
+    "dominates_host_prep_after": false
+  },
+  "stayed_as_ledger_required": {
+    "encode_before_median_ns": 2114214,
+    "encode_after_median_ns": 2487640,
+    "embed_before_median_ns": 8521417,
+    "embed_after_median_ns": 8608417,
+    "buffer_prep_before_median_ns": 4711172,
+    "buffer_prep_after_median_ns": 4868165,
+    "gpu_before_median_ns": 35563734,
+    "gpu_after_median_ns": 35489046,
+    "note": "encode / embed gather / buffer write-read stay. GPU matvec stays. Only catalog GEMV reparse went away. embed Instant still wraps packed()+gather, so catalog_reparse and embed double-count the remaining embed parse (~8.6 ms)."
+  },
+  "spread": {
+    "warm_wall_ns_before": [252058383, 256897610],
+    "warm_wall_ns_after": [192074799, 198246792],
+    "warm_gpu_ns_before": [35562378, 35581190],
+    "warm_gpu_ns_after": [35480432, 35568841],
+    "warm_host_prep_ns_before": [78441154, 80128179],
+    "warm_host_prep_ns_after": [22544260, 25500341]
+  },
+  "component_table": [
+    {
+      "component": "host_preparation",
+      "before_ns": 79555059,
+      "after_ns": 24986896,
+      "delta_ns": -54568163,
+      "delta_ms": -54.568,
+      "note": "acceptance target: drop ≥40 ms"
+    },
+    {
+      "component": "host_prep.catalog_reparse",
+      "before_ns": 64182729,
+      "after_ns": 8596625,
+      "delta_ns": -55586104,
+      "delta_ms": -55.586,
+      "note": "GEMV packed() deleted; remainder is embed packed()"
+    },
+    {
+      "component": "host_prep.embed",
+      "before_ns": 8521417,
+      "after_ns": 8608417,
+      "delta_ns": 87000,
+      "delta_ms": 0.087,
+      "note": "stays (gather + its own packed())"
+    },
+    {
+      "component": "host_prep.buffer_prep",
+      "before_ns": 4711172,
+      "after_ns": 4868165,
+      "delta_ns": 156993,
+      "delta_ms": 0.157,
+      "note": "stays"
+    },
+    {
+      "component": "host_prep.encode",
+      "before_ns": 2114214,
+      "after_ns": 2487640,
+      "delta_ns": 373426,
+      "delta_ms": 0.373,
+      "note": "stays"
+    },
+    {
+      "component": "host_prep.expert_bind",
+      "before_ns": 0,
+      "after_ns": 0,
+      "delta_ns": 0,
+      "delta_ms": 0.0,
+      "note": "warm rep 2; first-touch bind is in cold rep 1"
+    },
+    {
+      "component": "gpu_matvec",
+      "before_ns": 35563734,
+      "after_ns": 35489046,
+      "delta_ns": -74688,
+      "delta_ms": -0.075,
+      "note": "MTLCommandBuffer GPUEnd-GPUStart; not a kernel win"
+    },
+    {
+      "component": "wall",
+      "before_ns": 253235250,
+      "after_ns": 198238583,
+      "delta_ns": -54996667,
+      "delta_ms": -54.997,
+      "note": "tracks host_prep; not used as the acceptance metric"
+    }
+  ],
+  "gk_family_parity": {
+    "command": "cargo test --release -p hawking-core --test gk_family_parity",
+    "exit": 101,
+    "passed": 7,
+    "failed": 1,
+    "failed_test": "both_graphs_dispatch_the_shared_family",
+    "q80_kernel_tests": [
+      "q80_binary_family_matches_legacy_and_cpu",
+      "q80_hgravs_family_matches_legacy_and_cpu"
+    ],
+    "note": "The failing assert is include_str! of gravity_deepseek_v4_native_token_graph.rs looking for PACK_WORKLIST / gk_pack_worklist. That file is unchanged in this worktree (git diff empty) and already calls decode_family::pack_worklist() by helper, not the const name. Concurrent DSV/family lane owns that graph. This lane did not edit decode_family.rs (DENY) or the DSV graph. Q80 numeric family tests in the same binary passed."
+  },
+  "raw": {
+    "dir": "receipts/ascent-2026-08-16/g003-catalog-geom/",
+    "pairs": ["before_p1", "after_p1", "before_p2", "after_p2", "before_p3", "after_p3"]
+  }
+}

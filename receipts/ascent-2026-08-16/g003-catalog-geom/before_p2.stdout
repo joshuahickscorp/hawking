@@ -1,0 +1,21 @@
+prompt_token_ids=[151644, 872, 198, 7985, 264, 729, 429, 17431, 288, 264, 914, 13, 151645, 198, 151644, 77091, 198]
+generated_token_ids=[8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734]
+generated_text="Here’s a function that reverses a string (i.e"
+coherence_class=COHERENT
+prefill_secs=6.223949
+first_token_latency_secs=6.223949
+decode_secs=3.261150
+steady_state_tokens=11 steady_state_decode_secs=3.261149 steady_state_tok_s=3.373044
+wall_ns_per_token=296468080
+gpu_matvec_ns_per_token=35532986 (MTLCommandBuffer GPUEnd-GPUStart)
+facet1_bind_ns_per_token=42592826 facet2_wait_minus_gpu_ns_per_token=93093818 cbs_per_token=337.0 dispatches_per_token=2413.0
+peak_rss_bytes=9801908224
+fallback silent=0 designed_host=12781 (vec=265 embed=28 act=12460 sample=28)
+native binary=26880 residual=13440 hgravs=26880 q8=11116 waves=1344 cbs=9436
+stages embed=0.2407 deltanet=3.2083 gqa=0.5499 moe_shared=0.9326 moe_routed=3.4041 moe_combine=0.4016 terminal=0.2997 mixed_matvec=4.4511 gpu_matvec_ns=992049632
+dense_w_materialized=false
+greedy_oracle_12=[8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734] greedy_bit_identical=true
+rep1 host_prep decode_n=11 wall_med=290257625 gpu_med=35538157 host_prep_med=114207408 catalog_reparse=63671295 embed=7905750 buffer_prep=4424286 encode=2195605 expert_bind=37439466 vector_clone=177663 packed_calls=11409 packed_skipped=0
+cached_geometry_count=666
+rep2 generated_text="Here’s a function that reverses a string (i.e" wall_ns_per_token=252058383 gpu_matvec_ns_per_token=35562378 bind_ns=0 wait_minus_gpu_ns=91614571 cbs=337.0 disp=2413.0 ids_match=true
+rep2 host_prep decode_n=11 wall_med=251416542 gpu_med=35473624 host_prep_med=78441154 catalog_reparse=63137538 embed=7960875 buffer_prep=4711172 encode=2122686 expert_bind=0 vector_clone=176251 packed_calls=11144 packed_skipped=0
