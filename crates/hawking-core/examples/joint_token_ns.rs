@@ -9,7 +9,8 @@ use std::path::{Path, PathBuf};
 
 use hawking_core::token_ns::{
     ascent_2026_08_16_reports, flag_receipt, from_dsv4f_json, from_q80_baseline_run_json,
-    from_q80_json, EmitMeta, MeasurementLabel, ReceiptFlag, TOKEN_NS_SCHEMA,
+    from_q80_json, probe_energy_model, EmitMeta, MeasurementLabel, ReceiptFlag,
+    AMORTIZED_CAVEAT, FS_PER_WEIGHT_SERVED_FIELD, TOKEN_NS_SCHEMA,
 };
 
 fn read_json(path: &Path) -> serde_json::Value {
@@ -118,6 +119,7 @@ fn main() {
 
     let dsv_r = reports.iter().find(|r| r.model == "dsv4f").expect("dsv report");
     let q80_r = reports.iter().find(|r| r.model == "q80").expect("q80 report");
+    let energy_probe = probe_energy_model();
 
     let receipt = serde_json::json!({
         "schema": "hawking.ascent.joint_token_ns.v1",
@@ -142,7 +144,8 @@ fn main() {
                 "closure_failed": q80_doc.closure.failed,
                 "closure_failure": q80_doc.closure.failure,
                 "label": q80_doc.measurement_label.as_str(),
-                "document": "receipts/ascent-2026-08-16/TOKEN_NS_Q80.json"
+                "document": "receipts/ascent-2026-08-16/TOKEN_NS_Q80.json",
+                "served_weight": q80_doc.served_weight
             },
             "q80_baseline_run": {
                 "source": q80_baseline_path.display().to_string(),
@@ -152,7 +155,9 @@ fn main() {
                 "residual_fraction": q80_run.closure.residual_fraction,
                 "closure_failed": q80_run.closure.failed,
                 "note": "This is the 15.23 s named-stage sum vs the 15.60 s run. TOTAL_TOKEN_NS here is the WHOLE RUN, not per-token.",
-                "document": "receipts/ascent-2026-08-16/TOKEN_NS_Q80_BASELINE_RUN.json"
+                "document": "receipts/ascent-2026-08-16/TOKEN_NS_Q80_BASELINE_RUN.json",
+                "served_weight_uses_decode_ns_not_whole_run": q80_run.served_weight.token_ns,
+                "served_weight": q80_run.served_weight
             },
             "dsv4f_body": {
                 "source": dsv_source.display().to_string(),
@@ -170,7 +175,8 @@ fn main() {
                 "naive_all_stage_sum_ns": dsv_doc.closure.naive_all_stage_sum_ns,
                 "naive_overcount_ns": dsv_doc.closure.naive_overcount_ns,
                 "label": dsv_doc.measurement_label.as_str(),
-                "document": "receipts/ascent-2026-08-16/TOKEN_NS_DSV4F.json"
+                "document": "receipts/ascent-2026-08-16/TOKEN_NS_DSV4F.json",
+                "served_weight": dsv_doc.served_weight
             }
         },
         "critical_path": {
@@ -195,6 +201,12 @@ fn main() {
                 q80_r.discrepancy_ns
             )
         },
+        "served_weight_honesty": {
+            "field": FS_PER_WEIGHT_SERVED_FIELD,
+            "caveat": AMORTIZED_CAVEAT,
+            "not_latency": true
+        },
+        "energy_investigation": energy_probe,
         "correctness": "N/A — schema/adapter/reconciler only. Existing ledgers and gates were not edited.",
         "authority_reps": {
             "dsv4f_host_wall_warm_body_ms": [1067, 1033, 1040, 1037, 1024],
@@ -250,4 +262,13 @@ fn main() {
         q80_r.discrepancy_ns
     );
     eprintln!("receipt_flags={}", flags.len());
+    eprintln!(
+        "Q80 fs/weight_served={:.1} (amortized, NOT latency) floor={:?} distance={:?} | DSV4F fs/weight_served={:.1} floor={:?} distance={:?}",
+        q80_doc.served_weight.fs_per_weight_served,
+        q80_doc.served_weight.fs_per_weight_floor,
+        q80_doc.served_weight.distance_from_floor,
+        dsv_doc.served_weight.fs_per_weight_served,
+        dsv_doc.served_weight.fs_per_weight_floor,
+        dsv_doc.served_weight.distance_from_floor
+    );
 }
