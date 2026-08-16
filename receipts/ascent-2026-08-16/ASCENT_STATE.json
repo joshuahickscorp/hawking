@@ -1368,10 +1368,11 @@
       "information_gain": 150000000,
       "transfer_value": 50000000,
       "experiment_cost": 1.5,
-      "status": "pending",
+      "status": "running",
       "auto_generated": true,
       "from_bottleneck": "host top-10 + expert address-table bind, 157820565 ns/token (A1 host_work; moe_table_build 5.92 s over 28 forwards)",
-      "from_lane": "q80-deltanet-gqa2-20260816-003206"
+      "from_lane": "q80-deltanet-gqa2-20260816-003206",
+      "task_id": "auto-q80-host-top-expert-address-20260816-034041"
     },
     {
       "id": "auto-q80-expert-first-touch-upload",

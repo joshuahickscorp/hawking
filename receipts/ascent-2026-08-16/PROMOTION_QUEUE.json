@@ -590,6 +590,16 @@
       "skew": "NO_BRANCH",
       "disposition": "NO_REPORT_MANUAL_REVIEW",
       "promoted": false
+    },
+    {
+      "lane": "dsv-close-residual-20260816-031720",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "host.expert_slab_io (GPU-idle streamed top-6 expert read+fill), 406314919 ns (DIRTY_ENGINEERING)",
+      "branch": "grok/dsv-close-residual-20260816-031720",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
     }
   ]
 }
