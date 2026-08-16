@@ -327,6 +327,7 @@ pub const SHADER_QWEN80_DIRECT_PACKED_TERMINAL_HEAD: &str =
 /// Packed binary sign + FP16 group-scale Qwen component matvec. This is a
 /// bounded operator primitive, not a complete decoder or model TPS surface.
 pub const SHADER_QWEN_BINARY: &str = include_str!("../../shaders/qwen_binary.metal");
+pub const SHADER_Q80_MIXED_DECODE: &str = include_str!("../../shaders/q80_mixed_decode.metal");
 /// Device-side glue for the admitted Qwen30 complete-binary runtime.  It
 /// retains the packed sign/scale body through embedding, Q/K RMSNorm, and
 /// routed-expert control operations; it is not a generic BF16 fallback.
@@ -427,6 +428,7 @@ pub fn all_shader_sources() -> String {
         SHADER_QWEN80_ALL_TEN_ROUTED_EXPERT_WAVE,
         SHADER_QWEN80_DIRECT_PACKED_TERMINAL_HEAD,
         SHADER_QWEN_BINARY,
+        SHADER_Q80_MIXED_DECODE,
         SHADER_QWEN_COMPLETE_RUNTIME,
         SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED,
         SHADER_QWEN_DIRECT_PACKED_GATE_UP_SWIGLU_PAIRED_SCALAR_ORDER,
@@ -1085,6 +1087,11 @@ mod imp {
             // per-stage so a future complete-token profile can distinguish
             // packed decode, state, and routed-expert time rather than fold
             // it into an opaque "other" bucket.
+            "q80_binary_group_matvec" => "q80_binary_group_matvec",
+            "q80_rice_q1_residual_apply" => "q80_rice_q1_residual_apply",
+            "q80_sparse_q1_apply_csr" => "q80_sparse_q1_apply_csr",
+            "q80_rice_q1_expand_indices" => "q80_rice_q1_expand_indices",
+            "q80_hgravs01_factor_matvec" => "q80_hgravs01_factor_matvec",
             "qwen_binary_sign_scale_matvec" => "qwen_binary_sign_scale_matvec",
             "qwen_binary_sign_scale_matvec_serial" => "qwen_binary_sign_scale_matvec_serial",
             "qwen_binary_sign_scale_matvec_tiled" => "qwen_binary_sign_scale_matvec_tiled",
