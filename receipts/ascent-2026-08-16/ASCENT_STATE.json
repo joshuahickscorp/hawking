@@ -98,6 +98,42 @@
           "395/2048 organs had hgravs rank CLAMPED - the known underdetermined-fit failure mode; a clamped fit's score is not the codec's score"
         ],
         "receipt": "receipts/ascent-2026-08-16/Q80_COHERENCE_LAYER_DRIFT_PROBE.json"
+      },
+      "decode_throughput": {
+        "merged": "lane commit 23c73718",
+        "us_per_organ": {
+          "gate": {
+            "before": 60.5,
+            "after": 6.875
+          },
+          "up": {
+            "before": 80.0,
+            "after": 17.25
+          },
+          "down": {
+            "before": 261.3,
+            "after": 13.959
+          }
+        },
+        "down_proj_factor": 18.7,
+        "per_expert_us": {
+          "before": 400,
+          "after": 38.08
+        },
+        "routed_ms_per_token": {
+          "before": 192.9,
+          "after": 18.28,
+          "dirtier_window": {
+            "A": 340.8,
+            "B": 29.86
+          }
+        },
+        "expert_budget_ms": 8,
+        "over_budget_factor_now": 2.3,
+        "was_over_budget_factor": 24,
+        "correctness": "numeric gate 2e-5; drift gate 1.81e-5, up 1.10e-5, down 1.14e-5; rice indices bit-identical; 0 fallbacks; NO dense W",
+        "decoded_weight_cache": "REJECTED with arithmetic: dense restore is 12 MiB/expert, 120 MiB for the live top-10, 288 GiB for all (layer,expert). Packed is 471 KiB/expert, 11 GiB for all 48x512. Caching decoded W undoes the representation.",
+        "next": "up_proj fused binary+CSR at 17.25 us = 8.28 ms at 48x10, ~45% of the remaining 38 us/expert. Achieved 15 GB/s - still decode/occupancy bound, not DRAM. Reaching 8 ms needs ~17 us/expert; currently 38."
       }
     },
     "dsv4f": {
@@ -256,6 +292,43 @@
         "correctness": "bit-identical hc_sha c94da765 every BOS token; cached==fresh memcmp 8/8 over 106954752 bytes; 0 fallbacks",
         "CAVEAT": "B numbers are a repeated-BOS token-2 100%-HIT best case, not a varied-routing result. Treat as a ceiling, not the expected win.",
         "newly_exposed_wall": "host.attn_weight_io_prefetch 481955669 ns/token median (379-533 ms) - was HIDDEN behind expert_slab_io and is now DSV4F's largest single cost"
+      },
+      "integrated": {
+        "merged": "80594ce4 (lane commit b90312f6)",
+        "composed": [
+          "cb-collapse submission overhead",
+          "dsv-expert no-copy binds",
+          "dsv-mla simdgroup KV QAT"
+        ],
+        "body_ms": {
+          "pack": [
+            1029,
+            937,
+            995
+          ],
+          "nocopy": [
+            829,
+            816,
+            880
+          ],
+          "median_before": 996,
+          "median_after": 830
+        },
+        "expert_slab_io_ms": {
+          "median_before": 450.4,
+          "median_after": 239.4
+        },
+        "attn_gpu_ms_median": 127.24,
+        "correctness": "bit-identical hc_sha + greedy token 5 / logit 16.7818546295166 on every warm full-token run, delta 0.0; 43/43 no-copy binds; no flipped pair",
+        "honesty": "one no-copy slab 271.6 ms above the prior 262 reported not hidden; cold first run (208.8 ms attn / 2606 ms slab) excluded rather than averaged",
+        "bottleneck_ranking_after": {
+          "attn_weight_io_prefetch_ns": 252900000,
+          "expert_slab_io_ns": 239426001,
+          "expert_slab_io_note": "now mmap/bind of 40 learned experts, not slab memcpy",
+          "host_memcpy_ns": 232630000,
+          "gpu_ns": 302157000,
+          "gpu_verdict": "explicitly NOT the wall"
+        }
       }
     },
     "dsv4f_density_frontier": {
@@ -523,8 +596,9 @@
       "information_gain": 250000000,
       "transfer_value": 300000000,
       "experiment_cost": 2.0,
-      "status": "running",
-      "note": "Gates the whole Q80 <=1.5 path: a representation that cannot execute in budget is storage, not density."
+      "status": "retained",
+      "note": "Gates the whole Q80 <=1.5 path: a representation that cannot execute in budget is storage, not density.",
+      "tier1": "merged; routed decode 192.9 -> 18.28 ms, 24x over budget down to 2.3x"
     },
     {
       "id": "q80-coherence-deep",
@@ -555,8 +629,9 @@
       "information_gain": 100000000,
       "transfer_value": 100000000,
       "experiment_cost": 1.0,
-      "status": "running",
-      "note": "Three independent restructurings of the same hot path. Relaunched to absorb all three in one pass rather than two sequential integrations."
+      "status": "retained",
+      "note": "Three independent restructurings of the same hot path. Relaunched to absorb all three in one pass rather than two sequential integrations.",
+      "tier1": "merged 80594ce4; all three wins composed, bit-identical, no flipped pair"
     },
     {
       "id": "q80-expert-first-touch",
@@ -683,7 +758,8 @@
     "DSV4F attention: collapsing 17 dispatches into one serial encoder is bit-identical and reduces encoders 731->43 but does NOT reduce attention GPU time. Encoder gaps are not the attention wall.",
     "DSV4F path_resolve/verify identity tax is NOT on the critical path. Reducing it 2.9x (983->343 ms parallel-sum) produced ZERO whole-token improvement, because a parallel sum across threads is not token latency. Do not attack it again for wall time.",
     "Q80 topology collapse is NOT the lever: overlap, fuse-to-51-CBs and serial-encoder are all bit-identical and all fail to win complete-token wall (fuse REGRESSED 516 vs 307 ms). Matches DSV4F where 731->43 encoders moved attention GPU by nothing. Occupancy, not topology.",
-    "Q80 density fits are route-starved: p10=34 rows against 2048 dims, 221 never-routed pairs, and no on-disk post-SwiGLU X for down_proj. Any organ score from the 25k capture is suspect."
+    "Q80 density fits are route-starved: p10=34 rows against 2048 dims, 221 never-routed pairs, and no on-disk post-SwiGLU X for down_proj. Any organ score from the 25k capture is suspect.",
+    "Q80 decoded-weight caching is REFUTED by arithmetic: dense restore is 12 MiB/expert = 288 GiB for all (layer,expert) versus 11 GiB packed. Caching decoded W undoes the representation it exists to create."
   ],
   "saturation": {
     "measured": "2026-08-16 after wave 2",
