@@ -1096,6 +1096,8 @@ mod imp {
             // packed decode, state, and routed-expert time rather than fold
             // it into an opaque "other" bucket.
             "q80_binary_group_matvec" => "q80_binary_group_matvec",
+            "q80_binary_group_matvec_interleaved" => "q80_binary_group_matvec_interleaved",
+            "dram_row_locality_read_reduce" => "dram_row_locality_read_reduce",
             "q80_binary_group_matvec_simd" => "q80_binary_group_matvec_simd",
             "q80_binary_group_matvec_simd_bytes" => "q80_binary_group_matvec_simd_bytes",
             "q80_binary_group_matvec_chunk" => "q80_binary_group_matvec_chunk",
@@ -1132,6 +1134,9 @@ mod imp {
             "qwen_complete_binary_decode_vector" => "qwen_complete_binary_decode_vector",
             "qwen_complete_binary_embedding_lookup" => "qwen_complete_binary_embedding_lookup",
             "qwen_uniform_q4_group64_matvec" => "qwen_uniform_q4_group64_matvec",
+            "qwen_uniform_q4_group64_matvec_interleaved" => {
+                "qwen_uniform_q4_group64_matvec_interleaved"
+            },
             "qwen_uniform_q4_group64_matvec_rowblock" => "qwen_uniform_q4_group64_matvec_rowblock",
             "qwen_uniform_q4_group64_matvec_simdgroup" => {
                 "qwen_uniform_q4_group64_matvec_simdgroup"
@@ -1454,6 +1459,8 @@ mod imp {
             "deepseek_v4_p7_mhc_ffn_post_authority" => "deepseek_v4_p7_mhc_ffn_post_authority",
             "dsv4f_pack_worklist" => "dsv4f_pack_worklist",
             "dsv4f_worklist_fp4_matvec" => "dsv4f_worklist_fp4_matvec",
+            "dsv4f_fp4_matvec_split" => "dsv4f_fp4_matvec_split",
+            "dsv4f_fp4_matvec_interleaved" => "dsv4f_fp4_matvec_interleaved",
             "dsv4f_worklist_swiglu" => "dsv4f_worklist_swiglu",
             "dsv4f_worklist_combine" => "dsv4f_worklist_combine",
             "dsv4f_ax_act_quant_bf16_ue8m0_batched" => "dsv4f_ax_act_quant_bf16_ue8m0_batched",

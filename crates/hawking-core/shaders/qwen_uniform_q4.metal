@@ -555,3 +555,35 @@ kernel void qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8(
         }
     }
 }
+
+// Per-group [fp16 scale | 32 code bytes]. Same q = nibble-8 decode as the
+// split-buffer kernel. Grid: (rows, 1, 1), TG 256.
+kernel void qwen_uniform_q4_group64_matvec_interleaved(
+    device const uchar* records     [[buffer(0)]],
+    device const float* input       [[buffer(1)]],
+    device float* output            [[buffer(2)]],
+    constant uint& rows             [[buffer(3)]],
+    constant uint& cols             [[buffer(4)]],
+    constant uint& groups_per_row   [[buffer(5)]],
+    uint row                         [[thread_position_in_grid]])
+{
+    if (row >= rows) return;
+    const uint stride = 2u + QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP;
+    float sum = 0.0f;
+    const uint row_base = row * groups_per_row;
+    for (uint group = 0u; group < groups_per_row; ++group) {
+        const uint rec = (row_base + group) * stride;
+        const float scale = float(*((device const half*)(records + rec)));
+        device const uchar* codes = records + rec + 2u;
+        const uint group_start = group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+        const uint group_len = min(QWEN_UNIFORM_Q4_GROUP_SIZE, cols - group_start);
+        for (uint local_col = 0u; local_col < group_len; ++local_col) {
+            const uchar packed = codes[local_col >> 1u];
+            const uchar nibble = (local_col & 1u) == 0u
+                ? (packed & 0x0fu)
+                : (packed >> 4u);
+            sum += float(int(nibble) - 8) * scale * input[group_start + local_col];
+        }
+    }
+    output[row] = sum;
+}
