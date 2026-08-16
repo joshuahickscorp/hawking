@@ -1,0 +1,18 @@
+{
+  "schema": "hawking.special_unit.qwen38_residual_is_unrecorded_not_unmeasured.v1",
+  "date": "2026-08-16",
+  "finding": "Qwen3.8's 1.054 ms/step 'unattributed residual' is NOT unmeasured. The runtime already measures it and the harness throws it away.",
+  "evidence": {
+    "runtime_struct": "crates/hawking-core/src/metal/mod.rs CommandBufferTiming carries submit_ns, wait_ns, gpu_ns, dispatches AND encode_ns",
+    "harness": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs records only gpu_ns: Vec<Option<u64>> and wait_ns: Vec<u64> per step. encode_ns and submit_ns are returned by commit_and_wait_timed and then dropped.",
+    "arithmetic": "wall 1068.1 ms - sum(wait) 1041.7 ms = 26.4 ms over 26 steps = 1.054 ms/step, which is exactly the window in which encoding and submission happen: after one commit_and_wait returns and before the next one is entered."
+  },
+  "ruled_out": {
+    "host_sampling": "Sampling is ON-DEVICE - the harness reads a single u32 via workspace.sampled.contents(). There is no host argmax over the 248,320 vocabulary, so sampling cannot be the residual.",
+    "token_bookkeeping": "tokens.push and Vec growth are nanosecond-class, not millisecond-class."
+  },
+  "why_it_matters": "This 1.415 ms of fixed per-token overhead (0.361 wait-gap + 1.054 residual) does NOT scale with BPW, so it bounds the density ladder: 2.0 BPW -> 58.2 TPS, 1.25 BPW -> 88.7 TPS. RUNG B (>=100 TPS) is unreachable by density alone and needs this overhead cut too.",
+  "the_fix_is_small": "Record encode_ns and submit_ns per step alongside gpu_ns/wait_ns. That converts the residual from 'unattributed' to named, which is exactly what G001's closure requirement demands.",
+  "then_the_real_question": "If the residual IS encode, the mechanism is S004 s7 items 8/9/13 - make CPU-generated metadata persistent GPU state, collapse command buffers, move tables into function constants. Indirect Command Buffers are the known lever on this machine: prior work recorded per-dispatch overhead being won by elimination into ICB.",
+  "handoff": "Lane qwen38-token-ns owns this file right now, so I did NOT edit it - concurrent mutation of a file a live lane is instrumenting would conflict. If that lane's return does not name the residual, apply this directly."
+}
