@@ -39,12 +39,14 @@ fn main() {
 #[cfg(target_os = "macos")]
 mod macos {
     use hawking_core::model::qwen80_source_bf16_layer_major::{
-        capture_all_layers, embed_probes, format_capture_progress, greedy_decode_user_prompt,
-        is_coherent_paris_continuation, max_hidden_tokens_per_expert_within_streamed_cap,
-        peak_rss_bytes, retained_hidden_relative_path, worst_case_retained_hidden_bytes_per_layer,
+        capture_layers_from, embed_probes, format_capture_progress,
+        greedy_decode_user_prompt, is_coherent_paris_continuation,
+        max_hidden_tokens_per_expert_within_streamed_cap, peak_rss_bytes,
+        retained_hidden_relative_path, retained_swiglu_packed_relative_path,
+        retained_swiglu_relative_path, worst_case_retained_hidden_bytes_per_layer,
         worst_case_unique_rows_per_layer, write_retained_hidden_f32le, LayerTokenCapture,
         SourceBf16Index, DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT, QWEN80_EXPERTS, QWEN80_HIDDEN,
-        QWEN80_LAYERS, QWEN80_TOP_K, STREAMED_PEAK_RSS_HARD_CAP_BYTES,
+        QWEN80_LAYERS, QWEN80_MOE_INTERMEDIATE, QWEN80_TOP_K, STREAMED_PEAK_RSS_HARD_CAP_BYTES,
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
@@ -82,6 +84,7 @@ mod macos {
         max_probes: Option<usize>,
         max_new_tokens: usize,
         tokenizer_path: Option<PathBuf>,
+        resume: bool,
     }
 
     fn usage() -> &'static str {
@@ -90,7 +93,7 @@ mod macos {
          \x20   [--tokenizer-path ABSOLUTE_PATH] [--max-new-tokens N]\n\
          capture: ... --mode capture --source-model-dir ABSOLUTE_PATH \\\n\
          \x20   --input-json ABSOLUTE_PATH --output-dir ABSOLUTE_PATH \\\n\
-         \x20   [--max-hidden-tokens-per-expert N] [--max-probes N]\n\
+         \x20   [--max-hidden-tokens-per-expert N] [--max-probes N] [--resume]\n\
          note: --max-hidden-tokens-per-layer is retired; use --max-hidden-tokens-per-expert"
     }
 
@@ -120,6 +123,7 @@ mod macos {
         let mut max_probes = None;
         let mut max_new_tokens = 16usize;
         let mut tokenizer_path = None;
+        let mut resume = false;
         let mut args = env::args().skip(1);
         while let Some(flag) = args.next() {
             match flag.as_str() {
@@ -203,6 +207,7 @@ mod macos {
                         return Err("--tokenizer-path supplied more than once".into());
                     }
                 }
+                "--resume" => resume = true,
                 "--help" | "-h" => return Err(usage().into()),
                 other => return Err(format!("unsupported option {other:?}; {}", usage())),
             }
@@ -249,6 +254,7 @@ mod macos {
                 Some(p) => Some(absolute(p, "--tokenizer-path")?),
                 None => None,
             },
+            resume,
         })
     }
 
@@ -448,6 +454,175 @@ mod macos {
         })
     }
 
+    const CKPT_NAME: &str = "checkpoint.json";
+    const CKPT_SCHEMA: &str = "hawking.qwen80.source_bf16_layer_major.checkpoint.v1";
+
+    fn layer_meta_path(output_dir: &Path, layer: usize) -> PathBuf {
+        output_dir.join(format!("layer_meta/L{layer:02}.json"))
+    }
+
+    fn residual_path(output_dir: &Path, probe_id: &str) -> PathBuf {
+        output_dir.join(format!("residual/{probe_id}.f32le"))
+    }
+
+    fn write_json_overwrite(path: &Path, value: &Value) -> Result<(), String> {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
+        }
+        let text = serde_json::to_string_pretty(value).map_err(|e| e.to_string())?;
+        fs::write(path, text + "\n").map_err(|e| format!("cannot write {}: {e}", path.display()))
+    }
+
+    fn write_residual(output_dir: &Path, probe_id: &str, values: &[f32]) -> Result<(), String> {
+        let path = residual_path(output_dir, probe_id);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
+        }
+        let mut bytes = Vec::with_capacity(values.len().saturating_mul(4));
+        for v in values {
+            bytes.extend_from_slice(&v.to_le_bytes());
+        }
+        fs::write(&path, bytes).map_err(|e| format!("cannot write {}: {e}", path.display()))
+    }
+
+    fn read_residual(path: &Path, expected: usize) -> Result<Vec<f32>, String> {
+        let bytes = fs::read(path).map_err(|e| format!("cannot read {}: {e}", path.display()))?;
+        if bytes.len() != expected.saturating_mul(4) {
+            return Err(format!(
+                "{} residual bytes {} != {} f32",
+                path.display(),
+                bytes.len(),
+                expected
+            ));
+        }
+        let mut out = vec![0.0f32; expected];
+        for (i, chunk) in bytes.chunks_exact(4).enumerate() {
+            out[i] = f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+        }
+        Ok(out)
+    }
+
+    fn load_layer_meta_into(
+        output_dir: &Path,
+        layer: usize,
+        probes: &[(String, Vec<u32>)],
+        hidden_writes: &mut [Vec<Vec<Option<(String, String, usize, usize)>>>],
+        swiglu_writes: &mut [Vec<Vec<Vec<(u32, String, String, usize, usize)>>>],
+    ) -> Option<(usize, usize, usize)> {
+        let path = layer_meta_path(output_dir, layer);
+        if !path.is_file() {
+            return None;
+        }
+        let doc: Value = serde_json::from_str(&fs::read_to_string(&path).ok()?).ok()?;
+        let mut h_rows = 0usize;
+        let mut h_bytes = 0usize;
+        let mut s_bytes = 0usize;
+        for tok in doc.get("tokens")?.as_array()? {
+            let pi = tok.get("pi")?.as_u64()? as usize;
+            let pos = tok.get("pos")?.as_u64()? as usize;
+            if pi >= probes.len() || pos >= probes[pi].1.len() || layer >= QWEN80_LAYERS {
+                continue;
+            }
+            if let Some(hidden) = tok.get("hidden").filter(|v| !v.is_null()) {
+                let rel = hidden.get("relative_path")?.as_str()?.to_string();
+                let sha = hidden.get("sha256")?.as_str()?.to_string();
+                let bytes = hidden.get("bytes")?.as_u64()? as usize;
+                let elems = hidden.get("elements")?.as_u64()? as usize;
+                hidden_writes[pi][pos][layer] = Some((rel, sha, bytes, elems));
+                h_rows += 1;
+                h_bytes += bytes;
+            }
+            let mut rows = Vec::new();
+            if let Some(sw) = tok.get("swiglu").and_then(Value::as_array) {
+                for item in sw {
+                    let eid = item.get("expert_id")?.as_u64()? as u32;
+                    let rel = item.get("relative_path")?.as_str()?.to_string();
+                    let sha = item.get("sha256")?.as_str()?.to_string();
+                    let bytes = item.get("bytes")?.as_u64()? as usize;
+                    let elems = item.get("elements")?.as_u64()? as usize;
+                    s_bytes += bytes;
+                    rows.push((eid, rel, sha, bytes, elems));
+                }
+            }
+            swiglu_writes[pi][pos][layer] = rows;
+        }
+        Some((h_rows, h_bytes, s_bytes))
+    }
+
+    fn apply_resumed_routes(
+        output_dir: &Path,
+        probes: &[(String, Vec<u32>)],
+        start_layer: usize,
+        captures: &mut [Vec<Vec<LayerTokenCapture>>],
+    ) -> Result<(), String> {
+        for layer in 0..start_layer {
+            let path = layer_meta_path(output_dir, layer);
+            if !path.is_file() {
+                return Err(format!("resume missing {}", path.display()));
+            }
+            let doc: Value = serde_json::from_str(
+                &fs::read_to_string(&path)
+                    .map_err(|e| format!("cannot read {}: {e}", path.display()))?,
+            )
+            .map_err(|e| format!("{} is not JSON: {e}", path.display()))?;
+            for tok in doc
+                .get("tokens")
+                .and_then(Value::as_array)
+                .ok_or_else(|| format!("{} lacks tokens", path.display()))?
+            {
+                let pi = tok
+                    .get("pi")
+                    .and_then(Value::as_u64)
+                    .ok_or("layer_meta token missing pi")? as usize;
+                let pos = tok
+                    .get("pos")
+                    .and_then(Value::as_u64)
+                    .ok_or("layer_meta token missing pos")? as usize;
+                if pi >= probes.len() || pos >= probes[pi].1.len() {
+                    return Err("layer_meta token out of range".into());
+                }
+                if layer >= captures[pi][pos].len() {
+                    return Err(format!(
+                        "capture vec too short for resumed L{layer} ({pi},{pos})"
+                    ));
+                }
+                let ids = tok
+                    .get("selected_expert_ids")
+                    .and_then(Value::as_array)
+                    .ok_or("layer_meta missing selected_expert_ids")?
+                    .iter()
+                    .map(|v| {
+                        v.as_u64()
+                            .and_then(|x| u32::try_from(x).ok())
+                            .ok_or("bad expert id")
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let weights = tok
+                    .get("normalized_route_weights")
+                    .and_then(Value::as_array)
+                    .ok_or("layer_meta missing weights")?
+                    .iter()
+                    .map(|v| v.as_f64().map(|x| x as f32).ok_or("bad weight"))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let retained = tok
+                    .get("hidden_retained")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false);
+                captures[pi][pos][layer] = LayerTokenCapture {
+                    layer,
+                    selected_expert_ids: ids,
+                    normalized_route_weights: weights,
+                    router_input_hidden: Vec::new(),
+                    hidden_retained: retained,
+                    swiglu_hidden_routed: Vec::new(),
+                };
+            }
+        }
+        Ok(())
+    }
+
     fn write_json_new(path: &Path, value: &Value) -> Result<(), String> {
         let mut file = OpenOptions::new()
             .create_new(true)
@@ -549,13 +724,19 @@ mod macos {
             required(arguments.input_json.clone(), "--input-json").unwrap_or_else(|e| fail(e));
         let output_dir =
             required(arguments.output_dir.clone(), "--output-dir").unwrap_or_else(|e| fail(e));
-        if output_dir.exists() {
+        if output_dir.exists() && !arguments.resume {
             fail(format!(
-                "refusing to reuse or overwrite capture output directory {}",
+                "refusing to reuse or overwrite capture output directory {} (pass --resume)",
                 output_dir.display()
             ));
         }
-        if !output_dir.parent().is_some_and(|parent| parent.is_dir()) {
+        if arguments.resume && !output_dir.join(CKPT_NAME).is_file() {
+            fail(format!(
+                "--resume set but {} is missing",
+                output_dir.join(CKPT_NAME).display()
+            ));
+        }
+        if !output_dir.exists() && !output_dir.parent().is_some_and(|parent| parent.is_dir()) {
             fail("capture output parent must already exist");
         }
 
@@ -575,12 +756,14 @@ mod macos {
         let retained_hidden_budget_bytes =
             worst_case_retained_hidden_bytes_per_layer(arguments.max_hidden_tokens_per_expert);
 
-        fs::create_dir(&output_dir).unwrap_or_else(|e| {
-            fail(format!(
-                "cannot create capture output directory {}: {e}",
-                output_dir.display()
-            ))
-        });
+        if !output_dir.exists() {
+            fs::create_dir(&output_dir).unwrap_or_else(|e| {
+                fail(format!(
+                    "cannot create capture output directory {}: {e}",
+                    output_dir.display()
+                ))
+            });
+        }
         let executable_sha256 = current_executable_sha256().unwrap_or_else(|e| fail(e));
         let index = SourceBf16Index::open(&arguments.source_model_dir)
             .unwrap_or_else(|e| fail(e.to_string()));
@@ -603,6 +786,47 @@ mod macos {
 
         let started = Instant::now();
         let mut hiddens = embed_probes(&index, &probes).unwrap_or_else(|e| fail(e.to_string()));
+        let mut start_layer = 0usize;
+        let mut prior_wall_secs = 0.0f64;
+        if arguments.resume {
+            let ckpt: Value = serde_json::from_str(
+                &fs::read_to_string(output_dir.join(CKPT_NAME))
+                    .unwrap_or_else(|e| fail(format!("cannot read checkpoint: {e}"))),
+            )
+            .unwrap_or_else(|e| fail(format!("checkpoint is not JSON: {e}")));
+            if ckpt.get("schema").and_then(Value::as_str) != Some(CKPT_SCHEMA) {
+                fail("checkpoint schema mismatch");
+            }
+            if ckpt.get("input_sha256").and_then(Value::as_str) != Some(input_sha256.as_str()) {
+                fail("checkpoint input_sha256 does not match --input-json");
+            }
+            let ckpt_n = ckpt
+                .get("max_hidden_tokens_per_expert")
+                .and_then(Value::as_u64)
+                .unwrap_or(0) as usize;
+            if ckpt_n != arguments.max_hidden_tokens_per_expert {
+                fail(format!(
+                    "checkpoint first-N {ckpt_n} != {}",
+                    arguments.max_hidden_tokens_per_expert
+                ));
+            }
+            start_layer = ckpt
+                .get("next_layer")
+                .and_then(Value::as_u64)
+                .unwrap_or(0) as usize;
+            prior_wall_secs = ckpt
+                .get("wall_secs")
+                .and_then(Value::as_f64)
+                .unwrap_or(0.0);
+            for (idx, (probe_id, _)) in probes.iter().enumerate() {
+                let path = residual_path(&output_dir, probe_id);
+                let expected = hiddens[idx].len();
+                hiddens[idx] = read_residual(&path, expected).unwrap_or_else(|e| fail(e));
+            }
+            eprintln!(
+                "resume: starting at layer {start_layer} (prior wall {prior_wall_secs:.1}s)"
+            );
+        }
         let mut max_layer_resident = 0u64;
         let mut on_layer = |layer: usize, loaded: &hawking_core::model::qwen80_source_bf16_layer_major::LoadedLayer, _telem: &hawking_core::model::qwen80_source_bf16_layer_major::StreamTelemetry| {
             max_layer_resident = max_layer_resident.max(loaded.resident_bytes);
@@ -617,25 +841,61 @@ mod macos {
             refuse_if_resident_load(peak_rss_bytes());
         };
         // hidden_writes[probe][position][layer] = metadata written during flush.
-        let mut hidden_writes: Vec<Vec<Vec<Option<(String, String, usize, usize)>>>> = probes
+        // Dense in layer so --resume can fill 0..start_layer from layer_meta.
+        type HiddenMeta = (String, String, usize, usize);
+        type SwigluMeta = Vec<(u32, String, String, usize, usize)>;
+        let mut hidden_writes: Vec<Vec<Vec<Option<HiddenMeta>>>> = probes
             .iter()
             .map(|(_, toks)| {
                 (0..toks.len())
-                    .map(|_| Vec::with_capacity(QWEN80_LAYERS))
+                    .map(|_| vec![None; QWEN80_LAYERS])
+                    .collect()
+            })
+            .collect();
+        let mut swiglu_writes: Vec<Vec<Vec<SwigluMeta>>> = probes
+            .iter()
+            .map(|(_, toks)| {
+                (0..toks.len())
+                    .map(|_| vec![Vec::new(); QWEN80_LAYERS])
                     .collect()
             })
             .collect();
         let mut hidden_bytes_written = 0usize;
+        let mut swiglu_bytes_written = 0usize;
         let mut hidden_rows_retained_total = 0usize;
         let mut hidden_rows_per_layer = vec![0usize; QWEN80_LAYERS];
-        let mut on_layer_flush = |layer_idx: usize,
-                                  captures: &mut [Vec<Vec<LayerTokenCapture>>]|
-         -> hawking_core::Result<()> {
-            // Placeholder slot per token so hidden_writes[pi][pos][layer] is dense.
-            for (pi, (_, token_ids)) in probes.iter().enumerate() {
-                for slot in hidden_writes[pi].iter_mut().take(token_ids.len()) {
-                    slot.push(None);
+        if arguments.resume {
+            for layer in 0..start_layer {
+                if let Some((h_rows, h_bytes, s_bytes)) = load_layer_meta_into(
+                    &output_dir,
+                    layer,
+                    &probes,
+                    &mut hidden_writes,
+                    &mut swiglu_writes,
+                ) {
+                    hidden_rows_retained_total =
+                        hidden_rows_retained_total.saturating_add(h_rows);
+                    hidden_bytes_written = hidden_bytes_written.saturating_add(h_bytes);
+                    swiglu_bytes_written = swiglu_bytes_written.saturating_add(s_bytes);
+                    if layer < QWEN80_LAYERS {
+                        hidden_rows_per_layer[layer] = h_rows;
+                    }
                 }
+            }
+        }
+        let mut on_layer_flush = |layer_idx: usize,
+                                  captures: &mut [Vec<Vec<LayerTokenCapture>>],
+                                  residuals: &[hawking_core::model::qwen80_source_bf16_layer_major::ProbeHidden]|
+         -> hawking_core::Result<()> {
+            // A retry of a layer that crashed mid-flush must not trip create_new
+            // on already-written rows. layer_meta is written last, so its
+            // absence means this layer is incomplete.
+            if !layer_meta_path(&output_dir, layer_idx).is_file() {
+                let _ = fs::remove_dir_all(output_dir.join(format!("hidden/L{layer_idx:02}")));
+                // Packed files are `Lxx/Eyyy.f32le` beside `Lxx/Eyyy/` dirs.
+                let _ = fs::remove_dir_all(
+                    output_dir.join(format!("x/swiglu_hidden_routed/L{layer_idx:02}")),
+                );
             }
             for (probe_id, _) in probes.iter() {
                 let dir = output_dir.join(format!("hidden/L{layer_idx:02}/{probe_id}"));
@@ -726,18 +986,207 @@ mod macos {
                         Some((job.2.clone(), sha, bytes, elems));
                 }
             }
+            // Post-SwiGLU rows: same first-N tokens, one file per (layer, expert).
+            let mut swiglu_jobs: Vec<(usize, usize, u32, String)> = Vec::new();
+            let mut packed: std::collections::BTreeMap<u32, Vec<f32>> =
+                std::collections::BTreeMap::new();
+            for (pi, (probe_id, token_ids)) in probes.iter().enumerate() {
+                for pos in 0..token_ids.len() {
+                    let cap = captures
+                        .get(pi)
+                        .and_then(|p| p.get(pos))
+                        .and_then(|t| t.get(layer_idx))
+                        .ok_or_else(|| {
+                            hawking_core::Error::Model(format!(
+                                "flush missing swiglu capture {probe_id}@{pos} L{layer_idx}"
+                            ))
+                        })?;
+                    if !cap.hidden_retained {
+                        continue;
+                    }
+                    if cap.swiglu_hidden_routed.len() != cap.selected_expert_ids.len() {
+                        return Err(hawking_core::Error::Model(format!(
+                            "{probe_id}@{pos} L{layer_idx}: swiglu rows {} != top-k {}",
+                            cap.swiglu_hidden_routed.len(),
+                            cap.selected_expert_ids.len()
+                        )));
+                    }
+                    for &(eid, ref row) in &cap.swiglu_hidden_routed {
+                        if row.len() != QWEN80_MOE_INTERMEDIATE {
+                            return Err(hawking_core::Error::Model(format!(
+                                "{probe_id}@{pos} L{layer_idx} E{eid}: swiglu width {} != {QWEN80_MOE_INTERMEDIATE}",
+                                row.len()
+                            )));
+                        }
+                        swiglu_jobs.push((
+                            pi,
+                            pos,
+                            eid,
+                            retained_swiglu_relative_path(layer_idx, eid, probe_id, pos),
+                        ));
+                        packed.entry(eid).or_default().extend_from_slice(row);
+                    }
+                }
+            }
+            if !swiglu_jobs.is_empty() {
+                let n_jobs = swiglu_jobs.len();
+                let n_workers = std::thread::available_parallelism()
+                    .map(|n| n.get())
+                    .unwrap_or(4)
+                    .clamp(1, 16)
+                    .min(n_jobs);
+                let chunk = n_jobs.div_ceil(n_workers);
+                let mut results: Vec<Option<(String, usize, usize)>> = vec![None; n_jobs];
+                let err: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
+                let caps: &[Vec<Vec<LayerTokenCapture>>] = captures;
+                std::thread::scope(|scope| {
+                    for (wi, result_chunk) in results.chunks_mut(chunk).enumerate() {
+                        let start = wi * chunk;
+                        let my_jobs = &swiglu_jobs[start..start + result_chunk.len()];
+                        let err = &err;
+                        let output_dir = &output_dir;
+                        scope.spawn(move || {
+                            for (local, (pi, pos, eid, rel)) in my_jobs.iter().enumerate() {
+                                let row = caps[*pi][*pos][layer_idx]
+                                    .swiglu_hidden_routed
+                                    .iter()
+                                    .find(|(id, _)| id == eid)
+                                    .map(|(_, r)| r.as_slice());
+                                let Some(row) = row else {
+                                    if let Ok(mut g) = err.lock() {
+                                        *g = Some(format!(
+                                            "missing swiglu E{eid} at {pi}@{pos} L{layer_idx}"
+                                        ));
+                                    }
+                                    return;
+                                };
+                                match write_retained_hidden_f32le(&output_dir.join(rel), row) {
+                                    Ok((sha, bytes)) => {
+                                        result_chunk[local] = Some((sha, bytes, row.len()));
+                                    }
+                                    Err(e) => {
+                                        if let Ok(mut g) = err.lock() {
+                                            *g = Some(e.to_string());
+                                        }
+                                        return;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+                if let Some(msg) = err.into_inner().unwrap_or(None) {
+                    return Err(hawking_core::Error::Model(msg));
+                }
+                for (job, res) in swiglu_jobs.iter().zip(results.into_iter()) {
+                    let (sha, bytes, elems) = res.ok_or_else(|| {
+                        hawking_core::Error::Model("parallel swiglu write missing result".into())
+                    })?;
+                    swiglu_bytes_written = swiglu_bytes_written.saturating_add(bytes);
+                    swiglu_writes[job.0][job.1][layer_idx].push((
+                        job.2,
+                        job.3.clone(),
+                        sha,
+                        bytes,
+                        elems,
+                    ));
+                }
+            }
+            for (eid, buf) in packed {
+                if buf.is_empty() {
+                    continue;
+                }
+                let rel = retained_swiglu_packed_relative_path(layer_idx, eid);
+                let (sha, bytes) =
+                    write_retained_hidden_f32le(&output_dir.join(&rel), &buf).map_err(|e| {
+                        hawking_core::Error::Model(format!("packed swiglu L{layer_idx} E{eid}: {e}"))
+                    })?;
+                let _ = (sha, bytes);
+            }
+
+            // Layer-boundary resume: persist routes + write records + residuals.
+            let mut meta_tokens = Vec::new();
+            for (pi, (_probe_id, token_ids)) in probes.iter().enumerate() {
+                for pos in 0..token_ids.len() {
+                    let cap = &captures[pi][pos][layer_idx];
+                    let hidden = hidden_writes[pi][pos][layer_idx].as_ref().map(|w| {
+                        json!({
+                            "relative_path": w.0,
+                            "sha256": w.1,
+                            "bytes": w.2,
+                            "elements": w.3,
+                        })
+                    });
+                    let swiglu: Vec<Value> = swiglu_writes[pi][pos][layer_idx]
+                        .iter()
+                        .map(|w| {
+                            json!({
+                                "expert_id": w.0,
+                                "relative_path": w.1,
+                                "sha256": w.2,
+                                "bytes": w.3,
+                                "elements": w.4,
+                            })
+                        })
+                        .collect();
+                    meta_tokens.push(json!({
+                        "pi": pi,
+                        "pos": pos,
+                        "selected_expert_ids": cap.selected_expert_ids,
+                        "normalized_route_weights": cap.normalized_route_weights,
+                        "hidden_retained": cap.hidden_retained,
+                        "hidden": hidden,
+                        "swiglu": swiglu,
+                    }));
+                }
+            }
+            write_json_overwrite(
+                &layer_meta_path(&output_dir, layer_idx),
+                &json!({
+                    "layer": layer_idx,
+                    "tokens": meta_tokens,
+                }),
+            )
+            .map_err(|e| hawking_core::Error::Model(e))?;
+            for (pi, (probe_id, _)) in probes.iter().enumerate() {
+                write_residual(&output_dir, probe_id, &residuals[pi])
+                    .map_err(|e| hawking_core::Error::Model(e))?;
+            }
+            write_json_overwrite(
+                &output_dir.join(CKPT_NAME),
+                &json!({
+                    "schema": CKPT_SCHEMA,
+                    "next_layer": layer_idx + 1,
+                    "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
+                    "input_sha256": input_sha256,
+                    "probe_ids": probes.iter().map(|(id, _)| id.clone()).collect::<Vec<_>>(),
+                    "token_counts": probes.iter().map(|(_, t)| t.len()).collect::<Vec<_>>(),
+                    "hidden_rows_retained_total": hidden_rows_retained_total,
+                    "hidden_bytes_written": hidden_bytes_written,
+                    "swiglu_bytes_written": swiglu_bytes_written,
+                    "wall_secs": started.elapsed().as_secs_f64() + prior_wall_secs,
+                }),
+            )
+            .map_err(|e| hawking_core::Error::Model(e))?;
             refuse_if_resident_load(peak_rss_bytes());
             Ok(())
         };
-        let (captures, telem) = capture_all_layers(
+        let (mut captures, telem) = capture_layers_from(
             &index,
             &probes,
             &mut hiddens,
             arguments.max_hidden_tokens_per_expert,
+            start_layer,
             Some(&mut on_layer),
             Some(&mut on_layer_flush),
         )
         .unwrap_or_else(|e| fail(e.to_string()));
+        // Restore route membership for already-flushed layers so the result
+        // JSON is complete after --resume.
+        if start_layer > 0 {
+            apply_resumed_routes(&output_dir, &probes, start_layer, &mut captures)
+                .unwrap_or_else(|e| fail(e));
+        }
         drop(hiddens);
 
         let mut probe_rows = Vec::with_capacity(probes.len());
@@ -797,12 +1246,37 @@ mod macos {
                     } else {
                         None
                     };
+                    let swiglu_meta = if store_hidden {
+                        let rows = swiglu_writes
+                            .get(pi)
+                            .and_then(|p| p.get(pos))
+                            .and_then(|t| t.get(layer_cap.layer))
+                            .cloned()
+                            .unwrap_or_default();
+                        Some(
+                            rows.into_iter()
+                                .map(|w| {
+                                    json!({
+                                        "expert_id": w.0,
+                                        "relative_path": w.1,
+                                        "sha256": w.2,
+                                        "bytes": w.3,
+                                        "elements": w.4,
+                                        "source": "post-SwiGLU intermediate silu(x @ gate_proj.T) * (x @ up_proj.T) at moe_intermediate=512; the input down_proj sees",
+                                    })
+                                })
+                                .collect::<Vec<_>>(),
+                        )
+                    } else {
+                        None
+                    };
                     layer_rows.push(json!({
                         "layer": layer_cap.layer,
                         "selected_expert_ids": layer_cap.selected_expert_ids,
                         "normalized_route_weights": layer_cap.normalized_route_weights,
                         "router_input_hidden_f32le": hidden_meta,
                         "hidden_retained": store_hidden,
+                        "swiglu_hidden_routed_f32le": swiglu_meta,
                     }));
                 }
                 steps.push(json!({
@@ -931,6 +1405,16 @@ mod macos {
                 "retained_hidden_budget_bytes": retained_hidden_budget_bytes,
                 "retained_hidden_bytes_written": hidden_bytes_written,
                 "full_route_membership_for_every_token_every_layer": true,
+                "swiglu_hidden_routed": {
+                    "captured": true,
+                    "width": QWEN80_MOE_INTERMEDIATE,
+                    "formula": "silu(x @ gate_proj.T) * (x @ up_proj.T)",
+                    "hidden_act": "silu",
+                    "path_template": "x/swiglu_hidden_routed/L{layer:02}/E{expert:03}/{probe_id}/{position:06}.f32le",
+                    "packed_path_template": "x/swiglu_hidden_routed/L{layer:02}/E{expert:03}.f32le",
+                    "same_first_n_and_row_order_as_router_input_hidden": true,
+                    "bytes_written": swiglu_bytes_written,
+                },
                 "n_fit_distribution": n_fit_dist.clone(),
                 "rejected_alternatives": {
                     "full_raw_all_tokens": "unbounded; not acceptable",
@@ -955,7 +1439,9 @@ mod macos {
             "claim_boundary": claim_boundary,
         });
         let result_path = output_dir.join("capture-result.json");
-        write_json_new(&result_path, &result).unwrap_or_else(|e| fail(e));
+        // Final result may replace a partial file left by a previous --resume
+        // segment (that run wrote a result covering only the layers it executed).
+        write_json_overwrite(&result_path, &result).unwrap_or_else(|e| fail(e));
         println!(
             "{}",
             serde_json::to_string_pretty(&json!({

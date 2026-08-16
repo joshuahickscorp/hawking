@@ -113,6 +113,30 @@ pub fn retained_hidden_relative_path(layer: usize, probe_id: &str, position: usi
     format!("hidden/L{layer:02}/{probe_id}/{position:06}.f32le")
 }
 
+/// On-disk relative path for one retained post-SwiGLU intermediate row.
+///
+/// Keyed by `(layer, expert)` so the doctor6 collector can walk these the same
+/// way it walks router-input hiddens: one f32le row per (token, expert) that
+/// first-N retained, same global token order.
+///
+/// `x/swiglu_hidden_routed/L{{layer}}/E{{expert}}/{{probe}}/{{pos}}.f32le`
+pub fn retained_swiglu_relative_path(
+    layer: usize,
+    expert: u32,
+    probe_id: &str,
+    position: usize,
+) -> String {
+    format!("x/swiglu_hidden_routed/L{layer:02}/E{expert:03}/{probe_id}/{position:06}.f32le")
+}
+
+/// Packed organ file: every retained row for one `(layer, expert)`, concatenated
+/// in the same order `collect_expert_activations` would stack individual files.
+///
+/// `x/swiglu_hidden_routed/L{{layer}}/E{{expert}}.f32le`
+pub fn retained_swiglu_packed_relative_path(layer: usize, expert: u32) -> String {
+    format!("x/swiglu_hidden_routed/L{layer:02}/E{expert:03}.f32le")
+}
+
 /// Write one retained hidden row as little-endian f32. Refuses to overwrite.
 pub fn write_retained_hidden_f32le(path: &Path, values: &[f32]) -> Result<(String, usize)> {
     let parent = path.parent().ok_or_else(|| {
@@ -182,12 +206,21 @@ pub fn credit_expert_first_n_retention(
 ///
 /// After a per-layer flush this is the in-memory footprint of one layer (or
 /// zero once that layer has been released). It must not grow with layer index.
+/// Includes post-SwiGLU intermediates when they are still resident.
 pub fn resident_retained_hidden_bytes(captures: &[Vec<Vec<LayerTokenCapture>>]) -> usize {
     captures
         .iter()
         .flatten()
         .flatten()
-        .map(|cap| cap.router_input_hidden.len().saturating_mul(4))
+        .map(|cap| {
+            let hidden = cap.router_input_hidden.len();
+            let swiglu = cap
+                .swiglu_hidden_routed
+                .iter()
+                .map(|(_, row)| row.len())
+                .sum::<usize>();
+            hidden.saturating_add(swiglu).saturating_mul(4)
+        })
         .sum()
 }
 
@@ -204,7 +237,14 @@ pub fn release_layer_retained_hiddens(
             for cap in token.iter_mut() {
                 if cap.layer == layer_idx {
                     freed = freed.saturating_add(cap.router_input_hidden.len());
+                    freed = freed.saturating_add(
+                        cap.swiglu_hidden_routed
+                            .iter()
+                            .map(|(_, row)| row.len())
+                            .sum::<usize>(),
+                    );
                     cap.router_input_hidden = Vec::new();
+                    cap.swiglu_hidden_routed = Vec::new();
                 }
             }
         }
@@ -225,11 +265,42 @@ pub fn append_retained_layer_captures(
     layer_idx: usize,
     max_hidden_tokens_per_expert: usize,
 ) -> Result<()> {
+    append_retained_layer_captures_with_swiglu(
+        captures,
+        token_index,
+        routes,
+        all_router_in,
+        None,
+        layer_idx,
+        max_hidden_tokens_per_expert,
+    )
+}
+
+/// Like [`append_retained_layer_captures`], and when `all_swiglu` is present
+/// copy that token's post-SwiGLU rows under the same first-N retain mask.
+///
+/// `all_swiglu[t]` is the routed-expert list for token `t` in **route-slot
+/// order** (same as `selected_expert_ids`). Each row is
+/// `silu(x @ W_gate.T) * (x @ W_up.T)` at [`QWEN80_MOE_INTERMEDIATE`].
+pub fn append_retained_layer_captures_with_swiglu(
+    captures: &mut [Vec<Vec<LayerTokenCapture>>],
+    token_index: &[(usize, usize)],
+    routes: &mut [(Vec<u32>, Vec<f32>)],
+    all_router_in: &[f32],
+    all_swiglu: Option<&[Vec<(u32, Vec<f32>)>]>,
+    layer_idx: usize,
+    max_hidden_tokens_per_expert: usize,
+) -> Result<()> {
     if all_router_in.len() != token_index.len().saturating_mul(QWEN80_HIDDEN) {
         return Err(model_err("router-input/token_index length mismatch"));
     }
     if routes.len() != token_index.len() {
         return Err(model_err("routes/token_index length mismatch"));
+    }
+    if let Some(swiglu) = all_swiglu {
+        if swiglu.len() != token_index.len() {
+            return Err(model_err("swiglu/token_index length mismatch"));
+        }
     }
     let mut expert_retained = vec![0usize; QWEN80_EXPERTS];
     for (t, &(pi, pos)) in token_index.iter().enumerate() {
@@ -249,15 +320,52 @@ pub fn append_retained_layer_captures(
         } else {
             Vec::new()
         };
+        let swiglu_hidden_routed = if retain {
+            take_swiglu_rows(all_swiglu, t, &ids)?
+        } else {
+            Vec::new()
+        };
         captures[pi][pos].push(LayerTokenCapture {
             layer: layer_idx,
             selected_expert_ids: ids,
             normalized_route_weights: weights,
             router_input_hidden: hidden,
             hidden_retained: retain,
+            swiglu_hidden_routed,
         });
     }
     Ok(())
+}
+
+fn take_swiglu_rows(
+    all_swiglu: Option<&[Vec<(u32, Vec<f32>)>]>,
+    token: usize,
+    selected: &[u32],
+) -> Result<Vec<(u32, Vec<f32>)>> {
+    let Some(table) = all_swiglu else {
+        return Ok(Vec::new());
+    };
+    let src = &table[token];
+    let mut out = Vec::with_capacity(selected.len());
+    for &eid in selected {
+        let row = src
+            .iter()
+            .find(|(id, _)| *id == eid)
+            .map(|(_, row)| row.as_slice())
+            .ok_or_else(|| {
+                model_err(format!(
+                    "token {token} missing post-SwiGLU row for expert {eid}"
+                ))
+            })?;
+        if row.len() != QWEN80_MOE_INTERMEDIATE {
+            return Err(model_err(format!(
+                "token {token} expert {eid} post-SwiGLU width {} != {QWEN80_MOE_INTERMEDIATE}",
+                row.len()
+            )));
+        }
+        out.push((eid, row.to_vec()));
+    }
+    Ok(out)
 }
 
 /// Invoke `on_flush` (write this layer's retained rows) then drop those
@@ -357,7 +465,9 @@ pub fn widen_bf16_into(weight_le: &[u8], rows: usize, cols: usize, out: &mut [f3
 /// supply the throughput.
 ///
 /// Writes unweighted down outputs into `expert_down_out` (n × h). Residual
-/// scatter stays with the caller (route-slot order).
+/// scatter stays with the caller (route-slot order). When `expert_act_out`
+/// is `Some`, also writes the post-SwiGLU intermediate (`n × inter`) — the
+/// actual input `down_proj` sees.
 fn expert_batched_down(
     expert: &ExpertWeights,
     members: &[(usize, f32)],
@@ -365,6 +475,7 @@ fn expert_batched_down(
     h: usize,
     inter: usize,
     expert_down_out: &mut [f32],
+    mut expert_act_out: Option<&mut [f32]>,
     gu_out: &mut [f32],
     act: &mut [f32],
     w_gu: &mut [f32],
@@ -376,6 +487,11 @@ fn expert_batched_down(
     }
     if expert_down_out.len() < n * h {
         return Err(model_err("expert_batched_down output too small"));
+    }
+    if let Some(act_out) = expert_act_out.as_ref() {
+        if act_out.len() < n * inter {
+            return Err(model_err("expert_batched_down act output too small"));
+        }
     }
 
     // Widen once; run gate/up/down as separate M=1 matvecs (matches scalar
@@ -393,6 +509,9 @@ fn expert_batched_down(
         gemm_f32(w_gate, inter, h, x, 1, gate_scratch)?;
         gemm_f32(w_up, inter, h, x, 1, up_scratch)?;
         silu_mul(gate_scratch, up_scratch, act_scratch);
+        if let Some(act_out) = expert_act_out.as_mut() {
+            act_out[i * inter..(i + 1) * inter].copy_from_slice(act_scratch);
+        }
         gemm_f32(
             w_down,
             h,
@@ -419,9 +538,15 @@ pub fn moe_routed_experts_parallel(
     h: usize,
     inter: usize,
     moe_out: &mut [f32],
+    mut swiglu_by_token: Option<&mut [Vec<(u32, Vec<f32>)>]>,
 ) -> Result<()> {
     if experts.len() != QWEN80_EXPERTS || expert_members.len() != QWEN80_EXPERTS {
         return Err(model_err("moe_routed_experts_parallel expert table size"));
+    }
+    if let Some(dst) = swiglu_by_token.as_ref() {
+        if dst.len() != total_tokens {
+            return Err(model_err("swiglu_by_token/token length mismatch"));
+        }
     }
     // Active experts only.
     let active: Vec<usize> = (0..QWEN80_EXPERTS)
@@ -438,11 +563,22 @@ pub fn moe_routed_experts_parallel(
         return Ok(());
     }
 
-    // Per-active-expert down slots. `chunks_mut` gives each worker a disjoint
-    // exclusive borrow — no second copy of the T×top_k×h buffer.
-    let mut active_down: Vec<Vec<f32>> = active
+    let capture_swiglu = swiglu_by_token.is_some();
+    // Per-active-expert (down, act) slots. `chunks_mut` gives each worker a
+    // disjoint exclusive borrow — no second copy of the T×top_k buffers.
+    let mut active_payloads: Vec<(Vec<f32>, Vec<f32>)> = active
         .iter()
-        .map(|&e| vec![0.0f32; expert_members[e].len() * h])
+        .map(|&e| {
+            let n = expert_members[e].len();
+            (
+                vec![0.0f32; n * h],
+                if capture_swiglu {
+                    vec![0.0f32; n * inter]
+                } else {
+                    Vec::new()
+                },
+            )
+        })
         .collect();
     let n_workers = moe_worker_count(total_tokens, active.len());
 
@@ -451,9 +587,9 @@ pub fn moe_routed_experts_parallel(
         let experts: &[ExpertWeights] = experts;
         let chunk = active.len().div_ceil(n_workers);
         std::thread::scope(|scope| {
-            for (wi, down_chunk) in active_down.chunks_mut(chunk).enumerate() {
+            for (wi, payload_chunk) in active_payloads.chunks_mut(chunk).enumerate() {
                 let start = wi * chunk;
-                let my_ids = &active[start..start + down_chunk.len()];
+                let my_ids = &active[start..start + payload_chunk.len()];
                 let expert_members = expert_members;
                 let all_router_in = all_router_in;
                 let err = &err;
@@ -462,15 +598,21 @@ pub fn moe_routed_experts_parallel(
                     let mut act = vec![0.0f32; inter];
                     let mut w_gu = vec![0.0f32; 2 * inter * h];
                     let mut w_down = vec![0.0f32; h * inter];
-                    for (local, out) in down_chunk.iter_mut().enumerate() {
+                    for (local, (down_out, act_out)) in payload_chunk.iter_mut().enumerate() {
                         let e = my_ids[local];
+                        let act_slot = if act_out.is_empty() {
+                            None
+                        } else {
+                            Some(act_out.as_mut_slice())
+                        };
                         if let Err(err_e) = expert_batched_down(
                             &experts[e],
                             &expert_members[e],
                             all_router_in,
                             h,
                             inter,
-                            out,
+                            down_out,
+                            act_slot,
                             &mut gu_out,
                             &mut act,
                             &mut w_gu,
@@ -490,8 +632,11 @@ pub fn moe_routed_experts_parallel(
         return Err(model_err(msg));
     }
     let mut expert_down: Vec<Vec<f32>> = (0..QWEN80_EXPERTS).map(|_| Vec::new()).collect();
+    let mut expert_act: Vec<Vec<f32>> = (0..QWEN80_EXPERTS).map(|_| Vec::new()).collect();
     for (i, &e) in active.iter().enumerate() {
-        expert_down[e] = std::mem::take(&mut active_down[i]);
+        let (down, act) = std::mem::take(&mut active_payloads[i]);
+        expert_down[e] = down;
+        expert_act[e] = act;
     }
 
     // local_of[e][token] = row in expert_down[e]
@@ -506,6 +651,10 @@ pub fn moe_routed_experts_parallel(
     for t in 0..total_tokens {
         let (ids, weights) = &routes[t];
         let dst = &mut moe_out[t * h..(t + 1) * h];
+        if let Some(swiglu_dst) = swiglu_by_token.as_mut() {
+            swiglu_dst[t].clear();
+            swiglu_dst[t].reserve(ids.len());
+        }
         for (&eid, &w) in ids.iter().zip(weights.iter()) {
             let e = eid as usize;
             let local_i = *local_of[e]
@@ -515,6 +664,10 @@ pub fn moe_routed_experts_parallel(
             for j in 0..h {
                 dst[j] += src[j] * w;
             }
+            if let Some(swiglu_dst) = swiglu_by_token.as_mut() {
+                let act = &expert_act[e][local_i * inter..(local_i + 1) * inter];
+                swiglu_dst[t].push((eid, act.to_vec()));
+            }
         }
     }
 
@@ -523,6 +676,7 @@ pub fn moe_routed_experts_parallel(
         experts[e].up = Vec::new();
         experts[e].down = Vec::new();
         expert_down[e] = Vec::new();
+        expert_act[e] = Vec::new();
     }
     Ok(())
 }
@@ -1576,9 +1730,10 @@ impl GqaState {
 
 /// Per-token capture surface for one layer (matches complete-binary capture).
 ///
-/// After per-layer flush, [`Self::router_input_hidden`] is empty even when
-/// [`Self::hidden_retained`] is true — the row has been written and freed.
-/// Route membership stays complete for every token.
+/// After per-layer flush, [`Self::router_input_hidden`] and
+/// [`Self::swiglu_hidden_routed`] are empty even when [`Self::hidden_retained`]
+/// is true — the rows have been written and freed. Route membership stays
+/// complete for every token.
 #[derive(Clone, Debug)]
 pub struct LayerTokenCapture {
     pub layer: usize,
@@ -1587,6 +1742,10 @@ pub struct LayerTokenCapture {
     pub router_input_hidden: Vec<f32>,
     /// Whether first-N kept this token's hidden at this layer. Survives flush.
     pub hidden_retained: bool,
+    /// Post-SwiGLU intermediate per routed expert, same first-N mask and
+    /// route-slot order as [`Self::selected_expert_ids`]. Each row is
+    /// [`QWEN80_MOE_INTERMEDIATE`] (`silu(gate) * up`). Emptied on flush.
+    pub swiglu_hidden_routed: Vec<(u32, Vec<f32>)>,
 }
 
 pub type ProbeHidden = Vec<f32>;
@@ -2363,6 +2522,7 @@ pub fn forward_layer_probe(
             normalized_route_weights: weights,
             router_input_hidden: if retain { router_input } else { Vec::new() },
             hidden_retained: retain,
+            swiglu_hidden_routed: Vec::new(),
         });
     }
     Ok(captures)
@@ -2652,13 +2812,14 @@ pub fn moe_worker_count(total_tokens: usize, n_active: usize) -> usize {
 /// 3. One router GEMM over the whole corpus at this layer.
 /// 4. Shared expert one batched SwiGLU; routed experts gather/GEMM/scatter in
 ///    parallel; widen only active experts.
-/// 5. Retains router-input hiddens under **per-expert first-N** (see
+/// 5. Retains router-input hiddens **and** the matching post-SwiGLU
+///    intermediates under **per-expert first-N** (see
 ///    [`credit_expert_first_n_retention`]): the first `max_hidden_tokens_per_expert`
-///    tokens that route to expert E keep their hidden for that layer. Full route
-///    membership is always recorded.
+///    tokens that route to expert E keep their hidden (and that expert's
+///    `silu(gate)*up` row) for that layer. Full route membership is always recorded.
 /// 6. Invokes `on_layer_flush` (caller writes this layer's retained rows) and
-///    then drops those hidden payloads before layer `L+1` loads. The returned
-///    captures keep complete routes; `router_input_hidden` is empty after flush.
+///    then drops those hidden + SwiGLU payloads before layer `L+1` loads. The
+///    returned captures keep complete routes; payloads are empty after flush.
 ///
 /// Retention must happen *after* routing is known, so a precomputed global
 /// (probe, position) set cannot express per-expert quotas. Both DeltaNet and
@@ -2669,9 +2830,37 @@ pub fn capture_all_layers(
     probes: &[(String, Vec<u32>)],
     hiddens: &mut [ProbeHidden],
     max_hidden_tokens_per_expert: usize,
+    on_layer: Option<&mut dyn FnMut(usize, &LoadedLayer, &StreamTelemetry)>,
+    on_layer_flush: Option<
+        &mut dyn FnMut(usize, &mut [Vec<Vec<LayerTokenCapture>>], &[ProbeHidden]) -> Result<()>,
+    >,
+) -> Result<(Vec<Vec<Vec<LayerTokenCapture>>>, StreamTelemetry)> {
+    capture_layers_from(
+        index,
+        probes,
+        hiddens,
+        max_hidden_tokens_per_expert,
+        0,
+        on_layer,
+        on_layer_flush,
+    )
+}
+
+/// Like [`capture_all_layers`] but starts at `start_layer`.
+///
+/// Residual streams in `hiddens` must already reflect layers `0..start_layer`.
+/// Used to resume a checkpointed capture; first-N counters still reset per
+/// layer, so a resumed layer is byte-identical to a from-scratch run of that
+/// same layer.
+pub fn capture_layers_from(
+    index: &SourceBf16Index,
+    probes: &[(String, Vec<u32>)],
+    hiddens: &mut [ProbeHidden],
+    max_hidden_tokens_per_expert: usize,
+    start_layer: usize,
     mut on_layer: Option<&mut dyn FnMut(usize, &LoadedLayer, &StreamTelemetry)>,
     mut on_layer_flush: Option<
-        &mut dyn FnMut(usize, &mut [Vec<Vec<LayerTokenCapture>>]) -> Result<()>,
+        &mut dyn FnMut(usize, &mut [Vec<Vec<LayerTokenCapture>>], &[ProbeHidden]) -> Result<()>,
     >,
 ) -> Result<(Vec<Vec<Vec<LayerTokenCapture>>>, StreamTelemetry)> {
     if hiddens.len() != probes.len() {
@@ -2679,11 +2868,28 @@ pub fn capture_all_layers(
     }
     let total_tokens: usize = probes.iter().map(|(_, t)| t.len()).sum();
     let n_layers = capture_layer_limit();
+    let start_layer = start_layer.min(n_layers);
     let mut captures: Vec<Vec<Vec<LayerTokenCapture>>> = probes
         .iter()
         .map(|(_, toks)| {
             (0..toks.len())
-                .map(|_| Vec::with_capacity(n_layers))
+                .map(|_| {
+                    let mut layers = Vec::with_capacity(n_layers);
+                    // Index-by-layer for flush callbacks: placeholders for
+                    // already-completed layers on resume. Caller overwrites
+                    // these from layer_meta; they are never flushed.
+                    for layer in 0..start_layer {
+                        layers.push(LayerTokenCapture {
+                            layer,
+                            selected_expert_ids: Vec::new(),
+                            normalized_route_weights: Vec::new(),
+                            router_input_hidden: Vec::new(),
+                            hidden_retained: false,
+                            swiglu_hidden_routed: Vec::new(),
+                        });
+                    }
+                    layers
+                })
                 .collect()
         })
         .collect();
@@ -2708,7 +2914,7 @@ pub fn capture_all_layers(
     let mut router_logits = vec![0.0f32; total_tokens * QWEN80_EXPERTS];
     let mut moe_out = vec![0.0f32; total_tokens * h];
 
-    for layer_idx in 0..n_layers {
+    for layer_idx in start_layer..n_layers {
         let load_t0 = Instant::now();
         let mut layer = LoadedLayer::load(index, layer_idx)?;
         telem.load_secs += load_t0.elapsed().as_secs_f64();
@@ -2807,6 +3013,8 @@ pub fn capture_all_layers(
         telem.phase.moe_workers = moe_worker_count(total_tokens, n_active);
 
         let routed_t0 = Instant::now();
+        let mut swiglu_by_token: Vec<Vec<(u32, Vec<f32>)>> =
+            (0..total_tokens).map(|_| Vec::new()).collect();
         moe_routed_experts_parallel(
             &mut layer.experts,
             &expert_members,
@@ -2816,6 +3024,7 @@ pub fn capture_all_layers(
             h,
             inter,
             &mut moe_out,
+            Some(&mut swiglu_by_token),
         )?;
         telem.phase.routed_expert_secs += routed_t0.elapsed().as_secs_f64();
         telem.phase.peak_rss_after_routed_bytes = telem
@@ -2859,18 +3068,20 @@ pub fn capture_all_layers(
         }
         telem.phase.residual_secs += residual_t0.elapsed().as_secs_f64();
         let flush_t0 = Instant::now();
-        append_retained_layer_captures(
+        append_retained_layer_captures_with_swiglu(
             &mut captures,
             &token_index,
             &mut routes,
             &all_router_in,
+            Some(&swiglu_by_token),
             layer_idx,
             max_hidden_tokens_per_expert,
         )?;
+        drop(swiglu_by_token);
         // Write this layer's retained rows (caller) and drop the payloads
         // before the next layer's weights load.
         if let Some(cb) = on_layer_flush.as_mut() {
-            cb(layer_idx, &mut captures)?;
+            cb(layer_idx, &mut captures, hiddens)?;
         }
         release_layer_retained_hiddens(&mut captures, layer_idx);
         debug_assert_eq!(resident_retained_hidden_bytes(&captures), 0);
@@ -3388,13 +3599,30 @@ mod tests {
         layer_idx: usize,
         captures: &[Vec<Vec<LayerTokenCapture>>],
     ) -> Result<()> {
+        let mut packed: std::collections::BTreeMap<u32, Vec<f32>> =
+            std::collections::BTreeMap::new();
         for pos in 0..token_count {
-            let cap = &captures[0][pos][layer_idx];
+            let cap = captures[0][pos]
+                .iter()
+                .find(|c| c.layer == layer_idx)
+                .ok_or_else(|| model_err(format!("missing capture pos {pos} L{layer_idx}")))?;
             if !cap.hidden_retained {
                 continue;
             }
             let rel = retained_hidden_relative_path(layer_idx, probe_id, pos);
             write_retained_hidden_f32le(&output_dir.join(rel), &cap.router_input_hidden)?;
+            for &(eid, ref row) in &cap.swiglu_hidden_routed {
+                let srel = retained_swiglu_relative_path(layer_idx, eid, probe_id, pos);
+                write_retained_hidden_f32le(&output_dir.join(srel), row)?;
+                packed.entry(eid).or_default().extend_from_slice(row);
+            }
+        }
+        for (eid, buf) in packed {
+            if buf.is_empty() {
+                continue;
+            }
+            let prel = retained_swiglu_packed_relative_path(layer_idx, eid);
+            write_retained_hidden_f32le(&output_dir.join(prel), &buf)?;
         }
         Ok(())
     }
@@ -3597,6 +3825,207 @@ mod tests {
         let files_b = collect(dir_b.path());
         assert!(!files_a.is_empty(), "expected retained hidden files");
         assert_eq!(files_a, files_b);
+    }
+
+    fn synthetic_swiglu_for_routes(
+        routes: &[(Vec<u32>, Vec<f32>)],
+        layer_idx: usize,
+    ) -> Vec<Vec<(u32, Vec<f32>)>> {
+        routes
+            .iter()
+            .enumerate()
+            .map(|(t, (ids, _))| {
+                ids.iter()
+                    .map(|&eid| {
+                        let fill = layer_idx as f32 + (t as f32) / 100.0 + eid as f32 / 1000.0;
+                        (eid, vec![fill; QWEN80_MOE_INTERMEDIATE])
+                    })
+                    .collect()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn swiglu_rows_follow_first_n_and_are_released() {
+        let token_count = 20usize;
+        let n = 3usize;
+        let probes = vec![("probe0".to_string(), vec![1u32; token_count])];
+        let mut captures = empty_captures(&probes);
+        let (token_index, mut routes, all_router_in) = synthetic_layer_inputs(token_count, 2);
+        let swiglu = synthetic_swiglu_for_routes(&routes, 2);
+        append_retained_layer_captures_with_swiglu(
+            &mut captures,
+            &token_index,
+            &mut routes,
+            &all_router_in,
+            Some(&swiglu),
+            2,
+            n,
+        )
+        .expect("append");
+
+        let mut retained = 0usize;
+        for pos in 0..token_count {
+            let cap = &captures[0][pos][0];
+            if cap.hidden_retained {
+                retained += 1;
+                assert_eq!(cap.swiglu_hidden_routed.len(), QWEN80_TOP_K);
+                assert_eq!(cap.router_input_hidden.len(), QWEN80_HIDDEN);
+                for (i, &(eid, ref row)) in cap.swiglu_hidden_routed.iter().enumerate() {
+                    assert_eq!(eid, cap.selected_expert_ids[i]);
+                    assert_eq!(row.len(), QWEN80_MOE_INTERMEDIATE);
+                }
+            } else {
+                assert!(cap.swiglu_hidden_routed.is_empty());
+                assert!(cap.router_input_hidden.is_empty());
+            }
+        }
+        assert!(retained > 0);
+        let resident = resident_retained_hidden_bytes(&captures);
+        assert!(resident > retained * QWEN80_HIDDEN * 4);
+        let freed = release_layer_retained_hiddens(&mut captures, 2);
+        assert!(freed > 0);
+        assert_eq!(resident_retained_hidden_bytes(&captures), 0);
+        for pos in 0..token_count {
+            let cap = &captures[0][pos][0];
+            assert!(cap.router_input_hidden.is_empty());
+            assert!(cap.swiglu_hidden_routed.is_empty());
+        }
+    }
+
+    #[test]
+    fn swiglu_disk_layout_is_keyed_by_layer_expert_and_byte_identical() {
+        let token_count = 12usize;
+        let n = 4usize;
+        let probe_id = "sw0";
+        let probes = vec![(probe_id.to_string(), vec![7u32; token_count])];
+
+        let run = |dir: &std::path::Path| {
+            let mut captures = empty_captures(&probes);
+            let (token_index, mut routes, all_router_in) = synthetic_layer_inputs(token_count, 5);
+            let swiglu = synthetic_swiglu_for_routes(&routes, 5);
+            append_retained_layer_captures_with_swiglu(
+                &mut captures,
+                &token_index,
+                &mut routes,
+                &all_router_in,
+                Some(&swiglu),
+                5,
+                n,
+            )
+            .expect("append");
+            let mut flush = |layer: usize, caps: &mut [Vec<Vec<LayerTokenCapture>>]| {
+                write_layer_if_retained(dir, probe_id, token_count, layer, caps)
+            };
+            flush_and_release_layer_hiddens(&mut captures, 5, Some(&mut flush)).expect("flush");
+            captures
+        };
+
+        let dir_a = tempfile::tempdir().expect("tempdir a");
+        let dir_b = tempfile::tempdir().expect("tempdir b");
+        let caps_a = run(dir_a.path());
+        let _caps_b = run(dir_b.path());
+        // Payloads are released on flush; the retain mask + route ids survive.
+        let mut packed_seen = 0usize;
+        let mut individual_seen = 0usize;
+        for pos in 0..token_count {
+            let cap = &caps_a[0][pos][0];
+            if !cap.hidden_retained {
+                continue;
+            }
+            for &eid in &cap.selected_expert_ids {
+                let rel = retained_swiglu_relative_path(5, eid, probe_id, pos);
+                let bytes = std::fs::read(dir_a.path().join(&rel)).expect("read swiglu");
+                assert_eq!(bytes.len(), QWEN80_MOE_INTERMEDIATE * 4);
+                let other = std::fs::read(dir_b.path().join(&rel)).expect("read swiglu b");
+                assert_eq!(bytes, other);
+                individual_seen += 1;
+                let prel = retained_swiglu_packed_relative_path(5, eid);
+                if dir_a.path().join(&prel).is_file() {
+                    packed_seen += 1;
+                }
+            }
+        }
+        assert!(individual_seen > 0);
+        assert!(packed_seen > 0);
+        assert_eq!(
+            retained_swiglu_relative_path(10, 453, "probe", 7),
+            "x/swiglu_hidden_routed/L10/E453/probe/000007.f32le"
+        );
+        assert_eq!(
+            retained_swiglu_packed_relative_path(10, 453),
+            "x/swiglu_hidden_routed/L10/E453.f32le"
+        );
+    }
+
+    #[test]
+    fn resume_split_matches_oneshot_on_disk() {
+        // Layer-boundary resume: first two layers, then the next two, must
+        // match a single 0..4 run. Same first-N rule, same row order.
+        let token_count = 10usize;
+        let n = 3usize;
+        let probe_id = "rs0";
+        let probes = vec![(probe_id.to_string(), vec![3u32; token_count])];
+
+        let run_range = |dir: &std::path::Path, layers: std::ops::Range<usize>| {
+            let mut captures = empty_captures(&probes);
+            for layer_idx in layers {
+                let (token_index, mut routes, all_router_in) =
+                    synthetic_layer_inputs(token_count, layer_idx);
+                let swiglu = synthetic_swiglu_for_routes(&routes, layer_idx);
+                append_retained_layer_captures_with_swiglu(
+                    &mut captures,
+                    &token_index,
+                    &mut routes,
+                    &all_router_in,
+                    Some(&swiglu),
+                    layer_idx,
+                    n,
+                )
+                .expect("append");
+                let mut flush = |layer: usize, caps: &mut [Vec<Vec<LayerTokenCapture>>]| {
+                    write_layer_if_retained(dir, probe_id, token_count, layer, caps)
+                };
+                flush_and_release_layer_hiddens(&mut captures, layer_idx, Some(&mut flush))
+                    .expect("flush");
+            }
+        };
+
+        let oneshot = tempfile::tempdir().expect("oneshot");
+        run_range(oneshot.path(), 0..4);
+
+        let resumed = tempfile::tempdir().expect("resumed");
+        run_range(resumed.path(), 0..2);
+        run_range(resumed.path(), 2..4);
+
+        let collect = |root: &std::path::Path| -> Vec<(String, Vec<u8>)> {
+            let mut files = Vec::new();
+            fn walk(dir: &std::path::Path, root: &std::path::Path, out: &mut Vec<(String, Vec<u8>)>) {
+                let Ok(rd) = std::fs::read_dir(dir) else {
+                    return;
+                };
+                for ent in rd.flatten() {
+                    let path = ent.path();
+                    if path.is_dir() {
+                        walk(&path, root, out);
+                    } else if path.is_file() {
+                        let rel = path
+                            .strip_prefix(root)
+                            .expect("prefix")
+                            .to_string_lossy()
+                            .into_owned();
+                        out.push((rel, std::fs::read(path).expect("read")));
+                    }
+                }
+            }
+            walk(root, root, &mut files);
+            files.sort_by(|a, b| a.0.cmp(&b.0));
+            files
+        };
+        let a = collect(oneshot.path());
+        let b = collect(resumed.path());
+        assert!(!a.is_empty());
+        assert_eq!(a, b);
     }
 
     #[test]

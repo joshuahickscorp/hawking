@@ -771,6 +771,176 @@ def count_expert_activations(
     return counts, provenance
 
 
+SWIGLU_INTERMEDIATE = 512
+_SWIGLU_DIR = "x/swiglu_hidden_routed"
+
+
+def _load_packed_swiglu(
+    run_dir: Path,
+    *,
+    wanted_keys: set[tuple[int, int]] | None,
+) -> tuple[dict[tuple[int, int], list[np.ndarray] | int], dict[str, Any]] | None:
+    """Load packed ``Lxx/Eyyy.f32le`` organ files if the capture wrote them.
+
+    Same doctor6 collect contract: a dict keyed by (layer, expert) whose
+    values are row lists (here one ndarray split into rows). Returns None
+    when the packed tree is absent so the caller can walk per-token files.
+    """
+    root = Path(run_dir) / _SWIGLU_DIR
+    if not root.is_dir():
+        return None
+    by_key: dict[tuple[int, int], list[np.ndarray] | int] = {}
+    layers_seen: set[int] = set()
+    for layer_dir in sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("L")):
+        try:
+            layer = int(layer_dir.name[1:])
+        except ValueError:
+            continue
+        layers_seen.add(layer)
+        for packed in sorted(layer_dir.glob("E*.f32le")):
+            stem = packed.stem
+            if not stem.startswith("E"):
+                continue
+            try:
+                expert = int(stem[1:])
+            except ValueError:
+                continue
+            key = (layer, expert)
+            if wanted_keys is not None and key not in wanted_keys:
+                continue
+            arr = np.fromfile(packed, dtype="<f4")
+            if arr.size == 0 or arr.size % SWIGLU_INTERMEDIATE != 0:
+                raise ActivationWeightedRepackError(
+                    f"packed swiglu {packed} has {arr.size} f32, not a multiple of {SWIGLU_INTERMEDIATE}"
+                )
+            rows = [
+                arr[i : i + SWIGLU_INTERMEDIATE]
+                for i in range(0, arr.size, SWIGLU_INTERMEDIATE)
+            ]
+            by_key[key] = rows
+    if not by_key:
+        return None
+    n_pairs = sum(len(v) if isinstance(v, list) else int(v) for v in by_key.values())
+    provenance = {
+        "total_steps": None,
+        "hidden_retained_steps": None,
+        "route_only_steps": None,
+        "token_expert_pairs": int(n_pairs),
+        "layer_expert_pairs_with_hits": len(by_key),
+        "experts_with_hits": len({e for (_, e) in by_key}),
+        "layers_with_hidden_hits": sorted(layers_seen),
+        "n_layers_with_hidden_hits": len(layers_seen),
+        "all_layer_capture": True,
+        "streamed": True,
+        "packed_swiglu": True,
+        "x_kind": "swiglu_hidden_routed",
+        "swiglu_width": SWIGLU_INTERMEDIATE,
+        "wanted_keys": (
+            None
+            if wanted_keys is None
+            else [f"L{L}.E{e}" for L, e in sorted(wanted_keys)]
+        ),
+    }
+    return by_key, provenance
+
+
+def _walk_swiglu_hits(
+    run_dir: Path,
+    capture: Mapping[str, Any] | None,
+    *,
+    wanted_keys: set[tuple[int, int]] | None,
+    load_vectors: bool,
+) -> tuple[dict[tuple[int, int], list[np.ndarray] | int], dict[str, Any]]:
+    """Walk capture-result.json the same way as hiddens, but per-expert.
+
+    Each retained layer-row lists ``swiglu_hidden_routed_f32le`` in the same
+    order as ``selected_expert_ids``. Missing files fall back to the
+    deterministic path template.
+    """
+    meta, probes = iter_capture_probes(run_dir, capture)
+    by_key: dict[tuple[int, int], list[np.ndarray] | int] = {}
+    layers_seen: set[int] = set()
+    hidden_steps = 0
+    total_steps = 0
+    for probe in probes:
+        probe_id = str(probe.get("probe_id") or "")
+        for step in probe.get("steps") or []:
+            total_steps += 1
+            layer_rows = step.get("layers") or []
+            any_hidden = False
+            pos = int(step.get("position") or 0)
+            for layer_row in layer_rows:
+                layer = int(layer_row["layer"])
+                layers_seen.add(layer)
+                if not layer_row.get("hidden_retained") and not layer_row.get(
+                    "router_input_hidden_f32le"
+                ):
+                    continue
+                any_hidden = True
+                experts = [int(e) for e in layer_row.get("selected_expert_ids") or []]
+                listed = layer_row.get("swiglu_hidden_routed_f32le") or []
+                by_eid: dict[int, Mapping[str, Any]] = {}
+                if isinstance(listed, list):
+                    for item in listed:
+                        if isinstance(item, Mapping) and "expert_id" in item:
+                            by_eid[int(item["expert_id"])] = item
+                for expert_id in experts:
+                    key = (layer, expert_id)
+                    if wanted_keys is not None and key not in wanted_keys:
+                        continue
+                    if load_vectors:
+                        meta_e = by_eid.get(expert_id)
+                        if meta_e and meta_e.get("relative_path"):
+                            rel = str(meta_e["relative_path"])
+                            expected = int(meta_e.get("elements") or SWIGLU_INTERMEDIATE)
+                        else:
+                            rel = (
+                                f"{_SWIGLU_DIR}/L{layer:02}/E{expert_id:03}/"
+                                f"{probe_id}/{pos:06}.f32le"
+                            )
+                            expected = SWIGLU_INTERMEDIATE
+                        path = run_dir / rel
+                        x = np.fromfile(path, dtype="<f4")
+                        if x.size != expected:
+                            raise ActivationWeightedRepackError(
+                                f"swiglu size mismatch at {path}"
+                            )
+                        rows = by_key.setdefault(key, [])
+                        assert isinstance(rows, list)
+                        rows.append(x)
+                    else:
+                        by_key[key] = int(by_key.get(key, 0) or 0) + 1
+            if any_hidden:
+                hidden_steps += 1
+    n_pairs = 0
+    for value in by_key.values():
+        n_pairs += len(value) if isinstance(value, list) else int(value)
+    provenance = {
+        "total_steps": int(total_steps),
+        "hidden_retained_steps": int(hidden_steps),
+        "route_only_steps": int(total_steps - hidden_steps),
+        "token_expert_pairs": int(n_pairs),
+        "layer_expert_pairs_with_hits": len(by_key),
+        "experts_with_hits": len({e for (_, e) in by_key}),
+        "layers_with_hidden_hits": sorted(layers_seen),
+        "n_layers_with_hidden_hits": len(layers_seen),
+        "all_layer_capture": True,
+        "capture_schema": meta.get("schema"),
+        "bounded_storage": meta.get("bounded_storage"),
+        "n_tokens": int(total_steps),
+        "streamed": capture is None,
+        "packed_swiglu": False,
+        "x_kind": "swiglu_hidden_routed",
+        "swiglu_width": SWIGLU_INTERMEDIATE,
+        "wanted_keys": (
+            None
+            if wanted_keys is None
+            else [f"L{L}.E{e}" for L, e in sorted(wanted_keys)]
+        ),
+    }
+    return by_key, provenance
+
+
 def collect_expert_activations(
     run_dir: Path,
     capture: Mapping[str, Any] | None = None,
@@ -779,8 +949,9 @@ def collect_expert_activations(
     max_rows_per_expert: int | None = None,
     row_sample_seed: int = ROW_CAP_SEED,
     use_index: bool | None = None,
+    x_kind: str = "router_input",
 ) -> tuple[dict[tuple[int, int], np.ndarray], dict[str, Any]]:
-    """Collect router-input hiddens keyed by (layer, expert_id).
+    """Collect activation rows keyed by (layer, expert_id).
 
     L0-only captures are projected onto layer 0 so the rest of the packer can
     share one code path. All-layer captures only count tokens that retained a
@@ -792,15 +963,39 @@ def collect_expert_activations(
     subsample (row_sample_seed mixed with layer/expert). Does not change
     which organs are eligible — apply the cap after sampling.
     use_index: see ``_walk_hidden_hits``.
+
+    x_kind:
+      * ``router_input`` (default) — 2048-dim hidden; existing doctor6 path.
+      * ``swiglu_hidden_routed`` — 512-dim post-SwiGLU intermediate, same
+        first-N tokens and the same row order as the hidden collect. Prefers
+        packed ``x/swiglu_hidden_routed/Lxx/Eyyy.f32le`` files (one organ,
+        concatenated in collect order) and falls back to the per-token files
+        recorded on each layer row.
     """
 
-    raw, provenance = _walk_hidden_hits(
-        run_dir,
-        capture,
-        wanted_keys=wanted_keys,
-        load_vectors=True,
-        use_index=use_index,
-    )
+    if x_kind not in {"router_input", "swiglu_hidden_routed"}:
+        raise ActivationWeightedRepackError(f"unsupported x_kind {x_kind!r}")
+    if x_kind == "swiglu_hidden_routed":
+        packed = _load_packed_swiglu(Path(run_dir), wanted_keys=wanted_keys)
+        if packed is not None:
+            raw, provenance = packed
+        else:
+            raw, provenance = _walk_swiglu_hits(
+                Path(run_dir),
+                capture,
+                wanted_keys=wanted_keys,
+                load_vectors=True,
+            )
+        provenance["x_kind"] = x_kind
+    else:
+        raw, provenance = _walk_hidden_hits(
+            run_dir,
+            capture,
+            wanted_keys=wanted_keys,
+            load_vectors=True,
+            use_index=use_index,
+        )
+        provenance["x_kind"] = x_kind
     stacked: dict[tuple[int, int], np.ndarray] = {}
     n_before_cap: dict[str, int] = {}
     subsampled: list[dict[str, Any]] = []

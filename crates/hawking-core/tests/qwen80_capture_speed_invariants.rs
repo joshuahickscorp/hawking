@@ -132,6 +132,7 @@ fn synthetic_moe_out(n_workers: usize, tokens: usize) -> Vec<f32> {
         h,
         inter,
         &mut moe_out,
+        None,
     )
     .expect("moe wave");
     std::env::remove_var("HAWKING_Q80_MOE_WORKERS");

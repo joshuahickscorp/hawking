@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.ascension.qwen80_swiglu_intermediate_verify.v1",
+  "capture": "/tmp/q80-downproj-swiglu-n64-p12",
+  "model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+  "hidden_act": "silu",
+  "formula": "silu(x @ gate_proj.T) * (x @ up_proj.T)",
+  "note": "Recompute uses f32 numpy matmul on BF16-widened source weights. The capture used M=1 f32 GEMV after the same BF16 widen, so differences are rounding, not a different activation.",
+  "pairs": [
+    {
+      "layer": 1,
+      "expert": 265,
+      "rows": 341,
+      "max_abs_diff": 2.4437904357910156e-06,
+      "mean_abs_diff": 2.3066577981012415e-08,
+      "cosine": 0.9999999999972143,
+      "formula": "silu(X @ W_gate.T) * (X @ W_up.T)",
+      "hidden_act": "silu"
+    },
+    {
+      "layer": 32,
+      "expert": 179,
+      "rows": 338,
+      "max_abs_diff": 7.867813110351562e-06,
+      "mean_abs_diff": 1.0367466529714875e-07,
+      "cosine": 0.9999999999988887,
+      "formula": "silu(X @ W_gate.T) * (X @ W_up.T)",
+      "hidden_act": "silu"
+    },
+    {
+      "layer": 46,
+      "expert": 428,
+      "rows": 340,
+      "max_abs_diff": 4.1961669921875e-05,
+      "mean_abs_diff": 2.724151499933214e-07,
+      "cosine": 0.9999999999992416,
+      "formula": "silu(X @ W_gate.T) * (X @ W_up.T)",
+      "hidden_act": "silu"
+    }
+  ],
+  "hidden_provenance": {
+    "token_expert_pairs": 1019,
+    "x_kind": "router_input"
+  },
+  "swiglu_provenance": {
+    "token_expert_pairs": 1019,
+    "x_kind": "swiglu_hidden_routed",
+    "packed_swiglu": true,
+    "swiglu_width": 512
+  }
+}

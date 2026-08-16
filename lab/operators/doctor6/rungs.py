@@ -26,6 +26,7 @@ from lab.operators.ascension_dual_gravity_worker import (
     _residual_codec,
     _uniform_codec,
 )
+from lab.operators.residual_compact_codec import encode_residual_compact
 from lab.operators.hgravs01_adapter import (
     HGRAVS01_RUNGS,
     encode_hgravs01_rung,
@@ -115,6 +116,38 @@ def quant_act_svd(
 
 def quant_residual(W: np.ndarray, *, outlier_ratio: float = 0.05) -> tuple[np.ndarray, int]:
     codec = _residual_codec(W, outlier_ratio=outlier_ratio, group_size=GROUP_BINARY)
+    return codec.reconstruction.astype(np.float32).reshape(W.shape), len(codec.payload)
+
+
+def quant_residual_compact(
+    W: np.ndarray,
+    *,
+    outlier_ratio: float = 0.05,
+    index_mode: str = "rice",
+    value_bits: int = 1,
+    value_scale: str | None = None,
+    group_size: int = GROUP_BINARY,
+) -> tuple[np.ndarray, int]:
+    """Binary + sparse residual with a compact index/value encoding.
+
+    ``quant_residual`` keeps the original 48-bit (uint32 + fp16) packing.
+    This sibling only changes storage. Selection stays global top-k by
+    |residual|. ``value_bits < 16`` is a reported value-quantization.
+
+    Default is the measured Q80 operating point: Rice-coded indices plus a
+    1-bit (sign * RMS) residual. Pass ``value_bits=16`` for the incumbent
+    reconstruction at the cheaper index, or ``value_bits=4`` for a near-free
+    12-bit/outlier uniform quantizer.
+    """
+
+    codec = encode_residual_compact(
+        W,
+        outlier_ratio=outlier_ratio,
+        group_size=group_size,
+        index_mode=index_mode,
+        value_bits=value_bits,
+        value_scale=value_scale,
+    )
     return codec.reconstruction.astype(np.float32).reshape(W.shape), len(codec.payload)
 
 
