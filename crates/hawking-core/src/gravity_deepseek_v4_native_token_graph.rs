@@ -161,12 +161,22 @@ const GATE_KERNEL: &str = "deepseek_v4_p6a_gate_bf16_matvec_authority";
 const HASH_ROUTE_KERNEL: &str = "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority";
 const LEARNED_ROUTE_KERNEL: &str = "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority";
 const SHARED_SWIGLU_KERNEL: &str = "deepseek_v4_p5b_swiglu_route_bf16_authority";
-const PACK_KERNEL: &str = crate::decode_family::PACK_WORKLIST;
-const WORKLIST_FP4_KERNEL: &str = crate::decode_family::WORKLIST_FP4;
-const WORKLIST_FP4_SIMD_KERNEL: &str = crate::decode_family::WORKLIST_FP4_SIMD;
+fn pack_kernel() -> &'static str {
+    crate::decode_family::pack_worklist()
+}
+fn worklist_fp4_kernel() -> &'static str {
+    crate::decode_family::worklist_fp4()
+}
+fn worklist_fp4_simd_kernel() -> &'static str {
+    crate::decode_family::worklist_fp4_simd()
+}
 const WORKLIST_FP4_SIMD_ROWS_PER_TG: u32 = 8;
-const WORKLIST_SWIGLU_KERNEL: &str = crate::decode_family::SWIGLU_BF16_WORKLIST;
-const WORKLIST_COMBINE_KERNEL: &str = crate::decode_family::COMBINE_BF16;
+fn worklist_swiglu_kernel() -> &'static str {
+    crate::decode_family::swiglu_bf16_worklist()
+}
+fn worklist_combine_kernel() -> &'static str {
+    crate::decode_family::combine_bf16()
+}
 const LM_HEAD_KERNEL: &str = "gemv_native_bf16_seq";
 const EMBED_WEIGHT: &str = "embed.weight";
 const LM_HEAD_WEIGHT: &str = "head.weight";
@@ -356,6 +366,14 @@ impl NativeTokenGraphReport {
             },
             "honesty": self.honesty,
             "metal": {
+                "decode_family_enabled": crate::decode_family::family_dispatch_enabled(),
+                "decode_family_kernels": [
+                    crate::decode_family::pack_worklist(),
+                    crate::decode_family::worklist_fp4(),
+                    crate::decode_family::worklist_fp4_simd(),
+                    crate::decode_family::swiglu_bf16_worklist(),
+                    crate::decode_family::combine_bf16(),
+                ],
                 "metal_dispatches": self.counters.metal_dispatches,
                 "command_buffers": self.counters.command_buffers,
                 "fallback": self.counters.fallbacks,
@@ -864,7 +882,7 @@ mod macos {
                 act_tg: pipeline_tg(&metal, ACT_QUANT_SIMD_KERNEL, 256)?,
                 fp8_tg: pipeline_tg(&metal, FP8_KERNEL, 256)?,
                 fp8_occ_tg: align_simd(pipeline_tg(&metal, FP8_OCC_KERNEL, 256)?),
-                fp4_tg: pipeline_tg(&metal, WORKLIST_FP4_KERNEL, 256)?,
+                fp4_tg: pipeline_tg(&metal, worklist_fp4_kernel(), 256)?,
                 cast_tg: pipeline_tg(&metal, CAST_KERNEL, 256)?,
                 gate_tg: pipeline_tg(&metal, GATE_KERNEL, 256)?,
                 wo_a_tg: pipeline_tg(&metal, WO_A_KERNEL, 256)?,
@@ -1830,12 +1848,12 @@ mod macos {
         let (kernel, grid, tg) = if occupancy {
             let groups = rows.div_ceil(WORKLIST_FP4_SIMD_ROWS_PER_TG);
             (
-                WORKLIST_FP4_SIMD_KERNEL,
+                worklist_fp4_simd_kernel(),
                 top_k * groups * 256,
                 256u32,
             )
         } else {
-            (WORKLIST_FP4_KERNEL, top_k * rows, tg.min(rows.max(1)))
+            (worklist_fp4_kernel(), top_k * rows, tg.min(rows.max(1)))
         };
         batch.dispatch_threads(kernel, (grid, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(worklist), 0);
@@ -3131,7 +3149,7 @@ mod macos {
             })?;
         }
         n += 1;
-        batch.dispatch_threads(PACK_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+        batch.dispatch_threads(pack_kernel(), (1, 1, 1), (1, 1, 1), |enc| {
             enc.set_buffer(0, Some(&s.route_ids), 0);
             enc.set_buffer(1, Some(&s.route_weights), 0);
             enc.set_buffer(2, Some(&s.worklist), 0);
@@ -3214,7 +3232,7 @@ mod macos {
         n += 1;
         dispatch_cast(batch, &s.expert_up_f32, &s.expert_up_bf16, gate_count, p.cast_tg)?;
         n += 1;
-        batch.dispatch_threads(WORKLIST_SWIGLU_KERNEL, (gate_count, 1, 1), (tg, 1, 1), |enc| {
+        batch.dispatch_threads(worklist_swiglu_kernel(), (gate_count, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(&s.worklist), 0);
             enc.set_buffer(1, Some(&s.expert_gate_bf16), 0);
             enc.set_buffer(2, Some(&s.expert_up_bf16), 0);
@@ -3368,7 +3386,7 @@ mod macos {
         )?;
         n += 1;
         batch.dispatch_threads(
-            WORKLIST_COMBINE_KERNEL,
+            worklist_combine_kernel(),
             (HIDDEN_SIZE as u32, 1, 1),
             (p.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
             |enc| {
@@ -4206,7 +4224,7 @@ mod macos {
         })?;
         probe_one(&graph.metal, profiler, "isolated.moe_combine", layer_idx, |batch| {
             batch.dispatch_threads(
-                WORKLIST_COMBINE_KERNEL,
+                worklist_combine_kernel(),
                 (HIDDEN_SIZE as u32, 1, 1),
                 (graph.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
                 |enc| {
