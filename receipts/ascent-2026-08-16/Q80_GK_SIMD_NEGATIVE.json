@@ -1,0 +1,12 @@
+{
+  "schema": "hawking.q80.gk_simd_negative.v1",
+  "date": "2026-08-16",
+  "result": "NEGATIVE_SUBSUMED",
+  "gpu_matvec_tiles_ms": 36.53,
+  "gpu_matvec_gk_simd_ms": 91.28,
+  "simd_is_slower_by_x": 2.5,
+  "why_the_lead_looked_good": "The diagnosis measured gk_*_simd at 2x on binary and 8-45x on Q8 AGAINST THE SERIAL KERNELS. That comparison was valid when taken. The reconstruction fix then removed the serial extract from the hot path, and in-register occupancy tiles beat SIMD outright.",
+  "my_error": "I recorded 'gk_*_simd is on main and unused (2x binary, 8-45x Q8)' as unexploited headroom TWICE - in the G003 ledger evidence and in the lane contract - after the reconstruction fix had already landed. The two facts were true separately and false together, and I did not re-check the pairing before promoting it as a lead.",
+  "disposition": "default-off behind HAWKING_Q80_GK_SIMD=1, A/B reproducible, NOT promoted to default",
+  "evidence": "3 alternating pairs, greedy ids identical all 6 runs, silent_fallbacks 0, completed-MTLCommandBuffer authority under gpu_lane_lock.sh"
+}
