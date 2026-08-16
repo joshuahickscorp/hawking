@@ -20,6 +20,8 @@ pub mod qwen30_source_bf16_layer_major;
 pub mod qwen80_source_bf16_layer_major;
 /// Velocity-track binding: uniform-Q4 catalog -> hybrid token-graph greedy decode.
 pub mod qwen80_uniform_q4_hybrid_decode;
+/// Per-token ns ledger for the uniform-Q4 hybrid vehicle (profile before optimize).
+pub mod qwen80_token_ns_ledger;
 
 /// Memory-bounded DSV4F activation-X capture writer.
 ///

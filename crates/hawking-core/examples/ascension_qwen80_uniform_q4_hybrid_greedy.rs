@@ -33,6 +33,7 @@ struct Arguments {
     max_new_tokens: usize,
     max_seq_len: usize,
     out: Option<PathBuf>,
+    ledger: Option<PathBuf>,
 }
 
 fn usage() -> &'static str {
@@ -40,7 +41,7 @@ fn usage() -> &'static str {
         [--artifact-root DIR] [--tokenizer PATH] \
         [--prompt TEXT] [--raw-prompt] \
         [--max-new-tokens N] [--max-seq-len N] \
-        [--out RECEIPT.json]"
+        [--out RECEIPT.json] [--ledger LEDGER.json]"
 }
 
 fn parse_args() -> Result<Arguments, String> {
@@ -51,6 +52,7 @@ fn parse_args() -> Result<Arguments, String> {
     let mut max_new_tokens = 4usize;
     let mut max_seq_len = 64usize;
     let mut out = None;
+    let mut ledger = None;
     let mut args = env::args().skip(1);
     while let Some(flag) = args.next() {
         match flag.as_str() {
@@ -87,6 +89,11 @@ fn parse_args() -> Result<Arguments, String> {
                     args.next().ok_or_else(|| usage().to_owned())?,
                 ));
             }
+            "--ledger" => {
+                ledger = Some(PathBuf::from(
+                    args.next().ok_or_else(|| usage().to_owned())?,
+                ));
+            }
             "--help" | "-h" => return Err(usage().to_owned()),
             other => return Err(format!("unknown flag {other}; {}", usage())),
         }
@@ -99,6 +106,7 @@ fn parse_args() -> Result<Arguments, String> {
         max_new_tokens,
         max_seq_len,
         out,
+        ledger,
     })
 }
 
@@ -159,6 +167,9 @@ fn run() -> Result<(), String> {
     let tokenizer = load_qwen80_tokenizer(&tokenizer_path).map_err(|e| e.to_string())?;
     let mut session = Qwen80UniformQ4HybridDecodeSession::new(catalog, args.max_seq_len)
         .map_err(|e| e.to_string())?;
+    if args.ledger.is_some() {
+        session.token_ns.enable();
+    }
     eprintln!(
         "running greedy decode prompt_chars={} max_new_tokens={}",
         rendered.len(),
@@ -310,6 +321,29 @@ fn run() -> Result<(), String> {
         let pretty = serde_json::to_string_pretty(&receipt).map_err(|e| e.to_string())?;
         fs::write(&out, pretty).map_err(|e| e.to_string())?;
         eprintln!("wrote {}", out.display());
+    }
+    if let Some(ledger_path) = args.ledger {
+        if let Some(parent) = ledger_path.parent() {
+            fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        }
+        let ledger = session.token_ns.finish_report();
+        let pretty = serde_json::to_string_pretty(&ledger).map_err(|e| e.to_string())?;
+        fs::write(&ledger_path, pretty).map_err(|e| e.to_string())?;
+        eprintln!("wrote {}", ledger_path.display());
+        if let Some(diag) = &ledger.diagnosis {
+            eprintln!(
+                "token_ns_ledger verdict={} wall_ms={:.1} gpu_ms={:.1} wait_ms={:.1} cbs={:.0} disp={:.0} weight_gib={:.3} implied_gb_s_gpu={:?}",
+                diag.verdict,
+                diag.wall_ns as f64 / 1e6,
+                diag.gpu_execution_ns as f64 / 1e6,
+                diag.cpu_wait_ns as f64 / 1e6,
+                diag.command_buffers_per_token,
+                diag.dispatches_per_token,
+                diag.weight_bytes_per_token as f64 / (1024.0 * 1024.0 * 1024.0),
+                diag.implied_gb_s_from_gpu
+            );
+            eprintln!("rationale={}", diag.rationale);
+        }
     }
     Ok(())
 }

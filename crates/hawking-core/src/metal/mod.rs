@@ -555,6 +555,21 @@ pub struct MetalBatchTiming {
     pub compute_dispatches: u64,
 }
 
+/// Host + GPU timing for one committed `TokenCommandBuffer`.
+///
+/// `submit_ns` and `wait_ns` are host `Instant` around `commit` and
+/// `wait_until_completed`. `gpu_ns` is `GPUEndTime − GPUStartTime` when
+/// the driver exposes a valid pair after wait — never a CPU-wait proxy.
+#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+pub struct CommandBufferTiming {
+    pub submit_ns: u64,
+    pub wait_ns: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_ns: Option<u64>,
+    pub dispatches: u64,
+    pub encode_ns: u64,
+}
+
 /// Thread-local current-layer index. Set/cleared by the forward pass
 /// around each transformer layer so dispatch timing can be attributed
 /// to a layer without touching the kernel API.
@@ -4776,6 +4791,13 @@ mod imp {
         /// timestamps). When the ledger is off, behaviour is unchanged —
         /// a single atomic load then the historical flush path.
         pub fn commit_and_wait(self) -> Result<()> {
+            self.commit_and_wait_split().map(|_| ())
+        }
+
+        /// Same fence as [`commit_and_wait`], but always returns split
+        /// submit / wait / GPU-timestamp durations. Used by the Q80 token
+        /// ns ledger. Decode output is unchanged.
+        pub fn commit_and_wait_timed(self) -> Result<super::CommandBufferTiming> {
             self.commit_and_wait_split()
         }
 
@@ -4859,16 +4881,22 @@ mod imp {
         /// command buffer + one sync point. Behaviour on the GPU is
         /// identical; decode output is unchanged. When the ledger is not
         /// recording this is the same as the historical uninstrumented commit.
-        pub fn commit_and_wait_split(mut self) -> Result<()> {
+        pub fn commit_and_wait_split(mut self) -> Result<super::CommandBufferTiming> {
             use crate::cost_ledger::{self, Bucket};
             use std::time::Instant;
 
+            let mut timing = super::CommandBufferTiming {
+                encode_ns: self.ledger_encode_ns as u64,
+                dispatches: self.dispatch_count as u64,
+                ..super::CommandBufferTiming::default()
+            };
             if let Some(cmd) = self.cmd.take() {
                 // Close any still-open concurrent group before committing.
                 if let Some(enc) = self.concurrent_encoder.take() {
                     enc.end_encoding();
                 }
-                if cost_ledger::is_recording() {
+                let recording = cost_ledger::is_recording();
+                if recording {
                     // Charge encode wall that was accumulated while
                     // `dispatch_threads` ran under an active token (default-off).
                     if self.ledger_encode_ns > 0 {
@@ -4879,28 +4907,43 @@ mod imp {
                         self.ledger_encode_ns = 0;
                     }
                     cost_ledger::record_dispatches(self.dispatch_count as u64);
+                }
 
-                    let t_submit = Instant::now();
-                    cmd.commit();
-                    if self.ctx.trace_dispatch {
-                        self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
-                    }
-                    let commit_d = t_submit.elapsed();
+                let t_submit = Instant::now();
+                cmd.commit();
+                if self.ctx.trace_dispatch {
+                    self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+                }
+                let commit_d = t_submit.elapsed();
+                timing.submit_ns = commit_d.as_nanos() as u64;
+                if recording {
                     cost_ledger::add_duration(Bucket::MetalSubmit, commit_d);
                     cost_ledger::record_command_buffer();
+                }
 
-                    let t_sync = Instant::now();
-                    cmd.wait_until_completed();
-                    let wait_d = t_sync.elapsed();
+                let t_sync = Instant::now();
+                cmd.wait_until_completed();
+                let wait_d = t_sync.elapsed();
+                timing.wait_ns = wait_d.as_nanos() as u64;
+                if recording {
                     cost_ledger::add_duration(Bucket::MetalSynchronize, wait_d);
                     cost_ledger::record_sync_point();
-                    let status = cmd.status();
-                    if status != metal::MTLCommandBufferStatus::Completed {
-                        eprintln!(
-                            "[hawking] Metal command buffer did not complete cleanly: status={status:?}"
-                        );
-                    }
+                }
+                let status = cmd.status();
+                if status != metal::MTLCommandBufferStatus::Completed {
+                    eprintln!(
+                        "[hawking] Metal command buffer did not complete cleanly: status={status:?}"
+                    );
+                }
 
+                let (gpu_start, gpu_end) = unsafe { cb_gpu_start_end_s(&cmd) };
+                if let (Some(start), Some(end)) = (gpu_start, gpu_end) {
+                    if end > start {
+                        timing.gpu_ns = Some(((end - start) * 1_000_000_000.0) as u64);
+                    }
+                }
+
+                if recording {
                     // Device timeline: GPUStartTime/GPUEndTime after wait.
                     // Counter-sample markers are not encoded on this path
                     // (would change the CB); capability is probed only.
@@ -4921,34 +4964,30 @@ mod imp {
                         &stage_dispatches,
                     );
                     ledger_probe_counter_capability(&self.ctx.inner.device);
+                }
 
-                    // Drain TCB-internal trace samples the same way
-                    // flush_and_commit does in Off mode (nothing to do).
-                    match self.mode {
-                        TcbTraceMode::Off => {}
-                        TcbTraceMode::CpuEncode => {
-                            let layer = super::current_layer();
-                            for s in self.tcb_samples.drain(..) {
-                                self.ctx
-                                    .trace
-                                    .record(s.kernel_name, s.wall_us, s.layer_hint);
-                            }
-                            self.ctx.trace.record("tcb_commit", 0, layer);
+                match self.mode {
+                    TcbTraceMode::Off => {}
+                    TcbTraceMode::CpuEncode => {
+                        let layer = super::current_layer();
+                        for s in self.tcb_samples.drain(..) {
+                            self.ctx
+                                .trace
+                                .record(s.kernel_name, s.wall_us, s.layer_hint);
                         }
-                        TcbTraceMode::SplitCbGpu => {
-                            for s in self.tcb_samples.drain(..) {
-                                self.ctx.trace.samples.lock().push(s);
-                            }
-                        }
-                        TcbTraceMode::ProdCbGpu => {
-                            self.flush_prod_cb_trace_and_recycle();
+                        self.ctx.trace.record("tcb_commit", 0, layer);
+                    }
+                    TcbTraceMode::SplitCbGpu => {
+                        for s in self.tcb_samples.drain(..) {
+                            self.ctx.trace.samples.lock().push(s);
                         }
                     }
-                } else {
-                    self.flush_and_commit(cmd);
+                    TcbTraceMode::ProdCbGpu => {
+                        self.flush_prod_cb_trace_and_recycle();
+                    }
                 }
             }
-            Ok(())
+            Ok(timing)
         }
 
         /// Internal: commit `cmd`, wait for GPU completion, then flush TCB trace
@@ -5106,6 +5145,14 @@ mod imp {
         }
 
         pub fn commit_and_wait(self) -> Result<()> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
+        pub fn commit_and_wait_timed(self) -> Result<super::CommandBufferTiming> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
+        pub fn commit_and_wait_split(self) -> Result<super::CommandBufferTiming> {
             Err(Error::Metal("metal unavailable on this platform".into()))
         }
 

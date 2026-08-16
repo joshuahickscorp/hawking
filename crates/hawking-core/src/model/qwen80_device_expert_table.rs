@@ -17,6 +17,23 @@ pub const QWEN80_DEVICE_PROJ_UP: u32 = 1;
 pub const QWEN80_DEVICE_PROJ_DOWN: u32 = 2;
 pub const QWEN80_EXPERT_TABLE_TOP_K: usize = 10;
 
+/// Default **off**. Set `HAWKING_QWEN80_COMPACT_EXPERT_SLABS=1` to restore
+/// the host memcpy of top-10 payloads into compact slabs (the pre-velocity
+/// pack path). Address-table bind is the default.
+pub fn qwen80_compact_expert_slabs_enabled() -> bool {
+    match std::env::var("HAWKING_QWEN80_COMPACT_EXPERT_SLABS") {
+        Ok(raw) => {
+            let trimmed = raw.trim();
+            !(trimmed.is_empty()
+                || trimmed.eq_ignore_ascii_case("0")
+                || trimmed.eq_ignore_ascii_case("false")
+                || trimmed.eq_ignore_ascii_case("off")
+                || trimmed.eq_ignore_ascii_case("no"))
+        }
+        Err(_) => false,
+    }
+}
+
 /// Default **on**. Set `HAWKING_QWEN80_DEVICE_EXPERT_TABLE=0` / `false` /
 /// `off` / `no` to restore the host per-expert bind path for A/B.
 pub fn qwen80_device_expert_table_enabled() -> bool {
@@ -55,8 +72,11 @@ pub fn qwen80_expert_table_kernel() -> Qwen80ExpertTableKernel {
         .as_str()
     {
         "serial" => Qwen80ExpertTableKernel::Serial,
+        "rowblock" => Qwen80ExpertTableKernel::Rowblock,
         "simdgroup" | "fast" => Qwen80ExpertTableKernel::Simdgroup,
-        _ => Qwen80ExpertTableKernel::Rowblock,
+        // Measured at the live [512,2048]/[2048,512] top_k=10 geometry:
+        // simdgroup 3.67 tok/s, serial 3.45, rowblock 3.25 (token-identical).
+        _ => Qwen80ExpertTableKernel::Simdgroup,
     }
 }
 
@@ -525,7 +545,6 @@ fn triplet_from_gpu(trip: &Qwen80ExpertGpuTriplet, generation: u32) -> Qwen80Dev
 /// Write a 512-entry table whose selected route ids are ready. Other slots
 /// stay zero (not ready); the kernel only indexes the live route_ids.
 #[cfg(target_os = "macos")]
-#[allow(dead_code)]
 pub fn write_selected_expert_table(
     context: &crate::metal::MetalContext,
     layer: usize,
@@ -559,6 +578,44 @@ pub fn write_selected_expert_table(
         resources,
         generation,
         n_experts: QWEN80_EXPERTS,
+        layer,
+        build_secs: 0.0,
+    })
+}
+
+/// Ten-entry address table. Caller remaps live route ids to `0..10` so the
+/// kernel indexes this compact table. No payload memcpy.
+#[cfg(target_os = "macos")]
+pub fn write_top10_address_table(
+    context: &crate::metal::MetalContext,
+    layer: usize,
+    selected: &[(u32, &Qwen80ExpertGpuTriplet)],
+    table: Option<crate::metal::PinnedBuffer>,
+) -> Result<Qwen80DeviceExpertTableLease> {
+    if selected.len() != QWEN80_EXPERT_TABLE_TOP_K {
+        return Err(table_error("top-10 address table requires exactly 10 experts"));
+    }
+    let generation = u32::try_from(layer.saturating_add(1))
+        .map_err(|_| table_error("layer generation overflows u32"))?;
+    let mut entries = [Qwen80DeviceExpertTriplet::default(); QWEN80_EXPERT_TABLE_TOP_K];
+    let mut resources = Vec::with_capacity(selected.len().saturating_mul(6));
+    for (slot, &(_, trip)) in selected.iter().enumerate() {
+        entries[slot] = triplet_from_gpu(trip, generation);
+        for resource in trip.resources() {
+            resources.push(resource.clone());
+        }
+    }
+    let table = if let Some(existing) = table {
+        crate::metal::MetalContext::write_buffer_bytes(&existing, bytemuck::cast_slice(&entries));
+        existing
+    } else {
+        context.new_buffer_with_bytes_checked(bytemuck::cast_slice(&entries))?
+    };
+    Ok(Qwen80DeviceExpertTableLease {
+        table,
+        resources,
+        generation,
+        n_experts: QWEN80_EXPERT_TABLE_TOP_K,
         layer,
         build_secs: 0.0,
     })
@@ -794,7 +851,10 @@ pub fn dispatch_qwen80_device_expert_table_wave(
     workspace: &Qwen80DeviceExpertWaveWorkspace,
     kernel: Qwen80ExpertTableKernel,
 ) -> Result<u64> {
-    if lease.n_experts != QWEN80_EXPERTS || lease.resources.len() != 6 {
+    if (lease.n_experts != QWEN80_EXPERTS && lease.n_experts != QWEN80_EXPERT_TABLE_TOP_K)
+        || lease.resources.len() < 6
+        || lease.resources.len() % 6 != 0
+    {
         return Err(table_error("lease is incomplete"));
     }
     let mut dispatches = 0u64;
