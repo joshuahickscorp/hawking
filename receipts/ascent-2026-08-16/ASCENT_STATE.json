@@ -1523,5 +1523,21 @@
   "disk_governor_action": {
     "reclaimed": "455 legacy Q30 quality-candidate files",
     "safe_because": "Q30 is the ABANDONED campaign (static <=1.5 FAILED coherence); files are tracked and recoverable from git history; all four live artifacts verified intact (Q80 source 148G, DSV4F 150G, Qwen3.8 51G, mixed-1p5-v1 13G)"
+  },
+  "SUBBIT_VERDICT_AND_ITS_TENSION": {
+    "lane_verdict": "NO_GO for sub-0.655 BPW on this codec family. 0 of 588 recipes clear all organs at the 0.8604 bar. Incumbent holdout cosines: gate 0.8755, up 0.8665, down 0.7684. Every cheaper recipe is worse. Methodology was sound this time - 110 pairs against a 16-sample NULL DISTRIBUTION, not a single null.",
+    "lane_recommendation": "Stop spending lanes on BPW < 0.6552 unless a NEW organ family beats all-binary's 0.809 min-organ cosine - not another rank/residual knob on the same three codecs.",
+    "THE_TENSION": "The bar it judges against was FALSIFIED four hours later by generation. down_proj holdout cosine is 0.7684, well UNDER the 0.8604 bar, at the SAME 1.44445 BPW artifact that then GENERATED COHERENT TEXT with numeric drift 3.58e-7. The 0.8604 screen predicted failure where the model actually works.",
+    "consequence": "The NO_GO must NOT be accepted at face value. Its gate is demonstrably conservative in the pessimistic direction. A recipe rejected for missing 0.8604 may still generate. The curve needs re-scoring against a bar calibrated on GENERATION, which is ground truth, rather than on the D23 residual-identity break-even.",
+    "what_survives_regardless": "Bits are reachable; capability is the binding constraint. That framing holds. What is now unproven is WHERE the capability cliff actually sits.",
+    "receipts": [
+      "receipts/ascent-2026-08-16/q80-subbit-capability-curve.SUMMARY.json",
+      "receipts/ascent-2026-08-16/Q80_MIXED_GENERATE.json"
+    ]
+  },
+  "qwen38_reuse": {
+    "receipt": "receipts/ascent-2026-08-16/QWEN38_REUSE_MATRIX.json",
+    "recommendation": "Start at Q4 (~13.45 GB) if that packer retargets cheaply. 3 BPW allowed. Do NOT open 2-bit yet.",
+    "next": "Q80 dispatch locks (DeltaNet 32x128x128, GQA 16/2/theta=5e6) plus a pack-time fuse of the split in_proj_qkv/z/a/b into Q80's fused in_proj_qkvz/ba layout. No Q38 token-ns exists yet."
   }
 }
