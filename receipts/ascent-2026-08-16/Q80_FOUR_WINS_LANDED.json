@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.q80.four_wins_landed.v1",
+  "date": "2026-08-16",
+  "all_four_merged_and_verified": {
+    "1_reconstruction": "gpu_matvec 867.0 -> 36.6 ms; in-register consumption on occupancy tiles",
+    "2_catalog_reparse": "host_preparation 84.79 -> 25.0 ms; geometry cached at first touch",
+    "3_command_buffers": "337 -> 49 CBs; wait-minus-gpu 83.4 -> 15.9 ms",
+    "4_deltanet_gpu": "host recurrence 42.376 -> 4.449 ms; wall 160.479 -> 111.733 ms, 6/6 pairs"
+  },
+  "q80_trajectory_ms_per_token": {
+    "morning_serial_reconstruction": 1376.3,
+    "after_reconstruction": 301.4,
+    "after_catalog_and_CB": 160.5,
+    "after_deltanet": 111.7,
+    "total_improvement_x": 12.3
+  },
+  "tps": {
+    "morning": 0.73,
+    "now_lane_measured": 8.95,
+    "gate": 50.0,
+    "remaining_factor": 5.6
+  },
+  "fs_per_weight": {
+    "morning": 386270,
+    "now": 31350,
+    "improvement_x": 12.3,
+    "floor_at_4.980_active_bpw": 760.1
+  },
+  "verified_on_merged_main_by_controller": {
+    "greedy_ids_identical": true,
+    "sample_parity": true,
+    "silent_fallbacks": 0,
+    "cache_geom_active": true,
+    "wall_this_run_ms": 215.0,
+    "note": "contention-inflated - four other lanes live including two of the user's projects. The lane's paired 111.733 ms is the measured figure; this run proves CORRECTNESS on the combination, not speed."
+  },
+  "what_every_win_had_in_common": "None of the four was a compute optimisation. A serial bit-walk, a catalog re-parsed 289 times per token, 337 command buffers where 49 suffice, and a recurrence running on the host. Q80's token was ceremony, and the closed 14-component ledger is what made each one findable.",
+  "still_short": "5.6x from the 20 ms gate. The named remainder is residual host_preparation ~25 ms, weight_addressing 18.6, moe_routed 14.0 - and G003 stays open."
+}
