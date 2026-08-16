@@ -340,6 +340,26 @@
       "skew": "UNKNOWN",
       "disposition": "MERGE_READY",
       "promoted": false
+    },
+    {
+      "lane": "auto-q80-down-proj-fused-two-20260816-022448",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "mixed up_proj ~17250 ns/expert (8280000 ns/token at 48\u00d710) from q80-decode-throughput; down two-dispatch is 13500 ns/expert sequential or 33709 ns/layer concurrent. Q4 token wall remains host expert first-touch / moe_table_build (241\u2013396 ms).",
+      "branch": "grok/auto-q80-down-proj-fused-two-20260816-022448",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "matvec-geometry-sweep-20260816-022115",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "per-weight decode/ALU after occupancy is fixed \u2014 binary tg256 is 6750 ns/organ (22 GB/s, 4.4% of the 495 GB/s dirty control). Q4 is now matched at 6709 ns. down_proj hgravs was not re-swept.",
+      "branch": "grok/matvec-geometry-sweep-20260816-022115",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
     }
   ]
 }

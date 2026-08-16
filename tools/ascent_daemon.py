@@ -41,7 +41,7 @@ LANES = REPO / "workspace" / "ops" / "ascent-lanes"
 
 DISK_FLOOR_GIB = 15.0
 DISK_WARN_GIB = 40.0
-MAX_CONCURRENT = 6
+MAX_CONCURRENT = 7
 POLL_SECONDS = 300
 
 # Real Tier-1 gates. Reject-only: passing here is NOT promotion.
@@ -164,7 +164,7 @@ def slug(text: str) -> str:
     return "-".join(keep) or "unnamed"
 
 
-MAX_GENERATED = 24   # backstop: never let the generator run away
+MAX_GENERATED = 96   # widened 2026-08-16: Qwen-first pivot needs a deeper pool
 
 
 def generate_targets(state: dict, harvested: list[dict]) -> int:
@@ -183,6 +183,8 @@ def generate_targets(state: dict, harvested: list[dict]) -> int:
     generated = sum(1 for t in state["targets"] if t.get("auto_generated"))
     made = 0
 
+    # Qwen-family first (q80, qwen38) per the 2026-08-16 amendment; dsv4f is theory.
+    harvested = sorted(harvested, key=lambda h: {"q80": 0, "qwen38": 1}.get(model_of(h["lane"]), 2))
     for h in harvested:
         if generated + made >= MAX_GENERATED:
             break
