@@ -12,13 +12,21 @@
 //!   --out receipts/QWEN80_UNIFORM_Q4_VELOCITY_BASELINE.json
 //! ```
 
+use hawking_core::model::device_residency::{
+    persistent_address_table_enabled, residency_budget_bytes,
+};
 use hawking_core::model::qwen80_complete_runtime::qwen80_assert_native_operator_composition_complete;
+use hawking_core::model::qwen80_device_expert_table::{
+    qwen80_q4_address_geometry, QWEN80_EXPERT_TRIPLET_PAYLOAD_BYTES,
+};
 use hawking_core::model::qwen80_uniform_q4_hybrid_decode::{
     discover_qwen80_tokenizer, discover_qwen80_uniform_q4_root, generate_greedy,
-    load_qwen80_tokenizer, qwen80_default_tokenizer_path, render_qwen80_source_user_chat,
-    Qwen80UniformQ4HybridDecodeSession, Qwen80UniformQ4StreamingCatalog,
-    QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW, QWEN80_UNIFORM_Q4_EXPECTED_MANIFEST_SEAL,
-    QWEN80_UNIFORM_Q4_EXPECTED_TERMINAL_SEAL, QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS,
+    load_qwen80_tokenizer, probe_qwen80_expert_first_touch_io, qwen80_default_tokenizer_path,
+    qwen80_expert_nocopy_enabled, qwen80_expert_prefetch_enabled, qwen80_payload_rehash_enabled,
+    render_qwen80_source_user_chat, Qwen80UniformQ4HybridDecodeSession,
+    Qwen80UniformQ4StreamingCatalog, QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW,
+    QWEN80_UNIFORM_Q4_EXPECTED_MANIFEST_SEAL, QWEN80_UNIFORM_Q4_EXPECTED_TERMINAL_SEAL,
+    QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS,
 };
 use serde_json::json;
 use std::env;
@@ -35,6 +43,7 @@ struct Arguments {
     max_seq_len: usize,
     out: Option<PathBuf>,
     ledger: Option<PathBuf>,
+    first_touch_probe: Option<usize>,
 }
 
 fn usage() -> &'static str {
@@ -42,7 +51,8 @@ fn usage() -> &'static str {
         [--artifact-root DIR] [--tokenizer PATH] \
         [--prompt TEXT] [--raw-prompt] \
         [--max-new-tokens N] [--max-seq-len N] \
-        [--out RECEIPT.json] [--ledger LEDGER.json]"
+        [--out RECEIPT.json] [--ledger LEDGER.json] \
+        [--first-touch-probe N]"
 }
 
 fn parse_args() -> Result<Arguments, String> {
@@ -54,6 +64,7 @@ fn parse_args() -> Result<Arguments, String> {
     let mut max_seq_len = 64usize;
     let mut out = None;
     let mut ledger = None;
+    let mut first_touch_probe = None;
     let mut args = env::args().skip(1);
     while let Some(flag) = args.next() {
         match flag.as_str() {
@@ -95,6 +106,14 @@ fn parse_args() -> Result<Arguments, String> {
                     args.next().ok_or_else(|| usage().to_owned())?,
                 ));
             }
+            "--first-touch-probe" => {
+                first_touch_probe = Some(
+                    args.next()
+                        .ok_or_else(|| usage().to_owned())?
+                        .parse()
+                        .map_err(|_| usage().to_owned())?,
+                );
+            }
             "--help" | "-h" => return Err(usage().to_owned()),
             other => return Err(format!("unknown flag {other}; {}", usage())),
         }
@@ -108,6 +127,7 @@ fn parse_args() -> Result<Arguments, String> {
         max_seq_len,
         out,
         ledger,
+        first_touch_probe,
     })
 }
 
@@ -139,7 +159,7 @@ fn run() -> Result<(), String> {
     };
 
     eprintln!("opening streaming catalog at {}", root.display());
-    let catalog = Qwen80UniformQ4StreamingCatalog::open(&root).map_err(|e| e.to_string())?;
+    let mut catalog = Qwen80UniformQ4StreamingCatalog::open(&root).map_err(|e| e.to_string())?;
     if catalog.tensor_count() != 74_391 {
         return Err(format!(
             "catalog tensor count {} != 74391",
@@ -164,6 +184,77 @@ fn run() -> Result<(), String> {
         catalog.complete_physical_bpw,
         QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS
     );
+
+    if let Some(n) = args.first_touch_probe {
+        let admit = catalog.admit_session().map_err(|e| e.to_string())?;
+        eprintln!(
+            "session_admit seal={} stated={} sample_rehashed={} admit_ms={:.1} production_seals={}",
+            admit.session_seal_sha256,
+            admit.tensors_stated,
+            admit.sample_rehashed,
+            admit.admit_ns as f64 / 1e6,
+            admit.production_seals_checked
+        );
+        let probe = probe_qwen80_expert_first_touch_io(&catalog, n).map_err(|e| e.to_string())?;
+        let per = probe.compared_payloads.max(1) as f64;
+        println!(
+            "first_touch_probe n_experts={} compared={} bytes={} catalog_read_ms={:.3} sha256_ms={:.3} mmap_ms={:.3}",
+            probe.n_experts,
+            probe.compared_payloads,
+            probe.bytes_read,
+            probe.catalog_read_ns as f64 / 1e6,
+            probe.sha256_ns as f64 / 1e6,
+            probe.mmap_ns as f64 / 1e6
+        );
+        println!(
+            "first_touch_probe_per_payload_ns catalog_read={:.0} sha256={:.0} mmap={:.0}",
+            probe.catalog_read_ns as f64 / per,
+            probe.sha256_ns as f64 / per,
+            probe.mmap_ns as f64 / per
+        );
+        println!(
+            "first_touch_probe_per_expert_ns catalog_read={:.0} sha256={:.0} mmap={:.0} (3 projs)",
+            3.0 * probe.catalog_read_ns as f64 / per,
+            3.0 * probe.sha256_ns as f64 / per,
+            3.0 * probe.mmap_ns as f64 / per
+        );
+        if let Some(out) = args.out {
+            if let Some(parent) = out.parent() {
+                fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+            }
+            let receipt = json!({
+                "schema": "hawking.ascent.q80_expert_first_touch_io_probe.v1",
+                "lane": "q80-expert-first-touch",
+                "measurement_label": "DIRTY_ENGINEERING",
+                "session_admit": {
+                    "session_seal_sha256": admit.session_seal_sha256,
+                    "tensors_stated": admit.tensors_stated,
+                    "sample_rehashed": admit.sample_rehashed,
+                    "admit_ns": admit.admit_ns,
+                    "production_seals_checked": admit.production_seals_checked,
+                },
+                "probe": {
+                    "n_experts": probe.n_experts,
+                    "compared_payloads": probe.compared_payloads,
+                    "bytes_read": probe.bytes_read,
+                    "catalog_read_ns": probe.catalog_read_ns,
+                    "sha256_ns": probe.sha256_ns,
+                    "mmap_ns": probe.mmap_ns,
+                    "catalog_read_ns_per_payload": probe.catalog_read_ns as f64 / per,
+                    "sha256_ns_per_payload": probe.sha256_ns as f64 / per,
+                    "mmap_ns_per_payload": probe.mmap_ns as f64 / per,
+                    "catalog_read_ns_per_expert": 3.0 * probe.catalog_read_ns as f64 / per,
+                    "sha256_ns_per_expert": 3.0 * probe.sha256_ns as f64 / per,
+                    "mmap_ns_per_expert": 3.0 * probe.mmap_ns as f64 / per,
+                    "bit_identical_mmap_vs_fresh_read": true,
+                },
+            });
+            fs::write(&out, serde_json::to_string_pretty(&receipt).map_err(|e| e.to_string())?)
+                .map_err(|e| e.to_string())?;
+            eprintln!("wrote {}", out.display());
+        }
+        return Ok(());
+    }
 
     let tokenizer = load_qwen80_tokenizer(&tokenizer_path).map_err(|e| e.to_string())?;
     let mut session = Qwen80UniformQ4HybridDecodeSession::new(catalog, args.max_seq_len)
@@ -204,13 +295,19 @@ fn run() -> Result<(), String> {
         result.fallbacks.host_sample
     );
     println!(
-        "native_q4_dispatches matvec={} embed={} decode_vector={} table_builds={} table_waves={} table_dispatches={}",
+        "native_q4_dispatches matvec={} embed={} decode_vector={} table_builds={} table_waves={} table_dispatches={} upload_hits={} upload_misses={} evictions={} slot_patches={} resident_slots={} resident_bytes={}",
         result.native.q4_matvec_dispatches,
         result.native.q4_embedding_dispatches,
         result.native.q4_decode_vector_dispatches,
         result.native.expert_table_layer_builds,
         result.native.expert_table_waves,
-        result.native.expert_table_matvec_dispatches
+        result.native.expert_table_matvec_dispatches,
+        result.native.expert_upload_hits,
+        result.native.expert_upload_misses,
+        result.native.expert_residency_evictions,
+        result.native.expert_table_slot_patches,
+        result.native.expert_resident_slots,
+        result.native.expert_resident_bytes
     );
     println!(
         "stage_secs embed={:.4} deltanet={:.4} gqa={:.4} moe_norm_router={:.4} moe_shared={:.4} moe_table_build={:.4} moe_routed={:.4} moe_combine={:.4} terminal={:.4} q4_matvec={:.4} host_expert_bind={:.4}",
@@ -263,6 +360,62 @@ fn run() -> Result<(), String> {
         result.stages.activation.gqa_norm_rope_secs
     );
     println!(
+        "moe_table_split upload_miss={:.6} entries_fill={:.6} buffer_write={:.6} resource_clone={:.6} lease={:.6}",
+        result.stages.moe_table_upload_miss_secs,
+        result.stages.moe_table_entries_fill_secs,
+        result.stages.moe_table_buffer_write_secs,
+        result.stages.moe_table_resource_clone_secs,
+        result.stages.moe_table_lease_secs
+    );
+    let split = session.catalog().first_touch_split();
+    println!(
+        "first_touch catalog_read_ms={:.3} sha256_ms={:.3} metal_copy_ms={:.3} metal_nocopy_ms={:.3} mmap_ms={:.3} hashed={} mmapped={} copy_binds={} nocopy_binds={} prefetch_ms={:.3} prefetch_uploads={}",
+        split.catalog_read_ns as f64 / 1e6,
+        split.sha256_ns as f64 / 1e6,
+        split.metal_copy_ns as f64 / 1e6,
+        split.metal_nocopy_ns as f64 / 1e6,
+        split.mmap_ns as f64 / 1e6,
+        split.payloads_hashed,
+        split.payloads_mmapped,
+        split.copy_binds,
+        split.nocopy_binds,
+        split.prefetch_ns as f64 / 1e6,
+        split.prefetch_uploads
+    );
+    println!(
+        "session_seal admitted={} seal={:?} admit_ms={:.1} stated={} sample_rehashed={} nocopy={} rehash={} prefetch={}",
+        session.catalog().session_seal_sha256.is_some(),
+        session.catalog().session_seal_sha256,
+        session.catalog().session_admit.admit_ns as f64 / 1e6,
+        session.catalog().session_admit.tensors_stated,
+        session.catalog().session_admit.sample_rehashed,
+        qwen80_expert_nocopy_enabled(),
+        qwen80_payload_rehash_enabled(),
+        qwen80_expert_prefetch_enabled()
+    );
+    let geometry = qwen80_q4_address_geometry();
+    let limits = session.device_memory_limits();
+    println!(
+        "residency persistent={} budget_bytes={} table_bytes={} q4_full_payload_bytes={} scaled_1_5_payload_bytes={} triplet_payload_bytes={}",
+        persistent_address_table_enabled(),
+        session
+            .residency_budget_bytes()
+            .unwrap_or_else(residency_budget_bytes),
+        geometry.table_bytes(),
+        geometry.full_payload_bytes(),
+        geometry.scaled_payload_bytes(QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW, 1.5),
+        QWEN80_EXPERT_TRIPLET_PAYLOAD_BYTES
+    );
+    if let Some(limits) = limits {
+        println!(
+            "device_limits max_buffer_length={} recommended_max_working_set_size={} current_allocated_size={} has_unified_memory={}",
+            limits.max_buffer_length,
+            limits.recommended_max_working_set_size,
+            limits.current_allocated_size,
+            limits.has_unified_memory
+        );
+    }
+    println!(
         "complete_physical_bpw={:.6} claim={} metal_q4_matvec_used={}",
         result.complete_physical_bpw, result.claim, result.metal_q4_matvec_used
     );
@@ -274,6 +427,15 @@ fn run() -> Result<(), String> {
         if let Some(parent) = out.parent() {
             fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
+        let upload_total = result
+            .native
+            .expert_upload_hits
+            .saturating_add(result.native.expert_upload_misses);
+        let hit_rate = if upload_total == 0 {
+            0.0
+        } else {
+            result.native.expert_upload_hits as f64 / upload_total as f64
+        };
         let receipt = json!({
             "schema": "hawking.ascension.qwen80_uniform_q4_velocity_baseline.v1",
             "status": QWEN80_UNIFORM_Q4_VELOCITY_NOT_BASE_TRUE_TPS,
@@ -325,6 +487,72 @@ fn run() -> Result<(), String> {
                     "expert_table_layer_builds": result.native.expert_table_layer_builds,
                     "expert_table_waves": result.native.expert_table_waves,
                     "expert_table_matvec_dispatches": result.native.expert_table_matvec_dispatches,
+                    "expert_upload_hits": result.native.expert_upload_hits,
+                    "expert_upload_misses": result.native.expert_upload_misses,
+                    "expert_residency_evictions": result.native.expert_residency_evictions,
+                    "expert_table_slot_patches": result.native.expert_table_slot_patches,
+                    "expert_resident_slots": result.native.expert_resident_slots,
+                    "expert_resident_bytes": result.native.expert_resident_bytes,
+                    "expert_nocopy_binds": result.native.expert_nocopy_binds,
+                    "expert_copy_binds": result.native.expert_copy_binds,
+                    "expert_prefetch_uploads": result.native.expert_prefetch_uploads,
+                },
+                "session_seal": {
+                    "session_seal_sha256": session.catalog().session_seal_sha256,
+                    "admit_ns": session.catalog().session_admit.admit_ns,
+                    "tensors_stated": session.catalog().session_admit.tensors_stated,
+                    "sample_rehashed": session.catalog().session_admit.sample_rehashed,
+                    "production_seals_checked": session.catalog().session_admit.production_seals_checked,
+                    "verified_once": [
+                        "every catalogued file exists as a regular non-symlink with exact artifact_bytes",
+                        "production manifest and terminal seals match the sealed constants",
+                        "session seal binds manifest_seal || terminal_seal || ordered (name, bytes, declared_sha256)",
+                        "sample payloads rehashed against catalog SHA"
+                    ],
+                    "still_guards_token_path": [
+                        "mmap/read size must equal artifact_bytes",
+                        "header geometry must match the catalog row",
+                        "no-copy bind is fail-closed (16 KiB window + contents() alias)",
+                        "read_payload_rehash and HAWKING_Q80_REHASH_PAYLOADS=1 remain"
+                    ],
+                    "nocopy": qwen80_expert_nocopy_enabled(),
+                    "rehash": qwen80_payload_rehash_enabled(),
+                    "prefetch": qwen80_expert_prefetch_enabled(),
+                },
+                "first_touch": {
+                    "catalog_read_ns": split.catalog_read_ns,
+                    "sha256_ns": split.sha256_ns,
+                    "metal_copy_ns": split.metal_copy_ns,
+                    "metal_nocopy_ns": split.metal_nocopy_ns,
+                    "header_parse_ns": split.header_parse_ns,
+                    "mmap_ns": split.mmap_ns,
+                    "payloads_read": split.payloads_read,
+                    "payloads_hashed": split.payloads_hashed,
+                    "payloads_mmapped": split.payloads_mmapped,
+                    "nocopy_binds": split.nocopy_binds,
+                    "copy_binds": split.copy_binds,
+                    "prefetch_uploads": split.prefetch_uploads,
+                    "prefetch_ns": split.prefetch_ns,
+                    "prefetch_hits": split.prefetch_hits,
+                    "prefetch_misses": split.prefetch_misses,
+                },
+                "residency": {
+                    "persistent_address_table": persistent_address_table_enabled(),
+                    "budget_bytes": session.residency_budget_bytes().unwrap_or_else(residency_budget_bytes),
+                    "table_bytes": geometry.table_bytes(),
+                    "q4_full_payload_bytes": geometry.full_payload_bytes(),
+                    "scaled_1_5_payload_bytes": geometry.scaled_payload_bytes(
+                        QWEN80_UNIFORM_Q4_COMPLETE_PHYSICAL_BPW,
+                        1.5,
+                    ),
+                    "triplet_payload_bytes": QWEN80_EXPERT_TRIPLET_PAYLOAD_BYTES,
+                    "device_limits": limits.map(|lim| json!({
+                        "max_buffer_length": lim.max_buffer_length,
+                        "recommended_max_working_set_size": lim.recommended_max_working_set_size,
+                        "current_allocated_size": lim.current_allocated_size,
+                        "has_unified_memory": lim.has_unified_memory,
+                    })),
+                    "hit_rate": hit_rate,
                 },
                 "stages": {
                     "embed_secs": result.stages.embed_secs,
@@ -333,6 +561,16 @@ fn run() -> Result<(), String> {
                     "moe_norm_router_secs": result.stages.moe_norm_router_secs,
                     "moe_shared_secs": result.stages.moe_shared_secs,
                     "moe_table_build_secs": result.stages.moe_table_build_secs,
+                    "moe_table_upload_miss_secs": result.stages.moe_table_upload_miss_secs,
+                    "moe_table_entries_fill_secs": result.stages.moe_table_entries_fill_secs,
+                    "moe_table_buffer_write_secs": result.stages.moe_table_buffer_write_secs,
+                    "moe_table_resource_clone_secs": result.stages.moe_table_resource_clone_secs,
+                    "moe_table_lease_secs": result.stages.moe_table_lease_secs,
+                    "first_touch_catalog_read_secs": result.stages.first_touch_catalog_read_secs,
+                    "first_touch_sha256_secs": result.stages.first_touch_sha256_secs,
+                    "first_touch_metal_copy_secs": result.stages.first_touch_metal_copy_secs,
+                    "first_touch_metal_nocopy_secs": result.stages.first_touch_metal_nocopy_secs,
+                    "prefetch_secs": result.stages.prefetch_secs,
                     "moe_routed_secs": result.stages.moe_routed_secs,
                     "moe_combine_secs": result.stages.moe_combine_secs,
                     "terminal_secs": result.stages.terminal_secs,

@@ -1,0 +1,27 @@
+{
+  "lane": "q80-expert-first-touch",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "probe": {
+    "bit_identical_mmap_vs_fresh_read": true,
+    "bytes_read": 53481216,
+    "catalog_read_ns": 8549006,
+    "catalog_read_ns_per_expert": 267156.4375,
+    "catalog_read_ns_per_payload": 89052.14583333333,
+    "compared_payloads": 96,
+    "mmap_ns": 7123586,
+    "mmap_ns_per_expert": 222612.0625,
+    "mmap_ns_per_payload": 74204.02083333333,
+    "n_experts": 32,
+    "sha256_ns": 26144252,
+    "sha256_ns_per_expert": 817007.875,
+    "sha256_ns_per_payload": 272335.9583333333
+  },
+  "schema": "hawking.ascent.q80_expert_first_touch_io_probe.v1",
+  "session_admit": {
+    "admit_ns": 409770042,
+    "production_seals_checked": true,
+    "sample_rehashed": 4,
+    "session_seal_sha256": "bce647f0c63fe1afa60345dab03aa9b56f9c2f07c8090f7d7ba28d28b1238f04",
+    "tensors_stated": 74391
+  }
+}
