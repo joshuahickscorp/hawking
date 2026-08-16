@@ -11,18 +11,49 @@
 //! - verified bounded range and explicitly bounded full-tensor reads; and
 //! - exact native FP8 and packed-FP4 scale-pair geometry.
 //!
+//! Chunk SHA-256 is checked against the manifest digest **once per process**
+//! (first touch or [`DeepSeekV4FullStreamReader::verify_all_chunks`]) and
+//! recorded in a `(chunk, digest)` cache.  Subsequent reads of a verified
+//! chunk mmap the file read-only and extract the requested window without
+//! re-hashing.  A digest mismatch still hard-fails.  Silently trusting
+//! unverified bytes is not permitted.
+//!
+//! A sealed `<artifact>/.hawking-admission.json` may authorize skipping the
+//! first-touch SHA-256 when cheap identity (size, mtime_ns, inode) still
+//! matches.  `HAWKING_DSV4F_VERIFY=full` forces the hash.  A missing,
+//! stale, or unsealed receipt never skip-hashes; the reader falls back to
+//! SHA-256 and still hard-fails on mismatch.
+//!
 //! No method here constructs an [`crate::Engine`], allocates Metal resources,
 //! performs a model forward, or changes the public CLI admission policy.
 
+use crate::gravity_deepseek_v4_admission_trust::{
+    admission_hash_threads, file_identity, identity_matches, load_admission_receipt,
+    resolve_trusted_chunk_path, seal_admission_trust_at, DeepSeekV4AdmissionChunkSpec,
+    DeepSeekV4AdmissionLoad, DeepSeekV4AdmissionTrustIndex,
+};
+use crate::gravity_deepseek_v4_artifact_index::{
+    load_artifact_index, tensor_maps_structurally_equal, write_artifact_index, DeepSeekV4IndexLoad,
+    IndexBuildInput,
+};
 use crate::{Error, Result};
+use memmap2::{Mmap, MmapOptions};
+use parking_lot::Mutex;
 use serde::Deserialize;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs::{self, File};
 use std::io::Read;
 use std::ops::Range;
 use std::path::{Component, Path, PathBuf};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::time::Instant;
+
+pub use crate::gravity_deepseek_v4_admission_trust::{
+    admission_receipt_cache_path, admission_receipt_path, DeepSeekV4AdmissionTrustSeal,
+    DeepSeekV4VerifyMode, ADMISSION_TRUST_RECEIPT_NAME, ADMISSION_TRUST_SCHEMA,
+};
 
 /// Immutable full-stream artifact schema produced by the Condense streamer.
 pub const FULL_STREAM_SCHEMA: &str = "hawking.gravity.deepseek_v4.full_stream.v1";
@@ -41,7 +72,6 @@ const EXPECTED_TENSOR_COUNT: usize = 69_187;
 const EXPECTED_SOURCE_SHARDS: usize = 46;
 const FP8_BLOCK: u64 = 128;
 const FP4_LOGICAL_BLOCK: u64 = 32;
-const READ_BUFFER_BYTES: usize = 1024 * 1024;
 
 /// Pinned source identity exposed to a future adapter without opening a
 /// source parent file.
@@ -132,6 +162,196 @@ pub struct NativeScalePair<'a> {
 pub struct FullStreamChunkVerification {
     pub chunk_count: usize,
     pub bytes_verified: u64,
+}
+
+/// Process-local accounting for the verified-once chunk cache.
+///
+/// `hash_invocations` increments only when SHA-256 actually runs.
+/// A second read of an already-verified `(chunk, digest)` is a cache hit
+/// and does not re-hash.  `admission_trust_hits` counts first-touch chunks
+/// whose sealed receipt identity matched so SHA-256 was skipped.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct DeepSeekV4ChunkVerificationStats {
+    pub hash_invocations: u64,
+    pub cache_hits: u64,
+    pub bytes_hashed: u64,
+    pub chunks_verified: u64,
+    pub admission_trust_hits: u64,
+    pub admission_trust_fallbacks: u64,
+    pub verify_ns: u64,
+    pub admission_receipt_loaded: bool,
+    pub artifact_index_loaded: bool,
+    pub host_read: DeepSeekV4HostReadStats,
+}
+
+/// Per-token host-read breakdown for the DSV4F streamed reader.
+///
+/// `*_ns` fields that live under `ensure_chunk_verified` are the **sum of
+/// parallel worker-thread time**, not wall time.  `par_read_views` fans out
+/// one thread per tensor, so these sums can exceed body wall.  Counts and
+/// bytes are exact.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct DeepSeekV4HostReadStats {
+    pub read_view_calls: u64,
+    pub read_owned_calls: u64,
+    pub mapped_windows: u64,
+    pub mapped_window_bytes: u64,
+    pub owned_windows: u64,
+    pub owned_window_bytes: u64,
+    pub owned_allocs: u64,
+    pub owned_alloc_bytes: u64,
+    pub owned_copy_ns: u64,
+    pub mmap_calls: u64,
+    pub mmap_ns: u64,
+    pub identity_calls: u64,
+    pub identity_ns: u64,
+    pub path_resolve_calls: u64,
+    pub path_resolve_ns: u64,
+    pub digest_cache_probes: u64,
+    pub digest_cache_ns: u64,
+    pub tensor_lookup_calls: u64,
+    pub tensor_lookup_ns: u64,
+}
+
+#[derive(Debug, Default)]
+struct HostReadCounters {
+    read_view_calls: AtomicU64,
+    read_owned_calls: AtomicU64,
+    mapped_windows: AtomicU64,
+    mapped_window_bytes: AtomicU64,
+    owned_windows: AtomicU64,
+    owned_window_bytes: AtomicU64,
+    owned_allocs: AtomicU64,
+    owned_alloc_bytes: AtomicU64,
+    owned_copy_ns: AtomicU64,
+    mmap_calls: AtomicU64,
+    mmap_ns: AtomicU64,
+    identity_calls: AtomicU64,
+    identity_ns: AtomicU64,
+    path_resolve_calls: AtomicU64,
+    path_resolve_ns: AtomicU64,
+    digest_cache_probes: AtomicU64,
+    digest_cache_ns: AtomicU64,
+    tensor_lookup_calls: AtomicU64,
+    tensor_lookup_ns: AtomicU64,
+}
+
+impl HostReadCounters {
+    fn snapshot(&self) -> DeepSeekV4HostReadStats {
+        DeepSeekV4HostReadStats {
+            read_view_calls: self.read_view_calls.load(Ordering::Relaxed),
+            read_owned_calls: self.read_owned_calls.load(Ordering::Relaxed),
+            mapped_windows: self.mapped_windows.load(Ordering::Relaxed),
+            mapped_window_bytes: self.mapped_window_bytes.load(Ordering::Relaxed),
+            owned_windows: self.owned_windows.load(Ordering::Relaxed),
+            owned_window_bytes: self.owned_window_bytes.load(Ordering::Relaxed),
+            owned_allocs: self.owned_allocs.load(Ordering::Relaxed),
+            owned_alloc_bytes: self.owned_alloc_bytes.load(Ordering::Relaxed),
+            owned_copy_ns: self.owned_copy_ns.load(Ordering::Relaxed),
+            mmap_calls: self.mmap_calls.load(Ordering::Relaxed),
+            mmap_ns: self.mmap_ns.load(Ordering::Relaxed),
+            identity_calls: self.identity_calls.load(Ordering::Relaxed),
+            identity_ns: self.identity_ns.load(Ordering::Relaxed),
+            path_resolve_calls: self.path_resolve_calls.load(Ordering::Relaxed),
+            path_resolve_ns: self.path_resolve_ns.load(Ordering::Relaxed),
+            digest_cache_probes: self.digest_cache_probes.load(Ordering::Relaxed),
+            digest_cache_ns: self.digest_cache_ns.load(Ordering::Relaxed),
+            tensor_lookup_calls: self.tensor_lookup_calls.load(Ordering::Relaxed),
+            tensor_lookup_ns: self.tensor_lookup_ns.load(Ordering::Relaxed),
+        }
+    }
+}
+
+/// Content-addressed chunk binding used by isolated integrity fixtures.
+/// This is not an admission of the sealed 43-layer stream.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeepSeekV4ChunkSpec {
+    pub relative: String,
+    pub sha256: String,
+    pub bytes: u64,
+}
+
+/// A verified tensor window. Single-chunk windows are a read-only mmap
+/// slice; multi-chunk windows own a concatenated copy so callers still see
+/// one contiguous byte range.
+pub struct DeepSeekV4VerifiedBytes {
+    inner: VerifiedBytesInner,
+}
+
+enum VerifiedBytesInner {
+    Mapped {
+        mmap: Mmap,
+        start: usize,
+        end: usize,
+    },
+    Owned(Vec<u8>),
+}
+
+impl DeepSeekV4VerifiedBytes {
+    fn mapped(mmap: Mmap, start: usize, end: usize) -> Result<Self> {
+        if start > end || end > mmap.len() {
+            return Err(gravity("verified mmap window escaped its chunk"));
+        }
+        Ok(Self {
+            inner: VerifiedBytesInner::Mapped { mmap, start, end },
+        })
+    }
+
+    fn owned(bytes: Vec<u8>) -> Self {
+        Self {
+            inner: VerifiedBytesInner::Owned(bytes),
+        }
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        match &self.inner {
+            VerifiedBytesInner::Mapped { mmap, start, end } => &mmap[*start..*end],
+            VerifiedBytesInner::Owned(bytes) => bytes,
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.as_bytes().len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.as_bytes().is_empty()
+    }
+
+    /// True when the window is a slice of a read-only mmap (no host copy).
+    pub fn is_zero_copy(&self) -> bool {
+        matches!(self.inner, VerifiedBytesInner::Mapped { .. })
+    }
+
+    pub fn into_owned(self) -> Vec<u8> {
+        match self.inner {
+            VerifiedBytesInner::Mapped { mmap, start, end } => mmap[start..end].to_vec(),
+            VerifiedBytesInner::Owned(bytes) => bytes,
+        }
+    }
+}
+
+impl AsRef<[u8]> for DeepSeekV4VerifiedBytes {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl std::ops::Deref for DeepSeekV4VerifiedBytes {
+    type Target = [u8];
+
+    fn deref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl std::fmt::Debug for DeepSeekV4VerifiedBytes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DeepSeekV4VerifiedBytes")
+            .field("len", &self.len())
+            .field("zero_copy", &self.is_zero_copy())
+            .finish()
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -275,7 +495,9 @@ struct ChunkBinding {
 }
 
 /// A successfully admitted full source stream.  It owns no decoded weights,
-/// GPU buffers, or execution state.
+/// GPU buffers, or execution state.  Verified chunk identity is cached
+/// process-locally so a second read of the same `(chunk, digest)` does not
+/// re-hash; mmap views are not retained after the caller drops them.
 #[derive(Debug)]
 pub struct DeepSeekV4FullStreamReader {
     root: PathBuf,
@@ -283,27 +505,142 @@ pub struct DeepSeekV4FullStreamReader {
     manifest_seal_sha256: String,
     manifest_file_sha256: String,
     restart_seal_sha256: String,
+    content_addressed_chunk_sha256: String,
     tensor_bytes: u64,
     tensors: BTreeMap<String, DeepSeekV4TensorMetadata>,
     chunks: BTreeMap<String, ChunkBinding>,
     native_pairs: BTreeMap<String, NativeScalePairGeometry>,
     source_metadata_sha256: BTreeMap<String, String>,
+    /// SHA-256 hex of chunks that have passed the manifest digest check
+    /// or were accepted by a valid admission-trust receipt.
+    verified_digests: Mutex<HashSet<String>>,
+    hash_invocations: AtomicU64,
+    cache_hits: AtomicU64,
+    bytes_hashed: AtomicU64,
+    admission_trust_hits: AtomicU64,
+    admission_trust_fallbacks: AtomicU64,
+    verify_ns: AtomicU64,
+    verify_mode: DeepSeekV4VerifyMode,
+    admission: Option<DeepSeekV4AdmissionTrustIndex>,
+    admission_receipt_loaded: AtomicBool,
+    artifact_index_loaded: AtomicBool,
+    host_read: HostReadCounters,
 }
 
 impl DeepSeekV4FullStreamReader {
     /// Admit a complete, sealed V4 source stream without turning it into a
     /// runtime.  This validates all descriptor/chunk mappings and stats every
     /// declared content-addressed chunk; chunk SHA-256 bytes are checked on
-    /// verified reads or by [`Self::verify_all_chunks`].
+    /// first verified read (or by [`Self::verify_all_chunks`]) and then
+    /// cached for the life of this reader.
     pub fn admit(root: impl AsRef<Path>) -> Result<Self> {
+        Self::admit_with_verify_mode(root, DeepSeekV4VerifyMode::from_env()?)
+    }
+
+    /// Admit the sealed stream under an explicit verify mode.  Used by the
+    /// admission sealer (`full`) and by tests that must not race on the env
+    /// var.
+    pub fn admit_with_verify_mode(
+        root: impl AsRef<Path>,
+        verify_mode: DeepSeekV4VerifyMode,
+    ) -> Result<Self> {
+        crate::startup_timing::time_ms_result("admit_total", || {
+            if let Some(reader) = Self::try_admit_from_artifact_index(&root, verify_mode)? {
+                return Ok(reader);
+            }
+            Self::admit_with_verify_mode_inner(root, verify_mode)
+        })
+    }
+
+    /// Reconstruct the admitted reader from a valid mmap index. `None` means
+    /// "take today's JSON path": missing, disabled, stale, or corrupt.
+    pub fn try_admit_from_artifact_index(
+        root: impl AsRef<Path>,
+        verify_mode: DeepSeekV4VerifyMode,
+    ) -> Result<Option<Self>> {
+        crate::startup_timing::time_ms_result("artifact_index_load", || {
+            let root = root.as_ref();
+            match load_artifact_index(root) {
+                DeepSeekV4IndexLoad::Loaded(contents) => {
+                    Self::from_artifact_index(root, verify_mode, contents).map(Some)
+                }
+                DeepSeekV4IndexLoad::Disabled
+                | DeepSeekV4IndexLoad::Missing
+                | DeepSeekV4IndexLoad::Rejected(_) => Ok(None),
+            }
+        })
+    }
+
+    fn from_artifact_index(
+        root: &Path,
+        verify_mode: DeepSeekV4VerifyMode,
+        contents: crate::gravity_deepseek_v4_artifact_index::DeepSeekV4IndexContents,
+    ) -> Result<Self> {
+        let root = canonical_non_symlink_directory(root, "DeepSeek-V4 full artifact")?;
+        let mut chunks = BTreeMap::new();
+        for (relative, (sha256, bytes)) in contents.chunks {
+            chunks.insert(
+                relative.clone(),
+                ChunkBinding {
+                    relative,
+                    sha256,
+                    bytes,
+                },
+            );
+        }
+        let native_pairs = crate::startup_timing::time_ms_result("native_scale_pairs", || {
+            validate_native_scale_pairs(&contents.tensors)
+        })?;
+        let admission = match verify_mode {
+            DeepSeekV4VerifyMode::Admission => Some(contents.admission),
+            DeepSeekV4VerifyMode::Full => None,
+        };
+        crate::startup_timing::record_ms("tensor_map_build", 0);
+        Ok(Self {
+            root,
+            source: contents.source,
+            manifest_seal_sha256: contents.manifest_seal_sha256,
+            manifest_file_sha256: contents.manifest_file_sha256,
+            restart_seal_sha256: contents.restart_seal_sha256,
+            content_addressed_chunk_sha256: contents.content_addressed_chunk_sha256,
+            tensor_bytes: contents.tensor_bytes,
+            tensors: contents.tensors,
+            chunks,
+            native_pairs,
+            source_metadata_sha256: contents.source_metadata_sha256,
+            verified_digests: Mutex::new(HashSet::new()),
+            hash_invocations: AtomicU64::new(0),
+            cache_hits: AtomicU64::new(0),
+            bytes_hashed: AtomicU64::new(0),
+            admission_trust_hits: AtomicU64::new(0),
+            admission_trust_fallbacks: AtomicU64::new(0),
+            verify_ns: AtomicU64::new(0),
+            verify_mode,
+            admission_receipt_loaded: AtomicBool::new(admission.is_some()),
+            artifact_index_loaded: AtomicBool::new(true),
+            admission,
+            host_read: HostReadCounters::default(),
+        })
+    }
+
+    fn admit_with_verify_mode_inner(
+        root: impl AsRef<Path>,
+        verify_mode: DeepSeekV4VerifyMode,
+    ) -> Result<Self> {
         let root = canonical_non_symlink_directory(root.as_ref(), "DeepSeek-V4 full artifact")?;
         let manifest_path = checked_regular_path(&root, "manifest.json", "full stream manifest")?;
-        let manifest_raw = read_regular_file(&manifest_path, "full stream manifest")?;
-        let manifest_file_sha256 = sha256_hex(&manifest_raw);
-        let manifest_value = parse_and_verify_sealed_json(&manifest_raw, "full stream manifest")?;
-        let manifest: Manifest = serde_json::from_value(manifest_value).map_err(|error| {
-            Error::Gravity(format!("DeepSeek-V4 full manifest schema decode: {error}"))
+        let manifest_raw = crate::startup_timing::time_ms_result("manifest_json_read", || {
+            read_regular_file(&manifest_path, "full stream manifest")
         })?;
+        let manifest_file_sha256 = sha256_hex(&manifest_raw);
+        let manifest_value =
+            parse_and_verify_sealed_json(&manifest_raw, "full stream manifest", "manifest_json")?;
+        let manifest: Manifest =
+            crate::startup_timing::time_ms_result("manifest_schema_decode", || {
+                serde_json::from_value(manifest_value).map_err(|error| {
+                    Error::Gravity(format!("DeepSeek-V4 full manifest schema decode: {error}"))
+                })
+            })?;
         validate_manifest_identity(&manifest)?;
 
         let restart_path = checked_regular_path(
@@ -314,23 +651,54 @@ impl DeepSeekV4FullStreamReader {
         if manifest.restart_receipt.path != "restart-receipt.json" {
             return Err(gravity("full stream restart receipt path is not canonical"));
         }
-        let restart_raw = read_regular_file(&restart_path, "full stream restart receipt")?;
-        let restart_value =
-            parse_and_verify_sealed_json(&restart_raw, "full stream restart receipt")?;
+        let restart_raw = crate::startup_timing::time_ms_result("restart_receipt_read", || {
+            read_regular_file(&restart_path, "full stream restart receipt")
+        })?;
+        let restart_value = parse_and_verify_sealed_json(
+            &restart_raw,
+            "full stream restart receipt",
+            "restart_receipt",
+        )?;
         validate_restart_receipt(&restart_value, &manifest.restart_receipt.seal_sha256, &root)?;
 
-        let source_metadata_sha256 = validate_metadata_assets(&root, &manifest.source)?;
-        let index = load_and_verify_source_index(&root, &manifest.source)?;
+        let source_metadata_sha256 =
+            crate::startup_timing::time_ms_result("metadata_assets", || {
+                validate_metadata_assets(&root, &manifest.source)
+            })?;
+        let index = crate::startup_timing::time_ms_result("source_index_parse", || {
+            load_and_verify_source_index(&root, &manifest.source)
+        })?;
         if index.metadata.total_size != manifest.artifact.source_index_total_size_bytes {
             return Err(gravity(
                 "full stream source index total_size differs from manifest artifact bytes",
             ));
         }
 
-        let source_windows = validate_source_windows(&manifest.source)?;
-        let (tensors, chunks) = validate_tensors(&manifest, &index, &source_windows)?;
-        validate_chunk_tree(&root, &chunks)?;
-        let native_pairs = validate_native_scale_pairs(&tensors)?;
+        let source_windows = crate::startup_timing::time_ms_result("source_windows", || {
+            validate_source_windows(&manifest.source)
+        })?;
+        let (tensors, chunks) = crate::startup_timing::time_ms_result("tensor_map_build", || {
+            validate_tensors(&manifest, &index, &source_windows)
+        })?;
+        crate::startup_timing::time_ms_result("chunk_tree_validate", || {
+            validate_chunk_tree(&root, &chunks)
+        })?;
+        let native_pairs = crate::startup_timing::time_ms_result("native_scale_pairs", || {
+            validate_native_scale_pairs(&tensors)
+        })?;
+        let content_addressed_chunk_sha256 =
+            manifest.artifact.content_addressed_chunk_sha256.clone();
+        let total_chunk_bytes = chunk_bytes_total(&chunks)?;
+        let admission = crate::startup_timing::time_ms("admission_receipt_parse", || {
+            load_admission_if_requested(
+                &root,
+                verify_mode,
+                &manifest.seal_sha256,
+                &content_addressed_chunk_sha256,
+                chunks.len(),
+                total_chunk_bytes,
+            )
+        });
 
         Ok(Self {
             root,
@@ -341,12 +709,210 @@ impl DeepSeekV4FullStreamReader {
             manifest_seal_sha256: manifest.seal_sha256,
             manifest_file_sha256,
             restart_seal_sha256: manifest.restart_receipt.seal_sha256,
+            content_addressed_chunk_sha256,
             tensor_bytes: manifest.artifact.total_tensor_bytes,
             tensors,
             chunks,
             native_pairs,
             source_metadata_sha256,
+            verified_digests: Mutex::new(HashSet::new()),
+            hash_invocations: AtomicU64::new(0),
+            cache_hits: AtomicU64::new(0),
+            bytes_hashed: AtomicU64::new(0),
+            admission_trust_hits: AtomicU64::new(0),
+            admission_trust_fallbacks: AtomicU64::new(0),
+            verify_ns: AtomicU64::new(0),
+            verify_mode,
+            admission_receipt_loaded: AtomicBool::new(admission.is_some()),
+            artifact_index_loaded: AtomicBool::new(false),
+            admission,
+            host_read: HostReadCounters::default(),
         })
+    }
+
+    /// Isolated integrity-path fixture.  Binds a reader to a caller-owned
+    /// content-addressed chunk tree without admitting the sealed 43-layer
+    /// stream.  Refuses any root whose path names the sealed artifact.
+    pub fn bind_isolated_integrity_fixture(
+        root: impl AsRef<Path>,
+        tensors: BTreeMap<String, DeepSeekV4TensorMetadata>,
+        chunks: impl IntoIterator<Item = DeepSeekV4ChunkSpec>,
+    ) -> Result<Self> {
+        Self::bind_isolated_integrity_fixture_with_verify_mode(
+            root,
+            tensors,
+            chunks,
+            DeepSeekV4VerifyMode::from_env()?,
+        )
+    }
+
+    pub fn bind_isolated_integrity_fixture_with_verify_mode(
+        root: impl AsRef<Path>,
+        tensors: BTreeMap<String, DeepSeekV4TensorMetadata>,
+        chunks: impl IntoIterator<Item = DeepSeekV4ChunkSpec>,
+        verify_mode: DeepSeekV4VerifyMode,
+    ) -> Result<Self> {
+        let root = root.as_ref();
+        refuse_sealed_artifact_root(root)?;
+        let root = canonical_non_symlink_directory(root, "isolated integrity fixture")?;
+        let mut bindings = BTreeMap::new();
+        let mut tensor_bytes = 0u64;
+        for spec in chunks {
+            validate_chunk_relative_path(&spec.relative, &spec.sha256)?;
+            let path =
+                checked_regular_path(&root, &spec.relative, "isolated content-addressed chunk")?;
+            let observed = fs::metadata(&path)?.len();
+            if observed != spec.bytes {
+                return Err(gravity(format!(
+                    "isolated chunk {} is {observed} bytes, expected {}",
+                    spec.relative, spec.bytes
+                )));
+            }
+            bindings.insert(
+                spec.relative.clone(),
+                ChunkBinding {
+                    relative: spec.relative,
+                    sha256: spec.sha256,
+                    bytes: spec.bytes,
+                },
+            );
+        }
+        for tensor in tensors.values() {
+            tensor_bytes = tensor_bytes
+                .checked_add(tensor.bytes)
+                .ok_or_else(|| gravity("isolated fixture tensor byte count overflow"))?;
+            for segment in &tensor.segments {
+                let binding = bindings.get(&segment.chunk_relpath).ok_or_else(|| {
+                    gravity(format!(
+                        "isolated fixture tensor {} references unknown chunk {}",
+                        tensor.name, segment.chunk_relpath
+                    ))
+                })?;
+                if binding.sha256 != segment.sha256 {
+                    return Err(gravity(format!(
+                        "isolated fixture segment digest mismatch for {}",
+                        segment.chunk_relpath
+                    )));
+                }
+            }
+        }
+        let content_addressed_chunk_sha256 = content_addressed_chunk_digest(&bindings);
+        let total_chunk_bytes = chunk_bytes_total(&bindings)?;
+        let admission = load_admission_if_requested(
+            &root,
+            verify_mode,
+            "isolated-integrity-fixture",
+            &content_addressed_chunk_sha256,
+            bindings.len(),
+            total_chunk_bytes,
+        );
+        Ok(Self {
+            root,
+            source: DeepSeekV4SourceIdentity {
+                repository: PINNED_REPOSITORY.to_owned(),
+                revision: PINNED_REVISION.to_owned(),
+            },
+            manifest_seal_sha256: "isolated-integrity-fixture".to_owned(),
+            manifest_file_sha256: "isolated-integrity-fixture".to_owned(),
+            restart_seal_sha256: "isolated-integrity-fixture".to_owned(),
+            content_addressed_chunk_sha256,
+            tensor_bytes,
+            tensors,
+            chunks: bindings,
+            native_pairs: BTreeMap::new(),
+            source_metadata_sha256: BTreeMap::new(),
+            verified_digests: Mutex::new(HashSet::new()),
+            hash_invocations: AtomicU64::new(0),
+            cache_hits: AtomicU64::new(0),
+            bytes_hashed: AtomicU64::new(0),
+            admission_trust_hits: AtomicU64::new(0),
+            admission_trust_fallbacks: AtomicU64::new(0),
+            verify_ns: AtomicU64::new(0),
+            verify_mode,
+            admission_receipt_loaded: AtomicBool::new(admission.is_some()),
+            artifact_index_loaded: AtomicBool::new(false),
+            admission,
+            host_read: HostReadCounters::default(),
+        })
+    }
+
+    /// Write `payload` as a content-addressed chunk under `root`.  Refuses
+    /// the sealed artifact directory.  Used by integrity tests.
+    pub fn write_isolated_content_addressed_chunk(
+        root: impl AsRef<Path>,
+        payload: &[u8],
+    ) -> Result<(DeepSeekV4Segment, DeepSeekV4ChunkSpec)> {
+        let root = root.as_ref();
+        refuse_sealed_artifact_root(root)?;
+        if payload.is_empty() {
+            return Err(gravity("isolated chunk payload must be non-empty"));
+        }
+        let sha256 = sha256_hex(payload);
+        let relative = format!("chunks/{}/{}", &sha256[..2], sha256);
+        validate_chunk_relative_path(&relative, &sha256)?;
+        let path = root.join(&relative);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        if path.exists() {
+            let existing = fs::read(&path)?;
+            if existing.as_slice() != payload {
+                return Err(gravity(format!(
+                    "isolated chunk {relative} already exists with different bytes"
+                )));
+            }
+        } else {
+            fs::write(&path, payload)?;
+        }
+        let bytes = payload.len() as u64;
+        let spec = DeepSeekV4ChunkSpec {
+            relative: relative.clone(),
+            sha256: sha256.clone(),
+            bytes,
+        };
+        let segment = DeepSeekV4Segment {
+            bytes,
+            chunk_relpath: relative,
+            sha256,
+            source_file_start: 0,
+            source_file_end: bytes,
+            tensor_start: 0,
+            tensor_end: bytes,
+            row_start: 0,
+            row_count: 1,
+        };
+        Ok((segment, spec))
+    }
+
+    /// Process-local verified-once counters.  `hash_invocations` is the
+    /// assertion surface for "second read does not re-hash".
+    pub fn chunk_verification_stats(&self) -> DeepSeekV4ChunkVerificationStats {
+        DeepSeekV4ChunkVerificationStats {
+            hash_invocations: self.hash_invocations.load(Ordering::Relaxed),
+            cache_hits: self.cache_hits.load(Ordering::Relaxed),
+            bytes_hashed: self.bytes_hashed.load(Ordering::Relaxed),
+            chunks_verified: self.verified_digests.lock().len() as u64,
+            admission_trust_hits: self.admission_trust_hits.load(Ordering::Relaxed),
+            admission_trust_fallbacks: self.admission_trust_fallbacks.load(Ordering::Relaxed),
+            verify_ns: self.verify_ns.load(Ordering::Relaxed),
+            admission_receipt_loaded: self.admission_receipt_loaded.load(Ordering::Relaxed),
+            artifact_index_loaded: self.artifact_index_loaded.load(Ordering::Relaxed),
+            host_read: self.host_read.snapshot(),
+        }
+    }
+
+    pub fn verify_mode(&self) -> DeepSeekV4VerifyMode {
+        self.verify_mode
+    }
+
+    /// Artifact-level digest of the admitted chunk-hash list. Isolated
+    /// fixtures compute the same function over their bound chunks.
+    pub fn content_addressed_chunk_sha256(&self) -> &str {
+        &self.content_addressed_chunk_sha256
+    }
+
+    pub fn admission_trust_receipt_path(&self) -> PathBuf {
+        admission_receipt_path(&self.root)
     }
 
     /// Canonical non-symlink artifact root.
@@ -459,9 +1025,15 @@ impl DeepSeekV4FullStreamReader {
 
     /// Metadata only; this cannot read or execute a tensor.
     pub fn tensor_metadata(&self, name: &str) -> Result<&DeepSeekV4TensorMetadata> {
-        self.tensors
-            .get(name)
-            .ok_or_else(|| gravity(format!("full stream has no tensor {name:?}")))
+        self.host_read
+            .tensor_lookup_calls
+            .fetch_add(1, Ordering::Relaxed);
+        let started = Instant::now();
+        let found = self.tensors.get(name);
+        self.host_read
+            .tensor_lookup_ns
+            .fetch_add(started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+        found.ok_or_else(|| gravity(format!("full stream has no tensor {name:?}")))
     }
 
     /// Return an already validated native scale-pair contract for `weight_name`.
@@ -511,16 +1083,239 @@ impl DeepSeekV4FullStreamReader {
         })
     }
 
+    /// Same as [`Self::verify_all_chunks`] but hashed across cores.  In
+    /// `admission` mode a valid receipt still skip-hashes matching chunks;
+    /// the sealer hashes the durable root directly and does not use this.
+    pub fn verify_all_chunks_parallel(&self) -> Result<FullStreamChunkVerification> {
+        let bindings: Vec<&ChunkBinding> = self.chunks.values().collect();
+        if bindings.is_empty() {
+            return Ok(FullStreamChunkVerification {
+                chunk_count: 0,
+                bytes_verified: 0,
+            });
+        }
+        let threads = admission_hash_threads().min(bindings.len()).max(1);
+        let chunk_size = (bindings.len() + threads - 1) / threads;
+        let errors = Mutex::new(Vec::new());
+        std::thread::scope(|scope| {
+            let errors = &errors;
+            for work in bindings.chunks(chunk_size.max(1)) {
+                scope.spawn(move || {
+                    for binding in work {
+                        if !errors.lock().is_empty() {
+                            break;
+                        }
+                        if let Err(error) = self.verify_chunk(binding) {
+                            errors.lock().push(error);
+                            break;
+                        }
+                    }
+                });
+            }
+        });
+        if let Some(error) = errors.into_inner().into_iter().next() {
+            return Err(error);
+        }
+        Ok(FullStreamChunkVerification {
+            chunk_count: self.chunks.len(),
+            bytes_verified: chunk_bytes_total(&self.chunks)?,
+        })
+    }
+
+    /// Full SHA-256 of every chunk under `receipt_root`, then write
+    /// `.hawking-admission.json` there.  Always hashes the durable files
+    /// (never skip), so a clone-view reader can still seal the source
+    /// artifact.
+    pub fn seal_admission_trust_at(
+        &self,
+        receipt_root: impl AsRef<Path>,
+    ) -> Result<DeepSeekV4AdmissionTrustSeal> {
+        let specs: Vec<DeepSeekV4AdmissionChunkSpec> = self
+            .chunks
+            .values()
+            .map(|chunk| DeepSeekV4AdmissionChunkSpec {
+                relative: chunk.relative.clone(),
+                sha256: chunk.sha256.clone(),
+                bytes: chunk.bytes,
+            })
+            .collect();
+        let mut seal = seal_admission_trust_at(
+            receipt_root.as_ref(),
+            &self.manifest_seal_sha256,
+            &self.content_addressed_chunk_sha256,
+            &specs,
+            env!("CARGO_PKG_VERSION"),
+        )?;
+        if let Some(index) = self.try_write_artifact_index(receipt_root.as_ref(), &seal) {
+            seal.index_path = Some(index.path);
+            seal.index_bytes = Some(index.bytes);
+            seal.index_wall_ms = Some(index.wall_ms);
+        }
+        Ok(seal)
+    }
+
+    fn try_write_artifact_index(
+        &self,
+        source_root: &Path,
+        seal: &DeepSeekV4AdmissionTrustSeal,
+    ) -> Option<crate::gravity_deepseek_v4_artifact_index::DeepSeekV4ArtifactIndexSeal> {
+        if !source_root.join("manifest.json").is_file()
+            || !source_root.join("stream-ranges.jsonl").is_file()
+            || !source_root.join("stream-journal.json").is_file()
+        {
+            return None;
+        }
+        let chunks: BTreeMap<String, (String, u64)> = self
+            .chunks
+            .iter()
+            .map(|(k, v)| (k.clone(), (v.sha256.clone(), v.bytes)))
+            .collect();
+        let input = IndexBuildInput {
+            source_root,
+            _reader_root: &self.root,
+            source: &self.source,
+            manifest_seal_sha256: &self.manifest_seal_sha256,
+            manifest_file_sha256: &self.manifest_file_sha256,
+            restart_seal_sha256: &self.restart_seal_sha256,
+            content_addressed_chunk_sha256: &self.content_addressed_chunk_sha256,
+            tensor_bytes: self.tensor_bytes,
+            tensors: &self.tensors,
+            chunks: &chunks,
+            identities: &seal.identities,
+            source_metadata_sha256: &self.source_metadata_sha256,
+            table_sha256: &seal.table_sha256,
+            sealed_at_unix_ms: {
+                use std::time::{SystemTime, UNIX_EPOCH};
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .map(|d| d.as_millis() as u64)
+                    .unwrap_or(0)
+            },
+            verifier_version: &seal.verifier_version,
+        };
+        match crate::startup_timing::time_ms_result("artifact_index_build", || {
+            write_artifact_index(input)
+        }) {
+            Ok(index) => Some(index),
+            Err(error) => {
+                eprintln!("dsv4f artifact index write skipped: {error}");
+                None
+            }
+        }
+    }
+
+    /// Write the mmap index from an already-admitted reader and its loaded
+    /// admission identities. Does not re-hash chunks.
+    pub fn write_artifact_index_from_admission(
+        &self,
+        source_root: impl AsRef<Path>,
+    ) -> Result<crate::gravity_deepseek_v4_artifact_index::DeepSeekV4ArtifactIndexSeal> {
+        let source_root = source_root.as_ref();
+        let admission = self.admission.as_ref().ok_or_else(|| {
+            gravity("write_artifact_index_from_admission requires a loaded admission receipt")
+        })?;
+        let chunks: BTreeMap<String, (String, u64)> = self
+            .chunks
+            .iter()
+            .map(|(k, v)| (k.clone(), (v.sha256.clone(), v.bytes)))
+            .collect();
+        write_artifact_index(IndexBuildInput {
+            source_root,
+            _reader_root: &self.root,
+            source: &self.source,
+            manifest_seal_sha256: &self.manifest_seal_sha256,
+            manifest_file_sha256: &self.manifest_file_sha256,
+            restart_seal_sha256: &self.restart_seal_sha256,
+            content_addressed_chunk_sha256: &self.content_addressed_chunk_sha256,
+            tensor_bytes: self.tensor_bytes,
+            tensors: &self.tensors,
+            chunks: &chunks,
+            identities: &admission.chunks,
+            source_metadata_sha256: &self.source_metadata_sha256,
+            table_sha256: &admission.table_sha256,
+            sealed_at_unix_ms: admission.sealed_at_unix_ms,
+            verifier_version: &admission.verifier_version,
+        })
+    }
+
+    /// Field-for-field tensor + chunk compare against another admitted reader.
+    pub fn structural_map_eq(&self, other: &Self) -> Result<()> {
+        tensor_maps_structurally_equal(&self.tensors, &other.tensors)?;
+        let left: BTreeMap<String, (String, u64)> = self
+            .chunks
+            .iter()
+            .map(|(k, v)| (k.clone(), (v.sha256.clone(), v.bytes)))
+            .collect();
+        let right: BTreeMap<String, (String, u64)> = other
+            .chunks
+            .iter()
+            .map(|(k, v)| (k.clone(), (v.sha256.clone(), v.bytes)))
+            .collect();
+        crate::gravity_deepseek_v4_artifact_index::chunk_maps_structurally_equal(&left, &right)?;
+        if self.native_pairs != other.native_pairs {
+            return Err(gravity("native scale-pair maps differ"));
+        }
+        if self.source_metadata_sha256 != other.source_metadata_sha256 {
+            return Err(gravity("source metadata asset maps differ"));
+        }
+        if self.manifest_seal_sha256 != other.manifest_seal_sha256
+            || self.content_addressed_chunk_sha256 != other.content_addressed_chunk_sha256
+            || self.tensor_bytes != other.tensor_bytes
+        {
+            return Err(gravity("artifact-level seals/bytes differ"));
+        }
+        Ok(())
+    }
+
+    /// Seal a receipt beside this reader's root. Isolated fixtures use this.
+    pub fn seal_admission_trust(&self) -> Result<DeepSeekV4AdmissionTrustSeal> {
+        self.seal_admission_trust_at(&self.root)
+    }
+
     /// Return a verified source-native byte range.  Every source chunk touched
-    /// by the range is SHA-256 checked in full before this function succeeds.
-    /// `max_output_bytes` is mandatory so a caller cannot accidentally turn a
-    /// bounded adapter read into an unbounded host allocation.
+    /// by the range is SHA-256 checked against its manifest digest at least
+    /// once in this process before this function succeeds.  `max_output_bytes`
+    /// is mandatory so a caller cannot accidentally turn a bounded adapter
+    /// read into an unbounded host allocation.
     pub fn read_verified_range(
         &self,
         name: &str,
         range: Range<u64>,
         max_output_bytes: usize,
     ) -> Result<Vec<u8>> {
+        self.host_read
+            .read_owned_calls
+            .fetch_add(1, Ordering::Relaxed);
+        let view = self.read_verified_range_view(name, range, max_output_bytes)?;
+        if view.is_zero_copy() {
+            let bytes = view.len() as u64;
+            let started = Instant::now();
+            let owned = view.into_owned();
+            self.host_read
+                .owned_copy_ns
+                .fetch_add(started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+            self.host_read.owned_allocs.fetch_add(1, Ordering::Relaxed);
+            self.host_read
+                .owned_alloc_bytes
+                .fetch_add(bytes, Ordering::Relaxed);
+            Ok(owned)
+        } else {
+            Ok(view.into_owned())
+        }
+    }
+
+    /// Zero-copy counterpart of [`Self::read_verified_range`].  A window that
+    /// lives in a single already-verified chunk is a read-only mmap slice;
+    /// multi-chunk windows are concatenated into an owned buffer.
+    pub fn read_verified_range_view(
+        &self,
+        name: &str,
+        range: Range<u64>,
+        max_output_bytes: usize,
+    ) -> Result<DeepSeekV4VerifiedBytes> {
+        self.host_read
+            .read_view_calls
+            .fetch_add(1, Ordering::Relaxed);
         let tensor = self.tensor_metadata(name)?;
         if range.start >= range.end || range.end > tensor.bytes {
             return Err(gravity(format!(
@@ -537,15 +1332,54 @@ impl DeepSeekV4FullStreamReader {
             )));
         }
 
-        let mut out = Vec::with_capacity(requested_usize);
-        let mut cursor = range.start;
+        let mut overlaps: Vec<(&DeepSeekV4Segment, u64, u64)> = Vec::new();
         for segment in &tensor.segments {
             if segment.tensor_end <= range.start || segment.tensor_start >= range.end {
                 continue;
             }
             let take_start = range.start.max(segment.tensor_start);
             let take_end = range.end.min(segment.tensor_end);
-            self.read_verified_segment_slice(segment, take_start, take_end, &mut out)?;
+            overlaps.push((segment, take_start, take_end));
+        }
+        if overlaps.is_empty() {
+            return Err(gravity(format!(
+                "{name}: verified segment range is not contiguous"
+            )));
+        }
+
+        if overlaps.len() == 1 {
+            let (segment, take_start, take_end) = overlaps[0];
+            if take_start != range.start || take_end != range.end {
+                return Err(gravity(format!(
+                    "{name}: verified segment range is not contiguous"
+                )));
+            }
+            let mmap = self.map_verified_segment(segment)?;
+            let local_start = usize::try_from(take_start - segment.tensor_start)
+                .map_err(|_| gravity("chunk slice start exceeds usize"))?;
+            let local_end = usize::try_from(take_end - segment.tensor_start)
+                .map_err(|_| gravity("chunk slice end exceeds usize"))?;
+            self.host_read.mapped_windows.fetch_add(1, Ordering::Relaxed);
+            self.host_read
+                .mapped_window_bytes
+                .fetch_add(requested, Ordering::Relaxed);
+            return DeepSeekV4VerifiedBytes::mapped(mmap, local_start, local_end);
+        }
+
+        let mut out = Vec::with_capacity(requested_usize);
+        let mut cursor = range.start;
+        for (segment, take_start, take_end) in overlaps {
+            if take_start != cursor {
+                return Err(gravity(format!(
+                    "{name}: verified segment range is not contiguous"
+                )));
+            }
+            let mmap = self.map_verified_segment(segment)?;
+            let local_start = usize::try_from(take_start - segment.tensor_start)
+                .map_err(|_| gravity("chunk slice start exceeds usize"))?;
+            let local_end = usize::try_from(take_end - segment.tensor_start)
+                .map_err(|_| gravity("chunk slice end exceeds usize"))?;
+            out.extend_from_slice(&mmap[local_start..local_end]);
             cursor = take_end;
         }
         if cursor != range.end || out.len() != requested_usize {
@@ -553,7 +1387,15 @@ impl DeepSeekV4FullStreamReader {
                 "{name}: verified segment range is not contiguous"
             )));
         }
-        Ok(out)
+        self.host_read.owned_windows.fetch_add(1, Ordering::Relaxed);
+        self.host_read
+            .owned_window_bytes
+            .fetch_add(requested, Ordering::Relaxed);
+        self.host_read.owned_allocs.fetch_add(1, Ordering::Relaxed);
+        self.host_read
+            .owned_alloc_bytes
+            .fetch_add(requested, Ordering::Relaxed);
+        Ok(DeepSeekV4VerifiedBytes::owned(out))
     }
 
     /// Read an entire tensor after verifying all of its source chunks.  The
@@ -564,50 +1406,34 @@ impl DeepSeekV4FullStreamReader {
         self.read_verified_range(name, 0..bytes, max_output_bytes)
     }
 
+    /// Zero-copy counterpart of [`Self::read_verified_full`].
+    pub fn read_verified_full_view(
+        &self,
+        name: &str,
+        max_output_bytes: usize,
+    ) -> Result<DeepSeekV4VerifiedBytes> {
+        let bytes = self.tensor_metadata(name)?.bytes;
+        self.read_verified_range_view(name, 0..bytes, max_output_bytes)
+    }
+
     fn verify_segment(&self, segment: &DeepSeekV4Segment) -> Result<()> {
-        let binding = self.chunks.get(&segment.chunk_relpath).ok_or_else(|| {
-            gravity(format!(
-                "segment binding missing for {}",
-                segment.chunk_relpath
-            ))
-        })?;
-        self.verify_chunk(binding)
+        drop(self.map_verified_segment(segment)?);
+        Ok(())
     }
 
     fn verify_chunk(&self, binding: &ChunkBinding) -> Result<()> {
-        let path = checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")?;
-        let file = open_checked_regular_file(&path, "content-addressed chunk")?;
-        let observed_size = file.metadata()?.len();
-        if observed_size != binding.bytes {
-            return Err(gravity(format!(
-                "chunk {} byte size {observed_size} differs from sealed {}",
-                binding.relative, binding.bytes
-            )));
-        }
-        let observed = sha256_reader(file)?;
-        if observed != binding.sha256 {
-            return Err(gravity(format!(
-                "chunk {} sha256 differs from sealed segment digest",
-                binding.relative
-            )));
-        }
+        drop(self.ensure_chunk_verified(binding)?);
         Ok(())
     }
 
-    fn read_verified_segment_slice(
-        &self,
-        segment: &DeepSeekV4Segment,
-        take_start: u64,
-        take_end: u64,
-        out: &mut Vec<u8>,
-    ) -> Result<()> {
-        if take_start < segment.tensor_start
-            || take_end > segment.tensor_end
-            || take_start >= take_end
+    fn map_verified_segment(&self, segment: &DeepSeekV4Segment) -> Result<Mmap> {
+        if segment.tensor_end <= segment.tensor_start
+            || segment.bytes != segment.tensor_end - segment.tensor_start
         {
-            return Err(gravity(
-                "internal verified segment slice escaped its segment",
-            ));
+            return Err(gravity(format!(
+                "segment {} has inconsistent tensor window",
+                segment.chunk_relpath
+            )));
         }
         let binding = self.chunks.get(&segment.chunk_relpath).ok_or_else(|| {
             gravity(format!(
@@ -615,56 +1441,148 @@ impl DeepSeekV4FullStreamReader {
                 segment.chunk_relpath
             ))
         })?;
-        let path = checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")?;
-        let mut file = open_checked_regular_file(&path, "content-addressed chunk")?;
-        let observed_size = file.metadata()?.len();
-        if observed_size != binding.bytes {
+        if binding.sha256 != segment.sha256 {
             return Err(gravity(format!(
-                "chunk {} byte size differs from sealed segment bytes",
-                binding.relative
+                "segment {} digest differs from sealed chunk binding",
+                segment.chunk_relpath
             )));
         }
+        self.ensure_chunk_verified(binding)
+    }
 
-        let wanted_start = take_start - segment.tensor_start;
-        let wanted_end = take_end - segment.tensor_start;
-        let mut digest = Sha256::new();
-        let mut buffer = vec![0u8; READ_BUFFER_BYTES];
-        let mut offset = 0u64;
-        loop {
-            let got = file.read(&mut buffer)?;
-            if got == 0 {
-                break;
-            }
-            let end = offset.checked_add(got as u64).ok_or_else(|| {
-                gravity("chunk byte offset overflow while reading verified segment")
-            })?;
-            digest.update(&buffer[..got]);
-            let overlap_start = offset.max(wanted_start);
-            let overlap_end = end.min(wanted_end);
-            if overlap_start < overlap_end {
-                let local_start = usize::try_from(overlap_start - offset)
-                    .map_err(|_| gravity("chunk slice start exceeds usize"))?;
-                let local_end = usize::try_from(overlap_end - offset)
-                    .map_err(|_| gravity("chunk slice end exceeds usize"))?;
-                out.extend_from_slice(&buffer[local_start..local_end]);
-            }
-            offset = end;
+    /// Verify `binding` against its manifest digest on first touch, then
+    /// return a read-only mmap of the chunk.  A cached hit still remaps so
+    /// the caller can extract a slice; it does not re-hash.
+    ///
+    /// In `admission` mode a valid receipt whose cheap identity still holds
+    /// skips SHA-256.  A missing/stale/unsealed receipt, or any identity
+    /// mismatch, hashes this chunk and hard-fails on digest mismatch.
+    fn ensure_chunk_verified(&self, binding: &ChunkBinding) -> Result<Mmap> {
+        let started = Instant::now();
+        let result = self.ensure_chunk_verified_inner(binding);
+        self.verify_ns
+            .fetch_add(started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+        result
+    }
+
+    fn ensure_chunk_verified_inner(&self, binding: &ChunkBinding) -> Result<Mmap> {
+        let path = self.resolve_chunk_file(binding)?;
+        let mmap_started = Instant::now();
+        let mmap = map_chunk_readonly(&path, binding.bytes, &binding.relative)?;
+        self.host_read
+            .mmap_ns
+            .fetch_add(mmap_started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+        self.host_read.mmap_calls.fetch_add(1, Ordering::Relaxed);
+        let cache_started = Instant::now();
+        let cached = self.verified_digests.lock().contains(&binding.sha256);
+        self.host_read.digest_cache_ns.fetch_add(
+            cache_started.elapsed().as_nanos() as u64,
+            Ordering::Relaxed,
+        );
+        self.host_read
+            .digest_cache_probes
+            .fetch_add(1, Ordering::Relaxed);
+        if cached {
+            self.cache_hits.fetch_add(1, Ordering::Relaxed);
+            return Ok(mmap);
         }
-        if offset != binding.bytes {
-            return Err(gravity(format!(
-                "chunk {} ended at {offset}, expected {} bytes",
-                binding.relative, binding.bytes
-            )));
+        let identity_started = Instant::now();
+        let trusted = self.can_trust_without_hash(binding, &path)?;
+        self.host_read.identity_ns.fetch_add(
+            identity_started.elapsed().as_nanos() as u64,
+            Ordering::Relaxed,
+        );
+        self.host_read
+            .identity_calls
+            .fetch_add(1, Ordering::Relaxed);
+        if trusted {
+            self.admission_trust_hits.fetch_add(1, Ordering::Relaxed);
+            self.verified_digests.lock().insert(binding.sha256.clone());
+            return Ok(mmap);
         }
-        let observed = format!("{:x}", digest.finalize());
+        if self.verify_mode == DeepSeekV4VerifyMode::Admission && self.admission.is_some() {
+            self.admission_trust_fallbacks
+                .fetch_add(1, Ordering::Relaxed);
+        }
+        self.hash_invocations.fetch_add(1, Ordering::Relaxed);
+        self.bytes_hashed
+            .fetch_add(mmap.len() as u64, Ordering::Relaxed);
+        let observed = sha256_hex(&mmap);
         if observed != binding.sha256 {
             return Err(gravity(format!(
                 "chunk {} sha256 differs from sealed segment digest",
                 binding.relative
             )));
         }
-        Ok(())
+        self.verified_digests.lock().insert(binding.sha256.clone());
+        Ok(mmap)
     }
+
+    fn resolve_chunk_file(&self, binding: &ChunkBinding) -> Result<PathBuf> {
+        self.host_read
+            .path_resolve_calls
+            .fetch_add(1, Ordering::Relaxed);
+        let started = Instant::now();
+        let path = if self.verify_mode == DeepSeekV4VerifyMode::Admission {
+            if let Some(index) = self.admission.as_ref() {
+                let (path, _, _) =
+                    resolve_trusted_chunk_path(&self.root, &binding.relative, index)?;
+                Ok(path)
+            } else {
+                checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")
+            }
+        } else {
+            checked_regular_path(&self.root, &binding.relative, "content-addressed chunk")
+        };
+        self.host_read
+            .path_resolve_ns
+            .fetch_add(started.elapsed().as_nanos() as u64, Ordering::Relaxed);
+        path
+    }
+
+    fn can_trust_without_hash(&self, binding: &ChunkBinding, path: &Path) -> Result<bool> {
+        if self.verify_mode != DeepSeekV4VerifyMode::Admission {
+            return Ok(false);
+        }
+        let Some(index) = self.admission.as_ref() else {
+            return Ok(false);
+        };
+        let Some(expected) = index.chunks.get(&binding.relative) else {
+            return Ok(false);
+        };
+        let mut observed = file_identity(path, "content-addressed chunk")?;
+        observed.key = binding.relative.clone();
+        Ok(identity_matches(&observed, expected))
+    }
+}
+
+fn load_admission_if_requested(
+    root: &Path,
+    verify_mode: DeepSeekV4VerifyMode,
+    manifest_seal: &str,
+    chunk_digest: &str,
+    chunk_count: usize,
+    total_bytes: u64,
+) -> Option<DeepSeekV4AdmissionTrustIndex> {
+    if verify_mode != DeepSeekV4VerifyMode::Admission {
+        return None;
+    }
+    match load_admission_receipt(root, manifest_seal, chunk_digest, chunk_count, total_bytes) {
+        DeepSeekV4AdmissionLoad::Loaded(index) => Some(index),
+        DeepSeekV4AdmissionLoad::Missing | DeepSeekV4AdmissionLoad::Rejected(_) => None,
+    }
+}
+
+fn chunk_bytes_total(chunks: &BTreeMap<String, ChunkBinding>) -> Result<u64> {
+    chunks.values().try_fold(0u64, |acc, chunk| {
+        acc.checked_add(chunk.bytes)
+            .ok_or_else(|| gravity("full stream chunk byte count overflow"))
+    })
+}
+
+fn content_addressed_chunk_digest(chunks: &BTreeMap<String, ChunkBinding>) -> String {
+    let digests: Vec<String> = chunks.values().map(|chunk| chunk.sha256.clone()).collect();
+    sha256_hex(&canonical_json_array_strings(&digests))
 }
 
 fn validate_manifest_identity(manifest: &Manifest) -> Result<()> {
@@ -780,9 +1698,17 @@ fn validate_restart_receipt(value: &Value, expected_seal: &str, root: &Path) -> 
     }
     let journal = checked_regular_path(root, "stream-journal.json", "full stream journal")?;
     let ranges = checked_regular_path(root, "stream-ranges.jsonl", "full stream range journal")?;
-    if sha256_hex(&read_regular_file(&journal, "full stream journal")?) != journal_sha
-        || sha256_hex(&read_regular_file(&ranges, "full stream range journal")?) != ranges_sha
-    {
+    let journal_ok = crate::startup_timing::time_ms_result("stream_journal_hash", || {
+        Ok::<bool, Error>(
+            sha256_hex(&read_regular_file(&journal, "full stream journal")?) == journal_sha,
+        )
+    })?;
+    let ranges_ok = crate::startup_timing::time_ms_result("stream_ranges_jsonl_hash", || {
+        Ok::<bool, Error>(
+            sha256_hex(&read_regular_file(&ranges, "full stream range journal")?) == ranges_sha,
+        )
+    })?;
+    if !journal_ok || !ranges_ok {
         return Err(gravity(
             "full stream restart receipt journal binding differs",
         ));
@@ -1258,7 +2184,7 @@ fn validate_chunk_tree(root: &Path, chunks: &BTreeMap<String, ChunkBinding>) -> 
     Ok(())
 }
 
-fn checked_regular_path(root: &Path, relative: &str, label: &str) -> Result<PathBuf> {
+pub(crate) fn checked_regular_path(root: &Path, relative: &str, label: &str) -> Result<PathBuf> {
     let relative_path = Path::new(relative);
     if relative_path.is_absolute()
         || relative_path.components().any(|component| {
@@ -1299,7 +2225,7 @@ fn checked_regular_path(root: &Path, relative: &str, label: &str) -> Result<Path
     Ok(path)
 }
 
-fn canonical_non_symlink_directory(path: &Path, label: &str) -> Result<PathBuf> {
+pub(crate) fn canonical_non_symlink_directory(path: &Path, label: &str) -> Result<PathBuf> {
     let metadata = fs::symlink_metadata(path).map_err(|error| {
         gravity(format!(
             "cannot inspect {label} {}: {error}",
@@ -1357,53 +2283,81 @@ fn read_regular_file(path: &Path, label: &str) -> Result<Vec<u8>> {
     Ok(raw)
 }
 
-fn sha256_reader(mut reader: File) -> Result<String> {
-    let mut digest = Sha256::new();
-    let mut buffer = vec![0u8; READ_BUFFER_BYTES];
-    loop {
-        let read = reader.read(&mut buffer)?;
-        if read == 0 {
-            break;
-        }
-        digest.update(&buffer[..read]);
+fn refuse_sealed_artifact_root(root: &Path) -> Result<()> {
+    let display = root.to_string_lossy();
+    if display.contains("full-43-layer-stream.gravity") {
+        return Err(gravity(
+            "isolated integrity fixture refuses the sealed full-stream artifact",
+        ));
     }
-    Ok(format!("{:x}", digest.finalize()))
+    Ok(())
 }
 
-fn parse_and_verify_sealed_json(raw: &[u8], label: &str) -> Result<Value> {
-    let mut value: Value = serde_json::from_slice(raw)
-        .map_err(|error| gravity(format!("{label} is not valid JSON: {error}")))?;
-    let recorded = {
-        let object = value
-            .as_object_mut()
-            .ok_or_else(|| gravity(format!("{label} root must be a JSON object")))?;
-        object
-            .remove("seal_sha256")
-            .and_then(|item| item.as_str().map(str::to_owned))
-            .ok_or_else(|| gravity(format!("{label} lacks a string seal_sha256")))?
+pub(crate) fn map_chunk_readonly(path: &Path, expected_bytes: u64, label: &str) -> Result<Mmap> {
+    let file = open_checked_regular_file(path, "content-addressed chunk")?;
+    let observed = file.metadata()?.len();
+    if observed != expected_bytes {
+        return Err(gravity(format!(
+            "chunk {label} byte size {observed} differs from sealed {expected_bytes}"
+        )));
+    }
+    // SAFETY: the file is a just-checked regular non-symlink.  Mmap (not
+    // MmapMut) is PROT_READ / MAP_PRIVATE — a read-only view.  The sealed
+    // artifact is never mapped writable.
+    let mmap = unsafe {
+        MmapOptions::new().map(&file).map_err(|error| {
+            gravity(format!(
+                "cannot mmap content-addressed chunk {label}: {error}"
+            ))
+        })?
     };
-    if !is_sha256(&recorded) {
+    if mmap.len() as u64 != expected_bytes {
         return Err(gravity(format!(
-            "{label} seal_sha256 is not lowercase SHA-256"
+            "chunk {label} mmap length {} differs from sealed {expected_bytes}",
+            mmap.len()
         )));
     }
-    let observed = sha256_hex(&canonical_json(&value));
-    if observed != recorded {
-        return Err(gravity(format!(
-            "{label} seal mismatch: recorded={recorded} observed={observed}"
-        )));
-    }
-    value
-        .as_object_mut()
-        .expect("object was checked above")
-        .insert("seal_sha256".to_owned(), Value::String(recorded));
-    Ok(value)
+    Ok(mmap)
+}
+
+fn parse_and_verify_sealed_json(raw: &[u8], label: &str, phase: &str) -> Result<Value> {
+    let mut value: Value = crate::startup_timing::time_ms_result(format!("{phase}_parse"), || {
+        serde_json::from_slice(raw)
+            .map_err(|error| gravity(format!("{label} is not valid JSON: {error}")))
+    })?;
+    crate::startup_timing::time_ms_result(format!("{phase}_canonical_seal"), || {
+        let recorded = {
+            let object = value
+                .as_object_mut()
+                .ok_or_else(|| gravity(format!("{label} root must be a JSON object")))?;
+            object
+                .remove("seal_sha256")
+                .and_then(|item| item.as_str().map(str::to_owned))
+                .ok_or_else(|| gravity(format!("{label} lacks a string seal_sha256")))?
+        };
+        if !is_sha256(&recorded) {
+            return Err(gravity(format!(
+                "{label} seal_sha256 is not lowercase SHA-256"
+            )));
+        }
+        let observed = sha256_hex(&canonical_json(&value));
+        if observed != recorded {
+            return Err(gravity(format!(
+                "{label} seal mismatch: recorded={recorded} observed={observed}"
+            )));
+        }
+        value
+            .as_object_mut()
+            .expect("object was checked above")
+            .insert("seal_sha256".to_owned(), Value::String(recorded));
+        Ok(value)
+    })
 }
 
 /// Python's `json.dumps(sort_keys=True, separators=(",", ":"),
 /// ensure_ascii=False)` layout used by the stream sealer.  This stays local
 /// rather than widening the legacy Gravity container API.
-fn canonical_json(value: &Value) -> Vec<u8> {
+pub(crate) fn canonical_json(value: &Value) -> Vec<u8> {
     let mut out = Vec::with_capacity(256);
     write_canonical_json(&mut out, value);
     out
@@ -1499,15 +2453,15 @@ fn is_lower_hex_byte(byte: u8) -> bool {
     byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte)
 }
 
-fn is_sha256(value: &str) -> bool {
+pub(crate) fn is_sha256(value: &str) -> bool {
     value.len() == 64 && value.bytes().all(is_lower_hex_byte)
 }
 
-fn sha256_hex(bytes: &[u8]) -> String {
+pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
 
-fn gravity(message: impl Into<String>) -> Error {
+pub(crate) fn gravity(message: impl Into<String>) -> Error {
     Error::Gravity(message.into())
 }
 
@@ -1595,5 +2549,58 @@ mod tests {
         let digest = "a".repeat(64);
         assert!(validate_chunk_relative_path(&format!("chunks/aa/{digest}"), &digest).is_ok());
         assert!(validate_chunk_relative_path("chunks/aa/../bad", &digest).is_err());
+    }
+
+    #[test]
+    fn isolated_fixture_refuses_sealed_artifact_path() {
+        let sealed = PathBuf::from("/tmp/full-43-layer-stream.gravity/not-the-real-one");
+        let err =
+            DeepSeekV4FullStreamReader::write_isolated_content_addressed_chunk(&sealed, b"payload")
+                .expect_err("must refuse sealed path");
+        assert!(format!("{err}").contains("refuses the sealed"));
+    }
+
+    #[test]
+    fn isolated_verified_once_and_zero_copy_round_trip() {
+        let tmp = tempfile::tempdir().expect("tempdir");
+        let payload: Vec<u8> = (0..1024).map(|i| i as u8).collect();
+        let (segment, spec) = DeepSeekV4FullStreamReader::write_isolated_content_addressed_chunk(
+            tmp.path(),
+            &payload,
+        )
+        .expect("write");
+        let mut tensors = BTreeMap::new();
+        tensors.insert(
+            "probe.weight".to_owned(),
+            DeepSeekV4TensorMetadata {
+                name: "probe.weight".to_owned(),
+                dtype: "I8".to_owned(),
+                shape: vec![payload.len() as u64],
+                data_offsets: [0, payload.len() as u64],
+                bytes: payload.len() as u64,
+                source_file_start: 0,
+                source_file_end: payload.len() as u64,
+                source_shard: "model-00001-of-00046.safetensors".to_owned(),
+                segments: vec![segment],
+            },
+        );
+        let reader = DeepSeekV4FullStreamReader::bind_isolated_integrity_fixture(
+            tmp.path(),
+            tensors,
+            [spec],
+        )
+        .expect("bind");
+        let copied = reader
+            .read_verified_full("probe.weight", payload.len())
+            .expect("copy");
+        let view = reader
+            .read_verified_full_view("probe.weight", payload.len())
+            .expect("view");
+        assert_eq!(copied, payload);
+        assert_eq!(view.as_bytes(), payload.as_slice());
+        assert!(view.is_zero_copy());
+        let stats = reader.chunk_verification_stats();
+        assert_eq!(stats.hash_invocations, 1);
+        assert_eq!(stats.cache_hits, 1);
     }
 }

@@ -13587,6 +13587,19 @@ mod metal_dispatch {
                 output.length(),
             )));
         }
+        if crate::env_opt_out("HAWKING_Q80_COMPONENT_Q4_OCCUPANCY") {
+            return qwen_uniform_q4_group64_matvec_occupancy_tcb(
+                tcb,
+                codes,
+                scales_f16,
+                input,
+                output,
+                rows,
+                cols,
+                "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+                4,
+            );
+        }
         tcb.dispatch_threads(KERNEL, (rows as u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(codes), 0);
             enc.set_buffer(1, Some(scales_f16), 0);
@@ -13596,6 +13609,91 @@ mod metal_dispatch {
             enc.set_u32(5, cols as u32);
             enc.set_u32(6, groups_per_row as u32);
         })
+    }
+
+    /// Occupancy-correct uniform-Q4 matvec. Same buffers and numeric contract
+    /// as [`qwen_uniform_q4_group64_matvec_component_tcb`]; launch geometry is
+    /// one simdgroup (or four rows per simdgroup) instead of one thread/row.
+    /// `kernel` must be a vecgroup / simdgroup family name. Grid is
+    /// `(ceil(rows / rows_per_tg) * 256, 1, 1)`, TG 256.
+    #[allow(clippy::too_many_arguments)]
+    pub fn qwen_uniform_q4_group64_matvec_occupancy_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        codes: &PinnedBuffer,
+        scales_f16: &PinnedBuffer,
+        input: &PinnedBuffer,
+        output: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        kernel: &str,
+        rows_per_tg: u32,
+    ) -> Result<()> {
+        const GROUP_SIZE: usize = 64;
+        const CODE_BYTES_PER_GROUP: usize = GROUP_SIZE / 2;
+        if rows == 0 || cols == 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel} requires non-zero rows and cols"
+            )));
+        }
+        if rows > u32::MAX as usize || cols > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel} dimensions exceed Metal uint ABI"
+            )));
+        }
+        if rows_per_tg == 0 || TG_SIZE % 32 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel} refuses a non-simdgroup threadgroup"
+            )));
+        }
+        let groups_per_row = cols.div_ceil(GROUP_SIZE);
+        if groups_per_row > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel} group count exceeds Metal uint ABI"
+            )));
+        }
+        let group_count = rows
+            .checked_mul(groups_per_row)
+            .ok_or_else(|| Error::Kernel(format!("{kernel} packed group count overflows usize")))?;
+        let code_bytes = group_count
+            .checked_mul(CODE_BYTES_PER_GROUP)
+            .ok_or_else(|| Error::Kernel(format!("{kernel} code byte count overflows usize")))?;
+        let scale_bytes = group_count
+            .checked_mul(std::mem::size_of::<f16>())
+            .ok_or_else(|| Error::Kernel(format!("{kernel} scale byte count overflows usize")))?;
+        let input_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{kernel} input byte count overflows usize")))?;
+        let output_bytes = rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{kernel} output byte count overflows usize")))?;
+        if codes.length() < code_bytes as u64
+            || scales_f16.length() < scale_bytes as u64
+            || input.length() < input_bytes as u64
+            || output.length() < output_bytes as u64
+        {
+            return Err(Error::Kernel(format!(
+                "{kernel} buffer sizes: codes={} expected>={code_bytes} scales={} expected>={scale_bytes} input={} expected>={input_bytes} output={} expected>={output_bytes}",
+                codes.length(),
+                scales_f16.length(),
+                input.length(),
+                output.length(),
+            )));
+        }
+        let groups = (rows as u32).div_ceil(rows_per_tg);
+        tcb.dispatch_threads(
+            kernel,
+            (groups * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(codes), 0);
+                enc.set_buffer(1, Some(scales_f16), 0);
+                enc.set_buffer(2, Some(input), 0);
+                enc.set_buffer(3, Some(output), 0);
+                enc.set_u32(4, rows as u32);
+                enc.set_u32(5, cols as u32);
+                enc.set_u32(6, groups_per_row as u32);
+            },
+        )
     }
 
     #[allow(clippy::too_many_arguments)]

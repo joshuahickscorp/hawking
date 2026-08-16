@@ -1,0 +1,135 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.artifact_index.measurement.v1",
+  "status": "PASS_INIT_INDEX_CPU",
+  "claim_boundary": {
+    "base_true_tps": false,
+    "coherence": false,
+    "capability": false,
+    "tournament": false,
+    "integrity_preserved": true,
+    "native_token_graph_measured": false,
+    "native_token_graph_block": "gravity_deepseek_v4_native_token_graph failed with Metal(\"no Metal-capable GPU\") in this Seatbelt-sandboxed session. Artifact open, tensor-map identity, and JSON fallback were measured on CPU. Re-run the 43-layer token under the gate profile for hc_sha / greedy / dispatch identity."
+  },
+  "finding": {
+    "json_parse_is_not_the_bulk": true,
+    "bulk_phase": "prepare_clone_chunks",
+    "why": "stream-ranges.jsonl was appended (139674 = 2 x 69837). Every process start clonefile/cp -cR's the 69837-file chunk tree so admit can hash a sealed prefix. That is 10.4-12.2 s (88% of init). Manifest+ranges+admission JSON parse is ~1.7 s. The mmap index admits the durable root and skips the clone-view.",
+    "metal_not_measured": true
+  },
+  "artifact": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "manifest_json_bytes": 150990326,
+    "stream_ranges_jsonl_bytes": 108205334,
+    "admission_receipt_bytes": 13512403,
+    "stream_ranges_lines_on_disk": 139674,
+    "sealed_range_count": 69837
+  },
+  "index": {
+    "schema": "hawking.gravity.deepseek_v4.artifact_index.v1",
+    "path": "/Users/scammermike/.cache/hawking/dsv4f-admission/ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed.idx",
+    "bytes": 26661704,
+    "build_wall_ms": 137,
+    "tensor_count": 69187,
+    "chunk_count": 69837,
+    "index_seal_sha256": "0b702b209baec913974141178f475282035b3de79595e55050002ce65a40920b",
+    "validity": "source file size + mtime_ns for manifest.json, stream-ranges.jsonl, stream-journal.json, plus manifest seal. Missing/stale/corrupt/truncated index is ignored.",
+    "controls": {
+      "HAWKING_DSV4F_INDEX": "default on; 0|off|json forces today's JSON path",
+      "HAWKING_DSV4F_INDEX_PATH": "optional explicit sidecar",
+      "HAWKING_DSV4F_VERIFY": "full|admission unchanged"
+    }
+  },
+  "correctness": {
+    "tensor_map": {
+      "status": "STRUCTURALLY_IDENTICAL",
+      "tensor_count": 69187,
+      "chunk_count": 69837,
+      "compared": "full BTreeMap of tensors (keys, offsets, lengths, dtypes, shapes, segments) plus chunk bindings, native scale pairs, metadata asset hashes, and artifact seals"
+    },
+    "token_graph": {
+      "status": "NOT_RUN",
+      "expected_hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "expected_greedy_token": 5,
+      "expected_greedy_logit": 16.781855,
+      "expected_fallbacks": 0,
+      "expected_command_buffers": 137,
+      "expected_dispatches": 1857,
+      "reason": "no Metal-capable GPU in this sandbox"
+    },
+    "fallback": {
+      "truncate": {
+        "index_loaded": false,
+        "view": "clone_view_sealed_range_journal_prefix_69837_of_appended_journal",
+        "tensor_count": 69187,
+        "wall_ms": 15159
+      },
+      "corrupt_byte_flip": {
+        "index_loaded": false,
+        "view": "clone_view_sealed_range_journal_prefix_69837_of_appended_journal",
+        "tensor_count": 69187,
+        "wall_ms": 14159
+      },
+      "delete": {
+        "index_loaded": false,
+        "view": "clone_view_sealed_range_journal_prefix_69837_of_appended_journal",
+        "tensor_count": 69187,
+        "wall_ms": 14327
+      }
+    }
+  },
+  "init_phases": {
+    "note": "CPU-only admit + layer-source-anchors. Metal device/library/pipelines and first-layer weight bind live after this and were not timed here.",
+    "json_path_mean_wall_ms": 13413,
+    "index_path_mean_wall_ms": 139,
+    "speedup": 96.27,
+    "before_json_mean": {
+      "prepare_clone_chunks_ms": 11053,
+      "prepare_clone_view_ms": 11649,
+      "prepare_admission_root_ms": 11731,
+      "prepare_copy_admission_receipt_ms": 411,
+      "manifest_json_parse_ms": 286,
+      "manifest_json_canonical_seal_ms": 453,
+      "manifest_schema_decode_ms": 106,
+      "admission_receipt_parse_ms": 124,
+      "tensor_map_build_ms": 82,
+      "chunk_tree_validate_ms": 445,
+      "stream_ranges_jsonl_hash_ms": 27,
+      "admit_total_ms": 1661,
+      "layer_source_anchors_ms": 22,
+      "open_admitted_reader_ms": 13392
+    },
+    "after_index_mean": {
+      "artifact_index_load_ms": 119,
+      "open_admitted_reader_ms": 119,
+      "layer_source_anchors_ms": 21,
+      "prepare_clone_chunks_ms": 0,
+      "json_parse_ms": 0
+    }
+  },
+  "paired_reps": {
+    "method": "alternating JSON / index, 3 each, separate processes",
+    "json": [
+      {"rep": 1, "wall_ms": 12686, "view": "clone_view", "index_loaded": false},
+      {"rep": 2, "wall_ms": 13307, "view": "clone_view", "index_loaded": false},
+      {"rep": 3, "wall_ms": 14246, "view": "clone_view", "index_loaded": false}
+    ],
+    "index": [
+      {"rep": 1, "wall_ms": 138, "view": "artifact_index", "index_loaded": true},
+      {"rep": 2, "wall_ms": 139, "view": "artifact_index", "index_loaded": true},
+      {"rep": 3, "wall_ms": 141, "view": "artifact_index", "index_loaded": true}
+    ],
+    "native_token_graph_body": "not measured (Metal blocked)"
+  },
+  "trade": {
+    "index_build_ms": 137,
+    "index_bytes": 26661704,
+    "saved_per_process_start_ms": 13274,
+    "note": "137 ms once at index build vs ~13.3 s on every subsequent process start. Full SHA-256 admission (already paid, 47 s) is unchanged; this index is emitted from the already-loaded receipt and does not re-hash 159 GiB."
+  },
+  "tests": {
+    "dsv4f_artifact_index": "5 passed (roundtrip, truncate, corrupt, stale mtime, delete)",
+    "dsv4f_admission_trust": "11 passed",
+    "hawking_core lib gravity_deepseek_v4*": "100 passed"
+  }
+}

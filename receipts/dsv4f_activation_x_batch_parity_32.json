@@ -1,0 +1,34 @@
+{
+  "old_dir": "/tmp/dsv4f-ax-cpu-old-32",
+  "new_dir": "/tmp/dsv4f-ax-cpu-batched-32",
+  "key_set_and_order_identical": true,
+  "retained_file_set_identical": true,
+  "retained_rows_compared": 1376,
+  "router_input_h_post_ffn_norm": {
+    "max_abs_diff": 0.0,
+    "min_cosine": 0.9999999999999998,
+    "worst": {
+      "path": "hidden/L00/vocab_bos_v1/000000.f32le",
+      "max_abs": 0.0,
+      "cosine": 1.0000000000000002
+    }
+  },
+  "doctor6_batched": {
+    "key_count": 1685,
+    "all_organs_finite": true,
+    "sample_organ": {
+      "layer": 0,
+      "expert": 0,
+      "X_shape": [
+        1,
+        4096
+      ],
+      "all_finite": true
+    }
+  },
+  "old_tokens": 32,
+  "new_tokens": 32,
+  "old_execution_path": "host_cpu_streamed_bos_oracle",
+  "new_execution_path": "host_cpu_streamed_bos_oracle",
+  "pass": true
+}

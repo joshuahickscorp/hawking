@@ -1,0 +1,396 @@
+{
+  "schema": "hawking.ascent.dsv_cb_collapse.v1",
+  "lane": "dsv-cb-collapse",
+  "date": "2026-08-16",
+  "status": "SHIPPED",
+  "timing_label": "DIRTY_ENGINEERING",
+  "note": "Other lanes were running. GPU times are MTLCommandBuffer GPUEndTime-GPUStartTime after wait. Body ns is complete token wall including host IO; this is not a dsv-host-wall competing baseline (that lane had no ascent receipt at write time). Prior native warm ledger body was 3.425s DIRTY in receipts/DSV4F_TOKEN_NS_LEDGER.json.",
+  "correctness": {
+    "hc_sha_gate": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "hc_sha_source": "receipts/dsv4f_native_token_graph_l0_l42_receipt.json native verified route (not the CPU oracle d541c0a2...)",
+    "layer0_hc_sha": "a43d928f5dea968c0c692b22d340c19525b6a78ea33a3beda7e815f050408a8e",
+    "all_pairs_matched": true,
+    "fallbacks": 0,
+    "host_expert_gather": 0,
+    "host_expert_output_readback": 0,
+    "greedy_token": 5,
+    "greedy_logit": 16.7818546295166,
+    "numeric_vs_cpu_oracle": "native logit 16.781855 vs CPU oracle 16.767437; preserved, not tightened or loosened"
+  },
+  "census": {
+    "pre_collapse": {
+      "TOTAL_COMMAND_BUFFERS": 137,
+      "TOTAL_DISPATCHES": 1857,
+      "TOTAL_SYNC_POINTS": 137,
+      "TOTAL_READBACKS": 263,
+      "TOTAL_BUFFER_CREATIONS": 6,
+      "TOTAL_BUFFER_REBINDS": 1073,
+      "TOTAL_ENCODERS": 1857,
+      "decomposition": "43 attn (17 disp) + 43 route (3) + 43 moe (23) + 8 lm_head tiles (1) = 137 CBs / 1857 dispatches"
+    },
+    "post_collapse": {
+      "TOTAL_COMMAND_BUFFERS": 134,
+      "TOTAL_DISPATCHES": 1642,
+      "TOTAL_SYNC_POINTS": 134,
+      "TOTAL_READBACKS": 260,
+      "TOTAL_BUFFER_CREATIONS": 6,
+      "TOTAL_BUFFER_REBINDS": 1070,
+      "TOTAL_ENCODERS": 134,
+      "decomposition": "43 attn (17/1 enc) + 40 learned route (3/1) + 40 learned moe (18/1, 6 expert act_quant fused to 1) + 3 hash route_moe (21/1) + 8 lm_head = 134 CBs / 1642 dispatches"
+    },
+    "groups": [
+      {
+        "name": "attn",
+        "count_pre": 43,
+        "count_post": 43,
+        "dispatches": 17,
+        "why_separate": "host MHC post needs wo_b bf16 readback before FFN MHC pre; host_source_algorithm_exact_sha",
+        "waits": true,
+        "collapsible": false,
+        "reason_not_collapsed": "data dependency through host MHC. Device MHC exists (p7 kernels) but would change mhc_path honesty."
+      },
+      {
+        "name": "route",
+        "count_pre": 43,
+        "count_post": 40,
+        "dispatches": 3,
+        "why_separate": "learned-bias layers must read 6 expert ids before streaming residency can upload the slab",
+        "waits": true,
+        "collapsible": "hash layers only",
+        "reason": "DSV4F route-ID readback serializer already REFUTED (40 readbacks ~62us). Route CB is 2.4% of GPU. Hash IDs are known from token_id so experts upload first and route+moe share one CB (3 layers)."
+      },
+      {
+        "name": "moe",
+        "count_pre": 43,
+        "count_post": 40,
+        "dispatches_pre": 23,
+        "dispatches_post": 18,
+        "why_separate": "host MHC post needs moe_out bf16",
+        "waits": true,
+        "collapsed_inside": "6 serial expert act_quant -> 1 dispatch (2048%128==0, bit-identical); 23 encoders -> 1 ordered encoder"
+      },
+      {
+        "name": "route_moe",
+        "count_pre": 0,
+        "count_post": 3,
+        "dispatches": 21,
+        "why_separate": "hash layers only; experts uploaded from known tid2eid before encode",
+        "waits": true
+      },
+      {
+        "name": "lm_head.tile*",
+        "count_pre": 8,
+        "count_post": 8,
+        "dispatches": 1,
+        "why_separate": "one 128MiB weight tile under 384MiB resident bound; buffer reuse requires wait before refill",
+        "waits": true,
+        "collapsible": "rejected as cosmetic",
+        "reason": "3.4-4.5ms GPU total (1.2% of 377ms). 8->1 would need 8 resident tiles = 1GiB, over DECLARED_WEIGHT_RESIDENT_BOUND_BYTES."
+      }
+    ],
+    "wait_finding": "The increment after submitted.wait() is 1:1 with command buffers. Extra wait (wait-gpu) is not the token wall: warm A wait 154ms vs gpu 412ms because attn/moe overlap host preload with GPU. 137 pipeline drains are real but extra wait is ~4% of a 3s body on the historical warm ledger and wait<gpu on overlapped CBs.",
+    "intra_cb_kernel_gaps": "NOT VISIBLE. MetalBatchTiming exposes one GPUStart/End pair per command buffer. gap_ns reported here is next_cb.gpu_start - prev_cb.gpu_end."
+  },
+  "families_pair3A_baseline": {
+    "attn": {
+      "n": 43,
+      "gpu_ns": 200709000,
+      "wait_ns": 4032000,
+      "dispatches": 731,
+      "encoders": 731
+    },
+    "route": {
+      "n": 43,
+      "gpu_ns": 39332000,
+      "wait_ns": 73674000,
+      "dispatches": 129,
+      "encoders": 129
+    },
+    "moe": {
+      "n": 43,
+      "gpu_ns": 167520000,
+      "wait_ns": 39424000,
+      "dispatches": 989,
+      "encoders": 989
+    },
+    "lm_head": {
+      "n": 8,
+      "gpu_ns": 4204000,
+      "wait_ns": 37054000,
+      "dispatches": 8,
+      "encoders": 8
+    }
+  },
+  "families_pair3B_collapse": {
+    "attn": {
+      "n": 43,
+      "gpu_ns": 201284000,
+      "wait_ns": 9900000,
+      "dispatches": 731,
+      "encoders": 43
+    },
+    "route_moe": {
+      "n": 3,
+      "gpu_ns": 11109000,
+      "wait_ns": 2445000,
+      "dispatches": 63,
+      "encoders": 3
+    },
+    "route": {
+      "n": 40,
+      "gpu_ns": 37917000,
+      "wait_ns": 57283000,
+      "dispatches": 120,
+      "encoders": 40
+    },
+    "moe": {
+      "n": 40,
+      "gpu_ns": 122330000,
+      "wait_ns": 28712000,
+      "dispatches": 720,
+      "encoders": 40
+    },
+    "lm_head": {
+      "n": 8,
+      "gpu_ns": 4482000,
+      "wait_ns": 19739000,
+      "dispatches": 8,
+      "encoders": 8
+    }
+  },
+  "paired_reps": [
+    {
+      "rep": 1,
+      "side": "A",
+      "role": "baseline",
+      "body_ns": 12902363042,
+      "body_ms": 12902,
+      "init_ms": 187,
+      "wall_ms": 13090,
+      "metal_gpu_ns": 605539000,
+      "metal_wait_ns": 104001000,
+      "host_exclusive_ns": 9400788042,
+      "command_buffers": 137,
+      "dispatches": 1857,
+      "sync_points": 137,
+      "readbacks": 263,
+      "buffer_creations": 6,
+      "buffer_rebinds": 1073,
+      "encoders": 1857,
+      "inter_cb_device_gap_ns": 12264192162,
+      "gpu_idle_fraction_of_span": 0.9529488338548672,
+      "device_span_ns": 12869797916,
+      "hc_bf16_sha256": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "fallbacks": 0,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166,
+      "label": "DIRTY_ENGINEERING"
+    },
+    {
+      "rep": 1,
+      "side": "B",
+      "role": "collapse",
+      "body_ns": 1463725792,
+      "body_ms": 1463,
+      "init_ms": 204,
+      "wall_ms": 1668,
+      "metal_gpu_ns": 377085000,
+      "metal_wait_ns": 137939000,
+      "host_exclusive_ns": 907067792,
+      "command_buffers": 134,
+      "dispatches": 1642,
+      "sync_points": 134,
+      "readbacks": 260,
+      "buffer_creations": 6,
+      "buffer_rebinds": 1070,
+      "encoders": 134,
+      "inter_cb_device_gap_ns": 1052530832,
+      "gpu_idle_fraction_of_span": 0.7362446664098488,
+      "device_span_ns": 1429677250,
+      "hc_bf16_sha256": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "fallbacks": 0,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166,
+      "label": "DIRTY_ENGINEERING"
+    },
+    {
+      "rep": 2,
+      "side": "A",
+      "role": "baseline",
+      "body_ns": 2264718167,
+      "body_ms": 2264,
+      "init_ms": 242,
+      "wall_ms": 2507,
+      "metal_gpu_ns": 438916000,
+      "metal_wait_ns": 261197000,
+      "host_exclusive_ns": 1324602167,
+      "command_buffers": 137,
+      "dispatches": 1857,
+      "sync_points": 137,
+      "readbacks": 263,
+      "buffer_creations": 6,
+      "buffer_rebinds": 1073,
+      "encoders": 1857,
+      "inter_cb_device_gap_ns": 1777223957,
+      "gpu_idle_fraction_of_span": 0.8019517688465674,
+      "device_span_ns": 2216207625,
+      "hc_bf16_sha256": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "fallbacks": 0,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166,
+      "label": "DIRTY_ENGINEERING"
+    },
+    {
+      "rep": 2,
+      "side": "B",
+      "role": "collapse",
+      "body_ns": 1716644334,
+      "body_ms": 1716,
+      "init_ms": 275,
+      "wall_ms": 1991,
+      "metal_gpu_ns": 378531000,
+      "metal_wait_ns": 113327000,
+      "host_exclusive_ns": 1079654334,
+      "command_buffers": 134,
+      "dispatches": 1642,
+      "sync_points": 134,
+      "readbacks": 260,
+      "buffer_creations": 6,
+      "buffer_rebinds": 1070,
+      "encoders": 134,
+      "inter_cb_device_gap_ns": 1287749756,
+      "gpu_idle_fraction_of_span": 0.7728374213247685,
+      "device_span_ns": 1666344000,
+      "hc_bf16_sha256": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "fallbacks": 0,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166,
+      "label": "DIRTY_ENGINEERING"
+    },
+    {
+      "rep": 3,
+      "side": "A",
+      "role": "baseline",
+      "body_ns": 1652235791,
+      "body_ms": 1652,
+      "init_ms": 229,
+      "wall_ms": 1881,
+      "metal_gpu_ns": 411765000,
+      "metal_wait_ns": 154184000,
+      "host_exclusive_ns": 963379791,
+      "command_buffers": 137,
+      "dispatches": 1857,
+      "sync_points": 137,
+      "readbacks": 263,
+      "buffer_creations": 6,
+      "buffer_rebinds": 1073,
+      "encoders": 1857,
+      "inter_cb_device_gap_ns": 1192959459,
+      "gpu_idle_fraction_of_span": 0.7434157391990347,
+      "device_span_ns": 1604794459,
+      "hc_bf16_sha256": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "fallbacks": 0,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166,
+      "label": "DIRTY_ENGINEERING"
+    },
+    {
+      "rep": 3,
+      "side": "B",
+      "role": "collapse",
+      "body_ns": 1447461334,
+      "body_ms": 1447,
+      "init_ms": 271,
+      "wall_ms": 1718,
+      "metal_gpu_ns": 377122000,
+      "metal_wait_ns": 118079000,
+      "host_exclusive_ns": 870578334,
+      "command_buffers": 134,
+      "dispatches": 1642,
+      "sync_points": 134,
+      "readbacks": 260,
+      "buffer_creations": 6,
+      "buffer_rebinds": 1070,
+      "encoders": 134,
+      "inter_cb_device_gap_ns": 1036353092,
+      "gpu_idle_fraction_of_span": 0.7332079981641876,
+      "device_span_ns": 1413543125,
+      "hc_bf16_sha256": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "fallbacks": 0,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166,
+      "label": "DIRTY_ENGINEERING"
+    }
+  ],
+  "spread_body_ns": {
+    "A_baseline": [
+      12902363042,
+      2264718167,
+      1652235791
+    ],
+    "B_collapse": [
+      1463725792,
+      1716644334,
+      1447461334
+    ],
+    "A_gpu_ns": [
+      605539000,
+      438916000,
+      411765000
+    ],
+    "B_gpu_ns": [
+      377085000,
+      378531000,
+      377122000
+    ]
+  },
+  "result": {
+    "baseline_ns_per_token_all_A": [
+      12902363042,
+      2264718167,
+      1652235791
+    ],
+    "result_ns_per_token_all_B": [
+      1463725792,
+      1716644334,
+      1447461334
+    ],
+    "baseline_median_ns_per_token": 2264718167,
+    "result_median_ns_per_token": 1463725792,
+    "gpu_ns_A_warm_last_two": [
+      438916000,
+      411765000
+    ],
+    "gpu_ns_B": [
+      377085000,
+      378531000,
+      377122000
+    ],
+    "occupancy_proxy_gpu_ns_per_encoder_pair3A": 221736.67205169628,
+    "occupancy_proxy_gpu_ns_per_encoder_pair3B": 2814343.2835820895,
+    "fusion_rejected": false,
+    "fusion_note": "Not a fused kernel. Ordered encoder + batched same-kernel act_quant. Token wall did not increase. GPU time fell 412ms -> 377ms on the last pair and B GPU is stable at 377ms across 3 reps."
+  },
+  "negative_science": [
+    "Collapsing all 137 CBs is blocked by host MHC (attn/moe readbacks) and learned-bias streaming residency (route IDs). Forcing those merges without device MHC or resident experts would change honesty or the weight bound.",
+    "LM-head 8->1 rejected: 4ms GPU, would exceed 384MiB weight bound if all tiles resident.",
+    "Route-ID readback serializer remains REFUTED: 40 readbacks still cheap; route CB extra wait is tens of ms, not the token wall.",
+    "A fused kernel was not landed. Encoder collapse that raised GPU time would have been rejected; measured GPU time fell."
+  ],
+  "next_bottleneck": {
+    "name": "host exclusive / inter-CB GPU idle from streaming weight IO + host MHC",
+    "host_exclusive_ns_pair3B": 870578334,
+    "inter_cb_device_gap_ns_pair3B": 1036353092,
+    "gpu_idle_fraction_of_span_pair3B": 0.7332079981641876,
+    "largest_remaining_gpu_family_ns": 201280000,
+    "largest_remaining_gpu_family": "attn (43 CBs, 201ms GPU)",
+    "owner": "dsv-host-wall owns reader/IO; this lane did not touch it"
+  },
+  "env": {
+    "HAWKING_DSV4F_KERNEL_PROBE": "0",
+    "HAWKING_DSV4F_VERIFY": "admission",
+    "HAWKING_DSV4F_CB_COLLAPSE": "0=A, 1=B, default on for ship",
+    "binary": "workspace/ops/build/rust/release-fast/examples/gravity_deepseek_v4_native_token_graph",
+    "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity"
+  }
+}

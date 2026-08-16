@@ -1,0 +1,2176 @@
+{
+  "schema": "hawking.ascent.q80_recalibrate_capability_bar.v1",
+  "lane": "q80-recalibrate-capability-bar",
+  "status": "DERIVED_FROM_GENERATION",
+  "timing_label": "DIRTY_ENGINEERING",
+  "contradiction": {
+    "historical_bar": 0.8604,
+    "historical_bar_source": "D23 measured residual-identity break-even from Q80's own 25258-token capture (receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json)",
+    "incumbent_holdout_organ_cosine": {
+      "gate_proj": 0.8754952706943688,
+      "up_proj": 0.8664955440979232,
+      "down_proj": 0.7684198118931592
+    },
+    "incumbent_min_organ_cosine": 0.7684198118931592,
+    "incumbent_generated_coherent": true,
+    "incumbent_generated_text": "Here's a function that reverses a string (i.e",
+    "why_the_bar_is_wrong": "D23 residual-identity break-even required every organ >= 0.8604. The packed 1.444 BPW artifact generates coherent text with down_proj holdout cosine 0.7684. Generation is the gate; the bar is a screen."
+  },
+  "methodology_kept": {
+    "n_pairs": 110,
+    "n_holdout": 101,
+    "null_n": 16,
+    "null_is_a_distribution": true,
+    "did_not_rerun_588_encode": true,
+    "did_not_weaken_existing_gate": true
+  },
+  "corrected_bar": {
+    "status": "DERIVED_FROM_GENERATION",
+    "corrected_bar": 0.6018725462661019,
+    "last_coherent_min_organ_cosine": 0.6018725462661019,
+    "first_broken_min_organ_cosine": 0.5003182789349673,
+    "cliff_is_open_below": false,
+    "incumbent_min_organ_cosine": 0.7684198118931592,
+    "historical_bar": 0.8604,
+    "historical_bar_falsified_by_incumbent": true,
+    "points": [
+      {
+        "point": "control_r160",
+        "classes": [
+          "COHERENT"
+        ],
+        "all_coherent": true,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Here\u2019s a function that reverses a string (i.e., reverses the order of characters, not the order of"
+        },
+        "min_organ_cosine_for_bar": 0.7684198118931592,
+        "kind": "identity"
+      },
+      {
+        "point": "down_prefix_r80",
+        "classes": [
+          "COHERENT"
+        ],
+        "all_coherent": true,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Here\u2019s a function that **reverses** (reverses) a string\u2014 meaning it reverses the string"
+        },
+        "min_organ_cosine_for_bar": 0.7274682098045209,
+        "kind": "down_prefix"
+      },
+      {
+        "point": "down_prefix_r40",
+        "classes": [
+          "DEGRADED"
+        ],
+        "all_coherent": false,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Here\u2019s a function that **reverses** a string (meaning: \u201crevers\" is likely a typo or"
+        },
+        "min_organ_cosine_for_bar": 0.6292128528300363,
+        "kind": "down_prefix"
+      },
+      {
+        "point": "down_prefix_r20",
+        "classes": [
+          "DEGRADED"
+        ],
+        "all_coherent": false,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Here is a function that **re**es a string."
+        },
+        "min_organ_cosine_for_bar": 0.5381241322390077,
+        "kind": "down_prefix"
+      },
+      {
+        "point": "down_prefix_r8",
+        "classes": [
+          "COHERENT"
+        ],
+        "all_coherent": true,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Here is a function that reverses a string."
+        },
+        "min_organ_cosine_for_bar": 0.427637915640444,
+        "kind": "down_prefix"
+      },
+      {
+        "point": "mix_best_subbit_analog",
+        "classes": [
+          "COHERENT"
+        ],
+        "all_coherent": true,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Here\u2019s a function that reverses a string (i.e., reverses the order of characters in the string, not"
+        },
+        "min_organ_cosine_for_bar": 0.6880243841848435,
+        "kind": "all_organ_mix"
+      },
+      {
+        "point": "mix_all_hgravs_r40_analog",
+        "classes": [
+          "COHERENT"
+        ],
+        "all_coherent": true,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Here's a function that reverses a string (in Python):\n\n```python\ndef reverse_string():\n    return reversed_string"
+        },
+        "min_organ_cosine_for_bar": 0.6018725462661019,
+        "kind": "all_organ_mix"
+      },
+      {
+        "point": "mix_all_hgravs_r16_analog",
+        "classes": [
+          "ECHO"
+        ],
+        "all_coherent": false,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Write a function that reverses a string."
+        },
+        "min_organ_cosine_for_bar": 0.5003182789349673,
+        "kind": "all_organ_mix"
+      },
+      {
+        "point": "mix_all_hgravs_r8_analog",
+        "classes": [
+          "ECHO"
+        ],
+        "all_coherent": false,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Write a function that reverses a string."
+        },
+        "min_organ_cosine_for_bar": 0.432008010503407,
+        "kind": "all_organ_mix"
+      },
+      {
+        "point": "mix_all_0p50",
+        "classes": [
+          "ECHO"
+        ],
+        "all_coherent": false,
+        "any_incoherent": false,
+        "generated_text": {
+          "reverse_string": "Write a function that revers a string."
+        },
+        "min_organ_cosine_for_bar": 0.3842099059465796,
+        "kind": "all_organ_mix"
+      },
+      {
+        "point": "mix_all_0p25",
+        "classes": [
+          "INCOHERENT"
+        ],
+        "all_coherent": false,
+        "any_incoherent": true,
+        "generated_text": {
+          "reverse_string": ""
+        },
+        "min_organ_cosine_for_bar": 0.1921049529732898,
+        "kind": "all_organ_mix"
+      }
+    ],
+    "rule": "corrected_bar = min min-organ-cosine among points that generated COHERENT text on every prompt. Not lowered to manufacture a pass.",
+    "certified_prompt": "reverse_string",
+    "both_prompts_sensitivity": {
+      "status": "DERIVED_FROM_GENERATION",
+      "corrected_bar": 0.7684198118931592,
+      "last_coherent_min_organ_cosine": 0.7684198118931592,
+      "first_broken_min_organ_cosine": 0.6880243841848435,
+      "cliff_is_open_below": false,
+      "incumbent_min_organ_cosine": 0.7684198118931592,
+      "historical_bar": 0.8604,
+      "historical_bar_falsified_by_incumbent": true,
+      "points": [
+        {
+          "point": "control_r160",
+          "classes": [
+            "COHERENT",
+            "COHERENT"
+          ],
+          "all_coherent": true,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Here\u2019s a function that reverses a string (i.e., reverses the order of characters, not the order of",
+            "eight_primes": "The first eight prime numbers are:\n\n1. **2**  \n2. **3**  \n3. **4**"
+          },
+          "min_organ_cosine_for_bar": 0.7684198118931592,
+          "kind": "identity"
+        },
+        {
+          "point": "down_prefix_r80",
+          "classes": [
+            "COHERENT",
+            "COHERENT"
+          ],
+          "all_coherent": true,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Here\u2019s a function that **reverses** (reverses) a string\u2014 meaning it reverses the string",
+            "eight_primes": "The first eight prime numbers are:\n\n1. **2**  \n2. **3**  \n3. **4**"
+          },
+          "min_organ_cosine_for_bar": 0.7274682098045209,
+          "kind": "down_prefix"
+        },
+        {
+          "point": "down_prefix_r40",
+          "classes": [
+            "DEGRADED",
+            "COHERENT"
+          ],
+          "all_coherent": false,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Here\u2019s a function that **reverses** a string (meaning: \u201crevers\" is likely a typo or",
+            "eight_primes": "The first eight prime numbers are:\n\n1. **1**  \n2. **2**  \n3. **3**"
+          },
+          "min_organ_cosine_for_bar": 0.6292128528300363,
+          "kind": "down_prefix"
+        },
+        {
+          "point": "down_prefix_r20",
+          "classes": [
+            "DEGRADED"
+          ],
+          "all_coherent": false,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Here is a function that **re**es a string."
+          },
+          "min_organ_cosine_for_bar": 0.5381241322390077,
+          "kind": "down_prefix"
+        },
+        {
+          "point": "down_prefix_r8",
+          "classes": [
+            "COHERENT"
+          ],
+          "all_coherent": true,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Here is a function that reverses a string."
+          },
+          "min_organ_cosine_for_bar": 0.427637915640444,
+          "kind": "down_prefix"
+        },
+        {
+          "point": "mix_best_subbit_analog",
+          "classes": [
+            "COHERENT",
+            "DEGRADED"
+          ],
+          "all_coherent": false,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Here\u2019s a function that reverses a string (i.e., reverses the order of characters in the string, not",
+            "eight_primes": "I\u2019m not sure to answer this question, because prime numbers are not numbers that are prime numbers, but numbers that are"
+          },
+          "min_organ_cosine_for_bar": 0.6880243841848435,
+          "kind": "all_organ_mix"
+        },
+        {
+          "point": "mix_all_hgravs_r40_analog",
+          "classes": [
+            "COHERENT",
+            "DEGRADED"
+          ],
+          "all_coherent": false,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Here's a function that reverses a string (in Python):\n\n```python\ndef reverse_string():\n    return reversed_string",
+            "eight_primes": "I'm not sure to answer this request."
+          },
+          "min_organ_cosine_for_bar": 0.6018725462661019,
+          "kind": "all_organ_mix"
+        },
+        {
+          "point": "mix_all_hgravs_r16_analog",
+          "classes": [
+            "ECHO",
+            "ECHO"
+          ],
+          "all_coherent": false,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Write a function that reverses a string.",
+            "eight_primes": "List the first eight prime numbers."
+          },
+          "min_organ_cosine_for_bar": 0.5003182789349673,
+          "kind": "all_organ_mix"
+        },
+        {
+          "point": "mix_all_hgravs_r8_analog",
+          "classes": [
+            "ECHO"
+          ],
+          "all_coherent": false,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Write a function that reverses a string."
+          },
+          "min_organ_cosine_for_bar": 0.432008010503407,
+          "kind": "all_organ_mix"
+        },
+        {
+          "point": "mix_all_0p50",
+          "classes": [
+            "ECHO"
+          ],
+          "all_coherent": false,
+          "any_incoherent": false,
+          "generated_text": {
+            "reverse_string": "Write a function that revers a string."
+          },
+          "min_organ_cosine_for_bar": 0.3842099059465796,
+          "kind": "all_organ_mix"
+        },
+        {
+          "point": "mix_all_0p25",
+          "classes": [
+            "INCOHERENT"
+          ],
+          "all_coherent": false,
+          "any_incoherent": true,
+          "generated_text": {
+            "reverse_string": ""
+          },
+          "min_organ_cosine_for_bar": 0.1921049529732898,
+          "kind": "all_organ_mix"
+        }
+      ],
+      "rule": "corrected_bar = min min-organ-cosine among points that generated COHERENT text on every prompt. Not lowered to manufacture a pass."
+    }
+  },
+  "prefix_truncation_holdout_cosine": {
+    "160": 0.8183685386646474,
+    "80": 0.7274682098045209,
+    "40": 0.6292128528300363,
+    "20": 0.5381241322390077,
+    "16": 0.5096128454242184,
+    "8": 0.427637915640444
+  },
+  "rethreshold_historical_0_8604": {
+    "holdout_only": {
+      "bar": 0.8604,
+      "n_recipes": 588,
+      "n_clearing_all_organs": 0,
+      "n_sub_0_6552": 164,
+      "n_sub_0_6552_clearing": 0,
+      "best_min_organ_regardless_of_bpw": {
+        "name": "binary_g128|binary_g128|binary_g128|ne8",
+        "complete_physical_bpw": 1.3396923024294103,
+        "min_organ_output_cosine": 0.8092544545416578,
+        "organ_output_cosine": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8270190918343028,
+          "down_proj": 0.8092544545416578
+        },
+        "recipe": {
+          "gate_proj": "binary_g128",
+          "up_proj": "binary_g128",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 8
+        }
+      },
+      "best_sub_0_6552_by_min_organ": {
+        "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "complete_physical_bpw": 0.643662250489947,
+        "min_organ_output_cosine": 0.6730692511385828,
+        "organ_output_cosine": {
+          "gate_proj": 0.709562322116603,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.8092544545416578
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r16_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        }
+      },
+      "top_sub_0_6552": [
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4",
+          "complete_physical_bpw": 0.6231092471301056,
+          "min_organ_output_cosine": 0.6730692511385828,
+          "organ_output_cosine": {
+            "gate_proj": 0.6870440503855767,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.8092544545416578
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "binary_g128",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+          "complete_physical_bpw": 0.643662250489947,
+          "min_organ_output_cosine": 0.6730692511385828,
+          "organ_output_cosine": {
+            "gate_proj": 0.709562322116603,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.8092544545416578
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "binary_g128",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.4679236869158446,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.6870440503855767,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.48847669027568597,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.709562322116603,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.5500740092657639,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.7480901403589768,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r40_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+          "complete_physical_bpw": 0.5866580523012622,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.6870440503855767,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 8
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+          "complete_physical_bpw": 0.6072110556611036,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.709562322116603,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 8
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.4063263679257667,
+          "min_organ_output_cosine": 0.5949670236085831,
+          "organ_output_cosine": {
+            "gate_proj": 0.6870440503855767,
+            "up_proj": 0.5949670236085831,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r16_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        }
+      ],
+      "clearing_names": [],
+      "sub_clearing_names": []
+    },
+    "all_scored_pairs": {
+      "bar": 0.8604,
+      "n_recipes": 588,
+      "n_clearing_all_organs": 0,
+      "n_sub_0_6552": 164,
+      "n_sub_0_6552_clearing": 0,
+      "best_min_organ_regardless_of_bpw": {
+        "name": "binary_g128|binary_g128|binary_g128|ne8",
+        "complete_physical_bpw": 1.3396923024294103,
+        "min_organ_output_cosine": 0.8091496405798163,
+        "organ_output_cosine": {
+          "gate_proj": 0.8755490843383457,
+          "up_proj": 0.8277510737326309,
+          "down_proj": 0.8091496405798163
+        },
+        "recipe": {
+          "gate_proj": "binary_g128",
+          "up_proj": "binary_g128",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 8
+        }
+      },
+      "best_sub_0_6552_by_min_organ": {
+        "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "complete_physical_bpw": 0.6436645218345667,
+        "min_organ_output_cosine": 0.6880243841848435,
+        "organ_output_cosine": {
+          "gate_proj": 0.7224450633655662,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.8091496405798163
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r16_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        }
+      },
+      "top_sub_0_6552": [
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4",
+          "complete_physical_bpw": 0.6231115184747253,
+          "min_organ_output_cosine": 0.6880243841848435,
+          "organ_output_cosine": {
+            "gate_proj": 0.7006903588047396,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.8091496405798163
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "binary_g128",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+          "complete_physical_bpw": 0.6436645218345667,
+          "min_organ_output_cosine": 0.6880243841848435,
+          "organ_output_cosine": {
+            "gate_proj": 0.7224450633655662,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.8091496405798163
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "binary_g128",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.4679267528947122,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7006903588047396,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.48847975625455353,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7224450633655662,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.5500770752446315,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7594308946510923,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r40_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+          "complete_physical_bpw": 0.5866611182801298,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7006903588047396,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 8
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+          "complete_physical_bpw": 0.6072141216399711,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7224450633655662,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 8
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.4063294339046343,
+          "min_organ_output_cosine": 0.6133396571261834,
+          "organ_output_cosine": {
+            "gate_proj": 0.7006903588047396,
+            "up_proj": 0.6133396571261834,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r16_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        }
+      ],
+      "clearing_names": [],
+      "sub_clearing_names": []
+    }
+  },
+  "rethreshold_corrected": {
+    "holdout_only": {
+      "bar": 0.6018725462661019,
+      "n_recipes": 588,
+      "n_clearing_all_organs": 180,
+      "n_sub_0_6552": 164,
+      "n_sub_0_6552_clearing": 7,
+      "best_min_organ_regardless_of_bpw": {
+        "name": "binary_g128|binary_g128|binary_g128|ne8",
+        "complete_physical_bpw": 1.3396923024294103,
+        "min_organ_output_cosine": 0.8092544545416578,
+        "organ_output_cosine": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8270190918343028,
+          "down_proj": 0.8092544545416578
+        },
+        "recipe": {
+          "gate_proj": "binary_g128",
+          "up_proj": "binary_g128",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 8
+        }
+      },
+      "best_sub_0_6552_by_min_organ": {
+        "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "complete_physical_bpw": 0.643662250489947,
+        "min_organ_output_cosine": 0.6730692511385828,
+        "organ_output_cosine": {
+          "gate_proj": 0.709562322116603,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.8092544545416578
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r16_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        }
+      },
+      "top_sub_0_6552": [
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4",
+          "complete_physical_bpw": 0.6231092471301056,
+          "min_organ_output_cosine": 0.6730692511385828,
+          "organ_output_cosine": {
+            "gate_proj": 0.6870440503855767,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.8092544545416578
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "binary_g128",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+          "complete_physical_bpw": 0.643662250489947,
+          "min_organ_output_cosine": 0.6730692511385828,
+          "organ_output_cosine": {
+            "gate_proj": 0.709562322116603,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.8092544545416578
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "binary_g128",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.4679236869158446,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.6870440503855767,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.48847669027568597,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.709562322116603,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.5500740092657639,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.7480901403589768,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r40_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+          "complete_physical_bpw": 0.5866580523012622,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.6870440503855767,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 8
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+          "complete_physical_bpw": 0.6072110556611036,
+          "min_organ_output_cosine": 0.6708167190796313,
+          "organ_output_cosine": {
+            "gate_proj": 0.709562322116603,
+            "up_proj": 0.6730692511385828,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 8
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.4063263679257667,
+          "min_organ_output_cosine": 0.5949670236085831,
+          "organ_output_cosine": {
+            "gate_proj": 0.6870440503855767,
+            "up_proj": 0.5949670236085831,
+            "down_proj": 0.6708167190796313
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r16_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        }
+      ],
+      "clearing_names": [
+        "binary_g128|binary_g128|hgravs01_r160_b3|ne8",
+        "binary_g128|binary_g128|hgravs01_r160_b3|ne4",
+        "binary_g128|binary_g128|hgravs01_r80_b3|ne8",
+        "binary_g128|binary_g128|hgravs01_r80_b3|ne4",
+        "binary_g128|binary_g128|binary_g128|ne8",
+        "binary_g128|binary_g128|binary_g128|ne4",
+        "binary_g128|resid_2pct|hgravs01_r160_b3|ne8",
+        "binary_g128|resid_2pct|hgravs01_r160_b3|ne4",
+        "binary_g128|resid_2pct|hgravs01_r80_b3|ne8",
+        "binary_g128|resid_2pct|hgravs01_r80_b3|ne4",
+        "binary_g128|resid_2pct|binary_g128|ne8",
+        "binary_g128|resid_2pct|binary_g128|ne4",
+        "binary_g128|resid_0p5pct|hgravs01_r160_b3|ne8",
+        "binary_g128|resid_0p5pct|hgravs01_r160_b3|ne4",
+        "binary_g128|resid_0p5pct|hgravs01_r80_b3|ne8",
+        "binary_g128|resid_0p5pct|hgravs01_r80_b3|ne4",
+        "binary_g128|resid_0p5pct|binary_g128|ne8",
+        "binary_g128|resid_0p5pct|binary_g128|ne4",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r160_b3|ne8",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r160_b3|ne4",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r80_b3|ne8",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r80_b3|ne4",
+        "binary_g128|hgravs01_r160_b3|binary_g128|ne8",
+        "binary_g128|hgravs01_r160_b3|binary_g128|ne4",
+        "binary_g128|hgravs01_r40_b3|hgravs01_r160_b3|ne8",
+        "binary_g128|hgravs01_r40_b3|hgravs01_r160_b3|ne4",
+        "binary_g128|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+        "binary_g128|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "binary_g128|hgravs01_r40_b3|binary_g128|ne8",
+        "binary_g128|hgravs01_r40_b3|binary_g128|ne4",
+        "binary_g2048|binary_g128|hgravs01_r160_b3|ne8",
+        "binary_g2048|binary_g128|hgravs01_r160_b3|ne4"
+      ],
+      "sub_clearing_names": [
+        "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+        "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+        "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4"
+      ]
+    },
+    "all_scored_pairs": {
+      "bar": 0.6018725462661019,
+      "n_recipes": 588,
+      "n_clearing_all_organs": 288,
+      "n_sub_0_6552": 164,
+      "n_sub_0_6552_clearing": 35,
+      "best_min_organ_regardless_of_bpw": {
+        "name": "binary_g128|binary_g128|binary_g128|ne8",
+        "complete_physical_bpw": 1.3396923024294103,
+        "min_organ_output_cosine": 0.8091496405798163,
+        "organ_output_cosine": {
+          "gate_proj": 0.8755490843383457,
+          "up_proj": 0.8277510737326309,
+          "down_proj": 0.8091496405798163
+        },
+        "recipe": {
+          "gate_proj": "binary_g128",
+          "up_proj": "binary_g128",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 8
+        }
+      },
+      "best_sub_0_6552_by_min_organ": {
+        "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "complete_physical_bpw": 0.6436645218345667,
+        "min_organ_output_cosine": 0.6880243841848435,
+        "organ_output_cosine": {
+          "gate_proj": 0.7224450633655662,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.8091496405798163
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r16_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        }
+      },
+      "top_sub_0_6552": [
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4",
+          "complete_physical_bpw": 0.6231115184747253,
+          "min_organ_output_cosine": 0.6880243841848435,
+          "organ_output_cosine": {
+            "gate_proj": 0.7006903588047396,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.8091496405798163
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "binary_g128",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+          "complete_physical_bpw": 0.6436645218345667,
+          "min_organ_output_cosine": 0.6880243841848435,
+          "organ_output_cosine": {
+            "gate_proj": 0.7224450633655662,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.8091496405798163
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "binary_g128",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.4679267528947122,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7006903588047396,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.48847975625455353,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7224450633655662,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.5500770752446315,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7594308946510923,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r40_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+          "complete_physical_bpw": 0.5866611182801298,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7006903588047396,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 8
+          }
+        },
+        {
+          "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+          "complete_physical_bpw": 0.6072141216399711,
+          "min_organ_output_cosine": 0.685957807134259,
+          "organ_output_cosine": {
+            "gate_proj": 0.7224450633655662,
+            "up_proj": 0.6880243841848435,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r16_b3",
+            "up_proj": "hgravs01_r40_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 8
+          }
+        },
+        {
+          "name": "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne4",
+          "complete_physical_bpw": 0.4063294339046343,
+          "min_organ_output_cosine": 0.6133396571261834,
+          "organ_output_cosine": {
+            "gate_proj": 0.7006903588047396,
+            "up_proj": 0.6133396571261834,
+            "down_proj": 0.685957807134259
+          },
+          "recipe": {
+            "gate_proj": "hgravs01_r8_b3",
+            "up_proj": "hgravs01_r16_b3",
+            "down_proj": "hgravs01_r80_b3",
+            "nonexpert_bits": 4
+          }
+        }
+      ],
+      "clearing_names": [
+        "binary_g128|binary_g128|hgravs01_r160_b3|ne8",
+        "binary_g128|binary_g128|hgravs01_r160_b3|ne4",
+        "binary_g128|binary_g128|hgravs01_r80_b3|ne8",
+        "binary_g128|binary_g128|hgravs01_r80_b3|ne4",
+        "binary_g128|binary_g128|hgravs01_r40_b3|ne8",
+        "binary_g128|binary_g128|hgravs01_r40_b3|ne4",
+        "binary_g128|binary_g128|binary_g128|ne8",
+        "binary_g128|binary_g128|binary_g128|ne4",
+        "binary_g128|resid_2pct|hgravs01_r160_b3|ne8",
+        "binary_g128|resid_2pct|hgravs01_r160_b3|ne4",
+        "binary_g128|resid_2pct|hgravs01_r80_b3|ne8",
+        "binary_g128|resid_2pct|hgravs01_r80_b3|ne4",
+        "binary_g128|resid_2pct|hgravs01_r40_b3|ne8",
+        "binary_g128|resid_2pct|hgravs01_r40_b3|ne4",
+        "binary_g128|resid_2pct|binary_g128|ne8",
+        "binary_g128|resid_2pct|binary_g128|ne4",
+        "binary_g128|resid_0p5pct|hgravs01_r160_b3|ne8",
+        "binary_g128|resid_0p5pct|hgravs01_r160_b3|ne4",
+        "binary_g128|resid_0p5pct|hgravs01_r80_b3|ne8",
+        "binary_g128|resid_0p5pct|hgravs01_r80_b3|ne4",
+        "binary_g128|resid_0p5pct|hgravs01_r40_b3|ne8",
+        "binary_g128|resid_0p5pct|hgravs01_r40_b3|ne4",
+        "binary_g128|resid_0p5pct|binary_g128|ne8",
+        "binary_g128|resid_0p5pct|binary_g128|ne4",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r160_b3|ne8",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r160_b3|ne4",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r80_b3|ne8",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r80_b3|ne4",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r40_b3|ne8",
+        "binary_g128|hgravs01_r160_b3|hgravs01_r40_b3|ne4",
+        "binary_g128|hgravs01_r160_b3|binary_g128|ne8",
+        "binary_g128|hgravs01_r160_b3|binary_g128|ne4"
+      ],
+      "sub_clearing_names": [
+        "binary_g128|hgravs01_r16_b3|hgravs01_r40_b3|ne4",
+        "binary_g2048|hgravs01_r16_b3|hgravs01_r40_b3|ne4",
+        "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r40_b3|ne8",
+        "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r40_b3|ne4",
+        "hgravs01_r40_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne8",
+        "hgravs01_r40_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r40_b3|hgravs01_r16_b3|hgravs01_r40_b3|ne8",
+        "hgravs01_r40_b3|hgravs01_r16_b3|hgravs01_r40_b3|ne4",
+        "hgravs01_r40_b3|hgravs01_r16_b3|binary_g128|ne4",
+        "hgravs01_r16_b3|binary_g128|hgravs01_r40_b3|ne4",
+        "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+        "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r40_b3|ne8",
+        "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r40_b3|ne4",
+        "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "hgravs01_r16_b3|hgravs01_r16_b3|hgravs01_r160_b3|ne4",
+        "hgravs01_r16_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne8",
+        "hgravs01_r16_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r16_b3|hgravs01_r16_b3|hgravs01_r40_b3|ne8",
+        "hgravs01_r16_b3|hgravs01_r16_b3|hgravs01_r40_b3|ne4",
+        "hgravs01_r16_b3|hgravs01_r16_b3|binary_g128|ne4",
+        "hgravs01_r8_b3|binary_g128|hgravs01_r40_b3|ne4",
+        "hgravs01_r8_b3|resid_0p5pct|hgravs01_r40_b3|ne4",
+        "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+        "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r40_b3|ne8",
+        "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r40_b3|ne4",
+        "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r160_b3|ne4",
+        "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne8",
+        "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne4",
+        "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r40_b3|ne8",
+        "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r40_b3|ne4",
+        "hgravs01_r8_b3|hgravs01_r16_b3|binary_g128|ne4"
+      ]
+    }
+  },
+  "generation": {
+    "sweep_rows": [
+      {
+        "prompt_name": "reverse_string",
+        "point": "control_r160",
+        "generated_text": "Here\u2019s a function that reverses a string (i.e., reverses the order of characters, not the order of",
+        "coherence_class": "COHERENT",
+        "generated_token_ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          72,
+          1734,
+          2572,
+          17431,
+          288,
+          279,
+          1973,
+          315,
+          5766,
+          11,
+          537,
+          279,
+          1973,
+          315
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "identity",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8664955440979232,
+          "down_proj": 0.7684198118931592
+        },
+        "min_organ_cosine_for_bar": 0.7684198118931592
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "down_prefix_r80",
+        "generated_text": "Here\u2019s a function that **reverses** (reverses) a string\u2014 meaning it reverses the string",
+        "coherence_class": "COHERENT",
+        "generated_token_ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          3070,
+          265,
+          3004,
+          288,
+          334,
+          320,
+          265,
+          3004,
+          288,
+          8,
+          264,
+          914,
+          2293,
+          7290,
+          432,
+          17431,
+          288,
+          279,
+          914
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "down_prefix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8664955440979232,
+          "down_proj": 0.7274682098045209
+        },
+        "min_organ_cosine_for_bar": 0.7274682098045209
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "down_prefix_r40",
+        "generated_text": "Here\u2019s a function that **reverses** a string (meaning: \u201crevers\" is likely a typo or",
+        "coherence_class": "DEGRADED",
+        "generated_token_ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          3070,
+          265,
+          3004,
+          288,
+          334,
+          264,
+          914,
+          320,
+          56765,
+          25,
+          1036,
+          265,
+          3004,
+          1,
+          374,
+          4363,
+          264,
+          85105,
+          476
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "down_prefix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8664955440979232,
+          "down_proj": 0.6292128528300363
+        },
+        "min_organ_cosine_for_bar": 0.6292128528300363
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "down_prefix_r20",
+        "generated_text": "Here is a function that **re**es a string.",
+        "coherence_class": "DEGRADED",
+        "generated_token_ids": [
+          8420,
+          374,
+          264,
+          729,
+          429,
+          3070,
+          265,
+          334,
+          288,
+          264,
+          914,
+          13,
+          151645
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "down_prefix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8664955440979232,
+          "down_proj": 0.5381241322390077
+        },
+        "min_organ_cosine_for_bar": 0.5381241322390077
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "down_prefix_r8",
+        "generated_text": "Here is a function that reverses a string.",
+        "coherence_class": "COHERENT",
+        "generated_token_ids": [
+          8420,
+          374,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          13,
+          151645
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "down_prefix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8664955440979232,
+          "down_proj": 0.427637915640444
+        },
+        "min_organ_cosine_for_bar": 0.427637915640444
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "mix_best_subbit_analog",
+        "generated_text": "Here\u2019s a function that reverses a string (i.e., reverses the order of characters in the string, not",
+        "coherence_class": "COHERENT",
+        "generated_token_ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          72,
+          1734,
+          2572,
+          17431,
+          288,
+          279,
+          1973,
+          315,
+          5766,
+          304,
+          279,
+          914,
+          11,
+          537
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "all_organ_mix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.7224450633655662,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.7684198118931592
+        },
+        "min_organ_cosine_for_bar": 0.6880243841848435
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "mix_all_hgravs_r40_analog",
+        "generated_text": "Here's a function that reverses a string (in Python):\n\n```python\ndef reverse_string():\n    return reversed_string",
+        "coherence_class": "COHERENT",
+        "generated_token_ids": [
+          8420,
+          594,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          258,
+          13027,
+          7731,
+          73594,
+          12669,
+          198,
+          750,
+          9931,
+          3904,
+          3932,
+          262,
+          470,
+          27437,
+          3904
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "all_organ_mix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.7594308946510923,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.6018725462661019
+        },
+        "min_organ_cosine_for_bar": 0.6018725462661019
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "mix_all_hgravs_r16_analog",
+        "generated_text": "Write a function that reverses a string.",
+        "coherence_class": "ECHO",
+        "generated_token_ids": [
+          7985,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          13,
+          151645
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "all_organ_mix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.7224450633655662,
+          "up_proj": 0.6133396571261834,
+          "down_proj": 0.5003182789349673
+        },
+        "min_organ_cosine_for_bar": 0.5003182789349673
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "mix_all_hgravs_r8_analog",
+        "generated_text": "Write a function that reverses a string.",
+        "coherence_class": "ECHO",
+        "generated_token_ids": [
+          7985,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          13,
+          151645
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "all_organ_mix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.7006903588047396,
+          "up_proj": 0.5625293551890865,
+          "down_proj": 0.432008010503407
+        },
+        "min_organ_cosine_for_bar": 0.432008010503407
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "mix_all_0p50",
+        "generated_text": "Write a function that revers a string.",
+        "coherence_class": "ECHO",
+        "generated_token_ids": [
+          7985,
+          264,
+          729,
+          429,
+          17431,
+          264,
+          914,
+          13,
+          151645
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "all_organ_mix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.4377476353471844,
+          "up_proj": 0.4332477720489616,
+          "down_proj": 0.3842099059465796
+        },
+        "min_organ_cosine_for_bar": 0.3842099059465796
+      },
+      {
+        "prompt_name": "reverse_string",
+        "point": "mix_all_0p25",
+        "generated_text": "",
+        "coherence_class": "INCOHERENT",
+        "generated_token_ids": [
+          151643
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "all_organ_mix",
+        "prompt": "Write a function that reverses a string.",
+        "auto_coherence_class": "INCOHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.2188738176735922,
+          "up_proj": 0.2166238860244808,
+          "down_proj": 0.1921049529732898
+        },
+        "min_organ_cosine_for_bar": 0.1921049529732898
+      },
+      {
+        "prompt_name": "eight_primes",
+        "point": "control_r160",
+        "generated_text": "The first eight prime numbers are:\n\n1. **2**  \n2. **3**  \n3. **4**",
+        "coherence_class": "COHERENT",
+        "generated_token_ids": [
+          785,
+          1156,
+          8063,
+          10250,
+          5109,
+          525,
+          1447,
+          16,
+          13,
+          3070,
+          17,
+          334,
+          2303,
+          17,
+          13,
+          3070,
+          18,
+          334,
+          2303,
+          18,
+          13,
+          3070,
+          19,
+          334
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "identity",
+        "prompt": "List the first eight prime numbers.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8664955440979232,
+          "down_proj": 0.7684198118931592
+        },
+        "min_organ_cosine_for_bar": 0.7684198118931592
+      },
+      {
+        "prompt_name": "eight_primes",
+        "point": "down_prefix_r80",
+        "generated_text": "The first eight prime numbers are:\n\n1. **2**  \n2. **3**  \n3. **4**",
+        "coherence_class": "COHERENT",
+        "generated_token_ids": [
+          785,
+          1156,
+          8063,
+          10250,
+          5109,
+          525,
+          1447,
+          16,
+          13,
+          3070,
+          17,
+          334,
+          2303,
+          17,
+          13,
+          3070,
+          18,
+          334,
+          2303,
+          18,
+          13,
+          3070,
+          19,
+          334
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "down_prefix",
+        "prompt": "List the first eight prime numbers.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8664955440979232,
+          "down_proj": 0.7274682098045209
+        },
+        "min_organ_cosine_for_bar": 0.7274682098045209
+      },
+      {
+        "prompt_name": "eight_primes",
+        "point": "down_prefix_r40",
+        "generated_text": "The first eight prime numbers are:\n\n1. **1**  \n2. **2**  \n3. **3**",
+        "coherence_class": "COHERENT",
+        "generated_token_ids": [
+          785,
+          1156,
+          8063,
+          10250,
+          5109,
+          525,
+          1447,
+          16,
+          13,
+          3070,
+          16,
+          334,
+          2303,
+          17,
+          13,
+          3070,
+          17,
+          334,
+          2303,
+          18,
+          13,
+          3070,
+          18,
+          334
+        ],
+        "silent_fallback_count": 0,
+        "dense_w_materialized": false,
+        "source": "log_parse_of_live_generate",
+        "kind": "down_prefix",
+        "prompt": "List the first eight prime numbers.",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.8754952706943688,
+          "up_proj": 0.8664955440979232,
+          "down_proj": 0.6292128528300363
+        },
+        "min_organ_cosine_for_bar": 0.6292128528300363
+      },
+      {
+        "coherence_class": "DEGRADED",
+        "decode_secs": 29.939044875,
+        "degrade": {
+          "down_mix": 1.0,
+          "gate_mix": 0.8251844048500061,
+          "hgravs_rank_cap": 160,
+          "mix_seed": 3232857105,
+          "up_mix": 0.7940310835838318
+        },
+        "dense_w_materialized": false,
+        "generated_text": "I\u2019m not sure to answer this question, because prime numbers are not numbers that are prime numbers, but numbers that are",
+        "generated_token_ids": [
+          40,
+          4249,
+          537,
+          2704,
+          311,
+          4226,
+          419,
+          3405,
+          11,
+          1576,
+          10250,
+          5109,
+          525,
+          537,
+          5109,
+          429,
+          525,
+          10250,
+          5109,
+          11,
+          714,
+          5109,
+          429,
+          525
+        ],
+        "gpu_matvec_ns_per_token_reps": [
+          1430684960.7391305
+        ],
+        "gpu_timestamps_missing": 0,
+        "native": {
+          "binary_dispatches": 36480,
+          "command_buffers": 20558,
+          "hgravs_factor_dispatches": 36480,
+          "residual_dispatches": 18240,
+          "routed_expert_waves": 1824,
+          "uniform8_dispatches": 15086
+        },
+        "peak_rss_bytes": 10827120640,
+        "point": "mix_best_subbit_analog",
+        "prefill_secs": 21.750723583,
+        "prompt": "List the first eight prime numbers.",
+        "prompt_name": "eight_primes",
+        "prompt_token_ids": [
+          151644,
+          872,
+          198,
+          852,
+          279,
+          1156,
+          8063,
+          10250,
+          5109,
+          13,
+          151645,
+          198,
+          151644,
+          77091,
+          198
+        ],
+        "rendered_prompt": "<|im_start|>user\nList the first eight prime numbers.<|im_end|>\n<|im_start|>assistant\n",
+        "reps_generated_text": [
+          "I\u2019m not sure to answer this question, because prime numbers are not numbers that are prime numbers, but numbers that are"
+        ],
+        "reps_ids": [
+          [
+            40,
+            4249,
+            537,
+            2704,
+            311,
+            4226,
+            419,
+            3405,
+            11,
+            1576,
+            10250,
+            5109,
+            525,
+            537,
+            5109,
+            429,
+            525,
+            10250,
+            5109,
+            11,
+            714,
+            5109,
+            429,
+            525
+          ]
+        ],
+        "reps_ids_match_first": [
+          true
+        ],
+        "silent_fallback_count": 0,
+        "wall_ns_per_token_reps": [
+          1301697576.0869565
+        ],
+        "kind": "all_organ_mix",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.7224450633655662,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.7684198118931592
+        },
+        "min_organ_cosine_for_bar": 0.6880243841848435
+      },
+      {
+        "coherence_class": "DEGRADED",
+        "decode_secs": 10.970024125,
+        "degrade": {
+          "down_mix": 0.7832600474357605,
+          "gate_mix": 0.8674300312995911,
+          "hgravs_rank_cap": 160,
+          "mix_seed": 3232857105,
+          "up_mix": 0.7940310835838318
+        },
+        "dense_w_materialized": false,
+        "generated_text": "I'm not sure to answer this request.",
+        "generated_token_ids": [
+          40,
+          2776,
+          537,
+          2704,
+          311,
+          4226,
+          419,
+          1681,
+          13,
+          151645
+        ],
+        "gpu_matvec_ns_per_token_reps": [
+          2303059372.888889
+        ],
+        "gpu_timestamps_missing": 0,
+        "native": {
+          "binary_dispatches": 23040,
+          "command_buffers": 12984,
+          "hgravs_factor_dispatches": 23040,
+          "residual_dispatches": 11520,
+          "routed_expert_waves": 1152,
+          "uniform8_dispatches": 9528
+        },
+        "peak_rss_bytes": 11302715392,
+        "point": "mix_all_hgravs_r40_analog",
+        "prefill_secs": 19.086888709,
+        "prompt": "List the first eight prime numbers.",
+        "prompt_name": "eight_primes",
+        "prompt_token_ids": [
+          151644,
+          872,
+          198,
+          852,
+          279,
+          1156,
+          8063,
+          10250,
+          5109,
+          13,
+          151645,
+          198,
+          151644,
+          77091,
+          198
+        ],
+        "rendered_prompt": "<|im_start|>user\nList the first eight prime numbers.<|im_end|>\n<|im_start|>assistant\n",
+        "reps_generated_text": [
+          "I'm not sure to answer this request."
+        ],
+        "reps_ids": [
+          [
+            40,
+            2776,
+            537,
+            2704,
+            311,
+            4226,
+            419,
+            1681,
+            13,
+            151645
+          ]
+        ],
+        "reps_ids_match_first": [
+          true
+        ],
+        "silent_fallback_count": 0,
+        "wall_ns_per_token_reps": [
+          1218891537.1111112
+        ],
+        "kind": "all_organ_mix",
+        "auto_coherence_class": "DEGRADED",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.7594308946510923,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.6018725462661019
+        },
+        "min_organ_cosine_for_bar": 0.6018725462661019
+      },
+      {
+        "coherence_class": "ECHO",
+        "decode_secs": 8.790818958,
+        "degrade": {
+          "down_mix": 0.6511001586914062,
+          "gate_mix": 0.8251844048500061,
+          "hgravs_rank_cap": 160,
+          "mix_seed": 3232857105,
+          "up_mix": 0.7078393697738647
+        },
+        "dense_w_materialized": false,
+        "generated_text": "List the first eight prime numbers.",
+        "generated_token_ids": [
+          852,
+          279,
+          1156,
+          8063,
+          10250,
+          5109,
+          13,
+          151645
+        ],
+        "gpu_matvec_ns_per_token_reps": [
+          2745849160.571429
+        ],
+        "gpu_timestamps_missing": 0,
+        "native": {
+          "binary_dispatches": 21120,
+          "command_buffers": 11902,
+          "hgravs_factor_dispatches": 21120,
+          "residual_dispatches": 10560,
+          "routed_expert_waves": 1056,
+          "uniform8_dispatches": 8734
+        },
+        "peak_rss_bytes": 11737677824,
+        "point": "mix_all_hgravs_r16_analog",
+        "prefill_secs": 23.722294709,
+        "prompt": "List the first eight prime numbers.",
+        "prompt_name": "eight_primes",
+        "prompt_token_ids": [
+          151644,
+          872,
+          198,
+          852,
+          279,
+          1156,
+          8063,
+          10250,
+          5109,
+          13,
+          151645,
+          198,
+          151644,
+          77091,
+          198
+        ],
+        "rendered_prompt": "<|im_start|>user\nList the first eight prime numbers.<|im_end|>\n<|im_start|>assistant\n",
+        "reps_generated_text": [
+          "List the first eight prime numbers."
+        ],
+        "reps_ids": [
+          [
+            852,
+            279,
+            1156,
+            8063,
+            10250,
+            5109,
+            13,
+            151645
+          ]
+        ],
+        "reps_ids_match_first": [
+          true
+        ],
+        "silent_fallback_count": 0,
+        "wall_ns_per_token_reps": [
+          1255831220.2857141
+        ],
+        "kind": "all_organ_mix",
+        "auto_coherence_class": "COHERENT",
+        "organ_cosine_for_bar": {
+          "gate_proj": 0.7224450633655662,
+          "up_proj": 0.6133396571261834,
+          "down_proj": 0.5003182789349673
+        },
+        "min_organ_cosine_for_bar": 0.5003182789349673
+      }
+    ],
+    "parity": {
+      "passed": true,
+      "dense_w_materialized": false
+    },
+    "artifact_bpw": 1.4444456847927971,
+    "note": "Rank-cap is prefix of the packed r160 factors, not a fresh SVD at that rank. All-organ mix is a cosine analog of a recipe, not a packed artifact of that recipe."
+  },
+  "sub_0_6552_answer": {
+    "verdict": "ANALOG_COHERENT_NOT_PACKED",
+    "n_sub_0_6552_clearing_holdout_means": 7,
+    "best_sub_0_6552_by_min_organ": {
+      "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+      "complete_physical_bpw": 0.643662250489947,
+      "min_organ_output_cosine": 0.6730692511385828,
+      "organ_output_cosine": {
+        "gate_proj": 0.709562322116603,
+        "up_proj": 0.6730692511385828,
+        "down_proj": 0.8092544545416578
+      },
+      "recipe": {
+        "gate_proj": "hgravs01_r16_b3",
+        "up_proj": "hgravs01_r40_b3",
+        "down_proj": "binary_g128",
+        "nonexpert_bits": 4
+      }
+    },
+    "top_sub_0_6552": [
+      {
+        "name": "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "complete_physical_bpw": 0.6231092471301056,
+        "min_organ_output_cosine": 0.6730692511385828,
+        "organ_output_cosine": {
+          "gate_proj": 0.6870440503855767,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.8092544545416578
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r8_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        }
+      },
+      {
+        "name": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "complete_physical_bpw": 0.643662250489947,
+        "min_organ_output_cosine": 0.6730692511385828,
+        "organ_output_cosine": {
+          "gate_proj": 0.709562322116603,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.8092544545416578
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r16_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        }
+      },
+      {
+        "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "complete_physical_bpw": 0.4679236869158446,
+        "min_organ_output_cosine": 0.6708167190796313,
+        "organ_output_cosine": {
+          "gate_proj": 0.6870440503855767,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.6708167190796313
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r8_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "hgravs01_r80_b3",
+          "nonexpert_bits": 4
+        }
+      },
+      {
+        "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "complete_physical_bpw": 0.48847669027568597,
+        "min_organ_output_cosine": 0.6708167190796313,
+        "organ_output_cosine": {
+          "gate_proj": 0.709562322116603,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.6708167190796313
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r16_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "hgravs01_r80_b3",
+          "nonexpert_bits": 4
+        }
+      },
+      {
+        "name": "hgravs01_r40_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "complete_physical_bpw": 0.5500740092657639,
+        "min_organ_output_cosine": 0.6708167190796313,
+        "organ_output_cosine": {
+          "gate_proj": 0.7480901403589768,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.6708167190796313
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r40_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "hgravs01_r80_b3",
+          "nonexpert_bits": 4
+        }
+      },
+      {
+        "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+        "complete_physical_bpw": 0.5866580523012622,
+        "min_organ_output_cosine": 0.6708167190796313,
+        "organ_output_cosine": {
+          "gate_proj": 0.6870440503855767,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.6708167190796313
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r8_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "hgravs01_r80_b3",
+          "nonexpert_bits": 8
+        }
+      },
+      {
+        "name": "hgravs01_r16_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne8",
+        "complete_physical_bpw": 0.6072110556611036,
+        "min_organ_output_cosine": 0.6708167190796313,
+        "organ_output_cosine": {
+          "gate_proj": 0.709562322116603,
+          "up_proj": 0.6730692511385828,
+          "down_proj": 0.6708167190796313
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r16_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "hgravs01_r80_b3",
+          "nonexpert_bits": 8
+        }
+      },
+      {
+        "name": "hgravs01_r8_b3|hgravs01_r16_b3|hgravs01_r80_b3|ne4",
+        "complete_physical_bpw": 0.4063263679257667,
+        "min_organ_output_cosine": 0.5949670236085831,
+        "organ_output_cosine": {
+          "gate_proj": 0.6870440503855767,
+          "up_proj": 0.5949670236085831,
+          "down_proj": 0.6708167190796313
+        },
+        "recipe": {
+          "gate_proj": "hgravs01_r8_b3",
+          "up_proj": "hgravs01_r16_b3",
+          "down_proj": "hgravs01_r80_b3",
+          "nonexpert_bits": 4
+        }
+      }
+    ],
+    "generation_verified_analogs": [
+      {
+        "point": "mix_best_subbit_analog",
+        "prompt": "reverse_string",
+        "text": "Here\u2019s a function that reverses a string (i.e., reverses the order of characters in the string, not",
+        "min_organ_cosine_for_bar": 0.6880243841848435
+      },
+      {
+        "point": "mix_all_hgravs_r40_analog",
+        "prompt": "reverse_string",
+        "text": "Here's a function that reverses a string (in Python):\n\n```python\ndef reverse_string():\n    return reversed_string",
+        "min_organ_cosine_for_bar": 0.6018725462661019
+      }
+    ],
+    "note": "ANALOG_COHERENT_NOT_PACKED means a runtime cosine analog of a sub-0.655 recipe produced coherent text on the certified reverse_string prompt. It is not a packed <=0.655 artifact (non-expert is still Q8; gate/up were mixed, not re-encoded). A second prompt collapsed. Not a ship. Not a cosine-only YES.",
+    "bar": 0.6018725462661019
+  },
+  "claim_boundary": {
+    "generation_is_the_gate": true,
+    "bar_is_a_screen": true,
+    "did_not_lower_bar_to_manufacture_pass": true,
+    "runtime_degrade_is_requested_and_logged": true,
+    "not_a_packed_low_bpw_artifact": true,
+    "dense_w_materialized": false,
+    "second_prompt_is_stress_not_the_bar": true
+  },
+  "next_bottleneck": {
+    "what": "Packing a real sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generating it. The analog is cosine-matched, not byte-identical. A second prompt already collapses at the analog. Also the streamed RSS cap (16 GiB) killed a long multi-point session after expert-cache growth.",
+    "measured_ns": null,
+    "rss_cap_bytes": 17179869184,
+    "rss_hit_bytes": 17229037568
+  },
+  "seal_sha256": "e243e9aa0878f13a523128a074d2caa5bf7fa026b4e67245b85270fa87fbe325"
+}

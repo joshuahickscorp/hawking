@@ -1,0 +1,456 @@
+{
+  "artifact": {
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "body_ms": 398,
+  "chunk_verification": {
+    "admission_receipt_loaded": true,
+    "admission_trust_fallbacks": 0,
+    "admission_trust_hits": 75,
+    "artifact_index_loaded": true,
+    "bytes_hashed": 0,
+    "cache_hits": 0,
+    "chunks_verified": 75,
+    "hash_invocations": 0,
+    "verify_ns": 17711502
+  },
+  "execution_path": "device_worklist_bos_token",
+  "greedy": null,
+  "hc_bf16_sha256": "a43d928f5dea968c0c692b22d340c19525b6a78ea33a3beda7e815f050408a8e",
+  "honesty": {
+    "bos_window_only": true,
+    "compact_top6_worklist": true,
+    "complete_bos_token_graph": true,
+    "dense_over_256": false,
+    "device_resident_routing": true,
+    "full_compressed_indexer_graph": false,
+    "host_cpu": false,
+    "indexer_compressor_loaded": false,
+    "lm_head_path": "omitted",
+    "mhc_path": "host_source_algorithm_exact_sha",
+    "native": true,
+    "ratio_128_full_compressed_graph": false,
+    "ratio_4_full_compressed_graph": false
+  },
+  "init_ms": 1490,
+  "metal": {
+    "cb_collapse": true,
+    "command_buffers": 2,
+    "fallback": 0,
+    "host_expert_gather": 0,
+    "host_expert_output_readback": 0,
+    "host_route_id_readback": 0,
+    "metal_dispatches": 38,
+    "scratch_buffer_creations": 74,
+    "total_buffer_creations": 1,
+    "total_buffer_rebinds": 58,
+    "total_command_buffers": 2,
+    "total_dispatches": 38,
+    "total_readbacks": 4,
+    "total_sync_points": 2
+  },
+  "native": true,
+  "residency": {
+    "declared_rss_bound_bytes": 17179869184,
+    "declared_weight_bound_bytes": 402653184,
+    "peak_rss_bytes": 585416704,
+    "peak_weight_resident_bytes": 134229120,
+    "policy": "layer_stream_load_execute_free",
+    "rss_within_bound": true,
+    "schedule_streamed_decode_peak_bytes": 253719640,
+    "weight_within_bound": true
+  },
+  "schema": "hawking.gravity.deepseek_v4.native_token_graph.v1",
+  "scope": {
+    "deepest_layer": 0,
+    "layers_executed": [
+      0
+    ],
+    "token_id": 0,
+    "token_position": 0
+  },
+  "startup_timing": {
+    "enabled": false,
+    "phases": [],
+    "process_wall_ms": 1915,
+    "schema": "hawking.startup_timing.v1"
+  },
+  "stop_reason": null,
+  "token_ns_ledger": {
+    "body_ns": 398656375,
+    "command_buffers": [
+      {
+        "cpu_minus_gpu_ns": -6660000,
+        "dispatches": 17,
+        "encode_ns": 1395000,
+        "encoders": 1,
+        "force": "host_mhc_post_needs_wo_b_bf16",
+        "gpu_end_ns": 83971161086625,
+        "gpu_ns": 6665000,
+        "gpu_start_ns": 83971154421375,
+        "host_wall_ns": 74558000,
+        "layer": 0,
+        "name": "attn",
+        "submit_ns": 42000,
+        "wait_ns": 5000
+      },
+      {
+        "cpu_minus_gpu_ns": 2614000,
+        "dispatches": 21,
+        "encode_ns": 886000,
+        "encoders": 1,
+        "force": "hash_ids_known_before_route_so_experts_upload_then_one_cb",
+        "gpu_end_ns": 83971439797625,
+        "gpu_ns": 5871000,
+        "gpu_start_ns": 83971433926166,
+        "host_wall_ns": 9387000,
+        "layer": 0,
+        "name": "route_moe",
+        "submit_ns": 12000,
+        "wait_ns": 8485000
+      }
+    ],
+    "diagnosis": "io_bound",
+    "diagnosis_proof": "host_exclusive=314711375ns (78.9% of body) verify_ns=17711502 (4.4%); metal_gpu=12536000ns (3.1%) metal_wait=8490000ns (2.1%). Weight streaming / host memcpy / MHC sit outside GPU occupancy.",
+    "gpu_gaps": {
+      "device_span_ns": 285376250,
+      "first_gpu_start_ns": 83971154421375,
+      "gpu_busy_ns": 12536000,
+      "gpu_idle_fraction_of_span": 0.9560720277177936,
+      "gpu_idle_in_span_ns": 272840250,
+      "host_between_cb_exclusive_ns": 212577833,
+      "inter_cb_device_gap_ns": 272839541,
+      "inter_cb_device_overlap_ns": 0,
+      "inter_cb_gap_count": 1,
+      "intra_cb_kernel_gaps_visible": false,
+      "last_gpu_end_ns": 83971439797625,
+      "missing_timestamp_pairs": 0,
+      "observed_timestamp_pairs": 2,
+      "occupancy_proxy_gpu_ns_per_encoder": 6268000.0,
+      "production_encoders": 2,
+      "timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wall proxy"
+    },
+    "host_syncs": [
+      {
+        "block_ns": 3709,
+        "bytes": 8192,
+        "force": "host_source_mhc_post_requires_wo_b",
+        "layer": 0,
+        "name": "host.attn_activation_readback"
+      },
+      {
+        "block_ns": 6666,
+        "bytes": 8192,
+        "force": "host_source_mhc_post_requires_moe_out",
+        "layer": 0,
+        "name": "host.moe_activation_readback"
+      }
+    ],
+    "init_ns": 1490000000,
+    "isolated_kernels": [],
+    "metal_vs_host": {
+      "host_between_first_last_cb_gap_ns": 212577833,
+      "host_exclusive_ns": 314711375,
+      "isolated_probe_overhead_ns": 0,
+      "metal_encode_ns": 2281000,
+      "metal_gpu_ns": 12536000,
+      "metal_gpu_ns_missing_cbs": 0,
+      "metal_gpu_ns_observed_cbs": 2,
+      "metal_submit_ns": 54000,
+      "metal_wait_ns": 8490000,
+      "production_command_buffers": 2,
+      "production_dispatches": 38
+    },
+    "operator_classes": [
+      {
+        "bytes": 80216064,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "routed_experts",
+        "ns": 212089958,
+        "ns_per_token": 212089958,
+        "pct_body": 53.20119564123363
+      },
+      {
+        "bytes": 25165824,
+        "calls": 3,
+        "calls_per_token": 3,
+        "name": "shared_expert",
+        "ns": 61962250,
+        "ns_per_token": 61962250,
+        "pct_body": 15.542771641366578
+      },
+      {
+        "bytes": 213916032,
+        "calls": 10,
+        "calls_per_token": 10,
+        "name": "mla",
+        "ns": 26424167,
+        "ns_per_token": 26424167,
+        "pct_body": 6.628306646294067
+      },
+      {
+        "bytes": 0,
+        "calls": 4,
+        "calls_per_token": 4,
+        "name": "mhc_host",
+        "ns": 828334,
+        "ns_per_token": 828334,
+        "pct_body": 0.2077814508798461
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "norms",
+        "ns": 34749,
+        "ns_per_token": 34749,
+        "pct_body": 0.008716529366926592
+      }
+    ],
+    "route_id_readbacks": [],
+    "schema": "hawking.gravity.deepseek_v4.token_ns_ledger.v1",
+    "stages": [
+      {
+        "bytes": 80216064,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.expert_slab_io",
+        "ns": 212089958,
+        "ns_per_token": 212089958,
+        "pct_body": 53.20119564123363
+      },
+      {
+        "bytes": 108545772,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.attn_weight_io",
+        "ns": 68024000,
+        "ns_per_token": 68024000,
+        "pct_body": 17.063316747411854
+      },
+      {
+        "bytes": 8388608,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.shared.w1_io",
+        "ns": 24069834,
+        "ns_per_token": 24069834,
+        "pct_body": 6.037739644825697
+      },
+      {
+        "bytes": 8388608,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.shared.w3_io",
+        "ns": 23256708,
+        "ns_per_token": 23256708,
+        "pct_body": 5.833773008145172
+      },
+      {
+        "bytes": 8388608,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.shared.w2_io",
+        "ns": 14635708,
+        "ns_per_token": 14635708,
+        "pct_body": 3.671258988395708
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "metal.gpu",
+        "ns": 12536000,
+        "ns_per_token": 12536000,
+        "pct_body": 3.1445627829230123
+      },
+      {
+        "bytes": 4194560,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wq_a_upload",
+        "ns": 11052583,
+        "ns_per_token": 11052583,
+        "pct_body": 2.77245861175555
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "metal.wait",
+        "ns": 8490000,
+        "ns_per_token": 8490000,
+        "pct_body": 2.1296536396790344
+      },
+      {
+        "bytes": 2097280,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wkv_upload",
+        "ns": 6924542,
+        "ns_per_token": 6924542,
+        "pct_body": 1.7369700910966241
+      },
+      {
+        "bytes": 33556480,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wo_b_upload",
+        "ns": 3723500,
+        "ns_per_token": 3723500,
+        "pct_body": 0.9340124060476895
+      },
+      {
+        "bytes": 3678316,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.moe_control_io",
+        "ns": 3115083,
+        "ns_per_token": 3115083,
+        "pct_body": 0.7813955063430253
+      },
+      {
+        "bytes": 33556480,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wo_a_upload",
+        "ns": 2463875,
+        "ns_per_token": 2463875,
+        "pct_body": 0.6180448011147445
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "metal.encode",
+        "ns": 2281000,
+        "ns_per_token": 2281000,
+        "pct_body": 0.5721719613790197
+      },
+      {
+        "bytes": 33556480,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wq_b_upload",
+        "ns": 2259667,
+        "ns_per_token": 2259667,
+        "pct_body": 0.5668207362794587
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "host.mhc_pre",
+        "ns": 675334,
+        "ns_per_token": 675334,
+        "pct_body": 0.16940253369835112
+      },
+      {
+        "bytes": 0,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.embed_io",
+        "ns": 345292,
+        "ns_per_token": 345292,
+        "pct_body": 0.08661394164335137
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "host.mhc_post",
+        "ns": 153000,
+        "ns_per_token": 153000,
+        "pct_body": 0.03837891718149496
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "metal.submit",
+        "ns": 54000,
+        "ns_per_token": 54000,
+        "pct_body": 0.013545500181704105
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "host.rmsnorm",
+        "ns": 34749,
+        "ns_per_token": 34749,
+        "pct_body": 0.008716529366926592
+      },
+      {
+        "bytes": 8192,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.moe_activation_readback",
+        "ns": 6666,
+        "ns_per_token": 6666,
+        "pct_body": 0.0016721167446525846
+      },
+      {
+        "bytes": 8192,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.attn_activation_readback",
+        "ns": 3709,
+        "ns_per_token": 3709,
+        "pct_body": 0.0009303751884063061
+      },
+      {
+        "bytes": 2097152,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wkv_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      },
+      {
+        "bytes": 33554432,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wo_a_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      },
+      {
+        "bytes": 33554432,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wo_b_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      },
+      {
+        "bytes": 4194304,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wq_a_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      },
+      {
+        "bytes": 33554432,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wq_b_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      }
+    ],
+    "verify_ns": 17711502,
+    "wall_ns": 1889123875
+  },
+  "wall_ms": 1889
+}

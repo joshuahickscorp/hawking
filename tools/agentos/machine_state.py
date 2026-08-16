@@ -63,11 +63,27 @@ def _ram_gib() -> tuple[float | None, float | None]:
 
 
 def _active_grok_lanes() -> list[str]:
-    """Heavy lanes = live worktrees under ~/.claude-grok/worktrees (best-effort)."""
+    """Heavy lanes = worktrees with a LIVE grok process (best-effort).
+
+    A worktree directory is not evidence of a running lane — nothing self-reaps,
+    so finished lanes leave their directory behind. Counting directories made
+    clean_box_ok permanently False once a few lanes had ever run (36 stale dirs
+    observed), which would block every clean measurement forever. Match against
+    the running process table instead.
+    """
     wt = Path.home() / ".claude-grok" / "worktrees"
     if not wt.is_dir():
         return []
-    return sorted(p.name for p in wt.iterdir() if p.is_dir())
+    names = [p.name for p in wt.iterdir() if p.is_dir()]
+    if not names:
+        return []
+    try:
+        ps = subprocess.run(
+            ["ps", "-axo", "command"], capture_output=True, text=True, timeout=10
+        ).stdout
+    except Exception:
+        return sorted(names)  # cannot tell: stay conservative
+    return sorted(n for n in names if n in ps)
 
 
 def snapshot() -> dict:

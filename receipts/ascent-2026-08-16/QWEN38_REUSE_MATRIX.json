@@ -1,0 +1,633 @@
+{
+  "schema": "hawking.special_unit.qwen38_reuse_matrix.v1",
+  "date": "2026-08-16",
+  "lane": "qwen38-reuse-matrix",
+  "steer": "S002 §4-5 (census done; this lane is REUSE_MATRIX + port plan)",
+  "class": "STATIC / CPU / COMPILE",
+  "gpu_touched": false,
+  "timing_label": "N/A_STATIC_LANE",
+  "status": "SHIPPED",
+  "census": "receipts/ascent-2026-08-16/QWEN38_ARCH_CENSUS.json",
+  "local_checkpoint": {
+    "path": "workspace/campaign/records/runs/qwen38-27b/bf16",
+    "source": "https://huggingface.co/PocketAiHub/Qwen3.8-27B-Abliterated-MLX/tree/main/bf16",
+    "base_model": "Qwen/Qwen3.8-27B",
+    "base_revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "abliteration": "refusal-direction orthogonal projection, source_layer 53, destination_layers 24-63",
+    "shards": 11,
+    "n_tensors": 1184,
+    "tensor_bytes": 54713457120,
+    "dtype": "BF16",
+    "download_complete": true
+  },
+  "identity": {
+    "architectures": ["Qwen3_5ForConditionalGeneration"],
+    "model_type": "qwen3_5",
+    "text_model_type": "qwen3_5_text",
+    "text_standalone_class": "Qwen3_5ForCausalLM / Qwen3_5TextModel",
+    "NOT": ["qwen3", "qwen3_moe", "qwen3_next", "Qwen3MoeForCausalLM", "Qwen3NextForCausalLM", "Q30-compatible"]
+  },
+  "headline": {
+    "dense_not_moe": "No num_experts. Do not port moe_table_build, expert residency, device top-k, expert address tables, first-touch upload, routed/shared expert waves.",
+    "hybrid_is_q80_family": "64 layers, 48 linear + 16 full, interval 4. Same 3:1 rule as Q80 DeltaNet(36)+GQA(12). Start from qwen80_hybrid_token_graph.rs, not qwen_dense.rs.",
+    "deltanet_verdict": "SAME recurrence as Q80 Gated DeltaNet. Port is parameterization + projection-layout adapter. Say this loudly.",
+    "vision_verdict": "SKIP the vision tower for bring-up. Text path stands alone."
+  },
+
+  "geometry": {
+    "layers": 64,
+    "hidden": 5120,
+    "intermediate": 17408,
+    "mlp": "dense SwiGLU silu, every layer, no experts",
+    "full_attention": {
+      "count": 16,
+      "rule": "(layer + 1) % 4 == 0  (layers 3,7,...,63)",
+      "heads": 24,
+      "kv_heads": 4,
+      "head_dim": 256,
+      "gqa_ratio": 6,
+      "q_proj_includes_gate": true,
+      "q_proj_shape": [12288, 5120],
+      "k_proj_shape": [1024, 5120],
+      "v_proj_shape": [1024, 5120],
+      "o_proj_shape": [5120, 6144],
+      "qk_norm": true,
+      "attn_output_gate": "sigmoid, fused in q_proj as [head][query 256 | gate 256]",
+      "partial_rotary_factor": 0.25,
+      "rotary_dim": 64,
+      "rope_theta": 10000000.0
+    },
+    "linear_attention": {
+      "count": 48,
+      "class": "Qwen3_5GatedDeltaNet",
+      "key_heads": 16,
+      "value_heads": 48,
+      "values_per_key_head": 3,
+      "key_head_dim": 128,
+      "value_head_dim": 128,
+      "conv_kernel": 4,
+      "in_proj_qkv_shape": [10240, 5120],
+      "in_proj_z_shape": [6144, 5120],
+      "in_proj_a_shape": [48, 5120],
+      "in_proj_b_shape": [48, 5120],
+      "A_log_shape": [48],
+      "dt_bias_shape": [48],
+      "conv1d_shape_this_checkpoint": [10240, 4, 1],
+      "conv1d_note": "HF Conv1d is typically [C,1,K]. This MLX shard stores [10240,4,1]. Pack-time must verify axis order against a one-layer oracle; do not assume HF layout.",
+      "norm_shape": [128],
+      "out_proj_shape": [5120, 6144]
+    },
+    "vocab": 248320,
+    "tie_word_embeddings": false,
+    "embed_shape": [248320, 5120],
+    "lm_head_shape": [248320, 5120],
+    "rms_norm_eps": 1e-6,
+    "rms_norm_scale": "x * rsqrt(mean(x^2)+eps) * (1 + weight); weight init zeros",
+    "max_position": 262144,
+    "mtp_in_config": 1,
+    "mtp_tensors_in_this_checkpoint": 0
+  },
+
+  "q80_geometry_for_contrast": {
+    "source": "crates/hawking-core/src/model/qwen80_complete_runtime.rs",
+    "layers": 48,
+    "hidden": 2048,
+    "linear_key_heads": 16,
+    "linear_value_heads": 32,
+    "values_per_key_head": 2,
+    "linear_key_head_dim": 128,
+    "linear_value_head_dim": 128,
+    "linear_conv_kernel": 4,
+    "full_heads": 16,
+    "full_kv_heads": 2,
+    "full_head_dim": 256,
+    "partial_rotary_factor": 0.25,
+    "rope_theta": 5000000.0,
+    "vocab": 151936,
+    "experts": 512,
+    "top_k": 10,
+    "fused_projections": ["linear_attn.in_proj_qkvz.weight", "linear_attn.in_proj_ba.weight"]
+  },
+
+  "param_budget": {
+    "language_params": 26895998464,
+    "vision_params": 460730096,
+    "total_params": 27356728560,
+    "language_bf16_gb": 53.792,
+    "vision_bf16_gb": 0.921,
+    "language_3bpw_gb": 10.086,
+    "language_plus_vision_3bpw_gb": 10.259,
+    "language_q4_gb": 13.448,
+    "organs_language_B": {
+      "mlp": 17.113,
+      "linear_attn": 5.562,
+      "self_attn": 1.678,
+      "embed": 1.271,
+      "lm_head": 1.271,
+      "norm": 0.0007
+    },
+    "steer_allowance": "3 BPW allowed. <=1.5 tournament law does NOT apply.",
+    "recommendation": "Start uniform Q4 (~13.45 GB language) if the existing packer retargets cheaply; drop to Q3 (~10.09 GB) only if the pack is already a supported path. Do not open a 2-bit campaign."
+  },
+
+  "state_budget": {
+    "deltanet_recurrent_f32_bytes": 150994944,
+    "deltanet_recurrent_note": "48 layers × 48 value heads × 128 × 128 f32 = 144 MiB resident. Formula matches Q80 slot layout with heads=48.",
+    "deltanet_conv_f32_bytes": 5898240,
+    "deltanet_conv_note": "48 layers × 10240 channels × 3 taps f32 ≈ 5.6 MiB.",
+    "gqa_kv_bytes_per_token": 131072,
+    "gqa_kv_note": "16 layers × 4 KV heads × 256 dim × 2 (K+V) × 4 = 128 KiB/token. 8k context ≈ 1 GiB. Do not size the first runtime to 262144.",
+    "vs_q80_deltanet_state": "Q80 is 36 × 32 × 128 × 128 f32 = 72 MiB. Q38 is exactly 2× that (144 MiB)."
+  },
+
+  "deliverable_2_deltanet_comparison": {
+    "verdict": "SAME_RECURRENCE_DIFFERENT_GEOMETRY_AND_PROJECTION_PACKING",
+    "loud": "Qwen3.8 linear_attention IS Q80 Gated DeltaNet. The port is a parameterization plus a pack-time projection fuse. Do not write a new recurrence.",
+    "evidence": [
+      "transformers modeling_qwen3_5.py class Qwen3_5GatedDeltaNet uses the identical torch_recurrent_gated_delta_rule as modeling/modular_qwen3_next.py Qwen3NextGatedDeltaNet.",
+      "HF docs: 'The text backbone reuses Qwen3-Next’s linear-attention decoder' and names the path Qwen3NextGatedDeltaNet / Qwen3_5GatedDeltaNet with the same core.",
+      "Hawking shader crates/hawking-core/shaders/qwen_next.metal qwen_next_gated_delta_decode_single is documented as mirroring that exact rule."
+    ],
+    "recurrence_written_out": {
+      "shared_update": [
+        "q ← l2norm(q) * 1/sqrt(d_k)     (done in rearrange; kernel receives scaled q)",
+        "k ← l2norm(k)",
+        "beta ← sigmoid(b)",
+        "g ← -exp(A_log) * softplus(a + dt_bias)",
+        "decay ← exp(g)",
+        "if n_v / n_k > 1: repeat_interleave q and k across value heads",
+        "S ← S * decay",
+        "delta ← (v − Sᵀ k) * beta",
+        "S ← S + k ⊗ delta",
+        "o ← Sᵀ q",
+        "o ← RMSNorm(o) * silu(z)         (gated RMSNorm, no +1 residual scale)",
+        "y ← out_proj(o)"
+      ],
+      "hawking_metal": "crates/hawking-core/shaders/qwen_next.metal:20-66  (S*=d; delta=(v-Sᵀk)*b; S+=k⊗delta; o=Sᵀq)",
+      "hawking_ba_to_decay": "crates/hawking-core/shaders/qwen_next.metal:96-130  (beta=sigmoid(b); g=-exp(A_log)*softplus(a+dt_bias); decay=exp(g))",
+      "hawking_conv_l2": "crates/hawking-core/shaders/qwen_next.metal:199-285  (depthwise SiLU conv on QKV, L2 on Q/K, repeat key heads → value heads)",
+      "hawking_gated_rmsnorm": "crates/hawking-core/shaders/qwen_next.metal:289-325"
+    },
+    "what_matches_exactly": [
+      "The S/delta/S/o recurrence.",
+      "beta = sigmoid(b), g = -exp(A_log)*softplus(a+dt_bias).",
+      "Causal depthwise conv, kernel 4, SiLU, applied to Q,K,V only (not Z).",
+      "Q/K L2 then Q scaled by 1/sqrt(d_k); K unscaled after L2.",
+      "Q/K repeated from num_key_heads to num_value_heads.",
+      "Gated RMSNorm on value-head dim 128 with silu(z), weight WITHOUT +1.",
+      "Input / post-attn RMSNorm WITH +1 residual scale.",
+      "full_attention_interval = 4, mixer kind = linear unless (layer+1)%4==0."
+    ],
+    "what_differs_and_is_only_parametric": [
+      "value heads 48 vs 32 (values_per_key_head 3 vs 2). Metal kernels already take key_heads / values_per_key_head / heads as buffers.",
+      "hidden 5120 vs 2048; layers 64 vs 48; GQA 24:4 vs 16:2; vocab 248320 vs 151936.",
+      "rope_theta 1e7 vs 5e6. rotary_dim still 64."
+    ],
+    "what_is_an_adapter_not_a_new_op": [
+      "Q38 ships split projections in_proj_qkv / in_proj_z / in_proj_a / in_proj_b. Q80 ships fused in_proj_qkvz / in_proj_ba plus fix_query_key_value_ordering.",
+      "After split, both run the same conv → recurrence → gated RMSNorm → out_proj.",
+      "Pack-time fuse: interleave Q38 Q,K,V,Z into Q80 per-key-head QKVZ layout (Q128,K128,V384,Z384 for 3 values/key) and pack [b(3), a(3)] per key head into BA. Then qwen_next_qkvz_rearrange_conv_l2 and qwen_next_ba_to_decay_beta run unchanged.",
+      "Rust dispatch wrappers currently REFUSE anything but 32×128×128 (kernels/mod.rs qwen_next_gated_delta_decode_single_tcb / _at_state_offset_tcb and qwen_next_deltanet_gated_rmsnorm_tcb). Relax those gates to admit 48×128×128. Do not rewrite the Metal recurrence.",
+      "qwen80_attention_qk_norm_rope_cache hard-returns unless n_heads==16, n_kv==2, theta==5e6. qwen80_attention_apply_sigmoid_gate hard-returns unless elements==16*256. Same algorithm; open 24/4 and 24*256."
+    ],
+    "do_not_confuse_with": [
+      "Mamba2. The adapter table already recorded that mamba2 is NOT this operator.",
+      "Q30 full-attention GQA. Q30 has no DeltaNet.",
+      "A new linear-attention paper. This is Gated DeltaNet, already implemented."
+    ]
+  },
+
+  "reuse_matrix": [
+    {
+      "subsystem": "RMSNorm (input, post-attn, final)",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/shaders/qwen_next.metal  qwen_next_direct_packed_input_rmsnorm",
+        "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs  dispatch_qwen80_input_rmsnorm_tcb"
+      ],
+      "why": "Exact Qwen3.5 law: x * rsqrt(mean(x²)+eps) * (1+weight), eps=1e-6, weight stored as delta-from-one. Hidden is 5120 not 2048; the kernel already takes hidden as a buffer.",
+      "do_not_build": "A new RMSNorm."
+    },
+    {
+      "subsystem": "linear (DeltaNet) attention recurrence",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/shaders/qwen_next.metal  qwen_next_gated_delta_decode_single",
+        "crates/hawking-core/src/kernels/mod.rs  qwen_next_gated_delta_decode_single_tcb",
+        "crates/hawking-core/src/kernels/mod.rs  qwen_next_gated_delta_decode_single_at_state_offset_tcb",
+        "crates/hawking-core/examples/ascension_qwen_next_deltanet_metal_probe.rs"
+      ],
+      "why": "See deliverable_2. Metal is already (heads, key_dim, value_dim). Admit 48×128×128 in the Rust wrapper (currently locked to 32×128×128).",
+      "do_not_build": "A new recurrence kernel."
+    },
+    {
+      "subsystem": "DeltaNet QKV conv + Q/K L2 + head repeat",
+      "class": "ADAPTER_REQUIRED",
+      "existing": [
+        "crates/hawking-core/shaders/qwen_next.metal  qwen_next_qkvz_rearrange_conv_l2",
+        "crates/hawking-core/shaders/qwen_next.metal  qwen_next_causal_conv_update"
+      ],
+      "why": "Algorithm matches. Adapter is (1) pack-time fuse of split Q38 projections into Q80 QKVZ layout, (2) values_per_key_head=3, (3) confirm conv weight axis [10240,4,1] vs the kernel's channel*kernel indexing. Scratch in the kernel is already 128-wide; key_head_dim is 128 here too.",
+      "do_not_build": "A new conv/L2 operator. Fuse weights, then call the existing kernel."
+    },
+    {
+      "subsystem": "DeltaNet BA → decay/beta",
+      "class": "ADAPTER_REQUIRED",
+      "existing": [
+        "crates/hawking-core/shaders/qwen_next.metal  qwen_next_ba_to_decay_beta"
+      ],
+      "why": "Kernel already takes key_heads and values_per_key_head. Pack A and B into the Q80 BA layout [key_head][b×3, a×3]. 48 value heads, not 32.",
+      "do_not_build": "A new decay kernel."
+    },
+    {
+      "subsystem": "DeltaNet gated RMSNorm",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/shaders/qwen_next.metal  qwen_next_deltanet_gated_rmsnorm",
+        "crates/hawking-core/src/kernels/mod.rs  qwen_next_deltanet_gated_rmsnorm_tcb"
+      ],
+      "why": "Same silu(z)*rms(x)*weight (no +1), value_head_dim=128. Rust wrapper hardcodes heads=32; open heads=48. Metal already takes heads.",
+      "do_not_build": "A new gated-norm kernel."
+    },
+    {
+      "subsystem": "full GQA attention",
+      "class": "ADAPTER_REQUIRED",
+      "existing": [
+        "crates/hawking-core/shaders/qwen80_direct_packed_attention_stage.metal  qwen80_attention_qk_norm_rope_cache",
+        "crates/hawking-core/shaders/mha.metal  mha_decode_f32",
+        "crates/hawking-core/src/attn.rs",
+        "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs  dispatch_qwen80_gqa_mixer_prefix_tcb"
+      ],
+      "why": "Same GQA + q/k RMSNorm(+1) + partial RoPE 64/256 + sigmoid gate + o_proj. Q38 is 24Q/4KV, θ=1e7. The Q80 shader intentionally early-returns unless 16/2/θ=5e6. mha_decode_f32 itself is generic. Open the geometry lock; do not rewrite softmax attention.",
+      "do_not_build": "A new attention kernel family."
+    },
+    {
+      "subsystem": "hybrid layer schedule",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/src/model/qwen80_48_layer_execution_schedule.rs",
+        "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs",
+        "crates/hawking-core/src/model/qwen80_complete_runtime.rs  qwen80_execution_mixer_kind / Qwen80LayerKind"
+      ],
+      "why": "Identical rule: GQA iff (layer+1)%4==0. Parameterize LAYERS=64, DELTANET=48, GQA=16. Slot formulas slot_dn=layer-layer/4 and slot_gqa=layer/4 still hold. DELETE the 14-dispatch MoE suffix; replace with a dense SwiGLU suffix (see MLP).",
+      "do_not_build": "A new scheduler. Do not start from qwen_dense.rs."
+    },
+    {
+      "subsystem": "QKV/O projections (linear and full)",
+      "class": "ADAPTER_REQUIRED",
+      "existing": [
+        "crates/hawking-core/shaders/qwen_binary.metal  qwen_binary_sign_scale_matvec",
+        "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "crates/hawking-core/src/model/qwen_complete_binary/"
+      ],
+      "why": "They are ordinary GEMVs. Adapter is (a) Q38 name map language_model.model.layers.N.linear_attn.in_proj_{qkv,z,a,b} / self_attn.{q,k,v,o}_proj, (b) pack-time fuse of the four linear in-projs into the Q80 QKVZ/BA slots the existing mixer prefix expects, (c) row counts (q_proj 12288, qkv 10240, z 6144).",
+      "do_not_build": "New matvec math. Reuse the representation the first pack actually emits (uniform Q4 or complete-binary)."
+    },
+    {
+      "subsystem": "attn output gate",
+      "class": "ADAPTER_REQUIRED",
+      "existing": [
+        "crates/hawking-core/shaders/qwen80_direct_packed_attention_stage.metal  qwen80_attention_apply_sigmoid_gate"
+      ],
+      "why": "Config attn_output_gate=true, output_gate_type=swish (sigmoid in the Qwen3.5 source). Gate is the second half of each q_proj head. Same as Q80. Unlock elements==24*256 (currently 16*256).",
+      "do_not_build": "A new gate kernel."
+    },
+    {
+      "subsystem": "SwiGLU MLP",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/shaders/qwen_direct_packed_gate_up_swiglu_fused.metal",
+        "crates/hawking-core/src/model/qwen_dense.rs  silu_mul / fused swiglu",
+        "crates/hawking-core/src/kernels/  gemv_*_swiglu_*"
+      ],
+      "why": "Every layer is a dense silu-SwiGLU: down(silu(gate(x))*up(x)), shapes 17408×5120 / 5120×17408. This is qwen_dense / Q30 non-expert FFN, NOT the Q80 routed/shared expert wave. Compose those kernels as the hybrid-graph suffix in place of the 14 MoE dispatches.",
+      "do_not_build": "A new activation. Do not call qwen80_all_ten_routed_wave_* or qwen80_shared_expert_wave_*."
+    },
+    {
+      "subsystem": "embeddings",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs  dispatch_qwen80_embedding_gather_tcb / dispatch_qwen80_embedding_from_device_token_tcb"
+      ],
+      "why": "Same gather. Shape [248320, 5120] vs Q80 [151936, 2048]. The token-graph currently asserts the Q80 shape — parameterize that assert. Prefix is language_model.model.embed_tokens.weight.",
+      "do_not_build": "A new embedding op."
+    },
+    {
+      "subsystem": "untied LM head",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs  dispatch_qwen80_terminal_head_tcb",
+        "crates/hawking-core/src/model/qwen80_complete_runtime.rs  QWEN80_TERMINAL_HEAD_KERNELS"
+      ],
+      "why": "tie_word_embeddings=false. Separate 248320×5120 matrix (~1.27B params). Same terminal GEMV. Do not share rows with embed.",
+      "do_not_build": "A new head."
+    },
+    {
+      "subsystem": "tokenizer / vocab",
+      "class": "EXACT_REUSE",
+      "existing": [
+        "crates/hawking-core/src/tokenizer.rs  Tokenizer::from_file",
+        "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json",
+        "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer_config.json",
+        "workspace/campaign/records/runs/qwen38-27b/bf16/chat_template.jinja"
+      ],
+      "why": "tokenizer_class is Qwen2Tokenizer. Hawking already loads HF tokenizer.json. eos <|im_end|> and <|endoftext|> (ids 248046, 248044) are already in EOG_TOKEN_STRINGS. Vision special tokens exist in the vocab but are unused on the text path.",
+      "do_not_build": "A new tokenizer."
+    },
+    {
+      "subsystem": "KV cache (full-attention layers)",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/shaders/qwen80_gqa_kv_cache_preflight.metal",
+        "crates/hawking-core/src/model/qwen80_48_layer_execution_schedule.rs  qwen80_gqa_state_slot",
+        "crates/hawking-core/examples/ascension_qwen80_gqa_kv_cache_device_preflight.rs"
+      ],
+      "why": "16 GQA slots, layout [seq][kv_head][256]. kv_heads=4 not 2. Cap first context well below 262144 (128 KiB/token).",
+      "do_not_build": "A new cache format."
+    },
+    {
+      "subsystem": "linear-attention recurrent + conv state",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-core/src/model/qwen80_48_layer_execution_schedule.rs  qwen80_deltanet_state_slot",
+        "crates/hawking-core/src/model/qwen80_complete_runtime.rs  linear_conv_state_elements",
+        "crates/hawking-core/src/kernels/mod.rs  qwen_next_gated_delta_decode_single_at_state_offset_tcb"
+      ],
+      "why": "Same arena: 48 conv+recurrent slots, state [head][128][128] f32. Resize heads 32→48 and slot count 36→48. Offset helper already exists so a later layer cannot silently reuse slot 0.",
+      "do_not_build": "A new SSM/state type."
+    },
+    {
+      "subsystem": "Metal buffer layouts / command graph",
+      "class": "ADAPTER_REQUIRED",
+      "existing": [
+        "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs",
+        "crates/hawking-core/src/model/qwen80_48_layer_execution_schedule.rs  QWEN80_DELTANET_MIXER_PREFIX_KERNELS / QWEN80_GQA_MIXER_PREFIX_KERNELS",
+        "crates/hawking-core/examples/ascension_qwen80_device_state_buffer_layout_contract.rs"
+      ],
+      "why": "Keep the 9-dispatch mixer prefixes. Replace the 14-dispatch MoE suffix with ~4 dense FFN dispatches (post-norm, gate, up+swiglu, down, residual). Hidden/head counts change buffer sizes only. Do not copy Q80's 23-dispatch full-layer contract.",
+      "do_not_build": "A new command-buffer abstraction."
+    },
+    {
+      "subsystem": "sampling",
+      "class": "EXACT_REUSE",
+      "existing": [
+        "crates/hawking-core/shaders/sample.metal",
+        "generation_config.json  temperature=1.0 top_k=20 top_p=0.95 eos=[248046,248044]"
+      ],
+      "why": "sample_topk_topp / sample_argmax_f32 already take n. First coherent gate should be greedy argmax, then the published top-k/top-p.",
+      "do_not_build": "A new sampler."
+    },
+    {
+      "subsystem": "runtime session / server / HCLI",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-serve/src/http.rs",
+        "crates/hide-backend/src/bin/hcli.rs",
+        "crates/hide-backend/src/hcli_bridge.rs",
+        "crates/hide-backend/src/services_session.rs",
+        "crates/hide-backend/src/host_cmds/turn.rs",
+        "lab/hcli/"
+      ],
+      "why": "Session, streaming, interrupt, cwd binding, tools are model-agnostic. Need one new Engine impl that speaks the existing Engine/HCLI provider surface. Do not grow a parallel server.",
+      "do_not_build": "A one-off shell around the model."
+    },
+    {
+      "subsystem": "benchmark harness / token-ns ledger",
+      "class": "PARAMETRIC_REUSE",
+      "existing": [
+        "crates/hawking-bench/src/suites/decode.rs",
+        "crates/hawking-core/src/model/qwen80_token_ns_ledger.rs",
+        "crates/hawking-core/src/token_ns/"
+      ],
+      "why": "Reuse the harness and the ledger schema. Do not open a Q38 kernel tournament or a giant capture. First numbers will be DIRTY_ENGINEERING until a clean GPU window exists. This lane measured nothing.",
+      "do_not_build": "A new bench stack."
+    },
+    {
+      "subsystem": "representation / pack",
+      "class": "ADAPTER_REQUIRED",
+      "existing": [
+        "crates/hawking-core/src/model/qwen_complete_binary/uniform_q4.rs",
+        "crates/hawking-core/src/model/qwen_complete_binary/uniform_qn.rs",
+        "crates/hawking-core/src/model/qwen80_uniform_q4_hybrid_decode.rs",
+        "crates/hawking-core/examples/ascension_qwen80_uniform_q4_repack.rs",
+        "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs"
+      ],
+      "why": "Retarget an existing packer to the Q38 name map and language-only tensor set. 3 BPW is legal. Q4 is the cheapest first body if the packer already works. BF16 layer-major is the oracle, not the product.",
+      "do_not_build": "A sub-bit campaign, a kernel tournament, or a new codec family."
+    },
+    {
+      "subsystem": "RoPE (text-only)",
+      "class": "ADAPTER_REQUIRED",
+      "existing": [
+        "crates/hawking-core/shaders/qwen80_direct_packed_attention_stage.metal  (partial rotate_half, first 64 of 256)"
+      ],
+      "why": "Q38 text_config has multimodal RoPE (mrope_section [11,11,10], interleaved, θ=1e7). For text-only, transformers copies the 1D position onto the T/H/W planes; apply_interleaved_mrope is then a no-op and the result is ordinary partial RoPE. Unlock θ and head counts on the existing kernel. Do not implement vision mrope in v1.",
+      "do_not_build": "A 3-component vision RoPE for the developer text path."
+    },
+    {
+      "subsystem": "Q80 MoE machinery",
+      "class": "DO_NOT_PORT",
+      "existing": [
+        "crates/hawking-core/src/model/qwen80_device_expert_table.rs",
+        "crates/hawking-core/shaders/qwen80_device_expert_table.metal",
+        "crates/hawking-core/shaders/qwen80_all_ten_routed_expert_wave.metal",
+        "crates/hawking-core/shaders/qwen80_shared_expert_wave.metal",
+        "crates/hawking-core/shaders/qwen80_postnorm_router_top10.metal",
+        "crates/hawking-core/shaders/qwen80_moe_wave_aggregate_second_residual.metal"
+      ],
+      "why": "This model is dense. Every Q80 wall this session (expert residency, first-touch upload, top-k serializer) is absent. Porting any of it is wasted work and a contamination risk."
+    },
+    {
+      "subsystem": "Q30 runtime / qwen_dense as host",
+      "class": "DO_NOT_PORT",
+      "existing": [
+        "crates/hawking-core/src/model/qwen30_complete_runtime.rs",
+        "crates/hawking-core/src/model/qwen_dense.rs",
+        "crates/hawking-core/src/model/qwen_moe.rs"
+      ],
+      "why": "Census already refuted Q30 compatibility. qwen_dense is GQA+SwiGLU only — no hybrid schedule, no DeltaNet state. Steal SwiGLU/RMSNorm kernels from it; do not host the model there."
+    },
+    {
+      "subsystem": "vision tower",
+      "class": "SKIP_FOR_BRINGUP",
+      "new_if_ever": "NEW_IMPLEMENTATION_REQUIRED",
+      "existing": [],
+      "why_skip": "See deliverable_3_vision_decision. No Hawking ViT/Qwen3-VL encoder exists. Building one is a research program. Steer §44 forbids that.",
+      "why_new_if_ever": "27-layer Qwen3-VL ViT (patch 16, temporal 2, hidden 1152, merger to 5120, gelu_pytorch_tanh). Nothing in hawking-core implements it. Do not pretend qwen_dense or DeltaNet covers it."
+    },
+    {
+      "subsystem": "MTP (multi-token prediction)",
+      "class": "SKIP_FOR_BRINGUP",
+      "why_skip": "text_config.mtp_num_hidden_layers=1 but this checkpoint has 0 mtp.* tensors (official Qwen3.5-27B does). Transformers ignores ^mtp.* on load. Decode does not need it.",
+      "why_new_if_ever": "Official MTP is a separate decoder layer + fc. No Hawking MTP host exists. Do not invent one for this abliterated snapshot."
+    }
+  ],
+
+  "new_implementation_required_only_if_scope_expands": [
+    {
+      "item": "vision tower",
+      "why_nothing_fits": "No ViT, no 3D patch embed, no Qwen3-VL merger, no deepstack path in hawking-core. vision_tower.* is a disjoint 333-tensor organ."
+    },
+    {
+      "item": "MTP stack",
+      "why_nothing_fits": "Not present in this checkpoint. Official mtp.layers.0 + mtp.fc has no Hawking counterpart. Not needed for next-token decode."
+    }
+  ],
+
+  "do_not_build_already_present": [
+    "Gated DeltaNet recurrence",
+    "causal conv + Q/K L2 + head repeat",
+    "BA → decay/beta",
+    "gated RMSNorm",
+    "GQA + q/k norm + partial RoPE + sigmoid gate",
+    "SwiGLU",
+    "RMSNorm (1+w)",
+    "embedding gather",
+    "untied lm_head GEMV",
+    "HF tokenizer.json loader",
+    "GPU sampler",
+    "HCLI / session / serve",
+    "token-ns ledger / bench harness",
+    "uniform Q4 / complete-binary pack formats",
+    "any Q80 expert table or routed-wave kernel"
+  ],
+
+  "deliverable_3_vision_decision": {
+    "recommendation": "SKIP_VISION_TOWER",
+    "confidence": "HIGH",
+    "reason": "This is a DEVELOPER model (S002 §3). Text-only saves 0.92 GB bf16 (0.17 GB at 3 BPW), skips a 27-layer ViT with no Hawking host, and unblocks HCLI. Vision is a later optional organ, not the special-unit critical path.",
+    "text_path_stands_alone": true,
+    "evidence": [
+      {
+        "claim": "Transformers exposes a text-only class that does not construct the vision tower.",
+        "source": "https://huggingface.co/docs/transformers/en/model_doc/qwen3_5",
+        "quote": "Use Qwen3_5ForCausalLM for text-only generation with Qwen3_5TextConfig; use Qwen3_5ForConditionalGeneration … to feed interleaved image/video + text."
+      },
+      {
+        "claim": "Qwen3_5TextModel.forward never references visual weights. It embed_tokens → 64 decoder layers → final RMSNorm → (caller) lm_head.",
+        "source": "transformers src/transformers/models/qwen3_5/modeling_qwen3_5.py  Qwen3_5TextModel / Qwen3_5DecoderLayer"
+      },
+      {
+        "claim": "This checkpoint partitions tensors into two disjoint prefixes. language_model.* = 851 tensors / 26.896B params. vision_tower.* = 333 tensors / 0.461B params. No language_model tensor name contains visual/vision/merger.",
+        "source": "workspace/campaign/records/runs/qwen38-27b/bf16/model.safetensors.index.json + safetensors headers"
+      },
+      {
+        "claim": "Official Qwen3.5-27B uses the same split (model.language_model.* vs model.visual.*). The MLX conversion only renamed visual → vision_tower and language_model.model.",
+        "source": "https://huggingface.co/Qwen/Qwen3.5-27B/raw/main/model.safetensors.index.json"
+      },
+      {
+        "claim": "deepstack_visual_indexes is empty. No extra text-layer visual residual injection in this config.",
+        "source": "bf16/config.json vision_config.deepstack_visual_indexes = []"
+      },
+      {
+        "claim": "language_model_only is false on the multimodal wrapper, but that flag does not pull vision weights into the text forward. Loading language_model.* only is sufficient for Qwen3_5ForCausalLM-equivalent decode.",
+        "source": "bf16/config.json language_model_only=false; modeling_qwen3_5.py Qwen3_5Model.visual is only used by get_image_features / get_video_features"
+      },
+      {
+        "claim": "For text-only RoPE, identical T/H/W position streams make interleaved mrope a no-op. No vision position machinery is required.",
+        "source": "Qwen3_5TextRotaryEmbedding.apply_interleaved_mrope"
+      }
+    ],
+    "bytes_saved_by_skip": {
+      "bf16_gb": 0.921,
+      "at_3bpw_gb": 0.173,
+      "tensors": 333
+    },
+    "when_to_revisit": "Only after SPECIAL_UNIT_READY on text. Not this session. Steer §44."
+  },
+
+  "bring_up_plan": {
+    "authority": "S002 §6: census → reuse existing runtime → conservative representation → complete native token → coherent generation → perf cleanup → HCLI → tools → AgentOS → Grok. Then STOP.",
+    "anti_scope": [
+      "No sub-bit campaign",
+      "No kernel tournament",
+      "No TG3 chase",
+      "No giant capture (no capture-result.json)",
+      "No Q30 path reuse",
+      "No Q80 MoE port",
+      "No vision tower",
+      "No MTP",
+      "GPU belongs to Q80/DSV4F until a non-contaminating window"
+    ],
+    "ordered_steps": [
+      {
+        "id": "P0",
+        "name": "census + reuse matrix",
+        "status": "DONE_THIS_LANE",
+        "notes": "QWEN38_ARCH_CENSUS.json + this receipt."
+      },
+      {
+        "id": "P1",
+        "name": "geometry authority (STATIC/CPU)",
+        "reuse": "Clone qwen80_48_layer_execution_schedule.rs → qwen38_64_layer_execution_schedule.rs. Same interval-4 mixer rule. 48 DN slots + 16 GQA slots. Dense-MLP suffix, not MoE.",
+        "also": "Config parser that accepts qwen3_5 / qwen3_5_text and REFUSES qwen3_next, qwen3_moe, qwen3. Tensor name map for language_model.model.layers.*. Pack-time fuse in_proj_qkv+z → QKVZ, in_proj_b+a → BA.",
+        "do_not": "Open a new operator. Do not compile GPU kernels in a Q80/DSV window if it would relink shared Metal libs under their feet — prefer a later non-contaminating compile."
+      },
+      {
+        "id": "P2",
+        "name": "conservative representation",
+        "reuse": "qwen_complete_binary/uniform_q4.rs or source BF16 layer-major (qwen80_source_bf16_layer_major.rs as the template).",
+        "policy": "Language-only. Skip vision_tower.*. Skip mtp (absent). 3 BPW legal. Prefer Q4 if the packer retargets in hours, not days. Q3 next if already supported. Never start 2-bit.",
+        "resident": "Q4 language ≈ 13.45 GB; Q3 ≈ 10.09 GB. Both fit beside the Q80 13.4 GiB artifact on 96 GB if inference is paused during clean Q80/DSV benches."
+      },
+      {
+        "id": "P3",
+        "name": "complete native token",
+        "reuse": "qwen80_hybrid_token_graph.rs with MoE suffix deleted and SwiGLU spliced. Relax Rust geometry locks (32→48 DN heads; GQA 16/2/5e6 → 24/4/1e7).",
+        "correctness": "Bit-identity or a stated numeric gate against a CPU/transformers text-only oracle on layer-0 DeltaNet, layer-3 GQA, then one full token. 0 fallbacks. Do not weaken Q80 gates to make Q38 pass — fork the wrappers.",
+        "gpu": "Only in a non-contaminating window. Wrap any GPU run in ./tools/gpu_lane_lock.sh qwen38-reuse-matrix …"
+      },
+      {
+        "id": "P4",
+        "name": "coherent generation",
+        "gate": "Greedy decode of a short developer prompt produces readable, on-topic text. Then enable top_k=20 top_p=0.95. This is the product gate, not 100 TPS / TG3 / <=1.5.",
+        "identity": "Pin PocketAiHub Qwen3.8-27B-Abliterated-MLX + base revision 1d4bf0f2. Abliteration is a weight fact, not an architecture change."
+      },
+      {
+        "id": "P5",
+        "name": "perf cleanup (cheap only)",
+        "cap": "Stop at interactive-enough (S002 §9: 5/10/20/30/50 TPS if cheap). No occupancy research program. No third campaign.",
+        "labeling": "DIRTY_ENGINEERING while other lanes run. CLEAN_CANDIDATE only after a locked GPU window with ≥3 alternating paired reps. Report ns/token."
+      },
+      {
+        "id": "P6",
+        "name": "HCLI server",
+        "reuse": "hide-backend hcli.rs + hawking-serve. Persistent daemon, session, stream, interrupt, resume, cwd, model identity, generation params.",
+        "do_not": "curl-only wrapper as the finished product (S002 §10)."
+      },
+      {
+        "id": "P7",
+        "name": "tools + AgentOS + Grok",
+        "reuse": "Existing typed tool plane and HCLI AgentOS path. Qwen3.8 must launch Grok contracts and consume results without Claude in the loop (S002 §16-18).",
+        "stop": "Once SPECIAL_UNIT_READY (S002 §24) is met: FREEZE special-unit engineering and use the model."
+      }
+    ],
+    "starting_host": "qwen80_hybrid_token_graph.rs + qwen80_48_layer_execution_schedule.rs",
+    "not_starting_host": "qwen_dense.rs, qwen30_complete_runtime.rs, qwen_moe.rs"
+  },
+
+  "negative_science_honored": [
+    "Q80 expert machinery is irrelevant here (dense).",
+    "Q30 static <=1.5 / Q30 paths are not a template.",
+    "Do not assume 'simply bandwidth-bound' for later Q38 perf work.",
+    "No giant JSON capture index.",
+    "Suspect immutable-identity recomputation (SHA, st_dev, geometry parse, manifest scan) as soon as a token is slow — do not start a kernel tournament."
+  ],
+
+  "files_read_not_modified": [
+    "receipts/ascent-2026-08-16/QWEN38_ARCH_CENSUS.json",
+    "crates/hawking-core/src/model/qwen80_hybrid_token_graph.rs",
+    "crates/hawking-core/src/model/qwen80_48_layer_execution_schedule.rs",
+    "crates/hawking-core/src/model/qwen80_complete_runtime.rs",
+    "crates/hawking-core/src/model/qwen30_complete_runtime.rs",
+    "crates/hawking-core/src/model/qwen_dense.rs",
+    "crates/hawking-core/src/model/qwen_complete_binary/uniform_q4.rs",
+    "crates/hawking-core/shaders/qwen_next.metal",
+    "crates/hawking-core/shaders/qwen80_direct_packed_attention_stage.metal",
+    "crates/hawking-core/src/kernels/mod.rs",
+    "crates/hawking-core/src/tokenizer.rs",
+    "workspace/campaign/records/runs/qwen38-27b/bf16/config.json",
+    "workspace/campaign/records/runs/qwen38-27b/bf16/model.safetensors.index.json",
+    "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer_config.json"
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "artifact": {
+    "admission_view": "clone_view_sealed_range_journal_prefix_69837_of_appended_journal",
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "example_wall_ms": 16490,
+  "execution_path": "host_cpu_streamed_bos_oracle",
+  "greedy": null,
+  "hc_bf16_sha256": "a43d928f5dea968c0c692b22d340c19525b6a78ea33a3beda7e815f050408a8e",
+  "honesty": {
+    "bos_window_only": true,
+    "fallbacks": 0,
+    "full_compressed_indexer_graph": false,
+    "host_cpu": true,
+    "indexer_compressor_loaded": false,
+    "lm_head_path": "omitted",
+    "metal_dispatches": 0,
+    "native": false,
+    "ratio_128_full_compressed_graph": false,
+    "ratio_4_full_compressed_graph": false
+  },
+  "metal": {
+    "fallback": 0,
+    "metal_dispatches": 0
+  },
+  "native": false,
+  "operator_profile": {
+    "buckets": [
+      {
+        "calls": 34,
+        "name": "streaming_io",
+        "percent": 21.75954067149081,
+        "seconds": 0.142877588
+      },
+      {
+        "calls": 1,
+        "name": "mla_wo_a",
+        "percent": 16.725867053940235,
+        "seconds": 0.109825459
+      },
+      {
+        "calls": 1,
+        "name": "mla_wq_b",
+        "percent": 9.226671281895232,
+        "seconds": 0.060584208
+      },
+      {
+        "calls": 25,
+        "name": "act_quant",
+        "percent": 9.121226191284642,
+        "seconds": 0.059891834
+      },
+      {
+        "calls": 1,
+        "name": "mla_wo_b",
+        "percent": 8.993387188628459,
+        "seconds": 0.059052417
+      },
+      {
+        "calls": 6,
+        "name": "routed_w1",
+        "percent": 8.014111221149149,
+        "seconds": 0.052622291
+      },
+      {
+        "calls": 6,
+        "name": "routed_w3",
+        "percent": 8.009269763453581,
+        "seconds": 0.052590501
+      },
+      {
+        "calls": 6,
+        "name": "routed_w2",
+        "percent": 7.992961559162469,
+        "seconds": 0.052483418
+      },
+      {
+        "calls": 1,
+        "name": "shared_w1",
+        "percent": 2.2728313767359016,
+        "seconds": 0.014923875
+      },
+      {
+        "calls": 1,
+        "name": "shared_w2",
+        "percent": 2.256643637780971,
+        "seconds": 0.014817583
+      },
+      {
+        "calls": 1,
+        "name": "shared_w3",
+        "percent": 2.242854544900441,
+        "seconds": 0.014727041
+      },
+      {
+        "calls": 1,
+        "name": "mla_wq_a",
+        "percent": 1.1146343829150134,
+        "seconds": 0.007318917
+      },
+      {
+        "calls": 1,
+        "name": "embed",
+        "percent": 0.8349065621432856,
+        "seconds": 0.005482167
+      },
+      {
+        "calls": 1,
+        "name": "route",
+        "percent": 0.5795585800717624,
+        "seconds": 0.0038055
+      },
+      {
+        "calls": 1,
+        "name": "mla_wkv",
+        "percent": 0.5534399894838483,
+        "seconds": 0.003634
+      },
+      {
+        "calls": 1,
+        "name": "gate_logits_cpu",
+        "percent": 0.11302191860090834,
+        "seconds": 0.000742125
+      },
+      {
+        "calls": 1,
+        "name": "mhc_ffn_pre",
+        "percent": 0.04568210026571166,
+        "seconds": 0.000299958
+      },
+      {
+        "calls": 1,
+        "name": "kv_norm_qat_rope",
+        "percent": 0.04538390667754177,
+        "seconds": 0.000298
+      },
+      {
+        "calls": 1,
+        "name": "mhc_attn_pre",
+        "percent": 0.04483183734295758,
+        "seconds": 0.000294375
+      },
+      {
+        "calls": 6,
+        "name": "swiglu_routed",
+        "percent": 0.01494394578098586,
+        "seconds": 0.000098125
+      },
+      {
+        "calls": 1,
+        "name": "q_head_norm_rope",
+        "percent": 0.010977879681333031,
+        "seconds": 0.000072083
+      },
+      {
+        "calls": 1,
+        "name": "sparse_attn_bos",
+        "percent": 0.008001731009210476,
+        "seconds": 0.000052541
+      },
+      {
+        "calls": 1,
+        "name": "mhc_attn_post",
+        "percent": 0.0067136199935103145,
+        "seconds": 0.000044083
+      },
+      {
+        "calls": 1,
+        "name": "mhc_ffn_post",
+        "percent": 0.006548684520584886,
+        "seconds": 0.000043
+      },
+      {
+        "calls": 1,
+        "name": "swiglu_shared",
+        "percent": 0.0018339362557414697,
+        "seconds": 0.000012042
+      },
+      {
+        "calls": 1,
+        "name": "attn_norm",
+        "percent": 0.0016624520982954562,
+        "seconds": 0.000010916
+      },
+      {
+        "calls": 1,
+        "name": "ffn_norm",
+        "percent": 0.001611737867008136,
+        "seconds": 0.000010583
+      },
+      {
+        "calls": 1,
+        "name": "moe_combine",
+        "percent": 0.00045064087200955065,
+        "seconds": 2.959e-6
+      },
+      {
+        "calls": 1,
+        "name": "q_norm",
+        "percent": 0.0004316039984031992,
+        "seconds": 2.834e-6
+      }
+    ],
+    "total_seconds": 0.656620423
+  },
+  "residency": {
+    "declared_rss_bound_bytes": 17179869184,
+    "declared_weight_bound_bytes": 402653184,
+    "peak_rss_bytes": 1040007168,
+    "peak_weight_resident_bytes": 33556480,
+    "policy": "operator_stream_load_execute_free",
+    "rss_within_bound": true,
+    "schedule_streamed_decode_peak_bytes": 253719640,
+    "weight_within_bound": true
+  },
+  "schema": "hawking.gravity.deepseek_v4.streamed_forward.v1",
+  "scope": {
+    "deepest_layer": 0,
+    "layers_executed": [
+      0
+    ],
+    "requested_max_layer": 0,
+    "token_id": 0,
+    "token_position": 0
+  },
+  "stop_reason": null,
+  "wall_ms": 12522
+}

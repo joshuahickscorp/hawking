@@ -1347,6 +1347,52 @@ kernel void deepseek_v4_p3a_rmsnorm_bf16_authority(
     }
 }
 
+// Occupancy candidate for the same BF16 RMSNorm. Threads stripe the hidden
+// dimension into threadgroup squares; thread 0 then performs the authority
+// left-fold `sum_square = sum_square + squares[i]` before the parallel
+// `value * reciprocal * scale` apply. Reduction order matches the serial
+// authority; apply is in-place-safe (no output write until the sum finishes).
+kernel void deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate(
+    device const ushort* input_bf16 [[buffer(0)]],
+    device const ushort* weight_bf16 [[buffer(1)]],
+    device       ushort* output_bf16 [[buffer(2)]],
+    constant uint& width               [[buffer(3)]],
+    constant float& eps                [[buffer(4)]],
+    uint tid                           [[thread_position_in_threadgroup]],
+    uint tptg                          [[threads_per_threadgroup]])
+{
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kMaxWidth = 2048u;
+    constexpr uint kMaxSimdgroups = 32u;
+    threadgroup float squares[kMaxWidth];
+    threadgroup float reciprocal_slot[1];
+
+    if (width == 0u || width > kMaxWidth || !(eps > 0.0f)
+        || (tptg % kSimdWidth) != 0u || tptg / kSimdWidth == 0u
+        || tptg / kSimdWidth > kMaxSimdgroups) {
+        return;
+    }
+    for (uint index = tid; index < width; index += tptg) {
+        const float value = deepseek_v4_bf16_value(input_bf16[index]);
+        squares[index] = value * value;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0u) {
+        float sum_square = 0.0f;
+        for (uint index = 0u; index < width; ++index) {
+            sum_square = sum_square + squares[index];
+        }
+        reciprocal_slot[0] = 1.0f / sqrt(sum_square / (float)width + eps);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const float reciprocal = reciprocal_slot[0];
+    for (uint index = tid; index < width; index += tptg) {
+        const float value = deepseek_v4_bf16_value(input_bf16[index]);
+        const float scale = deepseek_v4_bf16_value(weight_bf16[index]);
+        output_bf16[index] = deepseek_v4_bf16_encode_rne(value * reciprocal * scale);
+    }
+}
+
 // Device-side stage handoff: source FP8 projection accumulates FP32, while
 // the next source operator consumes its BF16 copy.  The host never turns this
 // into a CPU handoff; exact storage bytes are checked only after completion.
@@ -1380,6 +1426,50 @@ kernel void deepseek_v4_p3a_per_head_rmsnorm_bf16_authority(
     }
     const float reciprocal = 1.0f / sqrt(sum_square / (float)head_dim + eps);
     for (uint index = 0u; index < head_dim; ++index) {
+        const ulong offset = base + (ulong)index;
+        output_bf16[offset] = deepseek_v4_bf16_encode_rne(
+            deepseek_v4_bf16_value(input_bf16[offset]) * reciprocal);
+    }
+}
+
+// One SIMDgroup owns one attention head. Lanes stripe squares into
+// threadgroup memory; lane 0 performs the authority left-fold over
+// `head_dim`, then every lane applies `value * reciprocal`.
+kernel void deepseek_v4_p3a_per_head_rmsnorm_bf16_simdgroup_candidate(
+    device const ushort* input_bf16 [[buffer(0)]],
+    device       ushort* output_bf16 [[buffer(1)]],
+    constant uint& heads               [[buffer(2)]],
+    constant uint& head_dim            [[buffer(3)]],
+    constant float& eps                [[buffer(4)]],
+    uint head                          [[threadgroup_position_in_grid]],
+    uint lane_id                       [[thread_index_in_simdgroup]],
+    uint tptg                          [[threads_per_threadgroup]])
+{
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kMaxHeadDim = 512u;
+    threadgroup float squares[kMaxHeadDim];
+    threadgroup float reciprocal_slot[1];
+
+    if (head >= heads || head_dim == 0u || head_dim > kMaxHeadDim
+        || !(eps > 0.0f) || tptg != kSimdWidth) {
+        return;
+    }
+    const ulong base = (ulong)head * (ulong)head_dim;
+    for (uint index = lane_id; index < head_dim; index += kSimdWidth) {
+        const float value = deepseek_v4_bf16_value(input_bf16[base + (ulong)index]);
+        squares[index] = value * value;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lane_id == 0u) {
+        float sum_square = 0.0f;
+        for (uint index = 0u; index < head_dim; ++index) {
+            sum_square = sum_square + squares[index];
+        }
+        reciprocal_slot[0] = 1.0f / sqrt(sum_square / (float)head_dim + eps);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const float reciprocal = reciprocal_slot[0];
+    for (uint index = lane_id; index < head_dim; index += kSimdWidth) {
         const ulong offset = base + (ulong)index;
         output_bf16[offset] = deepseek_v4_bf16_encode_rne(
             deepseek_v4_bf16_value(input_bf16[offset]) * reciprocal);
@@ -1433,6 +1523,69 @@ kernel void deepseek_v4_p4a_kv_nonrope_qat_inplace_authority(
     act_scales[block] = scale_bits;
     for (uint offset = 0u; offset < block_size; ++offset) {
         const uint index = start + offset;
+        const float value = deepseek_v4_bf16_value(input_bf16[index]);
+        const uchar encoded = deepseek_v4_e4m3fn_encode_rne(
+            clamp(value / scale, -448.0f, 448.0f));
+        quantized[index] = encoded;
+        output_bf16[index] = deepseek_v4_bf16_encode_rne(
+            deepseek_v4_e4m3fn_value(encoded) * scale);
+    }
+}
+
+// SIMDgroup candidate for the same in-place KV QAT. One SIMDgroup owns one
+// 64-wide non-RoPE block. `amax` is a max-reduction (order-independent on
+// finite values) and every element still uses the authority E4M3FN table
+// encoder, so the written bytes match the one-thread-per-block kernel.
+kernel void deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate(
+    device const ushort* input_bf16 [[buffer(0)]],
+    device       ushort* output_bf16 [[buffer(1)]],
+    device       uchar* quantized [[buffer(2)]],
+    device       uchar* act_scales [[buffer(3)]],
+    constant uint& head_dim [[buffer(4)]],
+    constant uint& rope_head_dim [[buffer(5)]],
+    constant uint& block_size [[buffer(6)]],
+    uint simdgroup_id [[simdgroup_index_in_threadgroup]],
+    uint lane_id [[thread_index_in_simdgroup]],
+    uint threads_per_tg [[threads_per_threadgroup]])
+{
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kMaxSimdgroups = 32u;
+    threadgroup uchar scale_bits_by_simdgroup[kMaxSimdgroups];
+
+    if (head_dim == 0u || rope_head_dim == 0u || rope_head_dim >= head_dim
+        || block_size != 64u || ((head_dim - rope_head_dim) % block_size) != 0u
+        || (threads_per_tg % kSimdWidth) != 0u
+        || threads_per_tg / kSimdWidth > kMaxSimdgroups) {
+        return;
+    }
+    const uint non_rope = head_dim - rope_head_dim;
+    const uint blocks = non_rope / block_size;
+    const uint simdgroups = threads_per_tg / kSimdWidth;
+    if (simdgroup_id == 0u) {
+        for (uint index = lane_id; index < rope_head_dim; index += kSimdWidth) {
+            output_bf16[non_rope + index] = input_bf16[non_rope + index];
+        }
+    }
+    const bool active = simdgroup_id < blocks;
+    const uint start = simdgroup_id * block_size;
+    float local_amax = 0.0f;
+    if (active) {
+        const uint first = start + lane_id * 2u;
+        local_amax = max(fabs(deepseek_v4_bf16_value(input_bf16[first])),
+            fabs(deepseek_v4_bf16_value(input_bf16[first + 1u])));
+    }
+    const float block_amax = simd_max(local_amax);
+    if (active && lane_id == 0u) {
+        scale_bits_by_simdgroup[simdgroup_id] = deepseek_v4_act_quant_ue8m0_scale(block_amax);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (!active) return;
+    const uchar scale_bits = scale_bits_by_simdgroup[simdgroup_id];
+    const float scale = deepseek_v4_e8m0fnu_value(scale_bits);
+    if (lane_id == 0u) act_scales[simdgroup_id] = scale_bits;
+    const uint first = start + lane_id * 2u;
+    for (uint offset = 0u; offset < 2u; ++offset) {
+        const uint index = first + offset;
         const float value = deepseek_v4_bf16_value(input_bf16[index]);
         const uchar encoded = deepseek_v4_e4m3fn_encode_rne(
             clamp(value / scale, -448.0f, 448.0f));
@@ -1510,6 +1663,67 @@ kernel void deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority(
             + deepseek_v4_bf16_value(attention_bf16[input_base + (ulong)column]) * converted_bf16;
     }
     output_bf16[row] = deepseek_v4_bf16_encode_rne(accumulator);
+}
+
+// Occupancy candidate for the same convert-then-einsum. One threadgroup
+// (several SIMDgroups) owns one output row and stripes the 4096-wide K.
+// The BF16 convert of each weight element is unchanged; the product
+// reduction is a simd/tree instead of a serial column walk, so this
+// path is not bit-identical to the authority. Opt-in only.
+kernel void deepseek_v4_p4a_wo_a_convert_bf16_einsum_simdgroup_candidate(
+    device const uchar* raw_weights [[buffer(0)]],
+    device const uchar* weight_scales [[buffer(1)]],
+    device const ushort* attention_bf16 [[buffer(2)]],
+    device       ushort* output_bf16 [[buffer(3)]],
+    constant uint& rows [[buffer(4)]],
+    constant uint& cols [[buffer(5)]],
+    constant uint& scale_cols [[buffer(6)]],
+    constant uint& ranks_per_group [[buffer(7)]],
+    constant uint& threads_x [[buffer(8)]],
+    uint2 global_id [[thread_position_in_grid]],
+    uint simdgroup_id [[simdgroup_index_in_threadgroup]],
+    uint lane_id [[thread_index_in_simdgroup]])
+{
+    constexpr uint kBlock = 128u;
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kMaxSimdgroups = 32u;
+    threadgroup float sg_partial[kMaxSimdgroups];
+
+    const uint row = global_id.y;
+    const uint simdgroups = threads_x / kSimdWidth;
+    if (row >= rows || cols == 0u || (cols % kBlock) != 0u
+        || ranks_per_group == 0u || scale_cols != cols / kBlock
+        || threads_x == 0u || (threads_x % kSimdWidth) != 0u
+        || simdgroups == 0u || simdgroups > kMaxSimdgroups) {
+        return;
+    }
+    const uint group = row / ranks_per_group;
+    const ulong input_base = (ulong)group * (ulong)cols;
+    const ulong weight_base = (ulong)row * (ulong)cols;
+    const uint scale_row = row / kBlock;
+    const uint tid = simdgroup_id * kSimdWidth + lane_id;
+    float accumulator = 0.0f;
+    for (uint column = tid; column < cols; column += threads_x) {
+        const float raw_weight = deepseek_v4_e4m3fn_value(raw_weights[weight_base + (ulong)column]);
+        const float scale = deepseek_v4_e8m0fnu_value(
+            weight_scales[scale_row * scale_cols + column / kBlock]);
+        const float converted_bf16 = deepseek_v4_bf16_value(
+            deepseek_v4_bf16_encode_rne(raw_weight * scale));
+        accumulator = accumulator
+            + deepseek_v4_bf16_value(attention_bf16[input_base + (ulong)column]) * converted_bf16;
+    }
+    accumulator = simd_sum(accumulator);
+    if (lane_id == 0u) {
+        sg_partial[simdgroup_id] = accumulator;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (simdgroup_id == 0u) {
+        float total = (lane_id < simdgroups) ? sg_partial[lane_id] : 0.0f;
+        total = simd_sum(total);
+        if (lane_id == 0u) {
+            output_bf16[row] = deepseek_v4_bf16_encode_rne(total);
+        }
+    }
 }
 
 // Source `Block.hc_post`: each output HC lane receives its `post`-weighted
@@ -1737,6 +1951,65 @@ kernel void deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_can
     const uint simdgroups = threads_x / 32u;
     if (row >= rows || threads_x == 0u || (threads_x & 31u) != 0u
         || simdgroups == 0u || simdgroups > kMaxBlocks
+        || cols == 0u || (cols % kBlock) != 0u || scale_cols > kMaxBlocks) {
+        return;
+    }
+    const ulong row_base = (ulong)row * (ulong)cols;
+    for (uint block = simdgroup_id; block < scale_cols; block += simdgroups) {
+        const uint start = block * kBlock + lane_id * kVectorWidth;
+        const uchar4 activation = *(device const uchar4*)(quantized + start);
+        const uchar4 weight = *(device const uchar4*)(weights + row_base + (ulong)start);
+        float partial = 0.0f;
+        partial += deepseek_v4_e4m3fn_value(activation.x) * deepseek_v4_e4m3fn_value(weight.x);
+        partial += deepseek_v4_e4m3fn_value(activation.y) * deepseek_v4_e4m3fn_value(weight.y);
+        partial += deepseek_v4_e4m3fn_value(activation.z) * deepseek_v4_e4m3fn_value(weight.z);
+        partial += deepseek_v4_e4m3fn_value(activation.w) * deepseek_v4_e4m3fn_value(weight.w);
+        const float reduced = simd_sum(partial);
+        if (lane_id == 0u) {
+            block_partial[block] = reduced;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (simdgroup_id == 0u && lane_id == 0u) {
+        const uint scale_row = row / kBlock;
+        float row_accumulator = 0.0f;
+        for (uint block = 0u; block < scale_cols; ++block) {
+            const float activation_scale = deepseek_v4_e8m0fnu_value(act_scales[block]);
+            const float weight_scale = deepseek_v4_e8m0fnu_value(
+                weight_scales[scale_row * scale_cols + block]);
+            row_accumulator = row_accumulator
+                + block_partial[block] * (activation_scale * weight_scale);
+        }
+        output[row] = row_accumulator;
+    }
+}
+
+// Occupancy sibling of the v4 split-K candidate. Same block-order scale
+// combine, but the partial array admits 128 source blocks so WO-B
+// (K=8192, 64 blocks) can use the same grid-widening. Inner 128-wide
+// block sums use simd_sum, so this path is not bit-identical. Opt-in only.
+kernel void deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate(
+    device const uchar* weights       [[buffer(0)]],
+    device const uchar* weight_scales [[buffer(1)]],
+    device const uchar* quantized     [[buffer(2)]],
+    device const uchar* act_scales    [[buffer(3)]],
+    device       float* output         [[buffer(4)]],
+    constant uint& rows                 [[buffer(5)]],
+    constant uint& cols                 [[buffer(6)]],
+    constant uint& scale_cols           [[buffer(7)]],
+    constant uint& threads_x            [[buffer(8)]],
+    uint2 global_id                     [[thread_position_in_grid]],
+    uint simdgroup_id                   [[simdgroup_index_in_threadgroup]],
+    uint lane_id                        [[thread_index_in_simdgroup]])
+{
+    constexpr uint kBlock = 128u;
+    constexpr uint kVectorWidth = 4u;
+    constexpr uint kMaxBlocks = 128u;
+    threadgroup float block_partial[kMaxBlocks];
+    const uint row = global_id.y;
+    const uint simdgroups = threads_x / 32u;
+    if (row >= rows || threads_x == 0u || (threads_x & 31u) != 0u
+        || simdgroups == 0u || simdgroups > 32u
         || cols == 0u || (cols % kBlock) != 0u || scale_cols > kMaxBlocks) {
         return;
     }

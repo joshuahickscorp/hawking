@@ -1,0 +1,167 @@
+{
+  "schema": "hawking.ascent.q80_pack.v1",
+  "lane": "q80-pack",
+  "date": "2026-08-16",
+  "status": "SHIPPED_PACKED_NOT_GENERATED",
+  "claim_boundary": {
+    "artifact_packed": true,
+    "decode_kernel_exists": false,
+    "coherence_generation_tested": false,
+    "packing_is_not_a_le_1_5_coherence_claim": true,
+    "generation_is_the_gate": true,
+    "note": "This receipt closes artifact_packed only. Organ cosine was a screen. Native-kernel generation is the gate. Do not launder this pack into a <=1.5 coherence claim."
+  },
+  "artifact": {
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+    "beside": "quality-candidates/uniform-q4-group64-v1",
+    "model_id": "Qwen3-Coder-Next-mixed-1p5-v1",
+    "branch_id": "qwen80-mixed-1p5-v1",
+    "manifest": "QWEN80_MIXED_1P5_V1_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "manifest_seal_sha256": "6a09fa747af1431b67e53691bc24dfa421c0a7643c5befb297b2eed0f4a95af6",
+    "terminal_seal_sha256": "0a5644a9a9d654bc69a33da927bd6cf557c8066290f6286eefdecb012b3b1fb2",
+    "catalog": "catalog.hq80m15",
+    "catalog_sha256": "6adc835e01beb9162264e901664400ce0b55275f7253f031dcd35f2153c1b138",
+    "format_spec": "docs/QWEN80_MIXED_1P5_PACKED_FORMAT.md",
+    "tensor_count": 74391,
+    "segment_count": 50
+  },
+  "source": {
+    "model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "mutated": false,
+    "shard_00001_mtime": "2026-08-08T01:58:17",
+    "capture": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64",
+    "capture_sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe",
+    "down_proj_x": "post-SwiGLU silu(X@gate.T)*(X@up.T) from router-input hidden + source BF16 gate/up"
+  },
+  "recipe": {
+    "gate_proj": "HGRAVB01 binary_group 128",
+    "up_proj": "HGRAVR02 binary + rice_q1_rms residual @ 2%",
+    "down_proj": "HGRAVS01 r160_b3; rank never clamped to n_fit_rows",
+    "nonexpert": "HGRAVU01 uniform-q8 group-64",
+    "sensitive_3pct_untouched": true,
+    "nonexpert_point": "8-bit (receipt start point). No GO_WITH_FIX from the coherence-probe lane was present at pack time."
+  },
+  "identity": "complete_bpw = 0.97032*expert_bpw + 0.02968*nonexpert_bpw",
+  "on_disk_ledger": {
+    "label": "DIRTY_ENGINEERING",
+    "source_weight_elements": 79674391296,
+    "tensor_payload_bytes": 14372548845,
+    "catalog_bytes": 13011181,
+    "manifest_bytes": 23455,
+    "terminal_bytes": 2169,
+    "format_bytes": 9128,
+    "fit_table_bytes": 73728,
+    "all_required_execute_bytes": 14385668506,
+    "complete_physical_bpw": 1.44445,
+    "payload_only_physical_bpw": 1.44313,
+    "design_identity_complete_bpw": 1.44313,
+    "threshold_bpw": 1.5,
+    "margin_below_ceiling": 0.05555,
+    "design_vs_ondisk_disagreement": 0.00132,
+    "note": "complete_physical_bpw uses actual bytes on disk of every file required to execute or admit (payloads + catalog + sealed manifest + terminal + format spec + fit tables). Resume sidecars (*.records.json) and pack.log are not required to execute and are not billed. Design identity uses payload bytes split expert/nonexpert only."
+  },
+  "per_organ_bytes": {
+    "routed_gate_proj": {
+      "bytes": 3630071808,
+      "elements": 25769803776,
+      "tensors": 24576,
+      "physical_bpw": 1.126922607421875,
+      "receipt_design_bpw": 1.1269
+    },
+    "routed_up_proj": {
+      "bytes": 4161335634,
+      "elements": 25769803776,
+      "tensors": 24576,
+      "physical_bpw": 1.2918486054986715,
+      "receipt_design_bpw": 1.2918
+    },
+    "routed_down_proj": {
+      "bytes": 4142078229,
+      "elements": 25769803776,
+      "tensors": 24576,
+      "physical_bpw": 1.2858703201636672,
+      "receipt_design_bpw": 1.27,
+      "note": "HGRAVS01 JSON header is billed; on-disk is 0.016 above the screen's 1.27 design figure."
+    },
+    "nonexpert_8bit": {
+      "bytes": 2439063174,
+      "elements": 2364979968,
+      "tensors": 663,
+      "physical_bpw": 8.250600705299505,
+      "receipt_design_bpw": 8.0,
+      "note": "uniform-q8 group-64 stores one fp16 scale per 64 weights (8.25 nominal). Small norms amortize header to ~9.25. Sensitive 3% not crushed."
+    }
+  },
+  "expert_physical_bpw": 1.2348805110280712,
+  "nonexpert_physical_bpw": 8.250600705299505,
+  "down_proj_fit": {
+    "requested_rank": 160,
+    "rank_clamped_to_n_fit": false,
+    "n_activation_weighted_n_ge_160": 17040,
+    "n_activation_weighted_n_in_1_159": 7315,
+    "n_weight_space_never_routed": 221,
+    "n_fit_census": {
+      "n_zero": 221,
+      "n_lt_160": 7536,
+      "n_ge_160": 17040,
+      "n_ge_512": 4984,
+      "p50": 258,
+      "max": 9573,
+      "mean": 365.0764973958333
+    },
+    "never_routed_example": {
+      "tensor": "model.layers.1.mlp.experts.148.down_proj.weight",
+      "fit": "weight_space_truncated_svd",
+      "rank": 160,
+      "reason": "never_routed_in_bound_25258_token_capture"
+    },
+    "well_posed_example": {
+      "tensor": "model.layers.0.mlp.experts.0.down_proj.weight",
+      "fit": "activation_weighted_svd_output_frobenius",
+      "n_fit_tokens": 641,
+      "rank": 160
+    },
+    "representation_decision": "221 never-routed experts have no post-SwiGLU X. They are packed as HGRAVS01 r160_b3 via weight-space truncated SVD of W, same physical layout the kernel lane already knows. This is reported, not a silent fallback. Rank is 160 on every down_proj."
+  },
+  "correctness": {
+    "catalog_tensor_count": 74391,
+    "execution_order": "embed, L00..L47 mixer-then-moe, norm, lm_head",
+    "sample_payload_sha256_verified": [
+      "model.layers.10.mlp.experts.453.gate_proj.weight",
+      "model.layers.10.mlp.experts.453.up_proj.weight",
+      "model.layers.10.mlp.experts.453.down_proj.weight",
+      "model.layers.0.input_layernorm.weight",
+      "model.layers.3.self_attn.q_proj.weight"
+    ],
+    "sample_magics": {
+      "gate": "HGRAVB01",
+      "up": "HGRAVR02",
+      "down": "HGRAVS01",
+      "nonexpert": "HGRAVU01"
+    },
+    "sample_weight_cosine_not_organ_output": {
+      "L10.E453.gate": 0.799096,
+      "L10.E453.up": 0.841979,
+      "L10.E453.down": 0.601600,
+      "L0.input_layernorm": 0.999965,
+      "L3.q_proj": 0.999981,
+      "note": "These are weight-space reconstruction cosines from physical bytes. The screen bar 0.8604 is output-space mean-row cosine on captured X, a different quantity. Generation is the gate."
+    },
+    "encoder_decode_is_from_physical_bytes": true,
+    "rust_catalog_open": {
+      "full_catalog": true,
+      "complete_physical_bpw": 1.4444456847927971,
+      "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen80_mixed_catalog_inspect"
+    }
+  },
+  "timing": {
+    "note": "Packing is not a token-time measurement. No GPU timestamps. No tok/s claim.",
+    "label": "N/A",
+    "ns_per_token": null
+  },
+  "kernel_lane_handoff": "docs/QWEN80_MIXED_1P5_PACKED_FORMAT.md plus the artifact FORMAT.md copy. Four magics, compact catalog.hq80m15, execution-order segments. Native HGRAVS01 path is y = L @ (R @ x); do not densify W on a token path.",
+  "next_bottleneck": {
+    "what": "No native mixed decode kernel exists. That is the kernel lane's gap. Until it exists, this artifact cannot be executed, so generation (the actual gate) is blocked on decode.",
+    "measured_ns": null
+  }
+}

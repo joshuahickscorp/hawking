@@ -1,0 +1,232 @@
+{
+  "claim_boundary": {
+    "artifact_packed": false,
+    "coherence_generation_tested": false,
+    "cpu_wall_is_not_gpu_time": true,
+    "decode_kernel_exists": true,
+    "not_bf16_parent_parity": true,
+    "not_full_token_runtime": true
+  },
+  "correctness": {
+    "dense_reconstruction_on_token_path": false,
+    "down": {
+      "gate_kind": "numeric_equivalence_two_stage_f32",
+      "max_abs_error": 0.000011444091796875,
+      "oracle": "two_stage_L_R_x_of_packed_factors_not_dense_W",
+      "passed": true,
+      "tolerance": 0.000019999999494757503
+    },
+    "fallbacks": 0,
+    "gate": {
+      "gate_kind": "numeric_equivalence_serial_f32",
+      "max_abs_error": 4.76837158203125e-6,
+      "passed": true,
+      "tolerance": 0.000019999999494757503
+    },
+    "rice_expand": {
+      "gate_kind": "bit_identical_u32_indices",
+      "passed": true,
+      "tolerance": 0.0
+    },
+    "up": {
+      "csr_apply_max_abs_error": 4.0531158447265625e-6,
+      "gate_kind": "numeric_equivalence_serial_f32",
+      "note": "rice apply and CSR apply are both graded against the same artifact oracle. CSR add order matches sorted-index serial apply.",
+      "passed": true,
+      "rice_apply_max_abs_error": 4.0531158447265625e-6,
+      "tolerance": 0.000019999999494757503
+    }
+  },
+  "cost": {
+    "down_proj": {
+      "decode_ops_per_factor_element": 1,
+      "dispatches": 2,
+      "dram_bytes_this_dispatch": 177280,
+      "fuses_with_surrounding_op": false,
+      "gpu_ns": {
+        "all_ns": [
+          259000,
+          259000,
+          257000,
+          259000,
+          260000,
+          262000
+        ],
+        "max_ns": 262000,
+        "median_ns": 259000,
+        "min_ns": 257000,
+        "n": 6
+      },
+      "median_ns_per_token_this_organ": 259000,
+      "packed_weight_bytes": 166400,
+      "temporary_bytes": 640,
+      "temporary_kind": "mid[rank=160] f32, not dense W"
+    },
+    "gate_proj": {
+      "decode_ops_per_weight": 1,
+      "dispatches": 1,
+      "dram_bytes_this_dispatch": 157696,
+      "fuses_with_surrounding_op": false,
+      "gpu_ns": {
+        "all_ns": [
+          66000,
+          60000,
+          60000,
+          61000,
+          59000,
+          61000
+        ],
+        "max_ns": 66000,
+        "median_ns": 61000,
+        "min_ns": 59000,
+        "n": 6
+      },
+      "median_ns_per_token_this_organ": 61000,
+      "packed_weight_bytes": 147456,
+      "temporary_bytes": 0
+    },
+    "routed_expert_wave_estimate": {
+      "claim_boundary": "routed-expert mixed-decode GPU time only; excludes attention, shared expert, router, host, and dispatch of a full token graph",
+      "formula": "48 * 10 * (gate_med + up_med + down_med)",
+      "label": "DIRTY_ENGINEERING",
+      "layers": 48,
+      "median_ns_per_token": 192000000,
+      "organs_per_expert": 3,
+      "top_k": 10
+    },
+    "up_proj": {
+      "decode_ops_per_weight": "1 binary + 0.02 residual apply",
+      "dispatches": 2,
+      "dram_bytes_this_dispatch": 265053,
+      "fuses_with_surrounding_op": false,
+      "gpu_ns": {
+        "all_ns": [
+          82000,
+          78000,
+          80000,
+          78000,
+          80000,
+          79000
+        ],
+        "max_ns": 82000,
+        "median_ns": 80000,
+        "min_ns": 78000,
+        "n": 6
+      },
+      "median_ns_per_token_this_organ": 80000,
+      "packed_weight_bytes": 168873,
+      "per_token_kernels": [
+        "q80_binary_group_matvec",
+        "q80_sparse_q1_apply_csr"
+      ],
+      "rice_expand_role": "bind-time only; q80_rice_q1_expand_indices is format-pure and bit-identical",
+      "rice_per_token_serial_ns_one_shot": 15597000,
+      "rice_per_token_serial_rejected_as_token_path": true,
+      "temporary_bytes": 85940,
+      "temporary_kind": "bind-time expanded u32 indices + CSR row_ptr; not dense W"
+    }
+  },
+  "device_name": "Apple M3 Ultra",
+  "geometry": {
+    "binary_group_size": 128,
+    "down_shape": [
+      2048,
+      512
+    ],
+    "gate_up_shape": [
+      512,
+      2048
+    ],
+    "hgravs_bits": 3,
+    "hgravs_group_size": 64,
+    "hgravs_rank": 160,
+    "note": "Qwen3-Coder-Next routed-expert geometry. Weights are a deterministic packed artifact, not a BF16 parent slice. Kernel is graded against the artifact oracle.",
+    "rice_k": 5,
+    "rice_outlier_count": 20972,
+    "rice_outlier_ratio": 0.02
+  },
+  "lane": "q80-decode-kernels",
+  "baseline_ns_per_token": 403000000,
+  "baseline_label": "DIRTY_ENGINEERING",
+  "baseline_source": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json full-token uniform-Q4",
+  "result_ns_per_token": 192000000,
+  "result_label": "DIRTY_ENGINEERING",
+  "result_scope": "48*10*(gate+up+down) routed mixed-decode GPU only",
+  "next_bottleneck": {
+    "organ": "down_proj hgravs01 two-stage factor matvec",
+    "median_ns": 259000,
+    "token_scale_ns": 124320000,
+    "why": "serial per-row 3-bit factor decode; R is 160x512 then L is 2048x160. Two dispatches, 640-byte mid."
+  },
+  "measurement_label": "DIRTY_ENGINEERING",
+  "pack_lane_contract": {
+    "down_proj": {
+      "bits": 3,
+      "codec": "hgravs01_r160_b3",
+      "container_magic": "HGRAVS01",
+      "execution": "y = L @ (R @ x); mid[rank] only temporary",
+      "factor_body": "fp16 scales[groups] || packed unsigned codes",
+      "group_size": 64,
+      "kernel": "q80_hgravs01_factor_matvec (R then L)",
+      "rank": 160,
+      "schema": "hawking.gravity.activation_weighted_svd_low_rank.v1"
+    },
+    "gate_proj": {
+      "body": "fp16 scales[groups] || LSB-first sign bits",
+      "codec": "binary_group",
+      "container_magic": "HGRAVB01",
+      "group_size": 128,
+      "kernel": "q80_binary_group_matvec",
+      "schema": "hawking.gravity.binary_sign_scale.v1"
+    },
+    "must_not": "packed -> dense (rows x cols) reconstruction -> matvec",
+    "note": "Pack lane must emit these containers. Kernels consume bodies after magic+header.",
+    "up_proj": {
+      "body": "binary scales+signs || u32 first_index || rice(diffs) || fp16 rms || 1-bit residual signs",
+      "codec": "binary + rice_q1_rms sparse residual @2%",
+      "container_magic": "HGRAVR02",
+      "kernels": [
+        "q80_binary_group_matvec",
+        "q80_rice_q1_expand_indices",
+        "q80_sparse_q1_apply_csr",
+        "q80_rice_q1_residual_apply"
+      ],
+      "rice": "unary quotient of 1-bits, then 0, then k LSBs; LSB-first bitstream",
+      "schema": "hawking.gravity.binary_outlier_residual.v2"
+    }
+  },
+  "parity_warmup_gpu_ns_not_a_claim": {
+    "gate_first_dispatch_us": 130,
+    "note": "first dispatch includes possible pipeline compile; excluded from measured reps"
+  },
+  "reps": {
+    "down_gpu_ns": [
+      259000,
+      259000,
+      257000,
+      259000,
+      260000,
+      262000
+    ],
+    "gate_gpu_ns": [
+      66000,
+      60000,
+      60000,
+      61000,
+      59000,
+      61000
+    ],
+    "protocol": "warmup=2 then 6 interleaved (gate, up, down) pairs",
+    "up_gpu_ns": [
+      82000,
+      78000,
+      80000,
+      78000,
+      80000,
+      79000
+    ]
+  },
+  "schema": "hawking.ascension.qwen80_mixed_decode_kernel_parity.v1",
+  "status": "DECODE_KERNEL_EXISTS_COMPONENT_PARITY_NOT_RUNTIME_OR_COHERENCE",
+  "timing_authority": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait_until_completed"
+}

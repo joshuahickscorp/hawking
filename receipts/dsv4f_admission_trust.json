@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.admission_trust.measurement.v1",
+  "claim_boundary": {
+    "base_true_tps": false,
+    "coherence": false,
+    "capability": false,
+    "tournament": false,
+    "integrity_preserved": true,
+    "native_token_graph_measured": false,
+    "native_token_graph_block": "workspace/ops/build/rust/release-fast/examples/gravity_deepseek_v4_native_token_graph --max-layer 42 failed with Metal(\"no Metal-capable GPU\"). This session is Seatbelt-sandboxed (ps is EPERM). The GPU exists (M3 Ultra, Metal Supported) but MTLDevice creation is blocked. Re-run that binary under the gate profile for the native-graph wall. The numbers below are the host-CPU streamed 43-layer BOS token, which uses the same reader and is the path that owns the streaming_io bucket."
+  },
+  "artifact": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "content_addressed_chunk_sha256": "15e00fb1b91ac074b7f24686de4e289f76d66eb1c3fb4ad643de027adc78ca13",
+    "read_only_tcc_locked": true
+  },
+  "admission_receipt": {
+    "preferred_path": "<artifact>/.hawking-admission.json",
+    "written_path": "/Users/scammermike/.cache/hawking/dsv4f-admission/ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed.json",
+    "why_not_beside_artifact": "com.apple.macl on the Downloads artifact directory; create/write returns EPERM. Reader also searches HAWKING_DSV4F_ADMISSION_RECEIPT and the cache path keyed by manifest seal. prepare_sealed_admission_root copies the cache receipt into the ephemeral clone view.",
+    "schema": "hawking.gravity.deepseek_v4.admission_trust.v1",
+    "chunk_count": 69837,
+    "total_bytes": 159609485896,
+    "table_sha256": "7614b08b6a6c2542d9aef4e204005c077f50a4ac1609945cdd8c8ccb40cbc6b9",
+    "seal_sha256": "423770f3a979266367216294f959d64bbf7068fe35fb817a6003bca9b3a6eb94",
+    "verifier_version": "0.2.2"
+  },
+  "admission_pass": {
+    "receipt": "receipts/dsv4f_admission_pass.json",
+    "threads": 28,
+    "hash_wall_ms": 47205,
+    "seal_wall_ms": 47373,
+    "example_wall_ms": 75053,
+    "bytes_hashed": 159609485896,
+    "chunk_count": 69837,
+    "note": "this is the honest one-time cost; paid once, never per token"
+  },
+  "path_measured": "host_cpu_streamed_bos_oracle (43 layers + host lm_head). Same reader as the native token graph.",
+  "full": {
+    "env": "HAWKING_DSV4F_VERIFY=full",
+    "receipt": "receipts/dsv4f_admission_trust_streamed_full.json",
+    "example_wall_ms": 96284,
+    "wall_ms": 88484,
+    "bytes_hashed": 10443501020,
+    "hash_invocations": 3314,
+    "cache_hits": 378,
+    "chunks_verified": 3314,
+    "admission_trust_hits": 0,
+    "admission_trust_fallbacks": 0,
+    "admission_receipt_loaded": false,
+    "verify_ns": 31009730951,
+    "verify_s": 31.009730951,
+    "operator_profile_total_s": 59.727468824,
+    "streaming_io_s": 29.191293432,
+    "streaming_io_calls": 1502,
+    "streaming_io_percent": 48.874151218459474,
+    "greedy_token_id": 5,
+    "greedy_logit": 16.767436981201172,
+    "hc_bf16_sha256": "d541c0a25a3bef30dac153d9bf7d1714aebfb4462af1bfb8b4648c1ea5e50c69"
+  },
+  "admission": {
+    "env": "HAWKING_DSV4F_VERIFY=admission",
+    "receipt": "receipts/dsv4f_admission_trust_streamed_admission.json",
+    "example_wall_ms": 88849,
+    "wall_ms": 83281,
+    "bytes_hashed": 0,
+    "hash_invocations": 0,
+    "cache_hits": 378,
+    "chunks_verified": 3314,
+    "admission_trust_hits": 3314,
+    "admission_trust_fallbacks": 0,
+    "admission_receipt_loaded": true,
+    "verify_ns": 1449479280,
+    "verify_s": 1.449479280,
+    "operator_profile_total_s": 64.425948727,
+    "streaming_io_s": 14.740524855,
+    "streaming_io_calls": 1502,
+    "streaming_io_percent": 22.879794781853878,
+    "greedy_token_id": 5,
+    "greedy_logit": 16.767436981201172,
+    "hc_bf16_sha256": "d541c0a25a3bef30dac153d9bf7d1714aebfb4462af1bfb8b4648c1ea5e50c69"
+  },
+  "comparison": {
+    "greedy_token_id_unchanged": true,
+    "greedy_logit_unchanged": true,
+    "hc_bf16_sha256_unchanged": true,
+    "bytes_hashed_full": 10443501020,
+    "bytes_hashed_admission": 0,
+    "streaming_io_speedup": 1.9802,
+    "verify_ns_speedup": 21.3938,
+    "example_wall_speedup": 1.0837,
+    "streaming_io_share_full_percent": 48.87,
+    "streaming_io_share_admission_percent": 22.88,
+    "honesty": "CPU-path wall only moved 96.3s -> 88.8s because host matvecs dominate that path. streaming_io halved (29.19s -> 14.74s). The hash itself (verify_ns) dropped 31.01s -> 1.45s (21x) and bytes hashed went to zero. Residual streaming_io is mmap + host copies, not SHA-256. On the prior Metal streamed body, streaming_io was 16.32s / 71% hashing 9.38 GiB; that is the surface this change is for. Native-graph wall was not measured here."
+  },
+  "threat_model": {
+    "covers": [
+      "chunk replace, truncate, or delete (size, mtime_ns, or inode change) — admission falls back to SHA-256 and hard-fails on digest mismatch",
+      "rewritten receipt whose table_sha256 or seal_sha256 no longer match — receipt is rejected, reader hashes",
+      "stale receipt whose content_addressed_chunk_sha256, chunk_count, or total_bytes disagree with the admitted manifest — receipt is rejected"
+    ],
+    "does_not_cover": [
+      "in-place bit flip that preserves size, mtime_ns, and inode (bit-rot or a write that restores mtime). Isolated test metadata_preserving_bitflip_is_the_residual_window documents this: admission returns the flipped bytes; HAWKING_DSV4F_VERIFY=full hard-fails.",
+      "a forged receipt written by a process that can already write the receipt file. The receipt is tamper-evident (canonical JSON seal), not secretly signed."
+    ],
+    "never_silently_downgrades": "missing, unsealed, or stale receipt does not skip hashing. A per-chunk identity miss hashes that chunk and still hard-fails on SHA-256 mismatch. Delete and truncate hard-fail. HAWKING_DSV4F_VERIFY=full restores today's hash-everything path.",
+    "clone_view": "this artifact's stream-ranges.jsonl was appended (139674 = 2 x 69837), so admit uses an APFS clone view with new inodes. The receipt records identities of the durable source files. The reader remaps a clone-view chunk to the source file when the source identity still matches, then skip-hashes that file."
+  },
+  "controls": {
+    "default": "admission",
+    "HAWKING_DSV4F_VERIFY": "full | admission",
+    "HAWKING_DSV4F_ADMISSION_RECEIPT": "optional explicit receipt path",
+    "HAWKING_DSV4F_ADMISSION_DIR": "optional cache directory",
+    "HAWKING_DSV4F_ADMIT_THREADS": "optional admission-pass thread count",
+    "example_flag": "--verify full|admission on gravity_deepseek_v4_native_token_graph and gravity_deepseek_v4_streamed_forward"
+  }
+}

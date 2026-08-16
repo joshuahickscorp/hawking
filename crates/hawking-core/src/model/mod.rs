@@ -18,6 +18,24 @@ pub mod qwen30_complete_runtime;
 /// full 56.9 GiB source (separate resource contract from the co-resident gate).
 pub mod qwen30_source_bf16_layer_major;
 pub mod qwen80_source_bf16_layer_major;
+/// Velocity-track binding: uniform-Q4 catalog -> hybrid token-graph greedy decode.
+pub mod qwen80_uniform_q4_hybrid_decode;
+/// Per-token ns ledger for the uniform-Q4 hybrid vehicle (profile before optimize).
+pub mod qwen80_token_ns_ledger;
+/// Compact mixed-representation catalog for the Q80 ≤1.5 pack.
+/// Admission/index only — not a decode kernel and not a generation runtime.
+pub mod qwen80_mixed_catalog;
+/// Mixed-catalog binding of the Q4 hybrid token graph. Expert organs use the
+/// packed mixed codecs; non-experts stay HGRAVU01-q8. Not a dense-W path.
+pub mod qwen80_mixed_hybrid_decode;
+
+/// Memory-bounded DSV4F activation-X capture writer.
+///
+/// Deterministic per-(layer, expert) first-N retention, per-layer flush+free,
+/// Q80/doctor6-compatible on-disk shape. Not an Engine and not a 43-layer
+/// source forward — it records X that a later job (or a reduced synthetic
+/// probe) supplies.
+pub mod dsv4f_activation_capture;
 /// Typed, non-serving HQ30GR2 candidate catalog for a later bounded Qwen30
 /// all-layer diagnostic.  It is not an Engine or endpoint selection.
 pub mod qwen30_quality_repack_diagnostic;
@@ -29,6 +47,9 @@ pub mod qwen80_48_layer_execution_schedule;
 /// graph has real capability evidence.
 pub mod qwen80_complete_runtime;
 pub mod qwen_complete_binary;
+/// Derived DRAM-row address-stream model and value-preserving execution-order
+/// layouts. Pack-time contract; not an Engine and not a default runtime path.
+pub mod dram_row_locality;
 pub mod qwen_dense;
 pub mod qwen_moe;
 pub mod rwkv7;
@@ -317,3 +338,8 @@ mod tier_map_hook_tests {
         );
     }
 }
+
+/// Device-side 512-way Q80 expert table/gather.
+pub mod qwen80_device_expert_table;
+/// Artifact-static payload residency + one persistent address table.
+pub mod device_residency;

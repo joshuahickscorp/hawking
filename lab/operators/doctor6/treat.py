@@ -9,28 +9,93 @@ from typing import Any
 import numpy as np
 
 from lab.operators.ascension_qwen30_activation_weighted_svd_repack import (
-    HOLD_FRAC,
-    SEED,
     collect_expert_activations,
     holdout_split,
     organ_activations,
 )
-from lab.operators.doctor6.prescribe import SAMPLE_SEED
 from lab.operators.doctor6.billing import project_complete_bpw, seal_with_ceiling
 from lab.operators.doctor6.coherence import LAYER_TARGET_COS, predict_composition
+from lab.operators.doctor6.prescribe import (
+    SAMPLE_SEED,
+    _split_seed,
+    map_in_stable_order,
+    resolve_workers,
+)
 from lab.operators.doctor6.rungs import apply_rung, quant_binary, score_vs_incumbent
 from lab.operators.one_bit_ceiling import CeilingViolation
 from lab.operators.qwen30b_gravity_pack import load_tensor, load_weight_map
 
-import hashlib
 
+def _treat_one_organ(
+    org: dict[str, Any],
+    *,
+    model_dir: Path,
+    weight_map: dict[str, str],
+    by_le: dict[tuple[int, int], Any],
+    device: str,
+    qat_steps: int,
+    qat_lr: float,
+    target_cos: float,
+) -> dict[str, Any]:
+    name = org["tensor_name"]
+    layer, expert, component = int(org["layer"]), int(org["expert"]), org["component"]
+    chain = list(org.get("chain") or ["incumbent_binary"])
+    print(f"  treat {name} chain={'+'.join(chain)}", flush=True)
+    W = load_tensor(model_dir, weight_map, name).astype(np.float32, copy=False)
+    X_all = organ_activations(
+        layer=layer,
+        expert=expert,
+        component=component,
+        X_hidden=by_le[(layer, expert)],
+        model_dir=model_dir,
+        weight_map=weight_map,
+    )
+    X_fit, X_hold = holdout_split(X_all, seed=_split_seed(layer, expert, component))
+    W_inc, _ = quant_binary(W)
 
-def _comp_seed(component: str) -> int:
-    return int(hashlib.sha256(component.encode()).hexdigest()[:8], 16)
+    # Apply last kept rung in the chain (each rung is full transform from W).
+    # Prefer the deepest non-incumbent rung.
+    apply_name = chain[-1]
+    if apply_name == "incumbent_binary":
+        W_hat, nbytes = W_inc, int(org.get("payload_bytes") or 0)
+        if nbytes <= 0:
+            _, nbytes = quant_binary(W)
+        meta = {"codec": "binary_g128"}
+    else:
+        result = apply_rung(
+            apply_name,
+            W,
+            X_fit,
+            organ_key=name,
+            sensitivity=float(org.get("sensitivity") or 0.5),
+            seed=0xD0C70A,
+            device=device,
+            qat_steps=qat_steps,
+            qat_lr=float(qat_lr),
+            prefer_budget=True,
+        )
+        W_hat, nbytes, meta = result.W_hat, result.payload_bytes, result.meta
 
-
-def _split_seed(layer: int, expert: int, component: str) -> int:
-    return SEED ^ (layer * 9176) ^ (expert * 1009) ^ (_comp_seed(component) & 0xFFFF)
+    score = score_vs_incumbent(
+        W=W, X_hold=X_hold, W_hat=W_hat, W_incumbent=W_inc
+    )
+    return {
+        "tensor_name": name,
+        "layer": layer,
+        "expert": expert,
+        "component": component,
+        "band": org.get("band"),
+        "chain": chain,
+        "applied_rung": apply_name,
+        "predicted_cosine": org.get("prescribed_cosine"),
+        "actual_cosine": score["output_cosine"],
+        "incumbent_cosine": score["incumbent_cosine"],
+        "surplus_over_incumbent": score["surplus_over_incumbent"],
+        "payload_bytes": int(nbytes),
+        "component_bpw": 8.0 * nbytes / max(W.size, 1),
+        "meta": meta,
+        "clears_target": bool(score["output_cosine"] >= target_cos),
+    }
 
 
 def treat(
@@ -42,6 +107,7 @@ def treat(
     qat_steps: int = 200,
     qat_lr: float | None = None,
     out_path: Path | None = None,
+    workers: int | None = None,
 ) -> dict[str, Any]:
     t0 = time.perf_counter()
     prescription_path = Path(prescription_path)
@@ -81,70 +147,24 @@ def treat(
         row_sample_seed=row_seed,
     )
     weight_map = load_weight_map(model_dir)
+    organs = list(rx.get("organs") or [])
+    workers_n = resolve_workers(workers, n_items=len(organs) or 1)
+    print(f"[treat] {len(organs)} organs (workers={workers_n})", flush=True)
 
-    rows_out: list[dict[str, Any]] = []
-    for org in rx.get("organs") or []:
-        name = org["tensor_name"]
-        layer, expert, component = int(org["layer"]), int(org["expert"]), org["component"]
-        chain = list(org.get("chain") or ["incumbent_binary"])
-        print(f"  treat {name} chain={'+'.join(chain)}", flush=True)
-        W = load_tensor(model_dir, weight_map, name).astype(np.float32, copy=False)
-        X_all = organ_activations(
-            layer=layer,
-            expert=expert,
-            component=component,
-            X_hidden=by_le[(layer, expert)],
+    def _one(i: int, org: dict[str, Any]) -> dict[str, Any]:
+        del i
+        return _treat_one_organ(
+            org,
             model_dir=model_dir,
             weight_map=weight_map,
+            by_le=by_le,
+            device=device,
+            qat_steps=qat_steps,
+            qat_lr=float(qat_lr),
+            target_cos=target_cos,
         )
-        X_fit, X_hold = holdout_split(X_all, seed=_split_seed(layer, expert, component))
-        W_inc, _ = quant_binary(W)
 
-        # Apply last kept rung in the chain (each rung is full transform from W).
-        # Prefer the deepest non-incumbent rung.
-        apply_name = chain[-1]
-        if apply_name == "incumbent_binary":
-            W_hat, nbytes = W_inc, int(org.get("payload_bytes") or 0)
-            if nbytes <= 0:
-                _, nbytes = quant_binary(W)
-            meta = {"codec": "binary_g128"}
-        else:
-            result = apply_rung(
-                apply_name,
-                W,
-                X_fit,
-                organ_key=name,
-                sensitivity=float(org.get("sensitivity") or 0.5),
-                seed=0xD0C70A,
-                device=device,
-                qat_steps=qat_steps,
-                qat_lr=float(qat_lr),
-                prefer_budget=True,
-            )
-            W_hat, nbytes, meta = result.W_hat, result.payload_bytes, result.meta
-
-        score = score_vs_incumbent(
-            W=W, X_hold=X_hold, W_hat=W_hat, W_incumbent=W_inc
-        )
-        rows_out.append(
-            {
-                "tensor_name": name,
-                "layer": layer,
-                "expert": expert,
-                "component": component,
-                "band": org.get("band"),
-                "chain": chain,
-                "applied_rung": apply_name,
-                "predicted_cosine": org.get("prescribed_cosine"),
-                "actual_cosine": score["output_cosine"],
-                "incumbent_cosine": score["incumbent_cosine"],
-                "surplus_over_incumbent": score["surplus_over_incumbent"],
-                "payload_bytes": int(nbytes),
-                "component_bpw": 8.0 * nbytes / max(W.size, 1),
-                "meta": meta,
-                "clears_target": bool(score["output_cosine"] >= target_cos),
-            }
-        )
+    rows_out = map_in_stable_order(_one, organs, workers=workers_n)
 
     mean_payload = float(np.mean([r["payload_bytes"] for r in rows_out])) if rows_out else 0.0
     bill = project_complete_bpw(mean_expert_payload_bytes=mean_payload)

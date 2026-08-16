@@ -1,0 +1,192 @@
+{
+ "architectures": [
+  "Qwen3MoeForCausalLM"
+ ],
+ "files": {
+  ".gitattributes": {
+   "bytes": 1519,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "a6344aac8c09253b3b630fb776ae94478aa0275b"
+  },
+  "LICENSE": {
+   "bytes": 11343,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "6634c8cc3133b3848ec74b9f275acaaa1ea618ab"
+  },
+  "README.md": {
+   "bytes": 5425,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "20e3701252e54cfd2c36ad3768b942aa5e6680ea"
+  },
+  "chat_template.jinja": {
+   "bytes": 6211,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "49b0e8d0ee7e655434942233b4b0ab2104d5247e"
+  },
+  "config.json": {
+   "bytes": 963,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "55a5a950a2926507ae506d5e6549b022bac27834"
+  },
+  "generation_config.json": {
+   "bytes": 180,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "ba3e8d9206508daab666e1aaa9dcc9c435bfa541"
+  },
+  "merges.txt": {
+   "bytes": 1671839,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+  },
+  "model-00001-of-00016.safetensors": {
+   "bytes": 3998893112,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167"
+  },
+  "model-00002-of-00016.safetensors": {
+   "bytes": 3999974192,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "8cf85f0e5a0ea8d8cd3fd1f411175d811ca735571210873fd42bb5eec0b35406"
+  },
+  "model-00003-of-00016.safetensors": {
+   "bytes": 3997360832,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "4fa5cc233e965c8671d32a335045697fc4317c8d2939d8ca5fb9ef62d0233207"
+  },
+  "model-00004-of-00016.safetensors": {
+   "bytes": 3999975056,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "c10ff15f08abea0ff60b2fc345dcc34191bc8049d05d3bece6b081a99cbfc4c8"
+  },
+  "model-00005-of-00016.safetensors": {
+   "bytes": 3999975400,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "65d3701e2354a8cf6e5afa3f84520bf81effcdc29b0c481dbbeb089f80349100"
+  },
+  "model-00006-of-00016.safetensors": {
+   "bytes": 3999975400,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "7c832bf9e527b7b6f3184b561de05f30981bdcfdffe9c69e69064cdaa97071b5"
+  },
+  "model-00007-of-00016.safetensors": {
+   "bytes": 3999975472,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "71a710c3ff52e85d22ae3f5b10b9a4dd49821c9533460fb1d4bb21593f71b585"
+  },
+  "model-00008-of-00016.safetensors": {
+   "bytes": 3997362064,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "cd2861625e1bd8a212151445072b9d826c9754fd4618f8b83c2857fc0854b778"
+  },
+  "model-00009-of-00016.safetensors": {
+   "bytes": 3999975408,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "8335225fd61c0fe283a83463a8d9c5c19e211ea8048925b031a088f274eb9c4e"
+  },
+  "model-00010-of-00016.safetensors": {
+   "bytes": 3999975400,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "421481c42e8d85891c9d88492d7530d6b6d8b15c23a6db6a9b7438e0b6161330"
+  },
+  "model-00011-of-00016.safetensors": {
+   "bytes": 3999975408,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "d7dd447928ddec67a3ec06d5bc4fd99dde9ac5bdf0b6ab500faca5dfdfb963b4"
+  },
+  "model-00012-of-00016.safetensors": {
+   "bytes": 3987924896,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "349a0b0247d244ffef34bc23b403ce756f515242323f024a5f8028c109a798af"
+  },
+  "model-00013-of-00016.safetensors": {
+   "bytes": 3999975088,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "52e7f570649b27bc35b8cd27ac643d2158c02a5c76078c80a8afc449377b508e"
+  },
+  "model-00014-of-00016.safetensors": {
+   "bytes": 3999975400,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "0b30aed1b55b3f25fbf2c5e81784438d0a08461c9518e26e11987eb10d80ebd7"
+  },
+  "model-00015-of-00016.safetensors": {
+   "bytes": 3999975400,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "cb8b3b13c0519874ed0cbe6832ab57e51476e3821c83f0ffe4ec83a8d23fc5f4"
+  },
+  "model-00016-of-00016.safetensors": {
+   "bytes": 1085307128,
+   "etag_is_sha256": true,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "778479fa2b8b766ba1c7bfc56a71ed9b060081e0fbc5eb4edafd19a1d6b4c116"
+  },
+  "model.safetensors.index.json": {
+   "bytes": 1699758,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "52b3fc9153e5d0c39c1a89ef94ef10ab8d6cca98"
+  },
+  "qwen3coder_tool_parser.py": {
+   "bytes": 31613,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "0960292aa3d83ff629f65be6c4bcb62632e6198d"
+  },
+  "tokenizer.json": {
+   "bytes": 7032399,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "90c73275ae7b61cd2b6c4f263018057d516f0c95"
+  },
+  "tokenizer_config.json": {
+   "bytes": 13055,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "cc8cf0649efea42a8c099d852b1525fcfc42c222"
+  },
+  "vocab.json": {
+   "bytes": 2776833,
+   "etag_is_sha256": false,
+   "hf_commit": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "hf_etag": "4783fe10ac3adce15ac8f358ef5462739852c569"
+  }
+ },
+ "geometry": {
+  "hidden_size": 2048,
+  "moe_intermediate_size": 768,
+  "num_experts": 128,
+  "num_experts_per_tok": 8,
+  "num_hidden_layers": 48,
+  "torch_dtype": "bfloat16",
+  "vocab_size": 151936
+ },
+ "hf_commit_consistent": true,
+ "hf_commit_hash": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+ "model": "Qwen3-Coder-30B-A3B-Instruct",
+ "model_type": "qwen3_moe",
+ "reason": "Q30 removed from the contender set; its static <=1.5 path is closed negative science. Body deleted 2026-08-15 to reclaim disk under user authorization. Identity kept so the source is re-fetchable.",
+ "schema": "hawking.source_identity.qwen30.v1",
+ "status": "BODY_RECLAIMED_IDENTITY_PRESERVED",
+ "total_bytes": 61079826794
+}

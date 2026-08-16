@@ -1,0 +1,76 @@
+{
+  "schema": "hawking.terminal_target.v1",
+  "date": "2026-08-16",
+  "law": "fs_per_weight_floor = 152.6252 * BPW (model-independent). token_ns_floor = active_weights * BPW/8 / 819e9. TPS ceiling = 1/token_ns_floor.",
+  "machine_reference": {
+    "theoretical_gb_s": 819,
+    "MEASURED_control_gb_s": [
+      560.25,
+      646.71
+    ],
+    "note": "Use the measured control, not 819, when judging efficiency. Packed matvecs currently run ~2.5 GB/s."
+  },
+  "per_model": {
+    "q80": {
+      "active_weights_per_token": 3562274816,
+      "sparsity": "MoE top-10 of 512",
+      "target_bpw": 1.44445,
+      "artifact": "mixed-1p5-v1 PACKED, generation not yet proven",
+      "floor_ms": 0.785,
+      "ceiling_tok_s": 1273,
+      "fs_per_weight_floor": 220.5,
+      "headroom": {
+        "50tps": 25.47,
+        "100tps": 12.73,
+        "tg3_333": 3.82
+      },
+      "TERMINAL": "TG3/333 is REACHABLE at the current 1.44445 BPW with 3.82x headroom. Q80 has the most room of the three because MoE sparsity keeps active weights at 3.562 G."
+    },
+    "dsv4f": {
+      "active_weights_per_token": 12748587008,
+      "sparsity": "MoE top-6 of 256 + shared",
+      "target_bpw": 1.5,
+      "floor_ms": 2.919,
+      "ceiling_tok_s": 343,
+      "fs_per_weight_floor": 228.9,
+      "headroom": {
+        "50tps": 6.85,
+        "100tps": 3.43,
+        "tg3_333": 1.03
+      },
+      "TERMINAL": "50 and 100 TPS are workable at 1.5 BPW. TG3/333 is MARGINAL at 1.03x - it would demand ~97% of peak bandwidth, which is not credible. Comfortable TG3 needs <= 0.6173 BPW, i.e. sub-bit."
+    },
+    "qwen38": {
+      "active_weights_per_token": 23611000000,
+      "sparsity": "DENSE - all weights every token",
+      "target_bpw": 2.0,
+      "hard_limit_bpw": 3.0,
+      "floor_ms": 7.207,
+      "ceiling_tok_s": 139,
+      "fs_per_weight_floor": 305.3,
+      "headroom": {
+        "50tps": 2.77,
+        "100tps": 1.39,
+        "tg3_333": 0.42
+      },
+      "TERMINAL": "50 TPS workable at 2.0 BPW (2.77x). 100 TPS is MARGINAL (1.39x) and needs BPW below 2.0. TG3/333 is PHYSICALLY IMPOSSIBLE at 2.0 BPW (0.42x) and would require 0.3333 BPW. Its realistic terminal is the 100-139 tok/s band. That is fine - it is a developer unit, not a tournament contender."
+    }
+  },
+  "sub_100_fs_threshold": {
+    "required_bpw": 0.6552,
+    "applies_to": "ALL THREE models identically, because the fs/weight floor is model-independent",
+    "current": {
+      "q80_fs": 156970,
+      "dsv4f_fs": 81402,
+      "efficiency_q80_pct_of_peak": 0.135
+    },
+    "note": "Sub-100 fs/weight requires BPW < 0.6552 AND near-unity bandwidth efficiency. Both are mandatory."
+  },
+  "bpw_for_comfortable_tg3": {
+    "q80": 2.2093,
+    "dsv4f": 0.6173,
+    "qwen38": 0.3333,
+    "note": "At 2.5x headroom. Q80's requirement is ABOVE its current BPW, so Q80 already qualifies."
+  },
+  "THE_SINGLE_SHARED_BLOCKER": "All three need the same fix. Every gate above assumes efficiency near 1.0. Measured efficiency is ~0.4% of the 560-647 GB/s control. Until packed matvec occupancy is solved, NONE of these ceilings are reachable and the differences between models are academic."
+}

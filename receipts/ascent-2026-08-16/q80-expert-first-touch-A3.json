@@ -1,0 +1,175 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 4.259241137535204,
+    "manifest_seal_sha256": "d4a140ab353f2756f08365c59da4e7ae646f389b969e6aa87e2d7b8f053df55b",
+    "mean_component_cosine": 0.994152710325234,
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/uniform-q4-group64-v1",
+    "tensor_count": 74391,
+    "terminal_seal_sha256": "b84e2d53532fbed700a99390d7d32c9eff223963e80ee079ee45cde9edfa3b39"
+  },
+  "claim_boundary": {
+    "artifact_cannot_satisfy_1_5_bpw_gate": true,
+    "base_true_tps": false,
+    "capability": false,
+    "coherence": false,
+    "complete_physical_bpw": 4.259241137535204,
+    "complete_physical_bpw_reported": 4.259241,
+    "density_gate_bpw_max": 1.5,
+    "hcli": false,
+    "restart": false,
+    "tournament": false
+  },
+  "execution": {
+    "fallbacks": {
+      "host_activation": 1056,
+      "host_expert_payload_bind": 0,
+      "host_q4_embedding_gather": 0,
+      "host_q4_matvec": 0,
+      "host_q4_vector_decode": 265,
+      "host_sample": 22,
+      "note": "512-way device expert table is live; host_expert_payload_bind counts remaining host binds",
+      "total": 1343
+    },
+    "first_touch": {
+      "catalog_read_ns": 1522896023,
+      "copy_binds": 9774,
+      "header_parse_ns": 295234048,
+      "metal_copy_ns": 1122895378,
+      "metal_nocopy_ns": 0,
+      "mmap_ns": 0,
+      "nocopy_binds": 0,
+      "payloads_hashed": 10439,
+      "payloads_mmapped": 0,
+      "payloads_read": 10441,
+      "prefetch_hits": 0,
+      "prefetch_misses": 0,
+      "prefetch_ns": 0,
+      "prefetch_uploads": 0,
+      "sha256_ns": 3201440232
+    },
+    "hybrid_token_graph": "embed + 48-layer mixer/MoE + terminal greedy",
+    "metal_error": null,
+    "metal_q4_matvec_used": true,
+    "native": {
+      "expert_copy_binds": 9774,
+      "expert_nocopy_binds": 0,
+      "expert_prefetch_uploads": 0,
+      "expert_residency_evictions": 0,
+      "expert_resident_bytes": 5444665344,
+      "expert_resident_slots": 3258,
+      "expert_table_layer_builds": 1056,
+      "expert_table_matvec_dispatches": 5280,
+      "expert_table_slot_patches": 3258,
+      "expert_table_waves": 1056,
+      "expert_upload_hits": 7302,
+      "expert_upload_misses": 3258,
+      "q4_decode_vector_dispatches": 0,
+      "q4_embedding_dispatches": 22,
+      "q4_matvec_dispatches": 8734
+    },
+    "residency": {
+      "budget_bytes": 8589934592,
+      "device_limits": {
+        "current_allocated_size": 6792740864,
+        "has_unified_memory": true,
+        "max_buffer_length": 62620631040,
+        "recommended_max_working_set_size": 83494174720
+      },
+      "hit_rate": 0.6914772727272728,
+      "persistent_address_table": true,
+      "q4_full_payload_bytes": 41070624768,
+      "scaled_1_5_payload_bytes": 14464064643,
+      "table_bytes": 3145728,
+      "triplet_payload_bytes": 1671168
+    },
+    "session_seal": {
+      "admit_ns": 411446583,
+      "nocopy": false,
+      "prefetch": false,
+      "production_seals_checked": true,
+      "rehash": true,
+      "sample_rehashed": 4,
+      "session_seal_sha256": "bce647f0c63fe1afa60345dab03aa9b56f9c2f07c8090f7d7ba28d28b1238f04",
+      "still_guards_token_path": [
+        "mmap/read size must equal artifact_bytes",
+        "header geometry must match the catalog row",
+        "no-copy bind is fail-closed (16 KiB window + contents() alias)",
+        "read_payload_rehash and HAWKING_Q80_REHASH_PAYLOADS=1 remain"
+      ],
+      "tensors_stated": 74391,
+      "verified_once": [
+        "every catalogued file exists as a regular non-symlink with exact artifact_bytes",
+        "production manifest and terminal seals match the sealed constants",
+        "session seal binds manifest_seal || terminal_seal || ordered (name, bytes, declared_sha256)",
+        "sample payloads rehashed against catalog SHA"
+      ]
+    },
+    "stages": {
+      "deltanet_secs": 3.4335838230000046,
+      "embed_secs": 0.0,
+      "first_touch_catalog_read_secs": 1.522896023,
+      "first_touch_metal_copy_secs": 1.122895378,
+      "first_touch_metal_nocopy_secs": 0.0,
+      "first_touch_sha256_secs": 3.201440232,
+      "gqa_secs": 1.0787145,
+      "host_expert_bind_secs": 0.0,
+      "moe_combine_secs": 1.681591581,
+      "moe_norm_router_secs": 0.0,
+      "moe_routed_secs": 0.0,
+      "moe_shared_secs": 0.0,
+      "moe_table_buffer_write_secs": 0.002474280999999995,
+      "moe_table_build_secs": 5.789041181999995,
+      "moe_table_entries_fill_secs": 0.0026373839999999957,
+      "moe_table_lease_secs": 0.000036711999999999956,
+      "moe_table_resource_clone_secs": 0.003963020000000004,
+      "moe_table_upload_miss_secs": 5.774468687000008,
+      "prefetch_secs": 0.0,
+      "q4_matvec_secs": 0.0,
+      "terminal_secs": 0.0
+    },
+    "weight_codec": "uniform_q4_group64"
+  },
+  "generated_text": "Hi! 👋 How can I help you today?",
+  "generated_token_ids": [
+    13048,
+    0,
+    61804,
+    233,
+    2585,
+    646,
+    358,
+    1492,
+    498,
+    3351,
+    30,
+    151645
+  ],
+  "prompt": "<|im_start|>user\nSay hi.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    45764,
+    15588,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "resources": {
+    "peak_rss_bytes": 8711962624,
+    "streamed_rss_cap_bytes": 17179869184
+  },
+  "schema": "hawking.ascension.qwen80_uniform_q4_velocity_baseline.v1",
+  "status": "VELOCITY_BASELINE_NOT_BASE_TRUE_TPS",
+  "timing": {
+    "decode_secs": 3.881929125,
+    "first_token_latency_secs": 8.453728958,
+    "prefill_secs": 8.453728958,
+    "steady_state_decode_secs": 3.881928875,
+    "steady_state_tok_s": 2.833642849780446,
+    "steady_state_tokens": 11
+  }
+}

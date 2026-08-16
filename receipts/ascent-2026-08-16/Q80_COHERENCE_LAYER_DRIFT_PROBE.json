@@ -1,0 +1,285 @@
+{
+  "schema": "hawking.ascension.qwen80_mixed_codec_coherence_probe.v1",
+  "status": "GO_WITH_FIX",
+  "lane": "q80-coherence-probe",
+  "timing_label": "DIRTY_ENGINEERING",
+  "prompt": "Write a function that reverses a string.",
+  "analysis": {
+    "span": [
+      0,
+      4
+    ],
+    "mixed_last_token_cosine": [
+      0.9887129990144525,
+      0.9707473741684386,
+      0.9800899973342896,
+      0.9781111292856502
+    ],
+    "mixed_last_token_rel_l2": [
+      0.16459626698596364,
+      0.2853201389191995,
+      0.35052640349878,
+      0.34288420919892776
+    ],
+    "null_last_token_cosine": [
+      0.9872034153884754,
+      0.9740473678155377,
+      0.9878165289091212,
+      0.9863152808763251
+    ],
+    "null_last_token_rel_l2": [
+      0.1631114118425971,
+      0.23815267021011075,
+      0.1563973288081173,
+      0.16610511767300515
+    ],
+    "mixed_growth_ratios": [
+      1.733454495316901,
+      1.2285371962406286,
+      0.9781979496449578
+    ],
+    "null_growth_ratios": [
+      1.460061362474924,
+      0.6567103726787333,
+      1.0620713214149473
+    ],
+    "mixed_geo_growth_per_layer": 1.277151745489193,
+    "null_geo_growth_per_layer": 1.0060808643053776,
+    "true_residual_stream_growth": [
+      1.0,
+      1.7823134977772206,
+      1.5504439556908842,
+      1.0221650102418662,
+      1.037215699492779,
+      1.0593669014552198,
+      1.0333478464231964,
+      0.9891195835054399,
+      0.9863234629603908,
+      1.0933529939653293,
+      1.030502465777895,
+      1.0403803576927477,
+      0.9866350863795204,
+      1.03237365519041,
+      1.0597590121864975,
+      1.0093174686798088,
+      0.9851302814330738,
+      1.0093978934645491,
+      0.980787288895073,
+      0.972613980859252,
+      0.9546139383518276,
+      1.0463522391143976,
+      1.132043260216194,
+      1.0177142506110872,
+      1.026204600449286,
+      0.9933798940791848,
+      1.0673496745237827,
+      1.032190432525093,
+      0.9861084959812567,
+      1.0181412491224835,
+      0.9945325570024303,
+      1.0211297624317996,
+      1.0372543111567836,
+      1.0139685913008436,
+      1.1155244242910738,
+      1.1192586075225577,
+      1.0612187382541165,
+      1.0306838688556963,
+      1.0597281976012403,
+      1.0952629406089092,
+      1.0068430936313575,
+      1.0828395303413034,
+      1.1403059382423253,
+      1.0679807039666458,
+      1.1855288433189595,
+      1.106407789670522,
+      1.5055570825593938,
+      0.7305522211126123
+    ],
+    "true_residual_geo_growth": 1.060696579078453,
+    "extrapolated_rel_l2_at_48_from_span_end": 16211.288730699043,
+    "layers_after_span": 44,
+    "arithmetic": "relL2_48 = relL2_span_end * geo^44 = 0.34288420919892776 * 1.277151745489193^44 = 16211.288730699043",
+    "mixed_vs_null_span_end_rel_l2_ratio": 2.0642603551440857,
+    "separated_from_null": false,
+    "logits": {
+      "mixed_kl_true_to_mixed": 0.00033482917007268535,
+      "mixed_top1": 8420,
+      "mixed_top1_agree": true,
+      "mixed_top5": [
+        8420,
+        22464,
+        5692,
+        39814,
+        99817
+      ],
+      "mixed_top5_overlap": 0.6,
+      "null_kl_true_to_null": 5.8802562205174413e-05,
+      "null_top1": 8420,
+      "null_top1_agree": true,
+      "null_top5": [
+        8420,
+        22464,
+        5692,
+        641,
+        99817
+      ],
+      "null_top5_overlap": 0.8,
+      "true_top1": 8420,
+      "true_top5": [
+        8420,
+        22464,
+        5692,
+        641,
+        12549
+      ]
+    },
+    "verdict": "GO_WITH_FIX",
+    "reason": "sub-span already multiplicative (geo 1.2772x/layer); 48-layer rel-L2 extrapolates to 16211.289",
+    "fix": {
+      "change": "protect first 4 and last 4 layers at 8-bit routed experts, keep mixed codecs on the middle 40; spend the 8->6-bit non-expert headroom if the protected mass still exceeds 1.5",
+      "protected_layer_fraction": 0.16666666666666666,
+      "identity_check": {
+        "complete_bpw_if_middle_stays_mixed_and_nonexpert_6bit": 1.3331010164551655
+      }
+    },
+    "capture_sufficiency": {
+      "index_status": "ok",
+      "index_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-index.v1",
+      "n_tokens": 25258,
+      "max_hidden_tokens_per_expert_policy": 192,
+      "row_cap_applied": 2048,
+      "row_sample_seed": 13682442,
+      "gate_proj": {
+        "organ": "gate_proj",
+        "fitted_dimension": 2048,
+        "n_layer_expert_pairs": 24576,
+        "zero_rows": 221,
+        "rows_lt_dimension_UNDERDETERMINED": 24326,
+        "frac_underdetermined": 0.9898274739583334,
+        "rows_ge_dimension_wellposed_for_score": 250,
+        "frac_wellposed_for_score": 0.010172526041666666,
+        "rows_ge_160_hgravs_rank_unclamped": 17040,
+        "rows_ge_64": 20794,
+        "min": 0,
+        "p10": 34.0,
+        "p50": 258.0,
+        "p90": 760.0,
+        "max": 2048,
+        "mean": 353.5095621744792
+      },
+      "up_proj": {
+        "organ": "up_proj",
+        "fitted_dimension": 2048,
+        "n_layer_expert_pairs": 24576,
+        "zero_rows": 221,
+        "rows_lt_dimension_UNDERDETERMINED": 24326,
+        "frac_underdetermined": 0.9898274739583334,
+        "rows_ge_dimension_wellposed_for_score": 250,
+        "frac_wellposed_for_score": 0.010172526041666666,
+        "rows_ge_160_hgravs_rank_unclamped": 17040,
+        "rows_ge_64": 20794,
+        "min": 0,
+        "p10": 34.0,
+        "p50": 258.0,
+        "p90": 760.0,
+        "max": 2048,
+        "mean": 353.5095621744792
+      },
+      "down_proj": {
+        "organ": "down_proj",
+        "fitted_dimension": 512,
+        "n_layer_expert_pairs": 24576,
+        "zero_rows": 221,
+        "rows_lt_dimension_UNDERDETERMINED": 19592,
+        "frac_underdetermined": 0.7972005208333334,
+        "rows_ge_dimension_wellposed_for_score": 4984,
+        "frac_wellposed_for_score": 0.20279947916666666,
+        "rows_ge_160_hgravs_rank_unclamped": 17040,
+        "rows_ge_64": 20794,
+        "min": 0,
+        "p10": 34.0,
+        "p50": 258.0,
+        "p90": 760.0,
+        "max": 2048,
+        "mean": 353.5095621744792
+      },
+      "receipt_screen_organs": {
+        "gate_up_screen_organs": [
+          {
+            "layer": 10,
+            "expert": 453,
+            "rows": 2921,
+            "dim": 2048,
+            "underdetermined": false
+          },
+          {
+            "layer": 3,
+            "expert": 494,
+            "rows": 2693,
+            "dim": 2048,
+            "underdetermined": false
+          }
+        ],
+        "down_screen_organs": [
+          {
+            "layer": 1,
+            "expert": 265,
+            "rows": 1361,
+            "dim": 512,
+            "underdetermined": false
+          },
+          {
+            "layer": 32,
+            "expert": 179,
+            "rows": 2909,
+            "dim": 512,
+            "underdetermined": false
+          },
+          {
+            "layer": 46,
+            "expert": 428,
+            "rows": 5511,
+            "dim": 512,
+            "underdetermined": false
+          },
+          {
+            "layer": 35,
+            "expert": 330,
+            "rows": 2124,
+            "dim": 512,
+            "underdetermined": false
+          }
+        ]
+      },
+      "verdict": {
+        "gate_up_typical_organ_UNDERDETERMINED": true,
+        "down_typical_organ_UNDERDETERMINED": true,
+        "receipt_down_proj_cosine_cannot_be_trusted": false,
+        "receipt_gate_up_cosine_is_busy_organ_only": true
+      },
+      "note": "gate/up X is router-input 2048-dim. down_proj X is post-SwiGLU 512-dim recomputed from the same retained router-input rows (silu(X @ W_gate.T) * (X @ W_up.T); verified in receipts/QWEN80_SWIGLU_INTERMEDIATE_VERIFY.json). Same row counts apply."
+    },
+    "reconstruction": {
+      "n_organs": 2048,
+      "down_cold_left_bf16": 9,
+      "hgravs_rank_clamped": 395,
+      "mean_gate_bpw": 1.126922607421875,
+      "mean_up_bpw": 1.2920794188976288,
+      "mean_down_bpw_fitted": 1.1520042961984946,
+      "mixed_expert_bpw_measured": 1.190335440839333,
+      "complete_bpw_8bit_nonexpert": 1.3924671422461694,
+      "complete_bpw_6bit_nonexpert": 1.3331010164551655,
+      "complete_bpw_4bit_nonexpert": 1.2737348906641617,
+      "wall_secs": 215.75038641600986
+    }
+  },
+  "probe_wall_secs": 101.334360084,
+  "probe_peak_rss_gib": 15.211349487304688,
+  "claim_boundary": {
+    "artifact_packed": false,
+    "decode_kernel_exists": false,
+    "coherence_generation_tested": false,
+    "teacher_forced_span_probe": true,
+    "full_autoregressive_generation_not_run": true
+  }
+}

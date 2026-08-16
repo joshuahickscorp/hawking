@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.old_repack_wall_ledger.v1",
+  "purpose": "G002 terminal-A: named-stage accounting of the HISTORICAL Q30 activation-weighted-SVD repack, reconciled to a real measured end-to-end wall.",
+  "provenance": "Independently verified by Claude from on-disk receipts + artifact mtimes (not taken on the prior Grok lane's word). Total is receipt-recorded; stage split is artifact-mtime-derived (the repack does NOT yet emit per-stage timers — closing that is the CURRENT-ledger instrumentation task).",
+  "reference_run": {
+    "candidate": "source-gated-v1",
+    "receipt": "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/source-gated-v1/QWEN30_ACTIVATION_WEIGHTED_SVD_V1_COMPLETE_GRAVITY_STATUS.json",
+    "elapsed_seconds_recorded": 4606.29,
+    "elapsed_min": 76.8
+  },
+  "stages": [
+    {"stage": "capture_load_activation_assembly", "wall_s": 40, "pct": 0.9, "method": "total - (snapshot->terminal mtime span 4566s)", "note": "loads the 4.1 GB capture-result.json; becomes the binding fixed cost once the fit sweep is optimized"},
+    {"stage": "per_organ_fit_selection_sweep", "wall_s": 4419, "pct": 96.0, "method": "mtime(SELECTION_RECEIPT 1786357756) - mtime(SOURCE_BINDING_SNAPSHOT 1786353337)", "note": "DOMINATOR. Per organ: load W + activations + 4 budget SVD fits (gram+eigh+SVD in _activation_weighted_svd_factors) + holdout + payload write. The 4 budgets each recompute the SAME max-rank factors -> ~4x redundant.", "code": "lab/operators/ascension_qwen30_activation_weighted_svd_repack.py"},
+    {"stage": "materialize_write_seal", "wall_s": 146, "pct": 3.2, "method": "mtime(TERMINAL/CANDIDATE 1786357902) - mtime(SELECTION_RECEIPT 1786357756)", "note": "baseline materialize + selected payload write (~9.9k files) + manifest seal"}
+  ],
+  "reconciliation": {"sum_stage_s": 4605, "receipt_total_s": 4606, "abs_error_s": 1, "pct_error": 0.02, "verdict": "RECONCILES"},
+  "range_across_real_runs_s": {
+    "activation-weighted-svd-v1": 328,
+    "all-layer-svd-mt8-v1": 3360,
+    "all-layer-activation-svd-v1": 3400,
+    "source-gated-v2": 4592,
+    "source-gated-v1": 4606,
+    "source-calibrated-v1": 6487,
+    "note": "config-dependent; source-gated ~77min is the reference. 328s run was a reduced-organ config."
+  },
+  "identified_speedup_lever": {
+    "mechanism": "shared-factor reuse: compute the max-rank activation-weighted SVD ONCE per organ, derive all 4 budgets from it (no recompute) + per-organ fit cache + BLAS single-thread pin.",
+    "measured_on_prior_lane": {"legacy_4x_codec_72organs_s": 42.2, "shared_factor_cold_72organs_s": 11.0, "speedup": 3.83, "cache_warm_48organs_s": 0.064},
+    "projected_wall": {"before_min": 77, "after_cold_first_pack_min": "22-25", "warm_repack_min": "3-4"},
+    "byte_identity": "prior lane: unit test 8/8 + 72 real organs 0 payload mismatches + cold-vs-warm same physical_payload_sha256 (MUST be re-verified on current tree before integration)",
+    "status": "STRANDED on branch grok/lane-repack-latency-20260810-104533 (HEAD a62a115e6 'wip: preserve lane source before reap'); NOT in current tree (arc/300k-integration). Operator diverged on both sides since merge-base e6e90e01d (branch +850, HEAD +66) -> needs a careful 3-way merge, not a checkout.",
+    "files": ["lab/operators/ascension_qwen30_activation_weighted_svd_repack.py", "lab/tests/test_activation_weighted_svd_pack_path.py"]
+  },
+  "current_ledger_todo": "Recover+verify the stranded shared-factor optimization (re-run byte-identity test on current tree), instrument the repack operator to emit per-stage timers, run ONE real end-to-end optimized repack (~22min, non-destructive location), and confirm sum(stage walls) ~= total. GATE: scout runnability/mutation verdict (repack-scout-20260814-033018) before launching a long mutating run."
+}

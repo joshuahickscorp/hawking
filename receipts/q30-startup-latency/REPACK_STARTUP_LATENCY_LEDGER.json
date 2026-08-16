@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.repack_startup_latency_ledger.v1",
+  "model": "qwen30_complete_binary_gravity_candidate",
+  "manifest_seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+  "machine": "M3 Ultra 96GB 28c darwin27",
+  "measurement": {
+    "binary": "target-parallel/release/examples/ascension_qwen30_complete_native_runtime",
+    "env": "HAWKING_STARTUP_TIMING=1",
+    "mode": "generate-greedy --max-new-tokens 2 --prompt-template source-user-chat",
+    "note": "startup_timing is a FLAT (name,ms) vec with no parent stack, so a raw SUM double-counts nested phases; exclusive time computed here from the top-level partition (runtime_load_total + generation_total + driver_glue).",
+    "cold_run": {"process_wall_ms": 13461, "admit_complete_binary_total_ms": 10193, "admit_payload_cold_rehash_ms": 9585, "metal_context_new_ms": 1284, "metal_shader_compile_ms": 1177},
+    "warm_runs_process_wall_ms": [2298, 2302, 2299, 2312, 2291, 2329],
+    "warm_driver_unattributed_pct": [2.2, 1.7]
+  },
+  "stages": [
+    {"stage": "runtime_load_total", "parent": "process", "warm_ms": 965, "cold_ms": 12100, "pct_warm_wall": 42, "frequency": "every process start", "cacheability": "warm-receipt cached (content sha proven once at cold admit)", "semantic_necessity": "must place model weights in RAM + build Metal context", "invalidation_key": "manifest_seal + per-file (size,mtime,inode) + sealed content sha", "current_target_ms": 400, "proposed_mechanism": "mmap payload instead of read-into-Arc (see admit_payload_warm_load_no_rehash); reuse Metal pipeline cache", "status": "warm path already sub-1s; target push to <400ms"},
+    {"stage": "admit_complete_binary_total", "parent": "runtime_load_total", "warm_ms": 815, "cold_ms": 10193, "pct_warm_wall": 35, "frequency": "every process start", "cacheability": "warm receipt", "semantic_necessity": "prove payload catalog is the sealed artifact", "invalidation_key": "manifest_seal + file identity", "current_target_ms": 200, "proposed_mechanism": "R1+R2 device-identity fix (SHIPPED) keeps warm receipt valid across remount so cold rehash is paid ONCE not per-reboot", "status": "cold 10193 -> warm 815 via warm receipt; durable across remount after R1+R2"},
+    {"stage": "admit_payload_warm_load_no_rehash", "parent": "admit_complete_binary_total", "warm_ms": 490, "cold_ms": 0, "pct_warm_wall": 21, "frequency": "every process start", "cacheability": "irreducible read of weight bytes, but representation-changeable", "semantic_necessity": "load every tensor payload into an immutable snapshot (size + header geometry proven, no content rehash)", "invalidation_key": "file identity", "current_target_ms": 150, "proposed_mechanism": "mmap the payload (map + prove header, upload to Metal from mapping) instead of read-into Arc<[u8]> host copy; measure warm_load before/after + bit-identity", "status": "OPEN — next admission target (G003/G004)"},
+    {"stage": "admit_warm_identity_recheck", "parent": "admit_complete_binary_total", "warm_ms": 85, "cold_ms": 0, "pct_warm_wall": 4, "frequency": "every process start", "cacheability": "cheap stat per payload file", "semantic_necessity": "prove files unchanged since cold verify", "invalidation_key": "(size,mtime,inode)", "current_target_ms": 85, "proposed_mechanism": "already <=100ms; single stat per file", "status": "MEETS <=100ms target"},
+    {"stage": "admit_source_chain", "parent": "admit_complete_binary_total", "warm_ms": 15, "cold_ms": 16, "pct_warm_wall": 1, "frequency": "every process start", "cacheability": "sealed source revalidation receipt", "semantic_necessity": "bind artifact to the BF16 source revision", "invalidation_key": "source file identity (device dropped, R1)", "current_target_ms": 15, "proposed_mechanism": "R1 dropped st_dev from hard-fail; already fast", "status": "MEETS target"},
+    {"stage": "runtime_construction_post_admit", "parent": "runtime_load_total", "warm_ms": 150, "cold_ms": 1750, "pct_warm_wall": 7, "frequency": "every process start", "cacheability": "Metal pipeline cache warm", "semantic_necessity": "Metal context + buffer uploads + tokenizer", "invalidation_key": "runtime executable + Metal driver", "current_target_ms": 100, "proposed_mechanism": "cold pipeline compile ~2.5s is warm-cached to ~24ms; remaining is buffer upload — candidate for upload-from-mmap", "status": "cold Metal 2.5s -> warm 24ms via pipeline cache"},
+    {"stage": "generation_total", "parent": "process", "warm_ms": 1288, "cold_ms": 1288, "pct_warm_wall": 56, "frequency": "per invocation (model work, NOT startup)", "cacheability": "N/A — real forward compute", "semantic_necessity": "prompt prefill (source-user-chat template, ~N tokens each a full 48-layer forward) + completion tokens", "invalidation_key": "prompt", "current_target_ms": null, "proposed_mechanism": "belongs to the whole-token TPS lane (G009), not admission; a Tier-1 SCREEN need not run full generation", "status": "RECLASSIFIED to G009 (TPS), not startup"},
+    {"stage": "driver_glue", "parent": "process", "warm_ms": 45, "cold_ms": 45, "pct_warm_wall": 2, "frequency": "every process start", "cacheability": "n/a", "semantic_necessity": "arg parse + exe sha256 (4.8MB) + json build", "invalidation_key": "n/a", "current_target_ms": 45, "proposed_mechanism": "already tiny; unattributed remainder 1.7-2.2% of wall", "status": "CLOSED — attribution complete for warm path"}
+  ],
+  "headline": {
+    "warm_process_wall_ms": 2300,
+    "warm_admission_load_ms": 965,
+    "warm_generation_ms": 1288,
+    "warm_unattributed_pct": 2.2,
+    "cold_process_wall_ms": 13461,
+    "cold_dominator": "admit_payload_cold_rehash 9585ms — paid ONCE after R1+R2 (was per-reboot due to st_dev warm-receipt invalidation)"
+  },
+  "open": [
+    "attack admit_payload_warm_load_no_rehash 490ms via mmap (G003/G004)",
+    "full cold-path exclusive ledger (currently only warm partition is <5% closed)",
+    "confirm activation-weighted (hgravs) artifact shares this warm receipt path",
+    "generation 1288ms -> G009 whole-token lane"
+  ]
+}

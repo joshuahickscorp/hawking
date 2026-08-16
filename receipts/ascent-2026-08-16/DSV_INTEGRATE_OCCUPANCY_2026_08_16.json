@@ -1,0 +1,116 @@
+{
+  "schema": "hawking.ascent.dsv_integrate_occupancy.v1",
+  "lane": "dsv-integrate-occupancy",
+  "date": "2026-08-16",
+  "status": "PARTIAL",
+  "recommendation": "HOLD",
+  "timing_label": "DIRTY_ENGINEERING",
+  "label_reason": "Other ascent lanes were running. GPU lock held for every Metal series. Cold first-touch bodies (8-14 s) discarded. Attention GPU is MTLCommandBuffer.GPUEndTime-GPUStartTime after wait, summed over attn CBs.",
+  "composed_onto": "main e3068e69 (joint-token-ns after 3-way dsv-integrate-graph 80594ce4). No wholesale file copy.",
+  "source_branch": "grok/dsv-occupancy-geometry-20260816-010044 fae64966",
+  "judgement": {
+    "question": "Can occupancy geometry be made bit-identical at modest cost?",
+    "bit_identical_ordered_all": {
+      "what": "Parallel compute of terms, then a serial left-fold matching the authority association.",
+      "sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "sha_match": true,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166,
+      "affordable": false,
+      "why": "16 KiB threadgroup dumps of the 4096-wide WO-A products (and the 128-wide FP8 blocks) destroyed occupancy. Cleanest A/B on that binary: attn GPU 125.557/129.816/130.963 ms -> 320.856/322.355/321.542 ms. A second low-TG ordered rewrite (1 KiB WO-A chunks + lane-0 serial FP8 blocks) stayed bit-identical and still lost: 128.666/131.821 -> 309.445/305.574 ms. Serial-equivalent reduction is not a modest-cost path for WO-A or FP8.",
+      "reps_attn_gpu_ms": {
+        "ordered_16kib_A": [129.816, 125.557, 130.963],
+        "ordered_16kib_B": [320.856, 322.355, 321.542],
+        "ordered_lowtg_A": [128.666, 131.821],
+        "ordered_lowtg_B": [309.445, 305.574]
+      },
+      "receipts": "receipts/ascent-2026-08-16/occ/occ-{A,B}{1,2,3}.json and occ2-*"
+    },
+    "bit_identical_rmsnorm_only": {
+      "what": "Q/KV RMSNorm and per-head RMS: stripe squares into TG, thread 0 left-folds, parallel apply.",
+      "sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "sha_match": true,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166,
+      "affordable": true,
+      "default": "HAWKING_DSV4F_MLA_RMSNORM_SIMD default on",
+      "attn_gpu_ms_dirty": {
+        "A_authority": [181.686, 157.292, 167.973],
+        "R_ordered_rms": [166.955, 154.710, 148.783]
+      },
+      "note": "Does not move the 127 ms attention wall. Isolated occupancy lane already priced rmsnorm.q 218->11 us; this is that win with authority-order reduction."
+    },
+    "opt_in_full_occupancy": {
+      "what": "Ordered RMSNorm + original occupancy simd_sum WO-A + widened FP8 grid. Not bit-identical.",
+      "env": "HAWKING_DSV4F_MLA_WO_A_SIMD=1 HAWKING_DSV4F_MLA_FP8_SIMD=1 (RMSNorm already on)",
+      "default": "off",
+      "hc_sha": "dddc9d81358a4f2b66e90094faa7db80f51b3a91ad22b8e124dc36b3e0538b5b",
+      "hc_sha_stable_across_B": true,
+      "greedy_token": 5,
+      "greedy_logit": 16.788509368896484,
+      "delta_vs_authority": 0.0066547393798828125,
+      "delta_vs_oracle": 0.021072368896484375,
+      "oracle_logit": 16.767437,
+      "authority_vs_oracle": 0.014417629516601562,
+      "closer_to_oracle_than_authority": false,
+      "top1": "token 5 on every A and B rep",
+      "attn_gpu_ms_dirty": [73.794, 77.239, 76.866, 73.088],
+      "vs_clean_authority_127ms": "73 ms dirty is still under the 127 ms integrate-graph median, but this is not the occupancy lane's 52.57 ms and is not shipped as default.",
+      "oracle_reframe": "The occupancy-geometry report's |delta|=0.001139 vs the CPU oracle was NOT reproduced. That number required simd_sum RMSNorm as well as simd_sum WO-A/FP8. With RMSNorm held to the authority fold, the remaining reassociation moves the logit FARTHER from the oracle (0.021) than the native authority already sits (0.014). The 'new reduction is closer to true' reading is RMSNorm-specific to that earlier binary, not a general fact about occupancy reductions.",
+      "per_layer_hidden_drift": "Not collected. HOLD does not accept this path as the identity, so a 43-layer hidden dump was not authorized as a ship gate.",
+      "what_breaks_if_hc_sha_moves": "hc_sha c94da765 is the DSV4F native-graph identity used by every prior ascent win (cb-collapse, no-copy binds, simdgroup KV QAT). A new SHA silently invalidates A/B identity checks, receipt seals, and any downstream that treats native HC bytes as a constant. Do not flip this default without an explicit numeric-equivalence review."
+    }
+  },
+  "defaults_shipped": {
+    "HAWKING_DSV4F_MLA_RMSNORM_SIMD": "1 (ordered, bit-identical)",
+    "HAWKING_DSV4F_MLA_WO_A_SIMD": "0",
+    "HAWKING_DSV4F_MLA_FP8_SIMD": "0",
+    "HAWKING_DSV4F_MLA_KV_QAT_SIMD": "1 (pre-existing)",
+    "HAWKING_DSV4F_CB_COLLAPSE": "1 (pre-existing)",
+    "authority_restore": "HAWKING_DSV4F_MLA_RMSNORM_SIMD=0 restores one-thread RMSNorm"
+  },
+  "existing_wins_on_default": {
+    "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "fallbacks": 0,
+    "expert_nocopy_binds": 43,
+    "expert_slab_packs": 0,
+    "command_buffers": 134,
+    "warm_authority_attn_gpu_ms": [125.557, 128.666, 129.816, 130.963, 131.821],
+    "warm_authority_body_ms": [981, 992, 1007, 1016, 1020],
+    "warm_authority_expert_slab_io_ms": [267.571, 276.356],
+    "note": "Warm A reps (occupancy flags forced off) keep the integrate-graph shape: attn ~127 ms, 43/43 no-copy, 0 fallbacks. Slab I/O 268-276 ms is in the same DIRTY band as integrate-graph's 239 ms median (spread there included 271.6)."
+  },
+  "default_confirmation": {
+    "run": "receipts/ascent-2026-08-16/occ/occ-default.json",
+    "env": "RMSNorm default on, WO-A/FP8 unset (off), KERNEL_PROBE=0, VERIFY=admission",
+    "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "greedy_token": 5,
+    "greedy_logit": 16.7818546295166,
+    "fallbacks": 0,
+    "expert_nocopy_binds": 43,
+    "attn_gpu_ms": 142.683,
+    "body_ms": 2934,
+    "label": "DIRTY_ENGINEERING"
+  },
+  "result": {
+    "baseline_attn_gpu_ns": 127236000,
+    "baseline_source": "dsv-integrate-graph warm median attn GPU, DIRTY_ENGINEERING",
+    "result_default_attn_gpu_ns": 127236000,
+    "result_default_source": "default path does not claim an attention-GPU wall win; warm authority pairs stay in the 125-132 ms band",
+    "result_optin_attn_gpu_ns": 73088000,
+    "result_optin_source": "occ3-B3 full occupancy, DIRTY_ENGINEERING, SHA dddc9d81, not default",
+    "baseline_body_ns": 829958833,
+    "baseline_body_source": "integrate-graph no-copy median body"
+  },
+  "negative_science_honored": [
+    "Did not retry collapsing 17 attention dispatches into one serial encoder.",
+    "Did not treat encoder gaps as the attention wall.",
+    "Did not flip the default to a non-bit-identical path.",
+    "Did not weaken hc_sha, fallback, or logit gates."
+  ],
+  "next_bottleneck": {
+    "on_default": "attention GPU still ~127 ms, occupancy-limited WO-A/WQ-A/WKV/WO-B on the authority one-thread-per-row grids. Host exclusive remains the token-level majority (clean A body ~1.0 s, host memcpy + file reads).",
+    "on_optin_occupancy": "attention GPU ~73 ms dirty (occupancy lane's cleanest was 52.57). Remaining isolated MLA: wq_b already 32768 threads, sparse_pos0 on 64 threads, then host exclusive.",
+    "measured_ns": 127236000
+  }
+}

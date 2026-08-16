@@ -1,0 +1,51 @@
+opening streaming catalog at /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/uniform-q4-group64-v1
+catalog tensors=74391 complete_physical_bpw=4.259241 claim=VELOCITY_BASELINE_NOT_BASE_TRUE_TPS
+running greedy decode prompt_chars=52 max_new_tokens=3
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+prompt_token_ids=[151644, 872, 198, 13048, 151645, 198, 151644, 77091, 198]
+generated_token_ids=[9707, 0, 2585]
+generated_text="Hello! How"
+prefill_secs=7.104315
+first_token_latency_secs=7.104315
+decode_secs=0.857996
+steady_state_tokens=2 steady_state_decode_secs=0.857996 steady_state_tok_s=2.331014
+peak_rss_bytes=6815055872
+fallback_count=804 (matvec=0 embed=0 vec=265 act=528 expert_bind=0 sample=11)
+native_q4_dispatches matvec=4367 embed=11 decode_vector=0 table_builds=528 table_waves=528 table_dispatches=2640
+stage_secs embed=0.1773 deltanet=2.0035 gqa=0.6803 moe_norm_router=0.0000 moe_shared=0.0000 moe_table_build=4.1001 moe_routed=0.0000 moe_combine=0.7621 terminal=0.2033 q4_matvec=0.0000 host_expert_bind=0.0000
+stage_ns embed=177314043 deltanet=2003539005 gqa=680272578 moe_norm_router=0 moe_shared=0 moe_table_build=4100140625 moe_routed=0 moe_combine=762144912 terminal=203292372 q4_matvec=0 host_expert_bind=0
+activation_ns shared_swiglu=1023457 shared_mlp_sandwich=110600137 deltanet_conv=1312842 deltanet_recurrent=2313250 gqa_input_layernorm=4293039 gqa_norm_rope=693252 other_host_activation=6273602 metal_matvec_sync=0
+complete_physical_bpw=4.259241 claim=VELOCITY_BASELINE_NOT_BASE_TRUE_TPS metal_q4_matvec_used=true
+wrote receipts/ascent-2026-08-16/q80-ns-ledger-run.json
+wrote compact ledger receipts/ascent-2026-08-16/q80-ns-ledger.json (38106 bytes)
+stage                    substage                      status           calls  ns/call        ns/token    %    class            identity
+embed                    gather_cb                     measured           1.0     270104         270104   0.1 GPU              SUM
+deltanet                 prefix_cb_mixed               measured          36.0    2589588       93225166  21.7 GPU              SUM
+gqa                      prefix_cb_mixed               measured          12.0    2746554       32958645   7.7 GPU              SUM
+moe_norm_router          gpu_in_prefix                 absorbed          48.0       3306         158670   0.0 GPU              nested
+moe_shared               gpu_in_prefix                 absorbed          48.0       7786         373708   0.1 GPU              nested
+moe_table_build          host_address_table            measured          48.0    5130914      246283892  57.4 CPU              SUM
+moe_routed               gpu_in_suffix                 absorbed          48.0      25419        1220105   0.3 GPU              nested
+moe_combine              suffix_cb_mixed               measured          48.0    1113535       53449686  12.5 GPU              SUM
+terminal                 norm_lm_head_cb               measured           1.0    2073729        2073729   0.5 GPU              SUM
+q4_matvec                fused_into_mixed_cbs          absorbed         397.0       2055         815895   0.2 GPU              nested
+host_expert_bind         host_payload_fallback         not_applicable     0.0          0              0   0.0 CPU              nested
+router_readback          memcpy_512_f32                measured          48.0       1686          80920   0.0 synchronization  SUM
+host_topk                softmax_top10                 measured          48.0      10876         522064   0.1 CPU              SUM
+logits_readback          memcpy_vocab_f32              measured           1.0      17312          17312   0.0 synchronization  SUM
+host_argmax              lowest_id_greedy              measured           1.0      91896          91896   0.0 CPU              SUM
+inter_phase_gap          unmarked_host                 measured           1.0       6062           6062   0.0 CPU              SUM
+activation               shared_swiglu                 measured          48.0       1424          68351   0.0 CPU              nested
+activation               shared_mlp_sandwich           measured          48.0       7677         368478   0.1 CPU              nested
+activation               deltanet_conv                 measured          36.0       2480          89272   0.0 CPU              nested
+activation               deltanet_recurrent            measured          36.0       4396         158249   0.0 CPU              nested
+activation               gqa_input_layernorm           measured          12.0      10363         124354   0.0 CPU              nested
+activation               gqa_norm_rope                 measured          12.0       3047          36564   0.0 CPU              nested
+activation               other_host_activation         measured          48.0       9899         475144   0.1 CPU              nested
+activation               metal_matvec_sync             not_applicable     0.0          0              0   0.0 synchronization  nested
+SUM(identity stages)=428979478 ns   wall=428985708 ns   residual=6231 ns (0.001% of wall)
+identity n=2 mean_wall_ns=428985708 mean_sum_ns=428979478 mean_residual_ns=6231 holds_all=true residual=inter_phase_gap_plus_seal_jitter
+totals token_ns=428985708 gpu_busy_ns=136320720 gpu_idle_ns=292664988 gpu_gap_ns=292248887 cpu_critical_ns=250907959 cbs=98 disp=1155 syncs=98 readbacks=49 buf_create=0 buf_rebind=48 dram=1892511808 temp=83787012
+catalog_complete=true silent_zero_stages=[]
+token_ns_ledger verdict=sync-bound wall_ms=429.0 gpu_ms=136.3 wait_ms=176.6 cbs=98 disp=1155 weight_gib=1.763 implied_gb_s_gpu=Some(13.882789065804564)
+rationale=host-visible work + post-wait sync is 246.9 ms (58% of wall). GPU starves on route extraction / expert packing / scalar readbacks.

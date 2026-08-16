@@ -1,0 +1,236 @@
+{
+  "schema": "hawking.ascent.cross_adversarial.v1",
+  "lane": "cross-adversarial",
+  "date": "2026-08-16",
+  "status": "SHIPPED",
+  "role": "REFUTE_NOT_BUILD",
+  "timing_label": "N/A",
+  "box": "Apple M3 Ultra, other ascent lanes running; every foreign timing cited below stays DIRTY_ENGINEERING",
+  "method": [
+    "Read receipts/ and receipts/ascent-2026-08-16/ including the parent-tree copies lanes published after this worktree was cut.",
+    "Read ASCENT_STATE.json (worktree 7088 B and parent 15590 B).",
+    "Diff grok/*-20260816-* branches and live worktree uncommitted rust/python for assertion, seal, threshold, hc_sha, and 0.05-logit edits.",
+    "Re-parse raw pair/rep JSON (not just summaries) and recompute medians, BPW identity, and token-id equality.",
+    "Did not modify runtime or representation code. Did not run a GPU benchmark."
+  ],
+  "gate_weakening": {
+    "this_wave": "NONE_FOUND",
+    "searched": [
+      "grok/dsv-host-wall-20260816-001740 commit 4b57d761",
+      "grok/dsv-cb-collapse-20260816-001742 uncommitted + pair receipts",
+      "q80-decode-kernels, q80-pack, q80-coherence-probe uncommitted rust/python"
+    ],
+    "preexisting_not_introduced_here": {
+      "finding_id": "P2-DSV-E2E-SHA-WARN",
+      "file": "crates/hawking-core/tests/dsv4f_native_token_graph_e2e.rs",
+      "lines": "23-70",
+      "defect": "The 43-layer native-graph e2e skips unless HAWKING_DSV4F_NATIVE_GRAPH_E2E=1, and on SHA mismatch it only eprintln!s. Load-bearing asserts are token_id plus logit ±0.05 and fallbacks==0. Present since graft commit c16dd051. Host-wall and cb-collapse did not edit this file."
+    }
+  },
+  "findings_ranked": [
+    {
+      "id": "P1-MIXED-CLEARS-BAR-FALSE",
+      "severity": "P1",
+      "claim": "receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json: gate_proj binary_group clears the 0.8604 bar (clears_bar: true, cosine_range [0.8586, 0.8932]); mixed recipe is a SCREEN_PASSED <=1.5 envelope at complete_bpw 1.43051.",
+      "defect": "The cited frontier file marks one of the two screen organs as FAIL. model.layers.3.mlp.experts.494.gate_proj.weight binary_g cosine=0.8585935762823004, clears_bar=false, verdict=fail. The mixed receipt takes the failing low end of the range and still sets clears_bar true. Organ cosine is a screen; this screen does not pass on its own cited organs.",
+      "evidence": {
+        "mixed": "receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json:7-16",
+        "frontier": "receipts/QWEN80_REPRESENTATION_FRONTIER_SWEEP.json:132-139",
+        "command": "python3: binary_g on L3E494 gate_proj is FAIL 0.858594"
+      }
+    },
+    {
+      "id": "P1-DOWN-R160-UNSOURCED",
+      "severity": "P1",
+      "claim": "down_proj codec is hgravs01_r160_b3 at expert_bpw 1.27 with cosine_range [0.8862, 0.8978], clears_bar true. This number is now the pack-lane contract, the decode-kernel rank, the resident-gravity envelope, and the coherence-probe rank.",
+      "defect": "r160 does not exist in any measurement receipt except the mixed summary that asserts it. receipts/QWEN80_DOWN_PROJ_FRONTIER_SWEEP.json has hgravs01_r192_b3 at 1.536 BPW (over-budget) and hgravs01_r256_b3 at 2.04 BPW. Zero candidates in that file both clear 0.8604 and fit the 1.3012 8-bit-nonexpert allowance. The exact cosine 0.8862304940652768 appears in QWEN80_RESIDUAL_ENCODING.json as rice_q4_absmax on gate_proj L3E494, not as an r160 down_proj score. 0.8978 does not appear in any QWEN80 evidence file besides the mixed summary.",
+      "evidence": {
+        "mixed_only_r160": "rg r160 receipts/QWEN80*.json -> only MIXED_REPRESENTATION_UNDER_1_5.json",
+        "down_in_budget_and_clears": 0,
+        "propagated_into": [
+          "docs/QWEN80_MIXED_1P5_PACKED_FORMAT.md (q80-pack)",
+          "q80-decode-kernels.json geometry.hgravs_rank=160",
+          "lab/operators/dsv4f_resident_gravity.py Q80_W2_BPW=1.27",
+          "lab/operators/q80_coherence_layer_drift_probe.py DOWN_BPW_RECEIPT=1.27 rank=160"
+        ]
+      }
+    },
+    {
+      "id": "P1-SCREEN-BELOW-NULL-AND-UNDERDETERMINED",
+      "severity": "P1",
+      "claim": "Organ cosines 0.86-0.90 on two busy experts justify a mixed <=1.5 density frontier.",
+      "defect": "Standing law: raw activation cosine null baseline is 0.898. up_proj rice_q1_rms@2% scores 0.864163/0.865237, below null. gate_proj binary is 0.8586-0.8932, at or below null. The claimed down range 0.8862-0.8978 is also at or below null. q80-coherence-probe's own capture census then shows the screen organs are the 1.02% well-posed tail: 24326/24576 gate/up layer-expert pairs are UNDERDETERMINED (rows < 2048). Typical down organ is also underdetermined (19592/24576, rows < 512). A busy-organ screen on L10E453/L3E494 cannot be generalized.",
+      "evidence": {
+        "null_law": "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science",
+        "up_scores": "receipts/QWEN80_RESIDUAL_ENCODING.json rice_q1_rms outlier_frac=0.02",
+        "census": "q80-coherence-probe receipts/.../Q80_COHERENCE_LAYER_DRIFT_PROBE.json analysis.capture_sufficiency"
+      }
+    },
+    {
+      "id": "P1-Q80-403MS-NOT-A-LEGAL-MEASUREMENT",
+      "severity": "P1",
+      "claim": "ASCENT_STATE incumbents.q80.measured_ns_per_token = 403000000 DIRTY_ENGINEERING from Q80_BASELINE_2026_08_16.json (2.479 tok/s).",
+      "defect": "Single 11-token CPU-wall decode, no paired reps, no spread, no GPUEndTime-GPUStartTime, 1637 counted fallbacks (host_activation 1344 = 28 tokens * 48 layers, host_q4_vector_decode 265 with q4_decode_vector_dispatches=0, host_sample 28). Stage bucket q4_matvec_secs is 0.0 despite metal_q4_matvec_used true. Binary path is not recorded. Same artifact, other receipts on this box: PROFILE8 Hi-prompt 1.788 tok/s (559 ms, 7 tokens); velocity-pair count-prompt 2.24-4.32 tok/s (232-447 ms, 35 tokens). QWEN80_TOKEN_NS_LEDGER.json (Hi, 7 decode tokens, GPU timestamps) has decode wall median 571.51 ms and GPU median 175.04 ms. 403 ms is not GPU time and is not a 0-fallback run.",
+      "evidence": {
+        "baseline": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json",
+        "ids_do_match_required": [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914],
+        "ledger_gpu": "receipts/QWEN80_TOKEN_NS_LEDGER.json tokens[decode] gpu_ns sum median 175.04 ms"
+      },
+      "what_survives": "generated_token_ids on the reverse-string prompt are exactly the required sequence. Artifact BPW 4.259241 is correctly rejected as tournament-invalid."
+    },
+    {
+      "id": "P1-CB-COLLAPSE-SHIPPED-ON-COLD-MEDIAN",
+      "severity": "P1",
+      "claim": "dsv-cb-collapse.json status=SHIPPED. baseline_median 2264.7 ms/token -> result_median 1463.7 ms/token. GPU 412->377 ms on last pair. 137->134 CBs.",
+      "defect": "The 3-point A set is [12902, 2264, 1652] ms. pair1A is a page-cache/contention 12.9 s run (host_exclusive 9401 ms, GPU only 606 ms). Median of that set is pair2A 2264 ms. pair1B 1463 ms is the first B, run immediately after the 12.9 s A, so it inherits the warm page cache. Warm last-two pairs: A 2264/1652 vs B 1716/1447 — B is not uniformly faster (B2 1716 > A3 1652). Host-wall warm body on the same artifact/binary class is 1024-1067 ms; both A and B are slower than the published DSV4F authority. Topology change is 3 CBs (hash-layer route+moe merge) plus encoder batching, not a collapse of the 137-CB wait-per-CB hypothesis. GPU B is stably 377.085/378.531/377.122 ms (real GPU timestamps, 0 missing CBs) — a ~35 ms GPU movement, not a 800 ms body win.",
+      "evidence": {
+        "summary": "receipts/ascent-2026-08-16/dsv-cb-collapse.json result.baseline_median_ns_per_token=2264718167",
+        "raw": "pair1A.stderr body_ms=12902; pair1B body_ms=1463; pair2A 2264; pair2B 1716; pair3A 1652; pair3B 1447",
+        "host_wall_authority": "DSV4F_HOST_WALL_BASELINE.json R2-R6 body_ms [1067, 1033, 1040, 1037, 1024]"
+      },
+      "what_survives": "hc_sha c94da765…, greedy token 5, logit 16.781855, fallbacks 0 on every pair. GPU timestamps present on 137/137 and 134/134 CBs. They correctly refuse to collapse attn/moe (host MHC) and lm_head tiles."
+    },
+    {
+      "id": "P1-DECODE-192MS-NOT-A-TOKEN",
+      "severity": "P1",
+      "claim": "q80-decode-kernels.json result_ns_per_token=192000000 vs baseline 403000000. decode_kernel_exists true. 48*10*(gate+up+down) GPU.",
+      "defect": "192 ms is 480 isolated organ dispatches on deterministic_matrix / deterministic_input, graded against the packed-artifact CPU oracle, not the BF16 parent (claim_boundary.not_bf16_parent_parity=true, not_full_token_runtime=true). Baking that product into result_ns_per_token next to the Q80 full-token 403 ms incumbent is a unit error. Rank 160 is the unsourced down_proj point (P1-DOWN-R160-UNSOURCED). An earlier write of this same receipt had up_proj serial rice at 15.609 ms/organ (wave 7.652 s); the live file rejects that path (rice_per_token_serial_rejected_as_token_path) and reports CSR apply 78-82 us. Protocol of the microbench itself is fine: warmup 2, 6 GPU-timestamped reps, 0 fallbacks, spread reported, DIRTY_ENGINEERING.",
+      "evidence": {
+        "receipt": "q80-decode-kernels worktree receipts/ascent-2026-08-16/q80-decode-kernels.json",
+        "weights": "crates/.../ascension_qwen80_mixed_decode_kernel_parity.rs:208-213 deterministic_matrix",
+        "reps_up_us": [82, 78, 80, 78, 80, 79],
+        "reps_gate_us": [66, 60, 60, 61, 59, 61],
+        "reps_down_us": [259, 259, 257, 259, 260, 262]
+      }
+    },
+    {
+      "id": "P1-COHERENCE-4LAYER-EXTRAPOLATION-AS-GO",
+      "severity": "P1",
+      "claim": "Q80_COHERENCE_LAYER_DRIFT_PROBE.json status=GO_WITH_FIX because mixed rel-L2 geo-grows 1.277x/layer and 0.3429 * 1.277^44 = 16211 at layer 48. Protect first/last 4 layers.",
+      "defect": "Only span [0,4] was teacher-forced. The three measured mixed growth ratios are 1.733, 1.229, 0.978 — the last step shrinks. Projecting a 3-point geo-mean across 44 unmeasured layers is not a 48-layer measurement. mixed last-token cosine [0.989, 0.971, 0.980, 0.978] is not separated from their own null [0.987, 0.974, 0.988, 0.986] (separated_from_null=false). Null top-1 also agrees (8420); null KL 5.88e-5 is better than mixed KL 3.35e-4. Their null is a shuffled weight residual (same error energy), not the standing-law constant-mean activation null. 395/2048 organs had hgravs rank clamped to n_fit (rank=min(160, rows)), the pattern negative science forbids. coherence_generation_tested remains false. A 4-layer teacher-forced residual probe that cannot beat its own null is not a GO.",
+      "evidence": {
+        "receipt": "q80-coherence-probe receipts/ascent-2026-08-16/Q80_COHERENCE_LAYER_DRIFT_PROBE.json",
+        "probe_actually_ran": "probe_wall_secs=101.33 reconstruction.wall_secs=215.75",
+        "null_construction": "lab/operators/q80_coherence_layer_drift_probe.py:240-244 shuffle(hat-src)"
+      },
+      "what_survives": "The capture-sufficiency census is the most useful object in that receipt: typical gate/up organ is underdetermined. That part should be treated as a substrate finding, not as support for GO_WITH_FIX."
+    },
+    {
+      "id": "P2-VELOCITY-PAIRS-COLD-BEFORE1",
+      "severity": "P2",
+      "claim": "receipts/q80-velocity-pairs/ before/after and final_before/final_after show an optimization win on the count-1-to-80 prompt.",
+      "defect": "before_1 is 2.238 tok/s (447 ms); before_2/3 are 3.204/3.232 tok/s. after_1/2/3 are 3.239/3.374/3.305 tok/s — indistinguishable from warm before. The first-run hole is the same page-cache confound the brief names. final_before 3.132-3.297 vs final_after 4.065-4.318 is a larger sequential shift but is not alternating A,B,A,B,A,B, is CPU wall, has 3401 fallbacks, uses a different prompt than the required Q80 id list, and is DIRTY. kernel_* files use 19 tokens and cannot be paired with the 35-token set.",
+      "evidence": {
+        "before_tps": [2.2381102710373515, 3.2042566567073436, 3.231965953177863],
+        "after_tps": [3.238758325858331, 3.3739377640025627, 3.304812603847097],
+        "final_before_tps": [3.296709584672231, 3.131227169882743, 3.1846337721224502],
+        "final_after_tps": [4.065258806075409, 4.317690307260934, 4.104415128477231]
+      }
+    },
+    {
+      "id": "P2-LANDMINE-NO-METAL-BASELINE",
+      "severity": "P2",
+      "claim": "receipts/QWEN80_UNIFORM_Q4_VELOCITY_BASELINE.json is named as the uniform-Q4 velocity baseline.",
+      "defect": "execution.metal_error='metal: no Metal-capable GPU', metal_q4_matvec_used=false, 46509 fallbacks, generated_token_ids=[9707,0,2585] ('Hello! How'), 2 tokens at 0.326 tok/s. This is a CPU-only skip that reads as a baseline. ASCENT_STATE correctly cites Q80_BASELINE_2026_08_16.json instead; the filename remains a trap.",
+      "evidence": "receipts/QWEN80_UNIFORM_Q4_VELOCITY_BASELINE.json:34-72"
+    },
+    {
+      "id": "P2-RESIDENT-GRAVITY-STALE-3S-AND-OPENED-ZERO-CHUNKS",
+      "severity": "P2",
+      "claim": "dsv-resident-gravity.json: <=1.5 DSV4F would fit 96 GiB; next bottleneck is a 21846-token capture at 3.275/3.323/3.425 s = ~20 h. chunk_sha_matches true.",
+      "defect": "Claim boundary is otherwise honest (QUALITY_UNPROVEN, no pack, no fit, no generation). Two defects: (1) identity.chunks_opened=0 and chunk_sha_matches compares the manifest field to EXPECTED_CHUNK_SHA256 — no chunk body was hashed. (2) streamed baseline 3275-3425 ms is the pre-simdgroup DSV4F_TOKEN_NS_LEDGER.json; host-wall superseded it at 1024-1067 ms and parent ASCENT_STATE now marks the 3.3 s figure stale. Arithmetic (f_routed=0.97431, 1.5 complete = 50.83 GiB, compressed MLA KV 5.41 GiB at 1M) is internally consistent with their official kv_cache_size = window + seq//ratio formula. They copied the unsourced Q80 r160=1.27 rate as an unfitted envelope.",
+      "evidence": {
+        "receipt": "receipts/ascent-2026-08-16/dsv-resident-gravity.json",
+        "chunks_opened": 0,
+        "stale_reps_body_ms": [3275, 3323, 3425]
+      }
+    },
+    {
+      "id": "P2-ASCENT-STATE-STALE-FRONTIER-FLAGS",
+      "severity": "P2",
+      "claim": "Parent ASCENT_STATE incumbents.q80_density_frontier.decode_kernel_exists=false; q80 measured_ns_per_token still 403e6; dsv4f now cites host-wall.",
+      "defect": "A decode-kernel receipt exists (component, synthetic). The 403 ms incumbent remains the registered Q80 number despite P1-Q80-403MS. Density frontier 1.43051 is still listed as SCREEN_PASSED after P1-MIXED-CLEARS-BAR-FALSE. Controller history is empty.",
+      "evidence": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/ASCENT_STATE.json"
+    }
+  ],
+  "confirmed_solid": [
+    {
+      "claim": "Q80 reverse-string generated ids",
+      "detail": "Q80_BASELINE_2026_08_16.json generated_token_ids == [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914]. Bit-identical to the required list."
+    },
+    {
+      "claim": "Q80 uniform-Q4 cannot satisfy the 1.5 complete-physical ceiling",
+      "detail": "complete_physical_bpw 4.259241, tournament_valid false. Correctly abandoned as a density target."
+    },
+    {
+      "claim": "Q80 cross-expert shared basis is orthogonal",
+      "detail": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json pairwise_cosine_mean gate 0.00414, up -6e-5. Standing negative science holds."
+    },
+    {
+      "claim": "Q80 is not simply bandwidth-bound",
+      "detail": "QWEN80_TOKEN_NS_LEDGER.json: implied 8.16 GB/s vs 819 GB/s peak (0.996%), GPU 41% of wall on that profile; after-opt note 15 GB/s, GPU 125/244 ms. Standing 0.79%/51%-idle figure is the same class of measurement. Dispatch/host bound, not DRAM-roof bound."
+    },
+    {
+      "claim": "DSV4F route-ID readback serializer remains refuted",
+      "detail": "host-wall and cb-collapse both record 40 route-id readbacks, ~0.1 ms. Not the token wall."
+    },
+    {
+      "claim": "DSV4F host-wall warm baseline (timing protocol)",
+      "detail": "6 process-per-token reps, R1 8408 ms discarded as cold, R2-R6 body 1067/1033/1040/1037/1024 ms, GPU 407.6/400.2/399.0/398.0/396.5 ms from GPUEndTime-GPUStartTime, 137/137 CBs observed, 0 missing, 0 fallbacks, hc_sha c94da765 stable, greedy token 5, binary at workspace/ops/build/rust/release-fast/examples/gravity_deepseek_v4_native_token_graph, DIRTY_ENGINEERING labeled. Code diff is counters + second-touch probe after body_ns snapshot, not operator change. This is the DSV4F timing authority. Caveat: BOS-window-only graph; native SHA != CPU oracle d541c0a25 (pre-existing)."
+    },
+    {
+      "claim": "SwiGLU formula used for down_proj X",
+      "detail": "QWEN80_SWIGLU_INTERMEDIATE_VERIFY.json three pairs, cosine >= 0.999999999997 against silu(X@Wg.T)*(X@Wu.T)."
+    },
+    {
+      "claim": "No this-wave assertion/seal/threshold weakening",
+      "detail": "Host-wall added classification unit tests. cb-collapse added census asserts 1857/137. Decode-kernels/pack/coherence did not edit existing gates."
+    },
+    {
+      "claim": "Resident-gravity claim boundary text",
+      "detail": "They refuse to declare <=1.5 DSV4F a success. Arithmetic-only, Q80 rates unfitted, experts already FP4."
+    }
+  ],
+  "q80_token_id_gate": {
+    "required": [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914],
+    "Q80_BASELINE_2026_08_16": "MATCH",
+    "QWEN80_UNIFORM_Q4_VELOCITY_PROFILE8": "DIFFERENT_PROMPT_Hi",
+    "q80-velocity-pairs": "DIFFERENT_PROMPT_count_1_to_80",
+    "QWEN80_UNIFORM_Q4_VELOCITY_BASELINE": "NO_METAL_AND_DIFFERENT_PROMPT"
+  },
+  "dsv4f_hc_sha": {
+    "native_expected_and_observed": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "cpu_oracle": "d541c0a25a3bef30dac153d9bf7d1714aebfb4462af1bfb8b4648c1ea5e50c69",
+    "host_wall_and_cb_collapse": "native SHA preserved, 0 fallbacks, token 5, logit 16.7818546295166 vs oracle 16.767437 (delta 0.0144 <= 0.05)"
+  },
+  "incumbent_timing_after_audit": {
+    "q80_registered": {
+      "ns_per_token": 403000000,
+      "label": "DIRTY_ENGINEERING",
+      "audit": "DO_NOT_TREAT_AS_GPU_OR_ZERO_FALLBACK_OR_PAIRED"
+    },
+    "q80_gpu_decode_median_from_ledger": {
+      "ns_per_token": 175040000,
+      "wall_ns_per_token_median": 571510000,
+      "label": "DIRTY_ENGINEERING",
+      "n_decode_tokens": 7,
+      "source": "receipts/QWEN80_TOKEN_NS_LEDGER.json"
+    },
+    "dsv4f_host_wall_authority": {
+      "body_ns_median": 1037764208,
+      "gpu_ns_median": 399023000,
+      "host_exclusive_ns_median": 564853792,
+      "label": "DIRTY_ENGINEERING",
+      "reps_body_ms_warm": [1067, 1033, 1040, 1037, 1024]
+    }
+  },
+  "next_bottleneck": {
+    "name": "DSV4F host.expert_slab_io (streamed top-6 expert read + metal fill, GPU-idle) then metal.gpu across 137 CBs",
+    "ns_per_token": 415126416,
+    "after_that_ns": 399023000,
+    "label": "DIRTY_ENGINEERING",
+    "source": "DSV4F_HOST_WALL_BASELINE.json",
+    "q80_note": "Q80 wall is still a hybrid host+metal token with ~175 ms GPU / ~400-570 ms CPU-wall and 1637-3401 fallbacks; density <=1.5 is not a packed generated artifact."
+  },
+  "files_read_not_modified_runtime": true
+}

@@ -1,0 +1,91 @@
+{
+  "schema": "hawking.q80.capture_index.measurement.v1",
+  "status": "MEASURED_EQUIVALENT",
+  "machine": {
+    "cpu_brand": "Apple M3 Ultra",
+    "cpu_count": 28,
+    "machine": "arm64",
+    "platform": "Darwin",
+    "release": "27.0.0",
+    "unified_memory_bytes": 103079215104
+  },
+  "source_json": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-result.json",
+    "bytes": 1376514503,
+    "mtime_ns": 1786787804209496869,
+    "sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe"
+  },
+  "capture_run_used_for_measure": "/Users/scammermike/.claude-grok/worktrees/q80-capture-index-20260815-193001/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64",
+  "index_build": {
+    "status": "WRITTEN",
+    "wall_s": 11.364516499990714,
+    "sidecar_bytes": 167968842,
+    "sidecar_mib": 160.189,
+    "index_dir": "/Users/scammermike/.claude-grok/worktrees/q80-capture-index-20260815-193001/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-index.v1",
+    "n_rows": 1212384,
+    "n_hidden_rows": 897212,
+    "n_tokens": 25258,
+    "n_keys": 24355,
+    "n_expert_entries": 12123840,
+    "n_key_hits": 8972120,
+    "hidden_width": 2048,
+    "all_layer_capture": true,
+    "capture_schema": "hawking.ascension.qwen80_broad_activation_all_layer_route_capture_result.v1",
+    "note": "1,212,384 layer-rows = 25,258 tokens × 48 layers. 897,212 hidden rows matches bounded_storage.hidden_rows_retained_total. 24,355 keys = 24,576 LE pairs − 221 never-routed."
+  },
+  "census": {
+    "json_wall_s": 1112.182256916989,
+    "index_wall_s": 0.05699908400129061,
+    "speedup": 19512.28298496527,
+    "n_keys": 24355,
+    "token_expert_pairs": 8972120,
+    "n_tokens": 25258,
+    "identical": true
+  },
+  "collect_2key": {
+    "keys": [[10, 453], [3, 494]],
+    "json_wall_s": 1099.9774175000057,
+    "index_wall_s": 6.084407208007178,
+    "speedup": 180.78629189256392,
+    "byte_identical": true,
+    "shapes": {
+      "L10.E453": [2921, 2048],
+      "L3.E494": [2693, 2048]
+    },
+    "matches_existing_prescription_hit_counts": true
+  },
+  "row_cap": {
+    "max_rows_per_expert": 2048,
+    "row_sample_seed": 13682442,
+    "bit_identical": true,
+    "method": "subsample_expert_rows applied to the JSON collect matrices, compared to collect_expert_activations(..., max_rows_per_expert=2048) on the index path. json_apply_wall_s is not a JSON parse.",
+    "json_apply_wall_s": 0.1165809999947669,
+    "index_collect_wall_s": 3.9612370830000145
+  },
+  "equivalence_checks": {
+    "count_expert_activations_full_dict_identical": true,
+    "collect_expert_activations_L10_E453_and_L3_E494_byte_identical": true,
+    "row_cap_max_rows_2048_seed_0xD0C70A_bit_identical": true
+  },
+  "validity_binding": {
+    "load_time": "size_and_mtime_ns",
+    "sha256_recorded_at_build": true,
+    "sha256_rechecked_on_query": false,
+    "why_not_rehash_on_query": "Hashing 1.38 GB on every doctor6/probe call would recreate the wall this index exists to remove. size+mtime_ns is the load-time bind. A mismatch ignores the sidecar and falls back to the JSON path. Never served stale.",
+    "stale_sidecar_is_ignored": true
+  },
+  "how_to_install_next_to_the_json": {
+    "default_location": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-index.v1",
+    "or_env": "HAWKING_CAPTURE_INDEX=<this worktree overlay>/capture-index.v1",
+    "build": "python -m lab.operators.q80_capture_index --capture <capture-dir>",
+    "note": "This measurement wrote the sidecar beside a worktree overlay (symlinks to the main-tree JSON and hidden/) because the main-tree capture directory was not writable from the sandboxed builder. Copy or rebuild next to the real JSON so doctor6 on the main path picks it up with no env var."
+  },
+  "claim_boundary": {
+    "does_not_change_retention_or_sampling": true,
+    "does_not_touch_dsv4f": true,
+    "json_path_unchanged_when_sidecar_absent_or_stale": true,
+    "speedup_is_measured_not_asserted": true,
+    "census_speedup_is_not_inflated": true,
+    "collect_2key_still_opens_the_hidden_files": true
+  }
+}

@@ -20,11 +20,25 @@ def main(argv: list[str] | None = None) -> int:
     p_pre.add_argument("--capture", type=Path, default=None)
     p_pre.add_argument("--target-bpw", type=float, default=1.0)
     p_pre.add_argument("--target-cos", type=float, default=None)
-    p_pre.add_argument("--le-per-band", type=int, default=4)
+    p_pre.add_argument(
+        "--le-per-band",
+        type=int,
+        default=None,
+        help="LE pairs sampled per layer band (default: prescribe.LE_PER_BAND)",
+    )
     p_pre.add_argument("--min-rows", type=int, default=64)
     p_pre.add_argument("--device", default="auto")
     p_pre.add_argument("--qat-steps", type=int, default=200)
     p_pre.add_argument("--qat-lr", type=float, default=1e-3)
+    p_pre.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help=(
+            "parallel organ workers (default: measured from available "
+            "parallelism and free memory, capped at 32 GiB peak)"
+        ),
+    )
     p_pre.add_argument(
         "--out",
         type=Path,
@@ -56,6 +70,15 @@ def main(argv: list[str] | None = None) -> int:
     p_tr.add_argument("--device", default="auto")
     p_tr.add_argument("--qat-steps", type=int, default=200)
     p_tr.add_argument("--qat-lr", type=float, default=None)
+    p_tr.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help=(
+            "parallel organ workers (default: measured from available "
+            "parallelism and free memory, capped at 32 GiB peak)"
+        ),
+    )
     p_tr.add_argument(
         "--out",
         type=Path,
@@ -123,16 +146,17 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "prescribe":
         from lab.operators.doctor6.coherence import LAYER_TARGET_COS
-        from lab.operators.doctor6.prescribe import prescribe
+        from lab.operators.doctor6.prescribe import LE_PER_BAND, prescribe
 
         target_cos = float(args.target_cos) if args.target_cos is not None else LAYER_TARGET_COS
+        le_per_band = int(args.le_per_band) if args.le_per_band is not None else LE_PER_BAND
         out = prescribe(
             model_id=args.model,
             model_dir=args.model_dir,
             capture=args.capture,
             target_bpw=args.target_bpw,
             target_cos=target_cos,
-            le_per_band=args.le_per_band,
+            le_per_band=le_per_band,
             min_rows=args.min_rows,
             device=_device(args.device),
             qat_steps=args.qat_steps,
@@ -143,11 +167,14 @@ def main(argv: list[str] | None = None) -> int:
             max_rows_per_expert=(
                 None if int(args.max_rows_per_expert) <= 0 else int(args.max_rows_per_expert)
             ),
+            workers=args.workers,
         )
         # Print abridged summary to stdout; full JSON is on disk.
         summary = {
             "status": out.get("status"),
             "elapsed_seconds": out.get("elapsed_seconds"),
+            "workers": args.workers,
+            "le_per_band": le_per_band,
             "diagnose": out.get("diagnose"),
             "compose": {
                 k: out.get("compose", {}).get(k)
@@ -217,12 +244,14 @@ def main(argv: list[str] | None = None) -> int:
             qat_steps=args.qat_steps,
             qat_lr=args.qat_lr,
             out_path=args.out,
+            workers=args.workers,
         )
         print(
             json.dumps(
                 {
                     "status": out.get("status"),
                     "elapsed_seconds": out.get("elapsed_seconds"),
+                    "workers": args.workers,
                     "coherence": out.get("coherence_screen", {}).get("pass_gate"),
                     "ceiling": out.get("ceiling"),
                     "n_organs": len(out.get("organs") or []),

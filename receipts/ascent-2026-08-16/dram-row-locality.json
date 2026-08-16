@@ -1,0 +1,647 @@
+{
+  "address_streams": {
+    "dsv4f_expert_colocated": {
+      "bytes": 13369344,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 0,
+      "layout": "colocated_execution_order",
+      "max_run_bytes": 13369344,
+      "mean_run_bytes": 13369344.0,
+      "min_possible_dram_rows": 1632,
+      "name": "dsv4f_expert_triplet",
+      "note": "One blob, w1 then w3 then w2, each organ interleaved. Only the COLD remainder is in scope.",
+      "p50_run_bytes": 13369344,
+      "p90_run_bytes": 13369344,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 1,
+      "stride_ge_4k": 0,
+      "stride_ge_row": 0,
+      "touches": 1,
+      "unique_dram_rows": 1632,
+      "unique_pages_16k": 816,
+      "unique_pages_4k": 3264
+    },
+    "dsv4f_expert_six_chunks": {
+      "bytes": 13369344,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 5,
+      "layout": "six_sha_chunks",
+      "max_run_bytes": 4194304,
+      "mean_run_bytes": 2228224.0,
+      "min_possible_dram_rows": 1632,
+      "name": "dsv4f_expert_triplet",
+      "note": "Gravity content-addressed stream: one SHA file per tensor. Cold miss opens six unrelated mmap windows.",
+      "p50_run_bytes": 4194304,
+      "p90_run_bytes": 4194304,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 6,
+      "stride_ge_4k": 5,
+      "stride_ge_row": 5,
+      "touches": 6,
+      "unique_dram_rows": 1632,
+      "unique_pages_16k": 816,
+      "unique_pages_4k": 3264
+    },
+    "dsv4f_fp4_w1_interleaved": {
+      "bytes": 4456448,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 0,
+      "layout": "interleaved_per_block",
+      "max_run_bytes": 4456448,
+      "mean_run_bytes": 4456448.0,
+      "min_possible_dram_rows": 544,
+      "name": "dsv4f_fp4_w1",
+      "note": "Pack-time [e8m0 | 16 packed] per block. Destroys no-copy if done at bind; belongs in a gravity re-pack.",
+      "p50_run_bytes": 4456448,
+      "p90_run_bytes": 4456448,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 1,
+      "stride_ge_4k": 0,
+      "stride_ge_row": 0,
+      "touches": 1,
+      "unique_dram_rows": 544,
+      "unique_pages_16k": 272,
+      "unique_pages_4k": 1088
+    },
+    "dsv4f_fp4_w1_split": {
+      "bytes": 4456448,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 524287,
+      "layout": "split_packed_then_scales",
+      "max_run_bytes": 16,
+      "mean_run_bytes": 8.5,
+      "min_possible_dram_rows": 544,
+      "name": "dsv4f_fp4_w1",
+      "note": "dsv4f_worklist_fp4_matvec: per 32-weight block, 16 sequential packed bytes then 1 scale byte from a second buffer.",
+      "p50_run_bytes": 16,
+      "p90_run_bytes": 16,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 524288,
+      "stride_ge_4k": 524287,
+      "stride_ge_row": 524287,
+      "touches": 524288,
+      "unique_dram_rows": 544,
+      "unique_pages_16k": 272,
+      "unique_pages_4k": 1088
+    },
+    "q80_expert_colocated": {
+      "bytes": 1671168,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 0,
+      "layout": "colocated_execution_order",
+      "max_run_bytes": 1671168,
+      "mean_run_bytes": 1671168.0,
+      "min_possible_dram_rows": 204,
+      "name": "q80_q4_expert_triplet",
+      "note": "Pack-time triplet blob in gate/up/down order.",
+      "p50_run_bytes": 1671168,
+      "p90_run_bytes": 1671168,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 1,
+      "stride_ge_4k": 0,
+      "stride_ge_row": 0,
+      "touches": 1,
+      "unique_dram_rows": 204,
+      "unique_pages_16k": 102,
+      "unique_pages_4k": 408
+    },
+    "q80_expert_six_files": {
+      "bytes": 1671168,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 5,
+      "layout": "six_sha_files",
+      "max_run_bytes": 524288,
+      "mean_run_bytes": 278528.0,
+      "min_possible_dram_rows": 204,
+      "name": "q80_q4_expert_triplet",
+      "note": "Live Q4 catalog: sha256(name).hq80uq4, one file per organ, codes and scales then split again at upload.",
+      "p50_run_bytes": 524288,
+      "p90_run_bytes": 524288,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 6,
+      "stride_ge_4k": 5,
+      "stride_ge_row": 5,
+      "touches": 6,
+      "unique_dram_rows": 204,
+      "unique_pages_16k": 102,
+      "unique_pages_4k": 408
+    },
+    "q80_mixed_binary_interleaved": {
+      "bytes": 147456,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 0,
+      "layout": "interleaved_per_group",
+      "max_run_bytes": 147456,
+      "mean_run_bytes": 147456.0,
+      "min_possible_dram_rows": 18,
+      "name": "q80_mixed_gate_binary",
+      "note": "Pack/bind-time: [fp16 scale | 16 sign bytes] per group of 128. One sequential run per row.",
+      "p50_run_bytes": 147456,
+      "p90_run_bytes": 147456,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 1,
+      "stride_ge_4k": 0,
+      "stride_ge_row": 0,
+      "touches": 1,
+      "unique_dram_rows": 18,
+      "unique_pages_16k": 9,
+      "unique_pages_4k": 36
+    },
+    "q80_mixed_binary_split": {
+      "bytes": 147456,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 16383,
+      "layout": "split_scales_then_signs",
+      "max_run_bytes": 16,
+      "mean_run_bytes": 9.0,
+      "min_possible_dram_rows": 18,
+      "name": "q80_mixed_gate_binary",
+      "note": "Current mixed-decode bind: two MTLBuffers. Per group the kernel reads 2B scale then 16B signs from a different allocation.",
+      "p50_run_bytes": 16,
+      "p90_run_bytes": 16,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 16384,
+      "stride_ge_4k": 16383,
+      "stride_ge_row": 16383,
+      "touches": 16384,
+      "unique_dram_rows": 18,
+      "unique_pages_16k": 9,
+      "unique_pages_4k": 36
+    },
+    "q80_q4_interleaved": {
+      "bytes": 557056,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 0,
+      "layout": "interleaved_per_group",
+      "max_run_bytes": 557056,
+      "mean_run_bytes": 557056.0,
+      "min_possible_dram_rows": 68,
+      "name": "q80_q4_gate",
+      "note": "Execution-order group record [fp16 scale | 32 codes]. Same 34 bytes/group, one sequential run per row.",
+      "p50_run_bytes": 557056,
+      "p90_run_bytes": 557056,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 1,
+      "stride_ge_4k": 0,
+      "stride_ge_row": 0,
+      "touches": 1,
+      "unique_dram_rows": 68,
+      "unique_pages_16k": 34,
+      "unique_pages_4k": 136
+    },
+    "q80_q4_split": {
+      "bytes": 557056,
+      "derived_model_not_hardware_counter": true,
+      "dram_row_bytes_model": 8192,
+      "dram_row_transitions": 32767,
+      "layout": "split_scales_then_codes",
+      "max_run_bytes": 32,
+      "mean_run_bytes": 17.0,
+      "min_possible_dram_rows": 68,
+      "name": "q80_q4_gate",
+      "note": "Live Q4 vehicle. HQ30UQ4 body is all scales then all codes; upload splits them into two buffers. Kernel alternates 2B + 32B across the pair.",
+      "p50_run_bytes": 32,
+      "p90_run_bytes": 32,
+      "scatter_ratio": 1.0,
+      "sequential_runs": 32768,
+      "stride_ge_4k": 32767,
+      "stride_ge_row": 32767,
+      "touches": 32768,
+      "unique_dram_rows": 68,
+      "unique_pages_16k": 34,
+      "unique_pages_4k": 136
+    },
+    "ranked_by_bytes_x_scatter": [
+      {
+        "bytes": 3449290752,
+        "bytes_x_scatter": 3855089663.0,
+        "dram_row_transitions": 405798911,
+        "layout": "split_packed_then_scales",
+        "name": "dsv4f_fp4_w1",
+        "scatter_ratio": 1.0,
+        "unique_dram_rows": 421056
+      },
+      {
+        "bytes": 3449290752,
+        "bytes_x_scatter": 3449292299.0,
+        "dram_row_transitions": 1547,
+        "layout": "six_sha_chunks",
+        "name": "dsv4f_expert_triplet",
+        "scatter_ratio": 1.0,
+        "unique_dram_rows": 421056
+      },
+      {
+        "bytes": 802160640,
+        "bytes_x_scatter": 849346559.0000001,
+        "dram_row_transitions": 47185919,
+        "layout": "split_scales_then_codes",
+        "name": "q80_q4_gate",
+        "scatter_ratio": 1.0,
+        "unique_dram_rows": 97920
+      },
+      {
+        "bytes": 802160640,
+        "bytes_x_scatter": 802163518.9999999,
+        "dram_row_transitions": 2879,
+        "layout": "six_sha_files",
+        "name": "q80_q4_expert_triplet",
+        "scatter_ratio": 1.0,
+        "unique_dram_rows": 97920
+      },
+      {
+        "bytes": 70778880,
+        "bytes_x_scatter": 78643199.0,
+        "dram_row_transitions": 7864319,
+        "layout": "split_scales_then_signs",
+        "name": "q80_mixed_gate_binary",
+        "scatter_ratio": 1.0,
+        "unique_dram_rows": 8640
+      }
+    ],
+    "token_scaled": {
+      "dsv4f_fp4_43x6x3_split": {
+        "bytes": 3449290752,
+        "derived_model_not_hardware_counter": true,
+        "dram_row_bytes_model": 8192,
+        "dram_row_transitions": 405798911,
+        "layout": "split_packed_then_scales",
+        "max_run_bytes": 16,
+        "mean_run_bytes": 8.5,
+        "min_possible_dram_rows": 421056,
+        "name": "dsv4f_fp4_w1",
+        "note": "dsv4f_worklist_fp4_matvec: per 32-weight block, 16 sequential packed bytes then 1 scale byte from a second buffer.",
+        "p50_run_bytes": 16,
+        "p90_run_bytes": 16,
+        "scatter_ratio": 1.0,
+        "sequential_runs": 405798912,
+        "stride_ge_4k": 405798138,
+        "stride_ge_row": 405798138,
+        "touches": 405798912,
+        "unique_dram_rows": 421056,
+        "unique_pages_16k": 210528,
+        "unique_pages_4k": 842112
+      },
+      "q80_q4_48x10x3_split": {
+        "bytes": 802160640,
+        "derived_model_not_hardware_counter": true,
+        "dram_row_bytes_model": 8192,
+        "dram_row_transitions": 47185919,
+        "layout": "split_scales_then_codes",
+        "max_run_bytes": 32,
+        "mean_run_bytes": 17.0,
+        "min_possible_dram_rows": 97920,
+        "name": "q80_q4_gate",
+        "note": "Live Q4 vehicle. HQ30UQ4 body is all scales then all codes; upload splits them into two buffers. Kernel alternates 2B + 32B across the pair.",
+        "p50_run_bytes": 32,
+        "p90_run_bytes": 32,
+        "scatter_ratio": 1.0,
+        "sequential_runs": 47185920,
+        "stride_ge_4k": 47184480,
+        "stride_ge_row": 47184480,
+        "touches": 47185920,
+        "unique_dram_rows": 97920,
+        "unique_pages_16k": 48960,
+        "unique_pages_4k": 195840
+      }
+    }
+  },
+  "claim_boundary": {
+    "ceiling_gbps": 819.0,
+    "cpu_wall_is_not_gpu_time": true,
+    "derived_address_model_not_hardware_counter": true,
+    "did_not_change_default_kernels": true,
+    "did_not_rewrite_dsv4f_gravity_chunks": true,
+    "did_not_rewrite_live_q80_catalog": true,
+    "did_not_run_a_new_capture": true,
+    "did_not_weaken_a_gate": true,
+    "dram_row_bytes_model": 8192,
+    "energy_figures_are_not_measured": true,
+    "hot_expert_cache_not_claimed": true,
+    "page_16k": 16384,
+    "page_4k": 4096,
+    "streams_claimed": [
+      "q80_mixed_organs",
+      "q80_q4_organs_and_cold_triplet_files",
+      "dsv4f_cold_streamed_fp4_and_chunks"
+    ]
+  },
+  "correctness_cpu": {
+    "binary_decoded_weights_bit_identical": true,
+    "binary_interleaved_stride": 18,
+    "fp4_interleaved_stride": 17,
+    "q4_codec_bpw": 4.25,
+    "q4_decoded_weights_bit_identical": true,
+    "q4_interleaved_stride": 34,
+    "triplet_blob_roundtrip": true
+  },
+  "gpu_correctness": {
+    "binary_interleaved_max_abs_error": 4.76837158203125e-06,
+    "binary_split_max_abs_error": 4.76837158203125e-06,
+    "fallbacks": 0,
+    "fp4_bytes_bit_identical": true,
+    "fp4_interleaved_max_abs_error": 0.0,
+    "fp4_split_max_abs_error": 0.0,
+    "fp4_split_vs_interleaved": 0.0,
+    "live_runtime_untouched": true,
+    "q4_decoded_weights_bit_identical": true,
+    "q4_interleaved_max_abs_error": 3.337860107421875e-06,
+    "q4_split_max_abs_error": 3.337860107421875e-06,
+    "q4_split_vs_interleaved": 0.0
+  },
+  "lane": "dram-row-locality",
+  "measure": {
+    "measurement_label": "DIRTY_ENGINEERING",
+    "paired": {
+      "dram_row_probe": {
+        "bytes_moved": 1006632960,
+        "conflict_gbps": 646.7114968381816,
+        "conflict_median_gpu_ns": 1556541,
+        "conflict_stride_8192_plus_64_gpu_ns": [
+          1556541,
+          1556125,
+          1559250
+        ],
+        "measurement_label": "DIRTY_ENGINEERING",
+        "note": "Isolated read-reduce. If sequential and conflict overlap, this GPU is not row-limited on a 64 MiB stream either.",
+        "sequential_gbps": 560.2520996243217,
+        "sequential_gpu_ns": [
+          1826375,
+          1796125,
+          1796750
+        ],
+        "sequential_median_gpu_ns": 1796750
+      },
+      "dsv4f_fp4_reduced": {
+        "A_frac_of_ceiling": 0.0011336100936100936,
+        "A_gbps": 0.9284266666666666,
+        "A_median_gpu_ns": 75000,
+        "A_split_gpu_ns": [
+          75000,
+          75125,
+          75000
+        ],
+        "B_frac_of_ceiling": 0.0013224363755542303,
+        "B_gbps": 1.0830753915789146,
+        "B_interleaved_gpu_ns": [
+          64541,
+          64250,
+          64291
+        ],
+        "B_median_gpu_ns": 64291,
+        "bytes": 69632,
+        "ceiling_gbps": 819.0,
+        "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+        "measurement_label": "DIRTY_ENGINEERING"
+      },
+      "q80_mixed_binary_gate": {
+        "A_frac_of_ceiling": 0.0030132879672628626,
+        "A_gbps": 2.4678828451882846,
+        "A_median_gpu_ns": 59750,
+        "A_split_gpu_ns": [
+          59750,
+          60125,
+          59416
+        ],
+        "B_frac_of_ceiling": 0.002945504393357154,
+        "B_gbps": 2.4123680981595093,
+        "B_interleaved_gpu_ns": [
+          61000,
+          61250,
+          61125
+        ],
+        "B_median_gpu_ns": 61125,
+        "bytes": 147456,
+        "ceiling_gbps": 819.0,
+        "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+        "measurement_label": "DIRTY_ENGINEERING"
+      },
+      "q80_q4_gate": {
+        "A_frac_of_ceiling": 0.0032311926658720007,
+        "A_gbps": 2.6463467933491684,
+        "A_median_gpu_ns": 210500,
+        "A_split_gpu_ns": [
+          212209,
+          209916,
+          210500
+        ],
+        "B_frac_of_ceiling": 0.003024089242944282,
+        "B_gbps": 2.476729089971367,
+        "B_interleaved_gpu_ns": [
+          225875,
+          223916,
+          224916
+        ],
+        "B_median_gpu_ns": 224916,
+        "bytes": 557056,
+        "ceiling_gbps": 819.0,
+        "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+        "measurement_label": "DIRTY_ENGINEERING"
+      }
+    },
+    "projected_q80_q4_routed_ns_A": 303120000,
+    "projected_q80_q4_routed_ns_B": 323879040,
+    "ran": true,
+    "whole_token_wall": "NOT RUN. Live Q80/DSV4F kernels were not switched. Isolated organ GPU times only; projected routed-expert ns is 48*10*3 (Q4) or 43*6*3 (FP4) times the organ median. That is not a token wall."
+  },
+  "measurement_label": "DIRTY_ENGINEERING",
+  "on_disk": {
+    "dsv4f_live_bundle": {
+      "admitted": true,
+      "chunks": [
+        {
+          "bytes": 4194304,
+          "chunk": "chunks/17/177ac1285aea3d72fd7e83bbd103d701499001c8a2ecd8950cb51cf74c53b507",
+          "role": "weight",
+          "tensor": "layers.0.ffn.experts.0.w1.weight"
+        },
+        {
+          "bytes": 262144,
+          "chunk": "chunks/ea/ea4ac9894a6b30c6a233e01d009bb8668bb36269937e68fe14b5f154cfa31b8e",
+          "role": "scale",
+          "tensor": "layers.0.ffn.experts.0.w1.scale"
+        },
+        {
+          "bytes": 4194304,
+          "chunk": "chunks/89/89d0b83c38d4e9f13e6cad6c65f84c39bdbedf162444205e0b328e355c33d906",
+          "role": "weight",
+          "tensor": "layers.0.ffn.experts.0.w2.weight"
+        },
+        {
+          "bytes": 262144,
+          "chunk": "chunks/c0/c0cd3a2e54e76aee1288755712c31b9057fe6e2146eabdd499e5c2ec52509ef8",
+          "role": "scale",
+          "tensor": "layers.0.ffn.experts.0.w2.scale"
+        },
+        {
+          "bytes": 4194304,
+          "chunk": "chunks/db/db6ba98e974c86eda63427005ad8e352e02ae8329797037db1d1204ec6a28e87",
+          "role": "weight",
+          "tensor": "layers.0.ffn.experts.0.w3.weight"
+        },
+        {
+          "bytes": 262144,
+          "chunk": "chunks/f3/f3ed34d330db2f4354086c27488a39cc2a62772f6b2a0707772976472949628e",
+          "role": "scale",
+          "tensor": "layers.0.ffn.experts.0.w3.scale"
+        }
+      ],
+      "expert": 0,
+      "layer": 0,
+      "payload_bytes": 13369344,
+      "source_chunk_read_count_per_fill": 6
+    },
+    "dsv4f_source_and_gravity": {
+      "bytes_per_expert": {
+        "triplet": 13369344,
+        "w1_packed": 4194304,
+        "w1_scales": 262144,
+        "w2_packed": 4194304,
+        "w2_scales": 262144
+      },
+      "derived_from": "full-43-layer-stream.gravity manifest tensor descriptors",
+      "experts_with_all_six_in_one_chunk": 0,
+      "gravity_chunk_layout": {
+        "chunk_count": 69837,
+        "effect": "source adjacency of w1/w2/w3 weights is destroyed. No-copy bind pins six unrelated mmap windows per expert.",
+        "kind": "one content-addressed SHA-named file per tensor",
+        "tensor_count": 69187
+      },
+      "layer0_expert_tensors": 1536,
+      "layer0_unique_gravity_chunks": 1536,
+      "source_safetensor_layout": {
+        "execution_order": [
+          "w1/gate",
+          "w3/up",
+          "w2/down"
+        ],
+        "scale_to_weight_gap_bytes_expert0_w1": 333448704,
+        "scales_region": "early in the shard (expert 0 w1.scale @ 11647016; expert 0 w1.weight @ 345095720). Scales of an expert's three organs are adjacent. Weights of an expert are adjacent as w1,w2,w3 \u2014 not execution order w1,w3,w2.",
+        "source_weight_order": [
+          "w1",
+          "w2",
+          "w3"
+        ]
+      },
+      "source_shard_layer0_all_experts": "model-00002-of-00046.safetensors",
+      "streams_claimed": "COLD/streamed remainder and Q80. Hot DSV4F expert-cache hits remove DRAM traffic and are not counted here."
+    },
+    "q80_sha_named_files": {
+      "experts_with_gate_up_down_consecutive_in_dir": 0,
+      "files_per_layer": 1536,
+      "layer": 0,
+      "naming": "sha256(tensor_name).hq80uq4 \u2014 not expert-number order",
+      "triplet_dir_rank_span": {
+        "max": 1520,
+        "median": 787,
+        "min": 10
+      },
+      "verdict": "0 of 512 layer-0 experts have gate/up/down consecutive in the SHA-named tensors directory. Median span 787 of 1536 slots. Pack-time triplet blob is the locality lever; the live catalog is one file per organ."
+    }
+  },
+  "pack_contract": {
+    "co_route_permutation": "Permitted by cheap evidence from the existing capture index. Only pays inside a packed slab.",
+    "dsv4f": "Do not interleave at no-copy bind (that reintroduces the memcpy the expert-nocopy lane deleted). A future gravity pack should emit one chunk per expert: w1_interleaved, w3_interleaved, w2_interleaved.",
+    "q80_mixed_gate": "HGRAVB01 body stays scales||signs. Bind-time interleave into one MTLBuffer is value-preserving and does not invent a second on-disk family.",
+    "q80_q4": "HQ30UQ4 body stays scales||codes. Bind-time [scale|codes]*G is the execution-order layout. Same BPW.",
+    "status": "Shipped as opt-in pack/bind helpers and isolated kernels. NOT default. Q4 interleaved lost isolated GPU time; do not flip the live Q4 kernel. DSV4F interleave belongs in a future gravity re-pack, never in the no-copy bind path."
+  },
+  "physics": {
+    "note": "Row activate/precharge dominates DRAM energy (~10x the column read) and costs tRP+tRCD. Two streams with the same byte count can differ in energy and achieved bandwidth by access order. Peak 819 GB/s assumes near-perfect row locality."
+  },
+  "routing_cooccurrence": {
+    "did_not_run_a_new_capture": true,
+    "distance_reduction_factor": 1.0365666736087444,
+    "mean_co_routed_greedy_distance": 164.28038745699934,
+    "mean_co_routed_id_distance": 170.28757476545752,
+    "n_route_rows": 1212384,
+    "never_routed_experts_collapsed_across_layers": 0,
+    "note_never_routed": "Coverage receipt's 221 is per (layer,expert) pair, not collapsed expert ids. This pass collapses layer.",
+    "source": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-index.v1",
+    "top_k": 10,
+    "top_pairs": [
+      {
+        "a": 389,
+        "b": 453,
+        "co_route_count": 19870,
+        "greedy_distance": 1,
+        "id_distance": 64
+      },
+      {
+        "a": 475,
+        "b": 487,
+        "co_route_count": 10568,
+        "greedy_distance": 1,
+        "id_distance": 12
+      },
+      {
+        "a": 19,
+        "b": 431,
+        "co_route_count": 8926,
+        "greedy_distance": 1,
+        "id_distance": 412
+      },
+      {
+        "a": 385,
+        "b": 453,
+        "co_route_count": 8767,
+        "greedy_distance": 90,
+        "id_distance": 68
+      },
+      {
+        "a": 310,
+        "b": 321,
+        "co_route_count": 8534,
+        "greedy_distance": 1,
+        "id_distance": 11
+      },
+      {
+        "a": 315,
+        "b": 510,
+        "co_route_count": 8448,
+        "greedy_distance": 1,
+        "id_distance": 195
+      },
+      {
+        "a": 73,
+        "b": 453,
+        "co_route_count": 8425,
+        "greedy_distance": 56,
+        "id_distance": 380
+      },
+      {
+        "a": 270,
+        "b": 425,
+        "co_route_count": 8424,
+        "greedy_distance": 1,
+        "id_distance": 155
+      }
+    ],
+    "verdict": "WEAK. Greedy co-route order cuts mean |id_i-id_j| only 170.29 -> 164.28 (1.037x). Hottest pair (389,453) is 64 ids apart and becomes adjacent; (19,431) is 412 apart. That is pair-specific, not a global permutation win. It only pays inside a packed slab. Do not rewrite the live 74k SHA-named catalog. Did not run a new capture.",
+    "cheap_evidence_supports_global_permutation": false,
+    "cheap_evidence_supports_hot_pair_colocation_in_a_slab": true
+  },
+  "schema": "hawking.ascension.dram_row_locality.v1",
+  "findings": {
+    "derived_model": "Split codes/scales issue 16k-524k DRAM-row transitions per organ because the kernel alternates 2B/32B (Q4) or 16B+1B (FP4) across two allocations. Interleaved collapses that to one sequential run per row. Unique DRAM-row count is the same (scatter_ratio=1.0): both layouts touch the same bytes. The difference is transitions, not extra rows.",
+    "gpu_isolated": {
+      "q80_q4": "B (interleaved) SLOWER. A 210500/209916/212209 ns vs B 224916/223916/225875 ns. Projected 48*10*3: 303.1 ms vs 323.9 ms. Better locality, same-or-worse speed.",
+      "q80_binary": "B slightly slower. A 59750/60125/59416 vs B 61125/61250/61000 ns.",
+      "dsv4f_fp4_reduced": "B faster 75000/75125/75000 vs 64291/64250/64541 ns (14%) on 256x512. Achieved 0.93 vs 1.08 GB/s. Occupancy/decode bound, not a token-wall move. Not scaled to full W1.",
+      "dram_probe": "Sequential 560 GB/s (1796/1826/1797 us) and 8192+64-stride 647 GB/s (1557/1556/1559 us). Both ~68-79% of 819. This box CAN stream. Weight kernels at 2.5 GB/s are not row-limited."
+    },
+    "wall_clock": "ZERO on the live vehicles. Default kernels were not switched. Whole-token Q80/DSV4F not re-run. Isolated Q4 interleaved did not win.",
+    "on_disk": "Q80: 0/512 layer-0 experts have gate/up/down consecutive in the SHA-named tensors dir (median span 787/1536). DSV4F gravity: 6 SHA chunks per expert; source safetensor had weights adjacent as w1,w2,w3 (~330 MiB away from their scales). Gravity content-addressed packing destroyed source weight adjacency.",
+    "streams_claimed": "Q80 mixed organs, Q80 Q4 organs, DSV4F COLD/streamed remainder. Hot expert-cache hits are not claimed.",
+    "energy": "NOT MEASURED. Derived: fewer row transitions imply less ACTIVATE/PRECHARGE energy at the same byte count. That is not a joule reading.",
+    "next": "Layout is not the current latency wall. Q80 still pays host moe_table_build / address-table rewrite; DSV4F still pays attn_weight_io_prefetch and remaining expert mmap. Occupancy/decode of the packed matvecs (2.5 GB/s vs 560+ GB/s probe) is the GPU-side remainder."
+  }
+}

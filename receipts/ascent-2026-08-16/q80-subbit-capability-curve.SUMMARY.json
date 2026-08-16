@@ -1,0 +1,4183 @@
+{
+  "schema": "hawking.ascension.qwen80_subbit_capability_curve.v1",
+  "lane": "q80-subbit-capability-curve",
+  "status": "CURVE_MEASURED_CLIFF_ABOVE_1P44",
+  "timing_label": "DIRTY_ENGINEERING",
+  "bar": 0.8604,
+  "bar_source": "D23 measured residual-identity break-even from Q80's own 25258-token capture (receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json)",
+  "identity_arithmetic": {
+    "stated_in_task": "complete = 0.97032*expert + 0.02968*nonexpert",
+    "ledger_coefficients": {
+      "f_expert": 0.9703169371044981,
+      "f_nonexpert": 0.029683062895501933
+    },
+    "coefficients_moved": false,
+    "current_1p44_artifact": {
+      "complete_physical_bpw": 1.4444456847927971,
+      "expert_physical_bpw": 1.2348805110280712,
+      "nonexpert_physical_bpw": 8.250600705299505,
+      "nonexpert_bytes": 2439063174,
+      "nonexpert_tensors": 663,
+      "nonexpert_mass_fraction": 0.029683062895501933,
+      "nonexpert_contribution_bpw": 0.2449030996610778
+    },
+    "drop_nonexpert_8_to_4_saves_complete_bpw": 0.1187343653854176,
+    "sub_0_655_requires_expert_bpw": {
+      "with_nonexpert_8bit": 0.4228483340332906,
+      "with_nonexpert_4bit": 0.5452149143175946
+    },
+    "binary_family_floor_note": "binary_group cannot go below ~1.0 BPW. Mixed family (binary gate/up + any-rank down) therefore floors near complete \u2248 0.78 with 4-bit non-expert. Sub-0.655 complete requires leaving the binary family on gate and up."
+  },
+  "measurement": {
+    "n_pairs": 110,
+    "smoke": false,
+    "null_n": 16,
+    "hold_frac": 0.25,
+    "row_cap": 2048,
+    "workers": 4,
+    "wall_secs": 302.4199582919973,
+    "did_not_parse_giant_json": true,
+    "did_not_pack_full_artifacts": true,
+    "reconstruction_from_physical_bytes": true,
+    "rank_not_clamped_to_n_fit": true,
+    "capture": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64",
+    "extension_capture": "/Users/scammermike/.claude-grok/worktrees/q80-capture-coverage-20260816-003209/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-reservoir-n512-ext",
+    "pairs": [
+      {
+        "layer": 0,
+        "expert": 289,
+        "role": "lowest_nonzero",
+        "n_rows_primary": 2,
+        "n_rows_extension_swiglu": 13,
+        "has_holdout": false
+      },
+      {
+        "layer": 0,
+        "expert": 409,
+        "role": "busiest",
+        "n_rows_primary": 1325,
+        "n_rows_extension_swiglu": 245,
+        "has_holdout": true
+      },
+      {
+        "layer": 0,
+        "expert": 505,
+        "role": "median",
+        "n_rows_primary": 307,
+        "n_rows_extension_swiglu": 603,
+        "has_holdout": true
+      },
+      {
+        "layer": 1,
+        "expert": 226,
+        "role": "median",
+        "n_rows_primary": 280,
+        "n_rows_extension_swiglu": 273,
+        "has_holdout": true
+      },
+      {
+        "layer": 1,
+        "expert": 265,
+        "role": "screen_down_busy",
+        "n_rows_primary": 1361,
+        "n_rows_extension_swiglu": 934,
+        "has_holdout": true
+      },
+      {
+        "layer": 1,
+        "expert": 462,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 1814,
+        "has_holdout": true
+      },
+      {
+        "layer": 2,
+        "expert": 42,
+        "role": "median",
+        "n_rows_primary": 307,
+        "n_rows_extension_swiglu": 343,
+        "has_holdout": true
+      },
+      {
+        "layer": 2,
+        "expert": 236,
+        "role": "busiest",
+        "n_rows_primary": 1428,
+        "n_rows_extension_swiglu": 2131,
+        "has_holdout": true
+      },
+      {
+        "layer": 3,
+        "expert": 97,
+        "role": "median",
+        "n_rows_primary": 249,
+        "n_rows_extension_swiglu": 81,
+        "has_holdout": true
+      },
+      {
+        "layer": 3,
+        "expert": 297,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 995,
+        "has_holdout": true
+      },
+      {
+        "layer": 3,
+        "expert": 494,
+        "role": "screen_gate_up_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 2788,
+        "has_holdout": true
+      },
+      {
+        "layer": 4,
+        "expert": 68,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 6671,
+        "has_holdout": true
+      },
+      {
+        "layer": 4,
+        "expert": 187,
+        "role": "median",
+        "n_rows_primary": 251,
+        "n_rows_extension_swiglu": 222,
+        "has_holdout": true
+      },
+      {
+        "layer": 5,
+        "expert": 207,
+        "role": "median",
+        "n_rows_primary": 266,
+        "n_rows_extension_swiglu": 191,
+        "has_holdout": true
+      },
+      {
+        "layer": 5,
+        "expert": 217,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 6682,
+        "has_holdout": true
+      },
+      {
+        "layer": 6,
+        "expert": 44,
+        "role": "median",
+        "n_rows_primary": 289,
+        "n_rows_extension_swiglu": 213,
+        "has_holdout": true
+      },
+      {
+        "layer": 6,
+        "expert": 125,
+        "role": "busiest",
+        "n_rows_primary": 1545,
+        "n_rows_extension_swiglu": 2705,
+        "has_holdout": true
+      },
+      {
+        "layer": 7,
+        "expert": 304,
+        "role": "median",
+        "n_rows_primary": 273,
+        "n_rows_extension_swiglu": 219,
+        "has_holdout": true
+      },
+      {
+        "layer": 7,
+        "expert": 425,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 1153,
+        "has_holdout": true
+      },
+      {
+        "layer": 8,
+        "expert": 19,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 2520,
+        "has_holdout": true
+      },
+      {
+        "layer": 8,
+        "expert": 314,
+        "role": "median",
+        "n_rows_primary": 229,
+        "n_rows_extension_swiglu": 109,
+        "has_holdout": true
+      },
+      {
+        "layer": 9,
+        "expert": 260,
+        "role": "median",
+        "n_rows_primary": 208,
+        "n_rows_extension_swiglu": 50,
+        "has_holdout": true
+      },
+      {
+        "layer": 9,
+        "expert": 453,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 9493,
+        "has_holdout": true
+      },
+      {
+        "layer": 10,
+        "expert": 302,
+        "role": "median",
+        "n_rows_primary": 214,
+        "n_rows_extension_swiglu": 588,
+        "has_holdout": true
+      },
+      {
+        "layer": 10,
+        "expert": 346,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 4010,
+        "has_holdout": true
+      },
+      {
+        "layer": 10,
+        "expert": 453,
+        "role": "screen_gate_up_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 6905,
+        "has_holdout": true
+      },
+      {
+        "layer": 11,
+        "expert": 15,
+        "role": "never_routed",
+        "n_rows_primary": 0,
+        "n_rows_extension_swiglu": 2,
+        "has_holdout": false
+      },
+      {
+        "layer": 11,
+        "expert": 134,
+        "role": "median",
+        "n_rows_primary": 235,
+        "n_rows_extension_swiglu": 82,
+        "has_holdout": true
+      },
+      {
+        "layer": 11,
+        "expert": 315,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 8303,
+        "has_holdout": true
+      },
+      {
+        "layer": 11,
+        "expert": 485,
+        "role": "lowest_nonzero",
+        "n_rows_primary": 1,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": false
+      },
+      {
+        "layer": 12,
+        "expert": 412,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 8592,
+        "has_holdout": true
+      },
+      {
+        "layer": 12,
+        "expert": 486,
+        "role": "median",
+        "n_rows_primary": 206,
+        "n_rows_extension_swiglu": 68,
+        "has_holdout": true
+      },
+      {
+        "layer": 13,
+        "expert": 17,
+        "role": "median",
+        "n_rows_primary": 220,
+        "n_rows_extension_swiglu": 69,
+        "has_holdout": true
+      },
+      {
+        "layer": 13,
+        "expert": 63,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 8334,
+        "has_holdout": true
+      },
+      {
+        "layer": 14,
+        "expert": 112,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 373,
+        "has_holdout": true
+      },
+      {
+        "layer": 14,
+        "expert": 330,
+        "role": "median",
+        "n_rows_primary": 249,
+        "n_rows_extension_swiglu": 154,
+        "has_holdout": true
+      },
+      {
+        "layer": 15,
+        "expert": 342,
+        "role": "median",
+        "n_rows_primary": 257,
+        "n_rows_extension_swiglu": 322,
+        "has_holdout": true
+      },
+      {
+        "layer": 15,
+        "expert": 475,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 1877,
+        "has_holdout": true
+      },
+      {
+        "layer": 16,
+        "expert": 68,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 5376,
+        "has_holdout": true
+      },
+      {
+        "layer": 16,
+        "expert": 411,
+        "role": "median",
+        "n_rows_primary": 243,
+        "n_rows_extension_swiglu": 327,
+        "has_holdout": true
+      },
+      {
+        "layer": 17,
+        "expert": 350,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 5701,
+        "has_holdout": true
+      },
+      {
+        "layer": 17,
+        "expert": 496,
+        "role": "median",
+        "n_rows_primary": 276,
+        "n_rows_extension_swiglu": 314,
+        "has_holdout": true
+      },
+      {
+        "layer": 18,
+        "expert": 222,
+        "role": "median",
+        "n_rows_primary": 274,
+        "n_rows_extension_swiglu": 125,
+        "has_holdout": true
+      },
+      {
+        "layer": 18,
+        "expert": 420,
+        "role": "busiest",
+        "n_rows_primary": 1748,
+        "n_rows_extension_swiglu": 3371,
+        "has_holdout": true
+      },
+      {
+        "layer": 19,
+        "expert": 425,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 1075,
+        "has_holdout": true
+      },
+      {
+        "layer": 19,
+        "expert": 488,
+        "role": "median",
+        "n_rows_primary": 262,
+        "n_rows_extension_swiglu": 80,
+        "has_holdout": true
+      },
+      {
+        "layer": 20,
+        "expert": 19,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 1559,
+        "has_holdout": true
+      },
+      {
+        "layer": 20,
+        "expert": 455,
+        "role": "median",
+        "n_rows_primary": 237,
+        "n_rows_extension_swiglu": 56,
+        "has_holdout": true
+      },
+      {
+        "layer": 21,
+        "expert": 37,
+        "role": "median",
+        "n_rows_primary": 215,
+        "n_rows_extension_swiglu": 268,
+        "has_holdout": true
+      },
+      {
+        "layer": 21,
+        "expert": 453,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 4646,
+        "has_holdout": true
+      },
+      {
+        "layer": 22,
+        "expert": 186,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 6587,
+        "has_holdout": true
+      },
+      {
+        "layer": 22,
+        "expert": 424,
+        "role": "median",
+        "n_rows_primary": 226,
+        "n_rows_extension_swiglu": 98,
+        "has_holdout": true
+      },
+      {
+        "layer": 23,
+        "expert": 109,
+        "role": "never_routed",
+        "n_rows_primary": 0,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": false
+      },
+      {
+        "layer": 23,
+        "expert": 167,
+        "role": "lowest_nonzero",
+        "n_rows_primary": 1,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": false
+      },
+      {
+        "layer": 23,
+        "expert": 462,
+        "role": "median",
+        "n_rows_primary": 233,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 23,
+        "expert": 506,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 24,
+        "expert": 187,
+        "role": "median",
+        "n_rows_primary": 215,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 24,
+        "expert": 297,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 25,
+        "expert": 135,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 25,
+        "expert": 306,
+        "role": "median",
+        "n_rows_primary": 250,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 26,
+        "expert": 186,
+        "role": "median",
+        "n_rows_primary": 258,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 26,
+        "expert": 279,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 27,
+        "expert": 181,
+        "role": "median",
+        "n_rows_primary": 272,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 27,
+        "expert": 475,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 28,
+        "expert": 68,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 28,
+        "expert": 249,
+        "role": "median",
+        "n_rows_primary": 254,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 29,
+        "expert": 303,
+        "role": "median",
+        "n_rows_primary": 289,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 29,
+        "expert": 350,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 30,
+        "expert": 15,
+        "role": "median",
+        "n_rows_primary": 299,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 30,
+        "expert": 282,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 31,
+        "expert": 21,
+        "role": "median",
+        "n_rows_primary": 283,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 31,
+        "expert": 425,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 32,
+        "expert": 19,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 32,
+        "expert": 179,
+        "role": "screen_down_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 32,
+        "expert": 276,
+        "role": "median",
+        "n_rows_primary": 269,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 33,
+        "expert": 78,
+        "role": "median",
+        "n_rows_primary": 231,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 33,
+        "expert": 453,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 34,
+        "expert": 206,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 34,
+        "expert": 299,
+        "role": "median",
+        "n_rows_primary": 257,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 35,
+        "expert": 167,
+        "role": "never_routed",
+        "n_rows_primary": 0,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": false
+      },
+      {
+        "layer": 35,
+        "expert": 330,
+        "role": "screen_down_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 35,
+        "expert": 392,
+        "role": "median",
+        "n_rows_primary": 261,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 35,
+        "expert": 473,
+        "role": "lowest_nonzero",
+        "n_rows_primary": 2,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": false
+      },
+      {
+        "layer": 35,
+        "expert": 506,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 36,
+        "expert": 154,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 36,
+        "expert": 387,
+        "role": "median",
+        "n_rows_primary": 236,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 37,
+        "expert": 112,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 37,
+        "expert": 166,
+        "role": "median",
+        "n_rows_primary": 277,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 38,
+        "expert": 112,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 38,
+        "expert": 502,
+        "role": "median",
+        "n_rows_primary": 284,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 39,
+        "expert": 124,
+        "role": "median",
+        "n_rows_primary": 274,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 39,
+        "expert": 475,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 40,
+        "expert": 36,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 40,
+        "expert": 248,
+        "role": "median",
+        "n_rows_primary": 279,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 41,
+        "expert": 314,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 41,
+        "expert": 470,
+        "role": "median",
+        "n_rows_primary": 281,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 42,
+        "expert": 235,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 42,
+        "expert": 294,
+        "role": "median",
+        "n_rows_primary": 261,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 43,
+        "expert": 47,
+        "role": "median",
+        "n_rows_primary": 258,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 43,
+        "expert": 196,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 44,
+        "expert": 358,
+        "role": "median",
+        "n_rows_primary": 246,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 44,
+        "expert": 453,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 45,
+        "expert": 154,
+        "role": "median",
+        "n_rows_primary": 241,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 45,
+        "expert": 395,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 46,
+        "expert": 371,
+        "role": "median",
+        "n_rows_primary": 235,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 46,
+        "expert": 428,
+        "role": "screen_down_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 47,
+        "expert": 48,
+        "role": "never_routed",
+        "n_rows_primary": 0,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": false
+      },
+      {
+        "layer": 47,
+        "expert": 132,
+        "role": "median",
+        "n_rows_primary": 268,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      },
+      {
+        "layer": 47,
+        "expert": 342,
+        "role": "lowest_nonzero",
+        "n_rows_primary": 1,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": false
+      },
+      {
+        "layer": 47,
+        "expert": 366,
+        "role": "busiest",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true
+      }
+    ]
+  },
+  "nonexpert_q4_probe": {
+    "sample": [
+      {
+        "name": "model.layers.0.input_layernorm.weight",
+        "elements": 2048,
+        "q8_bytes": 2368,
+        "q4_bytes": 1344,
+        "q8_bpw": 9.25,
+        "q4_bpw": 5.25
+      },
+      {
+        "name": "model.layers.0.mlp.gate.weight",
+        "elements": 1048576,
+        "q8_bytes": 1081616,
+        "q4_bytes": 557327,
+        "q8_bpw": 8.2520751953125,
+        "q4_bpw": 4.252067565917969
+      },
+      {
+        "name": "model.layers.0.mlp.shared_expert.down_proj.weight",
+        "elements": 1048576,
+        "q8_bytes": 1081616,
+        "q4_bytes": 557327,
+        "q8_bpw": 8.2520751953125,
+        "q4_bpw": 4.252067565917969
+      },
+      {
+        "name": "model.layers.3.self_attn.q_proj.weight",
+        "elements": 16777216,
+        "q8_bytes": 17301781,
+        "q4_bytes": 8913172,
+        "q8_bpw": 8.250132083892822,
+        "q4_bpw": 4.250131607055664
+      }
+    ],
+    "sample_q4_over_q8": 0.5151781844717581,
+    "projected_q4_bytes": 1256552138,
+    "projected_q4_bpw": 4.250529492856998,
+    "q8_artifact_bytes": 2439063174,
+    "q8_artifact_bpw": 8.250600705299505
+  },
+  "named_points": [
+    {
+      "name": "mixed_1p44_incumbent",
+      "recipe": {
+        "gate_proj": "binary_g128",
+        "up_proj": "resid_2pct",
+        "down_proj": "hgravs01_r160_b3",
+        "nonexpert_bits": 8
+      },
+      "complete_physical_bpw": 1.4444456847927971,
+      "design_identity_complete_bpw": 1.4431285748118732,
+      "expert_physical_bpw": 1.2348805110280712,
+      "nonexpert_physical_bpw": 8.250600705299505,
+      "all_required_weight_artifact_bytes": 14385666337,
+      "bytes_are": "mixed-1p5-v1 on-disk ledger",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "routed_up_proj": {
+          "bytes": 4161335634,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.2918486054986715
+        },
+        "routed_down_proj": {
+          "bytes": 4142078229,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.2858703201636672
+        },
+        "nonexpert_8bit": {
+          "bytes": 2439063174,
+          "elements": 2364979968,
+          "tensors": 663,
+          "physical_bpw": 8.250600705299505
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.8755490843383457,
+        "up_proj": 0.8671288264662023,
+        "down_proj": 0.7786097647971414
+      },
+      "mean_organ_output_cosine": 0.8404292252005631,
+      "min_organ_output_cosine": 0.7786097647971414,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.7641509433962265,
+        "up_proj": 0.5566037735849056,
+        "down_proj": 0.11320754716981132
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.0,
+        "up_proj": 0.0,
+        "down_proj": 0.3018867924528302
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.03824952482536784,
+        "up_proj": -0.03388670921260176,
+        "down_proj": -0.014421175216547366
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.8636145829326393,
+        0.8471279809366127,
+        0.7914720302467482,
+        0.8097576032332398,
+        0.7817398872733905,
+        0.7744989531261952,
+        0.7433688994601061,
+        0.7520157377586201,
+        0.7993534435474783,
+        0.7409810795700803,
+        0.7636029117978791,
+        0.8403030872234774,
+        0.8032343790657069,
+        0.756490582879618,
+        0.7241270289102553,
+        0.7717129083148593,
+        0.7090954370894063,
+        0.7476306416112999,
+        0.7704471078072155,
+        0.7672992084344612,
+        0.7688398758667354,
+        0.7535150990535893,
+        0.7313501147343735,
+        0.8580808729962399,
+        0.7495897556502141,
+        0.7466327529626611,
+        0.7493790682939624,
+        0.7811884626458454,
+        0.7007661193873315,
+        0.7430549690988698,
+        0.7834353752289047,
+        0.7395838239385912,
+        0.7618722363758406,
+        0.7062498141107791,
+        0.7635290073225015,
+        0.8320892461186021,
+        0.7307102967853905,
+        0.7140758527845665,
+        0.707476048309818,
+        0.7758235528929796,
+        0.7565737706124223,
+        0.7732527852481408,
+        0.7808764988416306,
+        0.7716997525593958,
+        0.8411491588544372,
+        0.8158443583630277,
+        0.8119902656460865,
+        0.856411552420441
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 0.9989116284415759,
+        "up_proj": 1.0022166480249288,
+        "down_proj": 1.0006956550516182
+      },
+      "residual_identity_e2e_from_worst_organ": 0.3029060808716606,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      }
+    },
+    {
+      "name": "mixed_crush_down_r20_ne8",
+      "recipe": {
+        "gate_proj": "binary_g128",
+        "up_proj": "binary_g128",
+        "down_proj": "hgravs01_r20_b3",
+        "nonexpert_bits": 8
+      },
+      "complete_physical_bpw": 1.030514239474611,
+      "design_identity_complete_bpw": 1.029197129493687,
+      "expert_physical_bpw": 0.8082864472849501,
+      "nonexpert_physical_bpw": 8.250600705299505,
+      "all_required_weight_artifact_bytes": 10263199344,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "routed_up_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "routed_down_proj": {
+          "bytes": 550875062,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.17101287841796875
+        },
+        "nonexpert": {
+          "bytes": 2439063174,
+          "elements": 2364979968,
+          "physical_bpw": 8.250600705299505,
+          "bits": 8
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.8755490843383457,
+        "up_proj": 0.8277510737326309,
+        "down_proj": 0.524075319913264
+      },
+      "mean_organ_output_cosine": 0.7424584926614135,
+      "min_organ_output_cosine": 0.524075319913264,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.7641509433962265,
+        "up_proj": 0.12264150943396226,
+        "down_proj": 0.04716981132075472
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.0,
+        "up_proj": 0.0,
+        "down_proj": 0.0660377358490566
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.03824952482536784,
+        "up_proj": -0.053445211343158334,
+        "down_proj": -0.21177318670039208
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.7061265243260365,
+        0.5840524737745164,
+        0.46981802872863787,
+        0.5724370354627016,
+        0.5080279478139246,
+        0.4816569670629736,
+        0.4268990520624363,
+        0.43250933339172504,
+        0.5746457514461031,
+        0.44072516384979227,
+        0.4598152554616155,
+        0.6626540179859468,
+        0.5853359449179174,
+        0.4819663542009462,
+        0.4063327578313819,
+        0.49256733429446425,
+        0.37216267496440364,
+        0.43481104291446404,
+        0.4723865026490145,
+        0.47185680530466384,
+        0.5160594408257647,
+        0.4472532066328739,
+        0.42982815367071436,
+        0.6890687249067886,
+        0.4972860459139471,
+        0.4573065213168299,
+        0.4907138326260135,
+        0.5683551832238851,
+        0.4069906991186344,
+        0.4571225155822786,
+        0.5584810564960442,
+        0.42922578602854555,
+        0.5113859526538761,
+        0.4300326129628815,
+        0.5662607417742915,
+        0.6230317627930053,
+        0.4496649492084219,
+        0.4496323643111191,
+        0.4153825874005597,
+        0.5387726298669425,
+        0.5093027967114168,
+        0.5395658986369453,
+        0.5194239173108639,
+        0.5667182313473833,
+        0.6543105588491789,
+        0.5963668376756124,
+        0.6086490539479692,
+        0.7314741133918616
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 0.9989116284415759,
+        "up_proj": 0.9998273656971449,
+        "down_proj": 0.9983500585711744
+      },
+      "residual_identity_e2e_from_worst_organ": 0.06752896970235159,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      }
+    },
+    {
+      "name": "mixed_crush_down_r8_ne4",
+      "recipe": {
+        "gate_proj": "binary_g128",
+        "up_proj": "binary_g128",
+        "down_proj": "hgravs01_r8_b3",
+        "nonexpert_bits": 4
+      },
+      "complete_physical_bpw": 0.8809590058019537,
+      "design_identity_complete_bpw": 0.8796418958210299,
+      "expert_physical_bpw": 0.776522734719846,
+      "nonexpert_physical_bpw": 4.250529492856998,
+      "all_required_weight_artifact_bytes": 8773734068,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "routed_up_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "routed_down_proj": {
+          "bytes": 243920822,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.07572174072265625
+        },
+        "nonexpert": {
+          "bytes": 1256552138,
+          "elements": 2364979968,
+          "physical_bpw": 4.250529492856998,
+          "bits": 4
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.8755490843383457,
+        "up_proj": 0.8277510737326309,
+        "down_proj": 0.43200801050340704
+      },
+      "mean_organ_output_cosine": 0.7117693895247945,
+      "min_organ_output_cosine": 0.43200801050340704,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.7641509433962265,
+        "up_proj": 0.12264150943396226,
+        "down_proj": 0.04716981132075472
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.0,
+        "up_proj": 0.0,
+        "down_proj": 0.04716981132075472
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.03824952482536784,
+        "up_proj": -0.053445211343158334,
+        "down_proj": -0.2988053267078977
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.607909996315937,
+        0.46167488424433056,
+        0.34703327450915383,
+        0.4821956774868165,
+        0.392686408879896,
+        0.378739776988155,
+        0.32539016412448885,
+        0.3294270304498712,
+        0.4815163177133095,
+        0.3529201820770022,
+        0.3596450705399123,
+        0.5801045506821114,
+        0.513649170115134,
+        0.3762617037574715,
+        0.31659812418421435,
+        0.3653948301680985,
+        0.28224666558280903,
+        0.337248160844841,
+        0.3661246829245862,
+        0.38407978018705813,
+        0.43449508268370823,
+        0.345271136723028,
+        0.34235226736320445,
+        0.6093943266815797,
+        0.40898111360108624,
+        0.35952940697892233,
+        0.3982490638526123,
+        0.4795912180121591,
+        0.3181651635259348,
+        0.3626916817428613,
+        0.4748361769970325,
+        0.32295028023726413,
+        0.4191348728579744,
+        0.3500537783049482,
+        0.5052596799923692,
+        0.5406945746875726,
+        0.36591418983134394,
+        0.3770633125576949,
+        0.33768551813775555,
+        0.45588382971064384,
+        0.42800525141337764,
+        0.4190313481774514,
+        0.42389893177944027,
+        0.46748754369558265,
+        0.567231393482519,
+        0.49846155157057936,
+        0.5183996056527276,
+        0.6827610270413981
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 0.9989116284415759,
+        "up_proj": 0.9998273656971449,
+        "down_proj": 0.9962480721501503
+      },
+      "residual_identity_e2e_from_worst_organ": 0.037595112594066796,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      }
+    },
+    {
+      "name": "all_hgravs_r40_ne4",
+      "recipe": {
+        "gate_proj": "hgravs01_r40_b3",
+        "up_proj": "hgravs01_r40_b3",
+        "down_proj": "hgravs01_r40_b3",
+        "nonexpert_bits": 4
+      },
+      "complete_physical_bpw": 0.44741323183211634,
+      "design_identity_complete_bpw": 0.4460961218511924,
+      "expert_physical_bpw": 0.3297143184269468,
+      "nonexpert_physical_bpw": 4.250529492856998,
+      "all_required_weight_artifact_bytes": 4455922113,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 1062086023,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.3297119140625
+        },
+        "routed_up_proj": {
+          "bytes": 1062086023,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.3297119140625
+        },
+        "routed_down_proj": {
+          "bytes": 1062080438,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.3297119140625
+        },
+        "nonexpert": {
+          "bytes": 1256552138,
+          "elements": 2364979968,
+          "physical_bpw": 4.250529492856998,
+          "bits": 4
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.7594308946510923,
+        "up_proj": 0.6880243841848435,
+        "down_proj": 0.6018725462661019
+      },
+      "mean_organ_output_cosine": 0.6831092750340125,
+      "min_organ_output_cosine": 0.6018725462661019,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.08490566037735849,
+        "up_proj": 0.07547169811320754,
+        "down_proj": 0.04716981132075472
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.14150943396226415,
+        "up_proj": 0.14150943396226415,
+        "down_proj": 0.09433962264150944
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.05558889142116886,
+        "up_proj": -0.07488114322833121,
+        "down_proj": -0.14217461477277643
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.7871252025449217,
+        0.6770431902991367,
+        0.5794346284353715,
+        0.6498068467134036,
+        0.589825344104761,
+        0.5704141210048099,
+        0.5172122019500067,
+        0.5302081511254093,
+        0.6372894976296205,
+        0.5270917293474312,
+        0.5462040190696519,
+        0.7180021516552059,
+        0.6455412185817804,
+        0.5686331840701935,
+        0.49524435386709775,
+        0.5794058375938003,
+        0.46625197787902256,
+        0.5241568608873126,
+        0.5652251163808425,
+        0.5593755781265684,
+        0.5929714785346507,
+        0.5412900385021472,
+        0.518786324035573,
+        0.7496039666990876,
+        0.5710097567290175,
+        0.546680953789995,
+        0.5695617322064607,
+        0.63256455385386,
+        0.4843047862797462,
+        0.5415209917816126,
+        0.5702903492194967,
+        0.5236850737413182,
+        0.5858000805916784,
+        0.5048873932314135,
+        0.620503335682855,
+        0.6917237059118178,
+        0.5315261201854038,
+        0.5213214940923778,
+        0.4940553955498307,
+        0.6104305021754346,
+        0.5826293628427667,
+        0.6175814492327729,
+        0.6005875627897856,
+        0.6289826981716202,
+        0.7221729249451941,
+        0.6464519556449065,
+        0.6788172508979485,
+        0.7720497426532704
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 1.0069176340037473,
+        "up_proj": 1.0031463080229095,
+        "down_proj": 0.9990354282437759
+      },
+      "residual_identity_e2e_from_worst_organ": 0.10866562022105218,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      }
+    },
+    {
+      "name": "all_hgravs_r16_ne4",
+      "recipe": {
+        "gate_proj": "hgravs01_r16_b3",
+        "up_proj": "hgravs01_r16_b3",
+        "down_proj": "hgravs01_r16_b3",
+        "nonexpert_bits": 4
+      },
+      "complete_physical_bpw": 0.2626212748618826,
+      "design_identity_complete_bpw": 0.2613041648809586,
+      "expert_physical_bpw": 0.1392693721378843,
+      "nonexpert_physical_bpw": 4.250529492856998,
+      "all_required_weight_artifact_bytes": 2615523777,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 448619911,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.1392669677734375
+        },
+        "routed_up_proj": {
+          "bytes": 448619911,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.1392669677734375
+        },
+        "routed_down_proj": {
+          "bytes": 448614326,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.1392669677734375
+        },
+        "nonexpert": {
+          "bytes": 1256552138,
+          "elements": 2364979968,
+          "physical_bpw": 4.250529492856998,
+          "bits": 4
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.7224450633655662,
+        "up_proj": 0.6133396571261834,
+        "down_proj": 0.5003182789349673
+      },
+      "mean_organ_output_cosine": 0.612034333142239,
+      "min_organ_output_cosine": 0.5003182789349673,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.05660377358490566,
+        "up_proj": 0.04716981132075472,
+        "down_proj": 0.04716981132075472
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.09433962264150944,
+        "up_proj": 0.08490566037735849,
+        "down_proj": 0.0660377358490566
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.08817787953156761,
+        "up_proj": -0.14141714781183212,
+        "down_proj": -0.2337856903625131
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.6784324368720038,
+        0.5485389009445188,
+        0.4417197905041959,
+        0.5494130369597877,
+        0.48405533593916644,
+        0.45843310395886827,
+        0.40137579908824145,
+        0.4039210343477973,
+        0.5499989007683651,
+        0.416862685733128,
+        0.43213688083886725,
+        0.6432756112144871,
+        0.5668521565692197,
+        0.4572897109472568,
+        0.38250247194221737,
+        0.45768752670499546,
+        0.3473806773569873,
+        0.40670617854876767,
+        0.44664621796406023,
+        0.4474476158448664,
+        0.49212442452880256,
+        0.41973632673266076,
+        0.40592675709109505,
+        0.6702032742199787,
+        0.4731201051556808,
+        0.4322119828369741,
+        0.464661214985141,
+        0.5482112387883992,
+        0.38253266897435667,
+        0.4331896696564942,
+        0.5098907429279309,
+        0.40045107093294724,
+        0.4884574373139962,
+        0.40817127657256075,
+        0.5522196015694132,
+        0.6028524869415753,
+        0.42696696774178555,
+        0.43066362496736144,
+        0.39182753216339683,
+        0.5160500094547205,
+        0.4884262919417062,
+        0.5131929533858649,
+        0.4930617674782628,
+        0.5464247753698217,
+        0.6325333708445798,
+        0.5732267222154914,
+        0.5862006797085624,
+        0.7194129716335266
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 1.0044965548598954,
+        "up_proj": 1.000962640377464,
+        "down_proj": 0.9980010707024517
+      },
+      "residual_identity_e2e_from_worst_organ": 0.058201128382713505,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      }
+    },
+    {
+      "name": "all_hgravs_r8_ne4",
+      "recipe": {
+        "gate_proj": "hgravs01_r8_b3",
+        "up_proj": "hgravs01_r8_b3",
+        "down_proj": "hgravs01_r8_b3",
+        "nonexpert_bits": 4
+      },
+      "complete_physical_bpw": 0.2009622647823586,
+      "design_identity_complete_bpw": 0.19964515480143466,
+      "expert_physical_bpw": 0.07572414508710305,
+      "nonexpert_physical_bpw": 4.250529492856998,
+      "all_required_weight_artifact_bytes": 2001443265,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 243926407,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.07572174072265625
+        },
+        "routed_up_proj": {
+          "bytes": 243926407,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.07572174072265625
+        },
+        "routed_down_proj": {
+          "bytes": 243920822,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.07572174072265625
+        },
+        "nonexpert": {
+          "bytes": 1256552138,
+          "elements": 2364979968,
+          "physical_bpw": 4.250529492856998,
+          "bits": 4
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.7006903588047396,
+        "up_proj": 0.5625293551890865,
+        "down_proj": 0.43200801050340704
+      },
+      "mean_organ_output_cosine": 0.5650759081657444,
+      "min_organ_output_cosine": 0.43200801050340704,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.05660377358490566,
+        "up_proj": 0.04716981132075472,
+        "down_proj": 0.04716981132075472
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.08490566037735849,
+        "up_proj": 0.05660377358490566,
+        "down_proj": 0.04716981132075472
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.1080847811173954,
+        "up_proj": -0.1895159991747201,
+        "down_proj": -0.2988053267078977
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.607909996315937,
+        0.46167488424433056,
+        0.34703327450915383,
+        0.4821956774868165,
+        0.392686408879896,
+        0.378739776988155,
+        0.32539016412448885,
+        0.3294270304498712,
+        0.4815163177133095,
+        0.3529201820770022,
+        0.3596450705399123,
+        0.5801045506821114,
+        0.513649170115134,
+        0.3762617037574715,
+        0.31659812418421435,
+        0.3653948301680985,
+        0.28224666558280903,
+        0.337248160844841,
+        0.3661246829245862,
+        0.38407978018705813,
+        0.43449508268370823,
+        0.345271136723028,
+        0.34235226736320445,
+        0.6093943266815797,
+        0.40898111360108624,
+        0.35952940697892233,
+        0.3982490638526123,
+        0.4795912180121591,
+        0.3181651635259348,
+        0.3626916817428613,
+        0.4628615128252206,
+        0.32295028023726413,
+        0.4191348728579744,
+        0.3500537783049482,
+        0.5052596799923692,
+        0.5406945746875726,
+        0.36591418983134394,
+        0.3770633125576949,
+        0.3313726323834749,
+        0.45588382971064384,
+        0.42800525141337764,
+        0.4190313481774514,
+        0.42389893177944027,
+        0.46748754369558265,
+        0.567231393482519,
+        0.49846155157057936,
+        0.5183996056527276,
+        0.6827610270413981
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 1.0028308141905957,
+        "up_proj": 0.9993140834876029,
+        "down_proj": 0.9962480721501503
+      },
+      "residual_identity_e2e_from_worst_organ": 0.037595112594066796,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      }
+    },
+    {
+      "name": "binary_floor_down_r8_ne4",
+      "recipe": {
+        "gate_proj": "binary_g2048",
+        "up_proj": "binary_g128",
+        "down_proj": "hgravs01_r8_b3",
+        "nonexpert_bits": 4
+      },
+      "complete_physical_bpw": 0.8430535328027314,
+      "design_identity_complete_bpw": 0.8417364228218075,
+      "expert_physical_bpw": 0.7374576915883355,
+      "nonexpert_physical_bpw": 4.250529492856998,
+      "all_required_weight_artifact_bytes": 8396222132,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 3252559872,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.0097274780273438
+        },
+        "routed_up_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "routed_down_proj": {
+          "bytes": 243920822,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.07572174072265625
+        },
+        "nonexpert": {
+          "bytes": 1256552138,
+          "elements": 2364979968,
+          "physical_bpw": 4.250529492856998,
+          "bits": 4
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.8744238172368411,
+        "up_proj": 0.8277510737326309,
+        "down_proj": 0.43200801050340704
+      },
+      "mean_organ_output_cosine": 0.7113943004909596,
+      "min_organ_output_cosine": 0.43200801050340704,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.7547169811320755,
+        "up_proj": 0.12264150943396226,
+        "down_proj": 0.04716981132075472
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.0,
+        "up_proj": 0.0,
+        "down_proj": 0.04716981132075472
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.038845616234611614,
+        "up_proj": -0.053445211343158334,
+        "down_proj": -0.2988053267078977
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.607909996315937,
+        0.46167488424433056,
+        0.34703327450915383,
+        0.4821956774868165,
+        0.392686408879896,
+        0.378739776988155,
+        0.32539016412448885,
+        0.3294270304498712,
+        0.4815163177133095,
+        0.3529201820770022,
+        0.3596450705399123,
+        0.5801045506821114,
+        0.513649170115134,
+        0.3762617037574715,
+        0.31659812418421435,
+        0.3653948301680985,
+        0.28224666558280903,
+        0.337248160844841,
+        0.3661246829245862,
+        0.38407978018705813,
+        0.43449508268370823,
+        0.345271136723028,
+        0.34235226736320445,
+        0.6093943266815797,
+        0.40898111360108624,
+        0.35952940697892233,
+        0.3982490638526123,
+        0.4795912180121591,
+        0.3181651635259348,
+        0.3626916817428613,
+        0.4748361769970325,
+        0.32295028023726413,
+        0.4191348728579744,
+        0.3500537783049482,
+        0.5052596799923692,
+        0.5406945746875726,
+        0.36591418983134394,
+        0.3770633125576949,
+        0.33768551813775555,
+        0.45588382971064384,
+        0.42800525141337764,
+        0.4190313481774514,
+        0.42389893177944027,
+        0.46748754369558265,
+        0.567231393482519,
+        0.49846155157057936,
+        0.5183996056527276,
+        0.6827610270413981
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 0.9988731765742476,
+        "up_proj": 0.9998273656971449,
+        "down_proj": 0.9962480721501503
+      },
+      "residual_identity_e2e_from_worst_organ": 0.037595112594066796,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      }
+    }
+  ],
+  "target_nearest": [
+    {
+      "name": "hgravs01_r160_b3|hgravs01_r160_b3|binary_g128|ne8",
+      "recipe": {
+        "gate_proj": "hgravs01_r160_b3",
+        "up_proj": "hgravs01_r160_b3",
+        "down_proj": "binary_g128",
+        "nonexpert_bits": 8
+      },
+      "complete_physical_bpw": 1.4399842019723084,
+      "design_identity_complete_bpw": 1.4386670919913844,
+      "expert_physical_bpw": 1.2302825465384457,
+      "nonexpert_physical_bpw": 8.250600705299505,
+      "all_required_weight_artifact_bytes": 14341233096,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 4129490311,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.2819595336914062
+        },
+        "routed_up_proj": {
+          "bytes": 4129490311,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.2819595336914062
+        },
+        "routed_down_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "nonexpert": {
+          "bytes": 2439063174,
+          "elements": 2364979968,
+          "physical_bpw": 8.250600705299505,
+          "bits": 8
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.8369561011124742,
+        "up_proj": 0.811531980831789,
+        "down_proj": 0.8091496405798163
+      },
+      "mean_organ_output_cosine": 0.8192125741746933,
+      "min_organ_output_cosine": 0.8091496405798163,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.33962264150943394,
+        "up_proj": 0.16037735849056603,
+        "down_proj": 0.009433962264150943
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.3584905660377358,
+        "up_proj": 0.44339622641509435,
+        "down_proj": 0.0
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.012361091873503314,
+        "up_proj": 0.004464183928194371,
+        "down_proj": -0.05725678588366688
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.8235244258813741,
+        0.8210196677061163,
+        0.8150575077880999,
+        0.8141351388636751,
+        0.8229292572714706,
+        0.8120803381973025,
+        0.804293091923469,
+        0.7935116229437659,
+        0.8163140266876766,
+        0.765819095333385,
+        0.792806078167508,
+        0.8002084784015677,
+        0.8148395106174158,
+        0.7525656382145673,
+        0.7795411124899603,
+        0.802669616180474,
+        0.7699626547333289,
+        0.7929929384466579,
+        0.806897938675815,
+        0.7851830718858377,
+        0.7997734174747791,
+        0.7953201103718577,
+        0.7792490312972336,
+        0.7983939915468286,
+        0.7939146470313125,
+        0.7719705712191602,
+        0.7720181278898848,
+        0.7942648039245233,
+        0.7603868190977747,
+        0.7844876201842325,
+        0.6767407189522605,
+        0.8014439880305043,
+        0.7973260346275682,
+        0.7713625946793469,
+        0.7767527067024196,
+        0.8035773520485812,
+        0.7555077083359647,
+        0.7536497562820201,
+        0.6924658664414527,
+        0.795546823260176,
+        0.798754037313788,
+        0.8012269468799974,
+        0.7577641393759351,
+        0.7986416044798257,
+        0.8053129273808448,
+        0.7097229856370798,
+        0.803977505002195,
+        0.8336640363115565
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 1.0080385173482997,
+        "up_proj": 1.0042581033582716,
+        "down_proj": 0.9944190670809642
+      },
+      "residual_identity_e2e_from_worst_organ": 0.3591164588141191,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      },
+      "requested_complete_bpw": 1.44
+    },
+    {
+      "name": "hgravs01_r8_b3|binary_g128|binary_g128|ne8",
+      "recipe": {
+        "gate_proj": "hgravs01_r8_b3",
+        "up_proj": "binary_g128",
+        "down_proj": "binary_g128",
+        "nonexpert_bits": 8
+      },
+      "complete_physical_bpw": 0.9996939319698169,
+      "design_identity_complete_bpw": 0.9983768219888931,
+      "expert_physical_bpw": 0.7765233126572437,
+      "nonexpert_physical_bpw": 8.250600705299505,
+      "all_required_weight_artifact_bytes": 9956250689,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 243926407,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.07572174072265625
+        },
+        "routed_up_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "routed_down_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "nonexpert": {
+          "bytes": 2439063174,
+          "elements": 2364979968,
+          "physical_bpw": 8.250600705299505,
+          "bits": 8
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.7006903588047396,
+        "up_proj": 0.8277510737326309,
+        "down_proj": 0.8091496405798163
+      },
+      "mean_organ_output_cosine": 0.7791970243723956,
+      "min_organ_output_cosine": 0.7006903588047396,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.05660377358490566,
+        "up_proj": 0.12264150943396226,
+        "down_proj": 0.009433962264150943
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.08490566037735849,
+        "up_proj": 0.0,
+        "down_proj": 0.0
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.1080847811173954,
+        "up_proj": -0.053445211343158334,
+        "down_proj": -0.05725678588366688
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.7901907558172595,
+        0.6960188725601423,
+        0.7195488231740559,
+        0.6737710513082781,
+        0.6731465270184265,
+        0.6260725089358896,
+        0.6376761475919304,
+        0.6142269886294991,
+        0.729452019038159,
+        0.7017158571941452,
+        0.7086174870011789,
+        0.8002084784015677,
+        0.7658568735493786,
+        0.6804291567639937,
+        0.6029230397742069,
+        0.6396021649455492,
+        0.6158652002927436,
+        0.6789511249788154,
+        0.6844962992201754,
+        0.6400031411410613,
+        0.7008071534329896,
+        0.7472212877733084,
+        0.7012144934146045,
+        0.7983939915468286,
+        0.6908099762326787,
+        0.7018271462982706,
+        0.6889339632022186,
+        0.6848998576497618,
+        0.656913221551207,
+        0.6678054122158323,
+        0.4628615128252206,
+        0.6756713270723262,
+        0.7211212770960068,
+        0.6898528983879335,
+        0.782031504880328,
+        0.7416729894664633,
+        0.6508914698981707,
+        0.6597804636853957,
+        0.6035716181735571,
+        0.7111707196528267,
+        0.7789943958169552,
+        0.7621033789110967,
+        0.6877944993053304,
+        0.7787447767613048,
+        0.799307203759514,
+        0.591984637635861,
+        0.7434833861922392,
+        0.7910705250887933
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 1.0028308141905957,
+        "up_proj": 0.9998273656971449,
+        "down_proj": 0.9944190670809642
+      },
+      "residual_identity_e2e_from_worst_organ": 0.19446489414542534,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      },
+      "requested_complete_bpw": 1.0
+    },
+    {
+      "name": "hgravs01_r16_b3|resid_2pct|hgravs01_r80_b3|ne4",
+      "recipe": {
+        "gate_proj": "hgravs01_r16_b3",
+        "up_proj": "resid_2pct",
+        "down_proj": "hgravs01_r80_b3",
+        "nonexpert_bits": 4
+      },
+      "complete_physical_bpw": 0.7996719099779139,
+      "design_identity_complete_bpw": 0.79835479999699,
+      "expert_physical_bpw": 0.6927489771818122,
+      "nonexpert_physical_bpw": 4.250529492856998,
+      "all_required_weight_artifact_bytes": 7964171583,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 448619911,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.1392669677734375
+        },
+        "routed_up_proj": {
+          "bytes": 4161341701,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.2918472290039062
+        },
+        "routed_down_proj": {
+          "bytes": 2084540342,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.647125244140625
+        },
+        "nonexpert": {
+          "bytes": 1256552138,
+          "elements": 2364979968,
+          "physical_bpw": 4.250529492856998,
+          "bits": 4
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.7224450633655662,
+        "up_proj": 0.8671288264662023,
+        "down_proj": 0.685957807134259
+      },
+      "mean_organ_output_cosine": 0.7585105656553425,
+      "min_organ_output_cosine": 0.685957807134259,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.05660377358490566,
+        "up_proj": 0.5566037735849056,
+        "down_proj": 0.0660377358490566
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.09433962264150944,
+        "up_proj": 0.0,
+        "down_proj": 0.14150943396226415
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.08817787953156761,
+        "up_proj": -0.03388670921260176,
+        "down_proj": -0.07312114215654841
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.8420401974134611,
+        0.7333853044558479,
+        0.6888534999683766,
+        0.702795834162707,
+        0.6797398831250144,
+        0.6541721839170098,
+        0.6264359747533992,
+        0.6378385801179555,
+        0.711680925523161,
+        0.6274229355502007,
+        0.6493319507744009,
+        0.7770611610592358,
+        0.7186297297432296,
+        0.6571995029137951,
+        0.6030499729301577,
+        0.6710665405639866,
+        0.5746355016559019,
+        0.6313010732583116,
+        0.6658288011662443,
+        0.658970254032123,
+        0.6744169365446688,
+        0.640137101708536,
+        0.6167181025609008,
+        0.805566338655499,
+        0.6534142615632536,
+        0.6435714862405648,
+        0.6539934352971312,
+        0.7016971352048202,
+        0.5823186629022676,
+        0.6363168809056394,
+        0.5098907429279309,
+        0.628525189493646,
+        0.6684798935039851,
+        0.5960027568044615,
+        0.6849138742088203,
+        0.7621014769657615,
+        0.6239667466780231,
+        0.6074756846846141,
+        0.5915488930562062,
+        0.6893189805113131,
+        0.6618465898486197,
+        0.6882011678213519,
+        0.6867489526032811,
+        0.6918979212141255,
+        0.7820460598283626,
+        0.6138405784722414,
+        0.7436367761735997,
+        0.8108366081356598
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 1.0044965548598954,
+        "up_proj": 1.0022166480249288,
+        "down_proj": 0.9996972235758887
+      },
+      "residual_identity_e2e_from_worst_organ": 0.1785655618057987,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      },
+      "requested_complete_bpw": 0.8
+    },
+    {
+      "name": "binary_g128|hgravs01_r40_b3|hgravs01_r20_b3|ne4",
+      "recipe": {
+        "gate_proj": "binary_g128",
+        "up_proj": "hgravs01_r40_b3",
+        "down_proj": "hgravs01_r20_b3",
+        "nonexpert_bits": 4
+      },
+      "complete_physical_bpw": 0.6539318259795193,
+      "design_identity_complete_bpw": 0.6526147159985954,
+      "expert_physical_bpw": 0.5425505436336001,
+      "nonexpert_physical_bpw": 4.250529492856998,
+      "all_required_weight_artifact_bytes": 6512702523,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 3630071808,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.126922607421875
+        },
+        "routed_up_proj": {
+          "bytes": 1062086023,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.3297119140625
+        },
+        "routed_down_proj": {
+          "bytes": 550875062,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.17101287841796875
+        },
+        "nonexpert": {
+          "bytes": 1256552138,
+          "elements": 2364979968,
+          "physical_bpw": 4.250529492856998,
+          "bits": 4
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.8755490843383457,
+        "up_proj": 0.6880243841848435,
+        "down_proj": 0.524075319913264
+      },
+      "mean_organ_output_cosine": 0.6958829294788176,
+      "min_organ_output_cosine": 0.524075319913264,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.7641509433962265,
+        "up_proj": 0.07547169811320754,
+        "down_proj": 0.04716981132075472
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.0,
+        "up_proj": 0.14150943396226415,
+        "down_proj": 0.0660377358490566
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.03824952482536784,
+        "up_proj": -0.07488114322833121,
+        "down_proj": -0.21177318670039208
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.7061265243260365,
+        0.5840524737745164,
+        0.46981802872863787,
+        0.5724370354627016,
+        0.5080279478139246,
+        0.4816569670629736,
+        0.4268990520624363,
+        0.43250933339172504,
+        0.5746457514461031,
+        0.44072516384979227,
+        0.4598152554616155,
+        0.6626540179859468,
+        0.5853359449179174,
+        0.4819663542009462,
+        0.4063327578313819,
+        0.49256733429446425,
+        0.37216267496440364,
+        0.43481104291446404,
+        0.4723865026490145,
+        0.47185680530466384,
+        0.5160594408257647,
+        0.4472532066328739,
+        0.42982815367071436,
+        0.6890687249067886,
+        0.4972860459139471,
+        0.4573065213168299,
+        0.4907138326260135,
+        0.5683551832238851,
+        0.4069906991186344,
+        0.4571225155822786,
+        0.5584810564960442,
+        0.42922578602854555,
+        0.5113859526538761,
+        0.4300326129628815,
+        0.5662607417742915,
+        0.6230317627930053,
+        0.4496649492084219,
+        0.4496323643111191,
+        0.4153825874005597,
+        0.5387726298669425,
+        0.5093027967114168,
+        0.5395658986369453,
+        0.5194239173108639,
+        0.5667182313473833,
+        0.6543105588491789,
+        0.5963668376756124,
+        0.6086490539479692,
+        0.7314741133918616
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 0.9989116284415759,
+        "up_proj": 1.0031463080229095,
+        "down_proj": 0.9983500585711744
+      },
+      "residual_identity_e2e_from_worst_organ": 0.06752896970235159,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      },
+      "requested_complete_bpw": 0.655
+    },
+    {
+      "name": "binary_g2048|hgravs01_r8_b3|hgravs01_r8_b3|ne4",
+      "recipe": {
+        "gate_proj": "binary_g2048",
+        "up_proj": "hgravs01_r8_b3",
+        "down_proj": "hgravs01_r8_b3",
+        "nonexpert_bits": 4
+      },
+      "complete_physical_bpw": 0.5030551623431382,
+      "design_identity_complete_bpw": 0.5017380523622142,
+      "expert_physical_bpw": 0.38705839682370424,
+      "nonexpert_physical_bpw": 4.250529492856998,
+      "all_required_weight_artifact_bytes": 5010076731,
+      "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+      "organ_breakdown": {
+        "routed_gate_proj": {
+          "bytes": 3252559872,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 1.0097274780273438
+        },
+        "routed_up_proj": {
+          "bytes": 243926407,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.07572174072265625
+        },
+        "routed_down_proj": {
+          "bytes": 243920822,
+          "elements": 25769803776,
+          "tensors": 24576,
+          "physical_bpw": 0.07572174072265625
+        },
+        "nonexpert": {
+          "bytes": 1256552138,
+          "elements": 2364979968,
+          "physical_bpw": 4.250529492856998,
+          "bits": 4
+        }
+      },
+      "organ_output_cosine": {
+        "gate_proj": 0.8744238172368411,
+        "up_proj": 0.5625293551890865,
+        "down_proj": 0.43200801050340704
+      },
+      "mean_organ_output_cosine": 0.6229870609764449,
+      "min_organ_output_cosine": 0.43200801050340704,
+      "clears_bar_all_organs": false,
+      "clears_bar_on_mean": false,
+      "frac_clears_bar": {
+        "gate_proj": 0.7547169811320755,
+        "up_proj": 0.04716981132075472,
+        "down_proj": 0.04716981132075472
+      },
+      "frac_separated_from_null_p95": {
+        "gate_proj": 0.0,
+        "up_proj": 0.05660377358490566,
+        "down_proj": 0.04716981132075472
+      },
+      "mean_surplus_over_null_p95": {
+        "gate_proj": -0.038845616234611614,
+        "up_proj": -0.1895159991747201,
+        "down_proj": -0.2988053267078977
+      },
+      "rows_per_fit": {
+        "gate_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "up_proj": {
+          "min": 0,
+          "p50": 227.0,
+          "mean": 804.6,
+          "max": 1536
+        },
+        "down_proj": {
+          "min": 0,
+          "p50": 660.5,
+          "mean": 1801.9636363636364,
+          "max": 11029
+        }
+      },
+      "frac_underdetermined": {
+        "gate_proj": 1.0,
+        "up_proj": 1.0,
+        "down_proj": 0.4727272727272727
+      },
+      "per_layer_min_organ_cosine": [
+        0.607909996315937,
+        0.46167488424433056,
+        0.34703327450915383,
+        0.4821956774868165,
+        0.392686408879896,
+        0.378739776988155,
+        0.32539016412448885,
+        0.3294270304498712,
+        0.4815163177133095,
+        0.3529201820770022,
+        0.3596450705399123,
+        0.5801045506821114,
+        0.513649170115134,
+        0.3762617037574715,
+        0.31659812418421435,
+        0.3653948301680985,
+        0.28224666558280903,
+        0.337248160844841,
+        0.3661246829245862,
+        0.38407978018705813,
+        0.43449508268370823,
+        0.345271136723028,
+        0.34235226736320445,
+        0.6093943266815797,
+        0.40898111360108624,
+        0.35952940697892233,
+        0.3982490638526123,
+        0.4795912180121591,
+        0.3181651635259348,
+        0.3626916817428613,
+        0.4748361769970325,
+        0.32295028023726413,
+        0.4191348728579744,
+        0.3500537783049482,
+        0.5052596799923692,
+        0.5406945746875726,
+        0.36591418983134394,
+        0.3770633125576949,
+        0.3313726323834749,
+        0.45588382971064384,
+        0.42800525141337764,
+        0.4190313481774514,
+        0.42389893177944027,
+        0.46748754369558265,
+        0.567231393482519,
+        0.49846155157057936,
+        0.5183996056527276,
+        0.6827610270413981
+      ],
+      "per_layer_rel_l2_geo_growth": {
+        "gate_proj": 0.9988731765742476,
+        "up_proj": 0.9993140834876029,
+        "down_proj": 0.9962480721501503
+      },
+      "residual_identity_e2e_from_worst_organ": 0.037595112594066796,
+      "residual_identity_note": "Uses measured 48-layer true residual-stream growth converted by r=sqrt(max(g^2-1,0)) and the residual-identity product at the worst organ cosine. This is a composition bound, not teacher-forced residual-stream probe of the mixed hats. q80-coherence-deep owns that probe for the 1.44 artifact.",
+      "capture_defect": {
+        "route_starved": true,
+        "p10_rows": 34,
+        "p50_rows": 258,
+        "never_routed_pairs": 221,
+        "no_on_disk_post_swiglu_on_bound_capture": true,
+        "typical_gate_up_UNDERDETERMINED": true,
+        "typical_down_UNDERDETERMINED": true,
+        "extension_swiglu_used_when_present": true
+      },
+      "requested_complete_bpw": 0.5
+    }
+  ],
+  "cliff": {
+    "sits_at_or_above_complete_bpw": 1.4444456847927971,
+    "first_named_point_failing_all_organs_bar": "mixed_1p44_incumbent",
+    "holdout_min_organ_output_cosine": 0.7684198118931592,
+    "grid_points_clearing_bar": 0,
+    "sub_100_fs_reachable_at_preserved_capability": false
+  },
+  "generated_text": null,
+  "generation_note": "Autoregressive generation is owned by q80-mixed-generate for the 1.44 artifact. Lower-BPW recipes have no packed full artifact and no decode kernel. Organ cosine + tiled per-layer rel-L2 is the capability curve this lane can close without minting 13 GiB copies.",
+  "claim_boundary": {
+    "artifact_packed_only_at_1p44": true,
+    "lower_bpw_bytes_from_measured_payloads_scaled": true,
+    "coherence_generation_tested": false,
+    "teacher_forced_residual_stream_full_depth": false,
+    "teacher_forced_organ_output_full_depth": true,
+    "null_is_a_distribution": true,
+    "did_not_copy_q30_static_le_1p5": true,
+    "did_not_use_cross_expert_shared_basis": true
+  },
+  "analysis": {
+    "primary_metric": "holdout output-space mean-row cosine vs D23 bar 0.8604",
+    "n_pairs_total": 110,
+    "n_pairs_with_holdout": 101,
+    "n_pairs_no_holdout_excluded_from_primary": 9,
+    "incumbent_holdout_only": {
+      "gate_proj": {
+        "codec": "binary_g128",
+        "n": 101,
+        "mean": 0.8754952706943688,
+        "p10": 0.8491928861070632,
+        "p50": 0.8774675131110893,
+        "p90": 0.8991028760499467,
+        "min": 0.8128233190255577,
+        "max": 0.9670469711286296,
+        "frac_clears_bar": 0.7722772277227723,
+        "frac_separated_from_null_p95": 0.0,
+        "mean_surplus_over_null_p95": -0.03809871914798745,
+        "mean_rel_l2": 0.49612394330869636,
+        "n_fit_p50": 1071.0
+      },
+      "up_proj": {
+        "codec": "resid_2pct",
+        "n": 101,
+        "mean": 0.8664955440979232,
+        "p10": 0.8426626149348669,
+        "p50": 0.8623127434071189,
+        "p90": 0.8966731142125792,
+        "min": 0.8239308678591735,
+        "max": 0.9553725222709305,
+        "frac_clears_bar": 0.5643564356435643,
+        "frac_separated_from_null_p95": 0.0,
+        "mean_surplus_over_null_p95": -0.03375474659660869,
+        "mean_rel_l2": 0.4962658978380303,
+        "n_fit_p50": 1071.0
+      },
+      "down_proj": {
+        "codec": "hgravs01_r160_b3",
+        "n": 101,
+        "mean": 0.7684198118931592,
+        "p10": 0.7077556595953931,
+        "p50": 0.7594288357698911,
+        "p90": 0.8401958716604243,
+        "min": 0.6703791927439823,
+        "max": 0.9052162282433523,
+        "frac_clears_bar": 0.06930693069306931,
+        "frac_separated_from_null_p95": 0.26732673267326734,
+        "mean_surplus_over_null_p95": -0.024644557773942376,
+        "mean_rel_l2": 0.6235050121114447,
+        "n_fit_p50": 1536.0
+      }
+    },
+    "incumbent_holdout_min_organ": 0.7684198118931592,
+    "incumbent_residual_identity_e2e": 0.28606015315139716,
+    "screen_organs_holdout": [
+      {
+        "layer": 1,
+        "expert": 265,
+        "role": "screen_down_busy",
+        "n_rows_primary": 1361,
+        "n_rows_extension_swiglu": 934,
+        "has_holdout": true,
+        "n_fit_down": 1955,
+        "down_underdetermined_vs_512": false,
+        "gate_binary_g128": 0.869141546018146,
+        "up_resid_2pct": 0.8787772967770946,
+        "down_hgravs01_r160": 0.8430354586228184
+      },
+      {
+        "layer": 3,
+        "expert": 494,
+        "role": "screen_gate_up_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 2788,
+        "has_holdout": true,
+        "n_fit_down": 4324,
+        "down_underdetermined_vs_512": false,
+        "gate_binary_g128": 0.8575315208550953,
+        "up_resid_2pct": 0.8651495830741494,
+        "down_hgravs01_r160": 0.7429679635420531
+      },
+      {
+        "layer": 10,
+        "expert": 453,
+        "role": "screen_gate_up_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 6905,
+        "has_holdout": true,
+        "n_fit_down": 8441,
+        "down_underdetermined_vs_512": false,
+        "gate_binary_g128": 0.8941161902141107,
+        "up_resid_2pct": 0.8649480789954814,
+        "down_hgravs01_r160": 0.7821730878202552
+      },
+      {
+        "layer": 32,
+        "expert": 179,
+        "role": "screen_down_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true,
+        "n_fit_down": 1536,
+        "down_underdetermined_vs_512": false,
+        "gate_binary_g128": 0.8839509493521756,
+        "up_resid_2pct": 0.8643738434815554,
+        "down_hgravs01_r160": 0.8186572598415873
+      },
+      {
+        "layer": 35,
+        "expert": 330,
+        "role": "screen_down_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true,
+        "n_fit_down": 1536,
+        "down_underdetermined_vs_512": false,
+        "gate_binary_g128": 0.8712386867386243,
+        "up_resid_2pct": 0.8711947875655675,
+        "down_hgravs01_r160": 0.7884222719915416
+      },
+      {
+        "layer": 46,
+        "expert": 428,
+        "role": "screen_down_busy",
+        "n_rows_primary": 2048,
+        "n_rows_extension_swiglu": 0,
+        "has_holdout": true,
+        "n_fit_down": 1536,
+        "down_underdetermined_vs_512": false,
+        "gate_binary_g128": 0.8996487449556664,
+        "up_resid_2pct": 0.922328070674205,
+        "down_hgravs01_r160": 0.8646405760869333
+      }
+    ],
+    "screen_down_n_clearing_bar": 1,
+    "per_layer_incumbent_holdout": [
+      {
+        "layer": 0,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.8757571337281255,
+        "worst_organ_rel_l2_mean": 0.48441386574080586,
+        "gate_mean": 0.8888381835700714,
+        "up_mean": 0.9198076250231634,
+        "down_mean": 0.8835955640902036
+      },
+      {
+        "layer": 1,
+        "n_pairs_holdout": 3,
+        "min_organ_cosine_mean": 0.844339617046828,
+        "worst_organ_rel_l2_mean": 0.5164775432921206,
+        "gate_mean": 0.8695388686550745,
+        "up_mean": 0.8816057953794889,
+        "down_mean": 0.8471279809366127
+      },
+      {
+        "layer": 2,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7914720302467482,
+        "worst_organ_rel_l2_mean": 0.6232584494982436,
+        "gate_mean": 0.8783923093838917,
+        "up_mean": 0.8752098595571687,
+        "down_mean": 0.7914720302467482
+      },
+      {
+        "layer": 3,
+        "n_pairs_holdout": 3,
+        "min_organ_cosine_mean": 0.7926618689156282,
+        "worst_organ_rel_l2_mean": 0.5804388741002809,
+        "gate_mean": 0.8504128465692512,
+        "up_mean": 0.8639450443602144,
+        "down_mean": 0.8097576032332398
+      },
+      {
+        "layer": 4,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7817398872733905,
+        "worst_organ_rel_l2_mean": 0.604939588484962,
+        "gate_mean": 0.8807385788758255,
+        "up_mean": 0.8835378209775571,
+        "down_mean": 0.7817398872733905
+      },
+      {
+        "layer": 5,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7744989531261952,
+        "worst_organ_rel_l2_mean": 0.6432736567570271,
+        "gate_mean": 0.8783680980643356,
+        "up_mean": 0.8670101885862822,
+        "down_mean": 0.7744989531261952
+      },
+      {
+        "layer": 6,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7433688994601061,
+        "worst_organ_rel_l2_mean": 0.6749357633769991,
+        "gate_mean": 0.8672899222330657,
+        "up_mean": 0.865517822951481,
+        "down_mean": 0.7433688994601061
+      },
+      {
+        "layer": 7,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7520157377586201,
+        "worst_organ_rel_l2_mean": 0.6538041167666733,
+        "gate_mean": 0.8793056896991382,
+        "up_mean": 0.876302247901733,
+        "down_mean": 0.7520157377586201
+      },
+      {
+        "layer": 8,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7993534435474783,
+        "worst_organ_rel_l2_mean": 0.592212023051605,
+        "gate_mean": 0.8726007059051728,
+        "up_mean": 0.8658825927003548,
+        "down_mean": 0.7993534435474783
+      },
+      {
+        "layer": 9,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7409810795700803,
+        "worst_organ_rel_l2_mean": 0.6661470644538072,
+        "gate_mean": 0.8889830289692747,
+        "up_mean": 0.8616681194173066,
+        "down_mean": 0.7409810795700803
+      },
+      {
+        "layer": 10,
+        "n_pairs_holdout": 3,
+        "min_organ_cosine_mean": 0.7636029117978791,
+        "worst_organ_rel_l2_mean": 0.6304622401329157,
+        "gate_mean": 0.8821174126858473,
+        "up_mean": 0.8605044922794511,
+        "down_mean": 0.7636029117978791
+      },
+      {
+        "layer": 11,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7657313493673197,
+        "worst_organ_rel_l2_mean": 0.634107149852364,
+        "gate_mean": 0.8896527243234162,
+        "up_mean": 0.8649118896767907,
+        "down_mean": 0.7657313493673197
+      },
+      {
+        "layer": 12,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.8032343790657069,
+        "worst_organ_rel_l2_mean": 0.5871956726301056,
+        "gate_mean": 0.8788324172387604,
+        "up_mean": 0.8636577515724801,
+        "down_mean": 0.8032343790657069
+      },
+      {
+        "layer": 13,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.756490582879618,
+        "worst_organ_rel_l2_mean": 0.6348458687001504,
+        "gate_mean": 0.8772461225032164,
+        "up_mean": 0.8633877243207639,
+        "down_mean": 0.756490582879618
+      },
+      {
+        "layer": 14,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7241270289102553,
+        "worst_organ_rel_l2_mean": 0.683313400630221,
+        "gate_mean": 0.8533657824138188,
+        "up_mean": 0.8593990482763811,
+        "down_mean": 0.7241270289102553
+      },
+      {
+        "layer": 15,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7717129083148593,
+        "worst_organ_rel_l2_mean": 0.6261737087249829,
+        "gate_mean": 0.8642636935442789,
+        "up_mean": 0.8682462545163686,
+        "down_mean": 0.7717129083148593
+      },
+      {
+        "layer": 16,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7090954370894063,
+        "worst_organ_rel_l2_mean": 0.7188034022908822,
+        "gate_mean": 0.8485218458072804,
+        "up_mean": 0.8473648860158631,
+        "down_mean": 0.7090954370894063
+      },
+      {
+        "layer": 17,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7476306416112999,
+        "worst_organ_rel_l2_mean": 0.6694899253305877,
+        "gate_mean": 0.8799801640789097,
+        "up_mean": 0.860923463916186,
+        "down_mean": 0.7476306416112999
+      },
+      {
+        "layer": 18,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7704471078072155,
+        "worst_organ_rel_l2_mean": 0.6505591568422077,
+        "gate_mean": 0.885350380321529,
+        "up_mean": 0.869667864573723,
+        "down_mean": 0.7704471078072155
+      },
+      {
+        "layer": 19,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7672992084344612,
+        "worst_organ_rel_l2_mean": 0.6535954905435499,
+        "gate_mean": 0.8597797714619781,
+        "up_mean": 0.8494081767208532,
+        "down_mean": 0.7672992084344612
+      },
+      {
+        "layer": 20,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7688398758667354,
+        "worst_organ_rel_l2_mean": 0.6137604133424941,
+        "gate_mean": 0.8611604187045045,
+        "up_mean": 0.8526886373643441,
+        "down_mean": 0.7688398758667354
+      },
+      {
+        "layer": 21,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7535150990535893,
+        "worst_organ_rel_l2_mean": 0.6482584155781892,
+        "gate_mean": 0.9028572127439043,
+        "up_mean": 0.858455887135529,
+        "down_mean": 0.7535150990535893
+      },
+      {
+        "layer": 22,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7313501147343735,
+        "worst_organ_rel_l2_mean": 0.6668533577633957,
+        "gate_mean": 0.8937066562303055,
+        "up_mean": 0.8614491627725942,
+        "down_mean": 0.7313501147343735
+      },
+      {
+        "layer": 23,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7930113059053168,
+        "worst_organ_rel_l2_mean": 0.6082478824143009,
+        "gate_mean": 0.876239062838468,
+        "up_mean": 0.8708410170111591,
+        "down_mean": 0.7930113059053168
+      },
+      {
+        "layer": 24,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7495897556502141,
+        "worst_organ_rel_l2_mean": 0.6534118851826205,
+        "gate_mean": 0.8525655815676656,
+        "up_mean": 0.8420347481201167,
+        "down_mean": 0.7495897556502141
+      },
+      {
+        "layer": 25,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7466327529626611,
+        "worst_organ_rel_l2_mean": 0.661602600110385,
+        "gate_mean": 0.8618167568878123,
+        "up_mean": 0.8498746273316276,
+        "down_mean": 0.7466327529626611
+      },
+      {
+        "layer": 26,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7493790682939624,
+        "worst_organ_rel_l2_mean": 0.6601929500867243,
+        "gate_mean": 0.8687402086362981,
+        "up_mean": 0.8604117076814948,
+        "down_mean": 0.7493790682939624
+      },
+      {
+        "layer": 27,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7811884626458454,
+        "worst_organ_rel_l2_mean": 0.6252225272008164,
+        "gate_mean": 0.8505213754929483,
+        "up_mean": 0.8542922086134592,
+        "down_mean": 0.7811884626458454
+      },
+      {
+        "layer": 28,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7007661193873315,
+        "worst_organ_rel_l2_mean": 0.7153501573596581,
+        "gate_mean": 0.8683254851170255,
+        "up_mean": 0.8467822771205249,
+        "down_mean": 0.7007661193873315
+      },
+      {
+        "layer": 29,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7430549690988698,
+        "worst_organ_rel_l2_mean": 0.6670735100640817,
+        "gate_mean": 0.8700089484540314,
+        "up_mean": 0.8699569022943343,
+        "down_mean": 0.7430549690988698
+      },
+      {
+        "layer": 30,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7819655195241546,
+        "worst_organ_rel_l2_mean": 0.5971895475110143,
+        "gate_mean": 0.9077949189655568,
+        "up_mean": 0.8628151034588913,
+        "down_mean": 0.7834353752289047
+      },
+      {
+        "layer": 31,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7395838239385912,
+        "worst_organ_rel_l2_mean": 0.6622706939316918,
+        "gate_mean": 0.8842176122250807,
+        "up_mean": 0.8739391432981576,
+        "down_mean": 0.7395838239385912
+      },
+      {
+        "layer": 32,
+        "n_pairs_holdout": 3,
+        "min_organ_cosine_mean": 0.7618722363758406,
+        "worst_organ_rel_l2_mean": 0.6310914373902254,
+        "gate_mean": 0.8758296087441816,
+        "up_mean": 0.8546681719833792,
+        "down_mean": 0.7618722363758406
+      },
+      {
+        "layer": 33,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7062498141107791,
+        "worst_organ_rel_l2_mean": 0.6995316929957918,
+        "gate_mean": 0.864738255355065,
+        "up_mean": 0.8465398341764756,
+        "down_mean": 0.7062498141107791
+      },
+      {
+        "layer": 34,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7635290073225015,
+        "worst_organ_rel_l2_mean": 0.6243034252564336,
+        "gate_mean": 0.8959235219468931,
+        "up_mean": 0.8541731330150195,
+        "down_mean": 0.7635290073225015
+      },
+      {
+        "layer": 35,
+        "n_pairs_holdout": 3,
+        "min_organ_cosine_mean": 0.7799097409410641,
+        "worst_organ_rel_l2_mean": 0.6250472910120228,
+        "gate_mean": 0.86815199918348,
+        "up_mean": 0.874706394565634,
+        "down_mean": 0.7799097409410641
+      },
+      {
+        "layer": 36,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7307102967853905,
+        "worst_organ_rel_l2_mean": 0.6833801431428638,
+        "gate_mean": 0.880296903116484,
+        "up_mean": 0.8605134258494608,
+        "down_mean": 0.7307102967853905
+      },
+      {
+        "layer": 37,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7140758527845665,
+        "worst_organ_rel_l2_mean": 0.6947576206853172,
+        "gate_mean": 0.8596311084868716,
+        "up_mean": 0.847319944320971,
+        "down_mean": 0.7140758527845665
+      },
+      {
+        "layer": 38,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.707476048309818,
+        "worst_organ_rel_l2_mean": 0.7123219309098692,
+        "gate_mean": 0.8648311132196299,
+        "up_mean": 0.8386857494056508,
+        "down_mean": 0.707476048309818
+      },
+      {
+        "layer": 39,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7758235528929796,
+        "worst_organ_rel_l2_mean": 0.6218978384952208,
+        "gate_mean": 0.8822175287269003,
+        "up_mean": 0.8645342585321465,
+        "down_mean": 0.7758235528929796
+      },
+      {
+        "layer": 40,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7565737706124223,
+        "worst_organ_rel_l2_mean": 0.6347824017307124,
+        "gate_mean": 0.8796394788923982,
+        "up_mean": 0.847952202560923,
+        "down_mean": 0.7565737706124223
+      },
+      {
+        "layer": 41,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7732527852481408,
+        "worst_organ_rel_l2_mean": 0.5850538848912497,
+        "gate_mean": 0.9021346851850129,
+        "up_mean": 0.8798839990759396,
+        "down_mean": 0.7732527852481408
+      },
+      {
+        "layer": 42,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7808764988416306,
+        "worst_organ_rel_l2_mean": 0.6262145006670126,
+        "gate_mean": 0.8735230607335764,
+        "up_mean": 0.8780061483711908,
+        "down_mean": 0.7808764988416306
+      },
+      {
+        "layer": 43,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7716997525593958,
+        "worst_organ_rel_l2_mean": 0.5772715016394434,
+        "gate_mean": 0.8890681894651948,
+        "up_mean": 0.8627505215803515,
+        "down_mean": 0.7716997525593958
+      },
+      {
+        "layer": 44,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.8411491588544372,
+        "worst_organ_rel_l2_mean": 0.5269384287151933,
+        "gate_mean": 0.9011605282800872,
+        "up_mean": 0.9085326014162247,
+        "down_mean": 0.8411491588544372
+      },
+      {
+        "layer": 45,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.8158443583630277,
+        "worst_organ_rel_l2_mean": 0.5428794792548739,
+        "gate_mean": 0.9012123992637278,
+        "up_mean": 0.9096004464852542,
+        "down_mean": 0.8158443583630277
+      },
+      {
+        "layer": 46,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.8119902656460865,
+        "worst_organ_rel_l2_mean": 0.5722052739007418,
+        "gate_mean": 0.8843097038704875,
+        "up_mean": 0.9160044546282837,
+        "down_mean": 0.8119902656460865
+      },
+      {
+        "layer": 47,
+        "n_pairs_holdout": 2,
+        "min_organ_cosine_mean": 0.7894026670270686,
+        "worst_organ_rel_l2_mean": 0.5440398558375026,
+        "gate_mean": 0.8452849335089818,
+        "up_mean": 0.8749386507682883,
+        "down_mean": 0.7894026670270686
+      }
+    ],
+    "organ_rel_l2_is_flat_with_depth": true,
+    "organ_rel_l2_geo_growth_incumbent": {
+      "gate_proj": 0.9989116284415759,
+      "up_proj": 1.0022166480249288,
+      "down_proj": 1.0006956550516182
+    },
+    "capability_best_under_budget": [
+      {
+        "requested_complete_bpw": 1.44,
+        "feasible": true,
+        "name": "binary_g2048|binary_g128|binary_g128|ne4",
+        "recipe": {
+          "gate_proj": "binary_g2048",
+          "up_proj": "binary_g128",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        },
+        "complete_physical_bpw": 1.1830524640447704,
+        "expert_physical_bpw": 1.0878575642903645,
+        "nonexpert_physical_bpw": 4.250529492856998,
+        "organ_output_cosine": {
+          "gate_proj": 0.8744238172368411,
+          "up_proj": 0.8277510737326309,
+          "down_proj": 0.8091496405798163
+        },
+        "min_organ_output_cosine": 0.8091496405798163,
+        "mean_organ_output_cosine": 0.837108177183096,
+        "clears_bar_all_organs": false,
+        "residual_identity_e2e_from_worst_organ": 0.3591164588141191,
+        "fs_per_weight_floor_at_unity_eff": 180.5636189353259,
+        "frac_underdetermined": {
+          "gate_proj": 1.0,
+          "up_proj": 1.0,
+          "down_proj": 0.4727272727272727
+        },
+        "rows_per_fit": {
+          "gate_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "up_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "down_proj": {
+            "min": 0,
+            "p50": 660.5,
+            "mean": 1801.9636363636364,
+            "max": 11029
+          }
+        },
+        "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+        "capture_defect": {
+          "route_starved": true,
+          "p10_rows": 34,
+          "p50_rows": 258,
+          "never_routed_pairs": 221,
+          "no_on_disk_post_swiglu_on_bound_capture": true,
+          "typical_gate_up_UNDERDETERMINED": true,
+          "typical_down_UNDERDETERMINED": true,
+          "extension_swiglu_used_when_present": true
+        }
+      },
+      {
+        "requested_complete_bpw": 1.0,
+        "feasible": true,
+        "name": "hgravs01_r40_b3|binary_g128|binary_g128|ne4",
+        "recipe": {
+          "gate_proj": "hgravs01_r40_b3",
+          "up_proj": "binary_g128",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        },
+        "complete_physical_bpw": 0.9631098889343186,
+        "expert_physical_bpw": 0.861186703770525,
+        "nonexpert_physical_bpw": 4.250529492856998,
+        "organ_output_cosine": {
+          "gate_proj": 0.7594308946510923,
+          "up_proj": 0.8277510737326309,
+          "down_proj": 0.8091496405798163
+        },
+        "min_organ_output_cosine": 0.7594308946510923,
+        "mean_organ_output_cosine": 0.7987772029878465,
+        "clears_bar_all_organs": false,
+        "residual_identity_e2e_from_worst_organ": 0.27193045085755996,
+        "fs_per_weight_floor_at_unity_eff": 146.99483942057816,
+        "frac_underdetermined": {
+          "gate_proj": 1.0,
+          "up_proj": 1.0,
+          "down_proj": 0.4727272727272727
+        },
+        "rows_per_fit": {
+          "gate_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "up_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "down_proj": {
+            "min": 0,
+            "p50": 660.5,
+            "mean": 1801.9636363636364,
+            "max": 11029
+          }
+        },
+        "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+        "capture_defect": {
+          "route_starved": true,
+          "p10_rows": 34,
+          "p50_rows": 258,
+          "never_routed_pairs": 221,
+          "no_on_disk_post_swiglu_on_bound_capture": true,
+          "typical_gate_up_UNDERDETERMINED": true,
+          "typical_down_UNDERDETERMINED": true,
+          "extension_swiglu_used_when_present": true
+        }
+      },
+      {
+        "requested_complete_bpw": 0.8,
+        "feasible": true,
+        "name": "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "recipe": {
+          "gate_proj": "hgravs01_r8_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        },
+        "complete_physical_bpw": 0.6231115184747253,
+        "expert_physical_bpw": 0.5107874090058936,
+        "nonexpert_physical_bpw": 4.250529492856998,
+        "organ_output_cosine": {
+          "gate_proj": 0.7006903588047396,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.8091496405798163
+        },
+        "min_organ_output_cosine": 0.6880243841848435,
+        "mean_organ_output_cosine": 0.7326214611897998,
+        "clears_bar_all_organs": false,
+        "residual_identity_e2e_from_worst_organ": 0.1807202823111651,
+        "fs_per_weight_floor_at_unity_eff": 95.10252012950866,
+        "frac_underdetermined": {
+          "gate_proj": 1.0,
+          "up_proj": 1.0,
+          "down_proj": 0.4727272727272727
+        },
+        "rows_per_fit": {
+          "gate_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "up_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "down_proj": {
+            "min": 0,
+            "p50": 660.5,
+            "mean": 1801.9636363636364,
+            "max": 11029
+          }
+        },
+        "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+        "capture_defect": {
+          "route_starved": true,
+          "p10_rows": 34,
+          "p50_rows": 258,
+          "never_routed_pairs": 221,
+          "no_on_disk_post_swiglu_on_bound_capture": true,
+          "typical_gate_up_UNDERDETERMINED": true,
+          "typical_down_UNDERDETERMINED": true,
+          "extension_swiglu_used_when_present": true
+        }
+      },
+      {
+        "requested_complete_bpw": 0.6552,
+        "feasible": true,
+        "name": "hgravs01_r8_b3|hgravs01_r40_b3|binary_g128|ne4",
+        "recipe": {
+          "gate_proj": "hgravs01_r8_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "binary_g128",
+          "nonexpert_bits": 4
+        },
+        "complete_physical_bpw": 0.6231115184747253,
+        "expert_physical_bpw": 0.5107874090058936,
+        "nonexpert_physical_bpw": 4.250529492856998,
+        "organ_output_cosine": {
+          "gate_proj": 0.7006903588047396,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.8091496405798163
+        },
+        "min_organ_output_cosine": 0.6880243841848435,
+        "mean_organ_output_cosine": 0.7326214611897998,
+        "clears_bar_all_organs": false,
+        "residual_identity_e2e_from_worst_organ": 0.1807202823111651,
+        "fs_per_weight_floor_at_unity_eff": 95.10252012950866,
+        "frac_underdetermined": {
+          "gate_proj": 1.0,
+          "up_proj": 1.0,
+          "down_proj": 0.4727272727272727
+        },
+        "rows_per_fit": {
+          "gate_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "up_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "down_proj": {
+            "min": 0,
+            "p50": 660.5,
+            "mean": 1801.9636363636364,
+            "max": 11029
+          }
+        },
+        "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+        "capture_defect": {
+          "route_starved": true,
+          "p10_rows": 34,
+          "p50_rows": 258,
+          "never_routed_pairs": 221,
+          "no_on_disk_post_swiglu_on_bound_capture": true,
+          "typical_gate_up_UNDERDETERMINED": true,
+          "typical_down_UNDERDETERMINED": true,
+          "extension_swiglu_used_when_present": true
+        }
+      },
+      {
+        "requested_complete_bpw": 0.5,
+        "feasible": true,
+        "name": "hgravs01_r8_b3|hgravs01_r40_b3|hgravs01_r80_b3|ne4",
+        "recipe": {
+          "gate_proj": "hgravs01_r8_b3",
+          "up_proj": "hgravs01_r40_b3",
+          "down_proj": "hgravs01_r80_b3",
+          "nonexpert_bits": 4
+        },
+        "complete_physical_bpw": 0.4679267528947122,
+        "expert_physical_bpw": 0.35085537067304057,
+        "nonexpert_physical_bpw": 4.250529492856998,
+        "organ_output_cosine": {
+          "gate_proj": 0.7006903588047396,
+          "up_proj": 0.6880243841848435,
+          "down_proj": 0.685957807134259
+        },
+        "min_organ_output_cosine": 0.685957807134259,
+        "mean_organ_output_cosine": 0.6915575167079474,
+        "clears_bar_all_organs": false,
+        "residual_identity_e2e_from_worst_organ": 0.1785655618057987,
+        "fs_per_weight_floor_at_unity_eff": 71.41741424590603,
+        "frac_underdetermined": {
+          "gate_proj": 1.0,
+          "up_proj": 1.0,
+          "down_proj": 0.4727272727272727
+        },
+        "rows_per_fit": {
+          "gate_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "up_proj": {
+            "min": 0,
+            "p50": 227.0,
+            "mean": 804.6,
+            "max": 1536
+          },
+          "down_proj": {
+            "min": 0,
+            "p50": 660.5,
+            "mean": 1801.9636363636364,
+            "max": 11029
+          }
+        },
+        "bytes_are": "mean measured payload bytes x 24576 tensors + 1p44 catalog overhead",
+        "capture_defect": {
+          "route_starved": true,
+          "p10_rows": 34,
+          "p50_rows": 258,
+          "never_routed_pairs": 221,
+          "no_on_disk_post_swiglu_on_bound_capture": true,
+          "typical_gate_up_UNDERDETERMINED": true,
+          "typical_down_UNDERDETERMINED": true,
+          "extension_swiglu_used_when_present": true
+        }
+      }
+    ],
+    "grid": {
+      "n_recipes": 588,
+      "n_clearing_all_organs_bar": 0,
+      "best_min_organ_regardless_of_bpw": {
+        "name": "binary_g128|binary_g128|binary_g128|ne8",
+        "complete_physical_bpw": 1.3396923024294103,
+        "min_organ_output_cosine": 0.8091496405798163,
+        "organ_output_cosine": {
+          "gate_proj": 0.8755490843383457,
+          "up_proj": 0.8277510737326309,
+          "down_proj": 0.8091496405798163
+        }
+      }
+    },
+    "null_finding": "Matched-magnitude shuffled-error null is a 16-sample distribution per organ. Binary and residual reconstructions never separate from that null (frac_separated=0, surplus vs p95 is negative). The 0.8604 bar is therefore being applied to a metric that, on these codecs, cannot tell the reconstruction from a random same-energy perturbation. hgravs01_r160 separates on a minority of organs (gate 0.36 / up 0.44 / down 0.30). This is reported, not papered over.",
+    "fit_set_vs_holdout_note": "Scoring the fit set on two screen down organs raises cosine by ~0.03 (L1E265 0.843 holdout vs 0.871 fit-all; L46E428 0.865 vs 0.873). L10E453 fails even fit-on-all at 0.795. The mixed-representation receipt range 0.886-0.898 is not reproduced on these organs.",
+    "verdict": {
+      "cliff_sits_above": 1.4444456847927971,
+      "sub_100_fs_reachable_at_preserved_capability": false,
+      "reason": "No measured recipe \u2014 including the packed 1.444 BPW mixed-1p5 artifact and the entire 6x7x7x2 codec grid \u2014 clears the 0.8604 bar on all three organs. down_proj is the binding organ (holdout mean 0.768 at hgravs01_r160). Sub-0.655 complete BPW requires leaving the binary family on gate/up and crushes min organ cosine to ~0.69. Bits are reachable; capability is the wall. The campaign should stop pursuing sub-100 fs/weight for Q80 at preserved capability on this architecture."
+    }
+  },
+  "codec_summaries_compact": {
+    "gate_proj.binary_g128": {
+      "physical_bpw_from_mean_bytes": 1.126922607421875,
+      "mean_output_cosine": 0.8755490843383457,
+      "p10_output_cosine": 0.8488678764547737,
+      "p50_output_cosine": 0.8776070305517476,
+      "min_output_cosine": 0.8128233190255577,
+      "frac_clears_bar": 0.7641509433962265,
+      "frac_separated_from_null_p95": 0.0,
+      "mean_surplus_over_null_p95": -0.03824952482536784,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9989116284415759,
+      "clears_bar_on_mean": true
+    },
+    "gate_proj.binary_g2048": {
+      "physical_bpw_from_mean_bytes": 1.0097274780273438,
+      "mean_output_cosine": 0.8744238172368411,
+      "p10_output_cosine": 0.8474810112062898,
+      "p50_output_cosine": 0.8768786827616142,
+      "min_output_cosine": 0.8107373763111452,
+      "frac_clears_bar": 0.7547169811320755,
+      "frac_separated_from_null_p95": 0.0,
+      "mean_surplus_over_null_p95": -0.038845616234611614,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9988731765742476,
+      "clears_bar_on_mean": true
+    },
+    "gate_proj.hgravs01_r160_b3": {
+      "physical_bpw_from_mean_bytes": 1.2819595336914062,
+      "mean_output_cosine": 0.8369561011124742,
+      "p10_output_cosine": 0.7824192175118156,
+      "p50_output_cosine": 0.838872084977588,
+      "min_output_cosine": 0.3898972513322471,
+      "frac_clears_bar": 0.33962264150943394,
+      "frac_separated_from_null_p95": 0.3584905660377358,
+      "mean_surplus_over_null_p95": -0.012361091873503314,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0080385173482997,
+      "clears_bar_on_mean": false
+    },
+    "gate_proj.hgravs01_r40_b3": {
+      "physical_bpw_from_mean_bytes": 0.3297119140625,
+      "mean_output_cosine": 0.7594308946510923,
+      "p10_output_cosine": 0.6730846682615792,
+      "p50_output_cosine": 0.7572950912027261,
+      "min_output_cosine": 0.19398129539987372,
+      "frac_clears_bar": 0.08490566037735849,
+      "frac_separated_from_null_p95": 0.14150943396226415,
+      "mean_surplus_over_null_p95": -0.05558889142116886,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0069176340037473,
+      "clears_bar_on_mean": false
+    },
+    "gate_proj.hgravs01_r16_b3": {
+      "physical_bpw_from_mean_bytes": 0.1392669677734375,
+      "mean_output_cosine": 0.7224450633655662,
+      "p10_output_cosine": 0.6313378935256466,
+      "p50_output_cosine": 0.7177476589844914,
+      "min_output_cosine": 0.08168741958242594,
+      "frac_clears_bar": 0.05660377358490566,
+      "frac_separated_from_null_p95": 0.09433962264150944,
+      "mean_surplus_over_null_p95": -0.08817787953156761,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0044965548598954,
+      "clears_bar_on_mean": false
+    },
+    "gate_proj.hgravs01_r8_b3": {
+      "physical_bpw_from_mean_bytes": 0.07572174072265625,
+      "mean_output_cosine": 0.7006903588047396,
+      "p10_output_cosine": 0.6042515482890868,
+      "p50_output_cosine": 0.6953581354086911,
+      "min_output_cosine": -0.008680791598267432,
+      "frac_clears_bar": 0.05660377358490566,
+      "frac_separated_from_null_p95": 0.08490566037735849,
+      "mean_surplus_over_null_p95": -0.1080847811173954,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0028308141905957,
+      "clears_bar_on_mean": false
+    },
+    "up_proj.binary_g128": {
+      "physical_bpw_from_mean_bytes": 1.126922607421875,
+      "mean_output_cosine": 0.8277510737326309,
+      "p10_output_cosine": 0.7988039138811512,
+      "p50_output_cosine": 0.8236183748446766,
+      "min_output_cosine": 0.7811657532614898,
+      "frac_clears_bar": 0.12264150943396226,
+      "frac_separated_from_null_p95": 0.0,
+      "mean_surplus_over_null_p95": -0.053445211343158334,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9998273656971449,
+      "clears_bar_on_mean": false
+    },
+    "up_proj.resid_2pct": {
+      "physical_bpw_from_mean_bytes": 1.2918472290039062,
+      "mean_output_cosine": 0.8671288264662023,
+      "p10_output_cosine": 0.842356596524394,
+      "p50_output_cosine": 0.8623105667268767,
+      "min_output_cosine": 0.8239308678591735,
+      "frac_clears_bar": 0.5566037735849056,
+      "frac_separated_from_null_p95": 0.0,
+      "mean_surplus_over_null_p95": -0.03388670921260176,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0022166480249288,
+      "clears_bar_on_mean": true
+    },
+    "up_proj.resid_0p5pct": {
+      "physical_bpw_from_mean_bytes": 1.179962158203125,
+      "mean_output_cosine": 0.8445736628392769,
+      "p10_output_cosine": 0.8165805818043765,
+      "p50_output_cosine": 0.8396776436381757,
+      "min_output_cosine": 0.7974405505099257,
+      "frac_clears_bar": 0.16981132075471697,
+      "frac_separated_from_null_p95": 0.0,
+      "mean_surplus_over_null_p95": -0.04406790241759238,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0007224461011646,
+      "clears_bar_on_mean": false
+    },
+    "up_proj.hgravs01_r160_b3": {
+      "physical_bpw_from_mean_bytes": 1.2819595336914062,
+      "mean_output_cosine": 0.811531980831789,
+      "p10_output_cosine": 0.7585794150184024,
+      "p50_output_cosine": 0.8002107287687913,
+      "min_output_cosine": 0.593563446977208,
+      "frac_clears_bar": 0.16037735849056603,
+      "frac_separated_from_null_p95": 0.44339622641509435,
+      "mean_surplus_over_null_p95": 0.004464183928194371,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0042581033582716,
+      "clears_bar_on_mean": false
+    },
+    "up_proj.hgravs01_r40_b3": {
+      "physical_bpw_from_mean_bytes": 0.3297119140625,
+      "mean_output_cosine": 0.6880243841848435,
+      "p10_output_cosine": 0.5966105352609876,
+      "p50_output_cosine": 0.6673171509766955,
+      "min_output_cosine": 0.3980131682771407,
+      "frac_clears_bar": 0.07547169811320754,
+      "frac_separated_from_null_p95": 0.14150943396226415,
+      "mean_surplus_over_null_p95": -0.07488114322833121,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0031463080229095,
+      "clears_bar_on_mean": false
+    },
+    "up_proj.hgravs01_r16_b3": {
+      "physical_bpw_from_mean_bytes": 0.1392669677734375,
+      "mean_output_cosine": 0.6133396571261834,
+      "p10_output_cosine": 0.5078904854334053,
+      "p50_output_cosine": 0.5816186505856855,
+      "min_output_cosine": 0.2705862074658284,
+      "frac_clears_bar": 0.04716981132075472,
+      "frac_separated_from_null_p95": 0.08490566037735849,
+      "mean_surplus_over_null_p95": -0.14141714781183212,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.000962640377464,
+      "clears_bar_on_mean": false
+    },
+    "up_proj.hgravs01_r8_b3": {
+      "physical_bpw_from_mean_bytes": 0.07572174072265625,
+      "mean_output_cosine": 0.5625293551890865,
+      "p10_output_cosine": 0.44773000208375036,
+      "p50_output_cosine": 0.5281089415278075,
+      "min_output_cosine": 0.16113920566327206,
+      "frac_clears_bar": 0.04716981132075472,
+      "frac_separated_from_null_p95": 0.05660377358490566,
+      "mean_surplus_over_null_p95": -0.1895159991747201,
+      "frac_underdetermined_vs_dim": 1.0,
+      "n_fit": {
+        "min": 0,
+        "p50": 227.0,
+        "mean": 804.6,
+        "max": 1536
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9993140834876029,
+      "clears_bar_on_mean": false
+    },
+    "down_proj.hgravs01_r160_b3": {
+      "physical_bpw_from_mean_bytes": 1.2819595336914062,
+      "mean_output_cosine": 0.7786097647971414,
+      "p10_output_cosine": 0.7087224121805096,
+      "p50_output_cosine": 0.759921454248355,
+      "min_output_cosine": 0.6703791927439823,
+      "frac_clears_bar": 0.11320754716981132,
+      "frac_separated_from_null_p95": 0.3018867924528302,
+      "mean_surplus_over_null_p95": -0.014421175216547366,
+      "frac_underdetermined_vs_dim": 0.4727272727272727,
+      "n_fit": {
+        "min": 0,
+        "p50": 660.5,
+        "mean": 1801.9636363636364,
+        "max": 11029
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 1.0006956550516182,
+      "clears_bar_on_mean": false
+    },
+    "down_proj.hgravs01_r80_b3": {
+      "physical_bpw_from_mean_bytes": 0.647125244140625,
+      "mean_output_cosine": 0.685957807134259,
+      "p10_output_cosine": 0.5985783687091697,
+      "p50_output_cosine": 0.6658288011662443,
+      "min_output_cosine": 0.5523985520291025,
+      "frac_clears_bar": 0.0660377358490566,
+      "frac_separated_from_null_p95": 0.14150943396226415,
+      "mean_surplus_over_null_p95": -0.07312114215654841,
+      "frac_underdetermined_vs_dim": 0.4727272727272727,
+      "n_fit": {
+        "min": 0,
+        "p50": 660.5,
+        "mean": 1801.9636363636364,
+        "max": 11029
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9996972235758887,
+      "clears_bar_on_mean": false
+    },
+    "down_proj.hgravs01_r40_b3": {
+      "physical_bpw_from_mean_bytes": 0.3297119140625,
+      "mean_output_cosine": 0.6018725462661019,
+      "p10_output_cosine": 0.49232813696084676,
+      "p50_output_cosine": 0.5663951338931168,
+      "min_output_cosine": 0.4431896658484107,
+      "frac_clears_bar": 0.04716981132075472,
+      "frac_separated_from_null_p95": 0.09433962264150944,
+      "mean_surplus_over_null_p95": -0.14217461477277643,
+      "frac_underdetermined_vs_dim": 0.4727272727272727,
+      "n_fit": {
+        "min": 0,
+        "p50": 660.5,
+        "mean": 1801.9636363636364,
+        "max": 11029
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9990354282437759,
+      "clears_bar_on_mean": false
+    },
+    "down_proj.hgravs01_r20_b3": {
+      "physical_bpw_from_mean_bytes": 0.17101287841796875,
+      "mean_output_cosine": 0.524075319913264,
+      "p10_output_cosine": 0.4064655336052859,
+      "p50_output_cosine": 0.4829956356959569,
+      "min_output_cosine": 0.34508259976587363,
+      "frac_clears_bar": 0.04716981132075472,
+      "frac_separated_from_null_p95": 0.0660377358490566,
+      "mean_surplus_over_null_p95": -0.21177318670039208,
+      "frac_underdetermined_vs_dim": 0.4727272727272727,
+      "n_fit": {
+        "min": 0,
+        "p50": 660.5,
+        "mean": 1801.9636363636364,
+        "max": 11029
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9983500585711744,
+      "clears_bar_on_mean": false
+    },
+    "down_proj.hgravs01_r16_b3": {
+      "physical_bpw_from_mean_bytes": 0.1392669677734375,
+      "mean_output_cosine": 0.5003182789349673,
+      "p10_output_cosine": 0.37718093639810446,
+      "p50_output_cosine": 0.45780160386750346,
+      "min_output_cosine": 0.3208067093313882,
+      "frac_clears_bar": 0.04716981132075472,
+      "frac_separated_from_null_p95": 0.0660377358490566,
+      "mean_surplus_over_null_p95": -0.2337856903625131,
+      "frac_underdetermined_vs_dim": 0.4727272727272727,
+      "n_fit": {
+        "min": 0,
+        "p50": 660.5,
+        "mean": 1801.9636363636364,
+        "max": 11029
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9980010707024517,
+      "clears_bar_on_mean": false
+    },
+    "down_proj.hgravs01_r8_b3": {
+      "physical_bpw_from_mean_bytes": 0.07572174072265625,
+      "mean_output_cosine": 0.43200801050340704,
+      "p10_output_cosine": 0.30823444516899645,
+      "p50_output_cosine": 0.3901321663380623,
+      "min_output_cosine": 0.24852224790275876,
+      "frac_clears_bar": 0.04716981132075472,
+      "frac_separated_from_null_p95": 0.04716981132075472,
+      "mean_surplus_over_null_p95": -0.2988053267078977,
+      "frac_underdetermined_vs_dim": 0.4727272727272727,
+      "n_fit": {
+        "min": 0,
+        "p50": 660.5,
+        "mean": 1801.9636363636364,
+        "max": 11029
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9962480721501503,
+      "clears_bar_on_mean": false
+    },
+    "down_proj.binary_g128": {
+      "physical_bpw_from_mean_bytes": 1.126922607421875,
+      "mean_output_cosine": 0.8091496405798163,
+      "p10_output_cosine": 0.800159468599572,
+      "p50_output_cosine": 0.8065821505823714,
+      "min_output_cosine": 0.7855601398123568,
+      "frac_clears_bar": 0.009433962264150943,
+      "frac_separated_from_null_p95": 0.0,
+      "mean_surplus_over_null_p95": -0.05725678588366688,
+      "frac_underdetermined_vs_dim": 0.4727272727272727,
+      "n_fit": {
+        "min": 0,
+        "p50": 660.5,
+        "mean": 1801.9636363636364,
+        "max": 11029
+      },
+      "n_scored": 106,
+      "per_layer_rel_l2_geo_growth": 0.9944190670809642,
+      "clears_bar_on_mean": false
+    }
+  },
+  "seal_sha256": "7784afde1d6d4bee5a047bf9d34bb1add95528c7a89e3e8185ea86feecdc8c0d"
+}

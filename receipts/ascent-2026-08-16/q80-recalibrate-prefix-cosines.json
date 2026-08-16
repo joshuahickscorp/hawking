@@ -1,0 +1,167 @@
+{
+  "schema": "hawking.ascent.q80_recalibrate_prefix_cosine.v1",
+  "n_pairs": 18,
+  "pairs": [
+    {
+      "layer": 1,
+      "expert": 265,
+      "role": "screen_down_busy",
+      "n_hold": 340
+    },
+    {
+      "layer": 32,
+      "expert": 179,
+      "role": "screen_down_busy",
+      "n_hold": 512
+    },
+    {
+      "layer": 35,
+      "expert": 330,
+      "role": "screen_down_busy",
+      "n_hold": 512
+    },
+    {
+      "layer": 46,
+      "expert": 428,
+      "role": "screen_down_busy",
+      "n_hold": 512
+    },
+    {
+      "layer": 3,
+      "expert": 494,
+      "role": "screen_gate_up_busy",
+      "n_hold": 512
+    },
+    {
+      "layer": 10,
+      "expert": 453,
+      "role": "screen_gate_up_busy",
+      "n_hold": 512
+    },
+    {
+      "layer": 0,
+      "expert": 409,
+      "role": "busiest",
+      "n_hold": 331
+    },
+    {
+      "layer": 1,
+      "expert": 462,
+      "role": "busiest",
+      "n_hold": 512
+    },
+    {
+      "layer": 2,
+      "expert": 236,
+      "role": "busiest",
+      "n_hold": 357
+    },
+    {
+      "layer": 3,
+      "expert": 297,
+      "role": "busiest",
+      "n_hold": 512
+    },
+    {
+      "layer": 4,
+      "expert": 68,
+      "role": "busiest",
+      "n_hold": 512
+    },
+    {
+      "layer": 5,
+      "expert": 217,
+      "role": "busiest",
+      "n_hold": 512
+    },
+    {
+      "layer": 6,
+      "expert": 125,
+      "role": "busiest",
+      "n_hold": 386
+    },
+    {
+      "layer": 7,
+      "expert": 425,
+      "role": "busiest",
+      "n_hold": 512
+    },
+    {
+      "layer": 8,
+      "expert": 19,
+      "role": "busiest",
+      "n_hold": 512
+    },
+    {
+      "layer": 9,
+      "expert": 453,
+      "role": "busiest",
+      "n_hold": 512
+    },
+    {
+      "layer": 10,
+      "expert": 346,
+      "role": "busiest",
+      "n_hold": 512
+    },
+    {
+      "layer": 11,
+      "expert": 315,
+      "role": "busiest",
+      "n_hold": 512
+    }
+  ],
+  "ranks": {
+    "160": {
+      "n": 18,
+      "mean": 0.8183685386646474,
+      "p10": 0.7850711445822333,
+      "p50": 0.8050713188640669,
+      "min": 0.7673615475833979
+    },
+    "80": {
+      "n": 18,
+      "mean": 0.7274682098045209,
+      "p10": 0.6711954400813686,
+      "p50": 0.7129681925295805,
+      "min": 0.6536719501692029
+    },
+    "40": {
+      "n": 18,
+      "mean": 0.6292128528300363,
+      "p10": 0.5593756602376512,
+      "p50": 0.6116854451977467,
+      "min": 0.5501262609917321
+    },
+    "20": {
+      "n": 18,
+      "mean": 0.5381241322390077,
+      "p10": 0.4674991953994688,
+      "p50": 0.5028743919001624,
+      "min": 0.4626720001421888
+    },
+    "16": {
+      "n": 18,
+      "mean": 0.5096128454242184,
+      "p10": 0.4425105897355817,
+      "p50": 0.46885623455609493,
+      "min": 0.435958581140081
+    },
+    "8": {
+      "n": 18,
+      "mean": 0.427637915640444,
+      "p10": 0.36770501544055956,
+      "p50": 0.3925229991148804,
+      "min": 0.3423196925266384
+    }
+  },
+  "mean_by_rank": {
+    "160": 0.8183685386646474,
+    "80": 0.7274682098045209,
+    "40": 0.6292128528300363,
+    "20": 0.5381241322390077,
+    "16": 0.5096128454242184,
+    "8": 0.427637915640444
+  },
+  "note": "prefix of packed quantized r160 factors; runtime rank-cap does this"
+}

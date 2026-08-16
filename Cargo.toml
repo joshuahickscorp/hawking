@@ -173,6 +173,9 @@ objc2-metal = "0.2"
 inherits = "release"
 lto = false
 codegen-units = 16
+incremental = true
+strip = false
+debug = false
 
 [profile.release]
 opt-level = 3

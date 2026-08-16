@@ -1,0 +1,30 @@
+{
+  "admission_receipt_schema": "hawking.gravity.deepseek_v4.admission_trust.v1",
+  "artifact": {
+    "admission_view": "clone_view_sealed_range_journal_prefix_69837_of_appended_journal",
+    "content_addressed_chunk_sha256": "15e00fb1b91ac074b7f24686de4e289f76d66eb1c3fb4ad643de027adc78ca13",
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity"
+  },
+  "claim": "one-time full SHA-256 admission; not a token, forward, Engine, or TPS result",
+  "example_wall_ms": 75053,
+  "reader_stats_after_seal": {
+    "bytes_hashed": 0,
+    "chunks_verified": 0,
+    "hash_invocations": 0
+  },
+  "schema": "hawking.gravity.deepseek_v4.admission_trust_pass.v1",
+  "seal": {
+    "bytes_hashed": 159609485896,
+    "chunk_count": 69837,
+    "hash_wall_ms": 47205,
+    "path": "/Users/scammermike/.cache/hawking/dsv4f-admission/ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed.json",
+    "seal_sha256": "423770f3a979266367216294f959d64bbf7068fe35fb817a6003bca9b3a6eb94",
+    "seal_wall_ms": 47373,
+    "table_sha256": "7614b08b6a6c2542d9aef4e204005c077f50a4ac1609945cdd8c8ccb40cbc6b9",
+    "threads": 28,
+    "total_bytes": 159609485896,
+    "verifier_version": "0.2.2"
+  },
+  "status": "PASS_ADMISSION_TRUST_SEAL"
+}

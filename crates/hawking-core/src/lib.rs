@@ -14,6 +14,12 @@ pub mod gravity_deepseek;
 /// full source stream.  This intentionally has no Engine, serving, Metal, or
 /// forward integration: admitting bytes is not permission to execute a model.
 pub mod gravity_deepseek_v4;
+/// Sealed admission-time trust receipt for the DeepSeek-V4 full stream.
+/// Storage/verification only; not an Engine, Metal, or forward surface.
+pub mod gravity_deepseek_v4_admission_trust;
+/// Compact mmap-able artifact index for DeepSeek-V4-Flash startup.
+/// Built at admission; not an Engine, Metal, or forward surface.
+pub mod gravity_deepseek_v4_artifact_index;
 /// CPU-only source-algorithm oracle for DeepSeek-V4 FP8 activation
 /// quantization and the bounded layer-0 WQ-A checkpoint.  This has no engine,
 /// Metal, forward, or serving integration.
@@ -112,6 +118,22 @@ pub mod gravity_deepseek_v4_runtime_spine;
 /// ranges for a future Metal executor. It is storage-only: no device upload,
 /// forward, Engine, serving, or TPS surface exists here.
 pub mod gravity_deepseek_v4_verified_tensor_cache;
+/// Memory-bounded, restartable host streamed BOS forward over the sealed
+/// DeepSeek-V4-Flash 43-layer source stream. Operator-streamed CPU oracle;
+/// not native, not Engine, not a TPS or coherence claim.
+pub mod gravity_deepseek_v4_streamed_forward;
+/// Opt-in Metal operators for the streamed DeepSeek-V4-Flash BOS decode.
+/// Default-off; the CPU oracle remains the parity reference.
+pub mod gravity_deepseek_v4_streamed_native;
+/// Minimum complete native BOS token graph: device-resident top-6 worklist,
+/// batched Metal command buffers, streaming residency. Not an Engine or TPS claim.
+pub mod gravity_deepseek_v4_native_token_graph;
+/// Per-token nanosecond ledger for the native BOS graph body.
+pub mod gravity_deepseek_v4_token_ns_ledger;
+/// Unified TOKEN_NS schema + adapters + closure + lane reconciler.
+/// Does not sit on a runtime hot path; both existing ledgers stay as-is.
+pub mod token_ns;
+
 pub mod gravity_glm;
 #[cfg(target_os = "macos")]
 pub mod gravity_glm_resident;
@@ -198,3 +220,7 @@ pub fn env_usize(name: &str, default: usize) -> usize {
         .and_then(|v| v.parse().ok())
         .unwrap_or(default)
 }
+
+/// Persistent local research harness: keeps Metal + one admitted model
+/// resident so a dirty Tier-1 loop does not re-pay startup. DIRTY_TIER1 only.
+pub mod research_server;

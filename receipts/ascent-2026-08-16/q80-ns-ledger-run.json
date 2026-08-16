@@ -1,0 +1,102 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 4.259241137535204,
+    "manifest_seal_sha256": "d4a140ab353f2756f08365c59da4e7ae646f389b969e6aa87e2d7b8f053df55b",
+    "mean_component_cosine": 0.994152710325234,
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/uniform-q4-group64-v1",
+    "tensor_count": 74391,
+    "terminal_seal_sha256": "b84e2d53532fbed700a99390d7d32c9eff223963e80ee079ee45cde9edfa3b39"
+  },
+  "claim_boundary": {
+    "artifact_cannot_satisfy_1_5_bpw_gate": true,
+    "base_true_tps": false,
+    "capability": false,
+    "coherence": false,
+    "complete_physical_bpw": 4.259241137535204,
+    "complete_physical_bpw_reported": 4.259241,
+    "density_gate_bpw_max": 1.5,
+    "hcli": false,
+    "restart": false,
+    "tournament": false
+  },
+  "execution": {
+    "fallbacks": {
+      "host_activation": 528,
+      "host_expert_payload_bind": 0,
+      "host_q4_embedding_gather": 0,
+      "host_q4_matvec": 0,
+      "host_q4_vector_decode": 265,
+      "host_sample": 11,
+      "note": "512-way device expert table is live; host_expert_payload_bind counts remaining host binds",
+      "total": 804
+    },
+    "hybrid_token_graph": "embed + 48-layer mixer/MoE + terminal greedy",
+    "metal_error": null,
+    "metal_q4_matvec_used": true,
+    "native": {
+      "expert_table_layer_builds": 528,
+      "expert_table_matvec_dispatches": 2640,
+      "expert_table_waves": 528,
+      "q4_decode_vector_dispatches": 0,
+      "q4_embedding_dispatches": 11,
+      "q4_matvec_dispatches": 4367
+    },
+    "stages": {
+      "deltanet_ns": 2003539005,
+      "deltanet_secs": 2.003539004999998,
+      "embed_ns": 177314043,
+      "embed_secs": 0.177314043,
+      "gqa_ns": 680272578,
+      "gqa_secs": 0.6802725780000001,
+      "host_expert_bind_ns": 0,
+      "host_expert_bind_secs": 0.0,
+      "moe_combine_ns": 762144912,
+      "moe_combine_secs": 0.7621449119999998,
+      "moe_norm_router_ns": 0,
+      "moe_norm_router_secs": 0.0,
+      "moe_routed_ns": 0,
+      "moe_routed_secs": 0.0,
+      "moe_shared_ns": 0,
+      "moe_shared_secs": 0.0,
+      "moe_table_build_ns": 4100140625,
+      "moe_table_build_secs": 4.100140624999997,
+      "q4_matvec_ns": 0,
+      "q4_matvec_secs": 0.0,
+      "terminal_ns": 203292372,
+      "terminal_secs": 0.203292372
+    },
+    "weight_codec": "uniform_q4_group64"
+  },
+  "generated_text": "Hello! How",
+  "generated_token_ids": [
+    9707,
+    0,
+    2585
+  ],
+  "prompt": "<|im_start|>user\nHi<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    13048,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "resources": {
+    "peak_rss_bytes": 6815055872,
+    "streamed_rss_cap_bytes": 17179869184
+  },
+  "schema": "hawking.ascension.qwen80_uniform_q4_velocity_baseline.v1",
+  "status": "VELOCITY_BASELINE_NOT_BASE_TRUE_TPS",
+  "timing": {
+    "decode_secs": 0.857996042,
+    "first_token_latency_secs": 7.1043145,
+    "prefill_secs": 7.1043145,
+    "steady_state_decode_secs": 0.857995875,
+    "steady_state_tok_s": 2.331013537798186,
+    "steady_state_tokens": 2
+  }
+}

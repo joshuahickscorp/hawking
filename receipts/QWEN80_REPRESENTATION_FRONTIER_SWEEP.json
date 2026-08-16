@@ -1,0 +1,242 @@
+{
+  "bar": 0.8604,
+  "expert_bpw_allowance": 1.3011578470468521,
+  "organs": [
+    {
+      "organ_key": "model.layers.10.mlp.experts.453.gate_proj.weight",
+      "component": "gate_proj",
+      "rows": 2921,
+      "W_shape": [
+        512,
+        2048
+      ],
+      "candidates": [
+        {
+          "codec": "binary_g",
+          "cosine": 0.8932464137407012,
+          "expert_bpw": 1.126922607421875,
+          "clears_bar": true,
+          "within_allowance": true,
+          "verdict": "PASS"
+        },
+        {
+          "codec": "uniform_b2",
+          "cosine": 0.86197724533211,
+          "expert_bpw": 2.2520675659179688,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "uniform_b3",
+          "cosine": 0.9847268452466109,
+          "expert_bpw": 3.2520675659179688,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "uniform_b4",
+          "cosine": 0.9971509893305015,
+          "expert_bpw": 4.252067565917969,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "binary+resid_2pct",
+          "cosine": 0.9171842982674411,
+          "expert_bpw": 2.0881423950195312,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "binary+resid_5pct",
+          "cosine": 0.9348738551218126,
+          "expert_bpw": 3.5281448364257812,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        }
+      ]
+    },
+    {
+      "organ_key": "model.layers.10.mlp.experts.453.up_proj.weight",
+      "component": "up_proj",
+      "rows": 2921,
+      "W_shape": [
+        512,
+        2048
+      ],
+      "candidates": [
+        {
+          "codec": "binary_g",
+          "cosine": 0.8275162668981674,
+          "expert_bpw": 1.126922607421875,
+          "clears_bar": false,
+          "within_allowance": true,
+          "verdict": "fail"
+        },
+        {
+          "codec": "uniform_b2",
+          "cosine": 0.8013432877646084,
+          "expert_bpw": 2.2520675659179688,
+          "clears_bar": false,
+          "within_allowance": false,
+          "verdict": "fail"
+        },
+        {
+          "codec": "uniform_b3",
+          "cosine": 0.9744312002918961,
+          "expert_bpw": 3.2520675659179688,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "uniform_b4",
+          "cosine": 0.9950969281445232,
+          "expert_bpw": 4.252067565917969,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "binary+resid_2pct",
+          "cosine": 0.865143437435382,
+          "expert_bpw": 2.0881423950195312,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "binary+resid_5pct",
+          "cosine": 0.8915749276089628,
+          "expert_bpw": 3.5281448364257812,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        }
+      ]
+    },
+    {
+      "organ_key": "model.layers.3.mlp.experts.494.gate_proj.weight",
+      "component": "gate_proj",
+      "rows": 2693,
+      "W_shape": [
+        512,
+        2048
+      ],
+      "candidates": [
+        {
+          "codec": "binary_g",
+          "cosine": 0.8585935762823004,
+          "expert_bpw": 1.126922607421875,
+          "clears_bar": false,
+          "within_allowance": true,
+          "verdict": "fail"
+        },
+        {
+          "codec": "uniform_b2",
+          "cosine": 0.835131004962883,
+          "expert_bpw": 2.2520675659179688,
+          "clears_bar": false,
+          "within_allowance": false,
+          "verdict": "fail"
+        },
+        {
+          "codec": "uniform_b3",
+          "cosine": 0.979527172087377,
+          "expert_bpw": 3.2520675659179688,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "uniform_b4",
+          "cosine": 0.9961459522768283,
+          "expert_bpw": 4.252067565917969,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "binary+resid_2pct",
+          "cosine": 0.8921522719311777,
+          "expert_bpw": 2.0881423950195312,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "binary+resid_5pct",
+          "cosine": 0.9144990308556648,
+          "expert_bpw": 3.5281448364257812,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        }
+      ]
+    },
+    {
+      "organ_key": "model.layers.3.mlp.experts.494.up_proj.weight",
+      "component": "up_proj",
+      "rows": 2693,
+      "W_shape": [
+        512,
+        2048
+      ],
+      "candidates": [
+        {
+          "codec": "binary_g",
+          "cosine": 0.8258422168325341,
+          "expert_bpw": 1.126922607421875,
+          "clears_bar": false,
+          "within_allowance": true,
+          "verdict": "fail"
+        },
+        {
+          "codec": "uniform_b2",
+          "cosine": 0.8091100394230221,
+          "expert_bpw": 2.2520675659179688,
+          "clears_bar": false,
+          "within_allowance": false,
+          "verdict": "fail"
+        },
+        {
+          "codec": "uniform_b3",
+          "cosine": 0.9749583190188569,
+          "expert_bpw": 3.2520675659179688,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "uniform_b4",
+          "cosine": 0.9952199632355183,
+          "expert_bpw": 4.252067565917969,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "binary+resid_2pct",
+          "cosine": 0.8664641631396747,
+          "expert_bpw": 2.0881423950195312,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        },
+        {
+          "codec": "binary+resid_5pct",
+          "cosine": 0.8938995949108425,
+          "expert_bpw": 3.5281448364257812,
+          "clears_bar": true,
+          "within_allowance": false,
+          "verdict": "over-budget"
+        }
+      ]
+    }
+  ]
+}

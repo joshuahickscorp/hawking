@@ -1,0 +1,164 @@
+{
+  "schema": "hawking.ascent.q80_expert_first_touch.v1",
+  "lane": "q80-expert-first-touch",
+  "status": "SHIPPED",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "date": "2026-08-16",
+  "claim_boundary": {
+    "base_true_tps": false,
+    "clean_candidate": false,
+    "tournament": false,
+    "single_metal_run": false,
+    "note": "Other ascent lanes were running. Page cache is live. Numbers are DIRTY_ENGINEERING. Spreads are reported in full."
+  },
+  "parent": {
+    "acting_on": "q80-runtime-residency",
+    "branch": "grok/q80-runtime-residency-20260816-003204",
+    "commit": "7ced3732",
+    "receipt": "receipts/ascent-2026-08-16/q80-runtime-residency.json",
+    "finding": "once an expert is resident the bind is microseconds, but expert_address_table_bind is still 90-245 ms/token on late tokens because new (layer, expert) pairs keep paying catalog read + SHA-256 + MTLBuffer copy"
+  },
+  "correctness": {
+    "gate": "generated ids must match the 12-token Q4 reverse-string harness list",
+    "prompt": "Write a function that reverses a string.",
+    "expected": [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914],
+    "observed": [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914],
+    "all_runs_bit_identical": true,
+    "runs": 12,
+    "note": "6 reverse-string C/D + 6 Say-hi A/B. Reverse-string ids match the contract on every run. Say-hi ids were [13048, 0, 61804, 233, 2585, 646, 358, 1492, 498, 3351, 30, 151645] on every A and B. Cached mmap payloads were bit-identical to freshly-hashed reads (fixture + 96 real expert projections + one real gate_proj)."
+  },
+  "integrity_move": {
+    "law": "cold artifact proof -> sealed session proof -> token path trusts the seal",
+    "verified_once_at_admission": [
+      "every catalogued file exists as a regular non-symlink with exact artifact_bytes (74391 stated, ~370-650 ms)",
+      "production manifest seal equals d4a140ab353f2756f08365c59da4e7ae646f389b969e6aa87e2d7b8f053df55b",
+      "production terminal seal equals b84e2d53532fbed700a99390d7d32c9eff223963e80ee079ee45cde9edfa3b39",
+      "session seal SHA-256(manifest_seal || terminal_seal || ordered (name, artifact_bytes, declared_sha256)) = bce647f0c63fe1afa60345dab03aa9b56f9c2f07c8090f7d7ba28d28b1238f04",
+      "four sample payloads rehashed against the catalog SHA (embed, lm_head, L0 E0 gate, L47 E511 down)"
+    ],
+    "still_guards_token_path": [
+      "mmap/read size must equal artifact_bytes",
+      "header geometry must match the catalog row (shape, group-64)",
+      "no-copy bind is fail-closed: 16 KiB-aligned window, contents() must alias the mmap pointer, silent copy is an error",
+      "read_payload_rehash and HAWKING_Q80_REHASH_PAYLOADS=1 still rehash",
+      "unadmitted catalogs still SHA on every first read"
+    ],
+    "not_deleted": "per-payload SHA-256 remains. It moved to admission samples + an explicit rehash API. The token path no longer re-derives it per expert first-touch.",
+    "st_dev": "not used as a hot-path key. File identity at admission is size + regular-file + sealed catalog hashes."
+  },
+  "attribution": {
+    "hypothesis": "do not assume SHA dominates; split catalog read / SHA-256 / MTLBuffer copy",
+    "io_probe_32_experts_warm": {
+      "label": "DIRTY_ENGINEERING",
+      "compared_payloads": 96,
+      "bytes": 53481216,
+      "bit_identical_mmap_vs_fresh_read": true,
+      "per_expert_ns": {
+        "catalog_read_fs": [1201931, 1591344, 267156],
+        "sha256": [753056, 780243, 817008],
+        "mmap": [263393, 257359, 222612]
+      },
+      "note": "SHA is stable ~0.75-0.82 ms/expert. fs::read swings with page cache. mmap is cheaper than fs::read."
+    },
+    "reverse_string_old_path_whole_run_ms": {
+      "label": "DIRTY_ENGINEERING",
+      "unique_experts": 4383,
+      "payloads": 13149,
+      "C1": {"catalog_read": 6997.3, "sha256": 3839.8, "metal_copy": 1508.5},
+      "C2": {"catalog_read": 2998.8, "sha256": 3710.1, "metal_copy": 1159.1},
+      "C3": {"catalog_read": 1379.5, "sha256": 3645.4, "metal_copy": 989.3},
+      "per_expert_us_approx": {
+        "sha256_stable": [876, 847, 832],
+        "metal_copy": [344, 264, 226],
+        "catalog_read_varies": [1596, 684, 315]
+      },
+      "verdict": "SHA-256 is the largest STABLE part (~3.6-3.8 s / run, ~0.85 ms/expert). Catalog read can exceed it when cold (1.4-7.0 s). Metal copy is real but the smallest of the three (~1.0-1.5 s). The 90-245 ms late-token bind is the sum of these on newly seen (layer, expert) pairs, not a 64 KiB table rewrite."
+    },
+    "reverse_string_new_path_whole_run_ms": {
+      "label": "DIRTY_ENGINEERING",
+      "D1": {"catalog_read_mmap": 1444.4, "sha256_admission_only": 143.7, "metal_nocopy": 163.3, "hashed": 4, "mmapped": 13149},
+      "D2": {"catalog_read_mmap": 7290.9, "sha256_admission_only": 189.8, "metal_nocopy": 259.2, "hashed": 4, "mmapped": 13149, "note": "cold page-in; mmap_ns 6711 ms"},
+      "D3": {"catalog_read_mmap": 534.2, "sha256_admission_only": 148.7, "metal_nocopy": 127.6, "hashed": 4, "mmapped": 13149}
+    }
+  },
+  "nocopy_bind": {
+    "pattern": "dsv-expert: pin the mmap window as an MTLBuffer, address slices by gpuAddress+offset, fail-closed if the bind copies",
+    "constraint_dsv4f_384mib": "DSV4F streamed weight bound. Not this device's ceiling. Q80 reports max_buffer_length=62.6 GiB and recommended_max_working_set_size=83.5 GiB. The 8 GiB residency budget (7.32 GiB of 4383 experts) fits.",
+    "why_whole_file": "HQ30UQ4 expert files are 557096 bytes. Header is 40 bytes, so scale_offset=40 and sign_offset=32808. Neither slice is 16 KiB aligned. newBufferWithBytesNoCopy requires a page-aligned pointer AND length. The file is mmap'd with length rounded up to 35*16384, the extra pages past EOF are zero, and the kernel only reads the sealed payload.",
+    "silent_copy": "0. contents() must equal the mmap pointer or the run is invalid.",
+    "env_restore_old": "HAWKING_Q80_EXPERT_NOCOPY=0 HAWKING_Q80_REHASH_PAYLOADS=1 HAWKING_Q80_EXPERT_PREFETCH=0"
+  },
+  "prefetch": {
+    "predictor": "previous token's top-10 at layer L+1, overlapped with layer L suffix GPU via commit_no_wait + wait_idle",
+    "measured": {
+      "prefetch_uploads": [0, 0, 0],
+      "prefetch_ms": [2.406, 2.519, 1.958],
+      "verdict": "REFUTED as a first-touch win. Those experts are already resident from the previous token's bind of that layer. New (layer, expert) pairs are exactly the ones the previous token did not use, so this predictor cannot see them. Cross-layer expert overlap is not assumed (Q80 experts are mutually orthogonal)."
+    }
+  },
+  "baseline_ns_per_token": {
+    "value": 518746019,
+    "label": "DIRTY_ENGINEERING",
+    "source": "median of the three old-path C reps on the reverse-string harness (SHA+copy first-touch, persistent 8 GiB table)",
+    "spread_ns": [339238705, 518746019, 556721773],
+    "ascent_incumbent_ns": 403000000,
+    "residency_d_median_ns": 387493474
+  },
+  "result_ns_per_token": {
+    "value": 208641989,
+    "label": "DIRTY_ENGINEERING",
+    "source": "median of the three new-path D reps (session seal + mmap no-copy, persistent 8 GiB table)",
+    "spread_ns": [188208818, 208641989, 382969470],
+    "note": "D2 is a cold page-in (mmap 6.7 s). It is kept in the spread. D is faster than its paired C on all three pairs: 518.7->208.6, 556.7->383.0, 339.2->188.2 ms/token."
+  },
+  "reps": {
+    "method": "alternating C (old first-touch) vs D (seal+nocopy), 3 each, same binary, reverse-string 12-token harness, one gpu_lane_lock",
+    "label": "DIRTY_ENGINEERING",
+    "C_ns_per_token": [518746019, 556721773, 339238705],
+    "D_ns_per_token": [208641989, 382969470, 188208818],
+    "C_tok_s": [1.927726, 1.796229, 2.947777],
+    "D_tok_s": [4.792900, 2.611175, 5.313248],
+    "C_moe_table_build_s": [12.3504, 8.0009, 5.9873],
+    "D_moe_table_build_s": [1.9976, 8.1061, 1.1373],
+    "corroborating_say_hi": {
+      "A_ns_per_token": [510667424, 326025458, 352902648],
+      "B_ns_per_token": [195002886, 255561898, 206537917],
+      "generated_token_ids": [13048, 0, 61804, 233, 2585, 646, 358, 1492, 498, 3351, 30, 151645]
+    }
+  },
+  "fallbacks": {
+    "host_expert_payload_bind": 0,
+    "host_q4_matvec": 0,
+    "total": 1637,
+    "note": "1637 is the pre-existing host_activation (router logit readback + top-k) plus embed/sample counters. It is identical on C and D. 0 expert-payload fallbacks. 13149/13149 no-copy binds on D."
+  },
+  "next_bottleneck": {
+    "what": "DeltaNet mixer (host-visible prefix CB wall after first-touch is no longer the 90-245 ms class)",
+    "measured_ns_per_token": 92600000,
+    "source": "D3 deltanet_secs 2.5941 / 28 forward steps",
+    "spread_ns_per_token_from_D": [92600000, 108100000, 137100000],
+    "then": "moe_combine ~54-84 ms/token and GQA ~31-47 ms/token of the same dirty D runs. Late-token first-touch on a warm D3 is mmap+nocopy of only newly seen experts (~0.1-0.3 ms/expert)."
+  },
+  "files": [
+    "crates/hawking-core/src/metal/mod.rs",
+    "crates/hawking-core/src/model/qwen80_uniform_q4_hybrid_decode.rs",
+    "crates/hawking-core/src/model/qwen80_device_expert_table.rs",
+    "crates/hawking-core/examples/ascension_qwen80_uniform_q4_hybrid_greedy.rs",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-C1.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-C2.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-C3.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-D1.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-D2.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-D3.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-A1.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-A2.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-A3.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-B1.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-B2.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-B3.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-io-probe.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-io-probe-2.json",
+    "receipts/ascent-2026-08-16/q80-expert-first-touch-io-probe-3.json"
+  ]
+}

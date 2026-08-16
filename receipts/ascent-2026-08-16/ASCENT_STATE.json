@@ -1,0 +1,2014 @@
+{
+  "schema": "hawking.ascent_controller.v1",
+  "generated": "2026-08-16",
+  "note": "Value units are ns/token-equivalent. They only have to ORDER the queue; no fake precision is claimed. Density gains are expressed as ns-equivalent because for both contenders density is a velocity mechanism, not a storage concern.",
+  "incumbents": {
+    "q80": {
+      "vehicle": "uniform-Q4 group64 v1",
+      "complete_physical_bpw": 4.259241,
+      "tournament_valid": false,
+      "reason_invalid": "BPW 4.259241 exceeds the 1.500000 ceiling; ABANDONED as a target by user order 2026-08-16, retained only as a correctness reference",
+      "measured_steady_state_tok_s": 2.479023,
+      "measured_ns_per_token": 403000000,
+      "measurement_label": "DIRTY_ENGINEERING_P1_INVALID_SINGLE_RUN",
+      "receipt": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json",
+      "runtime_residency": {
+        "branch": "grok/q80-runtime-residency-20260816-003204 (7ced3732) - not merged",
+        "outcome": "HONEST NEGATIVE on wall time. C(old) 370/574/295 ms vs D(persistent 8 GiB) 461/387/356 ms - spreads overlap, no clean speedup claimed. All 12 runs bit-identical.",
+        "real_finding": "Once an expert is resident the bind is microseconds, but expert_address_table_bind is still 90-245 ms/token on LATE tokens because new (layer,expert) pairs keep appearing and each miss pays catalog read + SHA-256 + MTLBuffer copy.",
+        "why_it_matters": "A SHA-256 per expert first-touch is immutable-identity work paid in the token loop - the pattern that has been the top latency finding three separate times on this box.",
+        "next": "first-touch expert payload upload 90-245 ms/token; then DeltaNet ~134 ms/token"
+      },
+      "deltanet_gqa": {
+        "merged": "49b452f1",
+        "rejected_all_bit_identical": {
+          "overlap_no_wait_suffix_mixer": "not robust; extra CBs 146 vs 98 tax prefill",
+          "fuse_to_51_cbs": "REGRESSED on cleanest pair, 516 ms vs 307 ms",
+          "serial_encoder": "failed to win complete-token wall"
+        },
+        "defaults": "historical topology retained; all three behind env flags",
+        "key_defect": "DeltaNet/GQA still use qwen_uniform_q4_group64_matvec - SERIAL, ONE THREAD PER ROW. Commit a47f8259 switched the expert-table kernel to simdgroup but the component dispatcher never followed. The simdgroup component kernel is documented not bit-identical, so it was never made default.",
+        "correctness": "bit-identical 18/18 runs; fixture state-contract tests passed",
+        "next": "host top-10 + 512-entry address-table rewrite ~157820565 ns/token of HOST work with the GPU IDLE"
+      },
+      "capture_coverage": {
+        "verdict": "ROUTE-STARVED - the underdetermined-fit failure, MEASURED not suspected",
+        "rows_per_fit_vs_2048_dim": {
+          "p10": 34,
+          "p50": 258,
+          "pairs_reaching_2048": 782
+        },
+        "never_routed_pairs": 221,
+        "down_proj_defect": "the 25258-token capture has NO on-disk post-SwiGLU X, so the organ whose codec choice depends on post-SwiGLU scoring was not scored against it",
+        "explains": "the 395/2048 clamped hgravs ranks the coherence probe reported",
+        "cost_to_fix": "~119k tokens to put p10 at rank 160; ~171k to put the median at 2048",
+        "extension_status": "running, checkpointed at layer 16/48; clone-fd cache fix drops resume from 15.5 to 3.68 GiB",
+        "commit_note": "macl blocked the lane's commit; recovered to main at 19928d56, patch kept"
+      },
+      "baseline_caveat": "403000000 ns is a single steady-state run, not paired. joint-token-ns measured 559171655 ns as a decode mean. A clean paired Q80 baseline is still owed.",
+      "expert_first_touch": {
+        "branch": "grok/q80-expert-first-touch-20260816-010044 (5f78cb35) - in q80-integrate-graph",
+        "reps_ms": {
+          "C": [
+            518.7,
+            556.7,
+            339.2
+          ],
+          "D": [
+            208.6,
+            383.0,
+            188.2
+          ]
+        },
+        "correctness": "bit-identical; ids matched on all 6 runs; mmap == rehash verified",
+        "what_it_killed": "catalog read + SHA-256 + MTLBuffer copy on expert first-touch",
+        "next": "DeltaNet mixer 92600000 ns/token"
+      },
+      "ns_ledger": {
+        "branch": "grok/q80-ns-ledger-20260816-010044 - in q80-integrate-graph",
+        "finding": "moe_table_build 246283892 ns = 57.4% of a 428985708 ns wall; the seven zero-reporting stages now populate"
+      },
+      "device_topk": {
+        "branch": "grok/q80-device-topk-20260816-010759 (4627b0f6) - queued for q80 integration",
+        "status": "PARTIAL - correct but not a robust wall win",
+        "correctness": "bit-identical generated ids; device route ids matched host 1344/1344 per layer per token, weight drift <= 2e-5. The tie-break divergence risk is CLOSED.",
+        "reps_ns": {
+          "A": [
+            613225625,
+            308567564,
+            309706277
+          ],
+          "B": [
+            428772807,
+            384132595,
+            519979621
+          ]
+        },
+        "why_no_win": "expert first-touch noise dominates the paired wall: B1 -184 ms, B2 +76 ms, B3 +210 ms. 4383 unique (layer,expert) first-touches over a 12-token harness.",
+        "conditional_value": "Its win is MASKED, not absent. Device routing removes host work between router and experts, but that only becomes visible once expert first-touch upload (241-396 ms/token) stops dominating. Re-measure after q80-expert-first-touch integrates.",
+        "seam": "Qwen80ExpertGpuTriplet - device-topk owns routing/address construction, expert-first-touch owns payload upload"
+      },
+      "confirmed_wall": {
+        "stage": "expert first-touch upload (catalog read + SHA-256 + MTLBuffer copy)",
+        "ns_per_token": "241542041 - 396000000",
+        "corroborated_by": [
+          "q80-runtime-residency (90-245 ms late-token)",
+          "q80-device-topk (241-396 ms, 4383 unique first-touches / 12 tokens)",
+          "q80-ns-ledger (moe_table_build 246 ms = 57.4% of wall)",
+          "joint-token-ns (compact_expert_slab_pack 281 ms serial)"
+        ],
+        "attacked_by": "q80-expert-first-touch, measured C 518.7/556.7/339.2 -> D 208.6/383.0/188.2 ms, in q80-integrate-graph",
+        "after_that": "mixer+expert GPU ~132 ms/token"
+      },
+      "component_simdgroup": {
+        "branch": "grok/q80-component-simdgroup-20260816-010759 (8b1f4c10) - queued for q80 integration",
+        "mixer_gpu_ms_per_token": {
+          "before": [
+            111,
+            113,
+            105
+          ],
+          "after": [
+            36,
+            37,
+            39
+          ],
+          "factor": "~3x"
+        },
+        "what_it_fixed": "DeltaNet/GQA ran qwen_uniform_q4_group64_matvec serial, ONE THREAD PER ROW, because commit a47f8259 wired simdgroup only into the expert-table kernel and never into the component dispatcher",
+        "NOT_BIT_IDENTICAL": true,
+        "numeric_gate": {
+          "last_hidden_max_abs": 5.54e-06,
+          "last_hidden_rel_l2": 2.38e-06,
+          "last_logit_delta": 5.7e-06,
+          "min_top1_margin": 0.245,
+          "ids": "12/12 match, plus Hi [9707,0,2585]",
+          "fallbacks": 0,
+          "state_contract_tests": "passed",
+          "assessment": "STRONG numeric case: the top-1 decision margin (0.245) exceeds the logit drift (5.7e-6) by ~43,000x, so no routing or token decision is anywhere near flipping. Materially stronger than dsv-occupancy-geometry's 0.013279 drift."
+        },
+        "not_a_wall_win": "complete-token wall is still host moe_table_build; B1 lost when table-build spiked to 11.24 s",
+        "next": "host moe_table_build ~197000000 ns/token. Mixer occupancy is no longer the complete-token wall."
+      },
+      "masked_wins": {
+        "note": "FOUR separate Q80 GPU-side wins are now measured and ALL are masked by the same host wall (expert first-touch / moe_table_build).",
+        "list": [
+          "decode throughput: routed decode 192.9 -> 18.28 ms (merged)",
+          "component simdgroup: mixer GPU 111 -> 36 ms (queued)",
+          "device top-k: routing correct 1344/1344, win masked (queued)",
+          "expert first-touch: 518.7/556.7/339.2 -> 208.6/383.0/188.2 ms (in integration)"
+        ],
+        "consequence": "Q80's token cannot improve until expert first-touch lands. Until then every GPU win is invisible in the wall, which is exactly the specialization trap joint-token-ns was built to expose - here it is visible in advance rather than in hindsight."
+      }
+    },
+    "q80_density_frontier": {
+      "complete_bpw_at_8bit_nonexpert": 1.43051,
+      "status": "SHIPPED_PACKED_NOT_GENERATED",
+      "artifact_packed": true,
+      "decode_kernel_exists": true,
+      "coherence_generation_tested": true,
+      "receipt": "receipts/ascent-2026-08-16/Q80_PACK.json",
+      "decode_kernel_receipt": "receipts/ascent-2026-08-16/q80-decode-kernels.json",
+      "decode_us_per_organ": {
+        "gate_binary_group": 61,
+        "up_binary_rice_csr": 80,
+        "down_hgravs01_r160_b3": 259
+      },
+      "decode_gates": {
+        "gate": 4.77e-06,
+        "up": 4.05e-06,
+        "down": 1.14e-05,
+        "tol": 2e-05,
+        "rice_indices": "bit-identical",
+        "oracle": "ARTIFACT oracle, not BF16 parent"
+      },
+      "routed_decode_ms_per_token_projected": 192,
+      "expert_budget_ms": 8,
+      "over_budget_factor": 24,
+      "blocking_finding": "The <=1.5 representation is affordable to STORE and unaffordable to EXECUTE. Decode achieves ~0.6 GB/s against a ~800 GB/s ceiling, so it is serial-decode-bound, not bandwidth-bound. down_proj alone is 124 of the 192 ms.",
+      "open_gaps": [
+        "artifact_packed",
+        "coherence_generation_tested"
+      ],
+      "complete_bpw_measured_from_reconstruction": {
+        "nonexpert_8bit": 1.392467,
+        "nonexpert_6bit": 1.333101,
+        "nonexpert_4bit": 1.273735
+      },
+      "mixed_expert_bpw_measured": 1.190335,
+      "note_bpw": "MEASURED reconstruction beats the 1.43051 design estimate because down_proj fit at 1.152004, not the assumed 1.27. Still not an on-disk pack.",
+      "coherence": {
+        "status_reported_by_lane": "GO_WITH_FIX",
+        "status_after_audit": "INCONCLUSIVE - not a green light",
+        "mixed_geo_growth_per_layer": 1.277152,
+        "null_geo_growth_per_layer": 1.006081,
+        "extrapolated_rel_l2_at_48": 16211.29,
+        "separated_from_null": false,
+        "logits_top1_agree": true,
+        "hgravs_rank_clamped_organs": 395,
+        "of_organs": 2048,
+        "defects": [
+          "16211x is extrapolated from a 4-LAYER span via geo^44; the conclusion is controlled entirely by a 4-layer growth estimate",
+          "separated_from_null=false: cannot distinguish codec error from a matched-magnitude random perturbation, so neither GO nor NO_GO follows",
+          "395/2048 organs had hgravs rank CLAMPED - the known underdetermined-fit failure mode; a clamped fit's score is not the codec's score"
+        ],
+        "receipt": "receipts/ascent-2026-08-16/Q80_COHERENCE_LAYER_DRIFT_PROBE.json"
+      },
+      "decode_throughput": {
+        "merged": "lane commit 23c73718",
+        "us_per_organ": {
+          "gate": {
+            "before": 60.5,
+            "after": 6.875
+          },
+          "up": {
+            "before": 80.0,
+            "after": 17.25
+          },
+          "down": {
+            "before": 261.3,
+            "after": 13.959
+          }
+        },
+        "down_proj_factor": 18.7,
+        "per_expert_us": {
+          "before": 400,
+          "after": 38.08
+        },
+        "routed_ms_per_token": {
+          "before": 192.9,
+          "after": 18.28,
+          "dirtier_window": {
+            "A": 340.8,
+            "B": 29.86
+          }
+        },
+        "expert_budget_ms": 8,
+        "over_budget_factor_now": 2.3,
+        "was_over_budget_factor": 24,
+        "correctness": "numeric gate 2e-5; drift gate 1.81e-5, up 1.10e-5, down 1.14e-5; rice indices bit-identical; 0 fallbacks; NO dense W",
+        "decoded_weight_cache": "REJECTED with arithmetic: dense restore is 12 MiB/expert, 120 MiB for the live top-10, 288 GiB for all (layer,expert). Packed is 471 KiB/expert, 11 GiB for all 48x512. Caching decoded W undoes the representation.",
+        "next": "up_proj fused binary+CSR at 17.25 us = 8.28 ms at 48x10, ~45% of the remaining 38 us/expert. Achieved 15 GB/s - still decode/occupancy bound, not DRAM. Reaching 8 ms needs ~17 us/expert; currently 38."
+      },
+      "artifact_root": "workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+      "complete_physical_bpw_ON_DISK": 1.44445,
+      "rust_catalog_open_bpw": 1.4444456847927971,
+      "threshold": 1.5,
+      "margin": 0.05555,
+      "all_required_execute_bytes": 14385668506,
+      "artifact_gib": 13.4,
+      "tensors": 74391,
+      "segments": 50,
+      "per_organ_physical_bpw": {
+        "routed_gate_proj": 1.126923,
+        "routed_up_proj": 1.291849,
+        "routed_down_proj": 1.28587,
+        "nonexpert_8bit": 8.250601
+      },
+      "design_vs_physical": "design identity 1.44313 vs on-disk 1.44445; the 0.00132 delta is catalog+manifest+terminal+format+fit_table overhead, counted rather than excluded",
+      "down_proj_fit_composition": {
+        "activation_weighted_r160_nfit_ge_160": 17040,
+        "activation_weighted_r160_nfit_1_to_159": 7315,
+        "never_routed_weight_space_svd_r160": 221,
+        "rank_clamped": "NO - rank not clamped in the packed artifact"
+      },
+      "honesty": "weight-space reconstruction cosines on a sample expert are 0.80/0.84/0.60 (binary/residual/low-rank). That is NOT the 0.8604 output-space screen and must not be read as one.",
+      "remaining_gap": "native mixed decode kernel is not wired to THIS catalog, so generation cannot be measured and there is no ns/token for the artifact",
+      "lowrank_algebra": {
+        "verdict": "CONFIRMED NEGATIVE - down_proj ALREADY executes L @ (R @ x); it never reconstructed W",
+        "so": "the doctrine's representation->algebra class (highest-value per the steer) was already satisfied for this organ. Avenue correctly closed rather than re-implemented.",
+        "correctness": "numeric gate 2e-5 vs the TWO-STAGE artifact oracle (not reconstruct, not BF16); reconstruct-vs-two-stage CPU drift 1.81e-5; packed-vs-decoded-factor 0.0; rice bit-identical; 0 fallbacks",
+        "routed_48x10": "192.9 -> 18.28 ms, unchanged by this lane; still 2.285x over the 8 ms expert budget",
+        "next": "up_proj binary decode/occupancy 17250 ns, ~45% of the remaining 38 us/expert, ~15 GB/s - NOT DRAM-bound and NOT reconstruct-W-bound"
+      },
+      "coherence_class": "COHERENT",
+      "generated_text": "Here's a function that reverses a string (i.e",
+      "q4_reference_text": "Here's a simple function in Python that reverses a string",
+      "numeric_drift_max": 3.58e-07,
+      "numeric_tolerance": 2e-05,
+      "no_dense_W": true,
+      "GATE_EARNED": "The <=1.5 BPW artifact GENERATES COHERENT TEXT at 1.44445 complete physical BPW. Organ cosine was the screen; generation was the gate; the gate is passed.",
+      "velocity_caveat": "Mixed decode is SLOWER than the abandoned Q4 vehicle: median 1,249,008,424 ns/token vs Q4's 403,384,727. GPU matvec 868,332,337 ns/forward across ~13808 CBs/generate.",
+      "fallback_caveat": "fallbacks.host_sample = 28 (declared, not silent). Constitution requires FALLBACK=0 before tournament admission."
+    },
+    "dsv4f": {
+      "measurement_label": "DIRTY_ENGINEERING",
+      "authority": "receipts/ascent-2026-08-16/DSV4F_HOST_WALL_BASELINE.json (6 reps, cold discarded, GPU lock held)",
+      "body_ns_per_token_median": 1037764208,
+      "wall_ns_per_token_median": 1205000000,
+      "host_exclusive_ns_median": 564853792,
+      "metal_gpu_ns_median": 399023000,
+      "command_buffers_per_token": 137,
+      "fallbacks": 0,
+      "hc_sha": "c94da765",
+      "superseded_claims": [
+        "job brief's 1.299 s/token: NOT reproduced, body is faster",
+        "3275-3425 ms/token cited by dsv-resident-gravity: stale DSV4F_TOKEN_NS_LEDGER baseline_warm, superseded"
+      ],
+      "top_cost_classes": {
+        "host.expert_slab_io_ns": 415126416,
+        "note": "GPU-idle streamed top-6 expert read+fill = 40% of body. Deleted by residency OR by a RAM expert cache.",
+        "after_residency_gpu_ns": 399023000,
+        "surviving_host_ns": 50000000
+      },
+      "path_to_20ms": "1205 -> kill expert_slab_io 415 -> kill identity tax -> leaves GPU body 399 ms across 137 CBs as THE wall. GPU body must reach the 10-15 ms class; that is a ~27x reduction and the dominant open problem.",
+      "cb_collapse": {
+        "receipt": "receipts/ascent-2026-08-16/dsv-cb-collapse.json",
+        "encoders_per_token": {
+          "before": 1857,
+          "after": 134
+        },
+        "command_buffers": {
+          "before": 137,
+          "after": 134
+        },
+        "dispatches": {
+          "before": 1857,
+          "after": 1642
+        },
+        "gpu_ns_median": {
+          "before": 412000000,
+          "after": 377000000
+        },
+        "occupancy_proxy_ns_per_encoder": {
+          "before": 222000,
+          "after": 2810000
+        },
+        "gpu_idle_fraction": 0.733,
+        "inter_cb_gap_ns": 1036353092,
+        "correctness": "bit-identical hc_sha c94da765... on all 6 full-token reps, 0 fallbacks",
+        "key_finding": "73% of the GPU span is IDLE, waiting on streamed weight IO and host MHC. GPU busy is only ~377 ms. This corroborates expert_slab_io as the wall and means kernel arithmetic is NOT the current war for DSV4F.",
+        "rejected": [
+          "attn+route+moe merge (host MHC sits between, would change the honesty path)",
+          "LM-head 8->1 (8 resident tiles = 1 GiB, over the 384 MiB weight bound; cosmetic)"
+        ],
+        "audit_correction": {
+          "finding": "P1 cold-contaminated median. A bodies were 12902/2264/1652 ms; the 12.9 s cold run poisoned the pairing and the first B inherited its warm cache.",
+          "what_does_NOT_survive": "any body-level speedup claim. Warm pairs A 2264/1652 vs B 1716/1447 - B is NOT uniformly faster (B2 1716 > A3 1652), and both are slower than the host-wall authority 1024-1067 ms.",
+          "what_survives": "GPU time stable at 377.085/378.531/377.122 ms vs A ~412 ms = ~35 ms real GPU win; encoders 1857->134; bit-identical hc_sha on all 6 pairs; 0 fallbacks.",
+          "source": "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json"
+        }
+      },
+      "expert_nocopy": {
+        "branch": "grok/dsv-expert-20260816-003212 (858894e3) - NOT yet on main, integration lane running",
+        "refuted_hypothesis": "My contract assumed per-expert GEMVs underfilling the GPU. FALSE: DSV4F already used device route -> compact top-6 worklist -> ONE dsv4f_worklist_fp4_matvec + shared expert + fused combine. host_expert_gather and host_expert_output_readback were already 0.",
+        "real_anti_pattern": "host payload STAGING - after the route CB the host mmapped 36 tensors and write_at-packed 76 MiB/layer into compact slabs.",
+        "fix": "Pin the six mmap'd expert-chunk windows as MTLBuffers, write a six-entry gpuAddress table, worklist kernel indexes them (useResources required). This is the Q80 cached-address-table pattern transferring across models, as predicted.",
+        "same_binary_ab_ms": {
+          "pack_body": [
+            1602,
+            1111,
+            1278
+          ],
+          "nocopy_body": [
+            1016,
+            987,
+            1404
+          ],
+          "pack_slab_io": [
+            535,
+            452,
+            481
+          ],
+          "nocopy_slab_io": [
+            257,
+            262,
+            351
+          ]
+        },
+        "expert_slab_io_ms": {
+          "before": 481,
+          "after": 262
+        },
+        "correctness": "bit-identical hc_sha c94da765..., greedy token 5 logit 16.781855, 0 fallbacks, 43/43 no-copy binds",
+        "honest_caveat": "One of three pairs FLIPPED (no-copy 1404 > pack 1278). Median improves; the spread is wide on a loaded box.",
+        "hard_constraint": "384 MiB Metal weight bound means all 256 experts cannot be pinned (3.3 GiB/layer). Streaming 6-of-256 is forced.",
+        "next_wall": "post-route host remap/open of the six expert chunks + next-layer attn views ~262 ms; GPU arithmetic 374 ms"
+      },
+      "mla": {
+        "branch": "grok/dsv-mla-20260816-003211 (1983ec3b) - NOT on main, dsv-integrate-graph running",
+        "regime": "OCCUPANCY-limited, NOT bandwidth-limited: 24-36 GB/s realized of a ~750 GB/s ceiling",
+        "thread_geometry_problem": "RMSNorm dispatches on 1 THREAD; WQ-A 1024; WKV 512; sparse attention 64",
+        "negative_result": "Collapsing the 17 attention dispatches into one serial encoder took encoders 731 -> 43 BIT-IDENTICALLY but attention GPU did NOT move (195-220 ms both arms). Encoder gaps are not the attention wall. Do not re-pay for this hypothesis.",
+        "real_win": "simdgroup KV QAT on the same E4M3FN table encoder: isolated kv_qat 2.9 ms -> 107 us/layer",
+        "attention_gpu_ms_pairs": [
+          [
+            198.32,
+            127.84
+          ],
+          [
+            196.97,
+            161.74
+          ],
+          [
+            269.4,
+            168.68
+          ]
+        ],
+        "attention_gpu_ms": {
+          "before": 198,
+          "after": 128
+        },
+        "layer_p50_ms": {
+          "before": 4.535,
+          "after": 2.898
+        },
+        "correctness": "hc_sha c94da765... preserved every rep, logit 16.7818546295166 (delta 0.0144), 0 fallbacks",
+        "no_structural_blocker": "no attention CB exceeds 20 ms",
+        "next": "wo_a 0.67-1.08 ms and wo_b 0.64-1.01 ms per layer (29-44 ms/token), then wq_a/wkv on 1024/512-thread grids. Still ~9x the 15 ms GPU-body budget. Occupancy plus convert+einsum, not bandwidth."
+      },
+      "admission_identity": {
+        "branch": "grok/dsv-admission-identity-20260816-003824 (7a634e2d) - HELD, skews with the in-flight dsv-integrate-graph",
+        "status": "PARTIAL - real work removed, NO wall win",
+        "path_identity_parallel_sum_ms": {
+          "before_median": 983,
+          "after_median": 343,
+          "factor": 2.9
+        },
+        "wall_effect": "NONE. Same-window A1 1231 ms vs B1 1303 ms. The 2.9x reduction produced zero whole-token improvement.",
+        "why": "The path_resolve/verify tax was ALREADY OVERLAPPED - a parallel sum across threads, never on the critical path. My contract hypothesised it was a wall; that hypothesis is REFUTED.",
+        "residual_finding": "Almost all remaining tensor_lookup calls are the init anchor walk (verify_deepseek_v4_layer_source_anchors formats every base-layer name), not per-token work. Body remainder ~2.2-4.9 ms. HashMap did not beat BTreeMap in this dirty window.",
+        "correctness": "bit-identical hc_sha c94da765, 0 fallbacks, 0 hash, drift 0.0144",
+        "lane_honesty": "Explicitly warned against comparing its 1303 ms B median to the host-wall 1038 ms authority because the box was dirtier - correct discipline.",
+        "next": "host.expert_slab_io again: 477.9 ms this window vs 415.1 ms host-wall authority"
+      },
+      "expert_cache": {
+        "branch": "grok/dsv-expert-cache-20260816-003822 (072427c8) - HELD, skews with in-flight integration",
+        "expert_slab_io_off_ms": [
+          776.4,
+          612.1,
+          1044.0
+        ],
+        "expert_slab_io_hit_us": [
+          24.5,
+          29.5,
+          27.3
+        ],
+        "correctness": "bit-identical hc_sha c94da765 every BOS token; cached==fresh memcmp 8/8 over 106954752 bytes; 0 fallbacks",
+        "CAVEAT": "B numbers are a repeated-BOS token-2 100%-HIT best case, not a varied-routing result. Treat as a ceiling, not the expected win.",
+        "newly_exposed_wall": "host.attn_weight_io_prefetch 481955669 ns/token median (379-533 ms) - was HIDDEN behind expert_slab_io and is now DSV4F's largest single cost"
+      },
+      "integrated": {
+        "merged": "80594ce4 (lane commit b90312f6)",
+        "composed": [
+          "cb-collapse submission overhead",
+          "dsv-expert no-copy binds",
+          "dsv-mla simdgroup KV QAT"
+        ],
+        "body_ms": {
+          "pack": [
+            1029,
+            937,
+            995
+          ],
+          "nocopy": [
+            829,
+            816,
+            880
+          ],
+          "median_before": 996,
+          "median_after": 830
+        },
+        "expert_slab_io_ms": {
+          "median_before": 450.4,
+          "median_after": 239.4
+        },
+        "attn_gpu_ms_median": 127.24,
+        "correctness": "bit-identical hc_sha + greedy token 5 / logit 16.7818546295166 on every warm full-token run, delta 0.0; 43/43 no-copy binds; no flipped pair",
+        "honesty": "one no-copy slab 271.6 ms above the prior 262 reported not hidden; cold first run (208.8 ms attn / 2606 ms slab) excluded rather than averaged",
+        "bottleneck_ranking_after": {
+          "attn_weight_io_prefetch_ns": 252900000,
+          "expert_slab_io_ns": 239426001,
+          "expert_slab_io_note": "now mmap/bind of 40 learned experts, not slab memcpy",
+          "host_memcpy_ns": 232630000,
+          "gpu_ns": 302157000,
+          "gpu_verdict": "explicitly NOT the wall"
+        }
+      },
+      "occupancy_geometry": {
+        "branch": "grok/dsv-occupancy-geometry-20260816-010044 - in dsv-integrate-occupancy",
+        "attn_gpu_ms": {
+          "A": [
+            127.04,
+            128.29,
+            127.1
+          ],
+          "B": [
+            52.57,
+            58.02,
+            53.62
+          ]
+        },
+        "layer_p50_ms": {
+          "before": 2.9,
+          "after": 1.19
+        },
+        "whole_token_gpu_ms": {
+          "before": 330,
+          "after": 273
+        },
+        "realized_bandwidth_gb_s": 92,
+        "of_ceiling": 750,
+        "NOT_BIT_IDENTICAL": "reduction order changes the SHA. logit 16.76857566833496 vs baseline 16.7818546295166, |delta| 0.013279; versus CPU ORACLE only 0.001139 - i.e. possibly CLOSER to true than the baseline. Under review; must not become default on lane authority."
+      },
+      "attn_weight_cache": {
+        "branch": "grok/dsv-attn-weight-io-20260816-010759 (d4dc5604) - NOT merged, queued for integration",
+        "reps_ns": {
+          "A": [
+            206977084,
+            340013752,
+            379147417
+          ],
+          "B": [
+            1589,
+            5164,
+            5665
+          ]
+        },
+        "effect": "host.attn_weight_io_prefetch from ~207-379 ms to ~1.6-5.7 MICROseconds",
+        "why_it_works": "attention weights are per-layer and reused EVERY token with no routing, so hit rate is perfect by construction - unlike experts, which are routed",
+        "correctness": "bit-identical hc_sha c94da765 on every BOS token; cached==fresh memcmp 8/8 over 868,366,176 B; 0 fallbacks",
+        "NEW_WALL": "metal.gpu 393375000 ns/token median (true GPU timestamps, 129 CBs)",
+        "next_host_candidate": "shared expert + moe_control I/O ~254 ms summed, same per-layer reuse shape"
+      },
+      "inversion": {
+        "note": "DSV4F has INVERTED. It began 73% GPU-idle waiting on host I/O. With expert payloads and attention weights both resident, host streaming is largely gone and metal.gpu ~393 ms is now THE wall.",
+        "consequence": "The optimization target moves from host I/O to GPU occupancy - which is exactly where dsv-occupancy-geometry already measured attention GPU 127.04 -> 52.57 ms.",
+        "PROJECTED_NOT_MEASURED": "If expert cache + attn cache + occupancy all compose on the 830 ms integrated body, the arithmetic suggests roughly 260-340 ms/token. This is a PROJECTION from separately-measured deltas, NOT a measured token, and joint-token-ns has already demonstrated that per-stage wins do not simply add. It must be measured on the integrated build before any claim."
+      }
+    },
+    "dsv4f_density_frontier": {
+      "feasibility": "CONFIRMED_BY_ARITHMETIC_NOT_FITTED",
+      "f_routed": 0.97431,
+      "complete_bpw_1_5_gib": 50.83,
+      "resident_on_96gb": true,
+      "max_routed_bpw_protect_at_source": 1.285,
+      "unfitted_envelope_if_q80_rates_transfer": {
+        "bpw": 1.447,
+        "gib": 49.0
+      },
+      "blocker": "determined teacher-X capture ~21846 tokens x 3.3s = ~20 h streamed forward; existing X underdetermined",
+      "caveat": "DSV4F experts are ALREADY 16-level FP4, whereas Q80's 1.23 came from BF16 -> low-bit. Q80 rates may NOT transfer.",
+      "receipt": "receipts/ascent-2026-08-16/dsv-resident-gravity.json"
+    }
+  },
+  "sources_on_device": {
+    "q80_bf16": "workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next (148 GB, 40 shards)",
+    "dsv4f": "workspace/campaign/records/runs/deepseek-v4 (150 GB)"
+  },
+  "targets": [
+    {
+      "id": "q80-coherence-probe",
+      "model": "q80",
+      "hypothesis": "Per-organ cosine 0.86 compounds across 48 layers into incoherence; measure the per-layer error growth ratio before committing to a 40 GiB pack",
+      "target_stage": "density/representation",
+      "contract": "workspace/ops/ascent-lanes/q80-coherence-probe.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.9,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 900000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.0,
+      "status": "retained_inconclusive",
+      "note": "Information-dominated: a NO_GO here is worth more than a week of packing. Highest value in the queue despite recovering zero ns directly.",
+      "tier1": "verdict not trustworthy; superseded by q80-coherence-deep"
+    },
+    {
+      "id": "q80-pack",
+      "model": "q80",
+      "hypothesis": "The mixed per-component recipe packs to a real on-disk artifact at <=1.5 complete physical BPW",
+      "target_stage": "density/artifact",
+      "contract": "workspace/ops/ascent-lanes/q80-pack.md",
+      "resource_class": "MEMORY_HEAVY",
+      "probability_of_success": 0.65,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 800000000,
+      "information_gain": 200000000,
+      "transfer_value": 100000000,
+      "experiment_cost": 2.0,
+      "status": "running"
+    },
+    {
+      "id": "q80-decode-kernels",
+      "model": "q80",
+      "hypothesis": "Metal kernels can consume the three packed formats in-register without ever reconstructing a dense tensor",
+      "target_stage": "runtime/representation-execution",
+      "contract": "workspace/ops/ascent-lanes/q80-decode-kernels.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.6,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 600000000,
+      "information_gain": 150000000,
+      "transfer_value": 250000000,
+      "experiment_cost": 2.0,
+      "status": "retained",
+      "note": "Transfer value is high: a working packed-matvec pattern applies to DSV4F resident gravity too.",
+      "tier1": "merged to main; skew guard SKEWED -> hand-composed additive conflicts, rebuilt clean"
+    },
+    {
+      "id": "dsv-host-wall",
+      "model": "dsv4f",
+      "hypothesis": "The ~641 ms host-exclusive wall is dominated by repeated immutable-identity work that belongs in admission",
+      "target_stage": "host",
+      "contract": "workspace/ops/ascent-lanes/dsv-host-wall.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 500000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 200000000,
+      "transfer_value": 100000000,
+      "experiment_cost": 1.5,
+      "status": "retained",
+      "note": "Strong prior: identity recomputation has been the real latency three separate times on this machine.",
+      "tier1": "merged to main; skew guard STALE_CLEAN (no file overlap with trunk)"
+    },
+    {
+      "id": "dsv-cb-collapse",
+      "model": "dsv4f",
+      "hypothesis": "137 command buffers/token means a wait-per-CB pipeline drain; collapsing submissions recovers GPU gap time",
+      "target_stage": "gpu/dispatch",
+      "contract": "workspace/ops/ascent-lanes/dsv-cb-collapse.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.6,
+      "recoverable_ns_per_token": 300000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 100000000,
+      "experiment_cost": 1.5,
+      "status": "retained",
+      "tier1": "merged to main; skew guard SKEWED -> hand-composed additive conflicts, rebuilt clean"
+    },
+    {
+      "id": "dsv-resident-gravity",
+      "model": "dsv4f",
+      "hypothesis": "A <=1.5 BPW DSV4F becomes resident on 96 GB, deleting the entire streamed-source runtime regime rather than optimizing it",
+      "target_stage": "density/architecture",
+      "contract": "workspace/ops/ascent-lanes/dsv-resident-gravity.md",
+      "resource_class": "MEMORY_HEAVY",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 900000000,
+      "density_frontier_gain_ns_equiv": 400000000,
+      "information_gain": 300000000,
+      "transfer_value": 200000000,
+      "experiment_cost": 3.0,
+      "status": "retained",
+      "note": "Largest single recoverable class for DSV4F: it removes the reason the host wall exists at all.",
+      "tier1": "merged to main; skew guard STALE_CLEAN (no file overlap with trunk)"
+    },
+    {
+      "id": "q80-runtime-residency",
+      "model": "q80",
+      "hypothesis": "Artifact-static address-table rebuild is paid per token; make residency+indirection a GENERAL mechanism the <=1.5 artifact inherits",
+      "target_stage": "runtime/residency",
+      "contract": "workspace/ops/ascent-lanes/q80-runtime-residency.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 269000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 250000000,
+      "transfer_value": 400000000,
+      "experiment_cost": 2.0,
+      "status": "retained_negative",
+      "note": "Highest transfer value of any runtime lane: the mechanism, not the Q4 win, is the deliverable.",
+      "tier1": "bit-identical but no clean wall-time win; its VALUE is locating the SHA-per-first-touch cost"
+    },
+    {
+      "id": "q80-deltanet-gqa2",
+      "model": "q80",
+      "hypothesis": "DeltaNet+GQA+combine are 39% of the token and are independent of expert encoding, so the win survives onto the <=1.5 artifact",
+      "target_stage": "runtime/attention-state",
+      "contract": "workspace/ops/ascent-lanes/q80-deltanet-gqa2.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.65,
+      "recoverable_ns_per_token": 180000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.5,
+      "status": "retained",
+      "tier1": "merged 49b452f1; three topology attacks rejected, all bit-identical"
+    },
+    {
+      "id": "q80-capture-coverage",
+      "model": "q80",
+      "hypothesis": "The 25258-token capture may be underdetermined per organ; underdetermined fits silently invalidate every density score",
+      "target_stage": "density/substrate",
+      "contract": "workspace/ops/ascent-lanes/q80-capture-coverage.md",
+      "resource_class": "CPU_HEAVY",
+      "probability_of_success": 0.85,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 300000000,
+      "information_gain": 600000000,
+      "transfer_value": 200000000,
+      "experiment_cost": 1.5,
+      "status": "retained_partial",
+      "note": "Guards the input to every density claim. Two prior campaigns were destroyed by invisible capture defects.",
+      "tier1": "preserved to main at 19928d56; extension capture checkpointed at layer 16/48"
+    },
+    {
+      "id": "dsv-mla",
+      "model": "dsv4f",
+      "hypothesis": "MLA/attention is gap- or occupancy-limited rather than arithmetic-limited; any single GPU component >20ms is a structural blocker",
+      "target_stage": "gpu/attention",
+      "contract": "workspace/ops/ascent-lanes/dsv-mla.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.6,
+      "recoverable_ns_per_token": 150000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 150000000,
+      "experiment_cost": 1.5,
+      "status": "retained_pending_integration",
+      "tier1": "SHIPPED, hc_sha preserved. Skews with cb-collapse and dsv-expert across the same graph/ledger files; folded into dsv-integrate-graph."
+    },
+    {
+      "id": "dsv-expert",
+      "model": "dsv4f",
+      "hypothesis": "Expert execution maps as per-expert GEMVs that underfill the GPU; a device worklist plus grouped compute recovers it",
+      "target_stage": "gpu/expert",
+      "contract": "workspace/ops/ascent-lanes/dsv-expert.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.6,
+      "recoverable_ns_per_token": 200000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 250000000,
+      "experiment_cost": 1.5,
+      "status": "retained_pending_integration",
+      "tier1": "SHIPPED and bit-identical, but SKEWED against main (cb-collapse touched the same MoE dispatch path). 4 conflicts, two large. Delegated to dsv-integrate-expert rather than hand-guessed."
+    },
+    {
+      "id": "cross-adversarial",
+      "model": "both",
+      "hypothesis": "Some wave-1/2 claims will be measurement artifacts; refute them before they enter the ledger",
+      "target_stage": "verification",
+      "contract": "workspace/ops/ascent-lanes/cross-adversarial.md",
+      "resource_class": "STATIC_ANALYSIS",
+      "probability_of_success": 0.8,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 500000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.0,
+      "status": "retained",
+      "note": "Reject-only. On this box plausible-but-wrong wins have repeatedly survived review.",
+      "tier1": "3 P1 findings, all recorded and acted on"
+    },
+    {
+      "id": "dsv-expert-cache",
+      "model": "dsv4f",
+      "hypothesis": "A bounded RAM-resident LRU expert cache absorbs the 415 ms/token expert_slab_io on the EXISTING artifact, with no re-fit and no 20h capture",
+      "target_stage": "host/streaming",
+      "contract": "workspace/ops/ascent-lanes/dsv-expert-cache.md",
+      "resource_class": "MEMORY_HEAVY",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 415126416,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 200000000,
+      "transfer_value": 150000000,
+      "experiment_cost": 1.5,
+      "status": "retained_held",
+      "note": "Buys the residency win NOW without waiting on the capture. Refuted if routing is near-uniform - the lane must compute the hit-rate ceiling from a trace before building.",
+      "tier1": "huge win on a 100%-hit best case, bit-identical; HELD - skews with in-flight integration"
+    },
+    {
+      "id": "dsv-admission-identity",
+      "model": "dsv4f",
+      "hypothesis": "3314 path_resolve+stat calls/token run BEFORE the digest cache; moving them behind a session seal removes the tax without weakening integrity",
+      "target_stage": "host/identity",
+      "contract": "workspace/ops/ascent-lanes/dsv-admission-identity.md",
+      "resource_class": "IO_HEAVY",
+      "probability_of_success": 0.75,
+      "recoverable_ns_per_token": 80000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 250000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.0,
+      "status": "retained_negative_held",
+      "note": "SHA already went to 0 on this path, proving the pattern works. Same class killed 28s of startup and 48x'd a repack previously.",
+      "tier1": "bit-identical, removes real work, but NO wall win - the tax was already overlapped. Held from merge: skews with in-flight dsv-integrate-graph."
+    },
+    {
+      "id": "q80-decode-throughput",
+      "model": "q80",
+      "hypothesis": "Mixed-codec decode is serial-decode-bound at ~0.6 GB/s against a ~800 GB/s ceiling; parallelizing down_proj's 3-bit factor decode into one dispatch closes most of the 24x expert-budget gap",
+      "target_stage": "runtime/representation-execution",
+      "contract": "workspace/ops/ascent-lanes/q80-decode-throughput.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.6,
+      "recoverable_ns_per_token": 150000000,
+      "density_frontier_gain_ns_equiv": 300000000,
+      "information_gain": 250000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 2.0,
+      "status": "retained",
+      "note": "Gates the whole Q80 <=1.5 path: a representation that cannot execute in budget is storage, not density.",
+      "tier1": "merged; routed decode 192.9 -> 18.28 ms, 24x over budget down to 2.3x"
+    },
+    {
+      "id": "q80-coherence-deep",
+      "model": "q80",
+      "hypothesis": "Full-depth drift measurement plus unclamped ranks plus a real null distribution will settle whether mixed <=1.5 Q80 can generate coherently",
+      "target_stage": "density/coherence",
+      "contract": "workspace/ops/ascent-lanes/q80-coherence-deep.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.85,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 1500000000,
+      "transfer_value": 400000000,
+      "experiment_cost": 2.0,
+      "status": "running",
+      "note": "DECIDES whether the Q80 <=1.5 path is alive. Ranks first in the queue."
+    },
+    {
+      "id": "dsv-integrate-graph",
+      "model": "dsv4f",
+      "hypothesis": "cb-collapse, dsv-expert no-copy binds, and dsv-mla simdgroup KV QAT are complementary and can all land with bit-identity and every win intact",
+      "target_stage": "integration",
+      "contract": "workspace/ops/ascent-lanes/dsv-integrate-graph.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.8,
+      "recoverable_ns_per_token": 289000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 100000000,
+      "transfer_value": 100000000,
+      "experiment_cost": 1.0,
+      "status": "retained",
+      "note": "Three independent restructurings of the same hot path. Relaunched to absorb all three in one pass rather than two sequential integrations.",
+      "tier1": "merged 80594ce4; all three wins composed, bit-identical, no flipped pair"
+    },
+    {
+      "id": "q80-expert-first-touch",
+      "model": "q80",
+      "hypothesis": "catalog read + SHA-256 + MTLBuffer copy per expert first-touch is immutable-identity work in the token loop; seal once at admission and no-copy bind the mmap window",
+      "target_stage": "runtime/identity",
+      "contract": "workspace/ops/ascent-lanes/q80-expert-first-touch.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.8,
+      "recoverable_ns_per_token": 170000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 200000000,
+      "transfer_value": 350000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "Directly transfers the dsv-expert no-copy bind pattern back to Q80. Same class killed 28s of startup and 48x'd a repack before."
+    },
+    {
+      "id": "q80-ns-ledger",
+      "model": "q80",
+      "hypothesis": "Seven of eleven Q80 stages report 0.0000 because nothing populates them, hiding real cost",
+      "target_stage": "measurement",
+      "contract": "workspace/ops/ascent-lanes/q80-ns-ledger.md",
+      "resource_class": "COMPILE",
+      "probability_of_success": 0.85,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 700000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "Enforces sum(stages)+residual == token. The baseline already has a 0.37 s unattributed residual."
+    },
+    {
+      "id": "dsv-occupancy-geometry",
+      "model": "dsv4f",
+      "hypothesis": "DSV4F attention is occupancy-limited at 24-36 GB/s of ~750; RMSNorm runs on ONE thread",
+      "target_stage": "gpu/occupancy",
+      "contract": "workspace/ops/ascent-lanes/dsv-occupancy-geometry.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 120000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 200000000,
+      "transfer_value": 250000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "note": "Success condition is becoming bandwidth-bound, since bandwidth is the physical floor."
+    },
+    {
+      "id": "joint-token-ns",
+      "model": "both",
+      "hypothesis": "Per-stage lanes will each report a win while tok/s barely moves; only a whole-token reconciliation catches that",
+      "target_stage": "measurement/anti-specialization",
+      "contract": "workspace/ops/ascent-lanes/joint-token-ns.md",
+      "resource_class": "STATIC_ANALYSIS",
+      "probability_of_success": 0.8,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 900000000,
+      "transfer_value": 500000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "Owns the closure identity and the per-lane savings-vs-measured-delta discrepancy. Guards against local optima."
+    },
+    {
+      "id": "dsv-attn-weight-io",
+      "model": "dsv4f",
+      "hypothesis": "Attention weights are per-layer and reused EVERY token with no routing, so they are a better residency candidate than experts were",
+      "target_stage": "host/io",
+      "contract": "workspace/ops/ascent-lanes/dsv-attn-weight-io.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 480000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 300000000,
+      "transfer_value": 200000000,
+      "experiment_cost": 1.5,
+      "status": "running"
+    },
+    {
+      "id": "q80-component-simdgroup",
+      "model": "q80",
+      "hypothesis": "DeltaNet/GQA run a serial one-thread-per-row matvec while a simdgroup kernel already exists; wiring it through with bit-identity is the untested occupancy lever",
+      "target_stage": "gpu/occupancy",
+      "contract": "workspace/ops/ascent-lanes/q80-component-simdgroup.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 150000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 250000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.5,
+      "status": "running"
+    },
+    {
+      "id": "q80-device-topk",
+      "model": "q80",
+      "hypothesis": "~158 ms/token of host top-k and address construction sits between the GPU router and GPU experts with the GPU idle",
+      "target_stage": "gpu/routing",
+      "contract": "workspace/ops/ascent-lanes/q80-device-topk.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 158000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 250000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.5,
+      "status": "running"
+    },
+    {
+      "id": "q80-lowrank-algebra",
+      "model": "q80",
+      "hypothesis": "down_proj low-rank should execute U @ (V @ x) rather than reconstruct W then W @ x - representation dictating cheaper algebra, which also removes the dense temporary",
+      "target_stage": "runtime/algebra",
+      "contract": "workspace/ops/ascent-lanes/q80-lowrank-algebra.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.65,
+      "recoverable_ns_per_token": 120000000,
+      "density_frontier_gain_ns_equiv": 200000000,
+      "information_gain": 300000000,
+      "transfer_value": 400000000,
+      "experiment_cost": 1.5,
+      "status": "retained",
+      "note": "Doctrine names representation->algebra one of the highest-value research classes. Also the controller's first live end-to-end cycle.",
+      "tier1_command": "echo controller-cycle-ok",
+      "tier1_expect": "controller-cycle-ok",
+      "task_id": "q80-lowrank-algebra-20260816-015251",
+      "tier1": "controller Tier-1 pass; merged; confirmed negative"
+    },
+    {
+      "id": "q80-mixed-generate",
+      "model": "q80",
+      "hypothesis": "The packed 1.44445 BPW artifact can be served by the existing mixed decode kernels and generate coherent text",
+      "target_stage": "density/gate",
+      "contract": "workspace/ops/ascent-lanes/q80-mixed-generate.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.55,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 900000000,
+      "information_gain": 900000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 2.0,
+      "status": "running",
+      "note": "THE density gate. Organ cosine is a screen; generation settles it. Launched directly rather than via controller - too critical to gamble on untested controller code.",
+      "tier1_command": null,
+      "tier1_expect": null
+    },
+    {
+      "id": "auto-q80-down-proj-fused-two",
+      "model": "q80",
+      "hypothesis": "down_proj fused two-stage still 299000 ns/expert (143520000 ns/token at 48\u00d710); occupancy/dispatch, not switching activity",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-down-proj-fused-two.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "down_proj fused two-stage still 299000 ns/expert (143520000 ns/token at 48\u00d710); occupancy/dispatch, not switching activity",
+      "from_lane": "codec-switching-activity-20260816-013121",
+      "task_id": "auto-q80-down-proj-fused-two-20260816-022448"
+    },
+    {
+      "id": "auto-q80-dsv4f-host-expert-slab",
+      "model": "q80",
+      "hypothesis": "DSV4F host.expert_slab_io 415126416 ns (DIRTY_ENGINEERING), then metal.gpu 399023000 ns across 137 CBs. Q80 wall is still hybrid host+metal (~175 ms GPU / ~400-570 ms CPU-wall, 1637-3401 fallbacks); <",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-dsv4f-host-expert-slab.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "DSV4F host.expert_slab_io 415126416 ns (DIRTY_ENGINEERING), then metal.gpu 399023000 ns across 137 CBs. Q80 wall is still hybrid host+metal (~175 ms GPU / ~400-570 ms CPU-wall, 1637-3401 fallbacks); <=1.5 is not a packed generated artifact.",
+      "from_lane": "cross-adversarial-20260816-003214",
+      "task_id": "auto-q80-dsv4f-host-expert-slab-20260816-022954"
+    },
+    {
+      "id": "auto-q80-not-dram-rows-q80",
+      "model": "q80",
+      "hypothesis": "not DRAM rows. Q80 host moe_table_build ~246 ms; DSV4F attn_weight_io_prefetch ~253 ms. GPU packed matvecs sit at ~2.5 GB/s against a 560\u2013647 GB/s read-reduce on the same box.",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-not-dram-rows-q80.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "not DRAM rows. Q80 host moe_table_build ~246 ms; DSV4F attn_weight_io_prefetch ~253 ms. GPU packed matvecs sit at ~2.5 GB/s against a 560\u2013647 GB/s read-reduce on the same box.",
+      "from_lane": "dram-row-locality-20260816-013210",
+      "task_id": "auto-q80-not-dram-rows-q80-20260816-023959"
+    },
+    {
+      "id": "auto-dsv4f-host-expert-slab-io",
+      "model": "dsv4f",
+      "hypothesis": "host.expert_slab_io (streamed top-6 read + metal fill); 477893164 ns this-window B median, 415126416 ns host-wall authority",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-host-expert-slab-io.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "host.expert_slab_io (streamed top-6 read + metal fill); 477893164 ns this-window B median, 415126416 ns host-wall authority",
+      "from_lane": "dsv-admission-identity-20260816-003824",
+      "task_id": "auto-dsv4f-host-expert-slab-io-20260816-025622"
+    },
+    {
+      "id": "auto-dsv4f-metal-gpu-true-gpu",
+      "model": "dsv4f",
+      "hypothesis": "metal.gpu 393375000 ns/token median (true GPU timestamps, 129 CBs). Next host-streamed candidate is shared expert + moe_control I/O (~254 ms summed on B2/B3, same per-layer reuse shape).",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-metal-gpu-true-gpu.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "metal.gpu 393375000 ns/token median (true GPU timestamps, 129 CBs). Next host-streamed candidate is shared expert + moe_control I/O (~254 ms summed on B2/B3, same per-layer reuse shape).",
+      "from_lane": "dsv-attn-weight-io-20260816-010759"
+    },
+    {
+      "id": "auto-dsv4f-host-exclusive-inter-cb",
+      "model": "dsv4f",
+      "hypothesis": "host exclusive / inter-CB GPU idle from streaming weight IO + host MHC \u2014 870578334 ns host exclusive and 1036353092 ns inter-CB device gap on pair 3B (73% of GPU span idle). Largest remaining GPU fami",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-host-exclusive-inter-cb.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "host exclusive / inter-CB GPU idle from streaming weight IO + host MHC \u2014 870578334 ns host exclusive and 1036353092 ns inter-CB device gap on pair 3B (73% of GPU span idle). Largest remaining GPU family is attn at 201280000 ns. Reader/IO is dsv-host-wall.",
+      "from_lane": "dsv-cb-collapse-20260816-001742"
+    },
+    {
+      "id": "auto-dsv4f-post-route-host-remap",
+      "model": "dsv4f",
+      "hypothesis": "post-route host remap of 6 expert chunks + next-layer attn views, 262400000 ns (iso_nocopy2 host.expert_slab_io; joint with attn prefetch 274.0 ms). GPU arithmetic 374150000 ns.",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-post-route-host-remap.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "post-route host remap of 6 expert chunks + next-layer attn views, 262400000 ns (iso_nocopy2 host.expert_slab_io; joint with attn prefetch 274.0 ms). GPU arithmetic 374150000 ns.",
+      "from_lane": "dsv-expert-20260816-003212"
+    },
+    {
+      "id": "auto-dsv4f-host-attn-weight-io",
+      "model": "dsv4f",
+      "hypothesis": "host.attn_weight_io_prefetch 481955669 ns (median on the 100% hit path; was hidden behind expert_slab_io)",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-host-attn-weight-io.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "host.attn_weight_io_prefetch 481955669 ns (median on the 100% hit path; was hidden behind expert_slab_io)",
+      "from_lane": "dsv-expert-cache-20260816-003822"
+    },
+    {
+      "id": "auto-dsv4f-host-expert-slab-io",
+      "model": "dsv4f",
+      "hypothesis": "host.expert_slab_io 415126416 ns/token (GPU-idle streamed top-6 expert read+fill). After residency deletes that: Metal GPU 399023000 ns/token across 137 CBs; surviving host MHC+decode ~50 ms.",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-host-expert-slab-io.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "host.expert_slab_io 415126416 ns/token (GPU-idle streamed top-6 expert read+fill). After residency deletes that: Metal GPU 399023000 ns/token across 137 CBs; surviving host MHC+decode ~50 ms.",
+      "from_lane": "dsv-host-wall-20260816-001740"
+    },
+    {
+      "id": "auto-dsv4f-host-attn-weight-io",
+      "model": "dsv4f",
+      "hypothesis": "host.attn_weight_io_prefetch 252900000 ns (pair1_nocopy); leftover host.expert_slab_io 239426001 ns is now mmap/bind of 40 learned experts, not slab memcpy; host.memcpy 232630000 ns sits beside it. GP",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-host-attn-weight-io.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "host.attn_weight_io_prefetch 252900000 ns (pair1_nocopy); leftover host.expert_slab_io 239426001 ns is now mmap/bind of 40 learned experts, not slab memcpy; host.memcpy 232630000 ns sits beside it. GPU 302157000 ns is not the wall.",
+      "from_lane": "dsv-integrate-graph-20260816-005613"
+    },
+    {
+      "id": "auto-dsv4f-attention-gpu-still-default",
+      "model": "dsv4f",
+      "hypothesis": "attention GPU still ~127236000 ns on the default path (WO-A / WQ-A / WKV / WO-B still one-thread-per-row). Host exclusive remains the token-level majority (~1.0 s clean body).",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-attention-gpu-still-default.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "attention GPU still ~127236000 ns on the default path (WO-A / WQ-A / WKV / WO-B still one-thread-per-row). Host exclusive remains the token-level majority (~1.0 s clean body).",
+      "from_lane": "dsv-integrate-occupancy-20260816-012855"
+    },
+    {
+      "id": "auto-dsv4f-level-host-exclusive-not",
+      "model": "dsv4f",
+      "hypothesis": "token-level host exclusive ~670 ms (not this lane). MLA GPU now ~128 ms; largest remaining isolated kernels are wo_a ~0.67\u20131.08 ms and wo_b ~0.64\u20131.01 ms per layer (~29\u201344 ms/token), then wq_a/wkv on ",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-level-host-exclusive-not.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "token-level host exclusive ~670 ms (not this lane). MLA GPU now ~128 ms; largest remaining isolated kernels are wo_a ~0.67\u20131.08 ms and wo_b ~0.64\u20131.01 ms per layer (~29\u201344 ms/token), then wq_a/wkv on 1024/512-thread grids. Still ~9\u00d7 the 15 ms GPU-body budget. Occupancy + convert+einsum, not bandwidth.",
+      "from_lane": "dsv-mla-20260816-003211"
+    },
+    {
+      "id": "auto-dsv4f-host-exclusive-not-this",
+      "model": "dsv4f",
+      "hypothesis": "host exclusive ~625-680 ms/token (not this lane). Inside attention after this win: wq_b ~267-319 us/layer already at 32768 threads, then wo_a ~233 us, wo_b ~190 us, sparse_pos0 ~131 us on 64 threads (",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-host-exclusive-not-this.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "host exclusive ~625-680 ms/token (not this lane). Inside attention after this win: wq_b ~267-319 us/layer already at 32768 threads, then wo_a ~233 us, wo_b ~190 us, sparse_pos0 ~131 us on 64 threads (~5.6 ms/token). Layer p50 1.19 ms. Realized 92 GB/s of ~750.",
+      "from_lane": "dsv-occupancy-geometry-20260816-010044"
+    },
+    {
+      "id": "auto-dsv4f-determined-teacher-x-capture",
+      "model": "dsv4f",
+      "hypothesis": "determined teacher-X capture/fit (existing X underdetermined). 21846-token fill \u00d7 3.323e9 ns \u2248 7.26e13 ns streamed forward (DIRTY_ENGINEERING, ~20 h). After a hypothetical resident pack the already-me",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-dsv4f-determined-teacher-x-capture.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "determined teacher-X capture/fit (existing X underdetermined). 21846-token fill \u00d7 3.323e9 ns \u2248 7.26e13 ns streamed forward (DIRTY_ENGINEERING, ~20 h). After a hypothetical resident pack the already-measured wall is metal.gpu 2082931000 ns/token (act_quant), not I/O.",
+      "from_lane": "dsv-resident-gravity-20260816-001744"
+    },
+    {
+      "id": "auto-q80-q80-host-compact-expert",
+      "model": "q80",
+      "hypothesis": "Q80 host.compact_expert_slab_pack 280819429 ns (78831 fs/weight amortized, DIRTY_ENGINEERING); DSV4F host.expert_slab_io 415126416 ns (32563 fs/weight amortized, DIRTY_ENGINEERING)",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-q80-host-compact-expert.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "Q80 host.compact_expert_slab_pack 280819429 ns (78831 fs/weight amortized, DIRTY_ENGINEERING); DSV4F host.expert_slab_io 415126416 ns (32563 fs/weight amortized, DIRTY_ENGINEERING)",
+      "from_lane": "frontier-fs-per-weight-20260816-013121",
+      "task_id": "auto-q80-q80-host-compact-expert-20260816-025648"
+    },
+    {
+      "id": "auto-q80-dsv4f-host-expert-slab",
+      "model": "q80",
+      "hypothesis": "DSV4F host.expert_slab_io 415126416 ns (DIRTY_ENGINEERING), then the 275026398 ns unattributed residual inside metal host_wall, then metal GPU 399023000 ns across 137 CBs. Q80 host.compact_expert_slab",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-dsv4f-host-expert-slab.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "DSV4F host.expert_slab_io 415126416 ns (DIRTY_ENGINEERING), then the 275026398 ns unattributed residual inside metal host_wall, then metal GPU 399023000 ns across 137 CBs. Q80 host.compact_expert_slab_pack 280819429 ns serial, then metal.wait 273658315 ns (contains 231968522 ns GPU).",
+      "from_lane": "joint-token-ns-20260816-010044",
+      "task_id": "auto-q80-dsv4f-host-expert-slab-20260816-031154"
+    },
+    {
+      "id": "auto-q80-route-starved-tail-p10",
+      "model": "q80",
+      "hypothesis": "route-starved tail \u2014 p10 = 34 rows (measured); 221 never-routed pairs; ~119k tokens to put p10 at rank 160, ~171k to put the median at 2048. The 25k capture also has no on-disk post-SwiGLU X.",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-route-starved-tail-p10.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "route-starved tail \u2014 p10 = 34 rows (measured); 221 never-routed pairs; ~119k tokens to put p10 at rank 160, ~171k to put the median at 2048. The 25k capture also has no on-disk post-SwiGLU X.",
+      "from_lane": "q80-capture-coverage-20260816-003209",
+      "task_id": "auto-q80-route-starved-tail-p10-20260816-031702"
+    },
+    {
+      "id": "auto-q80-all-mixed-generate-untested",
+      "model": "q80",
+      "hypothesis": "all-48 mixed generate (untested). Secondary: L0 structured error (mix/null 2.06) and typical-organ capture (p50 258 rows vs dim 2048/512).",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-all-mixed-generate-untested.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "all-48 mixed generate (untested). Secondary: L0 structured error (mix/null 2.06) and typical-organ capture (p50 258 rows vs dim 2048/512).",
+      "from_lane": "q80-coherence-probe-20260816-002153",
+      "task_id": "auto-q80-all-mixed-generate-untested-20260816-032208"
+    },
+    {
+      "id": "auto-q80-host-moe-table-build",
+      "model": "q80",
+      "hypothesis": "host moe_table_build ~197000000 ns/token (A1 5.530 s / 28 forwards; B1 spiked to 11.24 s). Mixer occupancy is no longer the complete-token wall.",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-host-moe-table-build.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "auto_generated": true,
+      "from_bottleneck": "host moe_table_build ~197000000 ns/token (A1 5.530 s / 28 forwards; B1 spiked to 11.24 s). Mixer occupancy is no longer the complete-token wall.",
+      "from_lane": "q80-component-simdgroup-20260816-010759",
+      "task_id": "auto-q80-host-moe-table-build-20260816-032723"
+    },
+    {
+      "id": "auto-q80-down-proj-hgravs01-two",
+      "model": "q80",
+      "hypothesis": "down_proj hgravs01 two-stage factor matvec, 259000 ns/organ (124320000 ns at 48\u00d710)",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-down-proj-hgravs01-two.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "down_proj hgravs01 two-stage factor matvec, 259000 ns/organ (124320000 ns at 48\u00d710)",
+      "from_lane": "q80-decode-kernels-20260816-002157"
+    },
+    {
+      "id": "auto-q80-up-proj-fused-binary",
+      "model": "q80",
+      "hypothesis": "up_proj fused binary+CSR, 17250 ns (8280000 ns at 48\u00d710)",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-up-proj-fused-binary.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "up_proj fused binary+CSR, 17250 ns (8280000 ns at 48\u00d710)",
+      "from_lane": "q80-decode-throughput-20260816-004451"
+    },
+    {
+      "id": "auto-q80-host-top-expert-address",
+      "model": "q80",
+      "hypothesis": "host top-10 + expert address-table bind, 157820565 ns/token (A1 host_work; moe_table_build 5.92 s over 28 forwards)",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-host-top-expert-address.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "host top-10 + expert address-table bind, 157820565 ns/token (A1 host_work; moe_table_build 5.92 s over 28 forwards)",
+      "from_lane": "q80-deltanet-gqa2-20260816-003206"
+    },
+    {
+      "id": "auto-q80-expert-first-touch-upload",
+      "model": "q80",
+      "hypothesis": "expert first-touch upload (q80-expert-first-touch), 241542041 ns/token on B1; after that, mixer+expert GPU is ~132 ms/token",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-expert-first-touch-upload.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "expert first-touch upload (q80-expert-first-touch), 241542041 ns/token on B1; after that, mixer+expert GPU is ~132 ms/token",
+      "from_lane": "q80-device-topk-20260816-010759"
+    },
+    {
+      "id": "auto-q80-deltanet-mixer-d3-deltanet",
+      "model": "q80",
+      "hypothesis": "DeltaNet mixer, 92600000 ns/token (D3 deltanet 2.594 s / 28 steps)",
+      "target_stage": "auto",
+      "contract": "workspace/ops/ascent-lanes/auto-q80-deltanet-mixer-d3-deltanet.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "DeltaNet mixer, 92600000 ns/token (D3 deltanet 2.594 s / 28 steps)",
+      "from_lane": "q80-expert-first-touch-20260816-010044"
+    },
+    {
+      "id": "auto-q80-mixed-up-proj-expert",
+      "model": "q80",
+      "hypothesis": "mixed up_proj ~17250 ns/expert (8280000 ns/token at 48\u00d710) from q80-decode-throughput; down two-dispatch is 13500 ns/expert sequential or 33709 ns/layer concurrent. Q4 token wall remains host expert f",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-mixed-up-proj-expert.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "mixed up_proj ~17250 ns/expert (8280000 ns/token at 48\u00d710) from q80-decode-throughput; down two-dispatch is 13500 ns/expert sequential or 33709 ns/layer concurrent. Q4 token wall remains host expert first-touch / moe_table_build (241\u2013396 ms).",
+      "from_lane": "auto-q80-down-proj-fused-two-20260816-022448"
+    },
+    {
+      "id": "auto-q80-weight-decode-alu-after",
+      "model": "q80",
+      "hypothesis": "per-weight decode/ALU after occupancy is fixed \u2014 binary tg256 is 6750 ns/organ (22 GB/s, 4.4% of the 495 GB/s dirty control). Q4 is now matched at 6709 ns. down_proj hgravs was not re-swept.",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-weight-decode-alu-after.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "per-weight decode/ALU after occupancy is fixed \u2014 binary tg256 is 6750 ns/organ (22 GB/s, 4.4% of the 495 GB/s dirty control). Q4 is now matched at 6709 ns. down_proj hgravs was not re-swept.",
+      "from_lane": "matvec-geometry-sweep-20260816-022115"
+    },
+    {
+      "id": "auto-q80-isolated-mib-qmv-launch",
+      "model": "q80",
+      "hypothesis": "isolated 0.59 MiB qmv launch/occupancy (~250-310 us HOST_WALL; Hawking kernel 210 us GPU). Not DRAM rows. Qwen-sized organs already at ~180 GB/s on MLX \u2014 remaining gap to the 560-647 GB/s probe is ~3x",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-isolated-mib-qmv-launch.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "isolated 0.59 MiB qmv launch/occupancy (~250-310 us HOST_WALL; Hawking kernel 210 us GPU). Not DRAM rows. Qwen-sized organs already at ~180 GB/s on MLX \u2014 remaining gap to the 560-647 GB/s probe is ~3x, not 230x.",
+      "from_lane": "matvec-mlx-reference-20260816-022115"
+    },
+    {
+      "id": "auto-q80-q4-organ-still-s",
+      "model": "q80",
+      "hypothesis": "Q4 organ still 11.0 \u00b5s / 50.45 GB/s (10.9\u00d7 below the 550 GB/s control); 1440\u00d711 \u00b5s = 15.90 ms, 1.99\u00d7 the 8 ms expert budget. Host compact_expert_slab_pack (~281 ms) remains the larger full-token term.",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-q4-organ-still-s.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "Q4 organ still 11.0 \u00b5s / 50.45 GB/s (10.9\u00d7 below the 550 GB/s control); 1440\u00d711 \u00b5s = 15.90 ms, 1.99\u00d7 the 8 ms expert budget. Host compact_expert_slab_pack (~281 ms) remains the larger full-token term.",
+      "from_lane": "matvec-occupancy-230x-20260816-015752"
+    },
+    {
+      "id": "auto-q80-deltanet-mixed-prefix-cb",
+      "model": "q80",
+      "hypothesis": "DeltaNet mixed prefix CB (mixer+shared+router+wait), 79081238 ns/token on D3 identity (DIRTY_ENGINEERING)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-deltanet-mixed-prefix-cb.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "DeltaNet mixed prefix CB (mixer+shared+router+wait), 79081238 ns/token on D3 identity (DIRTY_ENGINEERING)",
+      "from_lane": "q80-integrate-graph-20260816-012855"
+    },
+    {
+      "id": "auto-q80-up-proj-binary-decode",
+      "model": "q80",
+      "hypothesis": "up_proj binary decode/occupancy, 17250 ns (DIRTY_ENGINEERING, quieter up_b median); ~45% of the remaining 38 us/expert, ~15 GB/s, not DRAM-bound and not reconstruct-W-bound",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-up-proj-binary-decode.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "up_proj binary decode/occupancy, 17250 ns (DIRTY_ENGINEERING, quieter up_b median); ~45% of the remaining 38 us/expert, ~15 GB/s, not DRAM-bound and not reconstruct-W-bound",
+      "from_lane": "q80-lowrank-algebra-20260816-015251"
+    },
+    {
+      "id": "auto-q80-weight-gemv-dispatch-expert",
+      "model": "q80",
+      "hypothesis": "weight GEMV dispatch (10-expert mixed wave + Q8 mixer/shared/lm_head, ~13808 CBs/generate); GPU matvec 868332337 ns/forward",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-weight-gemv-dispatch-expert.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "weight GEMV dispatch (10-expert mixed wave + Q8 mixer/shared/lm_head, ~13808 CBs/generate); GPU matvec 868332337 ns/forward",
+      "from_lane": "q80-mixed-generate-20260816-015142"
+    },
+    {
+      "id": "auto-q80-moe-table-build-wall",
+      "model": "q80",
+      "hypothesis": "moe_table_build 246283892 ns/token (57.4% of 428985708 ns wall)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-moe-table-build-wall.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "moe_table_build 246283892 ns/token (57.4% of 428985708 ns wall)",
+      "from_lane": "q80-ns-ledger-20260816-010044"
+    },
+    {
+      "id": "auto-q80-native-mixed-decode-kernel",
+      "model": "q80",
+      "hypothesis": "native mixed decode kernel does not exist (kernel lane). Until that kernel runs, generation cannot be measured; no ns/token for this artifact.",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-native-mixed-decode-kernel.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "native mixed decode kernel does not exist (kernel lane). Until that kernel runs, generation cannot be measured; no ns/token for this artifact.",
+      "from_lane": "q80-pack-20260816-002155"
+    },
+    {
+      "id": "auto-q80-first-touch-expert-payload",
+      "model": "q80",
+      "hypothesis": "first-touch expert payload upload (catalog read + SHA-256 + MTLBuffer copy), 90\u2013245 ms/token on late tokens; after that DeltaNet is ~134 ms/token of the dirty run",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-first-touch-expert-payload.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "first-touch expert payload upload (catalog read + SHA-256 + MTLBuffer copy), 90\u2013245 ms/token on late tokens; after that DeltaNet is ~134 ms/token of the dirty run",
+      "from_lane": "q80-runtime-residency-20260816-003204"
+    },
+    {
+      "id": "auto-q80-down-proj-capability-holdout",
+      "model": "q80",
+      "hypothesis": "down_proj capability, holdout cosine 0.768 vs bar 0.8604 (not a token-ns figure; Q4 path remains ~5.59e8 ns/token on TOKEN_NS_Q80)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-down-proj-capability-holdout.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "down_proj capability, holdout cosine 0.768 vs bar 0.8604 (not a token-ns figure; Q4 path remains ~5.59e8 ns/token on TOKEN_NS_Q80)",
+      "from_lane": "q80-subbit-capability-curve-20260816-020047"
+    },
+    {
+      "id": "auto-qwen38-unmeasured-next-cost-q80",
+      "model": "qwen38",
+      "hypothesis": "unmeasured \u2014 next cost is the Q80 dispatch locks (DeltaNet 32\u00d7128\u00d7128, GQA 16/2/\u03b8=5e6) plus pack-time fuse of split in_proj_qkv/z/a/b; no Q38 token-ns exists yet. Git commit of this receipt is blocked",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-qwen38-unmeasured-next-cost-q80.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "unmeasured \u2014 next cost is the Q80 dispatch locks (DeltaNet 32\u00d7128\u00d7128, GQA 16/2/\u03b8=5e6) plus pack-time fuse of split in_proj_qkv/z/a/b; no Q38 token-ns exists yet. Git commit of this receipt is blocked in-sandbox.",
+      "from_lane": "qwen38-reuse-matrix-20260816-021330"
+    },
+    {
+      "id": "auto-q80-metal-gpu-hoistb3-true",
+      "model": "q80",
+      "hypothesis": "metal GPU 284622000 ns (DIRTY_ENGINEERING, hoistB3 true GPU timestamps); remaining host exclusive 289363167 ns, of which expert mmap is now 86-91 ms. Attn prefetch full work is still ~406-414 ms but i",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-metal-gpu-hoistb3-true.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "metal GPU 284622000 ns (DIRTY_ENGINEERING, hoistB3 true GPU timestamps); remaining host exclusive 289363167 ns, of which expert mmap is now 86-91 ms. Attn prefetch full work is still ~406-414 ms but is off the critical path.",
+      "from_lane": "auto-q80-dsv4f-host-expert-slab-20260816-022954"
+    },
+    {
+      "id": "auto-q80-cbs-dispatches-gpu-idle",
+      "model": "q80",
+      "hypothesis": "98 CBs / 1155 dispatches per token; GPU idle 50705310 ns (45% busy). Suffix moe_combine 33982886 ns; DeltaNet prefix 32727027 ns. moe_table_build now 15097311 ns.",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-cbs-dispatches-gpu-idle.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "98 CBs / 1155 dispatches per token; GPU idle 50705310 ns (45% busy). Suffix moe_combine 33982886 ns; DeltaNet prefix 32727027 ns. moe_table_build now 15097311 ns.",
+      "from_lane": "auto-q80-not-dram-rows-q80-20260816-023959"
+    },
+    {
+      "id": "auto-q80-moe-combine-suffix-cb",
+      "model": "q80",
+      "hypothesis": "moe_combine suffix CB 34540000 ns then deltanet prefix 31460000 ns (C2); metal.wait 72800000 ns contains GPU 42133942 ns across 98 CBs (DIRTY_ENGINEERING)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-moe-combine-suffix-cb.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "moe_combine suffix CB 34540000 ns then deltanet prefix 31460000 ns (C2); metal.wait 72800000 ns contains GPU 42133942 ns across 98 CBs (DIRTY_ENGINEERING)",
+      "from_lane": "auto-q80-q80-host-compact-expert-20260816-025648"
+    },
+    {
+      "id": "auto-q80-pack-real-sub-catalog",
+      "model": "q80",
+      "hypothesis": "pack a real sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generate it; analog is cosine-matched, not byte-identical; second prompt already collapses; streamed RSS cap 16 GiB killed the lo",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-pack-real-sub-catalog.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "pack a real sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generate it; analog is cosine-matched, not byte-identical; second prompt already collapses; streamed RSS cap 16 GiB killed the long session (17229037568 > 17179869184)",
+      "from_lane": "q80-recalibrate-capability-bar-20260816-023440"
+    },
+    {
+      "id": "auto-qwen38-layer-dense-q4-swiglu",
+      "model": "qwen38",
+      "hypothesis": "64-layer dense Q4 SwiGLU + mixer GEMVs, 43036874 ns/token GPU (~3\u00d7 4 BPW DRAM floor)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-qwen38-layer-dense-q4-swiglu.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "64-layer dense Q4 SwiGLU + mixer GEMVs, 43036874 ns/token GPU (~3\u00d7 4 BPW DRAM floor)",
+      "from_lane": "qwen38-native-bringup-20260816-024947"
+    },
+    {
+      "id": "auto-q80-host-expert-slab-read",
+      "model": "q80",
+      "hypothesis": "host.expert_slab_read 104433834 ns (DIRTY_ENGINEERING) \u2014 GPU-idle mmap of the six routed experts after route; metal.gpu 287662000\u2013307519000 ns across 134 CBs (wait 161686000\u2013172327000 ns)",
+      "target_stage": "auto",
+      "contract": "/Users/scammermike/Downloads/hawking/workspace/ops/ascent-lanes/auto-q80-host-expert-slab-read.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 50000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 50000000,
+      "experiment_cost": 1.5,
+      "status": "pending",
+      "auto_generated": true,
+      "from_bottleneck": "host.expert_slab_read 104433834 ns (DIRTY_ENGINEERING) \u2014 GPU-idle mmap of the six routed experts after route; metal.gpu 287662000\u2013307519000 ns across 134 CBs (wait 161686000\u2013172327000 ns)",
+      "from_lane": "auto-q80-dsv4f-host-expert-slab-20260816-031154"
+    }
+  ],
+  "history": [
+    {
+      "id": "q80-lowrank-algebra",
+      "task_id": "q80-lowrank-algebra-20260816-015251",
+      "outcome": "done",
+      "tier1": "tier1 pass (reject-only; NOT a promotion)"
+    }
+  ],
+  "negative_science": [
+    "Q30 static <=1.5 coherence FAILED",
+    "Q80 cross-expert shared-basis REFUTED (experts mutually orthogonal, cos 0.004)",
+    "Q80 simplistic bandwidth-bound thesis REFUTED (0.79% of ceiling, ~51% GPU idle)",
+    "DSV4F route-ID readback serializer hypothesis REFUTED",
+    "shader compile as primary wall REFUTED/deprioritized",
+    "single-family Q80 representation INSUFFICIENT",
+    "raw activation cosine is deceptive here: measured null baseline 0.898",
+    "fits with rows < fitted dimension are UNDERDETERMINED and their scores meaningless",
+    "never calibrate on a degraded baseline or on synthetic/Gaussian activations",
+    "immutable-identity recomputation per token has been the real latency three times",
+    "DSV4F attention: collapsing 17 dispatches into one serial encoder is bit-identical and reduces encoders 731->43 but does NOT reduce attention GPU time. Encoder gaps are not the attention wall.",
+    "DSV4F path_resolve/verify identity tax is NOT on the critical path. Reducing it 2.9x (983->343 ms parallel-sum) produced ZERO whole-token improvement, because a parallel sum across threads is not token latency. Do not attack it again for wall time.",
+    "Q80 topology collapse is NOT the lever: overlap, fuse-to-51-CBs and serial-encoder are all bit-identical and all fail to win complete-token wall (fuse REGRESSED 516 vs 307 ms). Matches DSV4F where 731->43 encoders moved attention GPU by nothing. Occupancy, not topology.",
+    "Q80 density fits are route-starved: p10=34 rows against 2048 dims, 221 never-routed pairs, and no on-disk post-SwiGLU X for down_proj. Any organ score from the 25k capture is suspect.",
+    "Q80 decoded-weight caching is REFUTED by arithmetic: dense restore is 12 MiB/expert = 288 GiB for all (layer,expert) versus 11 GiB packed. Caching decoded W undoes the representation it exists to create.",
+    "Q80 down_proj low-rank ALREADY executes L @ (R @ x) - it does not reconstruct W. The representation->algebra optimization was already in place; do not re-open it. The remaining decode cost is occupancy, not algebra.",
+    "Matvec widening is NOT the lever once threadgroup geometry is right: rowblock 4-8, fp16 accumulation and X-tiling were flat or REGRESSIONS. Register pressure was never the limiter (all survivors at max_total_threads_per_threadgroup=1024).",
+    "A 0.59 MiB organ measured in ISOLATION cannot be judged against a 64 MiB DRAM row probe. Even MLX hits only ~2.2 GB/s on Q80's 512x2048 shape isolated. Compare against MLX incremental (~3.7 us/organ) or against in-flight throughput, never against a streaming probe."
+  ],
+  "saturation": {
+    "measured": "2026-08-16 after wave 2",
+    "cpu_idle_pct": 0.0,
+    "load_1m": 21.75,
+    "ncpu": 28,
+    "ram_used_gib": 68,
+    "ram_free_gib": 27,
+    "disk_free_gib": 205,
+    "lanes_running": 12,
+    "note": "At 0% idle EVERY timing is DIRTY_ENGINEERING. Final 50-TPS claims require a clean window: drain lanes, confirm machine_state.clean_box_ok, then paired reps."
+  },
+  "audit": {
+    "receipt": "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json",
+    "p1_findings": [
+      "dsv-cb-collapse shipped a cold-contaminated median (body win not real; 35 ms GPU win is)",
+      "decode-kernels' 192 ms/token is an isolated-organ microbench product and must not sit beside a full-token incumbent",
+      "coherence GO_WITH_FIX rests on a 4-layer extrapolation"
+    ],
+    "survived_scrutiny": [
+      "host-wall protocol: 6 reps, R1 discarded, GPU timestamps 137/137, spread reported, 0 fallbacks, correct build dir, DIRTY labeled",
+      "cross-expert shared basis refuted (cos 0.004)",
+      "Q80 not bandwidth-bound (1.00% of 819 GB/s)",
+      "DSV4F route-ID serializer refuted (40 readbacks, ~0.1 ms)",
+      "SwiGLU formula cosine >= 0.999999999997",
+      "Q80 generated-id list MATCHES on the baseline"
+    ]
+  },
+  "machine_truth": {
+    "note": "macOS `top` PhysMem 'used' counts inactive/cached pages and is MISLEADING. Verified 2026-08-16: top said 93G used / 2.5G unused while memory_pressure said 90% free, swap 0.19 MB of 1024 MB, pageouts 1709. Real availability = (pages_free + pages_inactive) * 16384 ~= 56 GiB. Use memory_pressure and vm_stat, never top, to decide whether to launch a memory-heavy lane."
+  },
+  "specialization_evidence": {
+    "note": "Direct confirmation that per-stage wins need not appear in the token, which is why joint-token-ns exists.",
+    "case": "dsv-admission-identity cut its target metric 2.9x and moved the whole token by nothing measurable. The metric was a thread-summed quantity off the critical path.",
+    "rule": "A lane's win counts only when it appears in the complete token. Parallel sums, isolated microbenches and organ-level products are not token latency."
+  },
+  "measurement_audit_joint_token_ns": {
+    "receipt": "receipts/ascent-2026-08-16/JOINT_TOKEN_NS.json",
+    "merged": "e3068e69",
+    "P1_against_our_own_ledger": "The registered Q80 incumbent 403000000 ns is P1-INVALID as a baseline - it is a single steady-state figure, not a paired A/B set. The lane's own Q80 TOKEN_NS decode mean is 559171655 ns. Both are DIRTY_ENGINEERING.",
+    "dsv4f_critical_path": "host.expert_slab_io 406-415 ms (GPU-idle) -> metal.wait 243-244 ms (contains GPU) -> MHC/decode/lm_head. reader.path_resolve 1318 ms and verify_ns 2505 ms are NOT the token.",
+    "q80_critical_path": "host.compact_expert_slab_pack 281 ms + metal.wait 274 ms (contains 232 ms GPU)",
+    "unattributed_residual_ns": 275026398,
+    "receipts_flagged_for_presenting_non_token_as_token": [
+      "DSV4F_TOKEN_NS_LEDGER.json - path_resolve at 129% of body, verify_ns unlabeled",
+      "dsv-host-wall-rep6.json - same",
+      "dsv-cb-collapse.json - cold median",
+      "q80-decode-kernels.json - 192 ms organ product presented beside a full-token incumbent"
+    ],
+    "receipts_that_labelled_correctly": [
+      "DSV4F_HOST_WALL_BASELINE.json"
+    ]
+  },
+  "pending_integration_dsv4f": [
+    "grok/dsv-expert-cache-20260816-003822 (expert payload residency)",
+    "grok/dsv-admission-identity-20260816-003824 (no wall win; real work removed)",
+    "grok/dsv-occupancy-geometry-20260816-010044 (attn GPU 127->52.6, NOT bit-identical - under review)",
+    "grok/dsv-attn-weight-io-20260816-010759 (attn weight residency)"
+  ],
+  "OCCUPANCY_RESOLVED": {
+    "verdict": "230x gap REPRODUCED and largely CLOSED. Cause was geometry, as hypothesised.",
+    "kernel": "vecgroup_x64",
+    "per_organ_ns": {
+      "q4": [
+        212375,
+        11041,
+        "19.2x"
+      ],
+      "binary": [
+        59416,
+        6875,
+        "8.6x"
+      ],
+      "fp4_reduced": [
+        74375,
+        10750,
+        "6.9x"
+      ],
+      "fp4_w1": [
+        553375,
+        103084,
+        "5.4x"
+      ]
+    },
+    "gb_s": {
+      "before": 2.5,
+      "after": 50.45,
+      "control": 550,
+      "remaining": "10.9x (was ~230x)"
+    },
+    "correctness": "Q4 9.54e-6, binary 1.62e-5, FP4 0.0, tol 2e-5/2e-4, 0 fallbacks",
+    "new_wall": "DISPATCH floor: 1440 organ launches x 11 us = 15.90 ms = 1.99x the 8 ms expert budget. Remaining GPU headroom is a fused 10-expert wave or more K-splitting without raising register pressure.",
+    "still_larger": "Q80 host compact_expert_slab_pack ~281 ms remains the larger full-token term. This was an isolated-organ product, not a token wall."
+  },
+  "disk_governor_action": {
+    "reclaimed": "455 legacy Q30 quality-candidate files",
+    "safe_because": "Q30 is the ABANDONED campaign (static <=1.5 FAILED coherence); files are tracked and recoverable from git history; all four live artifacts verified intact (Q80 source 148G, DSV4F 150G, Qwen3.8 51G, mixed-1p5-v1 13G)"
+  },
+  "SUBBIT_VERDICT_AND_ITS_TENSION": {
+    "lane_verdict": "NO_GO for sub-0.655 BPW on this codec family. 0 of 588 recipes clear all organs at the 0.8604 bar. Incumbent holdout cosines: gate 0.8755, up 0.8665, down 0.7684. Every cheaper recipe is worse. Methodology was sound this time - 110 pairs against a 16-sample NULL DISTRIBUTION, not a single null.",
+    "lane_recommendation": "Stop spending lanes on BPW < 0.6552 unless a NEW organ family beats all-binary's 0.809 min-organ cosine - not another rank/residual knob on the same three codecs.",
+    "THE_TENSION": "The bar it judges against was FALSIFIED four hours later by generation. down_proj holdout cosine is 0.7684, well UNDER the 0.8604 bar, at the SAME 1.44445 BPW artifact that then GENERATED COHERENT TEXT with numeric drift 3.58e-7. The 0.8604 screen predicted failure where the model actually works.",
+    "consequence": "The NO_GO must NOT be accepted at face value. Its gate is demonstrably conservative in the pessimistic direction. A recipe rejected for missing 0.8604 may still generate. The curve needs re-scoring against a bar calibrated on GENERATION, which is ground truth, rather than on the D23 residual-identity break-even.",
+    "what_survives_regardless": "Bits are reachable; capability is the binding constraint. That framing holds. What is now unproven is WHERE the capability cliff actually sits.",
+    "receipts": [
+      "receipts/ascent-2026-08-16/q80-subbit-capability-curve.SUMMARY.json",
+      "receipts/ascent-2026-08-16/Q80_MIXED_GENERATE.json"
+    ]
+  },
+  "qwen38_reuse": {
+    "receipt": "receipts/ascent-2026-08-16/QWEN38_REUSE_MATRIX.json",
+    "recommendation": "Start at Q4 (~13.45 GB) if that packer retargets cheaply. 3 BPW allowed. Do NOT open 2-bit yet.",
+    "next": "Q80 dispatch locks (DeltaNet 32x128x128, GQA 16/2/theta=5e6) plus a pack-time fuse of the split in_proj_qkv/z/a/b into Q80's fused in_proj_qkvz/ba layout. No Q38 token-ns exists yet."
+  },
+  "CORRECTION_230X_FRAMING_WAS_PARTLY_WRONG": {
+    "source": "receipts/ascent-2026-08-16/matvec-mlx-reference.json (merged)",
+    "what_I_claimed": "Packed matvecs run 2.5 GB/s against a 560-647 GB/s control, therefore a ~230x occupancy gap. I repeated this and committed it to the ledger.",
+    "what_is_actually_true": "The comparison was apples-to-oranges for Q80. A 0.59 MiB expert organ measured in ISOLATION cannot be judged against a 64 MiB DRAM row probe. Even MLX - Apple's own optimized qmv - hits only 2.12-2.43 GB/s on that same 512x2048 shape in isolation. Our 2.5 GB/s was NOT anomalous for that shape.",
+    "the_real_numbers": {
+      "q80_shape_512x2048_0.59MiB": {
+        "mlx_isolated_gb_s": [
+          2.12,
+          2.2,
+          2.22,
+          2.43,
+          2.38,
+          2.36
+        ],
+        "mlx_in_flight_N256_gb_s": [
+          142.4,
+          143.0,
+          151.5,
+          141.1,
+          112.4,
+          142.2
+        ],
+        "mlx_incremental_ns_per_organ": 3694,
+        "hawking_before_occupancy_ns": 210000,
+        "hawking_after_occupancy_ns": 11041,
+        "REAL_GAP": "Hawking 11.0 us vs MLX incremental ~3.7-4 us = ~2.75x, NOT 230x. The occupancy fix already closed most of it."
+      },
+      "qwen38_shape_5120x17408_50MiB": {
+        "mlx_isolated_gb_s": [
+          221.0,
+          161.8,
+          208.4,
+          119.0,
+          187.9,
+          175.4
+        ],
+        "median_gb_s": 182,
+        "gap_to_probe": "~3x, not 230x",
+        "verdict": "For LARGE organs the ceiling is real and ~180 GB/s is achievable. If our organs stay at 2.5 GB/s on Qwen-sized shapes, our kernels ARE the problem and MLX's qmv_fast is the reference to study."
+      }
+    },
+    "lane_warning_I_am_honouring": "'Comparing one organ to a 64 MiB row probe is the wrong argument.' and 'Do not average those two shapes into one campaign slogan.'",
+    "corrected_framing": "There are TWO different problems, not one. (1) Q80's tiny 0.59 MiB organs are LAUNCH/OCCUPANCY bound on a per-dispatch basis - the fix is batching organs into flight, which is what MLX's 112-152 GB/s in-flight number shows is possible, and what the 1440-launches-x-11us dispatch floor already implies. (2) Qwen3.8's 50 MiB organs are large enough that ~180 GB/s is directly achievable and any shortfall is our kernel.",
+    "correctness": "MLX numeric gate max_rel <= 5e-3, measured 2.4e-4 to 9.9e-4, 0 fallbacks"
+  },
+  "MATVEC_CAMPAIGN_RESOLVED": {
+    "three_lanes_converged": true,
+    "results": {
+      "matvec-occupancy-230x": {
+        "kernel": "vecgroup_x64",
+        "q4_organ_ns": [
+          212375,
+          11041
+        ],
+        "factor": "19.2x"
+      },
+      "matvec-geometry-sweep": {
+        "kernel": "named / binary tg256",
+        "q4_organ_ns": [
+          209250,
+          6709
+        ],
+        "factor": "31.2x",
+        "binary_organ_ns": [
+          60459,
+          6750
+        ],
+        "binary_factor": "9.0x",
+        "paired_q4": {
+          "A": [
+            223000,
+            224000,
+            221084
+          ],
+          "B": [
+            8458,
+            8000,
+            8541
+          ]
+        },
+        "BEST": "geometry-sweep BEAT occupancy-230x on the same organ: 6709 vs 11041 ns"
+      },
+      "matvec-mlx-reference": {
+        "mlx_incremental_ns_per_organ": 3694,
+        "so_hawking_is_now": "6709 / 3694 = ~1.8x of MLX on this shape, down from ~57x before either lane"
+      }
+    },
+    "OCCUPANCY_IS_NOW_FIXED": "Register pressure was NOT the limiter - every survivor reported max_total_threads_per_threadgroup=1024. Widening (rowblock 4-8, fp16 accumulation, X tile) was mostly flat or a REGRESSION. The win came from threadgroup geometry alone.",
+    "NEW_WALL": "per-weight DECODE/ALU, not occupancy. binary tg256 at 6750 ns/organ = 22 GB/s = 4.4% of this run's 495 GB/s control. Q4 now matched at 6709 ns. down_proj hgravs was NOT re-swept and remains open.",
+    "control_honesty": "This run's control measured 495 GB/s DIRTY. Earlier clean quotes were 560-647. The lane explicitly said 'do not launder' - use 495 when quoting this run's percentages.",
+    "correctness": "numeric gate 2e-5; binary 1.62e-5; Q4 named 1.00e-5; 0 fallbacks"
+  },
+  "COHERENCE_RESOLVED_BY_40_LAYER_MEASUREMENT": {
+    "source": "workspace/ops/q80-coherence-deep-full/drift/drift-layers.jsonl (40 of 48 layers; lane timed out at exit 124 but the data survived)",
+    "measured_geometric_growth_per_layer": 1.03473,
+    "earlier_4_layer_claim": 1.277152,
+    "verdict": "The 4-layer extrapolation was WRONG. Measured over 39 transitions the growth is 1.03473/layer, not 1.27715. Its 16211x-at-L48 figure was an artifact of geo^44 from a 4-layer span.",
+    "at_L39": {
+      "rel_l2": 0.62317,
+      "cosine": 0.78381
+    },
+    "extrapolated_L47_rel_l2": 0.8189,
+    "drift_is_SUB_NULL": "From L15 onward the mixed codec's drift is BELOW a matched-magnitude random perturbation: separation ratio falls from 1.65 at L5 to ~0.72-0.75 from L20 to L39. The representation degrades LESS than noise at depth.",
+    "why_generation_works": "Drift saturates near 0.62-0.82 rel_L2 instead of compounding, and sits under the null. That is fully consistent with the COHERENT generation already observed on this artifact.",
+    "curve_sample": {
+      "L0": 0.1646,
+      "L5": 0.31332,
+      "L10": 0.33702,
+      "L15": 0.37603,
+      "L20": 0.49144,
+      "L25": 0.51711,
+      "L30": 0.56073,
+      "L35": 0.60001,
+      "L39": 0.62317
+    }
+  },
+  "CAPABILITY_BAR_RECALIBRATED": {
+    "receipt": "receipts/ascent-2026-08-16/q80-recalibrate-capability-bar.SUMMARY.json",
+    "historical_bar": 0.8604,
+    "historical_source": "D23 residual-identity break-even",
+    "why_it_was_wrong": "The packed 1.44445 BPW artifact generates coherent text with down_proj holdout cosine 0.7684, well UNDER 0.8604. Generation is the gate; 0.8604 was only a screen, and it was wrong in the PESSIMISTIC direction.",
+    "corrected_bar": 0.6018725462661019,
+    "corrected_bar_basis": "last point that still generated coherently, derived from measured generation",
+    "stricter_two_prompt_bar": 0.7684198118931592,
+    "OVERTURNS": "The subbit lane's NO_GO for sub-0.655 BPW. Re-thresholded against the corrected bar, the best sub-0.6552 recipe is 0.643662 BPW at min-organ cosine 0.673069 - ABOVE the 0.6019 corrected bar.",
+    "fs_per_weight_at_that_point": 98.2,
+    "SIGNIFICANCE": "0.643662 BPW gives a 98.2 fs/weight floor. SUB-100 fs/weight is no longer refuted - it is now an unpacked candidate rather than a closed door.",
+    "verdict": "ANALOG_COHERENT_NOT_PACKED",
+    "what_that_means": "The recipe clears the corrected bar in ANALOG (cosine-matched degradation of the existing artifact), NOT as a packed artifact that generated. It is a candidate, not a result.",
+    "honest_caveats": [
+      "second prompt COLLAPSES at that point - the two-prompt bar is 0.7684, and 0.6731 is below it",
+      "the lane explicitly did NOT lower the bar to manufacture a pass (did_not_lower_bar_to_manufacture_pass=true)",
+      "analog is cosine-matched, not byte-identical",
+      "1 greedy generate per (prompt, point), not 6/6 as mixed-generate used"
+    ],
+    "infrastructure_limit_found": "streamed RSS cap of 16 GiB killed the long session at 17,229,037,568 > 17,179,869,184 after expert-cache growth. Remaining points were rerun in a fresh process.",
+    "next": "pack a REAL sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generate it"
+  }
+}

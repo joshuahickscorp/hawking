@@ -1,0 +1,120 @@
+{
+  "schema": "hawking.ascension.qwen80_source_bf16_layer_major.capture_speed.v1",
+  "status": "MEASURED_4_40X_WALL_BYTE_IDENTICAL",
+  "machine": {
+    "cores": 28,
+    "performance_cores": 20,
+    "efficiency_cores": 8,
+    "chip": "M3 Ultra",
+    "unified_memory_bytes": 103079215104
+  },
+  "input": {
+    "corpus": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/all-layer-activation-equilibrium-v1/requests/QWEN80_BROAD_ACTIVATION_ALL_LAYER_ROUTE_CAPTURE_INPUT_cca889ca78932e63.json",
+    "source_model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "max_probes": 33,
+    "tokens": 4719,
+    "layers": 4,
+    "max_hidden_tokens_per_expert": 192,
+    "note": "First 33 probes of the 64-probe / 25258-token sealed corpus. Layers 0-2 DeltaNet, layer 3 GQA. Same input used for before and after."
+  },
+  "profile_first": {
+    "algorithm": "unmodified compute (legacy 4-worker MoE clamp, per-token DeltaNet gemv_bf16 re-widen, per-f32 write_all)",
+    "compute_secs": 180.805388876,
+    "wall_secs": 182.964658167,
+    "peak_rss_gib": 7.999603271484375,
+    "moe_workers": 4,
+    "phase_table": [
+      {"name": "mixer", "secs": 87.536, "pct_compute": 48.41},
+      {"name": "router_widen", "secs": 0.001, "pct_compute": 0.00},
+      {"name": "router_gemm", "secs": 0.249, "pct_compute": 0.14},
+      {"name": "routing", "secs": 0.128, "pct_compute": 0.07},
+      {"name": "shared_expert", "secs": 1.100, "pct_compute": 0.61},
+      {"name": "routed_expert_wave", "secs": 3.326, "pct_compute": 1.84},
+      {"name": "combine", "secs": 0.004, "pct_compute": 0.00},
+      {"name": "residual", "secs": 0.014, "pct_compute": 0.01},
+      {"name": "retention_flush", "secs": 88.445, "pct_compute": 48.92}
+    ],
+    "diagnosis": {
+      "primary_hypothesis_worker_clamp": "REFUTED as the dominant cost. Routed-expert wave is 1.84% of compute at 4719 tokens with the stale 4-worker cap.",
+      "actual_hot_paths": [
+        "retention_flush 48.9%: write_retained_hidden_f32le issued 2048 write_all(4-byte) syscalls per row (18848 rows).",
+        "mixer 48.4%: DeltaNet gemv_bf16 re-widened QKVZ (12288x2048, 50 MiB) and out_proj on every token. GQA already widened once (layer 3 was 27.8s vs ~50s DeltaNet layers)."
+      ]
+    }
+  },
+  "clamp_sweep_one_layer": {
+    "tokens": 4719,
+    "layers": 1,
+    "routed_secs": {"w4": 2.17, "w8": 1.43, "w12": 2.83, "w16": 2.88, "w28_from_4layer_avg": 3.04},
+    "rss_gib": {"w4": 3.88, "w8": 3.92, "w12": 3.95, "w16": 3.98},
+    "shipped_moe_workers": 8,
+    "finding": "Raising the clamp from 4 to 28 oversubscribed Accelerate M=1 GEMVs and slowed the expert wave (3.3s -> 12.2s over 4 layers). 8 workers is the measured sweet spot. Memory headroom was never the binding constraint at this corpus size."
+  },
+  "after": {
+    "compute_secs": 39.272236916,
+    "wall_secs": 41.564696833,
+    "peak_rss_gib": 9.1048583984375,
+    "moe_workers": 8,
+    "phase_table": [
+      {"name": "mixer", "secs": 28.640, "pct_compute": 72.93},
+      {"name": "router_widen", "secs": 0.002, "pct_compute": 0.01},
+      {"name": "router_gemm", "secs": 0.272, "pct_compute": 0.69},
+      {"name": "routing", "secs": 0.130, "pct_compute": 0.33},
+      {"name": "shared_expert", "secs": 1.187, "pct_compute": 3.02},
+      {"name": "routed_expert_wave", "secs": 6.033, "pct_compute": 15.36},
+      {"name": "combine", "secs": 0.004, "pct_compute": 0.01},
+      {"name": "residual", "secs": 0.015, "pct_compute": 0.04},
+      {"name": "retention_flush", "secs": 2.988, "pct_compute": 7.61}
+    ]
+  },
+  "speedup": {
+    "wall": 4.4019245202754975,
+    "compute": 4.6038984044307805,
+    "flush": 29.6,
+    "mixer": 3.06
+  },
+  "identity": {
+    "hidden_files": 18848,
+    "hidden_tree_sha256": "f384ad2690c64a8f70d53591a62519e4f6c01f4fcc1229bde12da1dfd892853d",
+    "hidden_tree_identical": true,
+    "n_fit_distribution_identical": true,
+    "n_fit_distribution": {
+      "count_at_or_above_64": 953,
+      "count_below_16": 482,
+      "count_below_32": 739,
+      "count_below_8": 324,
+      "count_zero": 105,
+      "experts": 512,
+      "layers": 4,
+      "max": 1264,
+      "mean": 92.03125,
+      "p10": 3,
+      "p50": 54,
+      "p90": 221
+    }
+  },
+  "rss": {
+    "hard_cap_bytes": 17179869184,
+    "hard_cap_unchanged": true,
+    "default_max_hidden_tokens_per_expert_unchanged": true,
+    "measured_peak_gib_at_shipped_8_workers": 9.1048583984375
+  },
+  "levers": {
+    "applied": [
+      "Coalesce hidden-row writes to one LE buffer + one write_all; parallelize flush across up to 16 threads.",
+      "Widen DeltaNet QKVZ and out_proj once per layer (matches large-mat gemv_bf16 = gemm_bf16 path). BA stays on-the-fly convert (below widen threshold).",
+      "Parallelize mixer across probes (DeltaNet uses available cores; GQA capped at 4 so Accelerate can own long sgemm).",
+      "Replace the stale 2/4/8 token-count ladder with a memory-aware cap defaulting to 8 workers (measured)."
+    ],
+    "did_not_pay": [
+      "Raising MoE workers to 20-28: RSS stayed under 16 GiB but expert-wave wall got worse (AMX oversubscription). Negative result on the primary clamp hypothesis as a speed lever."
+    ],
+    "not_attempted": [
+      "Metal expert wave. CPU levers delivered 4.4x; GPU remains a separate step."
+    ]
+  },
+  "constants_unchanged": {
+    "STREAMED_PEAK_RSS_HARD_CAP_BYTES": 17179869184,
+    "DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT": 64
+  }
+}

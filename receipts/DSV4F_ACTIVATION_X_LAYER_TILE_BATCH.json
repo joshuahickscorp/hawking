@@ -1,0 +1,140 @@
+{
+  "schema": "hawking.dsv4f.activation_x_layer_tile_batch.v1",
+  "status": "correctness_gate_passed_metal_unmeasured",
+  "what_changed": {
+    "driver": "crates/hawking-core/examples/dsv4f_activation_x_source_capture.rs",
+    "flags": {
+      "batch": "default on; --no-batch keeps the original per-token GEMV loop",
+      "token_tile": "default from a 2 GiB tile-activation budget, capped at 2048; 0 means that default"
+    },
+    "kernels": [
+      "dsv4f_ax_act_quant_bf16_ue8m0_batched",
+      "dsv4f_ax_fp8_e4m3fn_e8m0_gemm",
+      "dsv4f_ax_fp4_e2m1fn_x2_e8m0_gemm",
+      "dsv4f_ax_gate_bf16_gemm",
+      "dsv4f_ax_wo_a_convert_bf16_einsum_batched",
+      "dsv4f_ax_pack_expert_csr"
+    ],
+    "grouping": "inverse of dsv4f_pack_worklist: one token's top-6 is sorted by (expert_id, slot); those pairs are grouped by expert and each nonempty expert is one GEMM",
+    "retention": "unchanged first-N per (layer, expert); batching changes when rows are computed, not which rows or their order",
+    "on_disk": "byte-compatible with the unchanged doctor6 collector",
+    "resume": "same checkpoint schema; a run started by the old driver is accepted. capture-result.json is replaced on a completed resume."
+  },
+  "correctness_gate": {
+    "backend": "host CPU (--cpu). Metal session creation is refused in this sandbox: 'metal: no Metal-capable GPU' even though system_profiler reports Apple M3 Ultra, Metal Supported, 60 cores. The synthetic Metal GEMM-vs-GEMV unit test skipped for the same reason (try_session returned None in 0.04s).",
+    "tokens_32_all_43_layers": {
+      "old_dir": "/tmp/dsv4f-ax-cpu-old-32",
+      "batched_dir": "/tmp/dsv4f-ax-cpu-batched-32",
+      "key_set_and_order_identical": true,
+      "retained_file_set_identical": true,
+      "retained_rows_compared": 1376,
+      "max_abs_diff": 0.0,
+      "min_cosine": 0.9999999999999998,
+      "doctor6_key_count": 1685,
+      "doctor6_all_organs_finite": true,
+      "fallbacks": 0,
+      "pass": true
+    },
+    "tokens_128_layer_0_drift_does_not_grow_with_N": {
+      "old_dir": "/tmp/dsv4f-ax-cpu-old-128",
+      "batched_dir": "/tmp/dsv4f-ax-cpu-batched-128",
+      "key_set_and_order_identical": true,
+      "retained_rows_compared": 128,
+      "max_abs_diff": 0.0,
+      "min_cosine": 0.9999999999999999,
+      "doctor6_key_count": 236,
+      "pass": true
+    },
+    "resume_old_style_checkpoint": {
+      "setup": "4-token L0 completed, then --resume --max-layer 3 on both paths (covers hash L0-L2 and learned-bias L3)",
+      "key_set_and_order_identical": true,
+      "retained_rows_compared": 16,
+      "max_abs_diff": 0.0,
+      "pass": true
+    },
+    "organ_class_table": [
+      {
+        "organ_class": "router_input_h_post_ffn_norm",
+        "n_32": 1376,
+        "max_abs_32": 0.0,
+        "min_cosine_32": 1.0,
+        "n_128_l0": 128,
+        "max_abs_128": 0.0,
+        "min_cosine_128": 1.0,
+        "note": "CPU batched path loops the same act_quant+matvec as the old path after one weight load, so bit-identity is expected. Metal GEMM is the same per-row reduction as the authority matvec (not a reassociated GEMM); bounded drift vs N GEMVs is the Metal claim and is unmeasured here."
+      }
+    ]
+  },
+  "timing_cpu_same_token_count": {
+    "note": "CPU is not the win. Batched CPU still issues N independent matvecs; it only avoids re-reading weights from the ledger. The 42h wall is Metal GEMV + N weight uploads.",
+    "tokens": 32,
+    "layers": 43,
+    "old": {
+      "wall_ms": 962938,
+      "s_per_token": 30.092,
+      "s_per_layer": 22.394,
+      "s_per_layer_per_token": 0.700,
+      "peak_rss_bytes": 1027473408,
+      "peak_weight_resident_bytes": 33556480,
+      "metal_dispatches": 0,
+      "fallbacks": 0
+    },
+    "batched": {
+      "wall_ms": 961895,
+      "s_per_token": 30.059,
+      "s_per_layer": 22.370,
+      "s_per_layer_per_token": 0.699,
+      "peak_rss_bytes": 1043824640,
+      "peak_weight_resident_bytes": 33556480,
+      "metal_dispatches": 0,
+      "fallbacks": 0,
+      "token_tile": 32
+    },
+    "speedup": 1.001,
+    "layer0_128_tokens": {
+      "batched_layer_s": 73.0,
+      "old_layer_s": 89.3,
+      "layer_body_speedup": 1.223,
+      "note": "One-load-per-organ shows up on CPU once N is larger. Still not the Metal GEMM win."
+    },
+    "projected_10000_token_cpu_hours": 83.6,
+    "projected_10000_token_metal_hours": null
+  },
+  "timing_metal": {
+    "measured": false,
+    "reason": "StreamedNativeSession::new / MetalContext::new returns 'metal: no Metal-capable GPU' under this sandbox. The host has an M3 Ultra 60-core GPU. Re-run the same binary with --profile gate (unsandboxed) to get s/token, dispatch count, and the 10k-token projection.",
+    "prior_per_token_gemv_wall": {
+      "tokens": 256,
+      "layers": 43,
+      "wall_min": 54.4,
+      "s_per_token": 12.75,
+      "s_per_layer_per_token": 0.35,
+      "metal_dispatches": 847616,
+      "fallbacks": 0,
+      "projected_10000_token_hours": 42
+    },
+    "how_to_measure": [
+      "cargo run --profile release-fast -p hawking-core --example dsv4f_activation_x_source_capture -- --output-dir /abs/old32 --tokens 32 --no-batch --metal",
+      "cargo run --profile release-fast -p hawking-core --example dsv4f_activation_x_source_capture -- --output-dir /abs/new32 --tokens 32 --batch --token-tile 32 --metal",
+      "PYTHONPATH=. python3 lab/operators/dsv4f_activation_x_batch_parity.py /abs/old32 /abs/new32",
+      "cargo run --profile release-fast -p hawking-core --example dsv4f_activation_x_source_capture -- --output-dir /abs/large10k --tokens 10000 --batch --token-tile 1024 --metal"
+    ]
+  },
+  "rss": {
+    "bound_bytes": 17179869184,
+    "measured_peak_rss_bytes_32_token_batched": 1043824640,
+    "measured_peak_rss_bytes_128_token_l0_batched": 1055031296,
+    "under_16_gib": true,
+    "default_token_tile_rule": "min(n_tokens, max(32, min(2048, 2GiB / 256KiB)))"
+  },
+  "large_capture": {
+    "started": false,
+    "reason": "A 10k-token run on CPU is ~84 hours and is not the 42h wall this lane is supposed to remove. Metal is the path that can beat 2h and it is blocked in this sandbox. Start it under the gate profile with --resume on a fresh output dir."
+  },
+  "invariants": {
+    "q80_untouched": true,
+    "native_token_graph_untouched": true,
+    "storage_writer_untouched_except_driver_replaces_stale_capture_result_on_resume": true,
+    "doctor6_collector_unchanged": true
+  }
+}

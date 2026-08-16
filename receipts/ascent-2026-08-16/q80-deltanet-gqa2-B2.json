@@ -1,0 +1,140 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 4.259241137535204,
+    "manifest_seal_sha256": "d4a140ab353f2756f08365c59da4e7ae646f389b969e6aa87e2d7b8f053df55b",
+    "mean_component_cosine": 0.994152710325234,
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/uniform-q4-group64-v1",
+    "tensor_count": 74391,
+    "terminal_seal_sha256": "b84e2d53532fbed700a99390d7d32c9eff223963e80ee079ee45cde9edfa3b39"
+  },
+  "claim_boundary": {
+    "artifact_cannot_satisfy_1_5_bpw_gate": true,
+    "base_true_tps": false,
+    "capability": false,
+    "coherence": false,
+    "complete_physical_bpw": 4.259241137535204,
+    "complete_physical_bpw_reported": 4.259241,
+    "density_gate_bpw_max": 1.5,
+    "hcli": false,
+    "restart": false,
+    "tournament": false
+  },
+  "execution": {
+    "fallbacks": {
+      "host_activation": 1344,
+      "host_expert_payload_bind": 0,
+      "host_q4_embedding_gather": 0,
+      "host_q4_matvec": 0,
+      "host_q4_vector_decode": 265,
+      "host_sample": 28,
+      "note": "512-way device expert table is live; host_expert_payload_bind counts remaining host binds",
+      "total": 1637
+    },
+    "family_gpu": {
+      "bytes_read_weight": 52990300160,
+      "component_matvec_kernel": "qwen_uniform_q4_group64_matvec",
+      "deltanet_mixer_cbs": 1008,
+      "deltanet_mixer_dispatches": 9072,
+      "deltanet_mixer_gpu_ns": 1584743988,
+      "deltanet_mixer_mixed_with_moe_prefix": false,
+      "deltanet_mixer_wait_ns": 53636,
+      "gpu_gap_edges": 2687,
+      "gpu_gap_ns": 18504447408,
+      "gpu_timestamp_authority": "MTLCommandBuffer GPUEndTime-GPUStartTime after wait; overlapped CBs resolve after a later same-queue wait",
+      "gqa_mixer_cbs": 336,
+      "gqa_mixer_dispatches": 3024,
+      "gqa_mixer_gpu_ns": 576315624,
+      "gqa_mixer_mixed_with_moe_prefix": false,
+      "gqa_mixer_wait_ns": 17571,
+      "moe_prefix_cbs": 1344,
+      "moe_prefix_gpu_ns": 1301503585,
+      "moe_suffix_cbs": 1344,
+      "moe_suffix_combine_dispatches": 5376,
+      "moe_suffix_gpu_ns": 805863002,
+      "moe_suffix_wait_ns": 222368,
+      "overlap_cbs": true,
+      "serial_mixer": true
+    },
+    "hybrid_token_graph": "embed + 48-layer mixer/MoE + terminal greedy",
+    "metal_error": null,
+    "metal_q4_matvec_used": true,
+    "native": {
+      "expert_table_layer_builds": 1344,
+      "expert_table_matvec_dispatches": 6720,
+      "expert_table_waves": 1344,
+      "q4_decode_vector_dispatches": 0,
+      "q4_embedding_dispatches": 28,
+      "q4_matvec_dispatches": 11116
+    },
+    "stages": {
+      "activation": {
+        "deltanet_conv_secs": 0.002075996000000004,
+        "deltanet_recurrent_secs": 0.0031535700000000014,
+        "gqa_input_layernorm_secs": 0.0033394290000000027,
+        "gqa_norm_rope_secs": 0.0008515410000000013,
+        "note": "On the device-activation path these are host encode-wall of the named kernels, not GPU time. They were previously unwritten (~0) because only the host fallback populated them."
+      },
+      "deltanet_secs": 0.6448810019999991,
+      "embed_secs": 0.0,
+      "gqa_secs": 0.178227215,
+      "host_expert_bind_secs": 0.0,
+      "moe_combine_secs": 0.056115349999999946,
+      "moe_norm_router_secs": 0.0,
+      "moe_routed_secs": 0.0,
+      "moe_shared_secs": 5.150571714000003,
+      "moe_table_build_secs": 11.272496067999992,
+      "q4_matvec_secs": 0.0,
+      "terminal_secs": 0.0
+    },
+    "weight_codec": "uniform_q4_group64"
+  },
+  "generated_text": "Here's a simple function in Python that reverses a string",
+  "generated_token_ids": [
+    8420,
+    594,
+    264,
+    4285,
+    729,
+    304,
+    13027,
+    429,
+    17431,
+    288,
+    264,
+    914
+  ],
+  "prompt": "<|im_start|>user\nWrite a function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    7985,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "resources": {
+    "peak_rss_bytes": 10745856000,
+    "streamed_rss_cap_bytes": 17179869184
+  },
+  "schema": "hawking.ascension.qwen80_uniform_q4_velocity_baseline.v1",
+  "status": "VELOCITY_BASELINE_NOT_BASE_TRUE_TPS",
+  "timing": {
+    "decode_secs": 4.690127541,
+    "first_token_latency_secs": 13.036789625,
+    "prefill_secs": 13.036789625,
+    "steady_state_decode_secs": 4.69012725,
+    "steady_state_tok_s": 2.3453521436971676,
+    "steady_state_tokens": 11
+  }
+}

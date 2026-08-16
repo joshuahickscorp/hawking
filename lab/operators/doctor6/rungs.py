@@ -26,6 +26,18 @@ from lab.operators.ascension_dual_gravity_worker import (
     _residual_codec,
     _uniform_codec,
 )
+from lab.operators.residual_compact_codec import encode_residual_compact
+from lab.operators.hgravs01_adapter import (
+    HGRAVS01_RUNGS,
+    encode_hgravs01_rung,
+    is_hgravs01_rung,
+)
+
+import os as _os
+
+# Rung budget clamp. Historically hardcoded 0.98, which silently rebudgeted any
+# act-SVD rung above it down to rank 64 even when the prescription target was 1.5.
+_RUNG_BUDGET_BPW = float(_os.environ.get("HAWKING_RUNG_BUDGET_BPW", "0.98"))
 
 # ---------------------------------------------------------------------------
 # Absorb-lane entry points (optional). Marked STUB when absent.
@@ -37,6 +49,7 @@ ABSORB_ENTRYPOINTS: dict[str, str] = {
     "mixed_prec": "lab.operators.mixed_precision_alloc",
     "expert_alloc": "lab.operators.expert_alloc",
     "lowbit_qat": "lab.operators.lowbit_qat",
+    "activation_weighted": "lab.operators.hgravs01_adapter",
 }
 
 
@@ -103,6 +116,38 @@ def quant_act_svd(
 
 def quant_residual(W: np.ndarray, *, outlier_ratio: float = 0.05) -> tuple[np.ndarray, int]:
     codec = _residual_codec(W, outlier_ratio=outlier_ratio, group_size=GROUP_BINARY)
+    return codec.reconstruction.astype(np.float32).reshape(W.shape), len(codec.payload)
+
+
+def quant_residual_compact(
+    W: np.ndarray,
+    *,
+    outlier_ratio: float = 0.05,
+    index_mode: str = "rice",
+    value_bits: int = 1,
+    value_scale: str | None = None,
+    group_size: int = GROUP_BINARY,
+) -> tuple[np.ndarray, int]:
+    """Binary + sparse residual with a compact index/value encoding.
+
+    ``quant_residual`` keeps the original 48-bit (uint32 + fp16) packing.
+    This sibling only changes storage. Selection stays global top-k by
+    |residual|. ``value_bits < 16`` is a reported value-quantization.
+
+    Default is the measured Q80 operating point: Rice-coded indices plus a
+    1-bit (sign * RMS) residual. Pass ``value_bits=16`` for the incumbent
+    reconstruction at the cheaper index, or ``value_bits=4`` for a near-free
+    12-bit/outlier uniform quantizer.
+    """
+
+    codec = encode_residual_compact(
+        W,
+        outlier_ratio=outlier_ratio,
+        group_size=group_size,
+        index_mode=index_mode,
+        value_bits=value_bits,
+        value_scale=value_scale,
+    )
     return codec.reconstruction.astype(np.float32).reshape(W.shape), len(codec.payload)
 
 
@@ -299,6 +344,7 @@ RUNG_ORDER: tuple[str, ...] = (
     "l2_mixed_prec",
     "l3_outlier_residual",
     "l4_block_qat",
+    *HGRAVS01_RUNGS,  # activation-weighted low-rank family; rank is searchable
 )
 
 
@@ -321,6 +367,30 @@ def apply_rung(
     if name == "incumbent_binary":
         rec, nbytes = quant_binary(W)
         return RungResult(name, rec, nbytes, {"codec": "binary_g128", "role": "incumbent"})
+
+    if is_hgravs01_rung(name):
+        # Honest physical HGRAVS01 container (factors + scales + header).
+        # Rank is parsed from the rung name and clamped to n_fit_rows.
+        encoded = encode_hgravs01_rung(name, W, X_fit)
+        meta = {
+            "codec": (
+                f"hgravs01_activation_weighted_low_rank_"
+                f"r{encoded['achieved_rank']}_b{encoded['bits']}"
+            ),
+            "family": encoded["family"],
+            "schema": encoded["schema"],
+            "representation": encoded["representation"],
+            "activation_weighted": True,
+            "low_rank": True,
+            "hgravs": True,
+            "requested_rank": encoded["requested_rank"],
+            "rank": encoded["achieved_rank"],
+            "rank_clamped_to_n_fit": encoded["rank_clamped_to_n_fit"],
+            "n_fit_rows": encoded["n_fit_rows"],
+            "bits": encoded["bits"],
+            "ledger": encoded["ledger"],
+        }
+        return RungResult(name, encoded["W_hat"], int(encoded["payload_bytes"]), meta)
 
     if name == "l0_calib":
         # Domain calib is the capture rows; identity on weights. Serve via under-budget act-SVD.
@@ -383,7 +453,7 @@ def apply_rung(
         rank = min(rank, X_rot.shape[0], W_rot.shape[0], W_rot.shape[1])
         rec_rot, nbytes = quant_act_svd(W_rot, X_rot, rank=max(1, rank), bits=bits)
         local = 8.0 * nbytes / max(W.size, 1)
-        if prefer_budget and local > 0.98:
+        if prefer_budget and local > _RUNG_BUDGET_BPW:
             rank2 = max(1, min(64, rank))
             rec_rot, nbytes = quant_act_svd(W_rot, X_rot, rank=rank2, bits=3)
             tag = f"{tag}_rebudget"
@@ -424,7 +494,7 @@ def apply_rung(
         resid_bytes = int(idx.astype(np.uint32).nbytes + vals.nbytes)
         nbytes = base_bytes + resid_bytes
         codec = f"actsvd_r{rank}_b3_sparse_resid_{frac:.0%}"
-        if prefer_budget and 8.0 * nbytes / max(W.size, 1) > 0.98:
+        if prefer_budget and 8.0 * nbytes / max(W.size, 1) > _RUNG_BUDGET_BPW:
             rec, nbytes = base, base_bytes
             codec = f"actsvd_r{rank}_b3_resid_dropped_budget"
         W_hat = (rec @ R.T) / np.maximum(s[None, :], 1e-12)
@@ -477,6 +547,18 @@ def list_rung_status() -> list[dict[str, Any]]:
             "module": "lab.operators.doctor6.rungs",
             "status": "live",
             "rungs": list(RUNG_ORDER),
+        }
+    )
+    rows.append(
+        {
+            "entry": "hgravs01",
+            "module": "lab.operators.hgravs01_adapter",
+            "status": "live",
+            "family": "hgravs01",
+            "schema": "hawking.gravity.activation_weighted_svd_low_rank.v1",
+            "representation": "activation_weighted_svd_low_rank",
+            "rungs": list(HGRAVS01_RUNGS),
+            "rank_searchable": True,
         }
     )
     return rows

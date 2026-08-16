@@ -1,0 +1,63 @@
+{
+  "schema": "hawking.gravity.deepseek_v4.zerocopy_reader.v1",
+  "claim_boundary": {
+    "base_true_tps": false,
+    "coherence": false,
+    "capability": false,
+    "tournament": false,
+    "integrity_preserved": true
+  },
+  "artifact": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "read_only": true
+  },
+  "path_measured": "host_cpu_streamed_bos_oracle_metal_linears (3311 dispatches). This worktree does not contain the 137-command-buffer native token graph.",
+  "before_contracted": {
+    "body_s_per_token": 5.392,
+    "bytes_hashed_per_token": 10000000000,
+    "streaming_io_note": "Source B: streaming_io 6.69s / 1502 calls (48.5% of that profile). Source A: ~10 GB/token re-hash."
+  },
+  "after_first_token_new_process_skip_head": {
+    "receipt": "receipts/dsv4f_zerocopy_reader_body_warm.json",
+    "wall_ms_includes_admit": 34713,
+    "operator_profile_total_s": 22.883234,
+    "streaming_io_s": 16.316970777,
+    "streaming_io_calls": 1502,
+    "hash_invocations": 3183,
+    "cache_hits": 0,
+    "bytes_hashed": 9384168904,
+    "chunks_verified": 3183,
+    "metal_dispatches": 3311,
+    "fallbacks": 0,
+    "peak_rss_bytes": 1042366464,
+    "peak_weight_resident_bytes": 33556480,
+    "rss_within_bound": true,
+    "weight_within_bound": true
+  },
+  "after_resident_two_token_with_head": {
+    "tool": "research_server time 2 after load dsv4f --metal",
+    "admit_secs": 12.515679083,
+    "per_token_secs": [25.52278025, 5.762774792],
+    "generated_token_ids": [5, 5],
+    "logits": [16.767436981201172, 16.767436981201172],
+    "oracle_token_id": 5,
+    "oracle_logit": 16.767436981201172,
+    "logit_drift_vs_oracle": 0.0,
+    "native_graph_stated_drift": "16.781855 vs oracle 16.767436981201172 — this streamed-metal path did not reproduce that drift",
+    "peak_rss_bytes": 1083801600,
+    "metal_dispatches_two_tokens": 6686,
+    "fallbacks": 0,
+    "second_over_first": 0.2258,
+    "second_over_5_392": 1.0688
+  },
+  "integrity": {
+    "corrupted_temp_copy_hard_fails": true,
+    "truncated_temp_copy_hard_fails": true,
+    "verified_once_second_read_does_not_rehash": true,
+    "zero_copy_view_bytes_match_copying_path": true,
+    "fresh_reader_rechecks_mutated_copy": true,
+    "mmap_is_read_only": true
+  },
+  "finding": "Chunks are exclusive (0 shared). First touch in a process still SHA-256s 9.384 GiB (3183 invocations, 0 cache hits); that is why a new-process body stays streaming_io-dominated at 16.32s. A resident second token skips every hash: 25.523s -> 5.763s (4.43x). Hash-once is the cost on a dirty/resident loop. mmap + new_buffer_no_copy did not make first-touch under 20% faster on a warm page cache; skip-hash did."
+}

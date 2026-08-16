@@ -1,0 +1,536 @@
+{
+  "amortization": {
+    "all_routed_48x512_decoded_gib": 288.0,
+    "all_routed_48x512_packed_gib": 11.048789978027344,
+    "decoded_dense_bytes_per_expert": 12582912,
+    "packed_bytes_per_expert": 482729,
+    "top10_decoded_bytes": 125829120,
+    "top10_packed_bytes": 4827290,
+    "verdict": "decoded-weight cache is rejected: 12 MiB dense per expert, 120 MiB for the live top-10, ~288 GiB if every (layer, expert) is cached. That restores the footprint the 1.23 BPW representation exists to remove. Bind-time rice-index expand (~84 KiB/up) stays; it is not dense W."
+  },
+  "baseline_label": "DIRTY_ENGINEERING",
+  "baseline_ns_per_token": 192000000,
+  "baseline_source": "receipts/ascent-2026-08-16/q80-decode-kernels.json routed 48*10*(61+80+259)us; this lane's quiet A median reproduced 192.9 ms",
+  "claim_boundary": {
+    "artifact_packed": false,
+    "coherence_generation_tested": false,
+    "cpu_wall_is_not_gpu_time": true,
+    "decode_kernel_exists": true,
+    "dense_w_never_materialized": true,
+    "not_bf16_parent_parity": true,
+    "not_full_token_runtime": true
+  },
+  "correctness": {
+    "dense_reconstruction_on_token_path": false,
+    "fallbacks": 0,
+    "kernels": {
+      "down_fused": {
+        "max_abs_error": 1.1444091796875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "down_fused_rowblock4": {
+        "max_abs_error": 1.1444091796875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "down_simd3_two_dispatch": {
+        "max_abs_error": 1.1444091796875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "down_simd_two_dispatch": {
+        "max_abs_error": 1.1444091796875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "gate_chunk": {
+        "max_abs_error": 1.6689300537109375e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "gate_rowblock4": {
+        "max_abs_error": 1.811981201171875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "gate_simd": {
+        "max_abs_error": 1.811981201171875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "gate_simd_bytes": {
+        "max_abs_error": 1.6689300537109375e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "gate_tg256": {
+        "max_abs_error": 1.621246337890625e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "up_fused_binary_csr": {
+        "max_abs_error": 1.0967254638671875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "up_fused_bytes_csr": {
+        "max_abs_error": 1.0967254638671875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "up_fused_tg256_csr": {
+        "max_abs_error": 1.0967254638671875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      },
+      "up_simd_then_csr_simd": {
+        "max_abs_error": 1.0967254638671875e-05,
+        "passed": true,
+        "tolerance": 1.9999999494757503e-05
+      }
+    },
+    "largest_measured_drift": {
+      "down": 1.1444091796875e-05,
+      "gate": 1.811981201171875e-05,
+      "up": 1.0967254638671875e-05
+    },
+    "rice_indices": "bind-time expanded; bit-identical CPU oracle reused, not re-decoded per token",
+    "tolerance": 2e-05
+  },
+  "cost": {
+    "down_proj": {
+      "a_shipped_serial_ns": {
+        "all_ns": [
+          451584,
+          454250,
+          451959,
+          456041,
+          455334,
+          459125
+        ],
+        "max_ns": 459125,
+        "median_ns": 455334,
+        "min_ns": 451584,
+        "n": 6
+      },
+      "b_fast_ns": {
+        "all_ns": [
+          25750,
+          23459,
+          25000,
+          23584,
+          25250,
+          24000
+        ],
+        "max_ns": 25750,
+        "median_ns": 25000,
+        "min_ns": 23459,
+        "n": 6
+      },
+      "dispatches_a": 2,
+      "dispatches_b": 2,
+      "median_a": 455334,
+      "median_b": 25000,
+      "temporary_bytes": 640,
+      "temporary_kind": "device mid[rank=160] f32, not dense W"
+    },
+    "gate_proj": {
+      "a_shipped_serial_ns": {
+        "all_ns": [
+          129375,
+          106791,
+          110584,
+          109000,
+          110375,
+          110750
+        ],
+        "max_ns": 129375,
+        "median_ns": 110584,
+        "min_ns": 106791,
+        "n": 6
+      },
+      "b_fast_ns": {
+        "all_ns": [
+          11834,
+          11666,
+          11375,
+          11375,
+          11875,
+          12625
+        ],
+        "max_ns": 12625,
+        "median_ns": 11834,
+        "min_ns": 11375,
+        "n": 6
+      },
+      "dispatches_a": 1,
+      "dispatches_b": 1,
+      "median_a": 110584,
+      "median_b": 11834
+    },
+    "routed_expert_wave_estimate": {
+      "b_over_8ms_budget": 3.73254,
+      "budget_ns": 8000000,
+      "claim_boundary": "routed-expert mixed-decode GPU time only",
+      "formula": "48 * 10 * (gate + up + down)",
+      "label": "DIRTY_ENGINEERING",
+      "layers": 48,
+      "median_ns_per_token_a": 340820640,
+      "median_ns_per_token_b": 29860320,
+      "top_k": 10
+    },
+    "up_proj": {
+      "a_shipped_serial_ns": {
+        "all_ns": [
+          143916,
+          144709,
+          142334,
+          143959,
+          144125,
+          144334
+        ],
+        "max_ns": 144709,
+        "median_ns": 144125,
+        "min_ns": 142334,
+        "n": 6
+      },
+      "b_fast_ns": {
+        "all_ns": [
+          25584,
+          25250,
+          25334,
+          25375,
+          25250,
+          25666
+        ],
+        "max_ns": 25666,
+        "median_ns": 25375,
+        "min_ns": 25250,
+        "n": 6
+      },
+      "dispatches_a": 2,
+      "dispatches_b": 1,
+      "median_a": 144125,
+      "median_b": 25375
+    }
+  },
+  "device_name": "Apple M3 Ultra",
+  "geometry": {
+    "binary_group_size": 128,
+    "down_shape": [
+      2048,
+      512
+    ],
+    "gate_up_shape": [
+      512,
+      2048
+    ],
+    "hgravs_bits": 3,
+    "hgravs_group_size": 64,
+    "hgravs_rank": 160,
+    "rice_k": 5,
+    "rice_outlier_count": 20972
+  },
+  "lane": "q80-decode-throughput",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "next_bottleneck": {
+    "organ": "up_proj fused binary+CSR",
+    "median_ns": 17250,
+    "token_scale_ns": 8280000,
+    "why": "After down dropped 19x, up is 45% of the remaining 38 us/expert. Gate is 6.9 us, down 14.0 us. Still only 15 GB/s \u2014 occupancy/decode, not DRAM."
+  },
+  "regime": {
+    "ceiling_gbps": 800.0,
+    "down": {
+      "dram_bytes_fused": 176640,
+      "dram_bytes_two_dispatch": 177280,
+      "factor_elements": 409600,
+      "gbps_a": 0.3893405719757365,
+      "gbps_b": 7.0656,
+      "l_only_simd_ns": {
+        "all_ns": [
+          13875,
+          14750,
+          19791
+        ],
+        "max_ns": 19791,
+        "median_ns": 14750,
+        "min_ns": 13875,
+        "n": 3
+      },
+      "packed_weight_bytes": 166400,
+      "pct_of_ceiling_b": 0.8832,
+      "r_only_simd_ns": {
+        "all_ns": [
+          27750,
+          18750,
+          21500
+        ],
+        "max_ns": 27750,
+        "median_ns": 21500,
+        "min_ns": 18750,
+        "n": 3
+      },
+      "verdict": "serial 3-bit factor decode + 160-thread R occupancy was the wall"
+    },
+    "gate": {
+      "decode_ops_per_weight": 1,
+      "dram_bytes": 157696,
+      "fast_threads": 16384,
+      "gbps_a": 1.4260290819648411,
+      "gbps_b": 13.325671793138415,
+      "packed_weight_bytes": 147456,
+      "pct_of_ceiling_b": 1.665708974142302,
+      "shipped_threads": 512,
+      "verdict": "serial-decode / occupancy bound, not bandwidth bound",
+      "weights": 1048576
+    },
+    "note": "packed bytes / GPU ns. Ceiling 800 GB/s is the machine DRAM ballpark, not a measured roofline.",
+    "one_expert_three_organs_bytes": 482729,
+    "prompt_arithmetic": {
+      "conclusion": "decode is compute/occupancy bound by ~three orders vs the 800 GB/s ceiling; the 240 KB figure was slightly low (actual ~470 KB) but the regime call is correct",
+      "measured_gbps_at_shipped_400us": 1.2068225,
+      "measured_packed_bytes": 482729,
+      "shipped_us": 400.0,
+      "stated": "240 KB in 400 us ~ 0.6 GB/s vs 800 GB/s"
+    },
+    "up": {
+      "dram_bytes": 265053,
+      "gbps_a": 1.8390494362532523,
+      "gbps_b": 10.44543842364532,
+      "packed_weight_bytes": 168873,
+      "pct_of_ceiling_b": 1.305679802955665,
+      "verdict": "binary decode dominates; CSR is ~2% nnz and not the wall"
+    }
+  },
+  "reps": {
+    "down_a_gpu_ns": [
+      451584,
+      454250,
+      451959,
+      456041,
+      455334,
+      459125
+    ],
+    "down_b_gpu_ns": [
+      25750,
+      23459,
+      25000,
+      23584,
+      25250,
+      24000
+    ],
+    "gate_a_gpu_ns": [
+      129375,
+      106791,
+      110584,
+      109000,
+      110375,
+      110750
+    ],
+    "gate_b_gpu_ns": [
+      11834,
+      11666,
+      11375,
+      11375,
+      11875,
+      12625
+    ],
+    "protocol": "warmup=2 all variants; 3-rep selection sweep; then 6 alternating A,B pairs (gate, up, down interleaved inside each arm)",
+    "up_a_gpu_ns": [
+      143916,
+      144709,
+      142334,
+      143959,
+      144125,
+      144334
+    ],
+    "up_b_gpu_ns": [
+      25584,
+      25250,
+      25334,
+      25375,
+      25250,
+      25666
+    ]
+  },
+  "result_label": "DIRTY_ENGINEERING",
+  "result_ns_per_token": 18280320,
+  "result_scope": "48*10*(gate_b+up_b+down_b) from quieter paired window where serial A matched the shipped 192 ms",
+  "schema": "hawking.ascension.qwen80_mixed_decode_throughput.v1",
+  "selected_b": {
+    "down": "q80_hgravs01_factor_matvec_simd3 R then L",
+    "gate": "q80_binary_group_matvec_tg256",
+    "selection_medians_ns": {
+      "down_fused": 303125,
+      "down_fused_rowblock4": 156375,
+      "down_simd3_two": 26500,
+      "down_simd_two": 30666,
+      "gate_chunk": 13500,
+      "gate_rowblock4": 54500,
+      "gate_simd": 52084,
+      "gate_simd_bytes": 15875,
+      "gate_tg256": 11625,
+      "up_fused": 65834,
+      "up_fused_bytes": 31000,
+      "up_fused_tg256": 25500,
+      "up_two_dispatch": 57250
+    },
+    "up": "q80_binary_group_csr_matvec_tg256"
+  },
+  "shipped_lane_reference_ns": {
+    "down": 259000,
+    "gate": 61000,
+    "routed_48x10": 192000000,
+    "up": 80000
+  },
+  "status": "PARTIAL_10X_STILL_OVER_8MS_BUDGET",
+  "timing_authority": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait_until_completed; ns from raw endpoints when present",
+  "windows": {
+    "note": "Other lanes were running. Do not launder either window into CLEAN_CANDIDATE or BASE_TRUE.",
+    "quieter_A_matched_shipped": {
+      "label": "DIRTY_ENGINEERING",
+      "why_preferred": "serial A median reproduced the shipped decode-kernels organ times (gate 60.5, up 80.0, down 261 us vs 61/80/259)",
+      "gate_a_ns": [
+        61041,
+        60791,
+        60500,
+        59750,
+        60541,
+        60166
+      ],
+      "gate_b_ns": [
+        6875,
+        6959,
+        6709,
+        6625,
+        6625,
+        6959
+      ],
+      "up_a_ns": [
+        80709,
+        79791,
+        79834,
+        80041,
+        79500,
+        80541
+      ],
+      "up_b_ns": [
+        17334,
+        17625,
+        17250,
+        17250,
+        17166,
+        17125
+      ],
+      "down_a_ns": [
+        259166,
+        272250,
+        261291,
+        259666,
+        257125,
+        265250
+      ],
+      "down_b_ns": [
+        13750,
+        13959,
+        12875,
+        14000,
+        12875,
+        14834
+      ],
+      "median_a_ns": {
+        "gate": 60541,
+        "up": 80041,
+        "down": 261291,
+        "organ_sum": 401873,
+        "routed_48x10": 192899040
+      },
+      "median_b_ns": {
+        "gate": 6875,
+        "up": 17250,
+        "down": 13959,
+        "organ_sum": 38084,
+        "routed_48x10": 18280320
+      },
+      "selected_b": {
+        "gate": "q80_binary_group_matvec_tg256",
+        "up": "q80_binary_group_csr_matvec_bytes",
+        "down": "q80_hgravs01_factor_matvec_simd3 R then L"
+      },
+      "vs_8ms_budget": 2.285
+    },
+    "later_heavier_contention": {
+      "label": "DIRTY_ENGINEERING",
+      "why_not_preferred": "serial A inflated to ~341 ms (1.8x shipped). B also inflated but the ratio stayed ~11x.",
+      "this_receipt_reps_are_this_window": true,
+      "median_a_ns": {
+        "gate": 110584,
+        "up": 144125,
+        "down": 455334,
+        "routed_48x10": 340820640
+      },
+      "median_b_ns": {
+        "gate": 11834,
+        "up": 25375,
+        "down": 25000,
+        "routed_48x10": 29860320
+      },
+      "selected_b": {
+        "gate": "q80_binary_group_matvec_tg256",
+        "up": "q80_binary_group_csr_matvec_tg256",
+        "down": "q80_hgravs01_factor_matvec_simd3 R then L"
+      },
+      "vs_8ms_budget": 3.733
+    }
+  },
+  "fusion_negative": {
+    "target": "single dispatch y=L@(R@x) with mid in threadgroup",
+    "fused_median_ns_quiet_selection": 173209,
+    "fused_rowblock4_median_ns_quiet_selection": 89291,
+    "simd_two_dispatch_median_ns_quiet_selection": 17666,
+    "simd3_two_dispatch_median_ns_quiet_selection": 13500,
+    "verdict": "Redundant-R fusion lost by 5-13x. Each of 64-256 TGs recomputes R[160x512]. Two well-parallelized dispatches with a 640-byte device mid is the token path. Metal has no grid-wide barrier, so true single-pass without recompute is not available."
+  },
+  "per_organ_us": {
+    "label": "DIRTY_ENGINEERING quieter window medians",
+    "gate": {
+      "before_us": 60.541,
+      "after_us": 6.875,
+      "speedup": 8.8,
+      "kernel": "q80_binary_group_matvec_tg256",
+      "dispatches": 1,
+      "gbps_after": 22.94,
+      "pct_ceiling": 2.87
+    },
+    "up": {
+      "before_us": 80.041,
+      "after_us": 17.25,
+      "speedup": 4.6,
+      "kernel": "q80_binary_group_csr_matvec_bytes",
+      "dispatches": 1,
+      "gbps_after": 15.37,
+      "pct_ceiling": 1.92,
+      "note": "later window selected tg256+CSR; quieter window did not yet have that kernel"
+    },
+    "down": {
+      "before_us": 261.291,
+      "after_us": 13.959,
+      "speedup": 18.7,
+      "kernel": "q80_hgravs01_factor_matvec_simd3 R then L",
+      "dispatches": 2,
+      "gbps_after": 12.65,
+      "pct_ceiling": 1.58
+    }
+  },
+  "budget": {
+    "expert_work_budget_ns": 8000000,
+    "shipped_routed_ns": 192000000,
+    "result_routed_ns_quiet": 18280320,
+    "over_budget_quiet": 2.285,
+    "result_routed_ns_dirty_later": 29860320,
+    "over_budget_dirty_later": 3.733,
+    "honest": "10.5x closer. Still 2.3x over the 8 ms routed-expert budget in the quieter window. Density that cannot execute in budget is still not free."
+  }
+}

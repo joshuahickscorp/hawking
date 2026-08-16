@@ -1,0 +1,2281 @@
+{
+  "schema": "hawking.ascent.matvec_mlx_reference.v2",
+  "lane": "matvec-mlx-reference",
+  "date": "2026-08-16",
+  "generated_at": "2026-08-16T06:35:41.082796+00:00",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "question": "Does Apple MLX quantized matvec at our organ shapes approach 100-400 GB/s on this box, or does it also land in single-digit GB/s like our packed kernels (2.47-2.65) against a 560-647 GB/s DRAM row probe?",
+  "mlx": {
+    "version": "0.32.0",
+    "python": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python",
+    "device": "Device(gpu, 0)",
+    "device_info": {
+      "device_name": "Apple M3 Ultra",
+      "max_recommended_working_set_size": 83494174720,
+      "memory_size": 103079215104,
+      "architecture": "applegpu_g15d",
+      "max_buffer_length": 62620631040,
+      "resource_limit": 499000
+    }
+  },
+  "comparators": {
+    "q80_q4_gate_split_gbps": [
+      2.6463467933491684,
+      2.476729089971367
+    ],
+    "q80_q4_gate_bytes": 557056,
+    "q80_q4_gate_gpu_ns_A": [
+      212209,
+      209916,
+      210500
+    ],
+    "q80_mixed_binary_gate_gbps": [
+      2.4678828451882846,
+      2.4123680981595093
+    ],
+    "dram_row_probe_seq_gbps": 560.2520996243217,
+    "dram_row_probe_stride_gbps": 647.0,
+    "source": "receipts/ascent-2026-08-16/dram-row-locality.json"
+  },
+  "time_authority": "HOST_WALL after mx.synchronize(). Not GPUEndTime-GPUStartTime. Host wall >= GPU time, so reported GB/s is a lower bound.",
+  "byte_accounting": "w.nbytes + scales.nbytes + biases.nbytes. MLX affine-4 gs64 512x2048 is 589824 B (fp16 scale+bias). Hawking q80_q4_gate counted 557056 B on the same geometry.",
+  "geometry": {
+    "batch1_transpose_true": "QuantizedMatmul::eval_gpu: M=1 < qmv_batch_limit \u2192 dispatch_qmv. K not in {64,128} so not qmv_quad. M==1 so not qmv_wide. qmv() uses qmv_fast when N%8==0 and K%(pack*packs_per_thread*32)==0.",
+    "qmv_fast": {
+      "threadgroup": [
+        32,
+        2,
+        1
+      ],
+      "threads": 64,
+      "simdgroups": 2,
+      "simd_size": 32,
+      "results_per_simdgroup": 4,
+      "output_rows_per_tg": 8,
+      "affine_q4_values_per_thread": 16,
+      "affine_q4_k_block": 512,
+      "vector_width": "uint32 packed weights, 8x4-bit per pack; qdot unrolled by 4 (uint16 loads)",
+      "source_headers": [
+        "site-packages/mlx/include/mlx/backend/metal/kernels/quantized.h",
+        "ml-explore/mlx mlx/backend/metal/quantized.cpp (v0.32 line of qmv/dispatch_qmv)"
+      ]
+    }
+  },
+  "results": [
+    {
+      "shape": {
+        "name": "q80_512x2048",
+        "rows": 512,
+        "cols": 2048,
+        "organ": "Q80 expert proj"
+      },
+      "codec": {
+        "name": "affine_q4_gs64",
+        "mode": "affine",
+        "bits": 4,
+        "group_size": 64
+      },
+      "bytes_w_scales_biases": 589824,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          64,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.125,
+        "max_rel": 0.0008438818508429918,
+        "gate_max_abs": 0.02,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 400,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          278299.7925,
+          267893.9575,
+          265443.6475,
+          242249.6875,
+          247681.98,
+          249815.52
+        ],
+        "host_wall_gbps": [
+          2.1193835421203198,
+          2.2017069944550727,
+          2.222030949149009,
+          2.4347771346454263,
+          2.381376311671927,
+          2.3610382573508644
+        ],
+        "min_ns": 242249.6875,
+        "median_ns": 257629.58375,
+        "max_ns": 278299.7925,
+        "min_gbps": 2.1193835421203198,
+        "median_gbps": 2.2915346032499366,
+        "max_gbps": 2.4347771346454263,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 32,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          33229.15625,
+          13415.375,
+          13498.6875,
+          12917.96875,
+          12584.625,
+          12381.5
+        ],
+        "host_wall_gbps": [
+          17.75019490601721,
+          43.96627004463163,
+          43.69491478338172,
+          45.65919080737829,
+          46.86861944634822,
+          47.637523724912164
+        ],
+        "min_ns": 12381.5,
+        "median_ns": 13166.671875,
+        "max_ns": 33229.15625,
+        "min_gbps": 17.75019490601721,
+        "median_gbps": 44.81273042600496,
+        "max_gbps": 47.637523724912164,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "q80_512x2048",
+        "rows": 512,
+        "cols": 2048,
+        "organ": "Q80 expert proj"
+      },
+      "codec": {
+        "name": "affine_q2_gs64",
+        "mode": "affine",
+        "bits": 2,
+        "group_size": 64
+      },
+      "bytes_w_scales_biases": 327680,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          64,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.125,
+        "max_rel": 0.0009799118002554684,
+        "gate_max_abs": 0.02,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 400,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          245379.375,
+          252040.3125,
+          259286.25,
+          274303.4375,
+          251095.73,
+          228991.4575
+        ],
+        "host_wall_gbps": [
+          1.3354015593201345,
+          1.3001094814941558,
+          1.2637770032155582,
+          1.1945894772098873,
+          1.305000288137118,
+          1.4309704107630303
+        ],
+        "min_ns": 228991.4575,
+        "median_ns": 251568.02125,
+        "max_ns": 274303.4375,
+        "min_gbps": 1.1945894772098873,
+        "median_gbps": 1.302554884815637,
+        "max_gbps": 1.4309704107630303,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 32,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          12946.625,
+          12738.28125,
+          36363.28125,
+          10751.3125,
+          11459.625,
+          10983.09375
+        ],
+        "host_wall_gbps": [
+          25.310071157541056,
+          25.724035571910456,
+          9.011288000859384,
+          30.478139296946303,
+          28.594303914831418,
+          29.83494518564043
+        ],
+        "min_ns": 10751.3125,
+        "median_ns": 12098.953125,
+        "max_ns": 36363.28125,
+        "min_gbps": 9.011288000859384,
+        "median_gbps": 27.15916974337094,
+        "max_gbps": 30.478139296946303,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "q80_512x2048",
+        "rows": 512,
+        "cols": 2048,
+        "organ": "Q80 expert proj"
+      },
+      "codec": {
+        "name": "mxfp4_gs32",
+        "mode": "mxfp4",
+        "bits": 4,
+        "group_size": 32
+      },
+      "bytes_w_scales_biases": 557056,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          64,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.033477783203125,
+        "max_rel": 0.00024169282627930515,
+        "gate_max_abs": 0.05,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 400,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          219292.71,
+          215547.7075,
+          218337.1875,
+          211181.0425,
+          212066.7725,
+          212948.4375
+        ],
+        "host_wall_gbps": [
+          2.540239481741094,
+          2.584374505583642,
+          2.551356488458935,
+          2.637812529976501,
+          2.6267952939209276,
+          2.6159196401711093
+        ],
+        "min_ns": 211181.0425,
+        "median_ns": 214248.0725,
+        "max_ns": 219292.71,
+        "min_gbps": 2.540239481741094,
+        "median_gbps": 2.600147072877376,
+        "max_gbps": 2.637812529976501,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 32,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          11737.0,
+          10591.15625,
+          10643.21875,
+          11160.15625,
+          10539.0625,
+          11220.03125
+        ],
+        "host_wall_gbps": [
+          47.461531907642495,
+          52.59633479583497,
+          52.339053916372805,
+          49.91471333566678,
+          52.85631430689399,
+          49.64834656766219
+        ],
+        "min_ns": 10539.0625,
+        "median_ns": 10901.6875,
+        "max_ns": 11737.0,
+        "min_gbps": 47.461531907642495,
+        "median_gbps": 51.12688362601979,
+        "max_gbps": 52.85631430689399,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "q80_2048x512",
+        "rows": 2048,
+        "cols": 512,
+        "organ": "Q80 expert proj T"
+      },
+      "codec": {
+        "name": "affine_q4_gs64",
+        "mode": "affine",
+        "bits": 4,
+        "group_size": 64
+      },
+      "bytes_w_scales_biases": 589824,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          256,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.0625,
+        "max_rel": 0.0007800311915128712,
+        "gate_max_abs": 0.02,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 400,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          187461.875,
+          199880.3125,
+          241935.4175,
+          246751.25,
+          250794.0625,
+          258291.5625
+        ],
+        "host_wall_gbps": [
+          3.1463677614448273,
+          2.9508859207932248,
+          2.4379398688081704,
+          2.3903587114553626,
+          2.3518260126273924,
+          2.283558914163137
+        ],
+        "min_ns": 187461.875,
+        "median_ns": 244343.33375,
+        "max_ns": 258291.5625,
+        "min_gbps": 2.283558914163137,
+        "median_gbps": 2.4141492901317667,
+        "max_gbps": 3.1463677614448273,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 32,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          13365.875,
+          12600.25,
+          13042.96875,
+          12770.8125,
+          13177.0625,
+          13662.75
+        ],
+        "host_wall_gbps": [
+          44.129097421605394,
+          46.8104997916708,
+          45.221606469002694,
+          46.18531514733303,
+          44.76141780461313,
+          43.170225613438
+        ],
+        "min_ns": 12600.25,
+        "median_ns": 13110.015625,
+        "max_ns": 13662.75,
+        "min_gbps": 43.170225613438,
+        "median_gbps": 44.99151213680791,
+        "max_gbps": 46.8104997916708,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "q80_2048x512",
+        "rows": 2048,
+        "cols": 512,
+        "organ": "Q80 expert proj T"
+      },
+      "codec": {
+        "name": "affine_q2_gs64",
+        "mode": "affine",
+        "bits": 2,
+        "group_size": 64
+      },
+      "bytes_w_scales_biases": 327680,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          256,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.0625,
+        "max_rel": 0.0007668711562347098,
+        "gate_max_abs": 0.02,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 400,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          251017.7075,
+          228737.2925,
+          194884.2725,
+          196811.1475,
+          193292.29,
+          196398.335
+        ],
+        "host_wall_gbps": [
+          1.3054059144413148,
+          1.4325604557901286,
+          1.681408129021802,
+          1.664946341517571,
+          1.6952564429755579,
+          1.668445916305757
+        ],
+        "min_ns": 193292.29,
+        "median_ns": 196604.74125,
+        "max_ns": 251017.7075,
+        "min_gbps": 1.3054059144413148,
+        "median_gbps": 1.666696128911664,
+        "max_gbps": 1.6952564429755579,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 32,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          12127.59375,
+          11272.125,
+          11041.65625,
+          11074.21875,
+          10904.9375,
+          11276.0625
+        ],
+        "host_wall_gbps": [
+          27.01937472138692,
+          29.06994022866141,
+          29.676707242176644,
+          29.589446208112875,
+          30.04877377793316,
+          29.05978926597826
+        ],
+        "min_ns": 10904.9375,
+        "median_ns": 11173.171875,
+        "max_ns": 12127.59375,
+        "min_gbps": 27.01937472138692,
+        "median_gbps": 29.329693218387142,
+        "max_gbps": 30.04877377793316,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "q80_2048x512",
+        "rows": 2048,
+        "cols": 512,
+        "organ": "Q80 expert proj T"
+      },
+      "codec": {
+        "name": "mxfp4_gs32",
+        "mode": "mxfp4",
+        "bits": 4,
+        "group_size": 32
+      },
+      "bytes_w_scales_biases": 557056,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          256,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.0287628173828125,
+        "max_rel": 0.0003767417762485295,
+        "gate_max_abs": 0.05,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 400,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          196785.9375,
+          201110.625,
+          196306.46,
+          229163.855,
+          241362.085,
+          212651.04
+        ],
+        "host_wall_gbps": [
+          2.830771380703969,
+          2.7698984079036104,
+          2.837685524969479,
+          2.430819642128991,
+          2.3079681301228403,
+          2.619578065548139
+        ],
+        "min_ns": 196306.46,
+        "median_ns": 206880.83250000002,
+        "max_ns": 241362.085,
+        "min_gbps": 2.3079681301228403,
+        "median_gbps": 2.6947382367258745,
+        "max_gbps": 2.837685524969479,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 32,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          11851.5625,
+          11042.96875,
+          11096.375,
+          10746.09375,
+          11252.59375,
+          10600.25
+        ],
+        "host_wall_gbps": [
+          47.002747528015824,
+          50.44440608418819,
+          50.20161989839024,
+          51.83799927299164,
+          49.50467531096997,
+          52.551213414777955
+        ],
+        "min_ns": 10600.25,
+        "median_ns": 11069.671875,
+        "max_ns": 11851.5625,
+        "min_gbps": 47.002747528015824,
+        "median_gbps": 50.32301299128922,
+        "max_gbps": 52.551213414777955,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "qwen38_5120x17408",
+        "rows": 5120,
+        "cols": 17408,
+        "organ": "Qwen3.8 MLP"
+      },
+      "codec": {
+        "name": "affine_q4_gs64",
+        "mode": "affine",
+        "bits": 4,
+        "group_size": 64
+      },
+      "bytes_w_scales_biases": 50135040,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          640,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.5,
+        "max_rel": 0.0009293680280123271,
+        "gate_max_abs": 0.02,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 11,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          226844.63636363635,
+          309840.9090909091,
+          240571.9090909091,
+          421405.2727272727,
+          266769.0,
+          285822.0
+        ],
+        "host_wall_gbps": [
+          221.01047132378548,
+          161.8089752805692,
+          208.39939371747099,
+          118.97107901743475,
+          187.9342802199656,
+          175.4065117450721
+        ],
+        "min_ns": 226844.63636363635,
+        "median_ns": 276295.5,
+        "max_ns": 421405.2727272727,
+        "min_gbps": 118.97107901743475,
+        "median_gbps": 181.67039598251884,
+        "max_gbps": 221.01047132378548,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 11,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          74318.18181818182,
+          69753.81818181818,
+          63492.36363636364,
+          62825.72727272727,
+          65780.27272727272,
+          183712.0909090909
+        ],
+        "host_wall_gbps": [
+          674.5999266055045,
+          718.7425908259177,
+          789.6231472360312,
+          798.001745087059,
+          762.1591994284001,
+          272.90005656083406
+        ],
+        "min_ns": 62825.72727272727,
+        "median_ns": 67767.04545454544,
+        "max_ns": 183712.0909090909,
+        "min_gbps": 272.90005656083406,
+        "median_gbps": 740.4508951271589,
+        "max_gbps": 798.001745087059,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "qwen38_5120x17408",
+        "rows": 5120,
+        "cols": 17408,
+        "organ": "Qwen3.8 MLP"
+      },
+      "codec": {
+        "name": "affine_q2_gs64",
+        "mode": "affine",
+        "bits": 2,
+        "group_size": 64
+      },
+      "bytes_w_scales_biases": 27852800,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          640,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.5,
+        "max_rel": 0.000987166829245475,
+        "gate_max_abs": 0.02,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 21,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          346297.61904761905,
+          281319.4761904762,
+          292775.8095238095,
+          326033.7619047619,
+          239460.33333333334,
+          285378.95238095237
+        ],
+        "host_wall_gbps": [
+          80.43023823438413,
+          99.00772025162377,
+          95.13354277903522,
+          85.42918941056207,
+          116.31488026548585,
+          97.59934910273024
+        ],
+        "min_ns": 239460.33333333334,
+        "median_ns": 289077.38095238095,
+        "max_ns": 346297.61904761905,
+        "min_gbps": 80.43023823438413,
+        "median_gbps": 96.36644594088273,
+        "max_gbps": 116.31488026548585,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 21,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          55474.19047619047,
+          55722.23809523809,
+          56765.857142857145,
+          55781.76190476191,
+          55974.19047619047,
+          80930.52380952382
+        ],
+        "host_wall_gbps": [
+          502.08574043012715,
+          499.85070507030196,
+          490.6611368503703,
+          499.31732252477127,
+          497.600764978417,
+          344.1569223690396
+        ],
+        "min_ns": 55474.19047619047,
+        "median_ns": 55877.97619047619,
+        "max_ns": 80930.52380952382,
+        "min_gbps": 344.1569223690396,
+        "median_gbps": 498.4590437515941,
+        "max_gbps": 502.08574043012715,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "qwen38_5120x17408",
+        "rows": 5120,
+        "cols": 17408,
+        "organ": "Qwen3.8 MLP"
+      },
+      "codec": {
+        "name": "mxfp4_gs32",
+        "mode": "mxfp4",
+        "bits": 4,
+        "group_size": 32
+      },
+      "bytes_w_scales_biases": 47349760,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          640,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.123077392578125,
+        "max_rel": 0.00024965068661797084,
+        "gate_max_abs": 0.05,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 12,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          240020.83333333334,
+          230076.41666666666,
+          305392.4166666667,
+          257892.41666666666,
+          387329.8333333333,
+          269677.0833333333
+        ],
+        "host_wall_gbps": [
+          197.27354222723721,
+          205.80014538647848,
+          155.04563118108422,
+          183.60276200444048,
+          122.24661238333049,
+          175.57947236277957
+        ],
+        "min_ns": 230076.41666666666,
+        "median_ns": 263784.75,
+        "max_ns": 387329.8333333333,
+        "min_gbps": 122.24661238333049,
+        "median_gbps": 179.59111718361004,
+        "max_gbps": 205.80014538647848,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 12,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          56045.083333333336,
+          64305.583333333336,
+          91309.0,
+          66079.83333333333,
+          65027.833333333336,
+          57795.083333333336
+        ],
+        "host_wall_gbps": [
+          844.8512730078909,
+          736.3242434884477,
+          518.566187341883,
+          716.5538654001851,
+          728.1460502810335,
+          819.2696898957668
+        ],
+        "min_ns": 56045.083333333336,
+        "median_ns": 64666.708333333336,
+        "max_ns": 91309.0,
+        "min_gbps": 518.566187341883,
+        "median_gbps": 732.2351468847405,
+        "max_gbps": 844.8512730078909,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "qwen38_17408x5120",
+        "rows": 17408,
+        "cols": 5120,
+        "organ": "Qwen3.8 MLP T"
+      },
+      "codec": {
+        "name": "affine_q4_gs64",
+        "mode": "affine",
+        "bits": 4,
+        "group_size": 64
+      },
+      "bytes_w_scales_biases": 50135040,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          2176,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.25,
+        "max_rel": 0.00092764378134455,
+        "gate_max_abs": 0.02,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 11,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          260011.36363636365,
+          318219.7272727273,
+          290268.9090909091,
+          361863.63636363635,
+          271886.36363636365,
+          250390.18181818182
+        ],
+        "host_wall_gbps": [
+          192.8186495345483,
+          157.5484977932629,
+          172.71929038841097,
+          138.54677553071224,
+          184.39703753239152,
+          200.22765923148307
+        ],
+        "min_ns": 250390.18181818182,
+        "median_ns": 281077.63636363635,
+        "max_ns": 361863.63636363635,
+        "min_gbps": 138.54677553071224,
+        "median_gbps": 178.55816396040126,
+        "max_gbps": 200.22765923148307,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 11,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          74450.72727272728,
+          62503.72727272727,
+          66488.63636363637,
+          69488.63636363637,
+          63780.27272727273,
+          133640.18181818182
+        ],
+        "host_wall_gbps": [
+          673.3989288827997,
+          802.112804909089,
+          754.0392274824816,
+          721.485448896157,
+          786.0587271926486,
+          375.14944470974297
+        ],
+        "min_ns": 62503.72727272727,
+        "median_ns": 67988.63636363637,
+        "max_ns": 133640.18181818182,
+        "min_gbps": 375.14944470974297,
+        "median_gbps": 737.7623381893193,
+        "max_gbps": 802.112804909089,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "qwen38_17408x5120",
+        "rows": 17408,
+        "cols": 5120,
+        "organ": "Qwen3.8 MLP T"
+      },
+      "codec": {
+        "name": "affine_q2_gs64",
+        "mode": "affine",
+        "bits": 2,
+        "group_size": 64
+      },
+      "bytes_w_scales_biases": 27852800,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          2176,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.25,
+        "max_rel": 0.0008403361316291222,
+        "gate_max_abs": 0.02,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 21,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          291982.14285714284,
+          328994.04761904763,
+          299785.71428571426,
+          311611.09523809527,
+          279142.85714285716,
+          293339.28571428574
+        ],
+        "host_wall_gbps": [
+          95.39213503761238,
+          84.66049827214995,
+          92.90903025970933,
+          89.38321011553931,
+          99.7797338792221,
+          94.95080051135325
+        ],
+        "min_ns": 279142.85714285716,
+        "median_ns": 296562.5,
+        "max_ns": 328994.04761904763,
+        "min_gbps": 84.66049827214995,
+        "median_gbps": 93.92991538553129,
+        "max_gbps": 99.7797338792221,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 21,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          60301.57142857143,
+          54744.04761904762,
+          56379.0,
+          54317.47619047619,
+          58041.666666666664,
+          55644.857142857145
+        ],
+        "host_wall_gbps": [
+          461.8917772813312,
+          508.7822550831793,
+          494.0279181964916,
+          512.7778746996275,
+          479.87595118449394,
+          500.5458083663231
+        ],
+        "min_ns": 54317.47619047619,
+        "median_ns": 56011.92857142857,
+        "max_ns": 60301.57142857143,
+        "min_gbps": 461.8917772813312,
+        "median_gbps": 497.28686328140736,
+        "max_gbps": 512.7778746996275,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    {
+      "shape": {
+        "name": "qwen38_17408x5120",
+        "rows": 17408,
+        "cols": 5120,
+        "organ": "Qwen3.8 MLP T"
+      },
+      "codec": {
+        "name": "mxfp4_gs32",
+        "mode": "mxfp4",
+        "bits": 4,
+        "group_size": 32
+      },
+      "bytes_w_scales_biases": 47349760,
+      "dtype": "float16",
+      "batch": 1,
+      "kernel": {
+        "eval_gpu": "dispatch_qmv \u2192 qmv_fast",
+        "threadgroup": [
+          32,
+          2,
+          1
+        ],
+        "threads_per_tg": 64,
+        "simdgroups_per_tg": 2,
+        "simdgroup_size": 32,
+        "results_per_simdgroup": 4,
+        "output_rows_per_tg": 8,
+        "values_per_thread": 16,
+        "k_block": 512,
+        "grid": [
+          1,
+          2176,
+          1
+        ],
+        "qmv_fast": true,
+        "source": "mlx 0.32 quantized.h qmv_fast_impl + quantized.cpp qmv()/dispatch_qmv()"
+      },
+      "correctness": {
+        "max_abs": 0.1219482421875,
+        "max_rel": 0.00044084803292573183,
+        "gate_max_abs": 0.05,
+        "passed": true,
+        "ref": "mx.dequantize + fp16 matmul (x @ W_hat.T) [gate restated as max_rel<=5e-3]",
+        "gate_max_rel": 0.005
+      },
+      "eval_loop": {
+        "iters_per_rep": 12,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          257284.66666666666,
+          256055.58333333334,
+          268090.3333333333,
+          352385.4166666667,
+          283437.5,
+          246566.0
+        ],
+        "host_wall_gbps": [
+          184.036462854374,
+          184.91984975918314,
+          176.61867703796358,
+          134.36923822755622,
+          167.05538257993385,
+          192.03685828540836
+        ],
+        "min_ns": 246566.0,
+        "median_ns": 262687.5,
+        "max_ns": 352385.4166666667,
+        "min_gbps": 134.36923822755622,
+        "median_gbps": 180.3275699461688,
+        "max_gbps": 192.03685828540836,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "multi_x_one_eval": {
+        "xs_per_rep": 12,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "host_wall_ns_per_call": [
+          119177.08333333333,
+          62072.916666666664,
+          71593.75,
+          54635.416666666664,
+          61642.333333333336,
+          56611.166666666664
+        ],
+        "host_wall_gbps": [
+          397.30591381872216,
+          762.8086860211445,
+          661.3672282845919,
+          866.6495633937084,
+          768.1370486732602,
+          836.4031831175829
+        ],
+        "min_ns": 54635.416666666664,
+        "median_ns": 61857.625,
+        "max_ns": 119177.08333333333,
+        "min_gbps": 397.30591381872216,
+        "median_gbps": 765.4728673472023,
+        "max_gbps": 866.6495633937084,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      "measurement_label": "DIRTY_ENGINEERING"
+    }
+  ],
+  "occupancy_sweep_q80_512x2048": {
+    "shape": "q80_512x2048",
+    "codec": {
+      "name": "affine_q4_gs64",
+      "mode": "affine",
+      "bits": 4,
+      "group_size": 64
+    },
+    "note": "Same W reused across N x's in one eval. Counts N*bytes against host wall of that eval. Not a cold-DRAM stream. DIRTY_ENGINEERING.",
+    "levels": [
+      {
+        "n": 1,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "bytes_per_call": 589824,
+        "host_wall_ns_per_call": [
+          316542.0,
+          287459.0,
+          308667.0,
+          304709.0,
+          1465166.0,
+          313042.0
+        ],
+        "host_wall_gbps": [
+          1.8633356710957787,
+          2.0518543514031564,
+          1.910874826269086,
+          1.9356960247317934,
+          0.4025646240767258,
+          1.884168897464238
+        ],
+        "min_ns": 287459.0,
+        "median_ns": 310854.5,
+        "max_ns": 1465166.0,
+        "min_gbps": 0.4025646240767258,
+        "median_gbps": 1.897521861866662,
+        "max_gbps": 2.0518543514031564,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      {
+        "n": 4,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "bytes_per_call": 589824,
+        "host_wall_ns_per_call": [
+          86500.0,
+          86614.75,
+          82771.0,
+          82312.5,
+          90458.5,
+          78823.0
+        ],
+        "host_wall_gbps": [
+          6.818774566473988,
+          6.809740835134893,
+          7.125974073044907,
+          7.16566742596811,
+          6.520382274744772,
+          7.482892049274958
+        ],
+        "min_ns": 78823.0,
+        "median_ns": 84635.5,
+        "max_ns": 90458.5,
+        "min_gbps": 6.520382274744772,
+        "median_gbps": 6.972374319759448,
+        "max_gbps": 7.482892049274958,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      {
+        "n": 8,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "bytes_per_call": 589824,
+        "host_wall_ns_per_call": [
+          37546.875,
+          39260.375,
+          36390.625,
+          72562.5,
+          44140.625,
+          38786.5
+        ],
+        "host_wall_gbps": [
+          15.709003745318352,
+          15.023391905961162,
+          16.208130528123657,
+          8.128496124031008,
+          13.36238442477876,
+          15.206940559215191
+        ],
+        "min_ns": 36390.625,
+        "median_ns": 39023.4375,
+        "max_ns": 72562.5,
+        "min_gbps": 8.128496124031008,
+        "median_gbps": 15.115166232588177,
+        "max_gbps": 16.208130528123657,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      {
+        "n": 32,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "bytes_per_call": 589824,
+        "host_wall_ns_per_call": [
+          15890.625,
+          15546.875,
+          15114.59375,
+          14851.5625,
+          14947.90625,
+          47320.3125
+        ],
+        "host_wall_gbps": [
+          37.117734513274335,
+          37.938428140703515,
+          39.023476896294355,
+          39.714609153077326,
+          39.45863655654115,
+          12.46449925705795
+        ],
+        "min_ns": 14851.5625,
+        "median_ns": 15330.734375,
+        "max_ns": 47320.3125,
+        "min_gbps": 12.46449925705795,
+        "median_gbps": 38.48095251849894,
+        "max_gbps": 39.714609153077326,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      {
+        "n": 128,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "bytes_per_call": 589824,
+        "host_wall_ns_per_call": [
+          4585.9375,
+          4604.8203125,
+          4570.6328125,
+          4384.4375,
+          4608.7265625,
+          4616.5390625
+        ],
+        "host_wall_gbps": [
+          128.61579557069848,
+          128.0883856420836,
+          129.0464634102567,
+          134.52672093056407,
+          127.97982089005741,
+          127.76324255352274
+        ],
+        "min_ns": 4384.4375,
+        "median_ns": 4595.37890625,
+        "max_ns": 4616.5390625,
+        "min_gbps": 127.76324255352274,
+        "median_gbps": 128.35209060639104,
+        "max_gbps": 134.52672093056407,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      },
+      {
+        "n": 256,
+        "pair_order": [
+          "A",
+          "B",
+          "A",
+          "B",
+          "A",
+          "B"
+        ],
+        "bytes_per_call": 589824,
+        "host_wall_ns_per_call": [
+          4142.25,
+          4124.8359375,
+          3892.578125,
+          4181.31640625,
+          5246.2578125,
+          4147.13671875
+        ],
+        "host_wall_gbps": [
+          142.39217816404127,
+          142.99332359809765,
+          151.52528248871047,
+          141.06179554323222,
+          112.4275666732686,
+          142.2243923942253
+        ],
+        "min_ns": 3892.578125,
+        "median_ns": 4144.693359375,
+        "max_ns": 5246.2578125,
+        "min_gbps": 112.4275666732686,
+        "median_gbps": 142.3082852791333,
+        "max_gbps": 151.52528248871047,
+        "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+      }
+    ],
+    "measurement_label": "DIRTY_ENGINEERING"
+  },
+  "metal_captures": {
+    "note": "mx.metal.start_capture requires METAL_CAPTURE_ENABLED=1. A probe capture succeeded and wrote a .gputrace, but the bundle does not expose GPUEndTime/GPUStartTime as parseable text. No GPU timestamp is claimed. Trace deleted from /tmp (162 MiB shader blob). All GB/s remain HOST_WALL lower bounds.",
+    "probe": "CAPTURE_OK with METAL_CAPTURE_ENABLED=1; timestamps not extracted",
+    "measurement_label": "DIRTY_ENGINEERING"
+  },
+  "verdict": {
+    "kind": "SHAPE_SPLIT",
+    "text": "SPLIT. Qwen3.8 5120x17408 affine-4 isolated eval is 119.0-221.0 GB/s (median 181.7) HOST_WALL \u2014 that is the 100-400 GB/s band, so a quantized matvec CAN stream on this box when the organ is ~50 MiB. Q80 512x2048 affine-4 isolated eval is 2.12-2.43 GB/s (median 2.29) HOST_WALL, same ballpark as Hawking's 2.47-2.65 GB/s GPU timestamps on that exact organ. Comparing a 0.59 MiB batch-1 qmv to a 64 MiB DRAM row probe is a category error; the 230x framing is WRONG at Q80 organ size and RIGHT as a kernel-quality gap at Qwen3.8 size. Occupancy sweep 512x2048 affine-4 N=256: 112.4-151.5 GB/s (median 142.3) HOST_WALL. Incremental HOST_WALL N=128\u2192256 is 3694 ns/call (160 GB/s). Isolated Hawking q80_q4_gate GPU is 210 us; that is a real kernel-occupancy gap vs MLX in-flight, not a DRAM-row gap.",
+    "q80_512x2048_affine_q4_isolated": {
+      "iters_per_rep": 400,
+      "pair_order": [
+        "A",
+        "B",
+        "A",
+        "B",
+        "A",
+        "B"
+      ],
+      "host_wall_ns_per_call": [
+        278299.7925,
+        267893.9575,
+        265443.6475,
+        242249.6875,
+        247681.98,
+        249815.52
+      ],
+      "host_wall_gbps": [
+        2.1193835421203198,
+        2.2017069944550727,
+        2.222030949149009,
+        2.4347771346454263,
+        2.381376311671927,
+        2.3610382573508644
+      ],
+      "min_ns": 242249.6875,
+      "median_ns": 257629.58375,
+      "max_ns": 278299.7925,
+      "min_gbps": 2.1193835421203198,
+      "median_gbps": 2.2915346032499366,
+      "max_gbps": 2.4347771346454263,
+      "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+    },
+    "qwen38_5120x17408_affine_q4_isolated": {
+      "iters_per_rep": 11,
+      "pair_order": [
+        "A",
+        "B",
+        "A",
+        "B",
+        "A",
+        "B"
+      ],
+      "host_wall_ns_per_call": [
+        226844.63636363635,
+        309840.9090909091,
+        240571.9090909091,
+        421405.2727272727,
+        266769.0,
+        285822.0
+      ],
+      "host_wall_gbps": [
+        221.01047132378548,
+        161.8089752805692,
+        208.39939371747099,
+        118.97107901743475,
+        187.9342802199656,
+        175.4065117450721
+      ],
+      "min_ns": 226844.63636363635,
+      "median_ns": 276295.5,
+      "max_ns": 421405.2727272727,
+      "min_gbps": 118.97107901743475,
+      "median_gbps": 181.67039598251884,
+      "max_gbps": 221.01047132378548,
+      "time_authority": "HOST_WALL after mx.synchronize(); NOT MTLCommandBuffer GPU time. GB/s is a lower bound on kernel GB/s."
+    },
+    "occupancy_top": {
+      "n": 256,
+      "min_gbps": 112.4275666732686,
+      "median_gbps": 142.3082852791333,
+      "max_gbps": 151.52528248871047,
+      "ns": [
+        4142.25,
+        4124.8359375,
+        3892.578125,
+        4181.31640625,
+        5246.2578125,
+        4147.13671875
+      ]
+    },
+    "hawking_packed_gbps": "2.47-2.65 (q80_q4_gate, GPU timestamps, 557056 B)",
+    "row_probe_gbps": "560-647 (64 MiB read-reduce, GPU timestamps)",
+    "label": "DIRTY_ENGINEERING",
+    "time_authority": "HOST_WALL lower bound unless a capture parse says otherwise",
+    "incremental_n128_to_n256_ns": 3694.0078125,
+    "incremental_n128_to_n256_gbps": 159.67047985229456
+  },
+  "fallbacks": 0,
+  "pid": 70537,
+  "occupancy_derived": {
+    "bytes_per_call": 589824,
+    "levels": [
+      {
+        "n": 1,
+        "median_ns_per_call": 310854.5,
+        "median_total_ns": 310854.5,
+        "median_gbps": 1.897521861866662,
+        "min_gbps": 0.4025646240767258,
+        "max_gbps": 2.0518543514031564,
+        "all_ns_per_call": [
+          316542.0,
+          287459.0,
+          308667.0,
+          304709.0,
+          1465166.0,
+          313042.0
+        ],
+        "all_gbps": [
+          1.8633356710957787,
+          2.0518543514031564,
+          1.910874826269086,
+          1.9356960247317934,
+          0.4025646240767258,
+          1.884168897464238
+        ]
+      },
+      {
+        "n": 4,
+        "median_ns_per_call": 84635.5,
+        "median_total_ns": 338542.0,
+        "median_gbps": 6.972374319759448,
+        "min_gbps": 6.520382274744772,
+        "max_gbps": 7.482892049274958,
+        "all_ns_per_call": [
+          86500.0,
+          86614.75,
+          82771.0,
+          82312.5,
+          90458.5,
+          78823.0
+        ],
+        "all_gbps": [
+          6.818774566473988,
+          6.809740835134893,
+          7.125974073044907,
+          7.16566742596811,
+          6.520382274744772,
+          7.482892049274958
+        ],
+        "delta_from_prev": {
+          "dn": 3,
+          "d_total_ns": 27687.5,
+          "ns_per_added_call": 9229.166666666666,
+          "gbps_incremental": 63.908695259593685,
+          "note": "HOST_WALL delta. Independent x in one eval can overlap on GPU; incremental ns is not a serial GPU timestamp."
+        }
+      },
+      {
+        "n": 8,
+        "median_ns_per_call": 39023.4375,
+        "median_total_ns": 312187.5,
+        "median_gbps": 15.115166232588177,
+        "min_gbps": 8.128496124031008,
+        "max_gbps": 16.208130528123657,
+        "all_ns_per_call": [
+          37546.875,
+          39260.375,
+          36390.625,
+          72562.5,
+          44140.625,
+          38786.5
+        ],
+        "all_gbps": [
+          15.709003745318352,
+          15.023391905961162,
+          16.208130528123657,
+          8.128496124031008,
+          13.36238442477876,
+          15.206940559215191
+        ],
+        "delta_from_prev": {
+          "dn": 4,
+          "d_total_ns": -26354.5,
+          "ns_per_added_call": -6588.625,
+          "gbps_incremental": null,
+          "note": "HOST_WALL delta. Independent x in one eval can overlap on GPU; incremental ns is not a serial GPU timestamp."
+        }
+      },
+      {
+        "n": 32,
+        "median_ns_per_call": 15330.734375,
+        "median_total_ns": 490583.5,
+        "median_gbps": 38.48095251849894,
+        "min_gbps": 12.46449925705795,
+        "max_gbps": 39.714609153077326,
+        "all_ns_per_call": [
+          15890.625,
+          15546.875,
+          15114.59375,
+          14851.5625,
+          14947.90625,
+          47320.3125
+        ],
+        "all_gbps": [
+          37.117734513274335,
+          37.938428140703515,
+          39.023476896294355,
+          39.714609153077326,
+          39.45863655654115,
+          12.46449925705795
+        ],
+        "delta_from_prev": {
+          "dn": 24,
+          "d_total_ns": 178396.0,
+          "ns_per_added_call": 7433.166666666667,
+          "gbps_incremental": 79.35029933406578,
+          "note": "HOST_WALL delta. Independent x in one eval can overlap on GPU; incremental ns is not a serial GPU timestamp."
+        }
+      },
+      {
+        "n": 128,
+        "median_ns_per_call": 4595.37890625,
+        "median_total_ns": 588208.5,
+        "median_gbps": 128.35209060639104,
+        "min_gbps": 127.76324255352274,
+        "max_gbps": 134.52672093056407,
+        "all_ns_per_call": [
+          4585.9375,
+          4604.8203125,
+          4570.6328125,
+          4384.4375,
+          4608.7265625,
+          4616.5390625
+        ],
+        "all_gbps": [
+          128.61579557069848,
+          128.0883856420836,
+          129.0464634102567,
+          134.52672093056407,
+          127.97982089005741,
+          127.76324255352274
+        ],
+        "delta_from_prev": {
+          "dn": 96,
+          "d_total_ns": 97625.0,
+          "ns_per_added_call": 1016.9270833333334,
+          "gbps_incremental": 580.0061869398207,
+          "note": "HOST_WALL delta. Independent x in one eval can overlap on GPU; incremental ns is not a serial GPU timestamp."
+        }
+      },
+      {
+        "n": 256,
+        "median_ns_per_call": 4144.693359375,
+        "median_total_ns": 1061041.5,
+        "median_gbps": 142.3082852791333,
+        "min_gbps": 112.4275666732686,
+        "max_gbps": 151.52528248871047,
+        "all_ns_per_call": [
+          4142.25,
+          4124.8359375,
+          3892.578125,
+          4181.31640625,
+          5246.2578125,
+          4147.13671875
+        ],
+        "all_gbps": [
+          142.39217816404127,
+          142.99332359809765,
+          151.52528248871047,
+          141.06179554323222,
+          112.4275666732686,
+          142.2243923942253
+        ],
+        "delta_from_prev": {
+          "dn": 128,
+          "d_total_ns": 472833.0,
+          "ns_per_added_call": 3694.0078125,
+          "gbps_incremental": 159.67047985229456,
+          "note": "HOST_WALL delta. Independent x in one eval can overlap on GPU; incremental ns is not a serial GPU timestamp."
+        }
+      }
+    ],
+    "headline": "N=1 isolated median 1.90 GB/s (310854 ns). N=128\u2192256 incremental 3694 ns/call \u2248 159.7 GB/s HOST_WALL delta.",
+    "label": "DIRTY_ENGINEERING",
+    "time_authority": "HOST_WALL delta, not MTLCommandBuffer GPU timestamps. Capture layer was not inserted."
+  },
+  "table_isolated_eval_loop": [
+    {
+      "shape": "q80_512x2048",
+      "codec": "affine_q4_gs64",
+      "bytes": 589824,
+      "protocol": "eval_loop",
+      "ns": [
+        278299.7925,
+        267893.9575,
+        265443.6475,
+        242249.6875,
+        247681.98,
+        249815.52
+      ],
+      "gbps": [
+        2.1193835421203198,
+        2.2017069944550727,
+        2.222030949149009,
+        2.4347771346454263,
+        2.381376311671927,
+        2.3610382573508644
+      ],
+      "median_ns": 257629.58375,
+      "median_gbps": 2.2915346032499366,
+      "min_gbps": 2.1193835421203198,
+      "max_gbps": 2.4347771346454263
+    },
+    {
+      "shape": "q80_512x2048",
+      "codec": "affine_q2_gs64",
+      "bytes": 327680,
+      "protocol": "eval_loop",
+      "ns": [
+        245379.375,
+        252040.3125,
+        259286.25,
+        274303.4375,
+        251095.73,
+        228991.4575
+      ],
+      "gbps": [
+        1.3354015593201345,
+        1.3001094814941558,
+        1.2637770032155582,
+        1.1945894772098873,
+        1.305000288137118,
+        1.4309704107630303
+      ],
+      "median_ns": 251568.02125,
+      "median_gbps": 1.302554884815637,
+      "min_gbps": 1.1945894772098873,
+      "max_gbps": 1.4309704107630303
+    },
+    {
+      "shape": "q80_512x2048",
+      "codec": "mxfp4_gs32",
+      "bytes": 557056,
+      "protocol": "eval_loop",
+      "ns": [
+        219292.71,
+        215547.7075,
+        218337.1875,
+        211181.0425,
+        212066.7725,
+        212948.4375
+      ],
+      "gbps": [
+        2.540239481741094,
+        2.584374505583642,
+        2.551356488458935,
+        2.637812529976501,
+        2.6267952939209276,
+        2.6159196401711093
+      ],
+      "median_ns": 214248.0725,
+      "median_gbps": 2.600147072877376,
+      "min_gbps": 2.540239481741094,
+      "max_gbps": 2.637812529976501
+    },
+    {
+      "shape": "q80_2048x512",
+      "codec": "affine_q4_gs64",
+      "bytes": 589824,
+      "protocol": "eval_loop",
+      "ns": [
+        187461.875,
+        199880.3125,
+        241935.4175,
+        246751.25,
+        250794.0625,
+        258291.5625
+      ],
+      "gbps": [
+        3.1463677614448273,
+        2.9508859207932248,
+        2.4379398688081704,
+        2.3903587114553626,
+        2.3518260126273924,
+        2.283558914163137
+      ],
+      "median_ns": 244343.33375,
+      "median_gbps": 2.4141492901317667,
+      "min_gbps": 2.283558914163137,
+      "max_gbps": 3.1463677614448273
+    },
+    {
+      "shape": "q80_2048x512",
+      "codec": "affine_q2_gs64",
+      "bytes": 327680,
+      "protocol": "eval_loop",
+      "ns": [
+        251017.7075,
+        228737.2925,
+        194884.2725,
+        196811.1475,
+        193292.29,
+        196398.335
+      ],
+      "gbps": [
+        1.3054059144413148,
+        1.4325604557901286,
+        1.681408129021802,
+        1.664946341517571,
+        1.6952564429755579,
+        1.668445916305757
+      ],
+      "median_ns": 196604.74125,
+      "median_gbps": 1.666696128911664,
+      "min_gbps": 1.3054059144413148,
+      "max_gbps": 1.6952564429755579
+    },
+    {
+      "shape": "q80_2048x512",
+      "codec": "mxfp4_gs32",
+      "bytes": 557056,
+      "protocol": "eval_loop",
+      "ns": [
+        196785.9375,
+        201110.625,
+        196306.46,
+        229163.855,
+        241362.085,
+        212651.04
+      ],
+      "gbps": [
+        2.830771380703969,
+        2.7698984079036104,
+        2.837685524969479,
+        2.430819642128991,
+        2.3079681301228403,
+        2.619578065548139
+      ],
+      "median_ns": 206880.83250000002,
+      "median_gbps": 2.6947382367258745,
+      "min_gbps": 2.3079681301228403,
+      "max_gbps": 2.837685524969479
+    },
+    {
+      "shape": "qwen38_5120x17408",
+      "codec": "affine_q4_gs64",
+      "bytes": 50135040,
+      "protocol": "eval_loop",
+      "ns": [
+        226844.63636363635,
+        309840.9090909091,
+        240571.9090909091,
+        421405.2727272727,
+        266769.0,
+        285822.0
+      ],
+      "gbps": [
+        221.01047132378548,
+        161.8089752805692,
+        208.39939371747099,
+        118.97107901743475,
+        187.9342802199656,
+        175.4065117450721
+      ],
+      "median_ns": 276295.5,
+      "median_gbps": 181.67039598251884,
+      "min_gbps": 118.97107901743475,
+      "max_gbps": 221.01047132378548
+    },
+    {
+      "shape": "qwen38_5120x17408",
+      "codec": "affine_q2_gs64",
+      "bytes": 27852800,
+      "protocol": "eval_loop",
+      "ns": [
+        346297.61904761905,
+        281319.4761904762,
+        292775.8095238095,
+        326033.7619047619,
+        239460.33333333334,
+        285378.95238095237
+      ],
+      "gbps": [
+        80.43023823438413,
+        99.00772025162377,
+        95.13354277903522,
+        85.42918941056207,
+        116.31488026548585,
+        97.59934910273024
+      ],
+      "median_ns": 289077.38095238095,
+      "median_gbps": 96.36644594088273,
+      "min_gbps": 80.43023823438413,
+      "max_gbps": 116.31488026548585
+    },
+    {
+      "shape": "qwen38_5120x17408",
+      "codec": "mxfp4_gs32",
+      "bytes": 47349760,
+      "protocol": "eval_loop",
+      "ns": [
+        240020.83333333334,
+        230076.41666666666,
+        305392.4166666667,
+        257892.41666666666,
+        387329.8333333333,
+        269677.0833333333
+      ],
+      "gbps": [
+        197.27354222723721,
+        205.80014538647848,
+        155.04563118108422,
+        183.60276200444048,
+        122.24661238333049,
+        175.57947236277957
+      ],
+      "median_ns": 263784.75,
+      "median_gbps": 179.59111718361004,
+      "min_gbps": 122.24661238333049,
+      "max_gbps": 205.80014538647848
+    },
+    {
+      "shape": "qwen38_17408x5120",
+      "codec": "affine_q4_gs64",
+      "bytes": 50135040,
+      "protocol": "eval_loop",
+      "ns": [
+        260011.36363636365,
+        318219.7272727273,
+        290268.9090909091,
+        361863.63636363635,
+        271886.36363636365,
+        250390.18181818182
+      ],
+      "gbps": [
+        192.8186495345483,
+        157.5484977932629,
+        172.71929038841097,
+        138.54677553071224,
+        184.39703753239152,
+        200.22765923148307
+      ],
+      "median_ns": 281077.63636363635,
+      "median_gbps": 178.55816396040126,
+      "min_gbps": 138.54677553071224,
+      "max_gbps": 200.22765923148307
+    },
+    {
+      "shape": "qwen38_17408x5120",
+      "codec": "affine_q2_gs64",
+      "bytes": 27852800,
+      "protocol": "eval_loop",
+      "ns": [
+        291982.14285714284,
+        328994.04761904763,
+        299785.71428571426,
+        311611.09523809527,
+        279142.85714285716,
+        293339.28571428574
+      ],
+      "gbps": [
+        95.39213503761238,
+        84.66049827214995,
+        92.90903025970933,
+        89.38321011553931,
+        99.7797338792221,
+        94.95080051135325
+      ],
+      "median_ns": 296562.5,
+      "median_gbps": 93.92991538553129,
+      "min_gbps": 84.66049827214995,
+      "max_gbps": 99.7797338792221
+    },
+    {
+      "shape": "qwen38_17408x5120",
+      "codec": "mxfp4_gs32",
+      "bytes": 47349760,
+      "protocol": "eval_loop",
+      "ns": [
+        257284.66666666666,
+        256055.58333333334,
+        268090.3333333333,
+        352385.4166666667,
+        283437.5,
+        246566.0
+      ],
+      "gbps": [
+        184.036462854374,
+        184.91984975918314,
+        176.61867703796358,
+        134.36923822755622,
+        167.05538257993385,
+        192.03685828540836
+      ],
+      "median_ns": 262687.5,
+      "median_gbps": 180.3275699461688,
+      "min_gbps": 134.36923822755622,
+      "max_gbps": 192.03685828540836
+    }
+  ]
+}

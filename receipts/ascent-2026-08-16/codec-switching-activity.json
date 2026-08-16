@@ -1,0 +1,1810 @@
+{
+  "baseline_label": "DIRTY_ENGINEERING",
+  "baseline_ns_per_token": 143520000,
+  "claim_boundary": {
+    "artifact_packed_q80_mixed": false,
+    "bpw_changed": false,
+    "coherence_generation_tested": false,
+    "decode_kernel_exists": true,
+    "joules_measured": false,
+    "lut_not_in_production_library": true,
+    "note": "The permutation is free on the value/BPW axes. Shipping it on the token path requires a LUT (or Gray) decode in the production kernel. This lane did not replace the shipped q = code - bound extract.",
+    "weight_values_changed": false
+  },
+  "energy_claim": {
+    "kind": "DERIVED_not_measured_joules",
+    "note": "Energy is inferred from CMOS P = alpha C V^2 f. Only alpha is software-controlled here. No joule number is claimed.",
+    "powermetrics": "unavailable_no_root",
+    "primary_metric": "transition_count_reduction"
+  },
+  "fetch_order": {
+    "authority": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "gate_up_signs": "row-major; one byte per 8 consecutive columns after alignment. simd/tg256 coalesce to sequential sign bytes of the row.",
+    "hgravs_codes": "element = row*cols+col, 3-bit LSB-first extract. simd 32-wide tiles, 8 rows/TG. Packed bits are sequential in that element order.",
+    "not_file_layout": "JSON envelopes are stripped before bind. Activity is on kernel-facing bodies.",
+    "rice": "serial bitstream, thread 0, bind-time expand."
+  },
+  "gpu": {
+    "a_median_ns": 299000,
+    "a_original_prod_kernel_ns": [
+      300000,
+      299000,
+      299000
+    ],
+    "b_median_ns": 299333,
+    "b_remapped_lut_kernel_ns": [
+      299250,
+      299375,
+      299333
+    ],
+    "cpu_wall_is_not_gpu_time": true,
+    "device_name": "Apple M3 Ultra",
+    "fallbacks": 0,
+    "gpu_private_bound_vs_lut_bit_identical": false,
+    "gpu_private_bound_vs_lut_max_abs": 4.470348358154297e-8,
+    "gpu_private_bound_vs_lut_n_bit_diff": 1546,
+    "gpu_vs_cpu_oracle_gate": "numeric_equivalence_two_stage_f32",
+    "latency_verdict": "same_speed_within_3pct_lower_switching",
+    "lut_remapped_max_abs_error": 1.043081283569336e-7,
+    "pack_kind": "real_q30_down_sliced_requantized_q80_r160_b3",
+    "pairs": 3,
+    "private_bound_max_abs_error": 8.940696716308594e-8,
+    "production_two_stage_max_abs_error": 1.043081283569336e-7,
+    "timing_authority": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait_until_completed",
+    "token_scale_a_ns": 143520000,
+    "token_scale_b_ns": 143679840,
+    "tolerance": 0.000019999999494757503
+  },
+  "lane": "codec-switching-activity",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "next_bottleneck": {
+    "measured_ns": 299333,
+    "what": "down_proj two-stage factor matvec occupancy/dispatch, not switching activity",
+    "why": "Q80 mixed is already known dispatch/host bound (~0.79% of 700-800 GB/s). A free alpha reduction does not move that wall unless the bus is contention-limited, which this GPU timing tests."
+  },
+  "other_free_variables": {
+    "binary_polarity": "free and Hamming-invariant — not useful",
+    "bit_plane_msb_vs_lsb": "free if extract matches; can change u32-word Hamming because 3-bit codes straddle words. Intra-word bit reversal of whole words cannot.",
+    "gray_of_quant_levels": "a specific assignment; reported next to the empirical optimum",
+    "group_scale_packing": "kernel fetches scales[element/group_size] in group-index order, which is storage order. Permuting storage and the index together fetches the same scale words in the same order, so activity is unchanged. Changing grouping would change values (not free).",
+    "rice_symbols": "not a free codebook; would change BPW",
+    "sign_magnitude_vs_twos": "also specific assignments of the same 3-bit alphabet; decode formula changes; values stay identical if the LUT matches"
+  },
+  "q80_synthetic": {
+    "cpu_oracle_bit_identical_after_remap": true,
+    "down_left": {
+      "bits": 3,
+      "code_stream": {
+        "alpha": 0.48420964826349366,
+        "alpha_vs_random_0_5": 0.9684192965269873,
+        "bits": 3,
+        "codes": 327680,
+        "histogram": [
+          28672,
+          54227,
+          54179,
+          53513,
+          54184,
+          54172,
+          28733,
+          0
+        ],
+        "mean_hamming": 1.452628944790481,
+        "transitions": 475996
+      },
+      "group_size": 64,
+      "kernel_simd_tile": {
+        "bytes": 122880,
+        "label": "simd_tile_fetch",
+        "u128": {
+          "alpha": 0.5163076653861179,
+          "alpha_vs_random_0_5": 1.0326153307722359,
+          "mean_hamming": 66.0873811694231,
+          "transitions": 507485,
+          "transitions_per_byte": 4.129923502604167,
+          "word_bits": 128,
+          "words": 7680
+        },
+        "u32": {
+          "alpha": 0.48126159705719584,
+          "alpha_vs_random_0_5": 0.9625231941143917,
+          "mean_hamming": 15.400371105830267,
+          "transitions": 473084,
+          "transitions_per_byte": 3.849967447916667,
+          "word_bits": 32,
+          "words": 30720
+        },
+        "u8": {
+          "alpha": 0.4870940111817316,
+          "alpha_vs_random_0_5": 0.9741880223634632,
+          "mean_hamming": 3.896752089453853,
+          "transitions": 478829,
+          "transitions_per_byte": 3.896720377604167,
+          "word_bits": 8,
+          "words": 122880
+        }
+      },
+      "msb_vs_lsb_u32": {
+        "lsb": {
+          "alpha": 0.4759656076044142,
+          "alpha_vs_random_0_5": 0.9519312152088284,
+          "mean_hamming": 15.230899443341254,
+          "transitions": 467878,
+          "transitions_per_byte": 3.807600911458333,
+          "word_bits": 32,
+          "words": 30720
+        },
+        "msb": {
+          "alpha": 0.48914250952179433,
+          "alpha_vs_random_0_5": 0.9782850190435887,
+          "mean_hamming": 15.652560304697419,
+          "transitions": 480831,
+          "transitions_per_byte": 3.9130126953125,
+          "word_bits": 32,
+          "words": 30720
+        },
+        "note": "MSB-first is free iff extract is also MSB-first. Intra-word bit reversal of whole words preserves Hamming; 3-bit codes straddle words, so MSB vs LSB can change u32 activity."
+      },
+      "name": "down_proj L",
+      "packed_bytes": 122880,
+      "packed_storage": {
+        "bytes": 122880,
+        "code_stream": {
+          "alpha": 0.48420964826349366,
+          "alpha_vs_random_0_5": 0.9684192965269873,
+          "bits": 3,
+          "codes": 327680,
+          "histogram": [
+            28672,
+            54227,
+            54179,
+            53513,
+            54184,
+            54172,
+            28733,
+            0
+          ],
+          "mean_hamming": 1.452628944790481,
+          "transitions": 475996
+        },
+        "label": "storage_order",
+        "u128": {
+          "alpha": 0.4835397268524547,
+          "alpha_vs_random_0_5": 0.9670794537049094,
+          "mean_hamming": 61.893085037114204,
+          "transitions": 475277,
+          "transitions_per_byte": 3.867814127604167,
+          "word_bits": 128,
+          "words": 7680
+        },
+        "u32": {
+          "alpha": 0.4759656076044142,
+          "alpha_vs_random_0_5": 0.9519312152088284,
+          "mean_hamming": 15.230899443341254,
+          "transitions": 467878,
+          "transitions_per_byte": 3.807600911458333,
+          "word_bits": 32,
+          "words": 30720
+        },
+        "u8": {
+          "alpha": 0.48486824437047826,
+          "alpha_vs_random_0_5": 0.9697364887409565,
+          "mean_hamming": 3.878945954963826,
+          "transitions": 476641,
+          "transitions_per_byte": 3.878914388020833,
+          "word_bits": 8,
+          "words": 122880
+        }
+      },
+      "scale_bytes": 10240,
+      "scales": {
+        "bytes": 10240,
+        "label": "fp16_scales",
+        "u128": {
+          "alpha": 0.19692634976525822,
+          "alpha_vs_random_0_5": 0.39385269953051644,
+          "mean_hamming": 25.206572769953052,
+          "transitions": 16107,
+          "transitions_per_byte": 1.57294921875,
+          "word_bits": 128,
+          "words": 640
+        },
+        "u32": {
+          "alpha": 0.1710018561938257,
+          "alpha_vs_random_0_5": 0.3420037123876514,
+          "mean_hamming": 5.472059398202423,
+          "transitions": 14003,
+          "transitions_per_byte": 1.36748046875,
+          "word_bits": 32,
+          "words": 2560
+        },
+        "u8": {
+          "alpha": 0.41769215743724974,
+          "alpha_vs_random_0_5": 0.8353843148744995,
+          "mean_hamming": 3.341537259497998,
+          "transitions": 34214,
+          "transitions_per_byte": 3.3412109375,
+          "word_bits": 8,
+          "words": 10240
+        }
+      },
+      "shape": [
+        2048,
+        160
+      ]
+    },
+    "down_left_assignment": {
+      "best": {
+        "bits": 3,
+        "cost_transitions": 459866,
+        "identity_cost_transitions": 475996,
+        "method": "exact_brute_force",
+        "reduction_ratio": 0.03388683938520487,
+        "symbol_to_code": [
+          3,
+          5,
+          1,
+          4,
+          0,
+          6,
+          2,
+          7
+        ],
+        "transition_reduction": 16130
+      },
+      "code_stream_after": {
+        "alpha": 0.46780131368402206,
+        "alpha_vs_random_0_5": 0.9356026273680441,
+        "bits": 3,
+        "codes": 327680,
+        "histogram": [
+          54184,
+          54179,
+          28733,
+          28672,
+          53513,
+          54227,
+          54172,
+          0
+        ],
+        "mean_hamming": 1.4034039410520662,
+        "transitions": 459866
+      },
+      "code_stream_before": {
+        "alpha": 0.48420964826349366,
+        "alpha_vs_random_0_5": 0.9684192965269873,
+        "bits": 3,
+        "codes": 327680,
+        "histogram": [
+          28672,
+          54227,
+          54179,
+          53513,
+          54184,
+          54172,
+          28733,
+          0
+        ],
+        "mean_hamming": 1.452628944790481,
+        "transitions": 475996
+      },
+      "gray": {
+        "bits": 3,
+        "cost_transitions": 492117,
+        "identity_cost_transitions": 475996,
+        "method": "reflected_gray",
+        "reduction_ratio": -0.03386793166329127,
+        "symbol_to_code": [
+          0,
+          1,
+          3,
+          2,
+          6,
+          7,
+          5,
+          4
+        ],
+        "transition_reduction": 0
+      },
+      "identity": {
+        "bits": 3,
+        "cost_transitions": 475996,
+        "identity_cost_transitions": 475996,
+        "method": "identity",
+        "reduction_ratio": 0.0,
+        "symbol_to_code": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "transition_reduction": 0
+      },
+      "packed_u32_after": {
+        "alpha": 0.5021057814381978,
+        "alpha_vs_random_0_5": 1.0042115628763957,
+        "mean_hamming": 16.06738500602233,
+        "transitions": 493574,
+        "transitions_per_byte": 4.016715494791667,
+        "word_bits": 32,
+        "words": 30720
+      },
+      "packed_u32_before": {
+        "alpha": 0.4759656076044142,
+        "alpha_vs_random_0_5": 0.9519312152088284,
+        "mean_hamming": 15.230899443341254,
+        "transitions": 467878,
+        "transitions_per_byte": 3.807600911458333,
+        "word_bits": 32,
+        "words": 30720
+      },
+      "proof": {
+        "bit_identical_signed_levels": true,
+        "bpw_unchanged": true,
+        "elements": 327680,
+        "packed_bytes_after": 122880,
+        "packed_bytes_before": 122880,
+        "scales_unchanged": true
+      },
+      "sign_magnitude": {
+        "bits": 3,
+        "cost_transitions": 466310,
+        "identity_cost_transitions": 475996,
+        "method": "sign_magnitude",
+        "reduction_ratio": 0.02034891049504617,
+        "symbol_to_code": [
+          7,
+          6,
+          5,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "transition_reduction": 9686
+      },
+      "twos_complement": {
+        "bits": 3,
+        "cost_transitions": 476115,
+        "identity_cost_transitions": 475996,
+        "method": "twos_complement",
+        "reduction_ratio": -0.00025000210085801555,
+        "symbol_to_code": [
+          5,
+          6,
+          7,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "transition_reduction": 0
+      }
+    },
+    "down_right": {
+      "bits": 3,
+      "code_stream": {
+        "alpha": 0.48427511729065703,
+        "alpha_vs_random_0_5": 0.9685502345813141,
+        "bits": 3,
+        "codes": 81920,
+        "histogram": [
+          7155,
+          13578,
+          13524,
+          13398,
+          13543,
+          13555,
+          7167,
+          0
+        ],
+        "mean_hamming": 1.4528253518719711,
+        "transitions": 119014
+      },
+      "group_size": 64,
+      "kernel_simd_tile": {
+        "bytes": 30720,
+        "label": "simd_tile_fetch",
+        "u128": {
+          "alpha": 0.5046248045857217,
+          "alpha_vs_random_0_5": 1.0092496091714434,
+          "mean_hamming": 64.59197498697237,
+          "transitions": 123952,
+          "transitions_per_byte": 4.034895833333334,
+          "word_bits": 128,
+          "words": 1920
+        },
+        "u32": {
+          "alpha": 0.486367039979164,
+          "alpha_vs_random_0_5": 0.972734079958328,
+          "mean_hamming": 15.563745279333247,
+          "transitions": 119514,
+          "transitions_per_byte": 3.8904296875,
+          "word_bits": 32,
+          "words": 7680
+        },
+        "u8": {
+          "alpha": 0.4865962433672971,
+          "alpha_vs_random_0_5": 0.9731924867345942,
+          "mean_hamming": 3.892769946938377,
+          "transitions": 119582,
+          "transitions_per_byte": 3.8926432291666666,
+          "word_bits": 8,
+          "words": 30720
+        }
+      },
+      "msb_vs_lsb_u32": {
+        "lsb": {
+          "alpha": 0.47591646047662456,
+          "alpha_vs_random_0_5": 0.9518329209532491,
+          "mean_hamming": 15.229326735251986,
+          "transitions": 116946,
+          "transitions_per_byte": 3.8068359375,
+          "word_bits": 32,
+          "words": 7680
+        },
+        "msb": {
+          "alpha": 0.4889308503711421,
+          "alpha_vs_random_0_5": 0.9778617007422842,
+          "mean_hamming": 15.645787211876547,
+          "transitions": 120144,
+          "transitions_per_byte": 3.9109375,
+          "word_bits": 32,
+          "words": 7680
+        },
+        "note": "MSB-first is free iff extract is also MSB-first. Intra-word bit reversal of whole words preserves Hamming; 3-bit codes straddle words, so MSB vs LSB can change u32 activity."
+      },
+      "name": "down_proj R",
+      "packed_bytes": 30720,
+      "packed_storage": {
+        "bytes": 30720,
+        "code_stream": {
+          "alpha": 0.48427511729065703,
+          "alpha_vs_random_0_5": 0.9685502345813141,
+          "bits": 3,
+          "codes": 81920,
+          "histogram": [
+            7155,
+            13578,
+            13524,
+            13398,
+            13543,
+            13555,
+            7167,
+            0
+          ],
+          "mean_hamming": 1.4528253518719711,
+          "transitions": 119014
+        },
+        "label": "storage_order",
+        "u128": {
+          "alpha": 0.48343456878582597,
+          "alpha_vs_random_0_5": 0.9668691375716519,
+          "mean_hamming": 61.879624804585724,
+          "transitions": 118747,
+          "transitions_per_byte": 3.865462239583333,
+          "word_bits": 128,
+          "words": 1920
+        },
+        "u32": {
+          "alpha": 0.47591646047662456,
+          "alpha_vs_random_0_5": 0.9518329209532491,
+          "mean_hamming": 15.229326735251986,
+          "transitions": 116946,
+          "transitions_per_byte": 3.8068359375,
+          "word_bits": 32,
+          "words": 7680
+        },
+        "u8": {
+          "alpha": 0.4848465119307269,
+          "alpha_vs_random_0_5": 0.9696930238614538,
+          "mean_hamming": 3.8787720954458154,
+          "transitions": 119152,
+          "transitions_per_byte": 3.878645833333333,
+          "word_bits": 8,
+          "words": 30720
+        }
+      },
+      "scale_bytes": 2560,
+      "scales": {
+        "bytes": 2560,
+        "label": "fp16_scales",
+        "u128": {
+          "alpha": 0.1967374213836478,
+          "alpha_vs_random_0_5": 0.3934748427672956,
+          "mean_hamming": 25.18238993710692,
+          "transitions": 4004,
+          "transitions_per_byte": 1.5640625,
+          "word_bits": 128,
+          "words": 160
+        },
+        "u32": {
+          "alpha": 0.1698943661971831,
+          "alpha_vs_random_0_5": 0.3397887323943662,
+          "mean_hamming": 5.436619718309859,
+          "transitions": 3474,
+          "transitions_per_byte": 1.35703125,
+          "word_bits": 32,
+          "words": 640
+        },
+        "u8": {
+          "alpha": 0.41705744431418523,
+          "alpha_vs_random_0_5": 0.8341148886283705,
+          "mean_hamming": 3.336459554513482,
+          "transitions": 8538,
+          "transitions_per_byte": 3.33515625,
+          "word_bits": 8,
+          "words": 2560
+        }
+      },
+      "shape": [
+        160,
+        512
+      ]
+    },
+    "down_right_assignment": {
+      "best": {
+        "bits": 3,
+        "cost_transitions": 114945,
+        "identity_cost_transitions": 119014,
+        "method": "exact_brute_force",
+        "reduction_ratio": 0.03418925504562487,
+        "symbol_to_code": [
+          3,
+          5,
+          1,
+          4,
+          0,
+          6,
+          2,
+          7
+        ],
+        "transition_reduction": 4069
+      },
+      "code_stream_after": {
+        "alpha": 0.46771811179335687,
+        "alpha_vs_random_0_5": 0.9354362235867137,
+        "bits": 3,
+        "codes": 81920,
+        "histogram": [
+          13543,
+          13524,
+          7167,
+          7155,
+          13398,
+          13578,
+          13555,
+          0
+        ],
+        "mean_hamming": 1.4031543353800706,
+        "transitions": 114945
+      },
+      "code_stream_before": {
+        "alpha": 0.48427511729065703,
+        "alpha_vs_random_0_5": 0.9685502345813141,
+        "bits": 3,
+        "codes": 81920,
+        "histogram": [
+          7155,
+          13578,
+          13524,
+          13398,
+          13543,
+          13555,
+          7167,
+          0
+        ],
+        "mean_hamming": 1.4528253518719711,
+        "transitions": 119014
+      },
+      "gray": {
+        "bits": 3,
+        "cost_transitions": 123058,
+        "identity_cost_transitions": 119014,
+        "method": "reflected_gray",
+        "reduction_ratio": -0.033979195724872735,
+        "symbol_to_code": [
+          0,
+          1,
+          3,
+          2,
+          6,
+          7,
+          5,
+          4
+        ],
+        "transition_reduction": 0
+      },
+      "identity": {
+        "bits": 3,
+        "cost_transitions": 119014,
+        "identity_cost_transitions": 119014,
+        "method": "identity",
+        "reduction_ratio": 0.0,
+        "symbol_to_code": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "transition_reduction": 0
+      },
+      "packed_u32_after": {
+        "alpha": 0.5023888201588749,
+        "alpha_vs_random_0_5": 1.0047776403177497,
+        "mean_hamming": 16.076442245083996,
+        "transitions": 123451,
+        "transitions_per_byte": 4.018587239583334,
+        "word_bits": 32,
+        "words": 7680
+      },
+      "packed_u32_before": {
+        "alpha": 0.47591646047662456,
+        "alpha_vs_random_0_5": 0.9518329209532491,
+        "mean_hamming": 15.229326735251986,
+        "transitions": 116946,
+        "transitions_per_byte": 3.8068359375,
+        "word_bits": 32,
+        "words": 7680
+      },
+      "proof": {
+        "bit_identical_signed_levels": true,
+        "bpw_unchanged": true,
+        "elements": 81920,
+        "packed_bytes_after": 30720,
+        "packed_bytes_before": 30720,
+        "scales_unchanged": true
+      },
+      "sign_magnitude": {
+        "bits": 3,
+        "cost_transitions": 116575,
+        "identity_cost_transitions": 119014,
+        "method": "sign_magnitude",
+        "reduction_ratio": 0.02049338733258277,
+        "symbol_to_code": [
+          7,
+          6,
+          5,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "transition_reduction": 2439
+      },
+      "twos_complement": {
+        "bits": 3,
+        "cost_transitions": 119062,
+        "identity_cost_transitions": 119014,
+        "method": "twos_complement",
+        "reduction_ratio": -0.00040331389584413735,
+        "symbol_to_code": [
+          5,
+          6,
+          7,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "transition_reduction": 0
+      }
+    },
+    "gate": {
+      "codec": "binary_group",
+      "kernel_fetch": "row-major sign bytes; serial/simd_bytes/tg256 consume one byte per 8 columns",
+      "name": "gate_proj",
+      "packed": {
+        "bytes": 131072,
+        "code_stream": {
+          "alpha": 0.49706601816751306,
+          "alpha_vs_random_0_5": 0.9941320363350261,
+          "bits": 1,
+          "codes": 1048576,
+          "histogram": [
+            522194,
+            526382
+          ],
+          "mean_hamming": 0.49706601816751306,
+          "transitions": 521211
+        },
+        "label": "sign_bytes",
+        "u128": {
+          "alpha": 0.5361286396654865,
+          "alpha_vs_random_0_5": 1.072257279330973,
+          "mean_hamming": 68.62446587718227,
+          "transitions": 562103,
+          "transitions_per_byte": 4.288505554199219,
+          "word_bits": 128,
+          "words": 8192
+        },
+        "u32": {
+          "alpha": 0.4297482985930967,
+          "alpha_vs_random_0_5": 0.8594965971861934,
+          "mean_hamming": 13.751945554979095,
+          "transitions": 450610,
+          "transitions_per_byte": 3.4378814697265625,
+          "word_bits": 32,
+          "words": 32768
+        },
+        "u8": {
+          "alpha": 0.5454381594708212,
+          "alpha_vs_random_0_5": 1.0908763189416424,
+          "mean_hamming": 4.3635052757665695,
+          "transitions": 571929,
+          "transitions_per_byte": 4.363471984863281,
+          "word_bits": 8,
+          "words": 131072
+        }
+      },
+      "polarity_flip": {
+        "free": true,
+        "hamming_unchanged": true,
+        "note": "The only 1-bit permutation is polarity. Hamming(a,b) = Hamming(~a,~b), so activity is invariant.",
+        "transitions_after": 521211,
+        "transitions_before": 521211
+      },
+      "scale_bytes": 16384,
+      "scales": {
+        "bytes": 16384,
+        "label": "fp16_scales",
+        "u128": {
+          "alpha": 0.35961174242424243,
+          "alpha_vs_random_0_5": 0.7192234848484849,
+          "mean_hamming": 46.03030303030303,
+          "transitions": 47089,
+          "transitions_per_byte": 2.87408447265625,
+          "word_bits": 128,
+          "words": 1024
+        },
+        "u32": {
+          "alpha": 0.3663843101343101,
+          "alpha_vs_random_0_5": 0.7327686202686202,
+          "mean_hamming": 11.724297924297924,
+          "transitions": 48011,
+          "transitions_per_byte": 2.93035888671875,
+          "word_bits": 32,
+          "words": 4096
+        },
+        "u8": {
+          "alpha": 0.5180369895623512,
+          "alpha_vs_random_0_5": 1.0360739791247024,
+          "mean_hamming": 4.14429591649881,
+          "transitions": 67896,
+          "transitions_per_byte": 4.14404296875,
+          "word_bits": 8,
+          "words": 16384
+        }
+      },
+      "shape": [
+        512,
+        2048
+      ],
+      "sign_bits": {
+        "alpha": 0.49706601816751306,
+        "alpha_vs_random_0_5": 0.9941320363350261,
+        "bits": 1,
+        "codes": 1048576,
+        "histogram": [
+          522194,
+          526382
+        ],
+        "mean_hamming": 0.49706601816751306,
+        "transitions": 521211
+      },
+      "sign_bytes": 131072
+    },
+    "note": "Same deterministic pack the Q80 mixed-decode kernels already grade against. Not a BF16 parent slice.",
+    "up_binary": {
+      "codec": "binary_group",
+      "kernel_fetch": "row-major sign bytes; serial/simd_bytes/tg256 consume one byte per 8 columns",
+      "name": "up_proj binary base",
+      "packed": {
+        "bytes": 131072,
+        "code_stream": {
+          "alpha": 0.49705266671435044,
+          "alpha_vs_random_0_5": 0.9941053334287009,
+          "bits": 1,
+          "codes": 1048576,
+          "histogram": [
+            522172,
+            526404
+          ],
+          "mean_hamming": 0.49705266671435044,
+          "transitions": 521197
+        },
+        "label": "sign_bytes",
+        "u128": {
+          "alpha": 0.5361334086192162,
+          "alpha_vs_random_0_5": 1.0722668172384324,
+          "mean_hamming": 68.62507630325968,
+          "transitions": 562108,
+          "transitions_per_byte": 4.288543701171875,
+          "word_bits": 128,
+          "words": 8192
+        },
+        "u32": {
+          "alpha": 0.4297549745170446,
+          "alpha_vs_random_0_5": 0.8595099490340892,
+          "mean_hamming": 13.752159184545427,
+          "transitions": 450617,
+          "transitions_per_byte": 3.4379348754882812,
+          "word_bits": 32,
+          "words": 32768
+        },
+        "u8": {
+          "alpha": 0.5454591404658544,
+          "alpha_vs_random_0_5": 1.0909182809317088,
+          "mean_hamming": 4.363673123726835,
+          "transitions": 571951,
+          "transitions_per_byte": 4.363639831542969,
+          "word_bits": 8,
+          "words": 131072
+        }
+      },
+      "polarity_flip": {
+        "free": true,
+        "hamming_unchanged": true,
+        "note": "The only 1-bit permutation is polarity. Hamming(a,b) = Hamming(~a,~b), so activity is invariant.",
+        "transitions_after": 521197,
+        "transitions_before": 521197
+      },
+      "scale_bytes": 16384,
+      "scales": {
+        "bytes": 16384,
+        "label": "fp16_scales",
+        "u128": {
+          "alpha": 0.35981030058651026,
+          "alpha_vs_random_0_5": 0.7196206011730205,
+          "mean_hamming": 46.05571847507331,
+          "transitions": 47115,
+          "transitions_per_byte": 2.87567138671875,
+          "word_bits": 128,
+          "words": 1024
+        },
+        "u32": {
+          "alpha": 0.3659874847374847,
+          "alpha_vs_random_0_5": 0.7319749694749694,
+          "mean_hamming": 11.71159951159951,
+          "transitions": 47959,
+          "transitions_per_byte": 2.92718505859375,
+          "word_bits": 32,
+          "words": 4096
+        },
+        "u8": {
+          "alpha": 0.515351278764573,
+          "alpha_vs_random_0_5": 1.030702557529146,
+          "mean_hamming": 4.122810230116584,
+          "transitions": 67544,
+          "transitions_per_byte": 4.12255859375,
+          "word_bits": 8,
+          "words": 16384
+        }
+      },
+      "shape": [
+        512,
+        2048
+      ],
+      "sign_bits": {
+        "alpha": 0.49705266671435044,
+        "alpha_vs_random_0_5": 0.9941053334287009,
+        "bits": 1,
+        "codes": 1048576,
+        "histogram": [
+          522172,
+          526404
+        ],
+        "mean_hamming": 0.49705266671435044,
+        "transitions": 521197
+      },
+      "sign_bytes": 131072
+    },
+    "up_rice": {
+      "codec": "rice_q1_rms",
+      "kernel_fetch": "serial rice bitstream on bind-time expand (thread 0); residual signs are 1-bit LSB-first",
+      "name": "up_proj residual",
+      "outlier_count": 20972,
+      "permutation": {
+        "free_codebook": false,
+        "reason": "Rice is a variable-length integer code for index diffs, not a centroid codebook. Permuting rice symbols would change bit length (BPW) or break the decoder. Residual signs are 1-bit; polarity flip is Hamming-invariant."
+      },
+      "residual_sign_bytes": 2622,
+      "residual_signs": {
+        "bytes": 2622,
+        "label": "residual_signs",
+        "u128": {
+          "alpha": 0.4858608128834356,
+          "alpha_vs_random_0_5": 0.9717216257668712,
+          "mean_hamming": 62.190184049079754,
+          "transitions": 10137,
+          "transitions_per_byte": 3.863185975609756,
+          "word_bits": 128,
+          "words": 164
+        },
+        "u32": {
+          "alpha": 0.4852576335877863,
+          "alpha_vs_random_0_5": 0.9705152671755726,
+          "mean_hamming": 15.528244274809161,
+          "transitions": 10171,
+          "transitions_per_byte": 3.8761432926829267,
+          "word_bits": 32,
+          "words": 656
+        },
+        "u8": {
+          "alpha": 0.5075829835940481,
+          "alpha_vs_random_0_5": 1.0151659671880962,
+          "mean_hamming": 4.060663868752385,
+          "transitions": 10643,
+          "transitions_per_byte": 4.059115179252479,
+          "word_bits": 8,
+          "words": 2622
+        }
+      },
+      "rice_bytes": 18789,
+      "rice_k": 5,
+      "rice_stream": {
+        "bytes": 18789,
+        "label": "rice_bytes",
+        "u128": {
+          "alpha": 0.4798232538330494,
+          "alpha_vs_random_0_5": 0.9596465076660988,
+          "mean_hamming": 61.417376490630325,
+          "transitions": 72104,
+          "transitions_per_byte": 3.83531914893617,
+          "word_bits": 128,
+          "words": 1175
+        },
+        "u32": {
+          "alpha": 0.479927347242921,
+          "alpha_vs_random_0_5": 0.959854694485842,
+          "mean_hamming": 15.357675111773473,
+          "transitions": 72135,
+          "transitions_per_byte": 3.8386015325670497,
+          "word_bits": 32,
+          "words": 4698
+        },
+        "u8": {
+          "alpha": 0.47467133276559503,
+          "alpha_vs_random_0_5": 0.9493426655311901,
+          "mean_hamming": 3.7973706621247603,
+          "transitions": 71345,
+          "transitions_per_byte": 3.797168556070041,
+          "word_bits": 8,
+          "words": 18789
+        }
+      }
+    }
+  },
+  "real_q30_hgravs01": {
+    "files_scanned": 327,
+    "four_bit": {
+      "assignment": {
+        "bits": 4,
+        "cost_transitions": 251767573,
+        "identity_cost_transitions": 310701112,
+        "method": "annealed",
+        "reduction_ratio": 0.18967920204933153,
+        "symbol_to_code": [
+          12,
+          13,
+          10,
+          8,
+          5,
+          3,
+          2,
+          0,
+          1,
+          4,
+          6,
+          7,
+          9,
+          14,
+          11,
+          15
+        ],
+        "transition_reduction": 58933539
+      },
+      "code_stream": {
+        "alpha": 0.44068974407009887,
+        "mean_hamming": 1.7627589762803955,
+        "pairs": 176258420,
+        "transitions": 310701112
+      },
+      "code_stream_after_remap": {
+        "alpha": 0.3571000650635584,
+        "mean_hamming": 1.4284002602542336,
+        "pairs": 176258420,
+        "transitions": 251767573
+      },
+      "gray": {
+        "bits": 4,
+        "cost_transitions": 258564286,
+        "identity_cost_transitions": 310701112,
+        "method": "reflected_gray",
+        "reduction_ratio": 0.16780379595165407,
+        "symbol_to_code": [
+          0,
+          1,
+          3,
+          2,
+          6,
+          7,
+          5,
+          4,
+          12,
+          13,
+          15,
+          14,
+          10,
+          11,
+          9,
+          8
+        ],
+        "transition_reduction": 52136826
+      },
+      "identity_cost": 310701112,
+      "packed_u32": {
+        "alpha": 0.4471566877831599,
+        "alpha_vs_random_0_5": 0.8943133755663198,
+        "mean_hamming": 14.309014009061118,
+        "transitions": 315261677,
+        "transitions_per_byte": 3.5772533399018465,
+        "word_bits": 32,
+        "words": 22032384
+      },
+      "packed_u32_after_remap": {
+        "alpha": 0.3617570413286661,
+        "alpha_vs_random_0_5": 0.7235140826573322,
+        "mean_hamming": 11.576225322517315,
+        "transitions": 255051830,
+        "transitions_per_byte": 2.894056199274668,
+        "word_bits": 32,
+        "words": 22032384
+      },
+      "sign_magnitude": {
+        "bits": 4,
+        "cost_transitions": 270375209,
+        "identity_cost_transitions": 310701112,
+        "method": "sign_magnitude",
+        "reduction_ratio": 0.12979001826037884,
+        "symbol_to_code": [
+          15,
+          14,
+          13,
+          12,
+          11,
+          10,
+          9,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "transition_reduction": 40325903
+      },
+      "twos_complement": {
+        "bits": 4,
+        "cost_transitions": 310702408,
+        "identity_cost_transitions": 310701112,
+        "method": "twos_complement",
+        "reduction_ratio": -4.1712113345582225e-6,
+        "symbol_to_code": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "transition_reduction": 0
+      }
+    },
+    "four_bit_factor_streams": 652,
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/selected-payloads",
+    "present": true,
+    "q80_geometry_slice_source": "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/selected-payloads/007ab3edb02a51d3e177b7e1ad526ae8516b57d1d4754ae43420123dbe3acd03.hgravs01",
+    "three_bit_factor_streams": 2,
+    "three_bit_real_file": {
+      "assignment": {
+        "bits": 3,
+        "cost_transitions": 136224,
+        "identity_cost_transitions": 184474,
+        "method": "exact_brute_force",
+        "reduction_ratio": 0.2615544738011861,
+        "symbol_to_code": [
+          5,
+          3,
+          1,
+          0,
+          2,
+          4,
+          6,
+          7
+        ],
+        "transition_reduction": 48250
+      },
+      "code_stream": {
+        "alpha": 0.3411977080119704,
+        "mean_hamming": 1.0235931240359113,
+        "pairs": 180222,
+        "transitions": 184474
+      },
+      "identity_cost": 184474,
+      "packed_u32": {
+        "alpha": 0.556817845516425,
+        "alpha_vs_random_0_5": 1.11363569103285,
+        "mean_hamming": 17.8181710565256,
+        "transitions": 301038,
+        "transitions_per_byte": 4.454279119318182,
+        "word_bits": 32,
+        "words": 16896
+      }
+    }
+  },
+  "real_q30_sliced_to_q80": {
+    "bit_identical_after_remap": true,
+    "left": {
+      "best": {
+        "bits": 3,
+        "cost_transitions": 146826,
+        "identity_cost_transitions": 192368,
+        "method": "exact_brute_force",
+        "reduction_ratio": 0.23674415703235463,
+        "symbol_to_code": [
+          3,
+          1,
+          4,
+          0,
+          2,
+          5,
+          6,
+          7
+        ],
+        "transition_reduction": 45542
+      },
+      "code_stream_after": {
+        "alpha": 0.14935958666866048,
+        "alpha_vs_random_0_5": 0.29871917333732095,
+        "bits": 3,
+        "codes": 327680,
+        "histogram": [
+          249294,
+          9924,
+          23722,
+          5482,
+          23980,
+          9661,
+          5617,
+          0
+        ],
+        "mean_hamming": 0.44807876000598146,
+        "transitions": 146826
+      },
+      "code_stream_before": {
+        "alpha": 0.19568744614902592,
+        "alpha_vs_random_0_5": 0.39137489229805184,
+        "bits": 3,
+        "codes": 327680,
+        "histogram": [
+          5482,
+          9924,
+          23980,
+          249294,
+          23722,
+          9661,
+          5617,
+          0
+        ],
+        "mean_hamming": 0.5870623384470778,
+        "transitions": 192368
+      },
+      "gray": {
+        "bits": 3,
+        "cost_transitions": 153993,
+        "identity_cost_transitions": 192368,
+        "method": "reflected_gray",
+        "reduction_ratio": 0.19948744073858438,
+        "symbol_to_code": [
+          0,
+          1,
+          3,
+          2,
+          6,
+          7,
+          5,
+          4
+        ],
+        "transition_reduction": 38375
+      },
+      "identity": {
+        "bits": 3,
+        "cost_transitions": 192368,
+        "identity_cost_transitions": 192368,
+        "method": "identity",
+        "reduction_ratio": 0.0,
+        "symbol_to_code": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "transition_reduction": 0
+      },
+      "packed_u32_after": {
+        "alpha": 0.16993045834825352,
+        "alpha_vs_random_0_5": 0.33986091669650703,
+        "mean_hamming": 5.4377746671441125,
+        "transitions": 167043,
+        "transitions_per_byte": 1.3593994140625,
+        "word_bits": 32,
+        "words": 30720
+      },
+      "packed_u32_before": {
+        "alpha": 0.6015088381783261,
+        "alpha_vs_random_0_5": 1.2030176763566522,
+        "mean_hamming": 19.248282821706436,
+        "transitions": 591288,
+        "transitions_per_byte": 4.8119140625,
+        "word_bits": 32,
+        "words": 30720
+      },
+      "proof": {
+        "bit_identical_signed_levels": true,
+        "bpw_unchanged": true,
+        "elements": 327680,
+        "packed_bytes_after": 122880,
+        "packed_bytes_before": 122880,
+        "scales_unchanged": true
+      },
+      "sign_magnitude": {
+        "bits": 3,
+        "cost_transitions": 169586,
+        "identity_cost_transitions": 192368,
+        "method": "sign_magnitude",
+        "reduction_ratio": 0.11842926058388092,
+        "symbol_to_code": [
+          7,
+          6,
+          5,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "transition_reduction": 22782
+      },
+      "twos_complement": {
+        "bits": 3,
+        "cost_transitions": 192562,
+        "identity_cost_transitions": 192368,
+        "method": "twos_complement",
+        "reduction_ratio": -0.001008483739499244,
+        "symbol_to_code": [
+          5,
+          6,
+          7,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "transition_reduction": 0
+      }
+    },
+    "left_activity": {
+      "bits": 3,
+      "code_stream": {
+        "alpha": 0.19568744614902592,
+        "alpha_vs_random_0_5": 0.39137489229805184,
+        "bits": 3,
+        "codes": 327680,
+        "histogram": [
+          5482,
+          9924,
+          23980,
+          249294,
+          23722,
+          9661,
+          5617,
+          0
+        ],
+        "mean_hamming": 0.5870623384470778,
+        "transitions": 192368
+      },
+      "group_size": 64,
+      "kernel_simd_tile": {
+        "bytes": 122880,
+        "label": "simd_tile_fetch",
+        "u128": {
+          "alpha": 0.5971205967573903,
+          "alpha_vs_random_0_5": 1.1942411935147805,
+          "mean_hamming": 76.43143638494595,
+          "transitions": 586917,
+          "transitions_per_byte": 4.7763427734375,
+          "word_bits": 128,
+          "words": 7680
+        },
+        "u32": {
+          "alpha": 0.601557667892835,
+          "alpha_vs_random_0_5": 1.20311533578567,
+          "mean_hamming": 19.24984537257072,
+          "transitions": 591336,
+          "transitions_per_byte": 4.8123046875,
+          "word_bits": 32,
+          "words": 30720
+        },
+        "u8": {
+          "alpha": 0.6065865607630271,
+          "alpha_vs_random_0_5": 1.2131731215260542,
+          "mean_hamming": 4.852692486104217,
+          "transitions": 596294,
+          "transitions_per_byte": 4.852652994791667,
+          "word_bits": 8,
+          "words": 122880
+        }
+      },
+      "msb_vs_lsb_u32": {
+        "lsb": {
+          "alpha": 0.6015088381783261,
+          "alpha_vs_random_0_5": 1.2030176763566522,
+          "mean_hamming": 19.248282821706436,
+          "transitions": 591288,
+          "transitions_per_byte": 4.8119140625,
+          "word_bits": 32,
+          "words": 30720
+        },
+        "msb": {
+          "alpha": 0.6033175721865947,
+          "alpha_vs_random_0_5": 1.2066351443731893,
+          "mean_hamming": 19.30616230997103,
+          "transitions": 593066,
+          "transitions_per_byte": 4.826383463541666,
+          "word_bits": 32,
+          "words": 30720
+        },
+        "note": "MSB-first is free iff extract is also MSB-first. Intra-word bit reversal of whole words preserves Hamming; 3-bit codes straddle words, so MSB vs LSB can change u32 activity."
+      },
+      "name": "real_slice_L",
+      "packed_bytes": 122880,
+      "packed_storage": {
+        "bytes": 122880,
+        "code_stream": {
+          "alpha": 0.19568744614902592,
+          "alpha_vs_random_0_5": 0.39137489229805184,
+          "bits": 3,
+          "codes": 327680,
+          "histogram": [
+            5482,
+            9924,
+            23980,
+            249294,
+            23722,
+            9661,
+            5617,
+            0
+          ],
+          "mean_hamming": 0.5870623384470778,
+          "transitions": 192368
+        },
+        "label": "storage_order",
+        "u128": {
+          "alpha": 0.5912187459304596,
+          "alpha_vs_random_0_5": 1.1824374918609193,
+          "mean_hamming": 75.67599947909883,
+          "transitions": 581116,
+          "transitions_per_byte": 4.729134114583333,
+          "word_bits": 128,
+          "words": 7680
+        },
+        "u32": {
+          "alpha": 0.6015088381783261,
+          "alpha_vs_random_0_5": 1.2030176763566522,
+          "mean_hamming": 19.248282821706436,
+          "transitions": 591288,
+          "transitions_per_byte": 4.8119140625,
+          "word_bits": 32,
+          "words": 30720
+        },
+        "u8": {
+          "alpha": 0.6066659071118743,
+          "alpha_vs_random_0_5": 1.2133318142237486,
+          "mean_hamming": 4.853327256894994,
+          "transitions": 596372,
+          "transitions_per_byte": 4.853287760416666,
+          "word_bits": 8,
+          "words": 122880
+        }
+      },
+      "scale_bytes": 10240,
+      "scales": {
+        "bytes": 10240,
+        "label": "fp16_scales",
+        "u128": {
+          "alpha": 0.3816387910798122,
+          "alpha_vs_random_0_5": 0.7632775821596244,
+          "mean_hamming": 48.84976525821596,
+          "transitions": 31215,
+          "transitions_per_byte": 3.04833984375,
+          "word_bits": 128,
+          "words": 640
+        },
+        "u32": {
+          "alpha": 0.38376807346619773,
+          "alpha_vs_random_0_5": 0.7675361469323955,
+          "mean_hamming": 12.280578350918328,
+          "transitions": 31426,
+          "transitions_per_byte": 3.0689453125,
+          "word_bits": 32,
+          "words": 2560
+        },
+        "u8": {
+          "alpha": 0.4994628381677898,
+          "alpha_vs_random_0_5": 0.9989256763355796,
+          "mean_hamming": 3.9957027053423184,
+          "transitions": 40912,
+          "transitions_per_byte": 3.9953125,
+          "word_bits": 8,
+          "words": 10240
+        }
+      },
+      "shape": [
+        2048,
+        160
+      ]
+    },
+    "note": "Real Q30 down factor sliced to rank 160 / cols 512 and requantized with the Q80 3-bit packer. Values are not the live Q80 pack (that artifact is not on disk). Spatial structure is from a real activation-weighted SVD factor.",
+    "right": {
+      "best": {
+        "bits": 3,
+        "cost_transitions": 69123,
+        "identity_cost_transitions": 96361,
+        "method": "exact_brute_force",
+        "reduction_ratio": 0.28266622388725726,
+        "symbol_to_code": [
+          5,
+          3,
+          2,
+          0,
+          1,
+          4,
+          6,
+          7
+        ],
+        "transition_reduction": 27238
+      },
+      "code_stream_after": {
+        "alpha": 0.28126564044971253,
+        "alpha_vs_random_0_5": 0.5625312808994251,
+        "bits": 3,
+        "codes": 81920,
+        "histogram": [
+          44736,
+          13149,
+          13166,
+          3816,
+          3873,
+          1618,
+          1562,
+          0
+        ],
+        "mean_hamming": 0.8437969213491375,
+        "transitions": 69123
+      },
+      "code_stream_before": {
+        "alpha": 0.3920986991214899,
+        "alpha_vs_random_0_5": 0.7841973982429798,
+        "bits": 3,
+        "codes": 81920,
+        "histogram": [
+          1618,
+          3816,
+          13166,
+          44736,
+          13149,
+          3873,
+          1562,
+          0
+        ],
+        "mean_hamming": 1.1762960973644698,
+        "transitions": 96361
+      },
+      "gray": {
+        "bits": 3,
+        "cost_transitions": 72427,
+        "identity_cost_transitions": 96361,
+        "method": "reflected_gray",
+        "reduction_ratio": 0.2483784933738753,
+        "symbol_to_code": [
+          0,
+          1,
+          3,
+          2,
+          6,
+          7,
+          5,
+          4
+        ],
+        "transition_reduction": 23934
+      },
+      "identity": {
+        "bits": 3,
+        "cost_transitions": 96361,
+        "identity_cost_transitions": 96361,
+        "method": "identity",
+        "reduction_ratio": 0.0,
+        "symbol_to_code": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "transition_reduction": 0
+      },
+      "packed_u32_after": {
+        "alpha": 0.29445158874853494,
+        "alpha_vs_random_0_5": 0.5889031774970699,
+        "mean_hamming": 9.422450839953118,
+        "transitions": 72355,
+        "transitions_per_byte": 2.3553059895833335,
+        "word_bits": 32,
+        "words": 7680
+      },
+      "packed_u32_before": {
+        "alpha": 0.5483827646829014,
+        "alpha_vs_random_0_5": 1.0967655293658027,
+        "mean_hamming": 17.548248469852844,
+        "transitions": 134753,
+        "transitions_per_byte": 4.386490885416666,
+        "word_bits": 32,
+        "words": 7680
+      },
+      "proof": {
+        "bit_identical_signed_levels": true,
+        "bpw_unchanged": true,
+        "elements": 81920,
+        "packed_bytes_after": 30720,
+        "packed_bytes_before": 30720,
+        "scales_unchanged": true
+      },
+      "sign_magnitude": {
+        "bits": 3,
+        "cost_transitions": 83349,
+        "identity_cost_transitions": 96361,
+        "method": "sign_magnitude",
+        "reduction_ratio": 0.13503388300245955,
+        "symbol_to_code": [
+          7,
+          6,
+          5,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "transition_reduction": 13012
+      },
+      "twos_complement": {
+        "bits": 3,
+        "cost_transitions": 96669,
+        "identity_cost_transitions": 96361,
+        "method": "twos_complement",
+        "reduction_ratio": -0.003196313861417055,
+        "symbol_to_code": [
+          5,
+          6,
+          7,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "transition_reduction": 0
+      }
+    },
+    "right_activity": {
+      "bits": 3,
+      "code_stream": {
+        "alpha": 0.3920986991214899,
+        "alpha_vs_random_0_5": 0.7841973982429798,
+        "bits": 3,
+        "codes": 81920,
+        "histogram": [
+          1618,
+          3816,
+          13166,
+          44736,
+          13149,
+          3873,
+          1562,
+          0
+        ],
+        "mean_hamming": 1.1762960973644698,
+        "transitions": 96361
+      },
+      "group_size": 64,
+      "kernel_simd_tile": {
+        "bytes": 30720,
+        "label": "simd_tile_fetch",
+        "u128": {
+          "alpha": 0.5461829077644607,
+          "alpha_vs_random_0_5": 1.0923658155289213,
+          "mean_hamming": 69.91141219385096,
+          "transitions": 134160,
+          "transitions_per_byte": 4.3671875,
+          "word_bits": 128,
+          "words": 1920
+        },
+        "u32": {
+          "alpha": 0.5478130290402397,
+          "alpha_vs_random_0_5": 1.0956260580804793,
+          "mean_hamming": 17.53001692928767,
+          "transitions": 134613,
+          "transitions_per_byte": 4.38193359375,
+          "word_bits": 32,
+          "words": 7680
+        },
+        "u8": {
+          "alpha": 0.5486628796510303,
+          "alpha_vs_random_0_5": 1.0973257593020607,
+          "mean_hamming": 4.389303037208243,
+          "transitions": 134835,
+          "transitions_per_byte": 4.38916015625,
+          "word_bits": 8,
+          "words": 30720
+        }
+      },
+      "msb_vs_lsb_u32": {
+        "lsb": {
+          "alpha": 0.5483827646829014,
+          "alpha_vs_random_0_5": 1.0967655293658027,
+          "mean_hamming": 17.548248469852844,
+          "transitions": 134753,
+          "transitions_per_byte": 4.386490885416666,
+          "word_bits": 32,
+          "words": 7680
+        },
+        "msb": {
+          "alpha": 0.5470031905195989,
+          "alpha_vs_random_0_5": 1.0940063810391978,
+          "mean_hamming": 17.504102096627165,
+          "transitions": 134414,
+          "transitions_per_byte": 4.375455729166666,
+          "word_bits": 32,
+          "words": 7680
+        },
+        "note": "MSB-first is free iff extract is also MSB-first. Intra-word bit reversal of whole words preserves Hamming; 3-bit codes straddle words, so MSB vs LSB can change u32 activity."
+      },
+      "name": "real_slice_R",
+      "packed_bytes": 30720,
+      "packed_storage": {
+        "bytes": 30720,
+        "code_stream": {
+          "alpha": 0.3920986991214899,
+          "alpha_vs_random_0_5": 0.7841973982429798,
+          "bits": 3,
+          "codes": 81920,
+          "histogram": [
+            1618,
+            3816,
+            13166,
+            44736,
+            13149,
+            3873,
+            1562,
+            0
+          ],
+          "mean_hamming": 1.1762960973644698,
+          "transitions": 96361
+        },
+        "label": "storage_order",
+        "u128": {
+          "alpha": 0.5468546443460135,
+          "alpha_vs_random_0_5": 1.093709288692027,
+          "mean_hamming": 69.99739447628973,
+          "transitions": 134325,
+          "transitions_per_byte": 4.37255859375,
+          "word_bits": 128,
+          "words": 1920
+        },
+        "u32": {
+          "alpha": 0.5483827646829014,
+          "alpha_vs_random_0_5": 1.0967655293658027,
+          "mean_hamming": 17.548248469852844,
+          "transitions": 134753,
+          "transitions_per_byte": 4.386490885416666,
+          "word_bits": 32,
+          "words": 7680
+        },
+        "u8": {
+          "alpha": 0.548907028223575,
+          "alpha_vs_random_0_5": 1.09781405644715,
+          "mean_hamming": 4.3912562257886,
+          "transitions": 134895,
+          "transitions_per_byte": 4.39111328125,
+          "word_bits": 8,
+          "words": 30720
+        }
+      },
+      "scale_bytes": 2560,
+      "scales": {
+        "bytes": 2560,
+        "label": "fp16_scales",
+        "u128": {
+          "alpha": 0.3511694182389937,
+          "alpha_vs_random_0_5": 0.7023388364779874,
+          "mean_hamming": 44.9496855345912,
+          "transitions": 7147,
+          "transitions_per_byte": 2.791796875,
+          "word_bits": 128,
+          "words": 160
+        },
+        "u32": {
+          "alpha": 0.35059663536776214,
+          "alpha_vs_random_0_5": 0.7011932707355243,
+          "mean_hamming": 11.219092331768389,
+          "transitions": 7169,
+          "transitions_per_byte": 2.800390625,
+          "word_bits": 32,
+          "words": 640
+        },
+        "u8": {
+          "alpha": 0.4940894880812817,
+          "alpha_vs_random_0_5": 0.9881789761625634,
+          "mean_hamming": 3.952715904650254,
+          "transitions": 10115,
+          "transitions_per_byte": 3.951171875,
+          "word_bits": 8,
+          "words": 2560
+        }
+      },
+      "shape": [
+        160,
+        512
+      ]
+    },
+    "source": "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/selected-payloads/007ab3edb02a51d3e177b7e1ad526ae8516b57d1d4754ae43420123dbe3acd03.hgravs01"
+  },
+  "result_label": "DIRTY_ENGINEERING",
+  "result_ns_per_token": 143679840,
+  "schema": "hawking.ascension.q80_codec_switching_activity.v1",
+  "status": "ACTIVITY_MEASURED_PERMUTATION_IS_FREE_LATENCY_SEPARATE"
+}

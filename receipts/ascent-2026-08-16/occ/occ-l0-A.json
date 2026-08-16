@@ -1,0 +1,1077 @@
+{
+  "artifact": {
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "body_ms": 392,
+  "chunk_verification": {
+    "admission_receipt_loaded": true,
+    "admission_trust_fallbacks": 0,
+    "admission_trust_hits": 75,
+    "artifact_index_loaded": true,
+    "bytes_hashed": 0,
+    "cache_hits": 0,
+    "chunks_verified": 75,
+    "hash_invocations": 0,
+    "host_read": {
+      "digest_cache_ns": 18418,
+      "digest_cache_probes": 75,
+      "identity_calls": 75,
+      "identity_ns": 894250,
+      "mapped_window_bytes": 116952456,
+      "mapped_windows": 63,
+      "mmap_calls": 75,
+      "mmap_ns": 31541000,
+      "owned_alloc_bytes": 100671536,
+      "owned_allocs": 5,
+      "owned_copy_ns": 388084,
+      "owned_window_bytes": 100663296,
+      "owned_windows": 3,
+      "path_resolve_calls": 75,
+      "path_resolve_ns": 24354627,
+      "read_owned_calls": 2,
+      "read_view_calls": 66,
+      "tensor_lookup_calls": 134528,
+      "tensor_lookup_ns": 10558590
+    },
+    "verify_ns": 56900422
+  },
+  "execution_path": "device_worklist_bos_token",
+  "greedy": null,
+  "hc_bf16_sha256": "a43d928f5dea968c0c692b22d340c19525b6a78ea33a3beda7e815f050408a8e",
+  "honesty": {
+    "bos_window_only": true,
+    "compact_top6_worklist": true,
+    "complete_bos_token_graph": true,
+    "dense_over_256": false,
+    "device_resident_routing": true,
+    "full_compressed_indexer_graph": false,
+    "host_cpu": false,
+    "indexer_compressor_loaded": false,
+    "lm_head_path": "host_f64_mhc_merge_rmsnorm_then_host_streamed_lm_head_greedy",
+    "mhc_path": "host_source_algorithm_exact_sha",
+    "native": true,
+    "ratio_128_full_compressed_graph": false,
+    "ratio_4_full_compressed_graph": false
+  },
+  "init_ms": 1497,
+  "metal": {
+    "cb_collapse": true,
+    "command_buffers": 2,
+    "expert_nocopy_binds": 1,
+    "expert_payload_path": "device_address_table_nocopy",
+    "expert_slab_packs": 0,
+    "fallback": 0,
+    "host_expert_gather": 0,
+    "host_expert_output_readback": 0,
+    "host_route_id_readback": 0,
+    "metal_dispatches": 38,
+    "scratch_buffer_creations": 74,
+    "total_buffer_creations": 40,
+    "total_buffer_rebinds": 25,
+    "total_command_buffers": 2,
+    "total_dispatches": 38,
+    "total_readbacks": 4,
+    "total_sync_points": 2
+  },
+  "native": true,
+  "residency": {
+    "declared_rss_bound_bytes": 17179869184,
+    "declared_weight_bound_bytes": 402653184,
+    "peak_rss_bytes": 445562880,
+    "peak_weight_resident_bytes": 214445184,
+    "policy": "layer_stream_load_execute_free",
+    "rss_within_bound": true,
+    "schedule_streamed_decode_peak_bytes": 253719640,
+    "weight_within_bound": true
+  },
+  "schema": "hawking.gravity.deepseek_v4.native_token_graph.v1",
+  "scope": {
+    "deepest_layer": 0,
+    "layers_executed": [
+      0
+    ],
+    "token_id": 0,
+    "token_position": 0
+  },
+  "second_touch_probe": {
+    "cache_hits_delta": 26,
+    "identity_calls_delta": 0,
+    "mmap_calls_delta": 26,
+    "note": "re-read layer-0 attention tensors after the token; cache-hit remap cost, not in body_ns",
+    "ns": 5497500
+  },
+  "startup_timing": {
+    "enabled": false,
+    "phases": [],
+    "process_wall_ms": 1920,
+    "schema": "hawking.startup_timing.v1"
+  },
+  "stop_reason": null,
+  "token_ns_ledger": {
+    "body_ns": 392239083,
+    "command_buffers": [
+      {
+        "cpu_minus_gpu_ns": -5047000,
+        "dispatches": 17,
+        "encode_ns": 347000,
+        "encoders": 1,
+        "force": "host_mhc_post_needs_wo_b_bf16",
+        "gpu_end_ns": 87833341652666,
+        "gpu_ns": 5049000,
+        "gpu_start_ns": 87833336602750,
+        "host_wall_ns": 97374000,
+        "layer": 0,
+        "name": "attn",
+        "submit_ns": 40000,
+        "wait_ns": 2000
+      },
+      {
+        "cpu_minus_gpu_ns": 57053000,
+        "dispatches": 21,
+        "encode_ns": 1922000,
+        "encoders": 1,
+        "force": "hash_ids_known_before_route_so_experts_upload_then_one_cb",
+        "gpu_end_ns": 87833489557750,
+        "gpu_ns": 5943000,
+        "gpu_start_ns": 87833483614375,
+        "host_wall_ns": 64933000,
+        "layer": 0,
+        "name": "route_moe",
+        "submit_ns": 12000,
+        "wait_ns": 62996000
+      }
+    ],
+    "diagnosis": "io_bound",
+    "diagnosis_proof": "host_exclusive=229932083ns (58.6% of body) verify_ns=56900422 (14.5%); metal_gpu=10992000ns (2.8%) metal_wait=62998000ns (16.1%). Weight streaming / host memcpy / MHC sit outside GPU occupancy.",
+    "gpu_gaps": {
+      "device_span_ns": 152955000,
+      "first_gpu_start_ns": 87833336602750,
+      "gpu_busy_ns": 10992000,
+      "gpu_idle_fraction_of_span": 0.9281357261939787,
+      "gpu_idle_in_span_ns": 141963000,
+      "host_between_cb_exclusive_ns": 490125,
+      "inter_cb_device_gap_ns": 141961709,
+      "inter_cb_device_overlap_ns": 0,
+      "inter_cb_gap_count": 1,
+      "intra_cb_kernel_gaps_visible": false,
+      "last_gpu_end_ns": 87833489557750,
+      "missing_timestamp_pairs": 0,
+      "observed_timestamp_pairs": 2,
+      "occupancy_proxy_gpu_ns_per_encoder": 5496000.0,
+      "production_encoders": 2,
+      "timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wall proxy"
+    },
+    "host_syncs": [
+      {
+        "block_ns": 4917,
+        "bytes": 8192,
+        "force": "host_source_mhc_post_requires_wo_b",
+        "layer": 0,
+        "name": "host.attn_activation_readback"
+      },
+      {
+        "block_ns": 3833,
+        "bytes": 8192,
+        "force": "host_source_mhc_post_requires_moe_out",
+        "layer": 0,
+        "name": "host.moe_activation_readback"
+      }
+    ],
+    "host_wall_classes": [
+      {
+        "bytes": 217605976,
+        "calls": 7,
+        "calls_per_token": 7,
+        "name": "file_source_reads",
+        "ns": 271406500,
+        "ns_per_token": 271406500,
+        "pct_body": 69.19415014031124
+      },
+      {
+        "bytes": 341862224,
+        "calls": 33,
+        "calls_per_token": 33,
+        "name": "memcpy",
+        "ns": 147712126,
+        "ns_per_token": 147712126,
+        "pct_body": 37.65869654554541
+      },
+      {
+        "bytes": 3170520,
+        "calls": 9,
+        "calls_per_token": 9,
+        "name": "table_construction",
+        "ns": 14793751,
+        "ns_per_token": 14793751,
+        "pct_body": 3.771615741820404
+      },
+      {
+        "bytes": 0,
+        "calls": 6,
+        "calls_per_token": 6,
+        "name": "state_movement",
+        "ns": 828499,
+        "ns_per_token": 828499,
+        "pct_body": 0.2112229596457628
+      },
+      {
+        "bytes": 16384,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "synchronization",
+        "ns": 8750,
+        "ns_per_token": 8750,
+        "pct_body": 0.002230782290504182
+      },
+      {
+        "bytes": 0,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "unaccounted_host_exclusive",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      }
+    ],
+    "init_ns": 1497000000,
+    "isolated_kernels": [],
+    "metal_vs_host": {
+      "host_between_first_last_cb_gap_ns": 490125,
+      "host_exclusive_ns": 229932083,
+      "isolated_probe_overhead_ns": 0,
+      "metal_encode_ns": 2269000,
+      "metal_gpu_ns": 10992000,
+      "metal_gpu_ns_missing_cbs": 0,
+      "metal_gpu_ns_observed_cbs": 2,
+      "metal_submit_ns": 52000,
+      "metal_wait_ns": 62998000,
+      "production_command_buffers": 2,
+      "production_dispatches": 38
+    },
+    "mla": {
+      "attn_command_buffers": 1,
+      "attn_dispatches": 17,
+      "attn_encode_ns": 347000,
+      "attn_encoders": 1,
+      "attn_gpu_ns": 5049000,
+      "attn_gpu_ns_max": 5049000,
+      "attn_gpu_ns_min": 5049000,
+      "attn_gpu_ns_p50": 5049000,
+      "attn_gpu_ns_per_invocation": 297000,
+      "attn_wait_ns": 2000,
+      "dispatch_gap_proxy_ns": null,
+      "dispatches": [
+        {
+          "approx_flops": 1048576,
+          "bytes_read": 8192,
+          "bytes_written": 4128,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate",
+          "memory_stall_proxy_gbps": null,
+          "name": "act_quant.hidden",
+          "occupancy_proxy": 0.03125,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 4,
+          "threads": 1024,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 8388608,
+          "bytes_read": 4198688,
+          "bytes_written": 4096,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "mla.wq_a",
+          "occupancy_proxy": 0.03125,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 4,
+          "threads": 1024,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 1024,
+          "bytes_read": 4096,
+          "bytes_written": 2048,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p3a_fp32_to_bf16_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "cast.q_lora",
+          "occupancy_proxy": 0.03125,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 4,
+          "threads": 1024,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 3072,
+          "bytes_read": 4096,
+          "bytes_written": 2048,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p3a_rmsnorm_bf16_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "rmsnorm.q",
+          "occupancy_proxy": 0.000030517578125,
+          "simdgroups_per_threadgroup": 1,
+          "threadgroups": 1,
+          "threads": 1,
+          "threads_per_threadgroup": 1
+        },
+        {
+          "approx_flops": 262144,
+          "bytes_read": 2048,
+          "bytes_written": 1032,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate",
+          "memory_stall_proxy_gbps": null,
+          "name": "act_quant.q",
+          "occupancy_proxy": 0.0078125,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 1,
+          "threads": 256,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 67108864,
+          "bytes_read": 33557512,
+          "bytes_written": 131072,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "mla.wq_b",
+          "occupancy_proxy": 1.0,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 128,
+          "threads": 32768,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 32768,
+          "bytes_read": 131072,
+          "bytes_written": 65536,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p3a_fp32_to_bf16_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "cast.wq_b",
+          "occupancy_proxy": 1.0,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 128,
+          "threads": 32768,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 98304,
+          "bytes_read": 65536,
+          "bytes_written": 65536,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "per_head_rms",
+          "occupancy_proxy": 0.001953125,
+          "simdgroups_per_threadgroup": 2,
+          "threadgroups": 1,
+          "threads": 64,
+          "threads_per_threadgroup": 64
+        },
+        {
+          "approx_flops": 4194304,
+          "bytes_read": 2101408,
+          "bytes_written": 2048,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "mla.wkv",
+          "occupancy_proxy": 0.015625,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 2,
+          "threads": 512,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 512,
+          "bytes_read": 2048,
+          "bytes_written": 1024,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p3a_fp32_to_bf16_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "cast.wkv",
+          "occupancy_proxy": 0.015625,
+          "simdgroups_per_threadgroup": 1,
+          "threadgroups": 1,
+          "threads": 512,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 1536,
+          "bytes_read": 2048,
+          "bytes_written": 1024,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p3a_rmsnorm_bf16_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "rmsnorm.kv",
+          "occupancy_proxy": 0.000030517578125,
+          "simdgroups_per_threadgroup": 1,
+          "threadgroups": 1,
+          "threads": 1,
+          "threads_per_threadgroup": 1
+        },
+        {
+          "approx_flops": 114688,
+          "bytes_read": 1024,
+          "bytes_written": 1479,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate",
+          "memory_stall_proxy_gbps": null,
+          "name": "kv_qat",
+          "occupancy_proxy": 0.0068359375,
+          "simdgroups_per_threadgroup": 7,
+          "threadgroups": 1,
+          "threads": 224,
+          "threads_per_threadgroup": 224
+        },
+        {
+          "approx_flops": 65536,
+          "bytes_read": 66816,
+          "bytes_written": 66048,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p4a_sparse_attention_position0_sink_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "attn.sparse_pos0",
+          "occupancy_proxy": 0.001953125,
+          "simdgroups_per_threadgroup": 2,
+          "threadgroups": 1,
+          "threads": 64,
+          "threads_per_threadgroup": 64
+        },
+        {
+          "approx_flops": 67108864,
+          "bytes_read": 33622016,
+          "bytes_written": 16384,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "mla.wo_a",
+          "occupancy_proxy": 0.25,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 32,
+          "threads": 8192,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 2097152,
+          "bytes_read": 16384,
+          "bytes_written": 8256,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate",
+          "memory_stall_proxy_gbps": null,
+          "name": "act_quant.wo",
+          "occupancy_proxy": 0.0625,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 8,
+          "threads": 2048,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 67108864,
+          "bytes_read": 33564736,
+          "bytes_written": 16384,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "mla.wo_b",
+          "occupancy_proxy": 0.125,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 16,
+          "threads": 4096,
+          "threads_per_threadgroup": 256
+        },
+        {
+          "approx_flops": 4096,
+          "bytes_read": 16384,
+          "bytes_written": 8192,
+          "invocations_per_layer": 1,
+          "invocations_per_token": 1,
+          "isolated_gpu_ns_mean": null,
+          "isolated_ns_per_invocation": null,
+          "kernel": "deepseek_v4_p3a_fp32_to_bf16_authority",
+          "memory_stall_proxy_gbps": null,
+          "name": "cast.hidden_b",
+          "occupancy_proxy": 0.125,
+          "simdgroups_per_threadgroup": 8,
+          "threadgroups": 16,
+          "threads": 4096,
+          "threads_per_threadgroup": 256
+        }
+      ],
+      "isolated_mla_gpu_sum_ns": 0,
+      "kv_state": {
+        "bos_window_only": true,
+        "bytes_read_per_layer": 1024,
+        "bytes_read_per_token": 1024,
+        "bytes_written_per_layer": 1479,
+        "bytes_written_per_token": 1479,
+        "compressed_indexer_loaded": false,
+        "device_copies_per_token": 0,
+        "host_sync_bytes_per_token": 8192,
+        "host_syncs_per_token": 1,
+        "note": "BOS position-0 graph: compressed indexer is not loaded and window KV is empty. scratch.wkv / kv_qat_bytes are per-layer scratch overwritten on the next layer; they are not a device-addressable cache that survives the token. The only host sync in this region is wo_b activation readback for host MHC post (HIDDEN_SIZE bf16 / layer). A second token would rebuild latent KV from streamed WKV weights — the standing anti-pattern.",
+        "persistent_device_addressable": false,
+        "rebuild_rebind_reallocate_per_token": true,
+        "scratch_overwritten_per_layer": true
+      },
+      "layers": 1,
+      "layers_gpu_over_20ms": 0,
+      "limit_class": "occupancy",
+      "limit_proof": "mean occupancy_proxy=0.159 (mean threads=5216); WQ-A/WKV/RMSNorm grids are hundreds-to-1k threads. serial_group=true encoders/CB=1.0 realized 21.3 GB/s",
+      "pipeline_limits": [
+        {
+          "kernel": "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 32,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 16896,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p3a_fp32_to_bf16_authority",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p3a_rmsnorm_bf16_authority",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 8208,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p3a_per_head_rmsnorm_bf16_simdgroup_candidate",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 2064,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 32,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p4a_sparse_attention_position0_sink_authority",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        {
+          "kernel": "deepseek_v4_p4a_wo_a_convert_bf16_einsum_simdgroup_candidate",
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 16384,
+          "thread_execution_width": 32
+        }
+      ],
+      "serial_group": true,
+      "structural_blocker": false
+    },
+    "operator_classes": [
+      {
+        "bytes": 25165824,
+        "calls": 3,
+        "calls_per_token": 3,
+        "name": "shared_expert",
+        "ns": 78640458,
+        "ns_per_token": 78640458,
+        "pct_body": 20.049113259832907
+      },
+      {
+        "bytes": 213916032,
+        "calls": 10,
+        "calls_per_token": 10,
+        "name": "mla",
+        "ns": 31234250,
+        "ns_per_token": 31234250,
+        "pct_body": 7.9630642008206
+      },
+      {
+        "bytes": 80216064,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "routed_experts",
+        "ns": 2775209,
+        "ns_per_token": 2775209,
+        "pct_body": 0.7075299531026081
+      },
+      {
+        "bytes": 0,
+        "calls": 4,
+        "calls_per_token": 4,
+        "name": "mhc_host",
+        "ns": 809999,
+        "ns_per_token": 809999,
+        "pct_body": 0.20650644851726824
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "norms",
+        "ns": 18500,
+        "ns_per_token": 18500,
+        "pct_body": 0.004716511128494557
+      }
+    ],
+    "reader_parallel_sum": [
+      {
+        "bytes": 0,
+        "calls": 75,
+        "calls_per_token": 75,
+        "name": "reader.mmap",
+        "ns": 31541000,
+        "ns_per_token": 31541000,
+        "pct_body": 8.04126905426199
+      },
+      {
+        "bytes": 0,
+        "calls": 75,
+        "calls_per_token": 75,
+        "name": "reader.path_resolve",
+        "ns": 24354627,
+        "ns_per_token": 24354627,
+        "pct_body": 6.209128068964
+      },
+      {
+        "bytes": 0,
+        "calls": 134528,
+        "calls_per_token": 134528,
+        "name": "reader.tensor_lookup",
+        "ns": 10558590,
+        "ns_per_token": 10558590,
+        "pct_body": 2.6918760668222346
+      },
+      {
+        "bytes": 0,
+        "calls": 75,
+        "calls_per_token": 75,
+        "name": "reader.identity",
+        "ns": 894250,
+        "ns_per_token": 894250,
+        "pct_body": 0.2279859500895274
+      },
+      {
+        "bytes": 0,
+        "calls": 75,
+        "calls_per_token": 75,
+        "name": "reader.digest_cache",
+        "ns": 18418,
+        "ns_per_token": 18418,
+        "pct_body": 0.004695605511600688
+      }
+    ],
+    "route_id_readbacks": [],
+    "schema": "hawking.gravity.deepseek_v4.token_ns_ledger.v1",
+    "stages": [
+      {
+        "bytes": 108545772,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.attn_weight_io",
+        "ns": 189201250,
+        "ns_per_token": 189201250,
+        "pct_body": 48.23620546757193
+      },
+      {
+        "bytes": 134229408,
+        "calls": 23,
+        "calls_per_token": 23,
+        "name": "host.memcpy",
+        "ns": 116089792,
+        "ns_per_token": 116089792,
+        "pct_body": 29.59669166879018
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "metal.wait",
+        "ns": 62998000,
+        "ns_per_token": 62998000,
+        "pct_body": 16.06112259853514
+      },
+      {
+        "bytes": 0,
+        "calls": 75,
+        "calls_per_token": 75,
+        "name": "reader.mmap",
+        "ns": 31541000,
+        "ns_per_token": 31541000,
+        "pct_body": 8.04126905426199
+      },
+      {
+        "bytes": 8388608,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.shared.w2_io",
+        "ns": 27667208,
+        "ns_per_token": 27667208,
+        "pct_body": 7.053659158182358
+      },
+      {
+        "bytes": 8388608,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.shared.w1_io",
+        "ns": 26057875,
+        "ns_per_token": 26057875,
+        "pct_body": 6.643365266076762
+      },
+      {
+        "bytes": 8388608,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.shared.w3_io",
+        "ns": 24915375,
+        "ns_per_token": 24915375,
+        "pct_body": 6.352088835573787
+      },
+      {
+        "bytes": 0,
+        "calls": 75,
+        "calls_per_token": 75,
+        "name": "reader.path_resolve",
+        "ns": 24354627,
+        "ns_per_token": 24354627,
+        "pct_body": 6.209128068964
+      },
+      {
+        "bytes": 3170520,
+        "calls": 9,
+        "calls_per_token": 9,
+        "name": "host.decode",
+        "ns": 14793751,
+        "ns_per_token": 14793751,
+        "pct_body": 3.771615741820404
+      },
+      {
+        "bytes": 4194560,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wq_a_upload",
+        "ns": 13463625,
+        "ns_per_token": 13463625,
+        "pct_body": 3.432504710398785
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "metal.gpu",
+        "ns": 10992000,
+        "ns_per_token": 10992000,
+        "pct_body": 2.802372449968225
+      },
+      {
+        "bytes": 0,
+        "calls": 134528,
+        "calls_per_token": 134528,
+        "name": "reader.tensor_lookup",
+        "ns": 10558590,
+        "ns_per_token": 10558590,
+        "pct_body": 2.6918760668222346
+      },
+      {
+        "bytes": 2097280,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wkv_upload",
+        "ns": 8182833,
+        "ns_per_token": 8182833,
+        "pct_body": 2.086185022006081
+      },
+      {
+        "bytes": 0,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "probe.second_touch",
+        "ns": 5497500,
+        "ns_per_token": 5497500,
+        "pct_body": 1.401568644805342
+      },
+      {
+        "bytes": 33556480,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wq_b_upload",
+        "ns": 3493334,
+        "ns_per_token": 3493334,
+        "pct_body": 0.8906134425161298
+      },
+      {
+        "bytes": 33556480,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wo_a_upload",
+        "ns": 3241708,
+        "ns_per_token": 3241708,
+        "pct_body": 0.8264622625583693
+      },
+      {
+        "bytes": 33556480,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wo_b_upload",
+        "ns": 2852750,
+        "ns_per_token": 2852750,
+        "pct_body": 0.7272987633412349
+      },
+      {
+        "bytes": 80216064,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.expert_slab_io_overlapped",
+        "ns": 2775209,
+        "ns_per_token": 2775209,
+        "pct_body": 0.7075299531026081
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "metal.encode",
+        "ns": 2269000,
+        "ns_per_token": 2269000,
+        "pct_body": 0.5784737162461702
+      },
+      {
+        "bytes": 0,
+        "calls": 75,
+        "calls_per_token": 75,
+        "name": "reader.identity",
+        "ns": 894250,
+        "ns_per_token": 894250,
+        "pct_body": 0.2279859500895274
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "host.mhc_pre",
+        "ns": 720458,
+        "ns_per_token": 720458,
+        "pct_body": 0.1836782797088071
+      },
+      {
+        "bytes": 3678316,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.moe_control_io",
+        "ns": 470875,
+        "ns_per_token": 470875,
+        "pct_body": 0.12004795554756077
+      },
+      {
+        "bytes": 100671536,
+        "calls": 5,
+        "calls_per_token": 5,
+        "name": "host.owned_copy",
+        "ns": 388084,
+        "ns_per_token": 388084,
+        "pct_body": 0.09894067593463143
+      },
+      {
+        "bytes": 0,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.embed_io",
+        "ns": 318708,
+        "ns_per_token": 318708,
+        "pct_body": 0.08125350425622936
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "host.mhc_post",
+        "ns": 89541,
+        "ns_per_token": 89541,
+        "pct_body": 0.02282816880846114
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "metal.submit",
+        "ns": 52000,
+        "ns_per_token": 52000,
+        "pct_body": 0.013257220469281997
+      },
+      {
+        "bytes": 0,
+        "calls": 2,
+        "calls_per_token": 2,
+        "name": "host.rmsnorm",
+        "ns": 18500,
+        "ns_per_token": 18500,
+        "pct_body": 0.004716511128494557
+      },
+      {
+        "bytes": 0,
+        "calls": 75,
+        "calls_per_token": 75,
+        "name": "reader.digest_cache",
+        "ns": 18418,
+        "ns_per_token": 18418,
+        "pct_body": 0.004695605511600688
+      },
+      {
+        "bytes": 8192,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.attn_activation_readback",
+        "ns": 4917,
+        "ns_per_token": 4917,
+        "pct_body": 0.0012535721739896073
+      },
+      {
+        "bytes": 8192,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.moe_activation_readback",
+        "ns": 3833,
+        "ns_per_token": 3833,
+        "pct_body": 0.000977210116514575
+      },
+      {
+        "bytes": 2097152,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wkv_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      },
+      {
+        "bytes": 33554432,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wo_a_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      },
+      {
+        "bytes": 33554432,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wo_b_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      },
+      {
+        "bytes": 4194304,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wq_a_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      },
+      {
+        "bytes": 33554432,
+        "calls": 1,
+        "calls_per_token": 1,
+        "name": "host.mla.wq_b_bytes",
+        "ns": 0,
+        "ns_per_token": 0,
+        "pct_body": 0.0
+      }
+    ],
+    "verify_ns": 56900422,
+    "wall_ns": 1889304875
+  },
+  "wall_ms": 1894
+}
