@@ -1171,6 +1171,9 @@ mod imp {
             "qwen_uniform_q4_group64_matvec_simdgroup_x64" => {
                 "qwen_uniform_q4_group64_matvec_simdgroup_x64"
             }
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+            }
             "qwen_uniform_q4_group64_matvec_qkv" => "qwen_uniform_q4_group64_matvec_qkv",
             "qwen_uniform_q4_group64_matvec_qkv_simdgroup" => {
                 "qwen_uniform_q4_group64_matvec_qkv_simdgroup"

@@ -1,0 +1,1000 @@
+{
+  "compile_ms": 0.21475,
+  "control": {
+    "gbps": 494.7814991398378,
+    "gpu_ns": [
+      2034500,
+      2027499,
+      2037708
+    ],
+    "iters": 4096,
+    "kernel": "q80_geo_stream_control",
+    "label": "DIRTY_ENGINEERING",
+    "median_gpu_ns": 2034500,
+    "note": "same-box sequential float4 streaming ceiling for this run; occupancy receipts quoted 560-647 GB/s clean",
+    "threadgroups": 60,
+    "threads_per_threadgroup": 256,
+    "traffic_bytes": 1006632960
+  },
+  "correctness": {
+    "binary_passed": true,
+    "binary_winner_max_abs": 1.621246337890625e-05,
+    "q4_passed": true,
+    "q4_winner_max_abs": 1.0013580322265625e-05,
+    "tolerance": 1.9999999494757503e-05
+  },
+  "defect": {
+    "control_threadgroups": 60,
+    "occupancy_lane_diagnosis": "launch geometry / one-thread-per-row serialization; 512-row organs launch 2 threadgroups. Confirmed on packed path before the sweep.",
+    "packed_binary_is_one_thread_per_row": true,
+    "packed_q4_is_one_thread_per_row": true,
+    "shipped_binary_kernel": "q80_binary_group_matvec",
+    "shipped_q4_kernel": "qwen_uniform_q4_group64_matvec",
+    "shipped_threadgroups_512_rows_tg256": 2
+  },
+  "dense_weight_materialized": false,
+  "device_name": "Apple M3 Ultra",
+  "fallbacks": 0,
+  "gates": {
+    "gate": {
+      "shipped_reference_max_abs": 1.81e-05,
+      "tolerance": 1.9999999494757503e-05
+    },
+    "q4": {
+      "tolerance": 1.9999999494757503e-05
+    },
+    "rice_indices": "N/A (gate/q4 organs; rice not on this path)"
+  },
+  "generated": {
+    "binary_fail": {
+      "numeric": 44,
+      "tier1_slow": 6
+    },
+    "binary_refine": 116,
+    "binary_survivors": 264,
+    "coarse_candidates": 198,
+    "q4_fail": {
+      "numeric": 40
+    },
+    "q4_refine": 108,
+    "q4_survivors": 266,
+    "specialize_fail": 0,
+    "tier1_reject_counts": {
+      "reg_pressure_rows_and_split": 32,
+      "serial_tpr_rows_gt4": 6,
+      "serial_tpr_scalar_only": 48,
+      "unroll_exceeds_k": 40
+    }
+  },
+  "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+  "lane": "matvec-geometry-sweep",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "oracle": "artifact packed decode, not BF16 parent",
+  "paired": {
+    "binary": {
+      "A": [
+        61041,
+        61875,
+        62000
+      ],
+      "A_gbps": 2.3831272727272728,
+      "A_median_ns": 61875,
+      "B": [
+        8958,
+        9041,
+        8874
+      ],
+      "B_gbps": 16.460817146684526,
+      "B_median_ns": 8958,
+      "speedup": 6.907233757535164
+    },
+    "protocol": "3 alternating A,B pairs after warmup; A=shipped serial, B=generated winner",
+    "q4": {
+      "A": [
+        223000,
+        224000,
+        221084
+      ],
+      "A_gbps": 2.4980089686098657,
+      "A_median_ns": 223000,
+      "B": [
+        8458,
+        8000,
+        8541
+      ],
+      "B_gbps": 65.86143296287538,
+      "B_median_ns": 8458,
+      "speedup": 26.365571056987466
+    }
+  },
+  "projection": {
+    "baseline_ns_per_token": 29020320,
+    "result_ns_per_token": 3240000,
+    "q4_result_ns_per_token": 3220320,
+    "q4_baseline_ns_per_token": 100800000,
+    "formula_baseline": "48*10*shipped_binary_serial_gate",
+    "formula_result": "48*10*binary_tg256_champion",
+    "claim_boundary": "isolated packed-organ GPU time. Not a full token wall, not BF16 parent, not BASE_TRUE.",
+    "label": "DIRTY_ENGINEERING"
+  },
+  "schema": "hawking.ascension.q80_matvec_geometry_sweep.v1",
+  "shipped": {
+    "binary_serial_gbps": 2.4389420929886367,
+    "binary_serial_gpu_ns": [
+      59875,
+      60625,
+      60459
+    ],
+    "binary_serial_max_abs": 4.76837158203125e-06,
+    "binary_serial_median_ns": 60459,
+    "binary_tg256_gbps": 21.845333333333333,
+    "binary_tg256_gpu_ns": [
+      6291,
+      6875,
+      6750
+    ],
+    "binary_tg256_median_ns": 6750,
+    "q4_named_winner_gbps": 83.03115218363392,
+    "q4_named_winner_gpu_ns": [
+      6709,
+      6834,
+      6709
+    ],
+    "q4_named_winner_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "q4_named_winner_max_abs": 1.0013580322265625e-05,
+    "q4_named_winner_median_ns": 6709,
+    "q4_serial_gbps": 2.652647619047619,
+    "q4_serial_gpu_ns": [
+      209250,
+      210000,
+      210541
+    ],
+    "q4_serial_max_abs": 3.337860107421875e-06,
+    "q4_serial_median_ns": 210000
+  },
+  "top_survivors": {
+    "binary": [
+      {
+        "gbps": 16.460817146684526,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 2,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 64,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          8999,
+          8958,
+          8666
+        ],
+        "max_abs_error": 1.621246337890625e-05,
+        "median_gpu_ns": 8958,
+        "name": "tptg64_sg2_split2_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 3.3268861457635626,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.523318244025686,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 2,
+          "simdgroups_per_threadgroup": 2,
+          "split_k_simdgroups": 1,
+          "stage_x": false,
+          "threadgroups": 256,
+          "threads_per_row": 32,
+          "threads_per_threadgroup": 64,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          10041,
+          9499,
+          9499
+        ],
+        "max_abs_error": 1.621246337890625e-05,
+        "median_gpu_ns": 9499,
+        "name": "tptg64_sg2_split1_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 3.137408789741025,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.523318244025686,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 2,
+          "simdgroups_per_threadgroup": 4,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 256,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 128,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          9499
+        ],
+        "max_abs_error": 1.621246337890625e-05,
+        "median_gpu_ns": 9499,
+        "name": "tptg128_sg4_split2_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 3.137408789741025,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.320103896103896,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 2,
+          "simdgroups_per_threadgroup": 2,
+          "split_k_simdgroups": 1,
+          "stage_x": false,
+          "threadgroups": 256,
+          "threads_per_row": 32,
+          "threads_per_threadgroup": 64,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          9625
+        ],
+        "max_abs_error": 1.6689300537109375e-05,
+        "median_gpu_ns": 9625,
+        "name": "tptg64_sg2_split1_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 3.0963372564935066,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.320103896103896,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 2,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 64,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          9625
+        ],
+        "max_abs_error": 1.621246337890625e-05,
+        "median_gpu_ns": 9625,
+        "name": "tptg64_sg2_split2_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 3.0963372564935066,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.25512104283054,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 4,
+          "simdgroups_per_threadgroup": 4,
+          "split_k_simdgroups": 1,
+          "stage_x": false,
+          "threadgroups": 128,
+          "threads_per_row": 32,
+          "threads_per_threadgroup": 128,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          9666
+        ],
+        "max_abs_error": 1.621246337890625e-05,
+        "median_gpu_ns": 9666,
+        "name": "tptg128_sg4_split1_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 3.0832036099472373,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.25512104283054,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 4,
+          "simdgroups_per_threadgroup": 16,
+          "split_k_simdgroups": 4,
+          "stage_x": false,
+          "threadgroups": 128,
+          "threads_per_row": 128,
+          "threads_per_threadgroup": 512,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          9666
+        ],
+        "max_abs_error": 1.52587890625e-05,
+        "median_gpu_ns": 9666,
+        "name": "tptg512_sg16_split4_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 3.0832036099472373,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.189122373300371,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 1,
+          "split_k_simdgroups": 1,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 32,
+          "threads_per_threadgroup": 32,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          9708
+        ],
+        "max_abs_error": 1.621246337890625e-05,
+        "median_gpu_ns": 9708,
+        "name": "tptg32_sg1_split1_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 3.0698646573702097,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.123692307692307,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 8,
+          "simdgroups_per_threadgroup": 8,
+          "split_k_simdgroups": 1,
+          "stage_x": false,
+          "threadgroups": 64,
+          "threads_per_row": 32,
+          "threads_per_threadgroup": 256,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          9750
+        ],
+        "max_abs_error": 1.6689300537109375e-05,
+        "median_gpu_ns": 9750,
+        "name": "tptg256_sg8_split1_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 3.0566406249999996,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.123692307692307,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 8,
+          "simdgroups_per_threadgroup": 16,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 64,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 512,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          9750
+        ],
+        "max_abs_error": 1.621246337890625e-05,
+        "median_gpu_ns": 9750,
+        "name": "tptg512_sg16_split2_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 3.0566406249999996,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.06036155653151,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 4,
+          "split_k_simdgroups": 4,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 128,
+          "threads_per_threadgroup": 128,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          9791,
+          9625,
+          10000
+        ],
+        "max_abs_error": 1.52587890625e-05,
+        "median_gpu_ns": 9791,
+        "name": "tptg128_sg4_split4_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 3.043840883847411,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 15.06036155653151,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_shuffle_down",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 2,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 64,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          9791
+        ],
+        "max_abs_error": 1.71661376953125e-05,
+        "median_gpu_ns": 9791,
+        "name": "tptg64_sg2_split2_rsg1_vec1_u1_red2_a0_x0",
+        "pct_of_control": 3.043840883847411,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      }
+    ],
+    "q4": [
+      {
+        "gbps": 70.73726984126984,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 2,
+          "simdgroups_per_threadgroup": 4,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 256,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 128,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          7750,
+          8124,
+          7875
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 7875,
+        "name": "tptg128_sg4_split2_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 14.296668320105818,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 69.632,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 2,
+          "simdgroups_per_threadgroup": 8,
+          "split_k_simdgroups": 4,
+          "stage_x": false,
+          "threadgroups": 256,
+          "threads_per_row": 128,
+          "threads_per_threadgroup": 256,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          7916,
+          8000,
+          8375
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8000,
+        "name": "tptg256_sg8_split4_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 14.073282877604168,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 68.21650746999755,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 4,
+          "split_k_simdgroups": 4,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 128,
+          "threads_per_threadgroup": 128,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          8166,
+          8375,
+          8166
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8166,
+        "name": "tptg128_sg4_split4_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 13.787198508551718,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 66.19011406844106,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 4,
+          "simdgroups_per_threadgroup": 4,
+          "split_k_simdgroups": 1,
+          "stage_x": false,
+          "threadgroups": 128,
+          "threads_per_row": 32,
+          "threads_per_threadgroup": 128,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          8416
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8416,
+        "name": "tptg128_sg4_split1_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 13.377645320916507,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 65.536,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 1,
+          "split_k_simdgroups": 1,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 32,
+          "threads_per_threadgroup": 32,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          8500
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8500,
+        "name": "tptg32_sg1_split1_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 13.245442708333332,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 64.9022486310148,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 4,
+          "simdgroups_per_threadgroup": 8,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 128,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 256,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          8583,
+          8708,
+          8499
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8583,
+        "name": "tptg256_sg8_split2_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 13.117355589052002,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 64.58620289855072,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 4,
+          "simdgroups_per_threadgroup": 8,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 128,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 256,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          8625
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8625,
+        "name": "tptg256_sg8_split2_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 13.053479770531402,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 64.58620289855072,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 2,
+          "rows_per_threadgroup": 4,
+          "simdgroups_per_threadgroup": 8,
+          "split_k_simdgroups": 4,
+          "stage_x": false,
+          "threadgroups": 128,
+          "threads_per_row": 128,
+          "threads_per_threadgroup": 256,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          8625
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8625,
+        "name": "tptg256_sg8_split4_rsg2_vec1_u1_red1_a0_x0",
+        "pct_of_control": 13.053479770531402,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 63.97060174552136,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 2,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 64,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          8708,
+          8999,
+          8500
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8708,
+        "name": "tptg64_sg2_split2_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 12.929060980803092,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 63.67081952223111,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 2,
+          "rows_per_threadgroup": 2,
+          "simdgroups_per_threadgroup": 4,
+          "split_k_simdgroups": 4,
+          "stage_x": false,
+          "threadgroups": 256,
+          "threads_per_row": 128,
+          "threads_per_threadgroup": 128,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          8749
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8749,
+        "name": "tptg128_sg4_split4_rsg2_vec1_u1_red1_a0_x0",
+        "pct_of_control": 12.868472170629024,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 63.67081952223111,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 8,
+          "simdgroups_per_threadgroup": 8,
+          "split_k_simdgroups": 1,
+          "stage_x": false,
+          "threadgroups": 64,
+          "threads_per_row": 32,
+          "threads_per_threadgroup": 256,
+          "unroll": 1,
+          "vector_width": 1
+        },
+        "kernel_ns": [
+          8749
+        ],
+        "max_abs_error": 9.059906005859375e-06,
+        "median_gpu_ns": 8749,
+        "name": "tptg256_sg8_split1_rsg1_vec1_u1_red1_a0_x0",
+        "pct_of_control": 12.868472170629024,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        }
+      },
+      {
+        "gbps": 63.36662495734274,
+        "geometry": {
+          "acc": "fp32",
+          "reduction": "simd_sum",
+          "rows_per_simdgroup": 1,
+          "rows_per_threadgroup": 1,
+          "simdgroups_per_threadgroup": 2,
+          "split_k_simdgroups": 2,
+          "stage_x": false,
+          "threadgroups": 512,
+          "threads_per_row": 64,
+          "threads_per_threadgroup": 64,
+          "unroll": 1,
+          "vector_width": 2
+        },
+        "kernel_ns": [
+          8624,
+          8791,
+          8791
+        ],
+        "max_abs_error": 1.0013580322265625e-05,
+        "median_gpu_ns": 8791,
+        "name": "tptg64_sg2_split2_rsg1_vec2_u1_red1_a0_x0",
+        "pct_of_control": 12.806991584669927,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "occupancy_proxy_vs_1024": 1.0,
+          "static_threadgroup_memory_length": 128,
+          "thread_execution_width": 32
+        }
+      }
+    ]
+  },
+  "verdict": {
+    "binary_champion": "q80_binary_group_matvec_tg256",
+    "binary_generated_best_vs_existing_tg256": "existing q80_binary_group_matvec_tg256 remains faster; parameterized family did not beat the specialized 256-thread/row kernel",
+    "packed_one_thread_per_row": true,
+    "q4_champion": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "q4_generated_best": "tptg=128, 64 threads/row, 2 rows/TG, vec=uint, simd_sum. Beats occupancy x64 (~16us / 35 GB/s) on this run."
+  },
+  "wall_ms": 5204.015917,
+  "winners": {
+    "binary": {
+      "gbps": 16.460817146684526,
+      "geometry": {
+        "acc": "fp32",
+        "reduction": "simd_sum",
+        "rows_per_simdgroup": 1,
+        "rows_per_threadgroup": 1,
+        "simdgroups_per_threadgroup": 2,
+        "split_k_simdgroups": 2,
+        "stage_x": false,
+        "threadgroups": 512,
+        "threads_per_row": 64,
+        "threads_per_threadgroup": 64,
+        "unroll": 1,
+        "vector_width": 1
+      },
+      "kernel_ns": [
+        8999,
+        8958,
+        8666
+      ],
+      "max_abs_error": 1.621246337890625e-05,
+      "median_gpu_ns": 8958,
+      "name": "tptg64_sg2_split2_rsg1_vec1_u1_red1_a0_x0",
+      "pct_of_control": 3.3268861457635626,
+      "pipeline": {
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_proxy_vs_1024": 1.0,
+        "static_threadgroup_memory_length": 128,
+        "thread_execution_width": 32
+      }
+    },
+    "q4": {
+      "gbps": 70.73726984126984,
+      "geometry": {
+        "acc": "fp32",
+        "reduction": "simd_sum",
+        "rows_per_simdgroup": 1,
+        "rows_per_threadgroup": 2,
+        "simdgroups_per_threadgroup": 4,
+        "split_k_simdgroups": 2,
+        "stage_x": false,
+        "threadgroups": 256,
+        "threads_per_row": 64,
+        "threads_per_threadgroup": 128,
+        "unroll": 1,
+        "vector_width": 1
+      },
+      "kernel_ns": [
+        7750,
+        8124,
+        7875
+      ],
+      "max_abs_error": 1.0013580322265625e-05,
+      "median_gpu_ns": 7875,
+      "name": "tptg128_sg4_split2_rsg1_vec1_u1_red1_a0_x0",
+      "pct_of_control": 14.296668320105818,
+      "pipeline": {
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_proxy_vs_1024": 1.0,
+        "static_threadgroup_memory_length": 128,
+        "thread_execution_width": 32
+      }
+    }
+  },
+  "champions": {
+    "label": "DIRTY_ENGINEERING",
+    "binary": {
+      "kernel": "q80_binary_group_matvec_tg256",
+      "median_gpu_ns": 6750,
+      "gbps": 21.845333333333333,
+      "gpu_ns": [
+        6291,
+        6875,
+        6750
+      ],
+      "token_ns_48x10": 3240000
+    },
+    "q4": {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "median_gpu_ns": 6709,
+      "gbps": 83.03115218363392,
+      "gpu_ns": [
+        6709,
+        6834,
+        6709
+      ],
+      "max_abs_error": 1.0013580322265625e-05,
+      "token_ns_48x10": 3220320
+    },
+    "note": "Generated family did not beat specialized tg256 on binary. Specialized Q4 geo_tpr64_tg128 is the Q4 champion (83 GB/s). Token scale is 48*10*organ, not a full token wall."
+  }
+}
