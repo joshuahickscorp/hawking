@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.ascension.g013_fs_efficiency_closure.v1",
+  "date": "2026-08-16",
+  "law": "fs_per_weight = 152.6252 * BPW / efficiency",
+  "finding": "The ledger's 'sub-100 fs REQUIRES BPW < 0.6552' assumes efficiency = 1.0, which this box never delivers. Against the measured 560-647 GB/s control the real requirement is BPW < 0.448-0.518. The existing 0.6462 BPW artifact therefore CANNOT reach sub-100 fs at any achievable bandwidth: its best case is 124.8 fs at the top of the control band.",
+  "artifact_measured": {
+    "name": "mixed-sub655-v1",
+    "complete_physical_bpw": 0.6462038524865996,
+    "note": "below the 0.6552 nominal threshold, so the REPRESENTATION half of G013 is satisfied"
+  },
+  "per_efficiency": {
+    "low_560": {
+      "efficiency": 0.6838,
+      "fs_at_sub655_artifact": 144.24,
+      "bpw_required_for_100fs": 0.448
+    },
+    "high_647": {
+      "efficiency": 0.79,
+      "fs_at_sub655_artifact": 124.85,
+      "bpw_required_for_100fs": 0.5176
+    },
+    "unity": {
+      "efficiency": 1.0,
+      "fs_at_sub655_artifact": 98.63,
+      "bpw_required_for_100fs": 0.6552
+    }
+  },
+  "gap_decomposition_q80_today": {
+    "measured_fs": 156970,
+    "efficiency_pct": 0.135,
+    "efficiency_term_x": 738.6,
+    "note": "efficiency, not BPW, is the dominant term: 740x from occupancy vs 2.1x from density"
+  },
+  "consequence": "G013 needs BOTH a sub-0.518 BPW representation AND top-of-band occupancy. Neither exists today; the 0.6462 artifact closes only the easier half."
+}
