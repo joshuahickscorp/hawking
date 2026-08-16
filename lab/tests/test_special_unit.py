@@ -7,6 +7,9 @@ from pathlib import Path
 import pytest
 
 from lab.hcli.special_unit import (
+    NativeDecodeError,
+    NativeDecodeRefused,
+    NativeQwen38Backend,
     ResourceClass,
     ResourceGate,
     ScriptedBackend,
@@ -38,6 +41,7 @@ def test_conversation_records_context_and_reply(unit: SpecialUnit) -> None:
     turn = unit.say("what is the native-leg status?")
     assert turn.role == "assistant"
     assert "scripted" in turn.text
+    assert turn.meta.get("produced_by") == "scripted"
     assert len(unit.session.transcript) == 2
     assert unit.session.context_digest
     ctx = project_context(REPO_ROOT)
@@ -217,10 +221,175 @@ def test_session_store_missing(tmp_path: Path) -> None:
         store.load("ghost")
 
 
+def test_native_refuse_task_is_pass_not_skip(tmp_path: Path) -> None:
+    from lab.hcli.claude_offload_bench import _t_native_refuse_protected
+
+    ok, detail = _t_native_refuse_protected(tmp_path)
+    assert ok
+    assert not detail.startswith("SKIP ")
+    assert "refused protected lock" in detail
+
+
 def test_offload_catalog_cites_real_repo_files() -> None:
-    from lab.hcli.claude_offload_bench import G015, TASKS
+    from lab.hcli.claude_offload_bench import G015, PRODUCER_HARNESS, PRODUCER_MODEL, TASKS
 
     assert G015.is_file()
     assert len(TASKS) >= 12
     assert all(t.source for t in TASKS)
     assert all(t.routine_claude for t in TASKS)
+    producers = {t.producer for t in TASKS}
+    assert PRODUCER_HARNESS in producers
+    assert PRODUCER_MODEL in producers
+    assert any(t.id == "native_qwen38_say" and t.producer == PRODUCER_MODEL for t in TASKS)
+
+
+def test_native_backend_refuses_protected_lock_without_invoke(tmp_path: Path) -> None:
+    lock = tmp_path / "lock"
+    lock.mkdir()
+    (lock / "owner").write_text("q80-mixed-bench\n", encoding="utf-8")
+    called: list[list[str]] = []
+
+    def runner(cmd: list[str]) -> object:
+        called.append(cmd)
+        raise AssertionError("must not invoke generate")
+
+    before = Path("/tmp/hawking-gpu-lane.lock").exists()
+    backend = NativeQwen38Backend(
+        repo=REPO_ROOT,
+        gate=ResourceGate(lock_path=lock, allow_gpu=True),
+        runner=runner,  # type: ignore[arg-type]
+    )
+    with pytest.raises(NativeDecodeRefused, match="protected"):
+        backend.complete("Say hi.", {})
+    assert called == []
+    assert Path("/tmp/hawking-gpu-lane.lock").exists() == before
+
+
+def test_native_backend_refuses_nonprotected_holder(tmp_path: Path) -> None:
+    lock = tmp_path / "lock"
+    lock.mkdir()
+    (lock / "owner").write_text("some-other-lane\n", encoding="utf-8")
+    called: list[list[str]] = []
+
+    def runner(cmd: list[str]) -> object:
+        called.append(cmd)
+        raise AssertionError("must not contend")
+
+    backend = NativeQwen38Backend(
+        repo=REPO_ROOT,
+        gate=ResourceGate(lock_path=lock),
+        runner=runner,  # type: ignore[arg-type]
+    )
+    with pytest.raises(NativeDecodeRefused, match="will not contend"):
+        backend.complete("Say hi.", {})
+    assert called == []
+
+
+def test_native_backend_command_wraps_gpu_lane_lock(tmp_path: Path) -> None:
+    import json
+    import subprocess
+
+    def runner(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        assert Path(cmd[0]).name == "gpu_lane_lock.sh"
+        assert cmd[1] == "qwen38-special-unit"
+        assert "ascension_qwen38_hybrid_greedy" in cmd[2]
+        out = Path(cmd[cmd.index("--out") + 1])
+        out.write_text(
+            json.dumps(
+                {
+                    "generated_text": "hello from native stub",
+                    "fallbacks": 0,
+                    "new_token_ids": [1, 2, 3],
+                    "median_gpu_ns_per_token": 33500000,
+                    "wall_ns": 1000,
+                }
+            ),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(cmd, 0, stdout="GENERATED_TEXT_VERBATIM: hello from native stub\nFALLBACKS: 0\n", stderr="")
+
+    backend = NativeQwen38Backend(
+        repo=REPO_ROOT,
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+        runner=runner,
+    )
+    text = backend.complete("Say hi.", {})
+    assert text == "hello from native stub"
+    assert backend.last_receipt is not None
+    assert backend.last_receipt["fallbacks"] == 0
+    assert backend.last_receipt["used_gpu_lane_lock"] is False
+
+
+def test_native_backend_rejects_nonzero_fallbacks(tmp_path: Path) -> None:
+    import json
+    import subprocess
+
+    def runner(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        out = Path(cmd[cmd.index("--out") + 1])
+        out.write_text(json.dumps({"generated_text": "x", "fallbacks": 2}), encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="FALLBACKS: 2\n", stderr="")
+
+    backend = NativeQwen38Backend(
+        repo=REPO_ROOT,
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+        runner=runner,
+    )
+    with pytest.raises(NativeDecodeError, match="fallbacks=2"):
+        backend.complete("Say hi.", {})
+
+
+def test_say_records_model_producer_from_native_stub(tmp_path: Path) -> None:
+    import json
+    import subprocess
+
+    def runner(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        out = Path(cmd[cmd.index("--out") + 1])
+        out.write_text(json.dumps({"generated_text": "hi from model", "fallbacks": 0}), encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    backend = NativeQwen38Backend(
+        repo=REPO_ROOT,
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+        runner=runner,
+    )
+    unit = SpecialUnit(
+        repo=REPO_ROOT,
+        session_root=tmp_path / "sessions",
+        owned_worktree=tmp_path / "wt",
+        backend=backend,
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    turn = unit.say("Say hi.")
+    assert turn.meta.get("produced_by") == "model"
+    assert turn.meta.get("native", {}).get("fallbacks") == 0
+    assert turn.text == "hi from model"
+
+
+def test_proposed_complete_fence_holds_with_native_stub(tmp_path: Path) -> None:
+    import json
+    import subprocess
+
+    def runner(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        out = Path(cmd[cmd.index("--out") + 1])
+        out.write_text(json.dumps({"generated_text": "ok", "fallbacks": 0}), encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    unit = SpecialUnit(
+        repo=REPO_ROOT,
+        session_root=tmp_path / "sessions",
+        owned_worktree=tmp_path / "wt",
+        backend=NativeQwen38Backend(
+            repo=REPO_ROOT,
+            gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+            runner=runner,
+        ),
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    unit.say("plan this")
+    unit.plan("x", steps=[{"id": "s", "title": "S", "dependencies": [], "oracle": {"kind": "predicate"}}])
+    unit.propose("s", author="qwen38")
+    step = unit.session.plan["steps"][0]
+    assert step["status"] == StepStatus.PROPOSED_COMPLETE.value
+    assert step["status"] != StepStatus.VERIFIED_COMPLETE.value
+    with pytest.raises(SelfPromotionError):
+        unit.verify("s", principal=AuthorityPrincipal.SANDBOX_MODEL, certifier_id="qwen38")

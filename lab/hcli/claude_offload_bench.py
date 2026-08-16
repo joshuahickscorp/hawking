@@ -2,8 +2,12 @@
 
 A harness that cannot displace real work has not met G005. Every task below
 cites a file, receipt, or grok-run artifact this campaign already produced.
-The score is FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED: passed / attempted
-routine tasks. Environment-missing tasks are excluded from both sides.
+
+FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED is the share of attempted routine
+tasks whose result was produced by the native Qwen3.8 model. Harness-executed
+passes (tools, fences, scripted say) are reported separately; they are not
+model displacement. Environment-missing and GPU-lock refusals are SKIP and
+are excluded from both sides. A skip is never a pass.
 """
 from __future__ import annotations
 
@@ -16,6 +20,9 @@ from typing import Any, Callable
 from lab.hcli.special_unit import (
     GROK_TASKS,
     GPU_LOCK,
+    NativeDecodeError,
+    NativeDecodeRefused,
+    NativeQwen38Backend,
     ResourceClass,
     ResourceGate,
     ScriptedBackend,
@@ -27,10 +34,12 @@ from lab.layout import REPO_ROOT
 from lab.receipts import seal
 from lab.verification_authority import AuthorityPrincipal, SelfPromotionError
 
-SCHEMA = "hawking.special_unit.claude_offload_bench.v1"
-DEFAULT_RECEIPT = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G005_SPECIAL_UNIT_READY.json"
+SCHEMA = "hawking.special_unit.claude_offload_bench.v2"
+DEFAULT_RECEIPT = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G005_MODEL_WIRED_OFFLOAD.json"
 G015 = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G015_NATIVE_LEG_VERIFY_ON_MAIN.json"
 REAL_GROK_TASK = "q80-host-facets-20260816-143023"
+PRODUCER_MODEL = "model"
+PRODUCER_HARNESS = "harness"
 
 
 @dataclass
@@ -40,6 +49,7 @@ class OffloadTask:
     source: str
     routine_claude: bool
     run: Callable[[Path], tuple[bool, str]]
+    producer: str = PRODUCER_HARNESS
 
 
 def _unit(repo: Path, tmp: Path, **kwargs: Any) -> SpecialUnit:
@@ -76,11 +86,14 @@ def _t_pytest_option_c(tmp: Path) -> tuple[bool, str]:
 
 
 def _t_machine_state(tmp: Path) -> tuple[bool, str]:
+    script = REPO_ROOT / "tools" / "agentos" / "machine_state.py"
+    if not script.is_file():
+        return False, f"SKIP missing {script}"
     unit = _unit(REPO_ROOT, tmp)
     result = unit.tool(
         "bash",
         {
-            "argv": [__import__("sys").executable, str(REPO_ROOT / "tools" / "agentos" / "machine_state.py")],
+            "argv": [__import__("sys").executable, str(script)],
             "timeout": 20,
         },
     )
@@ -290,7 +303,104 @@ def _t_gpu_cmd_refuse(tmp: Path) -> tuple[bool, str]:
     return (not result.ok) and "refused" in result.output, result.output
 
 
+def _native_unit(repo: Path, tmp: Path, **kwargs: Any) -> SpecialUnit:
+    gate = kwargs.pop("gate", None) or ResourceGate()
+    backend = kwargs.pop("backend", None) or NativeQwen38Backend(repo=repo, gate=gate)
+    return SpecialUnit(
+        repo=repo,
+        session_root=tmp / "sessions",
+        owned_worktree=tmp / "wt",
+        backend=backend,
+        gate=gate,
+        **kwargs,
+    )
+
+
+def _t_native_qwen38_say(tmp: Path) -> tuple[bool, str]:
+    """say() answered by the verified native decode, under gpu_lane_lock.sh."""
+
+    gate = ResourceGate(lock_path=GPU_LOCK)
+    live, why = gate.protected_bench_live()
+    if live:
+        return False, f"SKIP {why}"
+    owner = gate.lock_owner()
+    if owner:
+        return False, f"SKIP gpu lock held by {owner}; will not contend"
+    unit = _native_unit(REPO_ROOT, tmp, gate=gate)
+    try:
+        turn = unit.say("Say hi.")
+    except NativeDecodeRefused as exc:
+        return False, exc.bench_detail()
+    except NativeDecodeError as exc:
+        return False, f"native generate failed: {exc}"
+    native = dict(turn.meta.get("native") or {})
+    sid = unit.session.session_id
+    reopened = SpecialUnit.open(
+        sid,
+        repo=REPO_ROOT,
+        session_root=unit.store.root,
+        owned_worktree=tmp / "wt",
+    )
+    persisted = (
+        len(reopened.session.transcript) >= 2
+        and reopened.session.transcript[1].text == turn.text
+    )
+    ok = (
+        turn.role == "assistant"
+        and bool(turn.text.strip())
+        and turn.meta.get("produced_by") == PRODUCER_MODEL
+        and native.get("fallbacks") == 0
+        and persisted
+    )
+    excerpt = turn.text.replace("\n", " ")[:160]
+    return (
+        ok,
+        (
+            f"model generated {len(turn.text)} chars fallbacks={native.get('fallbacks')} "
+            f"used_gpu_lane_lock={native.get('used_gpu_lane_lock')} persisted={persisted} "
+            f"excerpt={excerpt!r}"
+        ),
+    )
+
+
+def _t_native_refuse_protected(tmp: Path) -> tuple[bool, str]:
+    """Native generate must inspect and refuse a protected lock, never take it."""
+
+    lock = tmp / "fake-gpu.lock"
+    lock.mkdir()
+    (lock / "owner").write_text("q80-mixed-bench\n", encoding="utf-8")
+    called: list[list[str]] = []
+
+    def _runner(cmd: list[str]) -> Any:
+        called.append(cmd)
+        raise AssertionError("native backend invoked generate under a protected lock")
+
+    gate = ResourceGate(lock_path=lock, allow_gpu=True)
+    backend = NativeQwen38Backend(
+        repo=REPO_ROOT,
+        gate=gate,
+        binary=Path("/nonexistent/ascension_qwen38_hybrid_greedy"),
+        runner=_runner,
+    )
+    try:
+        backend.complete("Say hi.", {})
+    except NativeDecodeRefused as exc:
+        if called:
+            return False, f"invoked generate after refuse: {called[0][:4]}"
+        ok = "protected" in str(exc).lower() or "q80" in str(exc).lower()
+        return ok, f"refused protected lock without invoke: {exc}"
+    return False, "native backend generated while a protected q80 lock was held"
+
+
 TASKS: list[OffloadTask] = [
+    OffloadTask(
+        "native_qwen38_say",
+        "say() answered by native Qwen3.8 decode (gpu_lane_lock.sh)",
+        "crates/hawking-core/examples/ascension_qwen38_hybrid_greedy.rs + G015_NATIVE_LEG_VERIFY_ON_MAIN.json",
+        True,
+        _t_native_qwen38_say,
+        PRODUCER_MODEL,
+    ),
     OffloadTask(
         "read_g015_open_legs",
         "Read G015 and extract still-open harness legs",
@@ -403,6 +513,13 @@ TASKS: list[OffloadTask] = [
         True,
         _t_gpu_cmd_refuse,
     ),
+    OffloadTask(
+        "native_refuses_protected_lock",
+        "Native generate inspects a protected q80 lock and refuses without taking it",
+        "tools/gpu_lane_lock.sh owner protocol + NativeQwen38Backend",
+        True,
+        _t_native_refuse_protected,
+    ),
 ]
 
 
@@ -412,15 +529,22 @@ def _is_skip(detail: str) -> bool:
 
 def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> dict[str, Any]:
     _ = repo
+    NativeQwen38Backend.reset_counters()
     rows: list[dict[str, Any]] = []
     attempted = 0
     passed = 0
     skipped = 0
+    model_attempted = 0
+    model_passed = 0
+    harness_attempted = 0
+    harness_passed = 0
     with tempfile.TemporaryDirectory(prefix="su-offload-") as td:
         tmp = Path(td)
         for task in TASKS:
             try:
                 ok, detail = task.run(tmp)
+            except NativeDecodeRefused as exc:
+                ok, detail = False, exc.bench_detail()
             except Exception as exc:  # noqa: BLE001 — bench must record, not crash
                 ok, detail = False, f"{type(exc).__name__}: {exc}"
             if _is_skip(detail):
@@ -431,6 +555,8 @@ def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> di
                         "title": task.title,
                         "source": task.source,
                         "routine_claude": task.routine_claude,
+                        "produced_by": None,
+                        "expected_producer": task.producer,
                         "status": "SKIP",
                         "detail": detail,
                     }
@@ -440,29 +566,56 @@ def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> di
                 attempted += 1
                 if ok:
                     passed += 1
+                if task.producer == PRODUCER_MODEL:
+                    model_attempted += 1
+                    if ok:
+                        model_passed += 1
+                else:
+                    harness_attempted += 1
+                    if ok:
+                        harness_passed += 1
             rows.append(
                 {
                     "id": task.id,
                     "title": task.title,
                     "source": task.source,
                     "routine_claude": task.routine_claude,
+                    "produced_by": task.producer,
+                    "expected_producer": task.producer,
                     "status": "PASS" if ok else "FAIL",
                     "detail": detail[:800],
                 }
             )
-    fraction = (passed / attempted) if attempted else 0.0
+    # Honest displacement: only model-produced passes count. Harness passes
+    # are capability, not displacement. Skips are excluded from both sides.
+    fraction = (model_passed / attempted) if attempted else 0.0
+    native_untouched = NativeQwen38Backend.generates_completed == 0
+    gpu_untouched = NativeQwen38Backend.lock_acquisitions == 0
     doc = seal(
         {
             "schema": SCHEMA,
             "date": "2026-08-16",
-            "claim": "CLAUDE_OFFLOAD_BENCH from real Hawking tasks",
+            "claim": "CLAUDE_OFFLOAD_BENCH with native Qwen3.8 answering say()",
+            "metric_definition": (
+                "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED = "
+                "model-produced routine passes / all attempted routine tasks. "
+                "Harness-executed passes are not model displacement. "
+                "SKIP (missing env or GPU-lock refuse) is excluded from both sides "
+                "and is never counted as a pass."
+            ),
             "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED": round(fraction, 4),
             "passed": passed,
             "attempted": attempted,
             "skipped": skipped,
+            "model_produced_pass": model_passed,
+            "model_produced_attempted": model_attempted,
+            "harness_produced_pass": harness_passed,
+            "harness_produced_attempted": harness_attempted,
             "status": "PASS" if attempted and passed == attempted else "PARTIAL" if passed else "FAIL",
-            "gpu_lock_untouched": True,
-            "native_model_untouched": True,
+            "gpu_lock_untouched": gpu_untouched,
+            "native_model_untouched": native_untouched,
+            "native_lock_acquisitions": NativeQwen38Backend.lock_acquisitions,
+            "native_generates_completed": NativeQwen38Backend.generates_completed,
             "tasks": rows,
         }
     )

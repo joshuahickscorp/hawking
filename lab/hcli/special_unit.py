@@ -1,9 +1,11 @@
-"""Qwen3.8 special-unit harness — the agent legs, not the model.
+"""Qwen3.8 special-unit harness — agent legs plus the conversation wire.
 
-CPU-side. Does not load Qwen weights, does not take the GPU lane lock, and
-does not run a protected Q80/DSV benchmark. Conversation, tools, Grok
-delegate+consume, planning, and proposed_complete vs verified_complete live
-here so the already-verified native decode can be *used*.
+CPU-side tools, planning, and verification. ``say()`` is answered by the
+already-verified native Qwen3.8 decode when a ``NativeQwen38Backend`` is
+attached (CLI default). Generate inspects ``/tmp/hawking-gpu-lane.lock`` and
+REFUSES if a protected owner holds it; otherwise it runs under
+``tools/gpu_lane_lock.sh``. The harness never certifies its own work:
+proposed_complete is not verified_complete.
 
 Reuse: ``lab.execution_sandbox``, ``lab.verification_authority``,
 ``lab.receipts.seal``, ``tools/agentos/machine_state.py``. This is not a
@@ -20,12 +22,13 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any, Callable, Mapping, Protocol, Sequence
 
 from lab.execution_sandbox import (
     ExecutionSandboxPolicy,
@@ -52,6 +55,15 @@ DEFAULT_SESSION_ROOT = REPO_ROOT / ".hide" / "special-unit" / "sessions"
 GROK_RUN = Path.home() / ".claude-grok" / "bin" / "grok-run"
 GROK_TASKS = Path.home() / ".claude-grok" / "tasks"
 GPU_LOCK = Path("/tmp/hawking-gpu-lane.lock")
+NATIVE_DECODE_LANE = "qwen38-special-unit"
+QWEN38_PACK_RELATIVE = Path("workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1")
+QWEN38_TOKENIZER_RELATIVE = Path(
+    "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json"
+)
+QWEN38_GREEDY_RELATIVE = (
+    Path("workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy"),
+    Path("workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy"),
+)
 
 PROTECTED_OWNER_PREFIXES: tuple[str, ...] = (
     "q80-",
@@ -949,20 +961,301 @@ def _principal_is_sandbox(principal: AuthorityPrincipal | str) -> bool:
 # ---------------------------------------------------------------------------
 
 
+class ConversationBackend(Protocol):
+    produced_by: str
+    last_receipt: dict[str, Any] | None
+
+    def complete(self, prompt: str, context: Mapping[str, Any]) -> str: ...
+
+
 class ScriptedBackend:
-    """Deterministic stand-in for Qwen3.8. The native decode is a different leg."""
+    """Deterministic stand-in. Tests and harness-only bench tasks inject this."""
+
+    produced_by = "scripted"
 
     def __init__(self, replies: Sequence[str] | None = None) -> None:
         self.replies = list(replies or ["acknowledged"])
         self.i = 0
+        self.last_receipt: dict[str, Any] | None = None
 
     def complete(self, prompt: str, context: Mapping[str, Any]) -> str:
         _ = (prompt, context)
         if self.i >= len(self.replies):
-            return self.replies[-1]
-        text = self.replies[self.i]
-        self.i += 1
+            text = self.replies[-1]
+        else:
+            text = self.replies[self.i]
+            self.i += 1
+        self.last_receipt = {"produced_by": "scripted", "text": text}
         return text
+
+
+class NativeDecodeRefused(SpecialUnitError):
+    """Inspected the GPU lock or materials and will not generate.
+
+    The bench must record this as SKIP, never as PASS.
+    """
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+    def bench_detail(self) -> str:
+        return self.reason if self.reason.startswith("SKIP ") else f"SKIP {self.reason}"
+
+
+class NativeDecodeError(SpecialUnitError):
+    """Generate was invoked and failed. Bench FAIL, not a skip."""
+
+
+def checkout_search_roots(repo: Path) -> list[Path]:
+    """This worktree plus every git worktree, so a sparse checkout can see packs."""
+
+    roots: list[Path] = []
+    seen: set[Path] = set()
+
+    def add(raw: Path | str | None) -> None:
+        if raw is None:
+            return
+        path = Path(raw)
+        try:
+            path = path.resolve()
+        except OSError:
+            return
+        if path in seen or not path.is_dir():
+            return
+        seen.add(path)
+        roots.append(path)
+
+    add(repo)
+    for key in ("HAWKING_MAIN_REPO", "HAWKING_REPO"):
+        add(os.environ.get(key))
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(repo), "worktree", "list", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        proc = None
+    if proc is not None and proc.returncode == 0:
+        for line in proc.stdout.splitlines():
+            if line.startswith("worktree "):
+                add(line[len("worktree ") :])
+    return roots
+
+
+def locate_qwen38_greedy_binary(repo: Path) -> Path | None:
+    env = os.environ.get("QWEN38_GREEDY_BIN")
+    if env:
+        path = Path(env)
+        if path.is_file():
+            return path.resolve()
+    for root in checkout_search_roots(repo):
+        for rel in QWEN38_GREEDY_RELATIVE:
+            cand = root / rel
+            if cand.is_file():
+                return cand.resolve()
+    return None
+
+
+def locate_qwen38_artifact_root(repo: Path) -> Path | None:
+    env = os.environ.get("QWEN38_ARTIFACT_ROOT")
+    if env:
+        path = Path(env)
+        if path.is_dir():
+            return path.resolve()
+    for root in checkout_search_roots(repo):
+        cand = root / QWEN38_PACK_RELATIVE
+        if cand.is_dir() and (cand / "manifest.json").is_file():
+            return cand.resolve()
+    return None
+
+
+def locate_qwen38_tokenizer(repo: Path) -> Path | None:
+    env = os.environ.get("QWEN38_TOKENIZER")
+    if env:
+        path = Path(env)
+        if path.is_file():
+            return path.resolve()
+    for root in checkout_search_roots(repo):
+        cand = root / QWEN38_TOKENIZER_RELATIVE
+        if cand.is_file():
+            return cand.resolve()
+    return None
+
+
+class NativeQwen38Backend:
+    """Adapter over the verified ``ascension_qwen38_hybrid_greedy`` binary.
+
+    Does not modify the decode path. Inspects the GPU lock and refuses when a
+    protected owner (or any owner) holds it. Generate runs under
+    ``tools/gpu_lane_lock.sh``.
+    """
+
+    produced_by = "model"
+    lock_acquisitions = 0
+    generates_completed = 0
+
+    def __init__(
+        self,
+        *,
+        repo: Path,
+        gate: ResourceGate,
+        binary: Path | None = None,
+        artifact_root: Path | None = None,
+        tokenizer: Path | None = None,
+        max_new_tokens: int = 16,
+        max_seq_len: int = 128,
+        timeout: float = 600.0,
+        runner: Callable[[list[str]], subprocess.CompletedProcess[str]] | None = None,
+        lock_script: Path | None = None,
+        lane: str = NATIVE_DECODE_LANE,
+    ) -> None:
+        self.repo = Path(repo)
+        self.gate = gate
+        self.binary = Path(binary) if binary is not None else None
+        self.artifact_root = Path(artifact_root) if artifact_root is not None else None
+        self.tokenizer = Path(tokenizer) if tokenizer is not None else None
+        self.max_new_tokens = int(max_new_tokens)
+        self.max_seq_len = int(max_seq_len)
+        self.timeout = float(timeout)
+        self.runner = runner
+        self.lock_script = (
+            Path(lock_script) if lock_script is not None else self.repo / "tools" / "gpu_lane_lock.sh"
+        )
+        self.lane = lane
+        self.last_receipt: dict[str, Any] | None = None
+
+    @classmethod
+    def reset_counters(cls) -> None:
+        cls.lock_acquisitions = 0
+        cls.generates_completed = 0
+
+    def _refuse_if_locked(self) -> None:
+        live, why = self.gate.protected_bench_live()
+        if live:
+            raise NativeDecodeRefused(why)
+        owner = self.gate.lock_owner()
+        if owner:
+            raise NativeDecodeRefused(f"gpu lock held by {owner}; will not contend")
+
+    def _materials(self) -> tuple[Path, Path, Path]:
+        if self.runner is not None:
+            return (
+                self.binary or Path("/injected/ascension_qwen38_hybrid_greedy"),
+                self.artifact_root or Path("/injected/uniform-q4-v1"),
+                self.tokenizer or Path("/injected/tokenizer.json"),
+            )
+        binary = self.binary or locate_qwen38_greedy_binary(self.repo)
+        artifact = self.artifact_root or locate_qwen38_artifact_root(self.repo)
+        tokenizer = self.tokenizer or locate_qwen38_tokenizer(self.repo)
+        missing: list[str] = []
+        if binary is None or not Path(binary).is_file():
+            missing.append("greedy-binary")
+        if artifact is None or not Path(artifact).is_dir():
+            missing.append("artifact-root")
+        if tokenizer is None or not Path(tokenizer).is_file():
+            missing.append("tokenizer")
+        if not self.lock_script.is_file():
+            missing.append("gpu_lane_lock.sh")
+        if missing:
+            raise NativeDecodeRefused(f"missing native decode materials: {', '.join(missing)}")
+        return Path(binary), Path(artifact), Path(tokenizer)
+
+    def complete(self, prompt: str, context: Mapping[str, Any]) -> str:
+        _ = context
+        self._refuse_if_locked()
+        binary, artifact, tokenizer = self._materials()
+        self._refuse_if_locked()
+        with tempfile.TemporaryDirectory(prefix="qwen38-say-") as td:
+            out = Path(td) / "generate.json"
+            cmd = [
+                str(self.lock_script),
+                self.lane,
+                str(binary),
+                "--artifact-root",
+                str(artifact),
+                "--tokenizer",
+                str(tokenizer),
+                "--prompt",
+                prompt,
+                "--max-new-tokens",
+                str(self.max_new_tokens),
+                "--max-seq-len",
+                str(self.max_seq_len),
+                "--out",
+                str(out),
+            ]
+            if self.runner is None:
+                type(self).lock_acquisitions += 1
+            try:
+                if self.runner is not None:
+                    proc = self.runner(cmd)
+                else:
+                    proc = subprocess.run(
+                        cmd,
+                        capture_output=True,
+                        text=True,
+                        timeout=self.timeout,
+                    )
+            except subprocess.TimeoutExpired as exc:
+                raise NativeDecodeError(f"native generate timed out after {self.timeout}s") from exc
+            except OSError as exc:
+                raise NativeDecodeError(f"native generate failed to exec: {exc}") from exc
+            body: dict[str, Any] = {}
+            if out.is_file():
+                try:
+                    body = json.loads(out.read_text(encoding="utf-8"))
+                except json.JSONDecodeError as exc:
+                    raise NativeDecodeError(f"native generate wrote invalid json: {exc}") from exc
+            stdout = proc.stdout or ""
+            text = str(body.get("generated_text") or "")
+            if not text:
+                for line in stdout.splitlines():
+                    if line.startswith("GENERATED_TEXT_VERBATIM:"):
+                        text = line.split(":", 1)[1].lstrip()
+                        break
+            fallbacks = body.get("fallbacks")
+            if fallbacks is None:
+                for line in stdout.splitlines():
+                    if line.startswith("FALLBACKS:"):
+                        raw = line.split(":", 1)[1].strip()
+                        try:
+                            fallbacks = int(raw)
+                        except ValueError:
+                            fallbacks = None
+                        break
+            if proc.returncode != 0:
+                err = (proc.stderr or proc.stdout or "").strip()[-800:]
+                if proc.returncode == 75:
+                    raise NativeDecodeRefused(f"gpu_lane_lock timed out: {err}")
+                raise NativeDecodeError(
+                    f"native generate exit {proc.returncode}: {err or 'no output'}"
+                )
+            if fallbacks is None:
+                raise NativeDecodeError("native generate omitted FALLBACKS")
+            if int(fallbacks) != 0:
+                raise NativeDecodeError(f"native generate fallbacks={fallbacks} (must be 0)")
+            if not str(text).strip():
+                raise NativeDecodeError("native generate produced empty text")
+            if self.runner is None:
+                type(self).generates_completed += 1
+            self.last_receipt = {
+                "produced_by": "model",
+                "generated_text": text,
+                "fallbacks": int(fallbacks),
+                "new_token_ids": body.get("new_token_ids"),
+                "median_gpu_ns_per_token": body.get("median_gpu_ns_per_token"),
+                "wall_ns": body.get("wall_ns"),
+                "binary": str(binary),
+                "artifact_root": str(artifact),
+                "tokenizer": str(tokenizer),
+                "lane": self.lane,
+                "used_gpu_lane_lock": self.runner is None,
+                "exit_code": proc.returncode,
+            }
+            return text
 
 
 class SpecialUnit:
@@ -974,7 +1267,7 @@ class SpecialUnit:
         session: Session | None = None,
         gate: ResourceGate | None = None,
         policy: ExecutionSandboxPolicy | None = None,
-        backend: ScriptedBackend | None = None,
+        backend: ConversationBackend | None = None,
         grok_runner: GrokRunner | None = None,
         grok_tasks: Path | None = None,
         authority: VerificationAuthority | None = None,
@@ -1028,8 +1321,40 @@ class SpecialUnit:
         self.save()
         if self.backend is None:
             return user
-        reply_text = self.backend.complete(text, ctx)
-        assistant = Turn(role="assistant", text=reply_text)
+        try:
+            reply_text = self.backend.complete(text, ctx)
+        except NativeDecodeRefused as exc:
+            self.session.status = SessionStatus.PAUSED.value
+            self.session.pause_reason = str(exc)
+            self.save()
+            raise
+        except NativeDecodeError:
+            self.session.status = SessionStatus.IDLE.value
+            self.save()
+            raise
+        produced_by = getattr(self.backend, "produced_by", "unknown")
+        meta: dict[str, Any] = {
+            "produced_by": produced_by,
+            "context_digest": ctx["digest"],
+        }
+        receipt = getattr(self.backend, "last_receipt", None)
+        if isinstance(receipt, dict):
+            native = {
+                key: receipt[key]
+                for key in (
+                    "fallbacks",
+                    "new_token_ids",
+                    "median_gpu_ns_per_token",
+                    "wall_ns",
+                    "used_gpu_lane_lock",
+                    "binary",
+                    "lane",
+                )
+                if key in receipt
+            }
+            if native:
+                meta["native"] = native
+        assistant = Turn(role="assistant", text=reply_text, meta=meta)
         self.session.transcript.append(assistant)
         self.session.status = SessionStatus.IDLE.value
         self.save()
@@ -1229,6 +1554,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     p_say = sub.add_parser("say")
     _add_common(p_say)
     p_say.add_argument("text")
+    p_say.add_argument("--backend", choices=("native", "scripted"), default="native")
+    p_say.add_argument("--max-new-tokens", type=int, default=16)
 
     p_tool = sub.add_parser("tool")
     _add_common(p_tool)
@@ -1304,7 +1631,33 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     unit = _unit()
     if args.cmd == "say":
-        turn = unit.say(args.text)
+        if unit.backend is None:
+            if args.backend == "scripted":
+                unit.backend = ScriptedBackend(["acknowledged"])
+            else:
+                unit.backend = NativeQwen38Backend(
+                    repo=unit.repo,
+                    gate=unit.gate,
+                    max_new_tokens=args.max_new_tokens,
+                )
+        try:
+            turn = unit.say(args.text)
+        except NativeDecodeRefused as exc:
+            print(
+                json.dumps(
+                    {"ok": False, "error": str(exc), "skip": True, "produced_by": "none"},
+                    indent=2,
+                )
+            )
+            return 1
+        except NativeDecodeError as exc:
+            print(
+                json.dumps(
+                    {"ok": False, "error": str(exc), "skip": False, "produced_by": "none"},
+                    indent=2,
+                )
+            )
+            return 1
         print(json.dumps(turn.to_dict(), indent=2))
     elif args.cmd == "tool":
         result = unit.tool(args.name, json.loads(args.args))
