@@ -1142,6 +1142,21 @@ mod imp {
             "qwen_uniform_q4_group64_matvec" => "qwen_uniform_q4_group64_matvec",
             "qwen_uniform_q4_group64_matvec_interleaved" => {
                 "qwen_uniform_q4_group64_matvec_interleaved"
+            }
+            "qwen_uniform_q4_group64_matvec_vecgroup" => {
+                "qwen_uniform_q4_group64_matvec_vecgroup"
+            }
+            "qwen_uniform_q4_group64_matvec_vecgroup_x" => {
+                "qwen_uniform_q4_group64_matvec_vecgroup_x"
+            }
+            "qwen_uniform_q4_group64_matvec_vecgroup_r4" => {
+                "qwen_uniform_q4_group64_matvec_vecgroup_r4"
+            }
+            "qwen_uniform_q4_group64_matvec_vecgroup_r4_x" => {
+                "qwen_uniform_q4_group64_matvec_vecgroup_r4_x"
+            }
+            "qwen_uniform_q4_group64_matvec_vecgroup_x64" => {
+                "qwen_uniform_q4_group64_matvec_vecgroup_x64"
             },
             "qwen_uniform_q4_group64_matvec_rowblock" => "qwen_uniform_q4_group64_matvec_rowblock",
             "qwen_uniform_q4_group64_matvec_simdgroup" => {
@@ -1234,6 +1249,9 @@ mod imp {
             }
             "qwen80_expert_table_uniform_q4_matvec_simdgroup" => {
                 "qwen80_expert_table_uniform_q4_matvec_simdgroup"
+            }
+            "qwen80_expert_table_uniform_q4_matvec_vecgroup" => {
+                "qwen80_expert_table_uniform_q4_matvec_vecgroup"
             }
             "qwen80_expert_table_silu_mul" => "qwen80_expert_table_silu_mul",
             "qwen80_expert_table_weighted_sum" => "qwen80_expert_table_weighted_sum",
@@ -1478,7 +1496,10 @@ mod imp {
             "dsv4f_pack_worklist" => "dsv4f_pack_worklist",
             "dsv4f_worklist_fp4_matvec" => "dsv4f_worklist_fp4_matvec",
             "dsv4f_fp4_matvec_split" => "dsv4f_fp4_matvec_split",
+            "dsv4f_fp4_matvec_split_simd" => "dsv4f_fp4_matvec_split_simd",
+            "dsv4f_fp4_matvec_split_simd_r4" => "dsv4f_fp4_matvec_split_simd_r4",
             "dsv4f_fp4_matvec_interleaved" => "dsv4f_fp4_matvec_interleaved",
+            "dsv4f_worklist_fp4_matvec_simd" => "dsv4f_worklist_fp4_matvec_simd",
             "dsv4f_worklist_swiglu" => "dsv4f_worklist_swiglu",
             "dsv4f_worklist_combine" => "dsv4f_worklist_combine",
             "dsv4f_ax_act_quant_bf16_ue8m0_batched" => "dsv4f_ax_act_quant_bf16_ue8m0_batched",
@@ -1996,6 +2017,7 @@ mod imp {
                 "qwen80_expert_table_uniform_q4_matvec_serial",
                 "qwen80_expert_table_uniform_q4_matvec_rowblock",
                 "qwen80_expert_table_uniform_q4_matvec_simdgroup",
+                "qwen80_expert_table_uniform_q4_matvec_vecgroup",
                 "qwen80_expert_table_silu_mul",
                 "qwen80_expert_table_weighted_sum",
             ];
@@ -5548,6 +5570,7 @@ mod imp {
             const KERNELS: &[&str] = &[
                 "dsv4f_pack_worklist",
                 "dsv4f_worklist_fp4_matvec",
+                "dsv4f_worklist_fp4_matvec_simd",
                 "dsv4f_worklist_swiglu",
                 "dsv4f_worklist_combine",
             ];

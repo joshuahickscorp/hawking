@@ -214,6 +214,72 @@ kernel void dsv4f_worklist_fp4_matvec(
 }
 #pragma clang fp contract(on)
 
+// One simdgroup per (slot, row). Same association as one worklist slot of
+// dsv4f_worklist_fp4_matvec after simd_sum. Grid: top_k * ceil(rows/8) * 256.
+#pragma clang fp contract(off)
+kernel void dsv4f_worklist_fp4_matvec_simd(
+    device const Dsv4fWorklistEntry* worklist [[buffer(0)]],
+    device const Dsv4fExpertRef* refs         [[buffer(1)]],
+    device const uchar* quantized             [[buffer(2)]],
+    device const uchar* act_scales            [[buffer(3)]],
+    device       float* output                [[buffer(4)]],
+    constant uint& rows                        [[buffer(5)]],
+    constant uint& packed_cols                 [[buffer(6)]],
+    constant uint& scale_cols                  [[buffer(7)]],
+    constant uint& top_k                       [[buffer(8)]],
+    constant uint& act_is_per_slot             [[buffer(9)]],
+    uint group_id                              [[threadgroup_position_in_grid]],
+    uint simd_lane                             [[thread_index_in_simdgroup]],
+    uint simd_id                               [[simdgroup_index_in_threadgroup]])
+{
+    if (top_k != DSV4F_WORKLIST_K || rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * DSV4F_FP4_BLOCK) {
+        return;
+    }
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint groups_per_slot = (rows + kSimdgroupsPerThreadgroup - 1u)
+        / kSimdgroupsPerThreadgroup;
+    if (groups_per_slot == 0u) return;
+    const uint slot = group_id / groups_per_slot;
+    const uint row = (group_id % groups_per_slot) * kSimdgroupsPerThreadgroup + simd_id;
+    if (slot >= DSV4F_WORKLIST_K || row >= rows) return;
+    const Dsv4fWorklistEntry entry = worklist[slot];
+    if (entry.ready != 1u || entry.slab_slot >= DSV4F_WORKLIST_K) return;
+    const Dsv4fExpertRef ref = refs[entry.slab_slot];
+    if (ref.packed_weights == nullptr || ref.weight_scales == nullptr) return;
+
+    const uint logical_k = packed_cols * 2u;
+    const ulong act_base = act_is_per_slot != 0u
+        ? (ulong)entry.slab_slot * (ulong)logical_k
+        : 0ul;
+    const ulong act_scale_base = act_is_per_slot != 0u
+        ? (ulong)entry.slab_slot * (ulong)(logical_k / DSV4F_ACT_BLOCK)
+        : 0ul;
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const uint col = block * DSV4F_FP4_BLOCK + simd_lane;
+        const uchar packed = ref.packed_weights[weight_base + (ulong)(col >> 1u)];
+        const float activation = dsv4f_tg_e4m3fn_value(quantized[act_base + (ulong)col]);
+        const float weight = dsv4f_tg_e2m1fn_value(packed, (col & 1u) != 0u);
+        float block_accumulator = activation * weight;
+        block_accumulator = simd_sum(block_accumulator);
+        if (simd_lane == 0u) {
+            const float activation_scale = dsv4f_tg_e8m0fnu_value(
+                act_scales[act_scale_base + (ulong)(block / (DSV4F_ACT_BLOCK / DSV4F_FP4_BLOCK))]);
+            const float weight_scale = dsv4f_tg_e8m0fnu_value(
+                ref.weight_scales[scale_base + (ulong)block]);
+            row_accumulator = row_accumulator
+                + block_accumulator * (activation_scale * weight_scale);
+        }
+    }
+    if (simd_lane == 0u) {
+        output[(ulong)slot * (ulong)rows + (ulong)row] = row_accumulator;
+    }
+}
+#pragma clang fp contract(on)
+
 kernel void dsv4f_worklist_swiglu(
     device const Dsv4fWorklistEntry* worklist [[buffer(0)]],
     device const ushort* gate_bf16            [[buffer(1)]],
@@ -298,6 +364,129 @@ kernel void dsv4f_fp4_matvec_split(
             + block_accumulator * (activation_scale * weight_scale);
     }
     output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)
+
+// One simdgroup per row. Each lane owns one of the 32 weights in an FP4
+// block. Grid: (ceil(rows / 8) * 256, 1, 1), TG (256, 1, 1).
+#pragma clang fp contract(off)
+kernel void dsv4f_fp4_matvec_split_simd(
+    device const uchar* packed_weights [[buffer(0)]],
+    device const uchar* weight_scales  [[buffer(1)]],
+    device const uchar* quantized      [[buffer(2)]],
+    device const uchar* act_scales     [[buffer(3)]],
+    device       float* output         [[buffer(4)]],
+    constant uint& rows                 [[buffer(5)]],
+    constant uint& packed_cols          [[buffer(6)]],
+    constant uint& scale_cols           [[buffer(7)]],
+    uint group_id                       [[threadgroup_position_in_grid]],
+    uint simd_lane                      [[thread_index_in_simdgroup]],
+    uint simd_id                        [[simdgroup_index_in_threadgroup]])
+{
+    if (rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * DSV4F_FP4_BLOCK) {
+        return;
+    }
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) return;
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const uint col = block * DSV4F_FP4_BLOCK + simd_lane;
+        const uchar packed = packed_weights[weight_base + (ulong)(col >> 1u)];
+        const float activation = dsv4f_tg_e4m3fn_value(quantized[col]);
+        const float weight = dsv4f_tg_e2m1fn_value(packed, (col & 1u) != 0u);
+        float block_accumulator = activation * weight;
+        block_accumulator = simd_sum(block_accumulator);
+        if (simd_lane == 0u) {
+            const float activation_scale = dsv4f_tg_e8m0fnu_value(
+                act_scales[block / (DSV4F_ACT_BLOCK / DSV4F_FP4_BLOCK)]);
+            const float weight_scale = dsv4f_tg_e8m0fnu_value(
+                weight_scales[scale_base + (ulong)block]);
+            row_accumulator = row_accumulator
+                + block_accumulator * (activation_scale * weight_scale);
+        }
+    }
+    if (simd_lane == 0u) output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)
+
+// 4 rows / simdgroup, 32 rows / TG. Activations are shared across the four
+// rows. Grid: (ceil(rows / 32) * 256, 1, 1), TG (256, 1, 1).
+#pragma clang fp contract(off)
+kernel void dsv4f_fp4_matvec_split_simd_r4(
+    device const uchar* packed_weights [[buffer(0)]],
+    device const uchar* weight_scales  [[buffer(1)]],
+    device const uchar* quantized      [[buffer(2)]],
+    device const uchar* act_scales     [[buffer(3)]],
+    device       float* output         [[buffer(4)]],
+    constant uint& rows                 [[buffer(5)]],
+    constant uint& packed_cols          [[buffer(6)]],
+    constant uint& scale_cols           [[buffer(7)]],
+    uint group_id                       [[threadgroup_position_in_grid]],
+    uint simd_lane                      [[thread_index_in_simdgroup]],
+    uint simd_id                        [[simdgroup_index_in_threadgroup]])
+{
+    if (rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * DSV4F_FP4_BLOCK) {
+        return;
+    }
+    constexpr uint R = 4u;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kRowsPerTg = kSimdgroupsPerThreadgroup * R;
+    const uint row0 = group_id * kRowsPerTg + simd_id * R;
+    if (row0 >= rows) return;
+    const uint row1 = row0 + 1u;
+    const uint row2 = row0 + 2u;
+    const uint row3 = row0 + 3u;
+    const bool has1 = row1 < rows;
+    const bool has2 = row2 < rows;
+    const bool has3 = row3 < rows;
+    const uint r1 = has1 ? row1 : row0;
+    const uint r2 = has2 ? row2 : row0;
+    const uint r3 = has3 ? row3 : row0;
+    float a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const uint col = block * DSV4F_FP4_BLOCK + simd_lane;
+        const float activation = dsv4f_tg_e4m3fn_value(quantized[col]);
+        const float activation_scale = dsv4f_tg_e8m0fnu_value(
+            act_scales[block / (DSV4F_ACT_BLOCK / DSV4F_FP4_BLOCK)]);
+        const uchar p0 = packed_weights[(ulong)row0 * (ulong)packed_cols + (ulong)(col >> 1u)];
+        const uchar p1 = packed_weights[(ulong)r1 * (ulong)packed_cols + (ulong)(col >> 1u)];
+        const uchar p2 = packed_weights[(ulong)r2 * (ulong)packed_cols + (ulong)(col >> 1u)];
+        const uchar p3 = packed_weights[(ulong)r3 * (ulong)packed_cols + (ulong)(col >> 1u)];
+        const bool hi = (col & 1u) != 0u;
+        float b0 = activation * dsv4f_tg_e2m1fn_value(p0, hi);
+        float b1 = activation * dsv4f_tg_e2m1fn_value(p1, hi);
+        float b2 = activation * dsv4f_tg_e2m1fn_value(p2, hi);
+        float b3 = activation * dsv4f_tg_e2m1fn_value(p3, hi);
+        b0 = simd_sum(b0);
+        b1 = simd_sum(b1);
+        b2 = simd_sum(b2);
+        b3 = simd_sum(b3);
+        if (simd_lane == 0u) {
+            const float s0 = dsv4f_tg_e8m0fnu_value(
+                weight_scales[(ulong)row0 * (ulong)scale_cols + (ulong)block]);
+            const float s1 = dsv4f_tg_e8m0fnu_value(
+                weight_scales[(ulong)r1 * (ulong)scale_cols + (ulong)block]);
+            const float s2 = dsv4f_tg_e8m0fnu_value(
+                weight_scales[(ulong)r2 * (ulong)scale_cols + (ulong)block]);
+            const float s3 = dsv4f_tg_e8m0fnu_value(
+                weight_scales[(ulong)r3 * (ulong)scale_cols + (ulong)block]);
+            a0 = a0 + b0 * (activation_scale * s0);
+            a1 = a1 + b1 * (activation_scale * s1);
+            a2 = a2 + b2 * (activation_scale * s2);
+            a3 = a3 + b3 * (activation_scale * s3);
+        }
+    }
+    if (simd_lane == 0u) {
+        output[row0] = a0;
+        if (has1) output[row1] = a1;
+        if (has2) output[row2] = a2;
+        if (has3) output[row3] = a3;
+    }
 }
 #pragma clang fp contract(on)
 
