@@ -1,0 +1,6 @@
+Say hi.
+Write a function that reverses a string.
+What is the capital of France?
+Explain what a hash map is in one sentence.
+def fibonacci(n):
+The three primary colors are
