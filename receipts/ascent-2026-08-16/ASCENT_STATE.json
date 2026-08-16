@@ -41,7 +41,31 @@
       "open_gaps": [
         "artifact_packed",
         "coherence_generation_tested"
-      ]
+      ],
+      "complete_bpw_measured_from_reconstruction": {
+        "nonexpert_8bit": 1.392467,
+        "nonexpert_6bit": 1.333101,
+        "nonexpert_4bit": 1.273735
+      },
+      "mixed_expert_bpw_measured": 1.190335,
+      "note_bpw": "MEASURED reconstruction beats the 1.43051 design estimate because down_proj fit at 1.152004, not the assumed 1.27. Still not an on-disk pack.",
+      "coherence": {
+        "status_reported_by_lane": "GO_WITH_FIX",
+        "status_after_audit": "INCONCLUSIVE - not a green light",
+        "mixed_geo_growth_per_layer": 1.277152,
+        "null_geo_growth_per_layer": 1.006081,
+        "extrapolated_rel_l2_at_48": 16211.29,
+        "separated_from_null": false,
+        "logits_top1_agree": true,
+        "hgravs_rank_clamped_organs": 395,
+        "of_organs": 2048,
+        "defects": [
+          "16211x is extrapolated from a 4-LAYER span via geo^44; the conclusion is controlled entirely by a 4-layer growth estimate",
+          "separated_from_null=false: cannot distinguish codec error from a matched-magnitude random perturbation, so neither GO nor NO_GO follows",
+          "395/2048 organs had hgravs rank CLAMPED - the known underdetermined-fit failure mode; a clamped fit's score is not the codec's score"
+        ],
+        "receipt": "receipts/ascent-2026-08-16/Q80_COHERENCE_LAYER_DRIFT_PROBE.json"
+      }
     },
     "dsv4f": {
       "measurement_label": "DIRTY_ENGINEERING",
@@ -93,7 +117,13 @@
         "rejected": [
           "attn+route+moe merge (host MHC sits between, would change the honesty path)",
           "LM-head 8->1 (8 resident tiles = 1 GiB, over the 384 MiB weight bound; cosmetic)"
-        ]
+        ],
+        "audit_correction": {
+          "finding": "P1 cold-contaminated median. A bodies were 12902/2264/1652 ms; the 12.9 s cold run poisoned the pairing and the first B inherited its warm cache.",
+          "what_does_NOT_survive": "any body-level speedup claim. Warm pairs A 2264/1652 vs B 1716/1447 - B is NOT uniformly faster (B2 1716 > A3 1652), and both are slower than the host-wall authority 1024-1067 ms.",
+          "what_survives": "GPU time stable at 377.085/378.531/377.122 ms vs A ~412 ms = ~35 ms real GPU win; encoders 1857->134; bit-identical hc_sha on all 6 pairs; 0 fallbacks.",
+          "source": "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json"
+        }
       }
     },
     "dsv4f_density_frontier": {
@@ -129,8 +159,9 @@
       "information_gain": 900000000,
       "transfer_value": 300000000,
       "experiment_cost": 1.0,
-      "status": "running",
-      "note": "Information-dominated: a NO_GO here is worth more than a week of packing. Highest value in the queue despite recovering zero ns directly."
+      "status": "retained_inconclusive",
+      "note": "Information-dominated: a NO_GO here is worth more than a week of packing. Highest value in the queue despite recovering zero ns directly.",
+      "tier1": "verdict not trustworthy; superseded by q80-coherence-deep"
     },
     {
       "id": "q80-pack",
@@ -304,8 +335,9 @@
       "information_gain": 500000000,
       "transfer_value": 300000000,
       "experiment_cost": 1.0,
-      "status": "running",
-      "note": "Reject-only. On this box plausible-but-wrong wins have repeatedly survived review."
+      "status": "retained",
+      "note": "Reject-only. On this box plausible-but-wrong wins have repeatedly survived review.",
+      "tier1": "3 P1 findings, all recorded and acted on"
     },
     {
       "id": "dsv-expert-cache",
@@ -354,6 +386,22 @@
       "experiment_cost": 2.0,
       "status": "running",
       "note": "Gates the whole Q80 <=1.5 path: a representation that cannot execute in budget is storage, not density."
+    },
+    {
+      "id": "q80-coherence-deep",
+      "model": "q80",
+      "hypothesis": "Full-depth drift measurement plus unclamped ranks plus a real null distribution will settle whether mixed <=1.5 Q80 can generate coherently",
+      "target_stage": "density/coherence",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-coherence-deep.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.85,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 1500000000,
+      "transfer_value": 400000000,
+      "experiment_cost": 2.0,
+      "status": "running",
+      "note": "DECIDES whether the Q80 <=1.5 path is alive. Ranks first in the queue."
     }
   ],
   "history": [],
@@ -379,5 +427,21 @@
     "disk_free_gib": 205,
     "lanes_running": 12,
     "note": "At 0% idle EVERY timing is DIRTY_ENGINEERING. Final 50-TPS claims require a clean window: drain lanes, confirm machine_state.clean_box_ok, then paired reps."
+  },
+  "audit": {
+    "receipt": "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json",
+    "p1_findings": [
+      "dsv-cb-collapse shipped a cold-contaminated median (body win not real; 35 ms GPU win is)",
+      "decode-kernels' 192 ms/token is an isolated-organ microbench product and must not sit beside a full-token incumbent",
+      "coherence GO_WITH_FIX rests on a 4-layer extrapolation"
+    ],
+    "survived_scrutiny": [
+      "host-wall protocol: 6 reps, R1 discarded, GPU timestamps 137/137, spread reported, 0 fallbacks, correct build dir, DIRTY labeled",
+      "cross-expert shared basis refuted (cos 0.004)",
+      "Q80 not bandwidth-bound (1.00% of 819 GB/s)",
+      "DSV4F route-ID serializer refuted (40 readbacks, ~0.1 ms)",
+      "SwiGLU formula cosine >= 0.999999999997",
+      "Q80 generated-id list MATCHES on the baseline"
+    ]
   }
 }
