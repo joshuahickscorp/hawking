@@ -863,9 +863,10 @@ kernel void q80_hgravs01_factor_matvec_simd3(
     }
     float partial = 0.0f;
     const uint row_base = row * cols;
-    const uint tiled = (cols / 256u) * 256u;
-    for (uint base = 0u; base < tiled; base += 256u) {
-        const uint col = base + simd_lane * 8u;
+    // 8-wide whenever 8 codes fit, not only on 256-col tiles. down L is
+    // 2048x160: the 256-tile path did zero 8-wide work and fell through
+    // to the 1-wide remainder.
+    for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
         const uint byte0 = ((row_base + col) * 3u) >> 3u;
         const uint b0 = uint(codes[byte0]);
         const uint b1 = uint(codes[byte0 + 1u]);
@@ -895,13 +896,150 @@ kernel void q80_hgravs01_factor_matvec_simd3(
         partial += float(q6) * s6 * input[col + 6u];
         partial += float(q7) * s7 * input[col + 7u];
     }
-    for (uint col = tiled + simd_lane; col < cols; col += 32u) {
+    const uint rem = (cols / 8u) * 8u;
+    for (uint col = rem + simd_lane; col < cols; col += 32u) {
         partial += q80_uniform_value_wide(
             codes, scales, row_base + col, group_size, bits, bound) * input[col];
     }
     partial = simd_sum(partial);
     if (simd_lane == 0u) {
         output[row] = partial;
+    }
+}
+
+// HGRAVU01 q8: one code is one byte. Serial family extract walks 8 bits
+// of that byte. These kernels load the byte, subtract bound, FMA — no
+// bit loop, no dense W, no threadgroup weight staging.
+static inline float q80_uniform8_byte_dot(
+    device const uchar* codes,
+    device const half* scales,
+    device const float* input,
+    uint row_base,
+    uint col,
+    uint group_size,
+    int bound)
+{
+    const uint element = row_base + col;
+    const float scale = float(scales[element / group_size]);
+    device const uchar* p = codes + element;
+    float sum = 0.0f;
+    sum += float(int(p[0]) - bound) * scale * input[col];
+    sum += float(int(p[1]) - bound) * scale * input[col + 1u];
+    sum += float(int(p[2]) - bound) * scale * input[col + 2u];
+    sum += float(int(p[3]) - bound) * scale * input[col + 3u];
+    sum += float(int(p[4]) - bound) * scale * input[col + 4u];
+    sum += float(int(p[5]) - bound) * scale * input[col + 5u];
+    sum += float(int(p[6]) - bound) * scale * input[col + 6u];
+    sum += float(int(p[7]) - bound) * scale * input[col + 7u];
+    return sum;
+}
+
+// One simdgroup per row, 8-wide byte tiles. Grid: ceil(rows/8)*256, TG 256.
+// bits must be 8. 8 consecutive cols stay inside one group-64.
+kernel void q80_uniform8_matvec_simd_bytes(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows || bits != 8u || group_size == 0u) {
+        return;
+    }
+    float partial = 0.0f;
+    const uint row_base = row * cols;
+    const int ibound = int(bound);
+    const bool packed8 = group_size >= 8u && (group_size & 7u) == 0u;
+    for (uint base = 0u; base < cols; base += 256u) {
+        const uint col = base + simd_lane * 8u;
+        if (col + 8u > cols) {
+            continue;
+        }
+        if (packed8) {
+            partial += q80_uniform8_byte_dot(
+                codes, scales, input, row_base, col, group_size, ibound);
+        } else {
+            for (uint k = 0u; k < 8u; ++k) {
+                const uint element = row_base + col + k;
+                const float scale = float(scales[element / group_size]);
+                partial += float(int(codes[element]) - ibound) * scale * input[col + k];
+            }
+        }
+    }
+    const uint rem = (cols / 8u) * 8u;
+    for (uint col = rem + simd_lane; col < cols; col += 32u) {
+        const uint element = row_base + col;
+        const float scale = float(scales[element / group_size]);
+        partial += float(int(codes[element]) - ibound) * scale * input[col];
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        output[row] = partial;
+    }
+}
+
+// One 256-thread TG per row; each lane dots 8 Q8 codes, then 8-SG reduce.
+// Loops 2048-col tiles so 4096-col out_proj is covered. Grid: rows*256.
+kernel void q80_uniform8_matvec_tg256(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    if (row >= rows || bits != 8u || group_size == 0u) {
+        return;
+    }
+    const uint row_base = row * cols;
+    const int ibound = int(bound);
+    const bool packed8 = group_size >= 8u && (group_size & 7u) == 0u;
+    float partial = 0.0f;
+    for (uint tile = 0u; tile < cols; tile += 2048u) {
+        const uint col = tile + lid * 8u;
+        if (col + 8u > cols) {
+            continue;
+        }
+        if (packed8) {
+            partial += q80_uniform8_byte_dot(
+                codes, scales, input, row_base, col, group_size, ibound);
+        } else {
+            for (uint k = 0u; k < 8u; ++k) {
+                const uint element = row_base + col + k;
+                const float scale = float(scales[element / group_size]);
+                partial += float(int(codes[element]) - ibound) * scale * input[col + k];
+            }
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        output[row] = acc;
     }
 }
 

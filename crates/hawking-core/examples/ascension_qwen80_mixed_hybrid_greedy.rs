@@ -457,6 +457,7 @@ fn run() -> Result<(), String> {
                 "gpu_timestamps_missing": first.stages.gpu_matvec_timestamps_missing,
                 "facet1_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_host_facet1_enabled(),
                 "facet2_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_host_facet2_enabled(),
+                "recon_fuse_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_recon_fuse_enabled(),
             },
             "reps_generated_text": reps.iter().map(|r| r.generated_text.clone()).collect::<Vec<_>>(),
             "reps_ids_match_first": reps.iter().map(|r| r.generated_token_ids == first_ids).collect::<Vec<_>>(),
