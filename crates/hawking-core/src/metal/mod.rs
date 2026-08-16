@@ -575,6 +575,12 @@ pub struct CommandBufferTiming {
     /// `GPUEndTime` as ns since the driver epoch.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gpu_end_ns: Option<u64>,
+    /// Absolute `GPUStartTime` seconds, when the driver exposes a valid pair.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_s: Option<f64>,
+    /// Absolute `GPUEndTime` seconds, paired with `gpu_start_s`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_s: Option<f64>,
     pub dispatches: u64,
     pub encode_ns: u64,
 }
@@ -5222,6 +5228,8 @@ mod imp {
                     timing.gpu_end_ns = Some((end * 1_000_000_000.0) as u64);
                     if end > start {
                         timing.gpu_ns = Some(((end - start) * 1_000_000_000.0) as u64);
+                        timing.gpu_start_s = Some(start);
+                        timing.gpu_end_s = Some(end);
                     }
                 }
 
