@@ -12,6 +12,7 @@
 //! ```
 
 use hawking_core::model::qwen80_complete_runtime::qwen80_assert_native_operator_composition_complete;
+use hawking_core::model::qwen80_token_ns_ledger::format_stage_table;
 use hawking_core::model::qwen80_uniform_q4_hybrid_decode::{
     discover_qwen80_tokenizer, discover_qwen80_uniform_q4_root, generate_greedy,
     load_qwen80_tokenizer, qwen80_default_tokenizer_path, render_qwen80_source_user_chat,
@@ -226,6 +227,32 @@ fn run() -> Result<(), String> {
         result.stages.host_expert_bind_secs
     );
     println!(
+        "stage_ns embed={} deltanet={} gqa={} moe_norm_router={} moe_shared={} moe_table_build={} moe_routed={} moe_combine={} terminal={} q4_matvec={} host_expert_bind={}",
+        result.stages.embed_ns,
+        result.stages.deltanet_ns,
+        result.stages.gqa_ns,
+        result.stages.moe_norm_router_ns,
+        result.stages.moe_shared_ns,
+        result.stages.moe_table_build_ns,
+        result.stages.moe_routed_ns,
+        result.stages.moe_combine_ns,
+        result.stages.terminal_ns,
+        result.stages.q4_matvec_ns,
+        result.stages.host_expert_bind_ns
+    );
+    let act = &result.stages.activation;
+    println!(
+        "activation_ns shared_swiglu={} shared_mlp_sandwich={} deltanet_conv={} deltanet_recurrent={} gqa_input_layernorm={} gqa_norm_rope={} other_host_activation={} metal_matvec_sync={}",
+        act.shared_swiglu_ns,
+        act.shared_mlp_sandwich_ns,
+        act.deltanet_conv_ns,
+        act.deltanet_recurrent_ns,
+        act.gqa_input_layernorm_ns,
+        act.gqa_norm_rope_ns,
+        act.other_host_activation_ns,
+        act.metal_matvec_sync_ns
+    );
+    println!(
         "complete_physical_bpw={:.6} claim={} metal_q4_matvec_used={}",
         result.complete_physical_bpw, result.claim, result.metal_q4_matvec_used
     );
@@ -301,6 +328,17 @@ fn run() -> Result<(), String> {
                     "terminal_secs": result.stages.terminal_secs,
                     "q4_matvec_secs": result.stages.q4_matvec_secs,
                     "host_expert_bind_secs": result.stages.host_expert_bind_secs,
+                    "embed_ns": result.stages.embed_ns,
+                    "deltanet_ns": result.stages.deltanet_ns,
+                    "gqa_ns": result.stages.gqa_ns,
+                    "moe_norm_router_ns": result.stages.moe_norm_router_ns,
+                    "moe_shared_ns": result.stages.moe_shared_ns,
+                    "moe_table_build_ns": result.stages.moe_table_build_ns,
+                    "moe_routed_ns": result.stages.moe_routed_ns,
+                    "moe_combine_ns": result.stages.moe_combine_ns,
+                    "terminal_ns": result.stages.terminal_ns,
+                    "q4_matvec_ns": result.stages.q4_matvec_ns,
+                    "host_expert_bind_ns": result.stages.host_expert_bind_ns,
                 },
                 "fallbacks": {
                     "total": result.fallbacks.total(),
@@ -326,11 +364,64 @@ fn run() -> Result<(), String> {
         if let Some(parent) = ledger_path.parent() {
             fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
-        let ledger = session.token_ns.finish_report();
-        let pretty = serde_json::to_string_pretty(&ledger).map_err(|e| e.to_string())?;
+        if session.token_ns.measured_commit.is_empty() {
+            if let Ok(out) = std::process::Command::new("git")
+                .args(["rev-parse", "HEAD"])
+                .output()
+            {
+                session.token_ns.measured_commit =
+                    String::from_utf8_lossy(&out.stdout).trim().to_owned();
+            }
+        }
+        if session.token_ns.measurement_label.is_empty() {
+            session.token_ns.measurement_label = "DIRTY_ENGINEERING".to_owned();
+        }
+        // Compact receipt only. The v1 full CB dump was 1.2 MiB and is not
+        // needed to close the token identity.
+        let compact = session.token_ns.compact_receipt();
+        let pretty = serde_json::to_string_pretty(&compact).map_err(|e| e.to_string())?;
         fs::write(&ledger_path, pretty).map_err(|e| e.to_string())?;
-        eprintln!("wrote {}", ledger_path.display());
-        if let Some(diag) = &ledger.diagnosis {
+        eprintln!("wrote compact ledger {} ({} bytes)", ledger_path.display(), fs::metadata(&ledger_path).map(|m| m.len()).unwrap_or(0));
+        let wall = compact
+            .identity
+            .as_ref()
+            .map(|id| id.mean_wall_ns)
+            .unwrap_or(0.0);
+        eprint!("{}", format_stage_table(&compact.stage_table, wall));
+        if let Some(id) = &compact.identity {
+            eprintln!(
+                "identity n={} mean_wall_ns={:.0} mean_sum_ns={:.0} mean_residual_ns={:.0} holds_all={} residual={}",
+                id.n,
+                id.mean_wall_ns,
+                id.mean_sum_identity_ns,
+                id.mean_residual_ns,
+                id.identity_holds_all,
+                id.residual_name
+            );
+        }
+        if let Some(tot) = &compact.totals_mean_decode {
+            eprintln!(
+                "totals token_ns={} gpu_busy_ns={} gpu_idle_ns={} gpu_gap_ns={} cpu_critical_ns={} cbs={} disp={} syncs={} readbacks={} buf_create={} buf_rebind={} dram={} temp={}",
+                tot.total_token_ns,
+                tot.total_gpu_busy_ns,
+                tot.total_gpu_idle_ns,
+                tot.total_gpu_gap_ns,
+                tot.total_cpu_critical_ns,
+                tot.total_command_buffers,
+                tot.total_dispatches,
+                tot.total_sync_points,
+                tot.total_readbacks,
+                tot.total_buffer_creations,
+                tot.total_buffer_rebinds,
+                tot.dram_bytes_per_token,
+                tot.temp_bytes_per_token
+            );
+        }
+        eprintln!(
+            "catalog_complete={} silent_zero_stages={:?}",
+            compact.catalog_complete, compact.silent_zero_stages
+        );
+        if let Some(diag) = &compact.diagnosis {
             eprintln!(
                 "token_ns_ledger verdict={} wall_ms={:.1} gpu_ms={:.1} wait_ms={:.1} cbs={:.0} disp={:.0} weight_gib={:.3} implied_gb_s_gpu={:?}",
                 diag.verdict,

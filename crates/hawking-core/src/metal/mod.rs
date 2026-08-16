@@ -568,6 +568,13 @@ pub struct CommandBufferTiming {
     pub wait_ns: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gpu_ns: Option<u64>,
+    /// Absolute `GPUStartTime` seconds, when the driver exposes a valid pair.
+    /// Used only to compute inter-CB device-timeline gaps. Never a CPU proxy.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_s: Option<f64>,
+    /// Absolute `GPUEndTime` seconds, paired with `gpu_start_s`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_s: Option<f64>,
     pub dispatches: u64,
     pub encode_ns: u64,
 }
@@ -5006,6 +5013,8 @@ mod imp {
                 if let (Some(start), Some(end)) = (gpu_start, gpu_end) {
                     if end > start {
                         timing.gpu_ns = Some(((end - start) * 1_000_000_000.0) as u64);
+                        timing.gpu_start_s = Some(start);
+                        timing.gpu_end_s = Some(end);
                     }
                 }
 
