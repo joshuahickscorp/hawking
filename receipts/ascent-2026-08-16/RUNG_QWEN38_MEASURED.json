@@ -1,0 +1,133 @@
+{
+  "schema": "hawking.ascension.roof_and_rungs.v1",
+  "model": "qwen38-q4-oracle",
+  "artifact": null,
+  "measurement_label": null,
+  "sources": {},
+  "bytes_per_token": 13622000000.0,
+  "ns_per_token": 38216792.0,
+  "gpu_ns_per_token": 36987000.0,
+  "active_weights_per_token": null,
+  "active_decode_bpw": null,
+  "measured_memory_bandwidth_gb_s": 356.44017425638447,
+  "measured_gpu_bandwidth_gb_s": 368.2915619001271,
+  "arithmetic_intensity_flop_per_byte": null,
+  "arithmetic_intensity_note": "2 flop/weight (FMA=2) / bytes_per_weight. Batch=1 decode reads each weight once; there is no reuse to amortize the load.",
+  "gpu_occupancy": {
+    "fraction_of_honest_decode_ceiling": 0.8949681724309051,
+    "launch_occupancy_vs_15360": null,
+    "full_occupancy_threads": 15360,
+    "note": "Memory-system occupancy is achieved_gb_s / honest_decode_ceiling. Launch occupancy is threads / 15360 from the decode-shape control."
+  },
+  "dispatch_floor": {
+    "one_nop_cb_gpu_ns": 3334,
+    "one_nop_cb_host_ns": 192083,
+    "fused_ns_per_dispatch": 1284.7402597402597,
+    "host_tax_per_serial_cb_ns": 204897.51020408163,
+    "source": "receipts/ascent-2026-08-16/Q80_DECODE_SHAPE_BANDWIDTH.json",
+    "dispatches": null,
+    "command_buffers": null,
+    "serial_dispatch_gpu_floor_ns": null,
+    "fused_dispatch_gpu_floor_ns": null,
+    "serial_cb_host_floor_ns": null,
+    "note": "Serial CB host tax dominates fused GPU dispatch tax. 1155 nops in one CB cost 1.48 ms GPU; 1155 serial CBs project to 222 ms host."
+  },
+  "reconstruction_cost": {
+    "load_only_floor_ns": 33102187.793701887,
+    "measured_gpu_or_wall_ns": 36987000.0,
+    "excess_over_load_only_ns": 3884812.206298113,
+    "excess_is_occupancy_plus_alu_plus_reconstruction": true,
+    "isolated_reconstruction_ns": null,
+    "isolation_note": "excess_over_load_only mixes occupancy, issue, ALU and reconstruction. A same-launch load-only probe, or a same-shape cheaper codec, is required to isolate reconstruction. Q80 mixed vs Q4 (15.2 vs 2.57 GB/s) is the existing isolation, not this difference alone."
+  },
+  "synchronization_floor": {
+    "wait_minus_gpu_ns": null,
+    "synchronization_floor_ns": null,
+    "how": "unmeasured: pass wait_minus_gpu_ns or command_buffers"
+  },
+  "roof_tok_s": 30.209483621812534,
+  "fraction_of_roof": 0.8661686672628589,
+  "fraction_of_roof_gpu": 0.8949681724309051,
+  "fs_per_weight_served (amortized throughput-derived, NOT latency)": null,
+  "fs_per_weight_served_gpu": null,
+  "fs_per_weight_at_honest_roof": null,
+  "fs_honesty": {
+    "not_latency": true,
+    "field_label": "fs_per_weight_served (amortized throughput-derived, NOT latency)",
+    "caveat": "fs_per_weight_served is an amortized throughput metric under concurrency, NOT physical femtosecond latency. A single weight's DRAM round trip is ~100 ns. Femtoseconds appear only because thousands of weights are in flight at once."
+  },
+  "rung": {
+    "ms_per_token": 38.216792,
+    "tps": 26.166508167404526,
+    "cleared": [],
+    "current_rung": "below_A",
+    "next_rung": "A",
+    "definitions": {
+      "A": {
+        "max_ms": 20.0,
+        "min_tps": 50.0
+      },
+      "B": {
+        "max_ms": 10.0,
+        "min_tps": 100.0
+      },
+      "C": {
+        "max_ms": 5.0,
+        "min_tps": 200.0
+      },
+      "D": "continue toward the measured honest decode roof"
+    }
+  },
+  "reachable_at_current_bytes": {
+    "roof_tok_s": 30.209483621812534,
+    "reachable_at_current_bytes": [],
+    "highest_rung_reachable_at_current_bytes": null,
+    "next_rung_blocked_by_bytes": "A",
+    "byte_budgets": {
+      "A_max_bytes": 8230271717.926607,
+      "B_max_bytes": 4115135858.9633036,
+      "C_max_bytes": 2057567929.4816518
+    },
+    "note": "These budgets assume 100% of the honest decode ceiling (411.51 GB/s) and zero host tax. Host work can only make them stricter."
+  },
+  "roof_limited_below_next_rung": true,
+  "may_claim_physical_limit": false,
+  "physical_limit": {
+    "verdict": "FAIL",
+    "saturated_resource": null,
+    "evidence": null,
+    "achieved_over_ceiling": 0.8949681724309051,
+    "failures": [
+      "No hardware resource named as saturated.",
+      "No evidence that the named resource is at saturation.",
+      "Named resource is at 0.8950 of its ceiling; saturation requires >= 0.90."
+    ],
+    "bar": "A physical-limit claim REQUIRES naming the hardware resource actually at saturation with evidence. 'No further optimization is obvious' is not evidence."
+  },
+  "hardware": {
+    "honest_decode_ceiling_gb_s": 411.51358589633037,
+    "unique_once_1024mib_gb_s": 301.63405407683126,
+    "reuse_band_gb_s": [
+      535.8823163028844,
+      637.4964044632153
+    ],
+    "reuse_band_is_not_the_decode_ceiling": true,
+    "published_peak_gb_s": 819.0,
+    "control_receipt": "receipts/ascent-2026-08-16/Q80_DECODE_SHAPE_BANDWIDTH.json"
+  },
+  "claim_boundary": {
+    "honest_decode_ceiling_gb_s": 411.51358589633037,
+    "unique_once_1024mib_gb_s": 301.63405407683126,
+    "reuse_band_gb_s": [
+      535.8823163028844,
+      637.4964044632153
+    ],
+    "reuse_band_is_cache_resident_not_decode_ceiling": true,
+    "published_peak_819_was_not_achieved": true,
+    "what_governs_decode": "REUSE vs NO-REUSE, not gather vs sequential. Each weight is read once per token.",
+    "gather_vs_sequential_is_the_wrong_axis": true,
+    "fs_per_weight_served_is_not_latency": true,
+    "physical_limit_requires_named_saturated_resource": true,
+    "no_further_optimization_is_obvious_is_not_evidence": true
+  }
+}
