@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.ascent.backlog_is_stale.v1",
+  "date": "2026-08-16",
+  "method": "tools/merge_guard.py run across every unmerged grok/* branch. STALE means the branch never saw a landed commit that touches the SAME source files it touches, so its measured baseline no longer exists.",
+  "result": {
+    "unmerged_branches": 161,
+    "STALE": 139,
+    "safe_or_no_source": 22,
+    "stale_pct": 86.3
+  },
+  "WHAT_THIS_MEANS": "The preserved backlog is not a merge queue and cannot be consumed as one. 86% of it was measured against a HEAD that no longer exists - most of it predates today's reconstruction fix, which rewrote qwen80_mixed_hybrid_decode.rs and moved the Q80 token from 1376 to 301 ms.",
+  "the_four_recommended_stacks": "The backlog mine recommended consuming four stacks into qwen80_mixed_hybrid_decode.rs and q80_mixed_decode.metal: leftover occupancy bind, two-stage down_proj, sharex batch-10, and the fused 10-expert wave. The one whose branch still exists (leftover-deltanet-host-instant) is STALE. The other three do not resolve to surviving branches under those names, so they cannot be consumed as described either.",
+  "consequence": "Consuming the backlog means REBASE AND RE-MEASURE per branch, not merge. That is the same conclusion the stale-baseline pattern reached from three individual cases, now measured across the whole corpus at 139 branches.",
+  "this_does_not_devalue_the_backlog_mine": "Its census, its skip-list of superseded tips, and its identification that Q80 still dispatched a serial matvec were all correct and useful - the serial matvec finding is precisely what the reconstruction fix then eliminated. What is stale is the MERGEABILITY of the tips, not the intelligence about them.",
+  "cost_of_the_finding": "Cheap. One tool run across 161 branches. It replaces an assumption I was carrying - that the backlog held ready-to-merge wins - with a measurement."
+}
