@@ -36,6 +36,10 @@ pub const PACK_WORKLIST: &str = "gk_pack_worklist";
 pub const Q80_GRAPH_KERNELS: &[&str] = &[MATVEC_BINARY, MATVEC_HGRAVS];
 pub const Q80_GRAPH_SIMD_KERNELS: &[&str] = &[MATVEC_BINARY_SIMD, MATVEC_HGRAVS_SIMD];
 
+/// Dense Qwen3.8 mixed graph. Same family matvecs as Q80; no worklist,
+/// pack, or expert combine. Occupancy tiles stay in `q80_mixed_decode.metal`.
+pub const QWEN38_GRAPH_KERNELS: &[&str] = &[MATVEC_BINARY, MATVEC_HGRAVS];
+
 /// Kernels the DSV4F native token graph must dispatch after G023.
 pub const DSV4F_GRAPH_KERNELS: &[&str] = &[
     PACK_WORKLIST,
@@ -141,9 +145,14 @@ mod tests {
 
     #[test]
     fn both_graphs_name_only_family_kernels() {
-        for &kernel in Q80_GRAPH_KERNELS.iter().chain(DSV4F_GRAPH_KERNELS) {
+        for &kernel in Q80_GRAPH_KERNELS
+            .iter()
+            .chain(QWEN38_GRAPH_KERNELS)
+            .chain(DSV4F_GRAPH_KERNELS)
+        {
             assert!(is_family_kernel(kernel), "{kernel} is not a family kernel");
         }
+        assert_eq!(QWEN38_GRAPH_KERNELS, Q80_GRAPH_KERNELS);
     }
 
     #[test]

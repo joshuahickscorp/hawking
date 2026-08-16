@@ -265,6 +265,82 @@ kernel void qwen38_attention_apply_sigmoid_gate(
     gated_output[index] = attention_output[index] * sigmoid;
 }
 
+// Interleave split in_proj_qkv + in_proj_z activations into the fused
+// per-key-head QKVZ layout the rearrange kernel already consumes.
+// Activation-only. Does not touch packed weights.
+kernel void qwen38_fuse_split_qkvz_f32(
+    device const float* qkv            [[buffer(0)]],
+    device const float* z              [[buffer(1)]],
+    device float* fused                [[buffer(2)]],
+    constant uint& key_heads           [[buffer(3)]],
+    constant uint& values_per_key_head [[buffer(4)]],
+    constant uint& key_head_dim        [[buffer(5)]],
+    constant uint& value_head_dim      [[buffer(6)]],
+    uint idx                            [[thread_position_in_grid]])
+{
+    if (key_heads != 16u || values_per_key_head != 3u ||
+        key_head_dim != 128u || value_head_dim != 128u) {
+        return;
+    }
+    const uint value_rows = values_per_key_head * value_head_dim;
+    const uint qkvz_per_key = key_head_dim * 2u + value_rows * 2u;
+    const uint fused_n = key_heads * qkvz_per_key;
+    if (idx >= fused_n) return;
+    const uint key_head = idx / qkvz_per_key;
+    const uint local = idx - key_head * qkvz_per_key;
+    const uint key_elements = key_heads * key_head_dim;
+    if (local < key_head_dim) {
+        fused[idx] = qkv[key_head * key_head_dim + local];
+    } else if (local < key_head_dim * 2u) {
+        fused[idx] = qkv[key_elements + key_head * key_head_dim + (local - key_head_dim)];
+    } else if (local < key_head_dim * 2u + value_rows) {
+        fused[idx] = qkv[key_elements * 2u + key_head * value_rows
+            + (local - key_head_dim * 2u)];
+    } else {
+        fused[idx] = z[key_head * value_rows + (local - key_head_dim * 2u - value_rows)];
+    }
+}
+
+// Pack split in_proj_b + in_proj_a activations into [key_head][b×3, a×3].
+kernel void qwen38_fuse_split_ba_f32(
+    device const float* b              [[buffer(0)]],
+    device const float* a              [[buffer(1)]],
+    device float* fused                [[buffer(2)]],
+    constant uint& key_heads           [[buffer(3)]],
+    constant uint& values_per_key_head [[buffer(4)]],
+    uint idx                            [[thread_position_in_grid]])
+{
+    if (key_heads != 16u || values_per_key_head != 3u) return;
+    const uint ba_per_key = values_per_key_head * 2u;
+    const uint fused_n = key_heads * ba_per_key;
+    if (idx >= fused_n) return;
+    const uint key_head = idx / ba_per_key;
+    const uint local = idx - key_head * ba_per_key;
+    const uint src = key_head * values_per_key_head + (local % values_per_key_head);
+    fused[idx] = local < values_per_key_head ? b[src] : a[src];
+}
+
+// One-row gather of an HGRAVU01 (unsigned LSB, group scale) embedding.
+// Same extract as gk_uniform_value / Q80 uniform factor. Never a dense W.
+kernel void qwen38_hgravu_embedding_lookup(
+    device const uchar* codes     [[buffer(0)]],
+    device const half* scales     [[buffer(1)]],
+    device float* hidden          [[buffer(2)]],
+    constant uint& token          [[buffer(3)]],
+    constant uint& hidden_size    [[buffer(4)]],
+    constant uint& vocab          [[buffer(5)]],
+    constant uint& group_size     [[buffer(6)]],
+    constant uint& bits           [[buffer(7)]],
+    constant uint& bound          [[buffer(8)]],
+    uint dim                       [[thread_position_in_grid]])
+{
+    if (dim >= hidden_size || token >= vocab || group_size == 0u || bits == 0u) {
+        return;
+    }
+    const uint element = token * hidden_size + dim;
+    hidden[dim] = gk_uniform_value(codes, scales, element, group_size, bits, bound);
+}
+
 // Diagnostic sequential f32 copy. Used to put a bandwidth floor under
 // conv/recurrent/GQA state traffic without the fused activation ALU.
 kernel void qwen38_f32_stream_probe(
