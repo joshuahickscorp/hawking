@@ -167,6 +167,12 @@ workspace/campaign/records/ascension-sandbox/physical/**/selected-payloads/
 workspace/campaign/records/ascension-sandbox/physical/**/*.hgravs01
 workspace/campaign/records/ascension-sandbox/physical/**/tensors/
 workspace/campaign/records/ascension-sandbox/physical/**/capture-result.json
+workspace/campaign/records/ascension-sandbox/physical/**/hidden/
+workspace/campaign/records/ascension-sandbox/physical/**/x/
+workspace/campaign/records/ascension-sandbox/physical/**/layer_meta/
+workspace/campaign/records/ascension-sandbox/physical/**/residual/
+workspace/campaign/records/ascension-sandbox/physical/**/checkpoint.json
+workspace/campaign/records/ascension-sandbox/physical/**/source-bf16-capture-reservoir-*/
 
 # build output: cargo writes to workspace/ops/build/rust (see .cargo/config.toml).
 # target-parallel/ was committed build output and served stale binaries; never track it again.

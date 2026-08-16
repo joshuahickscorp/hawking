@@ -1144,6 +1144,188 @@ def _machine() -> dict[str, Any]:
     return info
 
 
+def build_capture_index_from_layer_meta(
+    run_dir: Path,
+    *,
+    dest: Path | None = None,
+    scalars: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build capture-index.v1 from per-layer ``layer_meta/Lxx.json``.
+
+    Used when the capture omitted the 1.38 GB probes array. Row order is
+    probe-major, then position, then layer — the same order JSON collect
+    walks an all-layer capture-result.json.
+    """
+    run_dir = Path(run_dir).expanduser().resolve()
+    meta_dir = run_dir / "layer_meta"
+    if not meta_dir.is_dir():
+        raise CaptureIndexError(f"missing layer_meta under {run_dir}")
+    by_tok: dict[tuple[int, int, int], dict[str, Any]] = {}
+    max_pos: dict[int, int] = {}
+    layers_seen: set[int] = set()
+    for path in sorted(meta_dir.glob("L*.json")):
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(doc, dict):
+            continue
+        layer = int(doc.get("layer", -1))
+        layers_seen.add(layer)
+        for tok in doc.get("tokens") or []:
+            if not isinstance(tok, Mapping):
+                continue
+            pi = int(tok["pi"])
+            pos = int(tok["pos"])
+            by_tok[(pi, pos, layer)] = dict(tok)
+            max_pos[pi] = max(max_pos.get(pi, -1), pos)
+    if not by_tok:
+        raise CaptureIndexError(f"layer_meta under {run_dir} has no tokens")
+    n_probes = max(max_pos) + 1
+    probe_ids: list[str] = []
+    ckpt = run_dir / "checkpoint.json"
+    if ckpt.is_file():
+        ck = json.loads(ckpt.read_text(encoding="utf-8"))
+        raw_ids = ck.get("probe_ids") or []
+        if isinstance(raw_ids, list) and raw_ids:
+            probe_ids = [str(x) for x in raw_ids]
+    if len(probe_ids) < n_probes:
+        probe_ids.extend(f"probe_{i}" for i in range(len(probe_ids), n_probes))
+
+    layers_order = sorted(layers_seen)
+    layer_l: list[int] = []
+    token_index: list[int] = []
+    probe_index: list[int] = []
+    step_index: list[int] = []
+    input_token_id: list[int] = []
+    hidden_retained: list[int] = []
+    elements: list[int] = []
+    hidden_offsets: list[int] = []
+    paths: list[str | None] = []
+    expert_ids: list[int] = []
+    expert_offsets: list[int] = [0]
+    global_tok = 0
+    for pi in range(n_probes):
+        npos = max_pos.get(pi, -1) + 1
+        for pos in range(npos):
+            for layer in layers_order:
+                tok = by_tok.get((pi, pos, layer))
+                if tok is None:
+                    continue
+                ids = [int(e) for e in (tok.get("selected_expert_ids") or [])]
+                hidden = tok.get("hidden") if tok.get("hidden_retained") else None
+                rel = None
+                n_elem = 0
+                retained = 0
+                if isinstance(hidden, Mapping) and hidden.get("relative_path"):
+                    rel = str(hidden["relative_path"])
+                    n_elem = int(hidden.get("elements") or 0)
+                    retained = 1
+                layer_l.append(layer)
+                token_index.append(global_tok)
+                probe_index.append(pi)
+                step_index.append(pos)
+                input_token_id.append(int(tok.get("input_token_id") or 0))
+                hidden_retained.append(retained)
+                elements.append(n_elem)
+                hidden_offsets.append(0)
+                paths.append(rel)
+                expert_ids.extend(ids)
+                expert_offsets.append(len(expert_ids))
+            global_tok += 1
+
+    layer_arr = np.asarray(layer_l, dtype=np.int16)
+    hidden_arr = np.asarray(hidden_retained, dtype=np.uint8)
+    eids = np.asarray(expert_ids, dtype=np.int32)
+    eoff = np.asarray(expert_offsets, dtype=np.int32)
+    key_layer, key_expert, key_off, key_row_ids = _invert_keys(
+        layer_arr, hidden_arr, eids, eoff
+    )
+    path_id, path_offsets, path_blob = _intern_paths(paths)
+    n_tokens = global_tok
+    n_hidden = int(hidden_arr.sum())
+    src = capture_result_path(run_dir)
+    if src.is_file():
+        src_stat = _source_stat(src)
+    else:
+        src_stat = {
+            "relative_path": CAPTURE_RESULT_NAME,
+            "resolved_path": str(src),
+            "bytes": 0,
+            "mtime_ns": 0,
+        }
+    header_scalars = dict(scalars or {})
+    if src.is_file() and not header_scalars:
+        try:
+            header_scalars = read_capture_scalars(src)
+        except Exception:
+            try:
+                loaded = json.loads(src.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                loaded = {}
+            if isinstance(loaded, dict):
+                header_scalars = loaded
+    dest_root = Path(dest).expanduser().resolve() if dest is not None else index_dir(run_dir)
+    header: dict[str, Any] = {
+        "schema": SCHEMA,
+        "status": "EARNED_CAPTURE_INDEX_V1",
+        "validity_binding": VALIDITY_BINDING,
+        "source": {**src_stat, "assembled_from": "layer_meta", "sha256": None},
+        "n_rows": int(layer_arr.size),
+        "n_hidden_rows": n_hidden,
+        "n_tokens": n_tokens,
+        "n_keys": int(key_layer.size),
+        "n_expert_entries": int(eids.size),
+        "n_key_hits": int(key_row_ids.size),
+        "n_unique_paths": int(path_offsets.size - 1),
+        "hidden_width": _hidden_width(header_scalars, np.asarray(elements, dtype=np.int32)),
+        "all_layer_capture": True,
+        "total_steps": n_tokens,
+        "hidden_retained_steps": n_hidden,
+        "route_only_steps": max(0, n_tokens - n_hidden),
+        "layers_with_hidden_hits": _layers_with_hidden(layer_arr, hidden_arr),
+        "n_layers_with_hidden_hits": len(_layers_with_hidden(layer_arr, hidden_arr)),
+        "probe_ids": probe_ids,
+        "capture_schema": header_scalars.get("schema"),
+        "capture_status": header_scalars.get("status"),
+        "claim_boundary": header_scalars.get("claim_boundary"),
+        "bounded_storage": header_scalars.get("bounded_storage"),
+        "capture_summary": header_scalars.get("capture_summary"),
+        "runtime_binding": header_scalars.get("runtime_binding"),
+        "arrays": {name: name for name in ARRAY_NAMES},
+        "claim_index": {
+            "assembled_from_layer_meta": True,
+            "json_capture_result_may_omit_probes": True,
+            "row_order_probe_major_then_layer": True,
+        },
+    }
+    arrays = {
+        "layer.npy": layer_arr,
+        "token_index.npy": np.asarray(token_index, dtype=np.int32),
+        "probe_index.npy": np.asarray(probe_index, dtype=np.int16),
+        "step_index.npy": np.asarray(step_index, dtype=np.int32),
+        "input_token_id.npy": np.asarray(input_token_id, dtype=np.int32),
+        "hidden_retained.npy": hidden_arr,
+        "elements.npy": np.asarray(elements, dtype=np.int32),
+        "hidden_offset.npy": np.asarray(hidden_offsets, dtype=np.int64),
+        "path_id.npy": path_id,
+        "path_offsets.npy": path_offsets,
+        "path_blob.npy": path_blob,
+        "expert_offsets.npy": eoff,
+        "expert_ids.npy": eids,
+        "key_layer.npy": key_layer,
+        "key_expert.npy": key_expert,
+        "key_offsets.npy": key_off,
+        "key_row_ids.npy": key_row_ids,
+    }
+    written = _atomic_write_index(dest_root, arrays, header)
+    return {
+        "status": "WRITTEN",
+        "index_dir": str(written),
+        "n_rows": int(layer_arr.size),
+        "n_tokens": n_tokens,
+        "n_keys": int(key_layer.size),
+        "assembled_from": "layer_meta",
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -1164,6 +1346,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="Reserved; regex passes already fan out internally",
+    )
+    parser.add_argument(
+        "--from-layer-meta",
+        action="store_true",
+        help="Assemble the sidecar from layer_meta/ instead of parsing capture-result.json",
     )
     parser.add_argument(
         "--measure",
@@ -1198,9 +1385,12 @@ def main(argv: list[str] | None = None) -> int:
         capture = capture.parent
     print(f"[q80-capture-index] capture {capture}", flush=True)
     t0 = time.perf_counter()
-    result = build_capture_index(
-        capture, force=args.force, workers=args.workers, dest=args.out
-    )
+    if args.from_layer_meta:
+        result = build_capture_index_from_layer_meta(capture, dest=args.out)
+    else:
+        result = build_capture_index(
+            capture, force=args.force, workers=args.workers, dest=args.out
+        )
     wall = time.perf_counter() - t0
     result.setdefault("build_wall_secs", wall)
     print(json.dumps(result, indent=2, sort_keys=True), flush=True)

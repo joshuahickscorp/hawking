@@ -45,8 +45,9 @@ mod macos {
         retained_hidden_relative_path, retained_swiglu_packed_relative_path,
         retained_swiglu_relative_path, worst_case_retained_hidden_bytes_per_layer,
         worst_case_unique_rows_per_layer, write_retained_hidden_f32le, LayerTokenCapture,
-        SourceBf16Index, DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT, QWEN80_EXPERTS, QWEN80_HIDDEN,
-        QWEN80_LAYERS, QWEN80_MOE_INTERMEDIATE, QWEN80_TOP_K, STREAMED_PEAK_RSS_HARD_CAP_BYTES,
+        RetentionPolicy, SourceBf16Index, DEFAULT_MAX_HIDDEN_TOKENS_PER_EXPERT, QWEN80_EXPERTS,
+        QWEN80_HIDDEN, QWEN80_LAYERS, QWEN80_MOE_INTERMEDIATE, QWEN80_TOP_K, RESERVOIR_SEED,
+        STREAMED_PEAK_RSS_HARD_CAP_BYTES,
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
@@ -85,6 +86,10 @@ mod macos {
         max_new_tokens: usize,
         tokenizer_path: Option<PathBuf>,
         resume: bool,
+        retention: String,
+        reservoir_seed: u64,
+        omit_result_json: bool,
+        packed_swiglu_only: bool,
     }
 
     fn usage() -> &'static str {
@@ -94,6 +99,8 @@ mod macos {
          capture: ... --mode capture --source-model-dir ABSOLUTE_PATH \\\n\
          \x20   --input-json ABSOLUTE_PATH --output-dir ABSOLUTE_PATH \\\n\
          \x20   [--max-hidden-tokens-per-expert N] [--max-probes N] [--resume]\n\
+         \x20   [--retention first-n|reservoir] [--reservoir-seed U64]\n\
+         \x20   [--omit-result-json] [--packed-swiglu-only]\n\
          note: --max-hidden-tokens-per-layer is retired; use --max-hidden-tokens-per-expert"
     }
 
@@ -124,6 +131,10 @@ mod macos {
         let mut max_new_tokens = 16usize;
         let mut tokenizer_path = None;
         let mut resume = false;
+        let mut retention = "first-n".to_string();
+        let mut reservoir_seed = RESERVOIR_SEED;
+        let mut omit_result_json = false;
+        let mut packed_swiglu_only = false;
         let mut args = env::args().skip(1);
         while let Some(flag) = args.next() {
             match flag.as_str() {
@@ -208,6 +219,29 @@ mod macos {
                     }
                 }
                 "--resume" => resume = true,
+                "--omit-result-json" => omit_result_json = true,
+                "--packed-swiglu-only" => packed_swiglu_only = true,
+                "--retention" => {
+                    let value = args.next().ok_or_else(|| {
+                        format!("missing value for --retention; {}", usage())
+                    })?;
+                    match value.as_str() {
+                        "first-n" | "reservoir" => retention = value,
+                        other => {
+                            return Err(format!(
+                                "--retention must be first-n or reservoir (got {other:?})"
+                            ))
+                        }
+                    }
+                }
+                "--reservoir-seed" => {
+                    let value = args.next().ok_or_else(|| {
+                        format!("missing value for --reservoir-seed; {}", usage())
+                    })?;
+                    reservoir_seed = value.parse::<u64>().map_err(|_| {
+                        format!("--reservoir-seed must be a u64 decimal; {}", usage())
+                    })?;
+                }
                 "--help" | "-h" => return Err(usage().into()),
                 other => return Err(format!("unsupported option {other:?}; {}", usage())),
             }
@@ -255,7 +289,24 @@ mod macos {
                 None => None,
             },
             resume,
+            retention,
+            reservoir_seed,
+            omit_result_json,
+            packed_swiglu_only,
         })
+    }
+
+    fn retention_policy(arguments: &Arguments) -> Result<RetentionPolicy, String> {
+        match arguments.retention.as_str() {
+            "first-n" => Ok(RetentionPolicy::first_n(
+                arguments.max_hidden_tokens_per_expert,
+            )),
+            "reservoir" => Ok(RetentionPolicy::reservoir(
+                arguments.max_hidden_tokens_per_expert,
+                arguments.reservoir_seed,
+            )),
+            other => Err(format!("unsupported --retention {other:?}")),
+        }
     }
 
     fn sha256_file(path: &Path) -> Result<String, String> {
@@ -810,6 +861,16 @@ mod macos {
                     arguments.max_hidden_tokens_per_expert
                 ));
             }
+            let ckpt_ret = ckpt
+                .get("retention")
+                .and_then(Value::as_str)
+                .unwrap_or("first-n");
+            if ckpt_ret != arguments.retention {
+                fail(format!(
+                    "checkpoint retention {ckpt_ret} != {}",
+                    arguments.retention
+                ));
+            }
             start_layer = ckpt
                 .get("next_layer")
                 .and_then(Value::as_u64)
@@ -1028,7 +1089,7 @@ mod macos {
                     }
                 }
             }
-            if !swiglu_jobs.is_empty() {
+            if !swiglu_jobs.is_empty() && !arguments.packed_swiglu_only {
                 let n_jobs = swiglu_jobs.len();
                 let n_workers = std::thread::available_parallelism()
                     .map(|n| n.get())
@@ -1101,7 +1162,10 @@ mod macos {
                     write_retained_hidden_f32le(&output_dir.join(&rel), &buf).map_err(|e| {
                         hawking_core::Error::Model(format!("packed swiglu L{layer_idx} E{eid}: {e}"))
                     })?;
-                let _ = (sha, bytes);
+                if arguments.packed_swiglu_only {
+                    swiglu_bytes_written = swiglu_bytes_written.saturating_add(bytes);
+                }
+                let _ = sha;
             }
 
             // Layer-boundary resume: persist routes + write records + residuals.
@@ -1158,6 +1222,10 @@ mod macos {
                     "schema": CKPT_SCHEMA,
                     "next_layer": layer_idx + 1,
                     "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
+                    "retention": arguments.retention,
+                    "reservoir_seed": arguments.reservoir_seed,
+                    "packed_swiglu_only": arguments.packed_swiglu_only,
+                    "omit_result_json": arguments.omit_result_json,
                     "input_sha256": input_sha256,
                     "probe_ids": probes.iter().map(|(id, _)| id.clone()).collect::<Vec<_>>(),
                     "token_counts": probes.iter().map(|(_, t)| t.len()).collect::<Vec<_>>(),
@@ -1171,6 +1239,7 @@ mod macos {
             refuse_if_resident_load(peak_rss_bytes());
             Ok(())
         };
+        let policy = retention_policy(&arguments).unwrap_or_else(|e| fail(e));
         let (mut captures, telem) = capture_layers_from(
             &index,
             &probes,
@@ -1179,6 +1248,7 @@ mod macos {
             start_layer,
             Some(&mut on_layer),
             Some(&mut on_layer_flush),
+            policy,
         )
         .unwrap_or_else(|e| fail(e.to_string()));
         // Restore route membership for already-flushed layers so the result
@@ -1192,11 +1262,16 @@ mod macos {
         let mut probe_rows = Vec::with_capacity(probes.len());
         let mut tokens_executed = 0usize;
         let mut route_membership_total = 0usize;
+        let write_probes = !arguments.omit_result_json;
 
         let layers_executed = telem.layers;
         for (pi, (probe_id, token_ids)) in probes.iter().enumerate() {
-            let mut steps = Vec::with_capacity(token_ids.len());
+            let mut steps = Vec::new();
+            if write_probes {
+                steps.reserve(token_ids.len());
+            }
             for (pos, &token_id) in token_ids.iter().enumerate() {
+                let _ = token_id;
                 let layer_caps = &captures[pi][pos];
                 if layer_caps.len() != layers_executed {
                     fail(format!(
@@ -1223,6 +1298,21 @@ mod macos {
                     let store_hidden = layer_cap.hidden_retained;
                     if store_hidden {
                         any_layer_retained = true;
+                        if hidden_writes
+                            .get(pi)
+                            .and_then(|p| p.get(pos))
+                            .and_then(|t| t.get(layer_cap.layer))
+                            .and_then(|slot| slot.as_ref())
+                            .is_none()
+                        {
+                            fail(format!(
+                                "{probe_id}@{pos} L{}: retained but not written during flush",
+                                layer_cap.layer
+                            ));
+                        }
+                    }
+                    if !write_probes {
+                        continue;
                     }
                     let hidden_meta = if store_hidden {
                         let written = hidden_writes
@@ -1230,12 +1320,7 @@ mod macos {
                             .and_then(|p| p.get(pos))
                             .and_then(|t| t.get(layer_cap.layer))
                             .and_then(|slot| slot.as_ref())
-                            .unwrap_or_else(|| {
-                                fail(format!(
-                                    "{probe_id}@{pos} L{}: retained but not written during flush",
-                                    layer_cap.layer
-                                ))
-                            });
+                            .unwrap();
                         Some(json!({
                             "relative_path": written.0,
                             "sha256": written.1,
@@ -1279,22 +1364,26 @@ mod macos {
                         "swiglu_hidden_routed_f32le": swiglu_meta,
                     }));
                 }
-                steps.push(json!({
-                    "position": pos,
-                    "input_token_id": token_id,
-                    "layers": layer_rows,
-                    "all_48_layers_executed": layers_executed == QWEN80_LAYERS,
-                    "final_norm_lm_head_sampler_executed": false,
-                    "autoregressive_feedback_or_generation_not_executed": true,
-                    "hidden_retained_for_this_token": any_layer_retained,
-                }));
+                if write_probes {
+                    steps.push(json!({
+                        "position": pos,
+                        "input_token_id": token_id,
+                        "layers": layer_rows,
+                        "all_48_layers_executed": layers_executed == QWEN80_LAYERS,
+                        "final_norm_lm_head_sampler_executed": false,
+                        "autoregressive_feedback_or_generation_not_executed": true,
+                        "hidden_retained_for_this_token": any_layer_retained,
+                    }));
+                }
                 tokens_executed += 1;
             }
-            probe_rows.push(json!({
-                "probe_id": probe_id,
-                "source_one_user_native_prompt_token_count": steps.len(),
-                "steps": steps,
-            }));
+            if write_probes {
+                probe_rows.push(json!({
+                    "probe_id": probe_id,
+                    "source_one_user_native_prompt_token_count": token_ids.len(),
+                    "steps": steps,
+                }));
+            }
         }
 
         let wall = started.elapsed();
@@ -1336,13 +1425,20 @@ mod macos {
             "broad_activation_diversity_capture": true,
             "bounded_hidden_storage_not_unbounded_raw_dump": true,
             "source_tokenizer_one_user_native_prompts": true,
-            "per_expert_first_n_retention": true,
+            "per_expert_first_n_retention": arguments.retention == "first-n",
+            "per_expert_reservoir_retention": arguments.retention == "reservoir",
+            "omit_result_json": arguments.omit_result_json,
+            "packed_swiglu_only": arguments.packed_swiglu_only,
         });
 
         let result = json!({
             "schema": RESULT_SCHEMA,
             "status": "EARNED_NEW_DIAGNOSTIC_NOT_HISTORICAL_SOURCE_BF16_LAYER_MAJOR_ALL_LAYER_ROUTE_AND_HIDDEN_CAPTURE",
-            "capture_protocol_revision": CAPTURE_PROTOCOL_REVISION,
+            "capture_protocol_revision": if arguments.retention == "reservoir" {
+                "q80-source-bf16-layer-major-route-hidden-capture-per-expert-reservoir-v1"
+            } else {
+                CAPTURE_PROTOCOL_REVISION
+            },
             "input": {
                 "path": input_json,
                 "sha256": input_sha256,
@@ -1389,10 +1485,15 @@ mod macos {
                 "peak_rss_after_routed_bytes": telem.phase.peak_rss_after_routed_bytes,
             },
             "bounded_storage": {
-                "strategy": "per_expert_first_n_router_input_hiddens_plus_full_route_membership",
-                "why": "Per-layer stratified subsample shared across 512 experts left well under 1 row/organ on Q80 (top-10). First-N per expert after routing is known guarantees up to N retained rows per (layer, expert) while keeping full route membership. Retained hidden rows are flushed per layer and freed before the next layer loads, so the streamed RSS cap bounds one layer rather than ×48.",
+                "strategy": if arguments.retention == "reservoir" {
+                    "per_expert_seeded_reservoir_router_input_hiddens_plus_full_route_membership"
+                } else {
+                    "per_expert_first_n_router_input_hiddens_plus_full_route_membership"
+                },
+                "why": "Per-layer stratified subsample shared across 512 experts left well under 1 row/organ on Q80 (top-10). Per-expert cap after routing is known guarantees rare experts keep every hit until N while popular experts are capped. Reservoir replaces first-N's head-of-corpus bias with a seeded uniform subset so added tokens still diversify. Retained hidden rows are flushed per layer and freed before the next layer loads, so the streamed RSS cap bounds one layer rather than ×48.",
                 "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
-                "retention_policy": "first_N_tokens_that_route_to_expert_in_global_token_order",
+                "retention_policy": arguments.retention,
+                "reservoir_seed": arguments.reservoir_seed,
                 "deterministic": true,
                 "experts": QWEN80_EXPERTS,
                 "worst_case_unique_rows_per_layer": worst_case_rows_per_layer,
@@ -1419,11 +1520,11 @@ mod macos {
                 "rejected_alternatives": {
                     "full_raw_all_tokens": "unbounded; not acceptable",
                     "per_layer_stratified_subsample": "shared budget across 512 experts; larger corpus spreads routing and starves each expert",
-                    "random_reservoir": "not deterministic unless seeded and documented; first-N is byte-identical across runs",
+                    "random_reservoir_unseeded": "refused: not deterministic. Seeded reservoir is the documented alternative to first-N.",
                 },
             },
             "capture_summary": {
-                "probe_count": probe_rows.len(),
+                "probe_count": probes.len(),
                 "total_tokens": tokens_executed,
                 "layers_executed": layers_executed,
                 "broad_activation_diversity": true,
@@ -1432,7 +1533,13 @@ mod macos {
                 "max_hidden_tokens_per_expert": arguments.max_hidden_tokens_per_expert,
                 "n_fit_distribution": n_fit_dist.clone(),
             },
-            "probes": probe_rows,
+            "probes": if write_probes { Value::Array(probe_rows) } else { Value::Array(vec![]) },
+            "probes_omitted": !write_probes,
+            "routes_live_in": if write_probes {
+                "capture-result.json probes array"
+            } else {
+                "layer_meta/Lxx.json + capture-index.v1 (assemble after capture)"
+            },
             "peak_rss_bytes": peak,
             "peak_rss_gib": peak as f64 / (1024.0 * 1024.0 * 1024.0),
             "wall_clock_secs": wall.as_secs_f64(),

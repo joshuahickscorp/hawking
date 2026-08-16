@@ -35,6 +35,8 @@ use std::io::{Read, Write};
 use std::io::{Seek, SeekFrom};
 #[cfg(unix)]
 use std::os::unix::fs::FileExt;
+#[cfg(target_os = "macos")]
+use std::os::unix::io::AsRawFd;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
@@ -137,6 +139,22 @@ pub fn retained_swiglu_packed_relative_path(layer: usize, expert: u32) -> String
     format!("x/swiglu_hidden_routed/L{layer:02}/E{expert:03}.f32le")
 }
 
+/// Disable the unified file cache for this fd (macOS F_NOCACHE). No-op elsewhere.
+fn macos_set_nocache(file: &File) {
+    #[cfg(target_os = "macos")]
+    unsafe {
+        extern "C" {
+            fn fcntl(fd: i32, cmd: i32, ...) -> i32;
+        }
+        const F_NOCACHE: i32 = 48;
+        let _ = fcntl(file.as_raw_fd(), F_NOCACHE, 1);
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = file;
+    }
+}
+
 /// Write one retained hidden row as little-endian f32. Refuses to overwrite.
 pub fn write_retained_hidden_f32le(path: &Path, values: &[f32]) -> Result<(String, usize)> {
     let parent = path.parent().ok_or_else(|| {
@@ -156,6 +174,7 @@ pub fn write_retained_hidden_f32le(path: &Path, values: &[f32]) -> Result<(Strin
         .write(true)
         .open(path)
         .map_err(|e| model_err(format!("cannot create hidden {}: {e}", path.display())))?;
+    macos_set_nocache(&file);
     // One LE buffer + one write. The previous per-f32 write_all was 2048
     // syscalls per row and dominated capture wall on this machine.
     let mut bytes = Vec::with_capacity(values.len().saturating_mul(4));
@@ -200,6 +219,120 @@ pub fn credit_expert_first_n_retention(
         }
     }
     retain
+}
+
+/// Documented seed for per-expert reservoir retention. Mixed with layer and
+/// expert so two layers (or two experts) never share a shuffle.
+pub const RESERVOIR_SEED: u64 = 0xA80C_A2E0_C0DE_0001;
+
+/// How a layer decides which routed tokens keep a hidden / post-SwiGLU row.
+///
+/// Both policies cap each expert at `max_per_expert` of **its own** routes
+/// (rare experts with ≤N hits keep every hit). A token is retained if any of
+/// its top-k experts selected it, so co-routing can still give a popular
+/// expert more than N rows — that is a floor, not a ceiling, and matches
+/// first-N. Reservoir replaces first-N's "keep the head of the corpus"
+/// bias with a seeded uniform subset so added tokens still diversify.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum RetentionPolicy {
+    FirstN { max_per_expert: usize },
+    Reservoir { max_per_expert: usize, seed: u64 },
+}
+
+impl RetentionPolicy {
+    pub fn first_n(max_per_expert: usize) -> Self {
+        Self::FirstN { max_per_expert }
+    }
+
+    pub fn reservoir(max_per_expert: usize, seed: u64) -> Self {
+        Self::Reservoir {
+            max_per_expert,
+            seed,
+        }
+    }
+
+    pub fn max_per_expert(self) -> usize {
+        match self {
+            Self::FirstN { max_per_expert } | Self::Reservoir { max_per_expert, .. } => {
+                max_per_expert
+            }
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::FirstN { .. } => "first_n",
+            Self::Reservoir { .. } => "reservoir",
+        }
+    }
+}
+
+fn splitmix64(mut x: u64) -> u64 {
+    x = x.wrapping_add(0x9E37_79B9_7F4A_7C15);
+    let mut z = x;
+    z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    z ^ (z >> 31)
+}
+
+fn reservoir_hash(seed: u64, layer: usize, expert: usize, token_ord: usize) -> u64 {
+    splitmix64(
+        seed
+            ^ ((layer as u64).wrapping_shl(48))
+            ^ ((expert as u64).wrapping_shl(32))
+            ^ (token_ord as u64),
+    )
+}
+
+/// Seeded per-expert reservoir mask for one layer.
+///
+/// For each expert: keep every routed token if that expert has ≤N hits;
+/// otherwise keep the N tokens with the smallest `(hash, token_ord)` key.
+/// A token is retained when any of its selected experts keeps it.
+///
+/// Deterministic given `(routes, N, seed, layer)`. Does not allocate the
+/// hidden payloads — the caller copies rows for `true` slots only.
+pub fn reservoir_retain_mask(
+    selected_per_token: &[Vec<u32>],
+    max_per_expert: usize,
+    seed: u64,
+    layer: usize,
+) -> Vec<bool> {
+    let n = selected_per_token.len();
+    let mut keep = vec![false; n];
+    if max_per_expert == 0 || n == 0 {
+        return keep;
+    }
+    let mut buckets: Vec<Vec<usize>> = vec![Vec::new(); QWEN80_EXPERTS];
+    for (t, ids) in selected_per_token.iter().enumerate() {
+        for &expert in ids {
+            let e = expert as usize;
+            if e < QWEN80_EXPERTS {
+                buckets[e].push(t);
+            }
+        }
+    }
+    for (e, toks) in buckets.iter().enumerate() {
+        if toks.is_empty() {
+            continue;
+        }
+        if toks.len() <= max_per_expert {
+            for &t in toks {
+                keep[t] = true;
+            }
+            continue;
+        }
+        let mut keyed: Vec<(u64, usize)> = toks
+            .iter()
+            .map(|&t| (reservoir_hash(seed, layer, e, t), t))
+            .collect();
+        let nth = max_per_expert - 1;
+        keyed.select_nth_unstable_by(nth, |a, b| a.0.cmp(&b.0).then(a.1.cmp(&b.1)));
+        for item in keyed.iter().take(max_per_expert) {
+            keep[item.1] = true;
+        }
+    }
+    keep
 }
 
 /// Bytes of retained hidden payloads currently sitting in `captures`.
@@ -291,6 +424,29 @@ pub fn append_retained_layer_captures_with_swiglu(
     layer_idx: usize,
     max_hidden_tokens_per_expert: usize,
 ) -> Result<()> {
+    append_retained_layer_captures_with_policy(
+        captures,
+        token_index,
+        routes,
+        all_router_in,
+        all_swiglu,
+        layer_idx,
+        RetentionPolicy::first_n(max_hidden_tokens_per_expert),
+    )
+}
+
+/// Like [`append_retained_layer_captures_with_swiglu`] with an explicit
+/// [`RetentionPolicy`]. Reservoir needs the full layer's routes before it
+/// can pick a uniform subset; first-N still walks in global token order.
+pub fn append_retained_layer_captures_with_policy(
+    captures: &mut [Vec<Vec<LayerTokenCapture>>],
+    token_index: &[(usize, usize)],
+    routes: &mut [(Vec<u32>, Vec<f32>)],
+    all_router_in: &[f32],
+    all_swiglu: Option<&[Vec<(u32, Vec<f32>)>]>,
+    layer_idx: usize,
+    policy: RetentionPolicy,
+) -> Result<()> {
     if all_router_in.len() != token_index.len().saturating_mul(QWEN80_HIDDEN) {
         return Err(model_err("router-input/token_index length mismatch"));
     }
@@ -302,7 +458,28 @@ pub fn append_retained_layer_captures_with_swiglu(
             return Err(model_err("swiglu/token_index length mismatch"));
         }
     }
-    let mut expert_retained = vec![0usize; QWEN80_EXPERTS];
+    let n_tokens = token_index.len();
+    let retain_mask: Vec<bool> = match policy {
+        RetentionPolicy::FirstN { max_per_expert } => {
+            let mut expert_retained = vec![0usize; QWEN80_EXPERTS];
+            let mut mask = Vec::with_capacity(n_tokens);
+            for t in 0..n_tokens {
+                mask.push(credit_expert_first_n_retention(
+                    &mut expert_retained,
+                    &routes[t].0,
+                    max_per_expert,
+                ));
+            }
+            mask
+        }
+        RetentionPolicy::Reservoir {
+            max_per_expert,
+            seed,
+        } => {
+            let selected: Vec<Vec<u32>> = routes.iter().map(|(ids, _)| ids.clone()).collect();
+            reservoir_retain_mask(&selected, max_per_expert, seed, layer_idx)
+        }
+    };
     for (t, &(pi, pos)) in token_index.iter().enumerate() {
         if pi >= captures.len() || pos >= captures[pi].len() {
             return Err(model_err(format!(
@@ -310,11 +487,7 @@ pub fn append_retained_layer_captures_with_swiglu(
             )));
         }
         let (ids, weights) = std::mem::take(&mut routes[t]);
-        let retain = credit_expert_first_n_retention(
-            &mut expert_retained,
-            &ids,
-            max_hidden_tokens_per_expert,
-        );
+        let retain = retain_mask[t];
         let hidden = if retain {
             all_router_in[t * QWEN80_HIDDEN..(t + 1) * QWEN80_HIDDEN].to_vec()
         } else {
@@ -1225,6 +1398,10 @@ impl SourceBf16Index {
         if !handles.contains_key(shard) {
             let f = File::open(shard)
                 .map_err(|e| model_err(format!("cannot open shard {}: {e}", shard.display())))?;
+            // Layer weights are ~3 GiB. Caching each range-read pinned unified
+            // memory and stacked with per-layer hidden/swiglu writes until the
+            // 16 GiB streamed cap aborted the coverage extension at layer 4.
+            macos_set_nocache(&f);
             handles.insert(shard.to_path_buf(), f);
         }
         Ok(())
@@ -1256,6 +1433,8 @@ impl SourceBf16Index {
                 ))
             })?
         };
+        // F_NOCACHE is per-fd; a cloned descriptor does not inherit it.
+        macos_set_nocache(&file);
         #[cfg(unix)]
         {
             file.read_exact_at(&mut buf[..loc.nbytes], loc.data_offset)
@@ -1380,6 +1559,7 @@ impl SourceBf16Index {
             f.try_clone()
                 .map_err(|e| model_err(format!("cannot clone embed shard handle: {e}")))?
         };
+        macos_set_nocache(&file);
         let mut buf = vec![0u8; row_bytes];
         #[cfg(unix)]
         {
@@ -2843,6 +3023,7 @@ pub fn capture_all_layers(
         0,
         on_layer,
         on_layer_flush,
+        RetentionPolicy::first_n(max_hidden_tokens_per_expert),
     )
 }
 
@@ -2862,7 +3043,14 @@ pub fn capture_layers_from(
     mut on_layer_flush: Option<
         &mut dyn FnMut(usize, &mut [Vec<Vec<LayerTokenCapture>>], &[ProbeHidden]) -> Result<()>,
     >,
+    policy: RetentionPolicy,
 ) -> Result<(Vec<Vec<Vec<LayerTokenCapture>>>, StreamTelemetry)> {
+    if policy.max_per_expert() != max_hidden_tokens_per_expert {
+        return Err(model_err(format!(
+            "retention policy N {} != max_hidden_tokens_per_expert {max_hidden_tokens_per_expert}",
+            policy.max_per_expert()
+        )));
+    }
     if hiddens.len() != probes.len() {
         return Err(model_err("hiddens/probes length mismatch"));
     }
@@ -3068,14 +3256,14 @@ pub fn capture_layers_from(
         }
         telem.phase.residual_secs += residual_t0.elapsed().as_secs_f64();
         let flush_t0 = Instant::now();
-        append_retained_layer_captures_with_swiglu(
+        append_retained_layer_captures_with_policy(
             &mut captures,
             &token_index,
             &mut routes,
             &all_router_in,
             Some(&swiglu_by_token),
             layer_idx,
-            max_hidden_tokens_per_expert,
+            policy,
         )?;
         drop(swiglu_by_token);
         // Write this layer's retained rows (caller) and drop the payloads
@@ -3547,6 +3735,47 @@ mod tests {
             .collect();
         assert_eq!(retained_mask, mask2);
         assert_eq!(counts, counts2);
+    }
+
+    #[test]
+    fn per_expert_reservoir_keeps_rare_experts_and_is_deterministic() {
+        // Expert 0 on every token (popular). Expert 1 only on the last token
+        // (rare). N=3: popular is subsampled; the rare hit is always kept.
+        let max_n = 3usize;
+        let n_tokens = 20usize;
+        let routes: Vec<Vec<u32>> = (0..n_tokens)
+            .map(|t| {
+                if t + 1 == n_tokens {
+                    vec![0, 1]
+                } else {
+                    vec![0]
+                }
+            })
+            .collect();
+        let mask = reservoir_retain_mask(&routes, max_n, RESERVOIR_SEED, 7);
+        assert_eq!(mask.len(), n_tokens);
+        assert!(mask[n_tokens - 1], "rare expert 1 must keep its only hit");
+        let kept = mask.iter().filter(|&&b| b).count();
+        // Popular expert contributes N, rare adds the last token if it was
+        // not already in the popular subset.
+        assert!(kept == max_n || kept == max_n + 1, "kept={kept}");
+        let popular_kept = mask.iter().take(n_tokens - 1).filter(|&&b| b).count()
+            + usize::from(mask[n_tokens - 1]);
+        assert!(popular_kept >= max_n);
+        let again = reservoir_retain_mask(&routes, max_n, RESERVOIR_SEED, 7);
+        assert_eq!(mask, again);
+        let other_seed = reservoir_retain_mask(&routes, max_n, RESERVOIR_SEED ^ 1, 7);
+        // Different seed must change the popular subset (20-choose-3 is large).
+        assert_ne!(mask, other_seed);
+        let empty = reservoir_retain_mask(&routes, 0, RESERVOIR_SEED, 7);
+        assert!(empty.iter().all(|&b| !b));
+    }
+
+    #[test]
+    fn per_expert_reservoir_under_n_keeps_every_hit() {
+        let routes: Vec<Vec<u32>> = (0..5).map(|t| vec![t as u32]).collect();
+        let mask = reservoir_retain_mask(&routes, 8, RESERVOIR_SEED, 0);
+        assert_eq!(mask, vec![true, true, true, true, true]);
     }
 
     #[test]
