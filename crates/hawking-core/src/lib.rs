@@ -17,6 +17,9 @@ pub mod gravity_deepseek_v4;
 /// Sealed admission-time trust receipt for the DeepSeek-V4 full stream.
 /// Storage/verification only; not an Engine, Metal, or forward surface.
 pub mod gravity_deepseek_v4_admission_trust;
+/// Compact mmap-able artifact index for DeepSeek-V4-Flash startup.
+/// Built at admission; not an Engine, Metal, or forward surface.
+pub mod gravity_deepseek_v4_artifact_index;
 /// CPU-only source-algorithm oracle for DeepSeek-V4 FP8 activation
 /// quantization and the bounded layer-0 WQ-A checkpoint.  This has no engine,
 /// Metal, forward, or serving integration.

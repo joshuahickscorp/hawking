@@ -71,6 +71,7 @@ fn parse_args() -> Result<Args, Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    hawking_core::startup_timing::mark_process_start();
     let args = parse_args()?;
     eprintln!(
         "dsv4f native token graph: artifact={} max_layer={} head={}",
@@ -91,7 +92,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let greedy = report.greedy.as_ref();
     eprintln!(
-        "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} hash_invocations={} admission_trust_hits={} bytes_hashed={} admission_receipt_loaded={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
+        "deepest_layer={:?} layers={:?} wall_ms={} init_ms={} body_ms={} s/token={:.4} (body {:.4}) peak_rss_bytes={} peak_weight_bytes={} metal_dispatches={} command_buffers={} fallbacks={} host_expert_gather={} host_expert_output_readback={} host_route_id_readback={} hash_invocations={} admission_trust_hits={} bytes_hashed={} admission_receipt_loaded={} artifact_index_loaded={} hc_sha={} greedy={:?} oracle=(token={} logit={} sha={}) stop={:?} receipt_sha256={digest}",
         report.deepest_layer,
         report.layers_executed,
         report.wall_ms,
@@ -111,6 +112,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         report.chunk_verification.admission_trust_hits,
         report.chunk_verification.bytes_hashed,
         report.chunk_verification.admission_receipt_loaded,
+        report.chunk_verification.artifact_index_loaded,
         report.hc_bf16_sha256,
         greedy.map(|g| (g.token_id, g.logit)),
         ORACLE_GREEDY_TOKEN_ID,
@@ -118,6 +120,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ORACLE_HC_BF16_SHA256,
         report.stop_reason,
     );
+    hawking_core::startup_timing::emit_stderr_json();
     if let Some(path) = args.out.as_ref() {
         eprintln!("wrote {}", path.display());
     }

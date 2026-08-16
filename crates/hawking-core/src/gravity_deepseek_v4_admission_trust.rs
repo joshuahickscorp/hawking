@@ -132,6 +132,10 @@ pub struct DeepSeekV4AdmissionTrustSeal {
     pub content_addressed_chunk_sha256: String,
     pub manifest_seal_sha256: String,
     pub verifier_version: String,
+    pub identities: BTreeMap<String, DeepSeekV4ChunkFileIdentity>,
+    pub index_path: Option<PathBuf>,
+    pub index_bytes: Option<u64>,
+    pub index_wall_ms: Option<u128>,
 }
 
 /// One chunk the sealer must hash and identify.
@@ -200,12 +204,8 @@ pub fn admission_hash_threads() -> usize {
 }
 
 pub fn file_identity(path: &Path, label: &str) -> Result<DeepSeekV4ChunkFileIdentity> {
-    let metadata = fs::symlink_metadata(path).map_err(|error| {
-        gravity(format!(
-            "cannot stat {label} {}: {error}",
-            path.display()
-        ))
-    })?;
+    let metadata = fs::symlink_metadata(path)
+        .map_err(|error| gravity(format!("cannot stat {label} {}: {error}", path.display())))?;
     if metadata.file_type().is_symlink() || !metadata.is_file() {
         return Err(gravity(format!(
             "{label} must be a regular non-symlink file: {}",
@@ -379,9 +379,11 @@ pub fn load_admission_receipt(
     if !saw_file {
         DeepSeekV4AdmissionLoad::Missing
     } else {
-        DeepSeekV4AdmissionLoad::Rejected(last_reject.unwrap_or_else(|| {
-            "admission receipt present but could not be verified".to_owned()
-        }))
+        DeepSeekV4AdmissionLoad::Rejected(
+            last_reject.unwrap_or_else(|| {
+                "admission receipt present but could not be verified".to_owned()
+            }),
+        )
     }
 }
 
@@ -422,7 +424,9 @@ fn load_admission_receipt_file(
         .as_object()
         .ok_or_else(|| gravity("admission receipt root must be a JSON object"))?;
     if object.get("schema").and_then(Value::as_str) != Some(ADMISSION_TRUST_SCHEMA) {
-        return Err(gravity("admission receipt schema is not admission_trust.v1"));
+        return Err(gravity(
+            "admission receipt schema is not admission_trust.v1",
+        ));
     }
     let manifest_seal = object
         .get("manifest_seal_sha256")
@@ -508,7 +512,10 @@ fn load_admission_receipt_file(
             "admission receipt table digest mismatch: recorded={table_sha256} observed={observed_table}"
         )));
     }
-    let summed: u64 = chunks.values().map(|c| c.bytes).fold(0u64, |a, b| a.saturating_add(b));
+    let summed: u64 = chunks
+        .values()
+        .map(|c| c.bytes)
+        .fold(0u64, |a, b| a.saturating_add(b));
     if summed != total_bytes {
         return Err(gravity(
             "admission receipt total_bytes disagrees with the chunk table",
@@ -547,12 +554,10 @@ pub fn seal_admission_trust_at(
     let hash_wall = Instant::now();
     let identities = hash_and_identify_chunks(&receipt_root, specs, threads)?;
     let hash_wall_ms = hash_wall.elapsed().as_millis();
-    let total_bytes = identities
-        .values()
-        .try_fold(0u64, |acc, chunk| {
-            acc.checked_add(chunk.bytes)
-                .ok_or_else(|| gravity("admission seal total byte count overflow"))
-        })?;
+    let total_bytes = identities.values().try_fold(0u64, |acc, chunk| {
+        acc.checked_add(chunk.bytes)
+            .ok_or_else(|| gravity("admission seal total byte count overflow"))
+    })?;
     let table_sha256 = sha256_hex(&canonical_json(&table_json(&identities)));
     let sealed_at_unix_ms = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -586,6 +591,10 @@ pub fn seal_admission_trust_at(
         content_addressed_chunk_sha256: content_addressed_chunk_sha256.to_owned(),
         manifest_seal_sha256: manifest_seal_sha256.to_owned(),
         verifier_version: verifier_version.to_owned(),
+        identities,
+        index_path: None,
+        index_bytes: None,
+        index_wall_ms: None,
     })
 }
 
@@ -595,8 +604,7 @@ fn hash_and_identify_chunks(
     threads: usize,
 ) -> Result<BTreeMap<String, DeepSeekV4ChunkFileIdentity>> {
     let errors: Mutex<Vec<Error>> = Mutex::new(Vec::new());
-    let rows: Mutex<Vec<DeepSeekV4ChunkFileIdentity>> =
-        Mutex::new(Vec::with_capacity(specs.len()));
+    let rows: Mutex<Vec<DeepSeekV4ChunkFileIdentity>> = Mutex::new(Vec::with_capacity(specs.len()));
     let chunk_size = (specs.len() + threads - 1) / threads;
     std::thread::scope(|scope| {
         let errors = &errors;
@@ -703,12 +711,18 @@ fn publish_receipt(root: &Path, manifest_seal: &str, receipt: &Value) -> Result<
 }
 
 fn write_receipt_atomic(path: &Path, receipt: &Value) -> Result<PathBuf> {
-    let parent = path.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or(Path::new("."));
+    let parent = path
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
     let name = path
         .file_name()
         .and_then(|n| n.to_str())
         .ok_or_else(|| gravity("admission receipt path must have a UTF-8 file name"))?;
-    let temporary = parent.join(format!(".{name}.{}.admission-trust.tmp", std::process::id()));
+    let temporary = parent.join(format!(
+        ".{name}.{}.admission-trust.tmp",
+        std::process::id()
+    ));
     let bytes = serde_json::to_vec_pretty(receipt)
         .map_err(|error| gravity(format!("cannot encode admission receipt: {error}")))?;
     let mut file = OpenOptions::new()

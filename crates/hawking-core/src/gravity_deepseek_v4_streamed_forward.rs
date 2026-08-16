@@ -30,8 +30,8 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::gravity_deepseek_v4::{
-    DeepSeekV4ChunkVerificationStats, DeepSeekV4FullStreamReader, NativeScalePairKind,
-    PINNED_REPOSITORY, PINNED_REVISION,
+    DeepSeekV4ChunkVerificationStats, DeepSeekV4FullStreamReader, DeepSeekV4VerifyMode,
+    NativeScalePairKind, PINNED_REPOSITORY, PINNED_REVISION,
 };
 use crate::gravity_deepseek_v4_act_quant::{
     act_quant_bf16_ue8m0, decode_e4m3fn, decode_e8m0fnu, fp8_e4m3fn_ue8m0_matvec, ACT_QUANT_BLOCK,
@@ -523,11 +523,51 @@ impl Drop for SealedAdmissionRoot {
     }
 }
 
+impl SealedAdmissionRoot {
+    /// Durable artifact, no ephemeral view. Used when the mmap index admits
+    /// the source tree directly.
+    pub fn from_artifact_index(path: impl Into<PathBuf>) -> Self {
+        let path = path.into();
+        Self {
+            path: path.clone(),
+            source_path: path,
+            view: "artifact_index".to_owned(),
+            ephemeral: None,
+        }
+    }
+}
+
+/// Open the sealed stream. Prefers a valid mmap artifact index on the durable
+/// root (skips the clone-view of 69k chunk files). Missing/stale/corrupt
+/// index falls back to [`prepare_sealed_admission_root`] + JSON admit.
+pub fn open_admitted_dsv4f_reader(
+    source: impl AsRef<Path>,
+) -> Result<(DeepSeekV4FullStreamReader, SealedAdmissionRoot)> {
+    crate::startup_timing::time_ms_result("open_admitted_reader", || {
+        let source = source.as_ref();
+        let mode = DeepSeekV4VerifyMode::from_env()?;
+        if let Some(reader) =
+            DeepSeekV4FullStreamReader::try_admit_from_artifact_index(source, mode)?
+        {
+            return Ok((reader, SealedAdmissionRoot::from_artifact_index(source)));
+        }
+        let admission = prepare_sealed_admission_root(source)?;
+        let reader = DeepSeekV4FullStreamReader::admit(&admission.path)?;
+        Ok((reader, admission))
+    })
+}
+
 /// Open the sealed stream, or a same-inode hardlink view whose
 /// `stream-ranges.jsonl` is exactly the sealed prefix bound by the restart
 /// receipt. Required because a later append doubled the on-disk journal
 /// (139674 = 2 × 69837) and broke `DeepSeekV4FullStreamReader::admit`.
 pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedAdmissionRoot> {
+    crate::startup_timing::time_ms_result("prepare_admission_root", || {
+        prepare_sealed_admission_root_inner(source)
+    })
+}
+
+fn prepare_sealed_admission_root_inner(source: impl AsRef<Path>) -> Result<SealedAdmissionRoot> {
     let source = source.as_ref();
     if !artifact_looks_sealed(source) {
         return Err(gravity(format!(
@@ -554,12 +594,18 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
 
     let journal_path = source.join("stream-journal.json");
     let ranges_path = source.join("stream-ranges.jsonl");
-    if sha256_file(&journal_path)? != expected_journal {
-        return Err(gravity(
-            "stream-journal.json no longer matches the sealed restart receipt",
-        ));
-    }
-    let on_disk_ranges = sha256_file(&ranges_path)?;
+    crate::startup_timing::time_ms_result("prepare_journal_hash", || {
+        if sha256_file(&journal_path)? != expected_journal {
+            Err(gravity(
+                "stream-journal.json no longer matches the sealed restart receipt",
+            ))
+        } else {
+            Ok(())
+        }
+    })?;
+    let on_disk_ranges = crate::startup_timing::time_ms_result("prepare_ranges_full_hash", || {
+        sha256_file(&ranges_path)
+    })?;
     if on_disk_ranges == expected_ranges {
         return Ok(SealedAdmissionRoot {
             path: source.to_path_buf(),
@@ -569,7 +615,10 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
         });
     }
 
-    let (prefix_sha, prefix_lines) = sha256_first_lines(&ranges_path, range_count)?;
+    let (prefix_sha, prefix_lines) =
+        crate::startup_timing::time_ms_result("prepare_ranges_prefix_hash", || {
+            sha256_first_lines(&ranges_path, range_count)
+        })?;
     if prefix_sha != expected_ranges {
         return Err(gravity(format!(
             "stream-ranges.jsonl drifted from the sealed restart receipt (on-disk {on_disk_ranges}, prefix({prefix_lines}) {prefix_sha}, sealed {expected_ranges})"
@@ -585,11 +634,13 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
             .unwrap_or(0)
     ));
     fs::create_dir_all(&view_root)?;
-    let result = (|| -> Result<()> {
-        clone_or_link_file(
-            &source.join("manifest.json"),
-            &view_root.join("manifest.json"),
-        )?;
+    let result = crate::startup_timing::time_ms_result("prepare_clone_view", || -> Result<()> {
+        crate::startup_timing::time_ms_result("prepare_clone_manifest", || {
+            clone_or_link_file(
+                &source.join("manifest.json"),
+                &view_root.join("manifest.json"),
+            )
+        })?;
         clone_or_link_file(
             &source.join("restart-receipt.json"),
             &view_root.join("restart-receipt.json"),
@@ -598,16 +649,24 @@ pub fn prepare_sealed_admission_root(source: impl AsRef<Path>) -> Result<SealedA
             &source.join("stream-journal.json"),
             &view_root.join("stream-journal.json"),
         )?;
-        write_first_lines(
-            &ranges_path,
-            &view_root.join("stream-ranges.jsonl"),
-            range_count,
-        )?;
-        clone_or_link_tree(&source.join("metadata"), &view_root.join("metadata"))?;
-        clone_or_link_tree(&source.join("chunks"), &view_root.join("chunks"))?;
-        copy_admission_receipt_into_view(source, &view_root)?;
+        crate::startup_timing::time_ms_result("prepare_write_ranges_prefix", || {
+            write_first_lines(
+                &ranges_path,
+                &view_root.join("stream-ranges.jsonl"),
+                range_count,
+            )
+        })?;
+        crate::startup_timing::time_ms_result("prepare_clone_metadata", || {
+            clone_or_link_tree(&source.join("metadata"), &view_root.join("metadata"))
+        })?;
+        crate::startup_timing::time_ms_result("prepare_clone_chunks", || {
+            clone_or_link_tree(&source.join("chunks"), &view_root.join("chunks"))
+        })?;
+        crate::startup_timing::time_ms_result("prepare_copy_admission_receipt", || {
+            copy_admission_receipt_into_view(source, &view_root)
+        })?;
         Ok(())
-    })();
+    });
     if let Err(error) = result {
         let _ = fs::remove_dir_all(&view_root);
         return Err(error);
@@ -870,9 +929,7 @@ pub fn execute_one_layer_with_x(
     let selected_expert_ids = moe
         .selected_ids
         .into_iter()
-        .map(|id| {
-            u32::try_from(id).map_err(|_| gravity(format!("expert id {id} exceeds u32")))
-        })
+        .map(|id| u32::try_from(id).map_err(|_| gravity(format!("expert id {id} exceeds u32"))))
         .collect::<Result<Vec<_>>>()?;
     Ok(StreamedLayerCapture {
         next_hc_bf16: moe.next_hc,
@@ -1131,7 +1188,10 @@ fn execute_one_layer(
     profile: &mut OperatorProfile,
     metal: Option<&mut StreamedNativeSession>,
 ) -> Result<Vec<u16>> {
-    Ok(execute_one_layer_with_x(reader, layer, hc_in, token_id, ledger, profile, metal)?.next_hc_bf16)
+    Ok(
+        execute_one_layer_with_x(reader, layer, hc_in, token_id, ledger, profile, metal)?
+            .next_hc_bf16,
+    )
 }
 
 fn execute_attention(
@@ -2562,10 +2622,17 @@ mod tests {
         assert_eq!(captured.normalized_route_weights.len(), ACTIVATED_EXPERTS);
         assert_eq!(captured.h_post_ffn_norm.len(), HIDDEN_SIZE);
         assert!(captured.h_post_ffn_norm.iter().all(|v| v.is_finite()));
-        assert!(captured.normalized_route_weights.iter().all(|v| v.is_finite()));
+        assert!(captured
+            .normalized_route_weights
+            .iter()
+            .all(|v| v.is_finite()));
         let unique: std::collections::BTreeSet<_> =
             captured.selected_expert_ids.iter().copied().collect();
         assert_eq!(unique.len(), ACTIVATED_EXPERTS);
-        assert!(ledger.live.is_empty(), "capture hook leaked {:?}", ledger.live.keys().collect::<Vec<_>>());
+        assert!(
+            ledger.live.is_empty(),
+            "capture hook leaked {:?}",
+            ledger.live.keys().collect::<Vec<_>>()
+        );
     }
 }

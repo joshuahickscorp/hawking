@@ -73,6 +73,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             "hash_wall_ms": seal.hash_wall_ms,
             "seal_wall_ms": seal.wall_ms,
         },
+        "artifact_index": {
+            "path": seal.index_path,
+            "bytes": seal.index_bytes,
+            "wall_ms": seal.index_wall_ms,
+        },
         "reader_stats_after_seal": {
             "hash_invocations": stats.hash_invocations,
             "bytes_hashed": stats.bytes_hashed,
@@ -98,7 +103,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         eprintln!("wrote {}", out.display());
     }
     eprintln!(
-        "status=PASS_ADMISSION_TRUST_SEAL receipt={} chunks={} bytes={} threads={} hash_wall_ms={} seal_wall_ms={} example_wall_ms={} digest={digest}",
+        "status=PASS_ADMISSION_TRUST_SEAL receipt={} chunks={} bytes={} threads={} hash_wall_ms={} seal_wall_ms={} example_wall_ms={} index={} index_bytes={} index_wall_ms={} digest={digest}",
         seal.path.display(),
         seal.chunk_count,
         seal.total_bytes,
@@ -106,6 +111,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         seal.hash_wall_ms,
         seal.wall_ms,
         wall.elapsed().as_millis(),
+        seal.index_path.as_ref().map(|p| p.display().to_string()).unwrap_or_else(|| "none".into()),
+        seal.index_bytes.unwrap_or(0),
+        seal.index_wall_ms.unwrap_or(0),
     );
     Ok(())
 }

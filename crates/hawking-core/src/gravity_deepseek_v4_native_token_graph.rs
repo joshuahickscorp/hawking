@@ -12,6 +12,7 @@
 
 use std::mem::size_of;
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
 
 use serde::Serialize;
@@ -45,7 +46,7 @@ use crate::gravity_deepseek_v4_layer_source_anchors::{
 };
 use crate::gravity_deepseek_v4_runtime_spine::DSV4F_VOCAB_SIZE;
 use crate::gravity_deepseek_v4_streamed_forward::{
-    peak_rss_bytes, prepare_sealed_admission_root, ResidentLedger, DECLARED_PEAK_RSS_BOUND_BYTES,
+    open_admitted_dsv4f_reader, peak_rss_bytes, ResidentLedger, DECLARED_PEAK_RSS_BOUND_BYTES,
     DECLARED_WEIGHT_RESIDENT_BOUND_BYTES, SCHEDULE_STREAMED_DECODE_PEAK_BYTES,
 };
 use crate::{Error, Result};
@@ -241,6 +242,7 @@ impl NativeTokenGraphReport {
             "wall_ms": self.wall_ms,
             "init_ms": self.init_ms,
             "body_ms": self.body_ms,
+            "startup_timing": crate::startup_timing::snapshot().to_json(),
             "chunk_verification": {
                 "hash_invocations": self.chunk_verification.hash_invocations,
                 "cache_hits": self.chunk_verification.cache_hits,
@@ -250,6 +252,7 @@ impl NativeTokenGraphReport {
                 "admission_trust_fallbacks": self.chunk_verification.admission_trust_fallbacks,
                 "verify_ns": self.chunk_verification.verify_ns,
                 "admission_receipt_loaded": self.chunk_verification.admission_receipt_loaded,
+                "artifact_index_loaded": self.chunk_verification.artifact_index_loaded,
             },
         })
     }
@@ -389,6 +392,8 @@ fn hash_ids_from_tid2eid(
 mod macos {
     use super::*;
     use crate::metal::{CommandBatch, MetalContext};
+
+    static FIRST_LAYER_BIND_TIMED: AtomicBool = AtomicBool::new(false);
 
     #[repr(C)]
     #[derive(Clone, Copy)]
@@ -883,9 +888,10 @@ mod macos {
                 "max_layer {max_layer} is outside the 0..42 base body"
             )));
         }
-        let admission = prepare_sealed_admission_root(artifact)?;
-        let reader = DeepSeekV4FullStreamReader::admit(&admission.path)?;
-        let anchors = verify_deepseek_v4_layer_source_anchors(&reader)?;
+        let (reader, admission) = open_admitted_dsv4f_reader(artifact)?;
+        let anchors = crate::startup_timing::time_ms_result("layer_source_anchors", || {
+            verify_deepseek_v4_layer_source_anchors(&reader)
+        })?;
         if anchors.identity().repository != PINNED_REPOSITORY
             || anchors.identity().revision != PINNED_REVISION
         {
@@ -895,7 +901,8 @@ mod macos {
         }
 
         let mut ledger = ResidentLedger::new(DECLARED_WEIGHT_RESIDENT_BOUND_BYTES);
-        let mut graph = Graph::new()?;
+        let mut graph =
+            crate::startup_timing::time_ms_result("metal_device_library_pipelines", Graph::new)?;
         let init_ms = wall.elapsed().as_millis();
         let body = Instant::now();
         let mut peak_rss = peak_rss_bytes();
@@ -1063,7 +1070,16 @@ mod macos {
             (kv_norm.name.clone(), HEAD_DIM * size_of::<u16>()),
             (sink.name.clone(), NUM_HEADS * size_of::<f32>()),
         ];
-        let blobs = par_read_full(reader, &jobs)?;
+        let blobs = if FIRST_LAYER_BIND_TIMED
+            .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
+            .is_ok()
+        {
+            crate::startup_timing::time_ms_result("first_layer_weight_bind", || {
+                par_read_full(reader, &jobs)
+            })?
+        } else {
+            par_read_full(reader, &jobs)?
+        };
         let hc_fn = decode_f32_le(&blobs[0], &mhc.fn_tensor.name)?;
         let hc_base = decode_f32_le(&blobs[1], &mhc.base_tensor.name)?;
         let hc_scale = decode_f32_le(&blobs[2], &mhc.scale_tensor.name)?;
