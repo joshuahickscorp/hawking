@@ -199,6 +199,21 @@
         "correctness": "hc_sha c94da765... preserved every rep, logit 16.7818546295166 (delta 0.0144), 0 fallbacks",
         "no_structural_blocker": "no attention CB exceeds 20 ms",
         "next": "wo_a 0.67-1.08 ms and wo_b 0.64-1.01 ms per layer (29-44 ms/token), then wq_a/wkv on 1024/512-thread grids. Still ~9x the 15 ms GPU-body budget. Occupancy plus convert+einsum, not bandwidth."
+      },
+      "admission_identity": {
+        "branch": "grok/dsv-admission-identity-20260816-003824 (7a634e2d) - HELD, skews with the in-flight dsv-integrate-graph",
+        "status": "PARTIAL - real work removed, NO wall win",
+        "path_identity_parallel_sum_ms": {
+          "before_median": 983,
+          "after_median": 343,
+          "factor": 2.9
+        },
+        "wall_effect": "NONE. Same-window A1 1231 ms vs B1 1303 ms. The 2.9x reduction produced zero whole-token improvement.",
+        "why": "The path_resolve/verify tax was ALREADY OVERLAPPED - a parallel sum across threads, never on the critical path. My contract hypothesised it was a wall; that hypothesis is REFUTED.",
+        "residual_finding": "Almost all remaining tensor_lookup calls are the init anchor walk (verify_deepseek_v4_layer_source_anchors formats every base-layer name), not per-token work. Body remainder ~2.2-4.9 ms. HashMap did not beat BTreeMap in this dirty window.",
+        "correctness": "bit-identical hc_sha c94da765, 0 fallbacks, 0 hash, drift 0.0144",
+        "lane_honesty": "Explicitly warned against comparing its 1303 ms B median to the host-wall 1038 ms authority because the box was dirtier - correct discipline.",
+        "next": "host.expert_slab_io again: 477.9 ms this window vs 415.1 ms host-wall authority"
       }
     },
     "dsv4f_density_frontier": {
@@ -446,8 +461,9 @@
       "information_gain": 250000000,
       "transfer_value": 300000000,
       "experiment_cost": 1.0,
-      "status": "running",
-      "note": "SHA already went to 0 on this path, proving the pattern works. Same class killed 28s of startup and 48x'd a repack previously."
+      "status": "retained_negative_held",
+      "note": "SHA already went to 0 on this path, proving the pattern works. Same class killed 28s of startup and 48x'd a repack previously.",
+      "tier1": "bit-identical, removes real work, but NO wall win - the tax was already overlapped. Held from merge: skews with in-flight dsv-integrate-graph."
     },
     {
       "id": "q80-decode-throughput",
@@ -574,7 +590,8 @@
     "fits with rows < fitted dimension are UNDERDETERMINED and their scores meaningless",
     "never calibrate on a degraded baseline or on synthetic/Gaussian activations",
     "immutable-identity recomputation per token has been the real latency three times",
-    "DSV4F attention: collapsing 17 dispatches into one serial encoder is bit-identical and reduces encoders 731->43 but does NOT reduce attention GPU time. Encoder gaps are not the attention wall."
+    "DSV4F attention: collapsing 17 dispatches into one serial encoder is bit-identical and reduces encoders 731->43 but does NOT reduce attention GPU time. Encoder gaps are not the attention wall.",
+    "DSV4F path_resolve/verify identity tax is NOT on the critical path. Reducing it 2.9x (983->343 ms parallel-sum) produced ZERO whole-token improvement, because a parallel sum across threads is not token latency. Do not attack it again for wall time."
   ],
   "saturation": {
     "measured": "2026-08-16 after wave 2",
@@ -605,5 +622,10 @@
   },
   "machine_truth": {
     "note": "macOS `top` PhysMem 'used' counts inactive/cached pages and is MISLEADING. Verified 2026-08-16: top said 93G used / 2.5G unused while memory_pressure said 90% free, swap 0.19 MB of 1024 MB, pageouts 1709. Real availability = (pages_free + pages_inactive) * 16384 ~= 56 GiB. Use memory_pressure and vm_stat, never top, to decide whether to launch a memory-heavy lane."
+  },
+  "specialization_evidence": {
+    "note": "Direct confirmation that per-stage wins need not appear in the token, which is why joint-token-ns exists.",
+    "case": "dsv-admission-identity cut its target metric 2.9x and moved the whole token by nothing measurable. The metric was a thread-summed quantity off the critical path.",
+    "rule": "A lane's win counts only when it appears in the complete token. Parallel sums, isolated microbenches and organ-level products are not token latency."
   }
 }
