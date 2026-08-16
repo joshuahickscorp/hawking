@@ -59,9 +59,8 @@ kernel void qwen80_attention_qk_norm_rope_cache(
     // The bounded Qwen80 contract is intentionally exact; accepting a nearby
     // shape here would turn this into a generic attention kernel and weaken
     // the source-bound parity probe.
-    if (head >= n_heads || n_heads != 16u || n_kv_heads != 2u ||
-        head_dim != 256u || rotary_dim != 64u || group_size != 128u ||
-        rope_theta != 5000000.0f || rms_epsilon != 1.0e-6f) {
+    if (head >= n_heads || group_size != 128u ||
+        !gk_gqa_geometry_ok(n_heads, n_kv_heads, head_dim, rotary_dim, rope_theta, rms_epsilon)) {
         return;
     }
 
@@ -147,7 +146,7 @@ kernel void qwen80_attention_apply_sigmoid_gate(
     uint index                               [[thread_position_in_grid]])
 {
     if (index >= elements) return;
-    if (head_dim != 256u || elements != 16u * head_dim) return;
+    if (head_dim != 256u || (elements != 16u * head_dim && elements != 24u * head_dim)) return;
     const uint head = index / head_dim;
     const uint dimension = index - head * head_dim;
     const uint gate_offset = head * (2u * head_dim) + head_dim + dimension;

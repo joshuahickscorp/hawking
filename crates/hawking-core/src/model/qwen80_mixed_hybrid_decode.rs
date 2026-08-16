@@ -569,7 +569,7 @@ impl MetalMixedAccel {
         match self.weights.get(name).expect("uploaded") {
             GpuWeight::Binary(body) => {
                 tcb.dispatch_threads(
-                    "q80_binary_group_matvec",
+                    crate::decode_family::MATVEC_BINARY,
                     (body.rows, 1, 1),
                     (256, 1, 1),
                     |enc| encode_binary(enc, body, &input_buf, &output_buf, 0),
@@ -578,7 +578,7 @@ impl MetalMixedAccel {
             }
             GpuWeight::Residual(body) => {
                 tcb.dispatch_threads(
-                    "q80_binary_group_matvec",
+                    crate::decode_family::MATVEC_BINARY,
                     (body.binary.rows, 1, 1),
                     (256, 1, 1),
                     |enc| encode_binary(enc, &body.binary, &input_buf, &output_buf, 0),
@@ -597,7 +597,7 @@ impl MetalMixedAccel {
                     .context
                     .new_buffer_checked(body.right_rows as usize * 4)?;
                 tcb.dispatch_threads(
-                    "q80_hgravs01_factor_matvec",
+                    crate::decode_family::MATVEC_HGRAVS,
                     (body.right_rows, 1, 1),
                     (256, 1, 1),
                     |enc| {
@@ -618,7 +618,7 @@ impl MetalMixedAccel {
                     },
                 )?;
                 tcb.dispatch_threads(
-                    "q80_hgravs01_factor_matvec",
+                    crate::decode_family::MATVEC_HGRAVS,
                     (body.left_rows, 1, 1),
                     (256, 1, 1),
                     |enc| {
@@ -643,7 +643,7 @@ impl MetalMixedAccel {
             }
             GpuWeight::Uniform(body) => {
                 tcb.dispatch_threads(
-                    "q80_hgravs01_factor_matvec",
+                    crate::decode_family::MATVEC_HGRAVS,
                     (body.rows, 1, 1),
                     (256, 1, 1),
                     |enc| {
@@ -773,13 +773,13 @@ impl MetalMixedAccel {
                 .ok_or_else(|| mixed_error("expert missing after ensure"))?;
             let mid_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
             tcb.dispatch_threads(
-                "q80_binary_group_matvec",
+                crate::decode_family::MATVEC_BINARY,
                 (trip.gate.rows, 1, 1),
                 (256, 1, 1),
                 |enc| encode_binary(enc, &trip.gate, &self.wave.input, &self.wave.gate, mid_off),
             )?;
             tcb.dispatch_threads(
-                "q80_binary_group_matvec",
+                crate::decode_family::MATVEC_BINARY,
                 (trip.up.binary.rows, 1, 1),
                 (256, 1, 1),
                 |enc| {
@@ -841,7 +841,7 @@ impl MetalMixedAccel {
             let act_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
             let mid_off = (slot * Q80_HGRAVS_RANK * 4) as u64;
             tcb.dispatch_threads(
-                "q80_hgravs01_factor_matvec",
+                crate::decode_family::MATVEC_HGRAVS,
                 (trip.down.right_rows, 1, 1),
                 (256, 1, 1),
                 |enc| {
@@ -864,7 +864,7 @@ impl MetalMixedAccel {
             if fused {
                 let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
                 tcb.dispatch_threads(
-                    "q80_hgravs01_factor_matvec",
+                    crate::decode_family::MATVEC_HGRAVS,
                     (trip.down.left_rows, 1, 1),
                     (256, 1, 1),
                     |enc| {
@@ -908,7 +908,7 @@ impl MetalMixedAccel {
                 let mid_off = (slot * Q80_HGRAVS_RANK * 4) as u64;
                 let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
                 tcb.dispatch_threads(
-                    "q80_hgravs01_factor_matvec",
+                    crate::decode_family::MATVEC_HGRAVS,
                     (trip.down.left_rows, 1, 1),
                     (256, 1, 1),
                     |enc| {

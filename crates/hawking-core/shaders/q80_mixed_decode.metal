@@ -38,42 +38,8 @@ static inline float q80_binary_group_serial_row(
     uint group_size,
     uint groups_per_row)
 {
-    float sum = 0.0f;
-    const uint row_base = row * cols;
-    const uint scale_base = row * groups_per_row;
-    for (uint group = 0; group < groups_per_row; ++group) {
-        const uint group_start = group * group_size;
-        const uint group_end = min(group_start + group_size, cols);
-        const float scale = float(scales[scale_base + group]);
-        uint col = group_start;
-        while (col < group_end && ((row_base + col) & 7u) != 0u) {
-            const uint flat = row_base + col;
-            const uchar byte = signs[flat >> 3u];
-            const bool positive = ((byte >> (flat & 7u)) & 1u) != 0u;
-            sum += (positive ? scale : -scale) * input[col];
-            col += 1u;
-        }
-        while (col + 8u <= group_end) {
-            const uchar byte = signs[(row_base + col) >> 3u];
-            sum += ((byte & 0x01u) ? scale : -scale) * input[col];
-            sum += ((byte & 0x02u) ? scale : -scale) * input[col + 1u];
-            sum += ((byte & 0x04u) ? scale : -scale) * input[col + 2u];
-            sum += ((byte & 0x08u) ? scale : -scale) * input[col + 3u];
-            sum += ((byte & 0x10u) ? scale : -scale) * input[col + 4u];
-            sum += ((byte & 0x20u) ? scale : -scale) * input[col + 5u];
-            sum += ((byte & 0x40u) ? scale : -scale) * input[col + 6u];
-            sum += ((byte & 0x80u) ? scale : -scale) * input[col + 7u];
-            col += 8u;
-        }
-        while (col < group_end) {
-            const uint flat = row_base + col;
-            const uchar byte = signs[flat >> 3u];
-            const bool positive = ((byte >> (flat & 7u)) & 1u) != 0u;
-            sum += (positive ? scale : -scale) * input[col];
-            col += 1u;
-        }
-    }
-    return sum;
+    return gk_binary_group_serial_row(
+        signs, scales, input, row, cols, group_size, groups_per_row);
 }
 
 // Grid: (rows, 1, 1), threadgroup: (256, 1, 1).
@@ -247,15 +213,7 @@ static inline uint q80_uniform_extract(
     uint element,
     uint bits)
 {
-    const uint bit0 = element * bits;
-    uint value = 0u;
-    for (uint b = 0u; b < bits; ++b) {
-        const uint bit_index = bit0 + b;
-        const uchar byte = codes[bit_index >> 3u];
-        const uint bit = (byte >> (bit_index & 7u)) & 1u;
-        value |= (bit << b);
-    }
-    return value;
+    return gk_uniform_extract(codes, element, bits);
 }
 
 static inline float q80_uniform_value(
@@ -266,10 +224,7 @@ static inline float q80_uniform_value(
     uint bits,
     uint bound)
 {
-    const uint group = element / group_size;
-    const uint code = q80_uniform_extract(codes, element, bits);
-    const int q = int(code) - int(bound);
-    return float(q) * float(scales[group]);
+    return gk_uniform_value(codes, scales, element, group_size, bits, bound);
 }
 
 // Serial left-to-right f32 association. Grid: (rows, 1, 1), TG: (256, 1, 1).
@@ -310,14 +265,7 @@ static inline uint q80_uniform_extract_wide(
     uint element,
     uint bits)
 {
-    const uint bit0 = element * bits;
-    const uint byte0 = bit0 >> 3u;
-    const uint shift = bit0 & 7u;
-    uint packed = uint(codes[byte0]);
-    if (shift + bits > 8u) {
-        packed |= uint(codes[byte0 + 1u]) << 8u;
-    }
-    return (packed >> shift) & ((1u << bits) - 1u);
+    return gk_uniform_extract_wide(codes, element, bits);
 }
 
 static inline float q80_uniform_value_wide(
@@ -328,10 +276,7 @@ static inline float q80_uniform_value_wide(
     uint bits,
     uint bound)
 {
-    const uint group = element / group_size;
-    const uint code = q80_uniform_extract_wide(codes, element, bits);
-    const int q = int(code) - int(bound);
-    return float(q) * float(scales[group]);
+    return gk_uniform_value_wide(codes, scales, element, group_size, bits, bound);
 }
 
 static inline float q80_binary_lane_term(
@@ -343,11 +288,8 @@ static inline float q80_binary_lane_term(
     uint col,
     uint group_size)
 {
-    const float scale = float(scales[scale_base + col / group_size]);
-    const uint flat = row_base + col;
-    const uchar byte = signs[flat >> 3u];
-    const bool positive = ((byte >> (flat & 7u)) & 1u) != 0u;
-    return (positive ? scale : -scale) * input[col];
+    return gk_binary_lane_term(
+        signs, scales, input, row_base, scale_base, col, group_size);
 }
 
 // Eight consecutive columns from one sign byte. Col must be 8-aligned and

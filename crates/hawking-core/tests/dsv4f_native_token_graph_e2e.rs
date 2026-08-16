@@ -8,14 +8,14 @@ use hawking_core::gravity_deepseek_v4_native_token_graph::{
     ORACLE_HC_BF16_SHA256,
 };
 use hawking_core::gravity_deepseek_v4_streamed_forward::discover_sealed_dsv4f_artifact;
-use hawking_core::metal::SHADER_DSV4F_NATIVE_TOKEN_GRAPH;
+use hawking_core::metal::SHADER_GK_FAMILY;
 
 #[test]
 fn native_graph_kernels_have_trace_names() {
     for kernel in NATIVE_TOKEN_GRAPH_KERNELS {
         assert!(
-            SHADER_DSV4F_NATIVE_TOKEN_GRAPH.contains(&format!("kernel void {kernel}(")),
-            "{kernel} missing from dsv4f_native_token_graph.metal"
+            SHADER_GK_FAMILY.contains(&format!("kernel void {kernel}(")),
+            "{kernel} missing from gk_family.metal"
         );
     }
 }

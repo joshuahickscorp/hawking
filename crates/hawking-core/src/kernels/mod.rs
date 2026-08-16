@@ -12786,9 +12786,9 @@ mod metal_dispatch {
         key_dim: usize,
         value_dim: usize,
     ) -> Result<()> {
-        if heads != 32 || key_dim != 128 || value_dim != 128 {
+        if !matches!(heads, 32 | 48) || key_dim != 128 || value_dim != 128 {
             return Err(Error::Kernel(format!(
-                "qwen_next_gated_delta_decode_single requires Qwen3-Next 32x128x128, got {heads}x{key_dim}x{value_dim}"
+                "qwen_next_gated_delta_decode_single requires Q80 32x128x128 or Qwen3.8 48x128x128, got {heads}x{key_dim}x{value_dim}"
             )));
         }
         tcb.dispatch_threads(
@@ -12831,9 +12831,9 @@ mod metal_dispatch {
         key_dim: usize,
         value_dim: usize,
     ) -> Result<()> {
-        if heads != 32 || key_dim != 128 || value_dim != 128 {
+        if !matches!(heads, 32 | 48) || key_dim != 128 || value_dim != 128 {
             return Err(Error::Kernel(format!(
-                "qwen_next_gated_delta_decode_single_at_state_offset requires Qwen3-Next 32x128x128, got {heads}x{key_dim}x{value_dim}"
+                "qwen_next_gated_delta_decode_single_at_state_offset requires Q80 32x128x128 or Qwen3.8 48x128x128, got {heads}x{key_dim}x{value_dim}"
             )));
         }
         let state_elements = heads
@@ -12943,14 +12943,13 @@ mod metal_dispatch {
         group_size: usize,
     ) -> Result<()> {
         const QWEN_NEXT_KEY_HEADS: usize = 16;
-        const QWEN_NEXT_VALUES_PER_KEY_HEAD: usize = 2;
         const QWEN_NEXT_GROUP_SIZE: usize = 128;
         if key_heads != QWEN_NEXT_KEY_HEADS
-            || values_per_key_head != QWEN_NEXT_VALUES_PER_KEY_HEAD
+            || !matches!(values_per_key_head, 2 | 3)
             || group_size != QWEN_NEXT_GROUP_SIZE
         {
             return Err(Error::Kernel(format!(
-                "qwen_next_ba_to_decay_beta requires 16 key heads, 2 value heads/key head, and group 128; got {key_heads}, {values_per_key_head}, {group_size}"
+                "qwen_next_ba_to_decay_beta requires 16 key heads, 2 (Q80) or 3 (Qwen3.8) value heads/key head, and group 128; got {key_heads}, {values_per_key_head}, {group_size}"
             )));
         }
         let value_heads = key_heads.checked_mul(values_per_key_head).ok_or_else(|| {
@@ -13085,13 +13084,12 @@ mod metal_dispatch {
         eps: f32,
     ) -> Result<()> {
         const KEY_HEADS: usize = 16;
-        const VALUES_PER_KEY_HEAD: usize = 2;
         const KEY_HEAD_DIM: usize = 128;
         const VALUE_HEAD_DIM: usize = 128;
         const CONV_KERNEL: usize = 4;
         const GROUP_SIZE: usize = 128;
         if key_heads != KEY_HEADS
-            || values_per_key_head != VALUES_PER_KEY_HEAD
+            || !matches!(values_per_key_head, 2 | 3)
             || key_head_dim != KEY_HEAD_DIM
             || value_head_dim != VALUE_HEAD_DIM
             || conv_kernel != CONV_KERNEL
@@ -13100,7 +13098,7 @@ mod metal_dispatch {
             || eps <= 0.0
         {
             return Err(Error::Kernel(format!(
-                "qwen_next_qkvz_rearrange_conv_l2 requires 16x2x128x128 kernel=4 group=128 and finite positive eps; got {key_heads}x{values_per_key_head}x{key_head_dim}x{value_head_dim} kernel={conv_kernel} group={group_size} eps={eps}"
+                "qwen_next_qkvz_rearrange_conv_l2 requires 16x{{2,3}}x128x128 kernel=4 group=128 and finite positive eps; got {key_heads}x{values_per_key_head}x{key_head_dim}x{value_head_dim} kernel={conv_kernel} group={group_size} eps={eps}"
             )));
         }
         let value_heads = key_heads
@@ -13214,17 +13212,16 @@ mod metal_dispatch {
         group_size: usize,
         eps: f32,
     ) -> Result<()> {
-        const HEADS: usize = 32;
         const VALUE_HEAD_DIM: usize = 128;
         const GROUP_SIZE: usize = 128;
-        if heads != HEADS
+        if !matches!(heads, 32 | 48)
             || value_head_dim != VALUE_HEAD_DIM
             || group_size != GROUP_SIZE
             || !eps.is_finite()
             || eps <= 0.0
         {
             return Err(Error::Kernel(format!(
-                "qwen_next_deltanet_gated_rmsnorm requires heads={HEADS}, value_dim={VALUE_HEAD_DIM}, group={GROUP_SIZE}, finite positive eps; got heads={heads}, value_dim={value_head_dim}, group={group_size}, eps={eps}"
+                "qwen_next_deltanet_gated_rmsnorm requires heads=32 (Q80) or 48 (Qwen3.8), value_dim={VALUE_HEAD_DIM}, group={GROUP_SIZE}, finite positive eps; got heads={heads}, value_dim={value_head_dim}, group={group_size}, eps={eps}"
             )));
         }
         let elements = heads
