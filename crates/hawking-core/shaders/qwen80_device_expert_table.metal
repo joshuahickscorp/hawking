@@ -326,6 +326,91 @@ kernel void qwen80_expert_table_uniform_q4_matvec_simdgroup(
     }
 }
 
+// Occupancy vecgroup: same grid as simdgroup, but each lane owns one code
+// byte (two weights) of the 64-wide group so the scale is loaded once.
+// Grid: (experts_per_token * ceil(max_rows / 8) * 256, 1, 1), TG (256,1,1).
+kernel void qwen80_expert_table_uniform_q4_matvec_vecgroup(
+    const device uint *route_ids [[buffer(0)]],
+    const device Qwen80DeviceExpertTriplet *table [[buffer(1)]],
+    const device float *input [[buffer(2)]],
+    device float *output [[buffer(3)]],
+    constant Qwen80DeviceExpertMatvecParams &p [[buffer(4)]],
+    uint group_id [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id [[simdgroup_index_in_threadgroup]])
+{
+    if (p.max_rows == 0u || p.experts_per_token == 0u) {
+        return;
+    }
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint groups_per_route = (p.max_rows + kSimdgroupsPerThreadgroup - 1u) /
+                                  kSimdgroupsPerThreadgroup;
+    if (groups_per_route == 0u) {
+        return;
+    }
+    const uint route = group_id / groups_per_route;
+    const uint group_in_route = group_id % groups_per_route;
+    if (route >= p.experts_per_token) {
+        return;
+    }
+    const uint expert = route_ids[route];
+    if (expert >= p.n_experts) {
+        return;
+    }
+    const device Qwen80DeviceExpertTriplet &entry = table[expert];
+    const device Qwen80DeviceExpertTensorRef *tensor =
+        qwen80_select_projection(entry, p.projection);
+    if (entry.ready_mask != QWEN80_EXPERT_TRIPLET_READY ||
+        entry.generation != p.generation ||
+        tensor->generation != p.generation ||
+        tensor->kind != QWEN80_EXPERT_KIND_UNIFORM_Q4 ||
+        tensor->primary == nullptr ||
+        tensor->secondary == nullptr ||
+        tensor->rows == 0u ||
+        tensor->cols == 0u ||
+        p.group_size != 64u) {
+        return;
+    }
+    const uint row = group_in_route * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= tensor->rows || row >= p.max_rows) {
+        return;
+    }
+
+    const device uchar *codes = tensor->primary;
+    const device half *scales =
+        reinterpret_cast<const device half *>(tensor->secondary);
+    const uint groups_per_row = (tensor->cols + 63u) / 64u;
+    const uint in_off = p.input_base_elems + route * p.input_stride_elems;
+    const uint out_off = p.output_base_elems + route * p.output_stride_elems;
+    const device float *x = input + in_off;
+    device float *y = output + out_off;
+    const uint row_group_base = row * groups_per_row;
+    const uint local0 = simd_lane << 1u;
+    const uint local1 = local0 + 1u;
+
+    float partial = 0.0f;
+    for (uint group = 0u; group < groups_per_row; ++group) {
+        const uint group_start = group * 64u;
+        const uint group_len = min(64u, tensor->cols - group_start);
+        if (local0 >= group_len) {
+            continue;
+        }
+        const uint group_base = row_group_base + group;
+        const float scale = float(scales[group_base]);
+        const uchar packed = codes[group_base * 32u + simd_lane];
+        const float q0 = float(int(packed & 0x0fu) - 8);
+        partial += q0 * scale * x[group_start + local0];
+        if (local1 < group_len) {
+            const float q1 = float(int(packed >> 4u) - 8);
+            partial += q1 * scale * x[group_start + local1];
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[row] = partial;
+    }
+}
+
 // Route-major SwiGLU: SiLU(gate) * up over top_k * intermediate elements.
 kernel void qwen80_expert_table_silu_mul(
     const device float *gate [[buffer(0)]],

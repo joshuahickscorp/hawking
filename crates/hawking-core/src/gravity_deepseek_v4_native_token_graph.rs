@@ -104,6 +104,7 @@ fn greedy_from_logits(logits: &[f32], vocab_offset: usize) -> (u32, f32) {
 pub const NATIVE_TOKEN_GRAPH_KERNELS: &[&str] = &[
     "dsv4f_pack_worklist",
     "dsv4f_worklist_fp4_matvec",
+    "dsv4f_worklist_fp4_matvec_simd",
     "dsv4f_worklist_swiglu",
     "dsv4f_worklist_combine",
 ];
@@ -137,6 +138,8 @@ const LEARNED_ROUTE_KERNEL: &str = "deepseek_v4_p6a_learned_bias_route_sqrtsoftp
 const SHARED_SWIGLU_KERNEL: &str = "deepseek_v4_p5b_swiglu_route_bf16_authority";
 const PACK_KERNEL: &str = "dsv4f_pack_worklist";
 const WORKLIST_FP4_KERNEL: &str = "dsv4f_worklist_fp4_matvec";
+const WORKLIST_FP4_SIMD_KERNEL: &str = "dsv4f_worklist_fp4_matvec_simd";
+const WORKLIST_FP4_SIMD_ROWS_PER_TG: u32 = 8;
 const WORKLIST_SWIGLU_KERNEL: &str = "dsv4f_worklist_swiglu";
 const WORKLIST_COMBINE_KERNEL: &str = "dsv4f_worklist_combine";
 const LM_HEAD_KERNEL: &str = "gemv_native_bf16_seq";
@@ -1798,9 +1801,18 @@ mod macos {
         act_is_per_slot: u32,
         tg: u32,
     ) -> Result<()> {
-        let grid = top_k * rows;
-        let tg = tg.min(rows.max(1));
-        batch.dispatch_threads(WORKLIST_FP4_KERNEL, (grid, 1, 1), (tg, 1, 1), |enc| {
+        let occupancy = crate::env_opt_out("HAWKING_DSV4F_FP4_OCCUPANCY");
+        let (kernel, grid, tg) = if occupancy {
+            let groups = rows.div_ceil(WORKLIST_FP4_SIMD_ROWS_PER_TG);
+            (
+                WORKLIST_FP4_SIMD_KERNEL,
+                top_k * groups * 256,
+                256u32,
+            )
+        } else {
+            (WORKLIST_FP4_KERNEL, top_k * rows, tg.min(rows.max(1)))
+        };
+        batch.dispatch_threads(kernel, (grid, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(worklist), 0);
             enc.set_buffer(1, Some(refs), 0);
             enc.set_buffer(2, Some(quant), 0);

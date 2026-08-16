@@ -1,0 +1,889 @@
+{
+  "correctness": {
+    "kernels": {
+      "bin_rowblock4": {
+        "max_abs_error": 1.811981201171875e-05,
+        "passed": true
+      },
+      "bin_serial": {
+        "max_abs_error": 4.76837158203125e-06,
+        "passed": true
+      },
+      "bin_simd": {
+        "max_abs_error": 1.811981201171875e-05,
+        "passed": true
+      },
+      "bin_simd_bytes": {
+        "max_abs_error": 1.6689300537109375e-05,
+        "passed": true
+      },
+      "bin_tg256": {
+        "max_abs_error": 1.621246337890625e-05,
+        "passed": true
+      },
+      "fp4_full_serial": {
+        "max_abs_error": 0.0,
+        "passed": true
+      },
+      "fp4_full_simd": {
+        "max_abs_error": 0.0,
+        "passed": true
+      },
+      "fp4_full_simd_r4": {
+        "max_abs_error": 0.0,
+        "passed": true
+      },
+      "fp4_reduced_serial": {
+        "max_abs_error": 0.0,
+        "passed": true
+      },
+      "fp4_reduced_simd": {
+        "max_abs_error": 0.0,
+        "passed": true
+      },
+      "fp4_reduced_simd_r4": {
+        "max_abs_error": 0.0,
+        "passed": true
+      },
+      "q4_serial": {
+        "max_abs_error": 3.337860107421875e-06,
+        "passed": true
+      },
+      "q4_simdgroup": {
+        "max_abs_error": 9.5367431640625e-06,
+        "passed": true
+      },
+      "q4_simdgroup_r4": {
+        "max_abs_error": 9.5367431640625e-06,
+        "passed": true
+      },
+      "q4_simdgroup_r8": {
+        "max_abs_error": 9.5367431640625e-06,
+        "passed": true
+      },
+      "q4_vecgroup": {
+        "max_abs_error": 1.049041748046875e-05,
+        "passed": true
+      },
+      "q4_vecgroup_r4": {
+        "max_abs_error": 1.049041748046875e-05,
+        "passed": true
+      },
+      "q4_vecgroup_r4_x": {
+        "max_abs_error": 1.049041748046875e-05,
+        "passed": true
+      },
+      "q4_vecgroup_x": {
+        "max_abs_error": 1.049041748046875e-05,
+        "passed": true
+      },
+      "q4_vecgroup_x64": {
+        "max_abs_error": 9.5367431640625e-06,
+        "passed": true
+      },
+      "q4_x64": {
+        "max_abs_error": 9.059906005859375e-06,
+        "passed": true
+      }
+    },
+    "tolerance_binary": 1.9999999494757503e-05,
+    "tolerance_fp4": 0.00019999999494757503,
+    "tolerance_q4": 1.9999999494757503e-05
+  },
+  "dense_weight_materialized": false,
+  "device_name": "Apple M3 Ultra",
+  "diagnosis": {
+    "arith_to_load": {
+      "binary_mac_per_packed_byte": 7.111111111111111,
+      "q4_mac_per_packed_byte": 1.8823529411764706
+    },
+    "bytes_per_thread_note": "serial Q4: 1088 packed bytes + the whole 8 KiB X vector per thread. Existing simdgroup kernels still call weight_at per column, reloading the group scale 64 times.",
+    "dsv4f_fp4_full_w1_serial": {
+      "arithmetic_to_load_mac_per_packed_byte": 1.8823529411764706,
+      "bytes_read_per_thread_packed": 2176.0,
+      "bytes_read_per_thread_x_if_reloaded": 16384.0,
+      "cols": 4096,
+      "decode_ops_per_weight_approx": 4,
+      "kernel": "dsv4f_fp4_matvec_split",
+      "limiter": "launch geometry / insufficient parallel work",
+      "occupancy_proxy_vs_control": 0.13333333333333333,
+      "rows": 2048,
+      "simdgroups_per_threadgroup": 8,
+      "threadgroups": 8,
+      "threads": 2048,
+      "threads_per_threadgroup": 256
+    },
+    "dsv4f_fp4_reduced_serial": {
+      "arithmetic_to_load_mac_per_packed_byte": 1.8823529411764706,
+      "bytes_read_per_thread_packed": 272.0,
+      "bytes_read_per_thread_x_if_reloaded": 2048.0,
+      "cols": 512,
+      "decode_ops_per_weight_approx": 4,
+      "kernel": "dsv4f_fp4_matvec_split",
+      "limiter": "launch geometry / insufficient parallel work",
+      "occupancy_proxy_vs_control": 0.016666666666666666,
+      "rows": 256,
+      "simdgroups_per_threadgroup": 8,
+      "threadgroups": 1,
+      "threads": 256,
+      "threads_per_threadgroup": 256
+    },
+    "limiter": "launch geometry / one-thread-per-row serialization. 512-row organs launch 2 threadgroups; the 256-row FP4 probe launches 1. The control launches 60. Register spill is not required to explain a 200-800x gap against a same-box 466-533 GB/s read-reduce.",
+    "q80_mixed_binary_serial": {
+      "arithmetic_to_load_mac_per_packed_byte": 7.111111111111111,
+      "bytes_read_per_thread_packed": 288.0,
+      "bytes_read_per_thread_x_if_reloaded": 8192.0,
+      "cols": 2048,
+      "decode_ops_per_weight_approx": 1,
+      "kernel": "q80_binary_group_matvec",
+      "limiter": "launch geometry / insufficient parallel work",
+      "occupancy_proxy_vs_control": 0.03333333333333333,
+      "rows": 512,
+      "simdgroups_per_threadgroup": 8,
+      "threadgroups": 2,
+      "threads": 512,
+      "threads_per_threadgroup": 256
+    },
+    "q80_q4_gate_serial": {
+      "arithmetic_to_load_mac_per_packed_byte": 1.8823529411764706,
+      "bytes_read_per_thread_packed": 1088.0,
+      "bytes_read_per_thread_x_if_reloaded": 8192.0,
+      "cols": 2048,
+      "decode_ops_per_weight_approx": 2,
+      "kernel": "qwen_uniform_q4_group64_matvec",
+      "limiter": "launch geometry / insufficient parallel work",
+      "occupancy_proxy_vs_control": 0.03333333333333333,
+      "rows": 512,
+      "simdgroups_per_threadgroup": 8,
+      "threadgroups": 2,
+      "threads": 512,
+      "threads_per_threadgroup": 256
+    }
+  },
+  "fallbacks": 0,
+  "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+  "lane": "matvec-occupancy-230x",
+  "measurement_label": "DIRTY_ENGINEERING",
+  "oracle": "artifact packed decode, not BF16 parent",
+  "paired": {
+    "dsv4f_fp4_full_w1": {
+      "A": "serial",
+      "A_frac_of_ceiling": 0.008833325404753976,
+      "A_gbps": 7.234493506493506,
+      "A_gpu_ns": [
+        616000,
+        553375,
+        632209
+      ],
+      "A_median_gpu_ns": 616000,
+      "B": "simd",
+      "B_frac_of_ceiling": 0.052785383273140835,
+      "B_gbps": 43.23122890070234,
+      "B_gpu_ns": [
+        102584,
+        103125,
+        103084
+      ],
+      "B_median_gpu_ns": 103084,
+      "bytes": 4456448,
+      "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    "dsv4f_fp4_reduced": {
+      "A": "serial",
+      "A_frac_of_ceiling": 0.0011431362288505146,
+      "A_gbps": 0.9362285714285714,
+      "A_gpu_ns": [
+        74125,
+        74375,
+        74541
+      ],
+      "A_median_gpu_ns": 74375,
+      "B": "simd",
+      "B_frac_of_ceiling": 0.007908907629837862,
+      "B_gbps": 6.477395348837209,
+      "B_gpu_ns": [
+        10875,
+        10416,
+        10750
+      ],
+      "B_median_gpu_ns": 10750,
+      "bytes": 69632,
+      "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    "q80_mixed_binary_gate": {
+      "A": "serial",
+      "A_frac_of_ceiling": 0.0030007326007326003,
+      "A_gbps": 2.4576,
+      "A_gpu_ns": [
+        60459,
+        59416,
+        60000
+      ],
+      "A_median_gpu_ns": 60000,
+      "B": "tg256",
+      "B_frac_of_ceiling": 0.026188211788211787,
+      "B_gbps": 21.448145454545454,
+      "B_gpu_ns": [
+        6791,
+        6959,
+        6875
+      ],
+      "B_median_gpu_ns": 6875,
+      "bytes": 147456,
+      "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+      "measurement_label": "DIRTY_ENGINEERING"
+    },
+    "q80_q4_gate": {
+      "A": "serial",
+      "A_frac_of_ceiling": 0.0032026653615823716,
+      "A_gbps": 2.6229829311359625,
+      "A_gpu_ns": [
+        217541,
+        209250,
+        212375
+      ],
+      "A_median_gpu_ns": 212375,
+      "B": "vecgroup_x64",
+      "B_frac_of_ceiling": 0.06160366417589495,
+      "B_gbps": 50.45340096005796,
+      "B_gpu_ns": [
+        11250,
+        11041,
+        10916
+      ],
+      "B_median_gpu_ns": 11041,
+      "bytes": 557056,
+      "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+      "measurement_label": "DIRTY_ENGINEERING"
+    }
+  },
+  "pipeline": {
+    "fp4_serial": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "fp4_winner": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "q4_serial": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    "q4_winner": {
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 32,
+      "thread_execution_width": 32
+    }
+  },
+  "projection": {
+    "at_100_gbps_ns": 8021606,
+    "claim_boundary": "isolated Q4 organ GPU time * 1440. Not a full token wall. Attention/shared/router/lm_head use the same component kernel.",
+    "distance_from_8ms_expert_budget": 1.98738,
+    "formula": "48 * 10 * 3 * organ_median",
+    "serial_ns_per_token": 305820000,
+    "winner_kernel": "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+    "winner_ns_per_token": 15899040
+  },
+  "reproduce": {
+    "control_conflict_gbps": 652.0526159305243,
+    "control_conflict_gpu_ns": [
+      1638750,
+      1529375,
+      1543791
+    ],
+    "control_sequential_gbps": 550.1354854188265,
+    "control_sequential_gpu_ns": [
+      1929834,
+      1829791,
+      1789250
+    ],
+    "dsv4f_fp4_full_w1_serial_gbps": 7.234493506493506,
+    "dsv4f_fp4_reduced_serial_gbps": 0.9362285714285714,
+    "gap_q4_vs_sequential_control": 209.73658611669794,
+    "note": "Same-box control vs packed kernels. DIRTY_ENGINEERING: other lanes may be running.",
+    "q80_mixed_binary_serial_gbps": 2.4576,
+    "q80_q4_gate_serial_gbps": 2.6229829311359625
+  },
+  "schema": "hawking.ascension.matvec_occupancy.v1",
+  "selection": {
+    "binary": {
+      "rowblock4": {
+        "bytes_read_per_thread_packed": 36.0,
+        "gbps": 4.775902834008098,
+        "gpu_ns": [
+          30500,
+          30875,
+          30916
+        ],
+        "kernel": "q80_binary_group_matvec_rowblock4",
+        "median_gpu_ns": 30875,
+        "note": "existing 4 rows/simdgroup",
+        "occupancy_proxy_vs_control": 0.26666666666666666,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 16,
+        "threads": 4096,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "serial": {
+        "bytes_read_per_thread_packed": 288.0,
+        "gbps": 2.4524906444906445,
+        "gpu_ns": [
+          60125,
+          59500,
+          60500
+        ],
+        "kernel": "q80_binary_group_matvec",
+        "median_gpu_ns": 60125,
+        "note": "shipped mixed-decode gate: one thread per row",
+        "occupancy_proxy_vs_control": 0.03333333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 2,
+        "threads": 512,
+        "threads_per_row": 1,
+        "threads_per_threadgroup": 256
+      },
+      "simd": {
+        "bytes_read_per_thread_packed": 9.0,
+        "gbps": 5.266285714285714,
+        "gpu_ns": [
+          28000,
+          28375,
+          27834
+        ],
+        "kernel": "q80_binary_group_matvec_simd",
+        "median_gpu_ns": 28000,
+        "note": "existing 1 row/simdgroup",
+        "occupancy_proxy_vs_control": 1.0666666666666667,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 64,
+        "threads": 16384,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "simd_bytes": {
+        "bytes_read_per_thread_packed": 9.0,
+        "gbps": 17.873454545454546,
+        "gpu_ns": [
+          8375,
+          8000,
+          8250
+        ],
+        "kernel": "q80_binary_group_matvec_simd_bytes",
+        "median_gpu_ns": 8250,
+        "note": "existing 8-weight byte unpack",
+        "occupancy_proxy_vs_control": 1.0666666666666667,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 64,
+        "threads": 16384,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "tg256": {
+        "bytes_read_per_thread_packed": 1.125,
+        "gbps": 21.065142857142856,
+        "gpu_ns": [
+          7000,
+          6875,
+          7209
+        ],
+        "kernel": "q80_binary_group_matvec_tg256",
+        "median_gpu_ns": 7000,
+        "note": "existing 256 threads/row",
+        "occupancy_proxy_vs_control": 8.533333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 32,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 512,
+        "threads": 131072,
+        "threads_per_row": 256,
+        "threads_per_threadgroup": 256
+      }
+    },
+    "fp4_full_w1": {
+      "serial": {
+        "bytes_read_per_thread_packed": 2176.0,
+        "gbps": 8.092833042170753,
+        "gpu_ns": [
+          562291,
+          548125,
+          550666
+        ],
+        "kernel": "dsv4f_fp4_matvec_split",
+        "median_gpu_ns": 550666,
+        "note": "isolated split kernel used by the 230x measurement",
+        "occupancy_proxy_vs_control": 0.13333333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 8,
+        "threads": 2048,
+        "threads_per_row": 1,
+        "threads_per_threadgroup": 256
+      },
+      "simd": {
+        "bytes_read_per_thread_packed": 68.0,
+        "gbps": 43.4072429041747,
+        "gpu_ns": [
+          103125,
+          102666,
+          102375
+        ],
+        "kernel": "dsv4f_fp4_matvec_split_simd",
+        "median_gpu_ns": 102666,
+        "note": "1 row/simdgroup, 32-wide FP4 block",
+        "occupancy_proxy_vs_control": 4.266666666666667,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 256,
+        "threads": 65536,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "simd_r4": {
+        "bytes_read_per_thread_packed": 272.0,
+        "gbps": 40.6206236498373,
+        "gpu_ns": [
+          110500,
+          109709,
+          109500
+        ],
+        "kernel": "dsv4f_fp4_matvec_split_simd_r4",
+        "median_gpu_ns": 109709,
+        "note": "4 rows/simdgroup, shared activations",
+        "occupancy_proxy_vs_control": 1.0666666666666667,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 64,
+        "threads": 16384,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      }
+    },
+    "fp4_reduced": {
+      "serial": {
+        "bytes_read_per_thread_packed": 272.0,
+        "gbps": 0.907257328990228,
+        "gpu_ns": [
+          89041,
+          74250,
+          76750
+        ],
+        "kernel": "dsv4f_fp4_matvec_split",
+        "median_gpu_ns": 76750,
+        "note": "isolated split kernel used by the 230x measurement",
+        "occupancy_proxy_vs_control": 0.016666666666666666,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 1,
+        "threads": 256,
+        "threads_per_row": 1,
+        "threads_per_threadgroup": 256
+      },
+      "simd": {
+        "bytes_read_per_thread_packed": 8.5,
+        "gbps": 6.477395348837209,
+        "gpu_ns": [
+          10750,
+          10959,
+          10459
+        ],
+        "kernel": "dsv4f_fp4_matvec_split_simd",
+        "median_gpu_ns": 10750,
+        "note": "1 row/simdgroup, 32-wide FP4 block",
+        "occupancy_proxy_vs_control": 0.5333333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 32,
+        "threads": 8192,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "simd_r4": {
+        "bytes_read_per_thread_packed": 34.0,
+        "gbps": 3.8154520547945205,
+        "gpu_ns": [
+          18250,
+          18709,
+          14750
+        ],
+        "kernel": "dsv4f_fp4_matvec_split_simd_r4",
+        "median_gpu_ns": 18250,
+        "note": "4 rows/simdgroup, shared activations",
+        "occupancy_proxy_vs_control": 0.13333333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 8,
+        "threads": 2048,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      }
+    },
+    "protocol": "warmup=2; 3 reps per variant (not paired); then 3 alternating A/B pairs of serial vs winner",
+    "q4": {
+      "serial": {
+        "bytes_read_per_thread_packed": 1088.0,
+        "gbps": 1.5287986277873071,
+        "gpu_ns": [
+          364375,
+          367125,
+          364125
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "median_gpu_ns": 364375,
+        "note": "shipped component path: one thread walks the whole K",
+        "occupancy_proxy_vs_control": 0.03333333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 2,
+        "threads": 512,
+        "threads_per_row": 1,
+        "threads_per_threadgroup": 256
+      },
+      "simdgroup": {
+        "bytes_read_per_thread_packed": 34.0,
+        "gbps": 12.954790697674419,
+        "gpu_ns": [
+          43000,
+          42709,
+          43625
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_simdgroup",
+        "median_gpu_ns": 43000,
+        "note": "existing 1 row/simdgroup, scalar weight_at",
+        "occupancy_proxy_vs_control": 1.0666666666666667,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 64,
+        "threads": 16384,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "simdgroup_r4": {
+        "bytes_read_per_thread_packed": 136.0,
+        "gbps": 11.873475999658964,
+        "gpu_ns": [
+          46916,
+          47584,
+          46625
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_simdgroup_rowblock4",
+        "median_gpu_ns": 46916,
+        "note": "existing 4 rows/simdgroup, scalar weight_at",
+        "occupancy_proxy_vs_control": 0.26666666666666666,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 16,
+        "threads": 4096,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "simdgroup_r8": {
+        "bytes_read_per_thread_packed": 272.0,
+        "gbps": 10.686925659472422,
+        "gpu_ns": [
+          54375,
+          52125,
+          48334
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_simdgroup_rowblock8",
+        "median_gpu_ns": 52125,
+        "note": "existing 8 rows/simdgroup, scalar weight_at",
+        "occupancy_proxy_vs_control": 0.13333333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 8,
+        "threads": 2048,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "vecgroup": {
+        "bytes_read_per_thread_packed": 34.0,
+        "gbps": 34.546108527131786,
+        "gpu_ns": [
+          15875,
+          16125,
+          16250
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_vecgroup",
+        "median_gpu_ns": 16125,
+        "note": "1 row/simdgroup, one code-byte per lane per group",
+        "occupancy_proxy_vs_control": 1.0666666666666667,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 64,
+        "threads": 16384,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "vecgroup_r4": {
+        "bytes_read_per_thread_packed": 136.0,
+        "gbps": 33.25707462686567,
+        "gpu_ns": [
+          17375,
+          16000,
+          16750
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_vecgroup_r4",
+        "median_gpu_ns": 16750,
+        "note": "4 rows/simdgroup, vectorized group decode",
+        "occupancy_proxy_vs_control": 0.26666666666666666,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 0,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 16,
+        "threads": 4096,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "vecgroup_r4_x": {
+        "bytes_read_per_thread_packed": 136.0,
+        "gbps": 33.010725925925925,
+        "gpu_ns": [
+          16875,
+          18084,
+          16625
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_vecgroup_r4_x",
+        "median_gpu_ns": 16875,
+        "note": "4 rows/simdgroup + X tile",
+        "occupancy_proxy_vs_control": 0.26666666666666666,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 8192,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 16,
+        "threads": 4096,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "vecgroup_x": {
+        "bytes_read_per_thread_packed": 34.0,
+        "gbps": 35.46094595454835,
+        "gpu_ns": [
+          15916,
+          15375,
+          15709
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_vecgroup_x",
+        "median_gpu_ns": 15709,
+        "note": "vecgroup + X tile in threadgroup memory",
+        "occupancy_proxy_vs_control": 1.0666666666666667,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 8192,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 64,
+        "threads": 16384,
+        "threads_per_row": 32,
+        "threads_per_threadgroup": 256
+      },
+      "vecgroup_x64": {
+        "bytes_read_per_thread_packed": 17.0,
+        "gbps": 50.64145454545454,
+        "gpu_ns": [
+          11000,
+          11250,
+          10625
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+        "median_gpu_ns": 11000,
+        "note": "vectorized group decode at 64 threads/row",
+        "occupancy_proxy_vs_control": 2.1333333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 32,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 128,
+        "threads": 32768,
+        "threads_per_row": 64,
+        "threads_per_threadgroup": 256
+      },
+      "x64": {
+        "bytes_read_per_thread_packed": 17.0,
+        "gbps": 39.437592920353985,
+        "gpu_ns": [
+          20125,
+          14125,
+          14125
+        ],
+        "kernel": "qwen_uniform_q4_group64_matvec_simdgroup_x64",
+        "median_gpu_ns": 14125,
+        "note": "existing 64 threads/row",
+        "occupancy_proxy_vs_control": 2.1333333333333333,
+        "pipeline": {
+          "max_total_threads_per_threadgroup": 1024,
+          "static_threadgroup_memory_length": 32,
+          "thread_execution_width": 32
+        },
+        "simdgroups_per_threadgroup": 8,
+        "threadgroups": 128,
+        "threads": 32768,
+        "threads_per_row": 64,
+        "threads_per_threadgroup": 256
+      }
+    }
+  },
+  "shipped": {
+    "q80_component_default": {
+      "kernel": "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+      "rows_per_tg": 4,
+      "threads_per_row": 64,
+      "escape": "HAWKING_Q80_COMPONENT_Q4_OCCUPANCY=0 restores qwen_uniform_q4_group64_matvec serial",
+      "paired_gpu_ns": {
+        "A": "serial",
+        "A_frac_of_ceiling": 0.0032026653615823716,
+        "A_gbps": 2.6229829311359625,
+        "A_gpu_ns": [
+          217541,
+          209250,
+          212375
+        ],
+        "A_median_gpu_ns": 212375,
+        "B": "vecgroup_x64",
+        "B_frac_of_ceiling": 0.06160366417589495,
+        "B_gbps": 50.45340096005796,
+        "B_gpu_ns": [
+          11250,
+          11041,
+          10916
+        ],
+        "B_median_gpu_ns": 11041,
+        "bytes": 557056,
+        "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+        "measurement_label": "DIRTY_ENGINEERING"
+      }
+    },
+    "dsv4f_worklist_default": {
+      "kernel": "dsv4f_worklist_fp4_matvec_simd",
+      "rows_per_tg": 8,
+      "threads_per_row": 32,
+      "escape": "HAWKING_DSV4F_FP4_OCCUPANCY=0 restores dsv4f_worklist_fp4_matvec serial",
+      "paired_full_w1_gpu_ns": {
+        "A": "serial",
+        "A_frac_of_ceiling": 0.008833325404753976,
+        "A_gbps": 7.234493506493506,
+        "A_gpu_ns": [
+          616000,
+          553375,
+          632209
+        ],
+        "A_median_gpu_ns": 616000,
+        "B": "simd",
+        "B_frac_of_ceiling": 0.052785383273140835,
+        "B_gbps": 43.23122890070234,
+        "B_gpu_ns": [
+          102584,
+          103125,
+          103084
+        ],
+        "B_median_gpu_ns": 103084,
+        "bytes": 4456448,
+        "gpu_time_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+        "measurement_label": "DIRTY_ENGINEERING"
+      }
+    },
+    "expert_table_default_unchanged": "still simdgroup; vecgroup is opt-in via HAWKING_QWEN80_Q4_KERNEL=vecgroup"
+  },
+  "findings": {
+    "gap_reproduced": true,
+    "control_sequential_gbps": 550.1354854188265,
+    "control_conflict_gbps": 652.0526159305243,
+    "serial_gbps": {
+      "q80_q4_gate": 2.6229829311359625,
+      "q80_mixed_binary": 2.4576,
+      "dsv4f_fp4_reduced": 0.9362285714285714,
+      "dsv4f_fp4_full_w1": 7.234493506493506
+    },
+    "winner_gbps": {
+      "q80_q4_gate_vecgroup_x64": 50.45340096005796,
+      "q80_mixed_binary_tg256": 21.448145454545454,
+      "dsv4f_fp4_reduced_simd": 6.477395348837209,
+      "dsv4f_fp4_full_w1_simd": 43.23122890070234
+    },
+    "limiter": "one-thread-per-row launch geometry. 512-row Q4/binary launch 2 threadgroups; 256-row FP4 probe launches 1. Control launches 60. max_total_threads_per_threadgroup=1024, thread_execution_width=32, no register-spill evidence (serial TG mem=0).",
+    "largest_fix": "Q4 component matvec: serial 212375 ns / 2.62 GB/s -> vecgroup_x64 11041 ns / 50.45 GB/s (19.2x). Still 10.9x below the 550 GB/s control. 48*10*3 projection 305.8 ms -> 15.90 ms (1.99x the 8 ms expert budget).",
+    "remaining": "50 GB/s vs 550 GB/s control. Next: more K-parallelism or a fused 10-expert wave so 1440 organ launches stop dominating. Isolated organ at 11 us * 1440 = 15.9 ms is already near a dispatch floor."
+  }
+}

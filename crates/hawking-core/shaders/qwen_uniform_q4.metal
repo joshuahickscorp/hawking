@@ -587,3 +587,315 @@ kernel void qwen_uniform_q4_group64_matvec_interleaved(
     }
     output[row] = sum;
 }
+
+// One simdgroup per row. Each lane owns one code byte (two weights) of the
+// 64-wide group, so a group is one iteration instead of 64 scalar weight_at
+// calls. Grid: (ceil(rows / 8) * 256, 1, 1), TG (256, 1, 1).
+kernel void qwen_uniform_q4_group64_matvec_vecgroup(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) return;
+    const uint row_group_base = row * groups_per_row;
+    const uint local0 = simd_lane << 1u;
+    const uint local1 = local0 + 1u;
+    float partial = 0.0f;
+    for (uint group = 0u; group < groups_per_row; ++group) {
+        const uint group_start = group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+        const uint group_len = min(QWEN_UNIFORM_Q4_GROUP_SIZE, cols - group_start);
+        if (local0 >= group_len) continue;
+        const uint group_base = row_group_base + group;
+        const float scale = float(scales[group_base]);
+        const uchar packed = codes[group_base * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + simd_lane];
+        const float q0 = float(int(packed & 0x0fu) - 8);
+        partial += q0 * scale * input[group_start + local0];
+        if (local1 < group_len) {
+            const float q1 = float(int(packed >> 4u) - 8);
+            partial += q1 * scale * input[group_start + local1];
+        }
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) output[row] = partial;
+}
+
+// vecgroup plus one cooperative load of X into threadgroup memory.
+// Tile is 2048 floats (8 KiB). Grid: (ceil(rows / 8) * 256, 1, 1), TG 256.
+kernel void qwen_uniform_q4_group64_matvec_vecgroup_x(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kXTile = 2048u;
+    threadgroup float x_tg[kXTile];
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    const bool live = row < rows;
+    const uint row_group_base = live ? row * groups_per_row : 0u;
+    const uint local0 = simd_lane << 1u;
+    const uint local1 = local0 + 1u;
+    float partial = 0.0f;
+    for (uint tile = 0u; tile < cols; tile += kXTile) {
+        const uint tile_n = min(kXTile, cols - tile);
+        for (uint i = lid; i < tile_n; i += 256u) {
+            x_tg[i] = input[tile + i];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        if (live) {
+            const uint g0 = tile / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint g1 = min(groups_per_row, (tile + tile_n + QWEN_UNIFORM_Q4_GROUP_SIZE - 1u)
+                / QWEN_UNIFORM_Q4_GROUP_SIZE);
+            for (uint group = g0; group < g1; ++group) {
+                const uint group_start = group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+                const uint group_len = min(QWEN_UNIFORM_Q4_GROUP_SIZE, cols - group_start);
+                if (local0 >= group_len) continue;
+                const uint group_base = row_group_base + group;
+                const float scale = float(scales[group_base]);
+                const uchar packed =
+                    codes[group_base * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + simd_lane];
+                const uint x0 = group_start + local0 - tile;
+                const float q0 = float(int(packed & 0x0fu) - 8);
+                partial += q0 * scale * x_tg[x0];
+                if (local1 < group_len) {
+                    const float q1 = float(int(packed >> 4u) - 8);
+                    partial += q1 * scale * x_tg[x0 + 1u];
+                }
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (!live) return;
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) output[row] = partial;
+}
+
+// 4 rows / simdgroup, 32 rows / TG. Vectorized group decode, X from device
+// (one pair of floats reused across the four rows). Grid: ceil(rows/32)*256.
+kernel void qwen_uniform_q4_group64_matvec_vecgroup_r4(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint R = 4u;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kRowsPerTg = kSimdgroupsPerThreadgroup * R;
+    const uint row0 = group_id * kRowsPerTg + simd_id * R;
+    if (row0 >= rows) return;
+    const uint row1 = row0 + 1u;
+    const uint row2 = row0 + 2u;
+    const uint row3 = row0 + 3u;
+    const bool has1 = row1 < rows;
+    const bool has2 = row2 < rows;
+    const bool has3 = row3 < rows;
+    const uint r1 = has1 ? row1 : row0;
+    const uint r2 = has2 ? row2 : row0;
+    const uint r3 = has3 ? row3 : row0;
+    const uint rgb0 = row0 * groups_per_row;
+    const uint rgb1 = r1 * groups_per_row;
+    const uint rgb2 = r2 * groups_per_row;
+    const uint rgb3 = r3 * groups_per_row;
+    const uint local0 = simd_lane << 1u;
+    const uint local1 = local0 + 1u;
+    float a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
+    for (uint group = 0u; group < groups_per_row; ++group) {
+        const uint group_start = group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+        const uint group_len = min(QWEN_UNIFORM_Q4_GROUP_SIZE, cols - group_start);
+        if (local0 >= group_len) continue;
+        const float xv0 = input[group_start + local0];
+        const float xv1 = (local1 < group_len) ? input[group_start + local1] : 0.0f;
+        const uint code_off = simd_lane;
+        const uchar p0 = codes[(rgb0 + group) * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + code_off];
+        const uchar p1 = codes[(rgb1 + group) * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + code_off];
+        const uchar p2 = codes[(rgb2 + group) * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + code_off];
+        const uchar p3 = codes[(rgb3 + group) * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + code_off];
+        const float s0 = float(scales[rgb0 + group]);
+        const float s1 = float(scales[rgb1 + group]);
+        const float s2 = float(scales[rgb2 + group]);
+        const float s3 = float(scales[rgb3 + group]);
+        a0 += float(int(p0 & 0x0fu) - 8) * s0 * xv0;
+        a1 += float(int(p1 & 0x0fu) - 8) * s1 * xv0;
+        a2 += float(int(p2 & 0x0fu) - 8) * s2 * xv0;
+        a3 += float(int(p3 & 0x0fu) - 8) * s3 * xv0;
+        if (local1 < group_len) {
+            a0 += float(int(p0 >> 4u) - 8) * s0 * xv1;
+            a1 += float(int(p1 >> 4u) - 8) * s1 * xv1;
+            a2 += float(int(p2 >> 4u) - 8) * s2 * xv1;
+            a3 += float(int(p3 >> 4u) - 8) * s3 * xv1;
+        }
+    }
+    a0 = simd_sum(a0);
+    a1 = simd_sum(a1);
+    a2 = simd_sum(a2);
+    a3 = simd_sum(a3);
+    if (simd_lane == 0u) {
+        output[row0] = a0;
+        if (has1) output[row1] = a1;
+        if (has2) output[row2] = a2;
+        if (has3) output[row3] = a3;
+    }
+}
+
+// 4 rows / simdgroup + X tile in threadgroup memory.
+// Grid: (ceil(rows / 32) * 256, 1, 1), TG (256, 1, 1).
+kernel void qwen_uniform_q4_group64_matvec_vecgroup_r4_x(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint R = 4u;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kRowsPerTg = kSimdgroupsPerThreadgroup * R;
+    constexpr uint kXTile = 2048u;
+    threadgroup float x_tg[kXTile];
+    const uint row0 = group_id * kRowsPerTg + simd_id * R;
+    const bool live = row0 < rows;
+    const uint row1 = row0 + 1u;
+    const uint row2 = row0 + 2u;
+    const uint row3 = row0 + 3u;
+    const bool has1 = live && row1 < rows;
+    const bool has2 = live && row2 < rows;
+    const bool has3 = live && row3 < rows;
+    const uint r1 = has1 ? row1 : row0;
+    const uint r2 = has2 ? row2 : row0;
+    const uint r3 = has3 ? row3 : row0;
+    const uint rgb0 = live ? row0 * groups_per_row : 0u;
+    const uint rgb1 = live ? r1 * groups_per_row : 0u;
+    const uint rgb2 = live ? r2 * groups_per_row : 0u;
+    const uint rgb3 = live ? r3 * groups_per_row : 0u;
+    const uint local0 = simd_lane << 1u;
+    const uint local1 = local0 + 1u;
+    float a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
+    for (uint tile = 0u; tile < cols; tile += kXTile) {
+        const uint tile_n = min(kXTile, cols - tile);
+        for (uint i = lid; i < tile_n; i += 256u) {
+            x_tg[i] = input[tile + i];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        if (live) {
+            const uint g0 = tile / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint g1 = min(groups_per_row, (tile + tile_n + QWEN_UNIFORM_Q4_GROUP_SIZE - 1u)
+                / QWEN_UNIFORM_Q4_GROUP_SIZE);
+            for (uint group = g0; group < g1; ++group) {
+                const uint group_start = group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+                const uint group_len = min(QWEN_UNIFORM_Q4_GROUP_SIZE, cols - group_start);
+                if (local0 >= group_len) continue;
+                const uint x0 = group_start + local0 - tile;
+                const float xv0 = x_tg[x0];
+                const float xv1 = (local1 < group_len) ? x_tg[x0 + 1u] : 0.0f;
+                const uint code_off = simd_lane;
+                const uchar p0 =
+                    codes[(rgb0 + group) * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + code_off];
+                const uchar p1 =
+                    codes[(rgb1 + group) * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + code_off];
+                const uchar p2 =
+                    codes[(rgb2 + group) * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + code_off];
+                const uchar p3 =
+                    codes[(rgb3 + group) * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + code_off];
+                const float s0 = float(scales[rgb0 + group]);
+                const float s1 = float(scales[rgb1 + group]);
+                const float s2 = float(scales[rgb2 + group]);
+                const float s3 = float(scales[rgb3 + group]);
+                a0 += float(int(p0 & 0x0fu) - 8) * s0 * xv0;
+                a1 += float(int(p1 & 0x0fu) - 8) * s1 * xv0;
+                a2 += float(int(p2 & 0x0fu) - 8) * s2 * xv0;
+                a3 += float(int(p3 & 0x0fu) - 8) * s3 * xv0;
+                if (local1 < group_len) {
+                    a0 += float(int(p0 >> 4u) - 8) * s0 * xv1;
+                    a1 += float(int(p1 >> 4u) - 8) * s1 * xv1;
+                    a2 += float(int(p2 >> 4u) - 8) * s2 * xv1;
+                    a3 += float(int(p3 >> 4u) - 8) * s3 * xv1;
+                }
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (!live) return;
+    a0 = simd_sum(a0);
+    a1 = simd_sum(a1);
+    a2 = simd_sum(a2);
+    a3 = simd_sum(a3);
+    if (simd_lane == 0u) {
+        output[row0] = a0;
+        if (has1) output[row1] = a1;
+        if (has2) output[row2] = a2;
+        if (has3) output[row3] = a3;
+    }
+}
+
+// Vectorized group decode at the winning x64 occupancy: 64 threads/row,
+// 4 rows/TG. The two simdgroups of a row take even/odd groups.
+// Grid: (ceil(rows / 4) * 256, 1, 1), TG (256, 1, 1).
+kernel void qwen_uniform_q4_group64_matvec_vecgroup_x64(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kRowsPerTg = 4u;
+    const uint row = group_id * kRowsPerTg + (simd_id >> 1u);
+    if (row >= rows) return;
+    const uint sg_half = simd_id & 1u;
+    const uint row_group_base = row * groups_per_row;
+    const uint local0 = simd_lane << 1u;
+    const uint local1 = local0 + 1u;
+    float partial = 0.0f;
+    for (uint group = sg_half; group < groups_per_row; group += 2u) {
+        const uint group_start = group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+        const uint group_len = min(QWEN_UNIFORM_Q4_GROUP_SIZE, cols - group_start);
+        if (local0 >= group_len) continue;
+        const uint group_base = row_group_base + group;
+        const float scale = float(scales[group_base]);
+        const uchar packed = codes[group_base * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + simd_lane];
+        const float q0 = float(int(packed & 0x0fu) - 8);
+        partial += q0 * scale * input[group_start + local0];
+        if (local1 < group_len) {
+            const float q1 = float(int(packed >> 4u) - 8);
+            partial += q1 * scale * input[group_start + local1];
+        }
+    }
+    partial = simd_sum(partial);
+    threadgroup float sh[8];
+    if (simd_lane == 0u) sh[simd_id] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (simd_lane == 0u && sg_half == 0u) {
+        output[row] = sh[simd_id] + sh[simd_id + 1u];
+    }
+}

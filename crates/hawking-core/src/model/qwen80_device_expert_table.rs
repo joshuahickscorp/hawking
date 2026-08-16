@@ -82,6 +82,7 @@ pub enum Qwen80ExpertTableKernel {
     Serial,
     Rowblock,
     Simdgroup,
+    Vecgroup,
 }
 
 pub fn qwen80_expert_table_kernel() -> Qwen80ExpertTableKernel {
@@ -93,16 +94,19 @@ pub fn qwen80_expert_table_kernel() -> Qwen80ExpertTableKernel {
         "serial" => Qwen80ExpertTableKernel::Serial,
         "rowblock" => Qwen80ExpertTableKernel::Rowblock,
         "simdgroup" | "fast" => Qwen80ExpertTableKernel::Simdgroup,
+        "vecgroup" => Qwen80ExpertTableKernel::Vecgroup,
         // Measured at the live [512,2048]/[2048,512] top_k=10 geometry:
         // simdgroup 3.67 tok/s, serial 3.45, rowblock 3.25 (token-identical).
+        // vecgroup is opt-in until the occupancy lane seals a default.
         _ => Qwen80ExpertTableKernel::Simdgroup,
     }
 }
 
-pub const QWEN80_EXPERT_TABLE_KERNELS: [&str; 5] = [
+pub const QWEN80_EXPERT_TABLE_KERNELS: [&str; 6] = [
     "qwen80_expert_table_uniform_q4_matvec_serial",
     "qwen80_expert_table_uniform_q4_matvec_rowblock",
     "qwen80_expert_table_uniform_q4_matvec_simdgroup",
+    "qwen80_expert_table_uniform_q4_matvec_vecgroup",
     "qwen80_expert_table_silu_mul",
     "qwen80_expert_table_weighted_sum",
 ];
@@ -1001,6 +1005,20 @@ fn matvec_dispatch_shape(
                 u32::try_from(grid_x).map_err(|_| table_error("simdgroup grid overflows u32"))?;
             Ok((
                 "qwen80_expert_table_uniform_q4_matvec_simdgroup",
+                (grid_x_u32, 1, 1),
+                (256, 1, 1),
+            ))
+        }
+        Qwen80ExpertTableKernel::Vecgroup => {
+            let groups = max_rows.div_ceil(8);
+            let grid_x = top_k
+                .checked_mul(groups)
+                .and_then(|v| v.checked_mul(256))
+                .ok_or_else(|| table_error("vecgroup grid overflows"))?;
+            let grid_x_u32 =
+                u32::try_from(grid_x).map_err(|_| table_error("vecgroup grid overflows u32"))?;
+            Ok((
+                "qwen80_expert_table_uniform_q4_matvec_vecgroup",
                 (grid_x_u32, 1, 1),
                 (256, 1, 1),
             ))

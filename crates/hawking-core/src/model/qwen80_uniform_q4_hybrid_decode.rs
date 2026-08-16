@@ -161,9 +161,12 @@ pub fn qwen80_serial_mixer_enabled() -> bool {
 }
 
 /// Component (DeltaNet / GQA / shared / router / lm_head) matvec kernel.
-/// Expert-table matvecs use the simdgroup default from a47f8259; this
-/// path still dispatches the serial one-thread-per-row kernel.
-pub const QWEN80_COMPONENT_MATVEC_KERNEL: &str = "qwen_uniform_q4_group64_matvec";
+/// Occupancy default: vectorized group decode at 64 threads/row.
+/// Set `HAWKING_Q80_COMPONENT_Q4_OCCUPANCY=0` to restore the serial
+/// one-thread-per-row kernel. Expert-table matvecs stay on their own
+/// simdgroup/vecgroup selector.
+pub const QWEN80_COMPONENT_MATVEC_KERNEL: &str = "qwen_uniform_q4_group64_matvec_vecgroup_x64";
+pub const QWEN80_COMPONENT_MATVEC_ROWS_PER_TG: u32 = 4;
 
 /// Default **on**. Set `HAWKING_Q80_EXPERT_NOCOPY=0` to restore
 /// `new_buffer_with_bytes` packing for A/B.
@@ -4934,15 +4937,16 @@ mod tests {
     }
 
     #[test]
-    fn component_matvec_kernel_is_serial_not_the_expert_table_simdgroup() {
+    fn component_matvec_kernel_is_occupancy_not_the_expert_table() {
         assert_eq!(
             QWEN80_COMPONENT_MATVEC_KERNEL,
-            "qwen_uniform_q4_group64_matvec"
+            "qwen_uniform_q4_group64_matvec_vecgroup_x64"
         );
         assert!(
-            !QWEN80_COMPONENT_MATVEC_KERNEL.contains("simdgroup"),
-            "DeltaNet/GQA/shared/router still dispatch the serial component kernel"
+            !QWEN80_COMPONENT_MATVEC_KERNEL.contains("expert_table"),
+            "component path must not dispatch the expert-table kernel"
         );
+        assert_eq!(QWEN80_COMPONENT_MATVEC_ROWS_PER_TG, 4);
     }
 
     #[test]
