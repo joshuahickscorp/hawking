@@ -167,3 +167,7 @@ workspace/campaign/records/ascension-sandbox/physical/**/selected-payloads/
 workspace/campaign/records/ascension-sandbox/physical/**/*.hgravs01
 workspace/campaign/records/ascension-sandbox/physical/**/tensors/
 workspace/campaign/records/ascension-sandbox/physical/**/capture-result.json
+
+# build output: cargo writes to workspace/ops/build/rust (see .cargo/config.toml).
+# target-parallel/ was committed build output and served stale binaries; never track it again.
+target-parallel/
