@@ -4,12 +4,16 @@
 //! bodies stay on disk until requested. This is not a Metal kernel, a
 //! generation runtime, or a ≤1.5 coherence claim.
 
+use crate::model::qwen_complete_binary::MixedPackedTensor;
 use crate::{Error, Result};
+use memmap2::Mmap;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
 pub const QWEN80_MIXED_CATALOG_MAGIC: [u8; 8] = *b"HQ80M15\0";
 pub const QWEN80_MIXED_CATALOG_VERSION: u32 = 1;
@@ -92,7 +96,18 @@ pub struct Qwen80MixedCatalogRow {
     pub segment_path: PathBuf,
 }
 
-#[derive(Debug)]
+pub struct MixedPayloadView {
+    map: Arc<Mmap>,
+    start: usize,
+    end: usize,
+}
+
+impl MixedPayloadView {
+    pub fn as_slice(&self) -> &[u8] {
+        &self.map[self.start..self.end]
+    }
+}
+
 pub struct Qwen80MixedStreamingCatalog {
     pub root: PathBuf,
     pub manifest_path: PathBuf,
@@ -102,6 +117,23 @@ pub struct Qwen80MixedStreamingCatalog {
     pub catalog_sha256: String,
     rows: HashMap<String, Qwen80MixedCatalogRow>,
     segments: Vec<Qwen80MixedSegment>,
+    maps: Mutex<HashMap<PathBuf, Arc<Mmap>>>,
+    verified: Mutex<HashSet<String>>,
+}
+
+impl fmt::Debug for Qwen80MixedStreamingCatalog {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Qwen80MixedStreamingCatalog")
+            .field("root", &self.root)
+            .field("manifest_path", &self.manifest_path)
+            .field("manifest_seal_sha256", &self.manifest_seal_sha256)
+            .field("complete_physical_bpw", &self.complete_physical_bpw)
+            .field("tensor_payload_bytes", &self.tensor_payload_bytes)
+            .field("catalog_sha256", &self.catalog_sha256)
+            .field("tensor_count", &self.rows.len())
+            .field("segment_count", &self.segments.len())
+            .finish()
+    }
 }
 
 impl Qwen80MixedStreamingCatalog {
@@ -202,6 +234,8 @@ impl Qwen80MixedStreamingCatalog {
             catalog_sha256,
             rows,
             segments,
+            maps: Mutex::new(HashMap::new()),
+            verified: Mutex::new(HashSet::new()),
         })
     }
 
@@ -219,34 +253,76 @@ impl Qwen80MixedStreamingCatalog {
             .ok_or_else(|| mixed_error(format!("missing tensor {name:?}")))
     }
 
-    pub fn read_payload(&self, name: &str) -> Result<Vec<u8>> {
-        let row = self.require_row(name)?;
-        let file = fs::read(&row.segment_path).map_err(|error| {
-            mixed_error(format!(
-                "cannot read segment {} for {name:?}: {error}",
-                row.segment_path.display()
-            ))
+    fn mmap_segment(&self, path: &Path) -> Result<Arc<Mmap>> {
+        if let Some(existing) = self
+            .maps
+            .lock()
+            .map_err(|_| mixed_error("segment mmap lock poisoned"))?
+            .get(path)
+            .cloned()
+        {
+            return Ok(existing);
+        }
+        let file = fs::File::open(path).map_err(|error| {
+            mixed_error(format!("cannot open segment {}: {error}", path.display()))
         })?;
+        let map = unsafe {
+            memmap2::MmapOptions::new().map(&file).map_err(|error| {
+                mixed_error(format!("cannot mmap segment {}: {error}", path.display()))
+            })?
+        };
+        let map = Arc::new(map);
+        self.maps
+            .lock()
+            .map_err(|_| mixed_error("segment mmap lock poisoned"))?
+            .insert(path.to_path_buf(), map.clone());
+        Ok(map)
+    }
+
+    /// Slice one payload from a mapped segment. SHA-256 runs once per tensor
+    /// name, never per token.
+    pub fn payload_view(&self, name: &str) -> Result<MixedPayloadView> {
+        let row = self.require_row(name)?;
+        let map = self.mmap_segment(&row.segment_path)?;
         let start = usize::try_from(row.offset)
             .map_err(|_| mixed_error(format!("{name:?} offset exceeds usize")))?;
         let end = start
             .checked_add(usize::try_from(row.nbytes).unwrap_or(usize::MAX))
             .ok_or_else(|| mixed_error(format!("{name:?} range overflow")))?;
-        if end > file.len() {
+        if end > map.len() {
             return Err(mixed_error(format!(
                 "{name:?} range {start}..{end} exceeds segment {}",
-                file.len()
+                map.len()
             )));
         }
-        let payload = file[start..end].to_vec();
-        let observed = sha256_hex(&payload);
-        if observed != row.sha256 {
-            return Err(mixed_error(format!(
-                "{name:?} payload sha256 {observed} != catalog {}",
-                row.sha256
-            )));
+        let already = self
+            .verified
+            .lock()
+            .map(|set| set.contains(name))
+            .unwrap_or(false);
+        if !already {
+            let observed = sha256_hex(&map[start..end]);
+            if observed != row.sha256 {
+                return Err(mixed_error(format!(
+                    "{name:?} payload sha256 {observed} != catalog {}",
+                    row.sha256
+                )));
+            }
+            if let Ok(mut set) = self.verified.lock() {
+                set.insert(name.to_owned());
+            }
         }
-        Ok(payload)
+        Ok(MixedPayloadView { map, start, end })
+    }
+
+    pub fn read_payload(&self, name: &str) -> Result<Vec<u8>> {
+        Ok(self.payload_view(name)?.as_slice().to_vec())
+    }
+
+    pub fn load_packed(&self, name: &str) -> Result<MixedPackedTensor> {
+        let row = self.require_row(name)?;
+        let view = self.payload_view(name)?;
+        MixedPackedTensor::from_codec_payload(row.codec, view.as_slice())
     }
 }
 
