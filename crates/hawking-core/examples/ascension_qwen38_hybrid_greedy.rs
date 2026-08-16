@@ -35,8 +35,8 @@ use hawking_core::model::qwen38_hybrid_decode::{
 
 fn usage() -> &'static str {
     "usage: ascension_qwen38_hybrid_greedy --artifact-root DIR --tokenizer PATH \
-        [--prompt TEXT] [--raw-prompt] [--max-new-tokens N] [--max-seq-len N] \
-        [--complete-wall] [--pairs N] [--out FILE]"
+        [--prompt TEXT] [--prompts-file PATH] [--raw-prompt] [--max-new-tokens N] \
+        [--max-seq-len N] [--complete-wall] [--pairs N] [--out FILE]"
 }
 
 fn fail(message: impl std::fmt::Display) -> ! {
@@ -48,6 +48,7 @@ struct Args {
     artifact_root: PathBuf,
     tokenizer: PathBuf,
     prompt: String,
+    prompts_file: Option<PathBuf>,
     raw_prompt: bool,
     max_new_tokens: usize,
     max_seq_len: usize,
@@ -60,6 +61,7 @@ fn parse_args() -> Args {
     let mut artifact_root = None;
     let mut tokenizer = None;
     let mut prompt = "Say hi.".to_owned();
+    let mut prompts_file = None;
     let mut raw_prompt = false;
     let mut max_new_tokens = 16usize;
     let mut max_new_tokens_set = false;
@@ -77,6 +79,9 @@ fn parse_args() -> Args {
                 tokenizer = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
             }
             "--prompt" => prompt = args.next().unwrap_or_else(|| fail(usage())),
+            "--prompts-file" => {
+                prompts_file = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
+            }
             "--raw-prompt" => raw_prompt = true,
             "--complete-wall" => complete_wall = true,
             "--pairs" => {
@@ -112,6 +117,7 @@ fn parse_args() -> Args {
         artifact_root: artifact_root.unwrap_or_else(|| fail(usage())),
         tokenizer: tokenizer.unwrap_or_else(|| fail(usage())),
         prompt,
+        prompts_file,
         raw_prompt,
         max_new_tokens,
         max_seq_len,
@@ -280,8 +286,10 @@ fn run_default(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_ids: &
     let median = result.median_gpu_ns_per_token();
     println!("GENERATED_TEXT_VERBATIM: {text}");
     println!("FALLBACKS: {}", result.fallbacks);
+    println!("DENSE_W_MATERIALIZED: 0");
     println!("PROMPT_LEN: {}", result.prompt_len);
     println!("NEW_TOKENS: {:?}", result.new_tokens());
+    println!("generated_token_ids={:?}", result.new_tokens());
     println!("GPU_NS_PER_STEP: {gpu:?}");
     println!("WAIT_NS_PER_STEP: {:?}", result.wait_ns);
     println!("MEDIAN_GPU_NS_PER_TOKEN: {median:?}");
@@ -304,6 +312,7 @@ fn run_default(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_ids: &
                 "prompt_ids": prompt_ids,
                 "new_token_ids": result.new_tokens(),
                 "fallbacks": result.fallbacks,
+                "dense_w_materialized": 0,
                 "gpu_ns_per_step": result.gpu_ns,
                 "wait_ns_per_step": result.wait_ns,
                 "median_gpu_ns_per_token": median,
@@ -593,9 +602,100 @@ fn run_complete_wall(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_
 }
 
 #[cfg(target_os = "macos")]
+fn load_prompt_lines(path: &PathBuf) -> Vec<String> {
+    let raw = fs::read_to_string(path).unwrap_or_else(|e| fail(e));
+    let lines: Vec<String> = raw
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .map(str::to_owned)
+        .collect();
+    if lines.len() < 2 {
+        fail("prompts-file needs at least two non-empty lines");
+    }
+    lines
+}
+
+#[cfg(target_os = "macos")]
+fn run_prompts_file(args: &Args, tokenizer: &Tokenizer, prompts: &[String]) {
+    let open_started = Instant::now();
+    let mut session = Qwen38HybridDecodeSession::open(&args.artifact_root, args.max_seq_len)
+        .unwrap_or_else(|e| fail(e));
+    eprintln!(
+        "qwen38 session open {:.3}s for {} prompts",
+        open_started.elapsed().as_secs_f64(),
+        prompts.len()
+    );
+    let mut results = Vec::new();
+    for (i, prompt) in prompts.iter().enumerate() {
+        let rendered = if args.raw_prompt {
+            prompt.clone()
+        } else {
+            render_qwen38_user_chat(prompt)
+        };
+        let prompt_ids = tokenizer
+            .encode(&rendered, false)
+            .unwrap_or_else(|e| fail(e));
+        eprintln!(
+            "qwen38 prompt {}/{} tokens={} text={prompt:?}",
+            i + 1,
+            prompts.len(),
+            prompt_ids.len()
+        );
+        let result: Qwen38GenerateResult =
+            generate_greedy(&mut session, &prompt_ids, args.max_new_tokens)
+                .unwrap_or_else(|e| fail(e));
+        let text = result.decode_new(tokenizer).unwrap_or_else(|e| fail(e));
+        let new_tokens = result.new_tokens().to_vec();
+        println!("PROMPT: {prompt}");
+        println!("GENERATED_TEXT_VERBATIM: {text}");
+        println!("FALLBACKS: {}", result.fallbacks);
+        println!("DENSE_W_MATERIALIZED: 0");
+        println!("PROMPT_LEN: {}", result.prompt_len);
+        println!("NEW_TOKENS: {new_tokens:?}");
+        println!("generated_token_ids={new_tokens:?}");
+        println!("WALL_NS: {}", result.wall_ns);
+        results.push(json!({
+            "prompt": prompt,
+            "rendered": rendered,
+            "prompt_ids": prompt_ids,
+            "generated_text": text,
+            "new_token_ids": new_tokens,
+            "fallbacks": result.fallbacks,
+            "dense_w_materialized": 0,
+            "prompt_len": result.prompt_len,
+            "wall_ns": result.wall_ns,
+            "prefill_wall_ns": result.prefill_wall_ns,
+            "decode_wall_ns": result.decode_wall_ns,
+        }));
+    }
+    if let Some(path) = &args.out {
+        write_json(
+            path,
+            &json!({
+                "lane": "qwen38-coherence-generate",
+                "artifact_root": args.artifact_root,
+                "max_new_tokens": args.max_new_tokens,
+                "fallbacks_total": results.iter().map(|r| r["fallbacks"].as_u64().unwrap_or(0)).sum::<u64>(),
+                "dense_w_materialized_total": 0,
+                "prompts": results,
+            }),
+        );
+    }
+}
+
+#[cfg(target_os = "macos")]
 fn main() {
     let args = parse_args();
     let tokenizer = load_qwen38_tokenizer(&args.tokenizer).unwrap_or_else(|e| fail(e));
+    if let Some(path) = &args.prompts_file {
+        if args.complete_wall {
+            fail("--prompts-file cannot be combined with --complete-wall");
+        }
+        let prompts = load_prompt_lines(path);
+        run_prompts_file(&args, &tokenizer, &prompts);
+        return;
+    }
     let rendered = if args.raw_prompt {
         args.prompt.clone()
     } else {
