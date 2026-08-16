@@ -335,6 +335,13 @@ fn run() -> Result<(), String> {
                 "gpu_matvec_ns_per_token={:.0} (MTLCommandBuffer GPUEnd-GPUStart)",
                 result.gpu_matvec_ns_per_token
             );
+            println!(
+                "facet1_bind_ns_per_token={:.0} facet2_wait_minus_gpu_ns_per_token={:.0} cbs_per_token={:.1} dispatches_per_token={:.1}",
+                result.host_expert_bind_ns_per_token,
+                result.wait_minus_gpu_ns_per_token,
+                result.command_buffers_per_token,
+                result.dispatches_per_token
+            );
             println!("peak_rss_bytes={}", result.peak_rss_bytes);
             println!(
                 "fallback silent={} designed_host={} (vec={} embed={} act={} sample={})",
@@ -369,11 +376,15 @@ fn run() -> Result<(), String> {
             println!("dense_w_materialized={}", result.dense_w_materialized);
         } else {
             println!(
-                "rep{} generated_text={:?} wall_ns_per_token={:.0} gpu_matvec_ns_per_token={:.0} ids_match={}",
+                "rep{} generated_text={:?} wall_ns_per_token={:.0} gpu_matvec_ns_per_token={:.0} bind_ns={:.0} wait_minus_gpu_ns={:.0} cbs={:.1} disp={:.1} ids_match={}",
                 rep + 1,
                 result.generated_text,
                 result.wall_ns_per_token,
                 result.gpu_matvec_ns_per_token,
+                result.host_expert_bind_ns_per_token,
+                result.wait_minus_gpu_ns_per_token,
+                result.command_buffers_per_token,
+                result.dispatches_per_token,
                 result.generated_token_ids == first_ids
             );
         }
@@ -387,6 +398,10 @@ fn run() -> Result<(), String> {
         let first = &reps[0];
         let wall: Vec<f64> = reps.iter().map(|r| r.wall_ns_per_token).collect();
         let gpu: Vec<f64> = reps.iter().map(|r| r.gpu_matvec_ns_per_token).collect();
+        let bind: Vec<f64> = reps.iter().map(|r| r.host_expert_bind_ns_per_token).collect();
+        let wait_minus: Vec<f64> = reps.iter().map(|r| r.wait_minus_gpu_ns_per_token).collect();
+        let cbs: Vec<f64> = reps.iter().map(|r| r.command_buffers_per_token).collect();
+        let disps: Vec<f64> = reps.iter().map(|r| r.dispatches_per_token).collect();
         let receipt = json!({
             "schema": "hawking.ascent.q80_mixed_generate.v1",
             "lane": "q80-mixed-generate",
@@ -435,7 +450,13 @@ fn run() -> Result<(), String> {
                 "steady_state_tok_s": first.steady_state_tok_s,
                 "wall_ns_per_token_reps": wall,
                 "gpu_matvec_ns_per_token_reps": gpu,
+                "host_expert_bind_ns_per_token_reps": bind,
+                "wait_minus_gpu_ns_per_token_reps": wait_minus,
+                "command_buffers_per_token_reps": cbs,
+                "dispatches_per_token_reps": disps,
                 "gpu_timestamps_missing": first.stages.gpu_matvec_timestamps_missing,
+                "facet1_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_host_facet1_enabled(),
+                "facet2_enabled": hawking_core::model::qwen80_mixed_hybrid_decode::qwen80_host_facet2_enabled(),
             },
             "reps_generated_text": reps.iter().map(|r| r.generated_text.clone()).collect::<Vec<_>>(),
             "reps_ids_match_first": reps.iter().map(|r| r.generated_token_ids == first_ids).collect::<Vec<_>>(),

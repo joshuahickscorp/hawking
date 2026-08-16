@@ -5,8 +5,9 @@
 //! generation runtime, or a ≤1.5 coherence claim.
 
 use crate::model::qwen_complete_binary::MixedPackedTensor;
+use crate::model::qwen80_uniform_q4_hybrid_decode::qwen80_payload_rehash_enabled;
 use crate::{Error, Result};
-use memmap2::Mmap;
+use memmap2::{Mmap, MmapOptions};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
@@ -14,6 +15,7 @@ use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
+use std::time::Instant;
 
 pub const QWEN80_MIXED_CATALOG_MAGIC: [u8; 8] = *b"HQ80M15\0";
 pub const QWEN80_MIXED_CATALOG_VERSION: u32 = 1;
@@ -106,6 +108,30 @@ impl MixedPayloadView {
     pub fn as_slice(&self) -> &[u8] {
         &self.map[self.start..self.end]
     }
+
+    pub fn mmap_arc(&self) -> Arc<Mmap> {
+        Arc::clone(&self.map)
+    }
+
+    pub fn start(&self) -> usize {
+        self.start
+    }
+
+    pub fn end(&self) -> usize {
+        self.end
+    }
+}
+
+/// First-touch split for the mixed catalog. SHA is session-admission work,
+/// not token-path work, once `admit_session` has returned.
+#[derive(Clone, Debug, Default)]
+pub struct Qwen80MixedFirstTouchSplit {
+    pub catalog_read_ns: u64,
+    pub sha256_ns: u64,
+    pub mmap_ns: u64,
+    pub payloads_hashed: u64,
+    pub payloads_mmapped: u64,
+    pub sha_skipped: u64,
 }
 
 pub struct Qwen80MixedStreamingCatalog {
@@ -119,6 +145,8 @@ pub struct Qwen80MixedStreamingCatalog {
     segments: Vec<Qwen80MixedSegment>,
     maps: Mutex<HashMap<PathBuf, Arc<Mmap>>>,
     verified: Mutex<HashSet<String>>,
+    session_admitted: bool,
+    first_touch: Mutex<Qwen80MixedFirstTouchSplit>,
 }
 
 impl fmt::Debug for Qwen80MixedStreamingCatalog {
@@ -132,6 +160,7 @@ impl fmt::Debug for Qwen80MixedStreamingCatalog {
             .field("catalog_sha256", &self.catalog_sha256)
             .field("tensor_count", &self.rows.len())
             .field("segment_count", &self.segments.len())
+            .field("session_admitted", &self.session_admitted)
             .finish()
     }
 }
@@ -236,7 +265,47 @@ impl Qwen80MixedStreamingCatalog {
             segments,
             maps: Mutex::new(HashMap::new()),
             verified: Mutex::new(HashSet::new()),
+            session_admitted: false,
+            first_touch: Mutex::new(Qwen80MixedFirstTouchSplit::default()),
         })
+    }
+
+    pub fn session_trusts_payloads(&self) -> bool {
+        self.session_admitted && !qwen80_payload_rehash_enabled()
+    }
+
+    pub fn first_touch_split(&self) -> Qwen80MixedFirstTouchSplit {
+        self.first_touch
+            .lock()
+            .map(|split| split.clone())
+            .unwrap_or_default()
+    }
+
+    fn add_first_touch(&self, update: impl FnOnce(&mut Qwen80MixedFirstTouchSplit)) {
+        if let Ok(mut split) = self.first_touch.lock() {
+            update(&mut split);
+        }
+    }
+
+    /// Move per-tensor SHA off the token path. Catalog file SHA is already
+    /// checked at open. A four-tensor sample is rehashed here; later
+    /// `payload_view` calls skip SHA unless `HAWKING_Q80_REHASH_PAYLOADS=1`.
+    pub fn admit_session(&mut self) -> Result<()> {
+        if self.session_admitted {
+            return Ok(());
+        }
+        for sample in [
+            "model.embed_tokens.weight",
+            "lm_head.weight",
+            "model.layers.0.mlp.experts.0.gate_proj.weight",
+            "model.layers.47.mlp.experts.511.down_proj.weight",
+        ] {
+            if self.rows.contains_key(sample) {
+                let _ = self.payload_view_rehash(sample)?;
+            }
+        }
+        self.session_admitted = true;
+        Ok(())
     }
 
     pub fn tensor_count(&self) -> usize {
@@ -266,11 +335,26 @@ impl Qwen80MixedStreamingCatalog {
         let file = fs::File::open(path).map_err(|error| {
             mixed_error(format!("cannot open segment {}: {error}", path.display()))
         })?;
+        let file_len = file
+            .metadata()
+            .map_err(|error| mixed_error(format!("cannot stat {}: {error}", path.display())))?
+            .len() as usize;
+        let align = 16 * 1024;
+        let map_len = file_len.div_ceil(align).saturating_mul(align).max(align);
+        let started = Instant::now();
         let map = unsafe {
-            memmap2::MmapOptions::new().map(&file).map_err(|error| {
-                mixed_error(format!("cannot mmap segment {}: {error}", path.display()))
-            })?
+            MmapOptions::new()
+                .len(map_len)
+                .map(&file)
+                .map_err(|error| {
+                    mixed_error(format!("cannot mmap segment {}: {error}", path.display()))
+                })?
         };
+        let map_ns = started.elapsed().as_nanos() as u64;
+        self.add_first_touch(|split| {
+            split.mmap_ns = split.mmap_ns.saturating_add(map_ns);
+            split.payloads_mmapped = split.payloads_mmapped.saturating_add(1);
+        });
         let map = Arc::new(map);
         self.maps
             .lock()
@@ -279,9 +363,36 @@ impl Qwen80MixedStreamingCatalog {
         Ok(map)
     }
 
-    /// Slice one payload from a mapped segment. SHA-256 runs once per tensor
-    /// name, never per token.
+    fn hash_window(&self, name: &str, bytes: &[u8], declared: &str) -> Result<()> {
+        let started = Instant::now();
+        let observed = sha256_hex(bytes);
+        let ns = started.elapsed().as_nanos() as u64;
+        self.add_first_touch(|split| {
+            split.sha256_ns = split.sha256_ns.saturating_add(ns);
+            split.payloads_hashed = split.payloads_hashed.saturating_add(1);
+        });
+        if observed != declared {
+            return Err(mixed_error(format!(
+                "{name:?} payload sha256 {observed} != catalog {declared}"
+            )));
+        }
+        if let Ok(mut set) = self.verified.lock() {
+            set.insert(name.to_owned());
+        }
+        Ok(())
+    }
+
+    fn payload_view_rehash(&self, name: &str) -> Result<MixedPayloadView> {
+        self.payload_view_inner(name, true)
+    }
+
+    /// Slice one payload from a mapped segment. After `admit_session`, SHA
+    /// is skipped on the token path (Q4 `session_trusts_payloads` pattern).
     pub fn payload_view(&self, name: &str) -> Result<MixedPayloadView> {
+        self.payload_view_inner(name, false)
+    }
+
+    fn payload_view_inner(&self, name: &str, force_hash: bool) -> Result<MixedPayloadView> {
         let row = self.require_row(name)?;
         let map = self.mmap_segment(&row.segment_path)?;
         let start = usize::try_from(row.offset)
@@ -300,17 +411,13 @@ impl Qwen80MixedStreamingCatalog {
             .lock()
             .map(|set| set.contains(name))
             .unwrap_or(false);
-        if !already {
-            let observed = sha256_hex(&map[start..end]);
-            if observed != row.sha256 {
-                return Err(mixed_error(format!(
-                    "{name:?} payload sha256 {observed} != catalog {}",
-                    row.sha256
-                )));
-            }
-            if let Ok(mut set) = self.verified.lock() {
-                set.insert(name.to_owned());
-            }
+        let skip_sha = !force_hash && self.session_trusts_payloads();
+        if skip_sha {
+            self.add_first_touch(|split| {
+                split.sha_skipped = split.sha_skipped.saturating_add(1);
+            });
+        } else if !already {
+            self.hash_window(name, &map[start..end], &row.sha256)?;
         }
         Ok(MixedPayloadView { map, start, end })
     }

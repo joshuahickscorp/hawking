@@ -28,9 +28,9 @@ use super::qwen80_uniform_q4_hybrid_decode::{
     Qwen80HybridDecodeState,
 };
 use super::qwen_complete_binary::{
-    max_abs_error, rice_q1_row_ptr, MixedPackedTensor, Q80_DOWN_COLS,
-    Q80_DOWN_ROWS, Q80_GATE_COLS, Q80_GATE_ROWS, Q80_HGRAVS_BITS, Q80_HGRAVS_GROUP_SIZE,
-    Q80_HGRAVS_RANK,
+    expand_rice_indices, max_abs_error, mixed_gpu_layout, rice_q1_row_ptr, MixedGpuKind,
+    MixedPackedTensor, RiceQ1Packed, Q80_DOWN_COLS, Q80_DOWN_ROWS, Q80_GATE_COLS,
+    Q80_GATE_ROWS, Q80_HGRAVS_BITS, Q80_HGRAVS_GROUP_SIZE, Q80_HGRAVS_RANK,
 };
 use crate::kernels::{add_inplace, silu_mul};
 use crate::tokenizer::Tokenizer;
@@ -46,6 +46,20 @@ pub const QWEN80_MIXED_EXPECTED_MANIFEST_SEAL: &str =
     "6a09fa747af1431b67e53691bc24dfa421c0a7643c5befb297b2eed0f4a95af6";
 pub const QWEN80_MIXED_NUMERIC_TOL: f32 = 2.0e-5;
 const MIXED_DEFAULT_ROOT_ABS: &str = "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1";
+
+/// Default **on**. Skip per-tensor SHA after session admit and pin each
+/// layer segment as one no-copy MTLBuffer. Set `HAWKING_Q80_HOST_FACET1=0`
+/// to restore the copy+rehash bind path for A/B.
+pub fn qwen80_host_facet1_enabled() -> bool {
+    crate::env_opt_out("HAWKING_Q80_HOST_FACET1")
+}
+
+/// Default **on**. Merge independent matvecs into one command buffer and
+/// keep the routed wave on one fence. Set `HAWKING_Q80_HOST_FACET2=0` to
+/// restore one-CB-per-matvec for A/B.
+pub fn qwen80_host_facet2_enabled() -> bool {
+    crate::env_opt_out("HAWKING_Q80_HOST_FACET2")
+}
 
 /// Requested, logged capability-bar probe. Not a silent fallback.
 /// Identity (rank 160, mix 1) keeps the fused incumbent generate path.
@@ -142,6 +156,12 @@ fn add_secs(slot: &mut f64, started: Instant) {
     *slot += started.elapsed().as_secs_f64();
 }
 
+fn add_elapsed_bind(stages: &mut Qwen80MixedStageTimes, started: Instant) {
+    let ns = started.elapsed().as_nanos() as u64;
+    stages.host_expert_bind_ns = stages.host_expert_bind_ns.saturating_add(ns);
+    stages.host_expert_bind_secs += ns as f64 / 1.0e9;
+}
+
 fn require_rss_cap(label: &str) -> Result<()> {
     let peak = peak_rss_bytes();
     if peak > STREAMED_PEAK_RSS_HARD_CAP_BYTES {
@@ -195,6 +215,10 @@ pub struct Qwen80MixedNativeCounts {
     pub uniform8_dispatches: u64,
     pub routed_expert_waves: u64,
     pub command_buffers: u64,
+    pub compute_dispatches: u64,
+    pub expert_nocopy_binds: u64,
+    pub expert_copy_binds: u64,
+    pub segment_nocopy_binds: u64,
 }
 
 #[derive(Clone, Debug, Default, Serialize)]
@@ -208,10 +232,16 @@ pub struct Qwen80MixedStageTimes {
     pub moe_combine_secs: f64,
     pub terminal_secs: f64,
     pub mixed_matvec_secs: f64,
+    pub host_expert_bind_secs: f64,
+    pub host_expert_bind_ns: u64,
     #[serde(skip)]
     pub activation: Qwen80ActivationClassTimes,
     pub gpu_matvec_ns: u64,
     pub gpu_matvec_timestamps_missing: u64,
+    pub cb_wait_ns: u64,
+    pub cb_submit_ns: u64,
+    pub cb_encode_ns: u64,
+    pub cb_wait_minus_gpu_ns: u64,
 }
 
 #[derive(Clone, Debug, Default, Serialize)]
@@ -237,6 +267,8 @@ impl VectorCache {
 struct GpuBinary {
     signs: crate::metal::PinnedBuffer,
     scales: crate::metal::PinnedBuffer,
+    sign_off: u64,
+    scale_off: u64,
     rows: u32,
     cols: u32,
     group_size: u32,
@@ -249,6 +281,7 @@ struct GpuResidual {
     indices: crate::metal::PinnedBuffer,
     row_ptr: crate::metal::PinnedBuffer,
     residual_signs: crate::metal::PinnedBuffer,
+    residual_sign_off: u64,
     residual_scale_f16: u32,
 }
 
@@ -258,6 +291,10 @@ struct GpuHgravs {
     left_scales: crate::metal::PinnedBuffer,
     right_codes: crate::metal::PinnedBuffer,
     right_scales: crate::metal::PinnedBuffer,
+    left_code_off: u64,
+    left_scale_off: u64,
+    right_code_off: u64,
+    right_scale_off: u64,
     left_rows: u32,
     left_cols: u32,
     right_rows: u32,
@@ -271,6 +308,8 @@ struct GpuHgravs {
 struct GpuUniform {
     codes: crate::metal::PinnedBuffer,
     scales: crate::metal::PinnedBuffer,
+    code_off: u64,
+    scale_off: u64,
     rows: u32,
     cols: u32,
     group_size: u32,
@@ -304,10 +343,22 @@ struct MixedWave {
 }
 
 #[cfg(target_os = "macos")]
+struct MixedScratch {
+    input: crate::metal::PinnedBuffer,
+    out_a: crate::metal::PinnedBuffer,
+    out_b: crate::metal::PinnedBuffer,
+    out_c: crate::metal::PinnedBuffer,
+    out_d: crate::metal::PinnedBuffer,
+    weights: crate::metal::PinnedBuffer,
+    combined: crate::metal::PinnedBuffer,
+}
+
+#[cfg(target_os = "macos")]
 struct MetalMixedAccel {
     context: crate::metal::MetalContext,
     weights: HashMap<String, GpuWeight>,
     experts: HashMap<(usize, u16), MixedExpertGpu>,
+    scratch: MixedScratch,
     wave: MixedWave,
 }
 
@@ -334,8 +385,8 @@ fn encode_binary(
     output: &crate::metal::PinnedBuffer,
     output_offset: u64,
 ) {
-    enc.set_buffer(0, Some(&packed.signs), 0);
-    enc.set_buffer(1, Some(&packed.scales), 0);
+    enc.set_buffer(0, Some(&packed.signs), packed.sign_off);
+    enc.set_buffer(1, Some(&packed.scales), packed.scale_off);
     enc.set_buffer(2, Some(input), 0);
     enc.set_buffer(3, Some(output), output_offset);
     set_u32(enc, 4, packed.rows);
@@ -354,7 +405,7 @@ fn encode_csr(
 ) {
     enc.set_buffer(0, Some(&packed.indices), 0);
     enc.set_buffer(1, Some(&packed.row_ptr), 0);
-    enc.set_buffer(2, Some(&packed.residual_signs), 0);
+    enc.set_buffer(2, Some(&packed.residual_signs), packed.residual_sign_off);
     enc.set_buffer(3, Some(input), 0);
     enc.set_buffer(4, Some(output), output_offset);
     set_u32(enc, 5, packed.binary.rows);
@@ -376,9 +427,11 @@ fn encode_factor(
     group_size: u32,
     bits: u32,
     bound: u32,
+    code_off: u64,
+    scale_off: u64,
 ) {
-    enc.set_buffer(0, Some(codes), 0);
-    enc.set_buffer(1, Some(scales), 0);
+    enc.set_buffer(0, Some(codes), code_off);
+    enc.set_buffer(1, Some(scales), scale_off);
     enc.set_buffer(2, Some(input), input_offset);
     enc.set_buffer(3, Some(output), output_offset);
     set_u32(enc, 4, rows);
@@ -396,6 +449,8 @@ impl MetalMixedAccel {
         let mid = 10 * QWEN80_MOE_INTERMEDIATE * 4;
         let rank = 10 * Q80_HGRAVS_RANK * 4;
         let down = 10 * QWEN80_HIDDEN * 4;
+        let lm_head = QWEN80_VOCAB * 4;
+        let qkvz = 12_288 * 4;
         Ok(Self {
             wave: MixedWave {
                 input: context.new_buffer_checked(hidden)?,
@@ -404,6 +459,15 @@ impl MetalMixedAccel {
                 act: context.new_buffer_checked(mid)?,
                 mid: context.new_buffer_checked(rank)?,
                 down: context.new_buffer_checked(down)?,
+            },
+            scratch: MixedScratch {
+                input: context.new_buffer_checked(qkvz.max(hidden))?,
+                out_a: context.new_buffer_checked(lm_head)?,
+                out_b: context.new_buffer_checked(qkvz)?,
+                out_c: context.new_buffer_checked(qkvz)?,
+                out_d: context.new_buffer_checked(hidden)?,
+                weights: context.new_buffer_checked(10 * 4)?,
+                combined: context.new_buffer_checked(hidden)?,
             },
             context,
             weights: HashMap::new(),
@@ -420,6 +484,8 @@ impl MetalMixedAccel {
             scales: self
                 .context
                 .new_buffer_with_bytes_checked(&as_u8_u16(&packed.scales_f16))?,
+            sign_off: 0,
+            scale_off: 0,
             rows: packed.rows as u32,
             cols: packed.cols as u32,
             group_size: packed.group_size as u32,
@@ -446,6 +512,7 @@ impl MetalMixedAccel {
             residual_signs: self
                 .context
                 .new_buffer_with_bytes_checked(&packed.residual_signs)?,
+            residual_sign_off: 0,
             residual_scale_f16: u32::from(packed.residual_scale_f16),
         })
     }
@@ -483,6 +550,10 @@ impl MetalMixedAccel {
             right_scales: self
                 .context
                 .new_buffer_with_bytes_checked(&as_u8_u16(&right.scales_f16))?,
+            left_code_off: 0,
+            left_scale_off: 0,
+            right_code_off: 0,
+            right_scale_off: 0,
             left_rows: left.rows as u32,
             left_cols: left.cols as u32,
             right_rows: right.rows as u32,
@@ -502,6 +573,8 @@ impl MetalMixedAccel {
             scales: self
                 .context
                 .new_buffer_with_bytes_checked(&as_u8_u16(&packed.scales_f16))?,
+            code_off: 0,
+            scale_off: 0,
             rows: packed.rows as u32,
             cols: packed.cols as u32,
             group_size: packed.group_size as u32,
@@ -523,14 +596,225 @@ impl MetalMixedAccel {
         }
     }
 
+    fn copy_slice(&self, bytes: &[u8]) -> Result<crate::metal::PinnedBuffer> {
+        self.context.new_buffer_with_bytes_checked(bytes)
+    }
+
+    fn upload_from_catalog(
+        &mut self,
+        catalog: &Qwen80MixedStreamingCatalog,
+        name: &str,
+        native: &mut Qwen80MixedNativeCounts,
+    ) -> Result<GpuWeight> {
+        let row = catalog.require_row(name)?;
+        let view = catalog.payload_view(name)?;
+        let payload = view.as_slice();
+        let layout = mixed_gpu_layout(row.codec, payload)?;
+        native.expert_nocopy_binds = native.expert_nocopy_binds.saturating_add(1);
+        match layout.kind {
+            MixedGpuKind::Binary {
+                scale_off,
+                scale_bytes,
+                sign_off,
+                sign_bytes,
+                group_size,
+                groups_per_row,
+            } => Ok(GpuWeight::Binary(GpuBinary {
+                signs: self.copy_slice(&payload[sign_off..sign_off + sign_bytes])?,
+                scales: self.copy_slice(&payload[scale_off..scale_off + scale_bytes])?,
+                sign_off: 0,
+                scale_off: 0,
+                rows: layout.rows,
+                cols: layout.cols,
+                group_size,
+                groups_per_row,
+            })),
+            MixedGpuKind::Residual {
+                ref binary,
+                residual_sign_off,
+                residual_sign_bytes,
+                rice_k,
+                first_index,
+                rice_off,
+                rice_bytes,
+                outlier_count,
+                residual_scale_f16,
+            } => {
+                let MixedGpuKind::Binary {
+                    scale_off,
+                    scale_bytes,
+                    sign_off,
+                    sign_bytes,
+                    group_size,
+                    groups_per_row,
+                } = binary.as_ref()
+                else {
+                    return Err(mixed_error("residual binary layout drifted"));
+                };
+                let rice = RiceQ1Packed {
+                    binary: super::qwen_complete_binary::BinaryGroupPacked {
+                        rows: layout.rows as usize,
+                        cols: layout.cols as usize,
+                        group_size: *group_size as usize,
+                        groups_per_row: *groups_per_row as usize,
+                        scales_f16: Vec::new(),
+                        signs: Vec::new(),
+                    },
+                    first_index,
+                    rice_k,
+                    rice_bytes: payload[rice_off..rice_off + rice_bytes].to_vec(),
+                    outlier_count,
+                    residual_scale_f16: residual_scale_f16 as u16,
+                    residual_signs: Vec::new(),
+                    indices: Vec::new(),
+                };
+                let indices = expand_rice_indices(&rice)?;
+                let row_ptr = rice_q1_row_ptr(&indices, layout.rows as usize, layout.cols as usize)?;
+                let idx_bytes: Vec<u8> = indices.iter().flat_map(|v| v.to_le_bytes()).collect();
+                let ptr_bytes: Vec<u8> = row_ptr.iter().flat_map(|v| v.to_le_bytes()).collect();
+                Ok(GpuWeight::Residual(GpuResidual {
+                    binary: GpuBinary {
+                        signs: self.copy_slice(&payload[*sign_off..*sign_off + *sign_bytes])?,
+                        scales: self.copy_slice(&payload[*scale_off..*scale_off + *scale_bytes])?,
+                        sign_off: 0,
+                        scale_off: 0,
+                        rows: layout.rows,
+                        cols: layout.cols,
+                        group_size: *group_size,
+                        groups_per_row: *groups_per_row,
+                    },
+                    indices: self.context.new_buffer_with_bytes_checked(&idx_bytes)?,
+                    row_ptr: self.context.new_buffer_with_bytes_checked(&ptr_bytes)?,
+                    residual_signs: self
+                        .copy_slice(&payload[residual_sign_off..residual_sign_off + residual_sign_bytes])?,
+                    residual_sign_off: 0,
+                    residual_scale_f16,
+                }))
+            }
+            MixedGpuKind::Hgravs { left, right } => Ok(GpuWeight::Hgravs(GpuHgravs {
+                left_codes: self.copy_slice(&payload[left.code_off..left.code_off + left.code_bytes])?,
+                left_scales: self
+                    .copy_slice(&payload[left.scale_off..left.scale_off + left.scale_bytes])?,
+                right_codes: self
+                    .copy_slice(&payload[right.code_off..right.code_off + right.code_bytes])?,
+                right_scales: self
+                    .copy_slice(&payload[right.scale_off..right.scale_off + right.scale_bytes])?,
+                left_code_off: 0,
+                left_scale_off: 0,
+                right_code_off: 0,
+                right_scale_off: 0,
+                left_rows: left.rows,
+                left_cols: left.cols,
+                right_rows: right.rows,
+                right_cols: right.cols,
+                group_size: left.group_size,
+                bits: left.bits,
+                bound: left.bound,
+            })),
+            MixedGpuKind::Uniform(factor) => Ok(GpuWeight::Uniform(GpuUniform {
+                codes: self
+                    .copy_slice(&payload[factor.code_off..factor.code_off + factor.code_bytes])?,
+                scales: self
+                    .copy_slice(&payload[factor.scale_off..factor.scale_off + factor.scale_bytes])?,
+                code_off: 0,
+                scale_off: 0,
+                rows: factor.rows,
+                cols: factor.cols,
+                group_size: factor.group_size,
+                bits: factor.bits,
+                bound: factor.bound,
+            })),
+        }
+    }
+
+    fn encode_weight(
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        weight: &GpuWeight,
+        input: &crate::metal::PinnedBuffer,
+        output: &crate::metal::PinnedBuffer,
+        native: &mut Qwen80MixedNativeCounts,
+    ) -> Result<()> {
+        match weight {
+            GpuWeight::Binary(body) => {
+                tcb.dispatch_threads(
+                    "q80_binary_group_matvec",
+                    (body.rows, 1, 1),
+                    (256, 1, 1),
+                    |enc| encode_binary(enc, body, input, output, 0),
+                )?;
+                native.binary_dispatches = native.binary_dispatches.saturating_add(1);
+            }
+            GpuWeight::Residual(body) => {
+                tcb.dispatch_threads(
+                    "q80_binary_group_matvec",
+                    (body.binary.rows, 1, 1),
+                    (256, 1, 1),
+                    |enc| encode_binary(enc, &body.binary, input, output, 0),
+                )?;
+                tcb.dispatch_threads(
+                    "q80_sparse_q1_apply_csr",
+                    (body.binary.rows, 1, 1),
+                    (256, 1, 1),
+                    |enc| encode_csr(enc, body, input, output, 0),
+                )?;
+                native.binary_dispatches = native.binary_dispatches.saturating_add(1);
+                native.residual_dispatches = native.residual_dispatches.saturating_add(1);
+            }
+            GpuWeight::Hgravs(body) => {
+                return Err(mixed_error(
+                    "hgravs encode_weight needs a mid buffer; use matvec",
+                ));
+            }
+            GpuWeight::Uniform(body) => {
+                tcb.dispatch_threads(
+                    "q80_hgravs01_factor_matvec",
+                    (body.rows, 1, 1),
+                    (256, 1, 1),
+                    |enc| {
+                        encode_factor(
+                            enc,
+                            &body.codes,
+                            &body.scales,
+                            input,
+                            0,
+                            output,
+                            0,
+                            body.rows,
+                            body.cols,
+                            body.group_size,
+                            body.bits,
+                            body.bound,
+                            body.code_off,
+                            body.scale_off,
+                        )
+                    },
+                )?;
+                native.uniform8_dispatches = native.uniform8_dispatches.saturating_add(1);
+            }
+        }
+        let _ = native;
+        Ok(())
+    }
+
     fn note_timing(
         stages: &mut Qwen80MixedStageTimes,
         native: &mut Qwen80MixedNativeCounts,
         timing: &crate::metal::CommandBufferTiming,
     ) {
         native.command_buffers = native.command_buffers.saturating_add(1);
+        native.compute_dispatches = native
+            .compute_dispatches
+            .saturating_add(timing.dispatches);
+        stages.cb_wait_ns = stages.cb_wait_ns.saturating_add(timing.wait_ns);
+        stages.cb_submit_ns = stages.cb_submit_ns.saturating_add(timing.submit_ns);
+        stages.cb_encode_ns = stages.cb_encode_ns.saturating_add(timing.encode_ns);
         match timing.gpu_ns {
-            Some(ns) => stages.gpu_matvec_ns = stages.gpu_matvec_ns.saturating_add(ns),
+            Some(ns) => {
+                stages.gpu_matvec_ns = stages.gpu_matvec_ns.saturating_add(ns);
+                stages.cb_wait_minus_gpu_ns = stages
+                    .cb_wait_minus_gpu_ns
+                    .saturating_add(timing.wait_ns.saturating_sub(ns));
+            }
             None => {
                 stages.gpu_matvec_timestamps_missing =
                     stages.gpu_matvec_timestamps_missing.saturating_add(1)
@@ -558,6 +842,7 @@ impl MetalMixedAccel {
             )));
         }
         if !self.weights.contains_key(name) {
+            native.expert_copy_binds = native.expert_copy_binds.saturating_add(1);
             let uploaded = self.upload_tensor(packed)?;
             self.weights.insert(name.to_owned(), uploaded);
         }
@@ -614,6 +899,8 @@ impl MetalMixedAccel {
                             body.group_size,
                             body.bits,
                             body.bound,
+                            body.right_code_off,
+                            body.right_scale_off,
                         )
                     },
                 )?;
@@ -635,6 +922,8 @@ impl MetalMixedAccel {
                             body.group_size,
                             body.bits,
                             body.bound,
+                            body.left_code_off,
+                            body.left_scale_off,
                         )
                     },
                 )?;
@@ -660,6 +949,8 @@ impl MetalMixedAccel {
                             body.group_size,
                             body.bits,
                             body.bound,
+                            body.code_off,
+                            body.scale_off,
                         )
                     },
                 )?;
@@ -672,18 +963,122 @@ impl MetalMixedAccel {
         Ok(())
     }
 
+    fn ensure_named_weight(
+        &mut self,
+        catalog: &Qwen80MixedStreamingCatalog,
+        name: &str,
+        packed: &MixedPackedTensor,
+        native: &mut Qwen80MixedNativeCounts,
+    ) -> Result<()> {
+        if self.weights.contains_key(name) {
+            return Ok(());
+        }
+        let uploaded = if qwen80_host_facet1_enabled() {
+            self.upload_from_catalog(catalog, name, native)?
+        } else {
+            native.expert_copy_binds = native.expert_copy_binds.saturating_add(1);
+            self.upload_tensor(packed)?
+        };
+        self.weights.insert(name.to_owned(), uploaded);
+        Ok(())
+    }
+
+    fn matvec_group_same_input(
+        &mut self,
+        catalog: &Qwen80MixedStreamingCatalog,
+        names: &[&str],
+        packed: &[MixedPackedTensor],
+        input: &[f32],
+        outputs: &mut [&mut [f32]],
+        native: &mut Qwen80MixedNativeCounts,
+        stages: &mut Qwen80MixedStageTimes,
+    ) -> Result<()> {
+        if names.len() != outputs.len() || names.len() != packed.len() || names.is_empty() {
+            return Err(mixed_error("matvec group arity drifted"));
+        }
+        if !qwen80_host_facet2_enabled() || names.len() == 1 {
+            for i in 0..names.len() {
+                self.ensure_named_weight(catalog, names[i], &packed[i], native)?;
+                self.matvec(names[i], &packed[i], input, outputs[i], native, stages)?;
+            }
+            return Ok(());
+        }
+        for i in 0..names.len() {
+            self.ensure_named_weight(catalog, names[i], &packed[i], native)?;
+        }
+        if names.iter().any(|name| {
+            self.weights
+                .get(*name)
+                .map(|w| matches!(w, GpuWeight::Hgravs(_)))
+                .unwrap_or(false)
+        }) {
+            for i in 0..names.len() {
+                self.matvec(names[i], &packed[i], input, outputs[i], native, stages)?;
+            }
+            return Ok(());
+        }
+        write_f32(&self.scratch.input, input);
+        let outs = [
+            self.scratch.out_a.clone(),
+            self.scratch.out_b.clone(),
+            self.scratch.out_c.clone(),
+            self.scratch.out_d.clone(),
+        ];
+        if names.len() > outs.len() {
+            return Err(mixed_error("matvec group exceeds scratch slots"));
+        }
+        let input_buf = self.scratch.input.clone();
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&self.context);
+        tcb.begin_serial_group()?;
+        for (i, name) in names.iter().enumerate() {
+            let weight = self
+                .weights
+                .get(*name)
+                .ok_or_else(|| mixed_error("weight missing after ensure"))?;
+            Self::encode_weight(&mut tcb, weight, &input_buf, &outs[i], native)?;
+        }
+        tcb.end_concurrent_group()?;
+        let timing = tcb.commit_and_wait_timed()?;
+        Self::note_timing(stages, native, &timing);
+        for (i, out) in outputs.iter_mut().enumerate() {
+            out.copy_from_slice(&read_f32(&outs[i], out.len()));
+        }
+        Ok(())
+    }
+
     fn ensure_expert(
         &mut self,
         catalog: &Qwen80MixedStreamingCatalog,
         layer: usize,
         expert: u16,
+        native: &mut Qwen80MixedNativeCounts,
+        stages: &mut Qwen80MixedStageTimes,
     ) -> Result<()> {
         if self.experts.contains_key(&(layer, expert)) {
             return Ok(());
         }
+        let bind_started = Instant::now();
         let gate_name = format!("model.layers.{layer}.mlp.experts.{expert}.gate_proj.weight");
         let up_name = format!("model.layers.{layer}.mlp.experts.{expert}.up_proj.weight");
         let down_name = format!("model.layers.{layer}.mlp.experts.{expert}.down_proj.weight");
+        if qwen80_host_facet1_enabled() {
+            let gate = match self.upload_from_catalog(catalog, &gate_name, native)? {
+                GpuWeight::Binary(body) => body,
+                _ => return Err(mixed_error(format!("{gate_name} did not parse as binary"))),
+            };
+            let up = match self.upload_from_catalog(catalog, &up_name, native)? {
+                GpuWeight::Residual(body) => body,
+                _ => return Err(mixed_error(format!("{up_name} did not parse as rice residual"))),
+            };
+            let down = match self.upload_from_catalog(catalog, &down_name, native)? {
+                GpuWeight::Hgravs(body) => body,
+                _ => return Err(mixed_error(format!("{down_name} did not parse as hgravs01"))),
+            };
+            self.experts
+                .insert((layer, expert), MixedExpertGpu { gate, up, down });
+            add_elapsed_bind(stages, bind_started);
+            return Ok(());
+        }
         let gate_row = catalog.require_row(&gate_name)?;
         let up_row = catalog.require_row(&up_name)?;
         let down_row = catalog.require_row(&down_name)?;
@@ -743,6 +1138,146 @@ impl MetalMixedAccel {
         };
         self.experts
             .insert((layer, expert), MixedExpertGpu { gate, up, down });
+        native.expert_copy_binds = native.expert_copy_binds.saturating_add(3);
+        add_elapsed_bind(stages, bind_started);
+        Ok(())
+    }
+
+    fn routed_wave_fused(
+        &mut self,
+        _layer: usize,
+        ids: &[u16],
+        weights: &[f32],
+        input: &[f32],
+        combined: &mut [f32],
+        native: &mut Qwen80MixedNativeCounts,
+        stages: &mut Qwen80MixedStageTimes,
+    ) -> Result<()> {
+        write_f32(&self.wave.input, input);
+        write_f32(&self.scratch.weights, weights);
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&self.context);
+        tcb.begin_serial_group()?;
+        for (slot, &expert) in ids.iter().enumerate() {
+            let trip = self
+                .experts
+                .get(&(_layer, expert))
+                .ok_or_else(|| mixed_error("expert missing after ensure"))?;
+            let mid_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
+            tcb.dispatch_threads(
+                "q80_binary_group_matvec",
+                (trip.gate.rows, 1, 1),
+                (256, 1, 1),
+                |enc| encode_binary(enc, &trip.gate, &self.wave.input, &self.wave.gate, mid_off),
+            )?;
+            tcb.dispatch_threads(
+                "q80_binary_group_matvec",
+                (trip.up.binary.rows, 1, 1),
+                (256, 1, 1),
+                |enc| {
+                    encode_binary(
+                        enc,
+                        &trip.up.binary,
+                        &self.wave.input,
+                        &self.wave.up,
+                        mid_off,
+                    )
+                },
+            )?;
+            tcb.dispatch_threads(
+                "q80_sparse_q1_apply_csr",
+                (trip.up.binary.rows, 1, 1),
+                (256, 1, 1),
+                |enc| encode_csr(enc, &trip.up, &self.wave.input, &self.wave.up, mid_off),
+            )?;
+            native.binary_dispatches = native.binary_dispatches.saturating_add(2);
+            native.residual_dispatches = native.residual_dispatches.saturating_add(1);
+        }
+        let silu_n = (10 * QWEN80_MOE_INTERMEDIATE) as u32;
+        tcb.dispatch_threads(
+            "qwen80_expert_table_silu_mul",
+            (silu_n.div_ceil(256) * 256, 1, 1),
+            (256, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&self.wave.gate), 0);
+                enc.set_buffer(1, Some(&self.wave.up), 0);
+                enc.set_buffer(2, Some(&self.wave.act), 0);
+                set_u32(enc, 3, silu_n);
+            },
+        )?;
+        for (slot, &expert) in ids.iter().enumerate() {
+            let trip = self
+                .experts
+                .get(&(_layer, expert))
+                .ok_or_else(|| mixed_error("expert missing after ensure"))?;
+            let act_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
+            let mid_off = (slot * Q80_HGRAVS_RANK * 4) as u64;
+            let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
+            tcb.dispatch_threads(
+                "q80_hgravs01_factor_matvec",
+                (trip.down.right_rows, 1, 1),
+                (256, 1, 1),
+                |enc| {
+                    encode_factor(
+                        enc,
+                        &trip.down.right_codes,
+                        &trip.down.right_scales,
+                        &self.wave.act,
+                        act_off,
+                        &self.wave.mid,
+                        mid_off,
+                        trip.down.right_rows,
+                        trip.down.right_cols,
+                        trip.down.group_size,
+                        trip.down.bits,
+                        trip.down.bound,
+                        trip.down.right_code_off,
+                        trip.down.right_scale_off,
+                    )
+                },
+            )?;
+            tcb.dispatch_threads(
+                "q80_hgravs01_factor_matvec",
+                (trip.down.left_rows, 1, 1),
+                (256, 1, 1),
+                |enc| {
+                    encode_factor(
+                        enc,
+                        &trip.down.left_codes,
+                        &trip.down.left_scales,
+                        &self.wave.mid,
+                        mid_off,
+                        &self.wave.down,
+                        down_off,
+                        trip.down.left_rows,
+                        trip.down.left_cols,
+                        trip.down.group_size,
+                        trip.down.bits,
+                        trip.down.bound,
+                        trip.down.left_code_off,
+                        trip.down.left_scale_off,
+                    )
+                },
+            )?;
+            native.hgravs_factor_dispatches = native.hgravs_factor_dispatches.saturating_add(2);
+        }
+        let hidden = QWEN80_HIDDEN as u32;
+        tcb.dispatch_threads(
+            "qwen80_expert_table_weighted_sum",
+            (hidden.div_ceil(256) * 256, 1, 1),
+            (256, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&self.wave.down), 0);
+                enc.set_buffer(1, Some(&self.scratch.weights), 0);
+                enc.set_buffer(2, Some(&self.scratch.combined), 0);
+                set_u32(enc, 3, hidden);
+                set_u32(enc, 4, 10);
+            },
+        )?;
+        tcb.end_concurrent_group()?;
+        let timing = tcb.commit_and_wait_timed()?;
+        Self::note_timing(stages, native, &timing);
+        combined.copy_from_slice(&read_f32(&self.scratch.combined, QWEN80_HIDDEN));
+        native.routed_expert_waves = native.routed_expert_waves.saturating_add(1);
         Ok(())
     }
 
@@ -762,7 +1297,12 @@ impl MetalMixedAccel {
             return Err(mixed_error("routed wave expects top-10 and hidden=2048"));
         }
         for &expert in ids {
-            self.ensure_expert(catalog, layer, expert)?;
+            self.ensure_expert(catalog, layer, expert, native, stages)?;
+        }
+        if qwen80_host_facet2_enabled() && degrade.is_identity() {
+            return self.routed_wave_fused(
+                layer, ids, weights, input, combined, native, stages,
+            );
         }
         write_f32(&self.wave.input, input);
         let mut tcb = crate::metal::TokenCommandBuffer::new(&self.context);
@@ -858,6 +1398,8 @@ impl MetalMixedAccel {
                         trip.down.group_size,
                         trip.down.bits,
                         trip.down.bound,
+                        trip.down.right_code_off,
+                        trip.down.right_scale_off,
                     )
                 },
             )?;
@@ -881,6 +1423,8 @@ impl MetalMixedAccel {
                             trip.down.group_size,
                             trip.down.bits,
                             trip.down.bound,
+                            trip.down.left_code_off,
+                            trip.down.left_scale_off,
                         )
                     },
                 )?;
@@ -925,6 +1469,8 @@ impl MetalMixedAccel {
                             trip.down.group_size,
                             trip.down.bits,
                             trip.down.bound,
+                            trip.down.left_code_off,
+                            trip.down.left_scale_off,
                         )
                     },
                 )?;
@@ -977,12 +1523,15 @@ pub struct Qwen80MixedHybridDecodeSession {
 }
 
 impl Qwen80MixedHybridDecodeSession {
-    pub fn new(catalog: Qwen80MixedStreamingCatalog, max_seq_len: usize) -> Result<Self> {
+    pub fn new(mut catalog: Qwen80MixedStreamingCatalog, max_seq_len: usize) -> Result<Self> {
         if catalog.tensor_count() != QWEN80_MIXED_EXPECTED_TENSOR_COUNT {
             return Err(mixed_error(format!(
                 "catalog tensor count {} != {QWEN80_MIXED_EXPECTED_TENSOR_COUNT}",
                 catalog.tensor_count()
             )));
+        }
+        if qwen80_host_facet1_enabled() {
+            catalog.admit_session()?;
         }
         #[cfg(target_os = "macos")]
         let (metal, metal_error) = match MetalMixedAccel::new() {
@@ -1148,6 +1697,7 @@ impl Qwen80MixedHybridDecodeSession {
                     "Metal required for {name}; refusing host mixed matvec"
                 )));
             };
+            metal.ensure_named_weight(&self.catalog, name, &packed, &mut self.native)?;
             metal.matvec(
                 name,
                 &packed,
@@ -1166,6 +1716,53 @@ impl Qwen80MixedHybridDecodeSession {
             Err(mixed_error(format!(
                 "refusing host mixed matvec for {name}"
             )))
+        }
+    }
+
+    fn matvec_named_group(
+        &mut self,
+        names: &[&str],
+        input: &[f32],
+        outputs: &mut [&mut [f32]],
+    ) -> Result<()> {
+        if names.len() != outputs.len() {
+            return Err(mixed_error("matvec group arity drifted"));
+        }
+        if !qwen80_host_facet2_enabled() || names.len() < 2 {
+            for (name, out) in names.iter().zip(outputs.iter_mut()) {
+                self.matvec_named(name, input, out)?;
+            }
+            return Ok(());
+        }
+        let started = Instant::now();
+        let mut packed = Vec::with_capacity(names.len());
+        for name in names {
+            packed.push(self.packed(name)?);
+        }
+        #[cfg(target_os = "macos")]
+        {
+            let Some(metal) = self.metal.as_mut() else {
+                return Err(mixed_error("Metal required for grouped mixed matvec"));
+            };
+            metal.matvec_group_same_input(
+                &self.catalog,
+                names,
+                &packed,
+                input,
+                outputs,
+                &mut self.native,
+                &mut self.stages,
+            )?;
+            add_secs(&mut self.stages.mixed_matvec_secs, started);
+            return Ok(());
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = started;
+            for (name, out) in names.iter().zip(outputs.iter_mut()) {
+                self.matvec_named(name, input, out)?;
+            }
+            Ok(())
         }
     }
 
@@ -1214,8 +1811,7 @@ impl Qwen80MixedHybridDecodeSession {
         let mut act = vec![0.0f32; intermediate];
         let mut down = vec![0.0f32; QWEN80_HIDDEN];
         let sandwich = Instant::now();
-        self.matvec_named(gate_name, input, &mut gate)?;
-        self.matvec_named(up_name, input, &mut up)?;
+        self.matvec_named_group(&[gate_name, up_name], input, &mut [&mut gate, &mut up])?;
         let silu_started = Instant::now();
         silu_mul(&gate, &up, &mut act);
         add_secs(&mut self.stages.activation.shared_swiglu_secs, silu_started);
@@ -1249,15 +1845,12 @@ impl Qwen80MixedHybridDecodeSession {
         let ba_rows = layout.ba_projection_elements()?;
         let mut projected_qkvz = vec![0.0f32; qkvz_rows];
         let mut projected_ba = vec![0.0f32; ba_rows];
-        self.matvec_named(
-            &Self::layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
+        let qkvz_name = Self::layer_name(layer, "linear_attn.in_proj_qkvz.weight");
+        let ba_name = Self::layer_name(layer, "linear_attn.in_proj_ba.weight");
+        self.matvec_named_group(
+            &[&qkvz_name, &ba_name],
             &rms,
-            &mut projected_qkvz,
-        )?;
-        self.matvec_named(
-            &Self::layer_name(layer, "linear_attn.in_proj_ba.weight"),
-            &rms,
-            &mut projected_ba,
+            &mut [&mut projected_qkvz, &mut projected_ba],
         )?;
         let (raw_query, raw_key, raw_value, z) =
             source_qwen80_split_linear_qkvz(&projected_qkvz, &layout)?;
@@ -1398,20 +1991,13 @@ impl Qwen80MixedHybridDecodeSession {
         let mut q_projection = vec![0.0f32; layout.q_proj_rows];
         let mut k_projection = vec![0.0f32; layout.kv_dim];
         let mut v_projection = vec![0.0f32; layout.kv_dim];
-        self.matvec_named(
-            &Self::layer_name(layer, "self_attn.q_proj.weight"),
+        let q_name = Self::layer_name(layer, "self_attn.q_proj.weight");
+        let k_name = Self::layer_name(layer, "self_attn.k_proj.weight");
+        let v_name = Self::layer_name(layer, "self_attn.v_proj.weight");
+        self.matvec_named_group(
+            &[&q_name, &k_name, &v_name],
             &rms,
-            &mut q_projection,
-        )?;
-        self.matvec_named(
-            &Self::layer_name(layer, "self_attn.k_proj.weight"),
-            &rms,
-            &mut k_projection,
-        )?;
-        self.matvec_named(
-            &Self::layer_name(layer, "self_attn.v_proj.weight"),
-            &rms,
-            &mut v_projection,
+            &mut [&mut q_projection, &mut k_projection, &mut v_projection],
         )?;
         let q_norm = self.vector(&Self::layer_name(layer, "self_attn.q_norm.weight"))?;
         let k_norm = self.vector(&Self::layer_name(layer, "self_attn.k_norm.weight"))?;
@@ -1689,6 +2275,10 @@ pub struct Qwen80MixedGreedyResult {
     pub steady_state_tok_s: f64,
     pub wall_ns_per_token: f64,
     pub gpu_matvec_ns_per_token: f64,
+    pub host_expert_bind_ns_per_token: f64,
+    pub wait_minus_gpu_ns_per_token: f64,
+    pub command_buffers_per_token: f64,
+    pub dispatches_per_token: f64,
     pub peak_rss_bytes: u64,
     pub fallbacks: Qwen80MixedFallbackCounts,
     pub native: Qwen80MixedNativeCounts,
@@ -1729,6 +2319,11 @@ pub fn generate_mixed_greedy(
         next = session.forward_token(token)?;
     }
     let prefill_secs = prefill_started.elapsed().as_secs_f64();
+    let prefill_bind_ns = session.stages.host_expert_bind_ns;
+    let prefill_wait_minus_ns = session.stages.cb_wait_minus_gpu_ns;
+    let prefill_cbs = session.native.command_buffers;
+    let prefill_dispatches = session.native.compute_dispatches;
+    let prefill_gpu_ns = session.stages.gpu_matvec_ns;
     let mut generated = Vec::with_capacity(max_new_tokens);
     generated.push(next);
     let decode_started = Instant::now();
@@ -1769,7 +2364,27 @@ pub fn generate_mixed_greedy(
     } else {
         0.0
     };
-    let gpu_matvec_ns_per_token = session.stages.gpu_matvec_ns as f64 / wall_tokens;
+    let decode_forwards = wall_tokens;
+    let gpu_matvec_ns_per_token =
+        session.stages.gpu_matvec_ns.saturating_sub(prefill_gpu_ns) as f64 / decode_forwards;
+    let host_expert_bind_ns_per_token = session
+        .stages
+        .host_expert_bind_ns
+        .saturating_sub(prefill_bind_ns) as f64
+        / decode_forwards;
+    let wait_minus_gpu_ns_per_token = session
+        .stages
+        .cb_wait_minus_gpu_ns
+        .saturating_sub(prefill_wait_minus_ns) as f64
+        / decode_forwards;
+    let command_buffers_per_token = session.native.command_buffers.saturating_sub(prefill_cbs)
+        as f64
+        / decode_forwards;
+    let dispatches_per_token = session
+        .native
+        .compute_dispatches
+        .saturating_sub(prefill_dispatches) as f64
+        / decode_forwards;
     Ok(Qwen80MixedGreedyResult {
         prompt: prompt.to_owned(),
         prompt_token_ids,
@@ -1783,6 +2398,10 @@ pub fn generate_mixed_greedy(
         steady_state_tok_s,
         wall_ns_per_token,
         gpu_matvec_ns_per_token,
+        host_expert_bind_ns_per_token,
+        wait_minus_gpu_ns_per_token,
+        command_buffers_per_token,
+        dispatches_per_token,
         peak_rss_bytes: peak_rss_bytes(),
         fallbacks: session.fallbacks.clone(),
         native: session.native.clone(),
