@@ -1540,6 +1540,8 @@ mod imp {
             "dsv4f_fp4_matvec_split_simd_r4" => "dsv4f_fp4_matvec_split_simd_r4",
             "dsv4f_fp4_matvec_interleaved" => "dsv4f_fp4_matvec_interleaved",
             "dsv4f_worklist_fp4_matvec_simd" => "dsv4f_worklist_fp4_matvec_simd",
+            "dsv4f_diag_fp4_load_only_simd" => "dsv4f_diag_fp4_load_only_simd",
+            "dsv4f_diag_f32_matvec_simd" => "dsv4f_diag_f32_matvec_simd",
             "dsv4f_worklist_swiglu" => "dsv4f_worklist_swiglu",
             "dsv4f_worklist_combine" => "dsv4f_worklist_combine",
             "dsv4f_ax_act_quant_bf16_ue8m0_batched" => "dsv4f_ax_act_quant_bf16_ue8m0_batched",
@@ -5660,6 +5662,8 @@ mod imp {
                 "dsv4f_pack_worklist",
                 "dsv4f_worklist_fp4_matvec",
                 "dsv4f_worklist_fp4_matvec_simd",
+                "dsv4f_diag_fp4_load_only_simd",
+                "dsv4f_diag_f32_matvec_simd",
                 "dsv4f_worklist_swiglu",
                 "dsv4f_worklist_combine",
             ];

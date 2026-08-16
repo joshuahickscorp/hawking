@@ -1,0 +1,167 @@
+{
+  "schema": "hawking.ascension.dsv4f_gpu_body_wall.v1",
+  "date": "2026-08-16",
+  "lane": "dsv4f-gpu-body",
+  "verified_by_me": "Whole-token GPU times from GPU-locked host-wall warm R2-R6 (137/137 CBs timestamped, hc_sha c94da765 on every rep, fallbacks 0). Isolated organs measured this lane under ./tools/gpu_lane_lock.sh dsv4f-gpu-body, 2 warmup + 3 alternating pairs, MTLCommandBuffer GPUEnd-GPUStart only. Diagnostic kernels do not run on the production graph.",
+  "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+  "fallbacks": 0,
+  "gpu_time_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+  "honest_ceiling_gb_s": 411.51,
+  "THE_HEADLINE": {
+    "unique_stored_bytes_per_token": 10280061568,
+    "unique_stored_gb": 10.280061568,
+    "metal_gpu_ns_median_warm_r2_r6": 399023000,
+    "metal_gpu_ms_median": 399.023,
+    "metal_gpu_ms_min": 396.549,
+    "metal_gpu_ms_max": 407.558,
+    "achieved_gb_s": 25.763,
+    "factor_off_ceiling": 15.97,
+    "pct_of_ceiling": 6.26,
+    "this_commit_page_warm": {
+      "note": "ee09f5122, gk_worklist_fp4_simd, 134 CBs / 1642 dispatches. Page-warm bodies (942-1037 ms) after discarding 6.7s/7.8s first-touch. DIRTY: other lanes live. Not a replacement for the host-wall 399 ms authority.",
+      "gpu_ms": [309.994, 275.627, 290.964, 298.293],
+      "gpu_ms_median": 294.628,
+      "achieved_gb_s": 34.89,
+      "factor_off_ceiling": 11.79,
+      "hc_sha_all_seven_tokens": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "fallbacks": 0,
+      "greedy_token": 5,
+      "greedy_logit": 16.7818546295166
+    },
+    "q80_mixed_was": {
+      "bytes_gb": 2.218,
+      "gpu_ms": 863.4,
+      "achieved_gb_s": 2.57,
+      "factor_off_ceiling": 160.0
+    },
+    "vs_q80_mixed": "DSV4F is 10x closer to the honest ceiling than Q80 mixed (25.76 vs 2.57 GB/s). The Q80 reconstruction-wall conclusion does NOT transfer. DSV4F experts are already 16-level FP4; they are not BF16-derived mixed codecs."
+  },
+  "BYTE_BUDGET": {
+    "note": "Unique stored bytes the GPU must read at least once per BOS token, from sealed pair shapes and source dtypes. TOKEN_NS 5.857 GB used a 3.675 BPW blend and under-counts stored traffic by 1.75x.",
+    "token_ns_bytes_were_wrong": 5857237264,
+    "token_ns_bpw_blend_was_wrong": 3.6755365973182523,
+    "components": {
+      "routed_fp4_plus_ue8m0_scale": 3449290752,
+      "shared_fp8_plus_scale": 1082196480,
+      "mla_fp8_plus_scale": 4599335040,
+      "router_bf16": 90177536,
+      "lm_head_bf16": 1059061760
+    },
+    "total": 10280061568,
+    "floor_at_411_51_ms": 24.98,
+    "floor_at_320_ms": 32.13,
+    "bytes_to_hit_20ms_at_411_51": 8230200000,
+    "gate_20ms_unreachable_on_this_byte_budget": true,
+    "gate_proof": "10.280 GB / 411.51 GB/s = 24.98 ms. The 20 ms/token gate is below the honest DRAM floor of the bytes that already exist. Compressing routed experts further cannot close that: they are 3.45 GB of 10.28 GB (33.6%). MLA 4.60 GB + lm_head 1.06 GB + shared 1.08 GB are the other 66%."
+  },
+  "PRODUCTION_GPU_SPLIT_WARM_R6": {
+    "source": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+    "attn_ms": 195.077,
+    "moe_ms": 160.137,
+    "route_ms": 38.228,
+    "lm_head_ms": 3.107,
+    "attn_bytes": 4599335040,
+    "moe_bytes": 4531487232,
+    "route_bytes": 90177536,
+    "lm_head_bytes": 1059061760,
+    "attn_gb_s": 23.58,
+    "moe_gb_s": 28.30,
+    "route_gb_s": 2.36,
+    "lm_head_gb_s": 340.86,
+    "lm_head_pct_of_ceiling": 82.8,
+    "positive_control": "LM head on the real token, same process, same GPU lock, moves 1.059 GB in 3.11 ms = 341 GB/s. The 411.51 ceiling is real on this box. The 399 ms GPU body is not a bandwidth roof."
+  },
+  "NAMED_SATURATED_RESOURCE": {
+    "primary": "occupancy / launch geometry",
+    "secondary": "FP4 access-pattern issue/latency (not ALU reconstruction)",
+    "not": [
+      "peak memory bandwidth",
+      "register pressure",
+      "ALU-saturating reconstruction of the Q80-mixed kind",
+      "137 command buffers as the GPU-time cause (those are a host/wait tax; GPU timestamps already sum to 399 ms of device-busy time)"
+    ]
+  },
+  "EVIDENCE_ALU_IS_IDLE": {
+    "fp4_w1_simd_gflops": 163.02,
+    "m3_ultra_60c_fp32_tflops_approx": 21.2,
+    "alu_utilization": 0.0077,
+    "even_with_8_decode_flops_per_weight": 0.061,
+    "pipeline_max_total_threads_per_threadgroup": 1024,
+    "fp4_simd_uses_threads_per_tg": 256,
+    "register_pressure": false,
+    "same_geometry_f32_gb_s": 428.81,
+    "same_geometry_f32_proves": "The 2048-row / 256-threadgroup launch can saturate (and slightly exceed) the 411.51 ceiling when each lane walks sequential f32. Occupancy of that grid is sufficient. The FP4 kernel on the same grid is not occupancy-starved; it is issue/latency-bound on the nibble+scale inner loop.",
+    "lm_head_production_gb_s": 340.86
+  },
+  "DISCRIMINATOR_ISOLATED": {
+    "protocol": "warmup=2; 3 alternating pairs; one completed MTLCommandBuffer per dispatch",
+    "receipt": "receipts/ascent-2026-08-16/DSV4F_GPU_BODY_DIAGNOSIS.json",
+    "fp4_w1_2048x4096_bytes": 4456448,
+    "fp4_serial_gb_s": 7.18,
+    "fp4_simd_gb_s": 43.30,
+    "fp4_load_only_same_addresses_gb_s": 79.40,
+    "f32_same_launch_geometry_gb_s": 428.81,
+    "worklist_6_expert_gb_s": 53.04,
+    "load_only_over_fp4_time": 0.545,
+    "reconstruction_cost": "FP4 decode+MAC is 1.83x the load-only kernel at the same addresses (102.9 us vs 56.1 us). Real, but 10x smaller than Q80 mixed's 160x-off-ceiling gap, and it does not saturate the ALU.",
+    "fp4_gb_s_vs_rows": {
+      "256": 6.14,
+      "2048": 43.30,
+      "4096": 46.73
+    },
+    "fp4_row_scaling_says": "Same decode, same K. 256 rows (1 threadgroup of simd) is occupancy-starved at 6 GB/s. 2048 and 4096 sit at 43-47 GB/s. That is the packed-nibble access-pattern wall, not more occupancy to buy."
+  },
+  "MLA_AND_GATE_ARE_THE_OCCUPANCY_MASS": {
+    "default_kernels": "one thread walks the whole K. HAWKING_DSV4F_MLA_WO_A_SIMD and HAWKING_DSV4F_MLA_FP8_SIMD default off because they move hc_sha.",
+    "fp8_authority_vs_occupancy_candidate": {
+      "wkv_512x4096": { "auth_gb_s": 7.04, "occ_gb_s": 117.06, "speedup": 16.6, "threadgroups_auth": 2 },
+      "wq_a_1024x4096": { "auth_gb_s": 14.22, "occ_gb_s": 162.11, "speedup": 11.4, "threadgroups_auth": 4 },
+      "wo_b_4096x8192": { "auth_gb_s": 56.99, "occ_gb_s": 240.62, "speedup": 4.2, "threadgroups_auth": 16 },
+      "wo_a_8192x4096": { "auth_gb_s": 62.91, "occ_gb_s": 249.57, "speedup": 4.0, "threadgroups_auth": 32 },
+      "wq_b_32768x1024": { "auth_gb_s": 172.38, "occ_gb_s": 251.20, "speedup": 1.46, "threadgroups_auth": 128 }
+    },
+    "speedup_falls_as_rows_rise": "Same FP8 decode. Tiny organs (512-1024 rows, 2-4 threadgroups) are 11-17x off their own occupancy sibling. The fat organ (32768 rows) is already 172 GB/s on the authority path. Reconstruction is constant per byte; the thing that changes is launched parallelism.",
+    "gate_256x4096_bf16": {
+      "authority_one_thread_per_row_gb_s": 5.52,
+      "c4_simd32_gb_s": 50.23,
+      "speedup": 9.1,
+      "production_route_cb_ms": 38.2,
+      "token_authority_isolated_ms": 16.39,
+      "token_c4_isolated_ms": 1.80,
+      "note": "C4 is not bit-identical to the authority fold. It is the occupancy contrast, not a ship candidate."
+    },
+    "isolated_mla_matvec_projection_ms": {
+      "authority": 82.11,
+      "occupancy_candidate": 19.41,
+      "production_attn_cb_ms": 195.08,
+      "gap_is": "production attn also runs act_quant, RMSNorm, casts, KV QAT, and the WO-A convert-then-einsum (a per-weight BF16 round-trip, heavier than the plain FP8 probe). Isolated matvecs are 82 of 195 ms. Occupancy on those five organs is the live lever; it is currently de-authorised because it moves hc_sha."
+    }
+  },
+  "WHY_THIS_IS_NOT_Q80": {
+    "q80_mixed": "per-weight reconstruction of binary/rice/low-rank made the kernel 2.57 GB/s, 160x off ceiling, and density (Q4 15.2 -> mixed 2.57 GB/s) made it slower per byte.",
+    "dsv4f_fp4": "16-level e2m1 + ue8m0 is cheap enough that the same-geometry f32 kernel is 0.76x the FP4 wall time while moving 7.5x the bytes. Reconstruction is a 1.83x tax on a 79 GB/s load-only kernel, not a 160x tax.",
+    "dsv4f_gpu_body": "399 ms is 49% MLA (starved 2-32 threadgroup FP8/WO-A authority) + 40% MoE (FP4 simd already on, stuck at 28-53 GB/s by the packed access pattern) + 10% gate (256-thread serial, 2.4 GB/s) + 0.8% lm_head (341 GB/s, done)."
+  },
+  "ACTION": {
+    "do_not": "Port Q80 mixed reconstruction-in-register work onto DSV4F. The starting codec is different and the ALU is idle.",
+    "do": [
+      "The bit-identical occupancy question on MLA/gate is the GPU-body lever. Prior lane already showed WO-A/FP8 simd moves hc_sha and is HOLD. That is still the right fight if anyone re-opens hc_sha.",
+      "FP4 expert simd is already the default. Its wall is ~43-53 GB/s (access-pattern issue/latency), 8x off ceiling. A wider-load / scale-cached / interleaved-record kernel is the expert-side lever, not more occupancy at 2048+ rows.",
+      "Do not spend this lane on host.expert_slab_io. Sibling host lanes own that. Even if they zero it, 399 ms of GPU remains 20x the 20 ms gate, and 25 ms is the honest DRAM floor of the current byte budget."
+    ]
+  },
+  "UNRESOLVED": [
+    "Intra-CB kernel gaps are not visible (one GPUStart/GPUEnd pair per command buffer). Production attn 195 ms vs isolated matvec 82 ms includes those gaps plus RMSNorm/cast/QAT/WO-A-convert.",
+    "WO-A production kernel is convert-then-einsum, heavier than the plain FP8 probe used for the occupancy contrast.",
+    "C4 gate and FP8 occupancy candidates are not hc_sha-preserving. Isolated speedups are not a ship receipt.",
+    "This-commit page-warm GPU (276-310 ms) is faster than the host-wall 399 ms authority and is DIRTY. Isolated organs, not the 276 ms point, are the diagnosis."
+  ],
+  "FILES": [
+    "receipts/ascent-2026-08-16/DSV4F_GPU_BODY_WALL.json",
+    "receipts/ascent-2026-08-16/DSV4F_GPU_BODY_DIAGNOSIS.json",
+    "receipts/ascent-2026-08-16/DSV4F_HOST_WALL_BASELINE.json",
+    "crates/hawking-core/examples/dsv4f_gpu_body_diagnosis.rs",
+    "crates/hawking-core/shaders/dsv4f_native_token_graph.metal"
+  ],
+  "CONFIDENCE": "high on the headline GB/s, the ALU-idle proof, and the occupancy-vs-reconstruction discriminator. medium on the exact split of the 195-82 ms attn remainder."
+}
