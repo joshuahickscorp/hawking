@@ -1,0 +1,59 @@
+{
+  "schema": "hawking.ascension.three_model_regime_split.v1",
+  "date": "2026-08-16",
+  "finding": "The three models are in TWO DIFFERENT PERFORMANCE REGIMES, and the same optimization does not serve both. Q80 and DSV4F are host/sync/IO-bound. Qwen3.8 is GPU-BOUND. This changes which lever works on which model.",
+  "measured": {
+    "qwen38": {
+      "gpu_ns_per_token": 33449499,
+      "gpu_tok_s": 29.9,
+      "bringup_gpu_ns": 43036874,
+      "wall_vs_gpu": "wait ~= gpu + 0.5 ms - the host is NOT the wall",
+      "bpw": 4.252735126866492,
+      "dram_floor_at_4bpw_ms": 14.414,
+      "ratio_to_floor": 3.0,
+      "regime": "GPU_BOUND",
+      "evidence": "receipts/ascent-2026-08-16/qwen38-native-bringup.json + qwen38-layer-dense-q4-swiglu.json (branch grok/auto-qwen38-layer-dense-q4-swiglu-20260816-071431, UNMERGED)",
+      "timing_label": "DIRTY_ENGINEERING - other lanes were running, NOT clean-room"
+    },
+    "q80": {
+      "gpu_ms": 125,
+      "token_ms": 225,
+      "gpu_busy_fraction": 0.41,
+      "regime": "HOST_SYNC_BOUND",
+      "host_facets": "expert-table bind 54-79 ms, 98 CBs, wait-minus-gpu 36 ms"
+    },
+    "dsv4f": {
+      "gpu_ms": 410,
+      "token_ms": 1109,
+      "regime": "IO_BOUND",
+      "host_facets": "expert slab I/O 523 ms"
+    }
+  },
+  "consequence": "Qwen3.8 is the CLOSEST of the three to the 50 TPS gate and it is closest on the honest axis: it is GPU-bound, so its wall clock is its GPU time plus ~0.5 ms, whereas Q80's 225 ms token hides 100 ms of host work behind a 125 ms GPU. For Qwen3.8 ONLY, reducing BPW buys TPS directly: it sits at 3.0x its DRAM floor, so a 2.0 BPW pack moves the floor from 14.414 ms to ~7.2 ms and the 3.0x ratio to ~21.6 ms/token - within reach of the 20 ms gate. For Q80 and DSV4F, density buys nothing until the host facets are removed.",
+  "g023_axis1_confirmed_empirically": {
+    "claim": "Qwen3.8 already reuses Q80 DeltaNet kernels UNMODIFIED in shipped code.",
+    "reused_unmodified": [
+      "qwen80_residual_rmsnorm_f32",
+      "qwen80_silu_mul_f32",
+      "qwen80_ba_to_decay_beta_f32",
+      "qwen80_deltanet_gated_rmsnorm_f32"
+    ],
+    "forked_only": [
+      "qwen38_qkvz_rearrange_conv_l2_f32",
+      "qwen38_gqa_qk_norm_rope_cache_f32"
+    ],
+    "note": "This is not a proposal - it is already working. Axis 1 of G023 is demonstrated, not hypothetical."
+  },
+  "correctness": {
+    "generation": "readable on-topic English, greedy token-identical across 3 reps",
+    "fallbacks": 0,
+    "q4_min_cosine_vs_bf16": 0.98948,
+    "language_only": true,
+    "skipped_vision_tensors": 333
+  },
+  "caveats": [
+    "4.2527 BPW FAILS G016's 2.0 target and 3.0 hard limit - bring-up vehicle only",
+    "DIRTY_ENGINEERING label: not a clean-room measurement, other lanes were running",
+    "GPU ns/token is not the complete-token wall the G001/G002 gate measures, though for this model they are close"
+  ]
+}
