@@ -1,0 +1,24 @@
+{
+  "schema": "hawking.g011.autonomous_loop_starved.v1",
+  "date": "2026-08-16",
+  "G011_STATUS": "FAILING, with a root cause I introduced this morning.",
+  "evidence": {
+    "daemon_launches_all_day": 0,
+    "every_tick_logged": "\"launched\": null, \"hold\": \"queue dry - harvest supplied no new pending target\"",
+    "generated_targets": 0,
+    "task_dirs_remaining": "only the 2 currently-RUNNING lanes; every finished lane's dir was purged",
+    "daemon_was_also_found_DEAD": "restarted at pid 41428"
+  },
+  "THE_CHAIN": [
+    "1. This morning the disk hit 0 bytes and stalled every tool on the box.",
+    "2. I raised DISK_WARN_GIB from 40 to 90 so reclamation would start with room to work.",
+    "3. Disk then hovered 85-105 GiB all day, so the governor fired on MOST ticks.",
+    "4. Each firing runs tools/reclaim_safe.sh, whose section 2 rm -rf's EVERY task dir whose lane is not currently running.",
+    "5. The daemon's harvest() reads exactly those dirs - ~/.claude-grok/tasks/*/grok-report.md - to mine NEXT_BOTTLENECK.",
+    "6. harvest() found nothing, generate_targets() produced 0 pending targets, and the daemon never launched anything."
+  ],
+  "why_this_was_invisible": "The daemon reported healthily every tick. disk_free_gib fine, dead_lanes_found 0, live_lanes counted. Its ONE failure - launched: null with a dry queue - looked like an idle state rather than a starved one. A loop that reports 'nothing to do' is indistinguishable from a loop that has been prevented from finding anything to do.",
+  "THE_FIX": "reclaim_safe.sh now preserves grok-report.md and metadata.json while deleting the bulk (diff.patch, grok-output.json). The report is a few KB; the bulk is what filled the disk. Both goals are served.",
+  "a_second_contributing_cause": "My own lane contracts never requested a NEXT_BOTTLENECK field - I asked for CLAIM/STATUS/EVIDENCE/ACTION/UNRESOLVED, then later ACCEPTANCE/VERIFY/EDIT. So even surviving reports would not feed harvest(). The alpha-gates report present on disk has NEXT_BOTTLENECK=0. Contracts should carry the field the autonomous loop consumes.",
+  "honest_assessment": "G011 asks whether the pipeline survives my absence and keeps making measurable progress. Today it did not, and both causes are mine: a disk fix that deleted the loop's input, and a contract format that never produced that input in the first place."
+}
