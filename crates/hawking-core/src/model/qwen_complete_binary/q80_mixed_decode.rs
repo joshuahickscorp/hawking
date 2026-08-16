@@ -83,6 +83,48 @@ pub fn packed_byte_count(count: usize, bits: u8) -> Result<usize> {
         .ok_or_else(|| Error::Model("packed byte count overflow".into()))
 }
 
+/// LSB-first unsigned pack. Same wire as the Q80 hgravs01 factor body.
+pub fn pack_unsigned_lsb(codes: &[u8], bits: u8) -> Result<Vec<u8>> {
+    pack_unsigned(codes, bits)
+}
+
+/// Inverse of [`pack_unsigned_lsb`]. `count` is the number of codes, including
+/// any retained group padding the packer emitted.
+pub fn unpack_unsigned_lsb(packed: &[u8], count: usize, bits: u8) -> Result<Vec<u8>> {
+    if bits == 0 || bits > 8 {
+        return Err(Error::Model("unsigned unpack bits must be 1..=8".into()));
+    }
+    let expected = packed_byte_count(count, bits)?;
+    if packed.len() < expected {
+        return Err(Error::Model(
+            "unsigned unpack payload shorter than packed geometry".into(),
+        ));
+    }
+    let mut out = Vec::with_capacity(count);
+    for element in 0..count {
+        let value = extract_unsigned(packed, element, bits);
+        out.push(u8::try_from(value).map_err(|_| {
+            Error::Model("unsigned unpack produced a code that does not fit u8".into())
+        })?);
+    }
+    Ok(out)
+}
+
+/// MSB-first unsigned pack of the same codes. Decode must extract MSB-first
+/// too; this is a bit-plane experiment, not a different codebook.
+pub fn pack_unsigned_msb(codes: &[u8], bits: u8) -> Result<Vec<u8>> {
+    if bits == 0 || bits > 8 {
+        return Err(Error::Model("unsigned pack bits must be 1..=8".into()));
+    }
+    let mut bit_iter = Vec::with_capacity(codes.len() * usize::from(bits));
+    for &code in codes {
+        for bit in (0..bits).rev() {
+            bit_iter.push(((code >> bit) & 1) != 0);
+        }
+    }
+    Ok(pack_bits_lsb(bit_iter))
+}
+
 pub fn split_gravity_container<'a>(payload: &'a [u8], magic: &[u8; 8]) -> Result<(&'a [u8], &'a [u8])> {
     if payload.len() < 12 || payload[..8] != magic[..] {
         return Err(Error::Model("gravity container magic mismatch".into()));
@@ -527,7 +569,7 @@ pub fn pack_uniform_factor(
     })
 }
 
-fn extract_unsigned(codes: &[u8], element: usize, bits: u8) -> u16 {
+pub(super) fn extract_unsigned(codes: &[u8], element: usize, bits: u8) -> u16 {
     let bit0 = element * usize::from(bits);
     let mut value = 0u16;
     for b in 0..usize::from(bits) {
