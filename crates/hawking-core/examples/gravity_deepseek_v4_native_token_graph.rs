@@ -148,7 +148,34 @@ fn main() -> Result<(), Box<dyn Error>> {
             ledger.isolated_kernels.len(),
             ledger.diagnosis_proof,
         );
+        for row in &ledger.host_wall_classes {
+            eprintln!(
+                "host_class {} ns={} ns/token={} pct_body={:.2} calls={} bytes={}",
+                row.name, row.ns, row.ns_per_token, row.pct_body, row.calls, row.bytes
+            );
+        }
+        for row in &ledger.reader_parallel_sum {
+            eprintln!(
+                "reader_sum {} ns={} calls={} (parallel-sum, not wall)",
+                row.name, row.ns, row.calls
+            );
+        }
     }
+    eprintln!(
+        "second_touch_probe_ns={} cache_hits_delta={} identity_delta={} mmap_delta={} host_read_views={} owned_allocs={} owned_alloc_bytes={} owned_copy_ns={} mmap_calls={} identity_calls={} path_resolve_ns={} tensor_lookup_ns={}",
+        report.second_touch_probe_ns,
+        report.second_touch_cache_hits_delta,
+        report.second_touch_identity_calls_delta,
+        report.second_touch_mmap_calls_delta,
+        report.chunk_verification.host_read.read_view_calls,
+        report.chunk_verification.host_read.owned_allocs,
+        report.chunk_verification.host_read.owned_alloc_bytes,
+        report.chunk_verification.host_read.owned_copy_ns,
+        report.chunk_verification.host_read.mmap_calls,
+        report.chunk_verification.host_read.identity_calls,
+        report.chunk_verification.host_read.path_resolve_ns,
+        report.chunk_verification.host_read.tensor_lookup_ns,
+    );
     hawking_core::startup_timing::emit_stderr_json();
     if let Some(path) = args.out.as_ref() {
         eprintln!("wrote {}", path.display());

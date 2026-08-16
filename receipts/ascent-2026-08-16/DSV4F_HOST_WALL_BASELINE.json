@@ -1,0 +1,306 @@
+{
+  "schema": "hawking.ascent.dsv_host_wall.baseline.v1",
+  "lane": "dsv-host-wall",
+  "date": "2026-08-16",
+  "role": "DSV4F baseline authority",
+  "label": "DIRTY_ENGINEERING",
+  "label_reason": "Other ascent lanes were running on this machine. GPU lock held for the whole 6-rep series. Page-cache cold first process discarded from the warm authority set.",
+  "binary": "workspace/ops/build/rust/release-fast/examples/gravity_deepseek_v4_native_token_graph",
+  "profile": "release-fast",
+  "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+  "verify_mode": "admission",
+  "kernel_probe": "0",
+  "gpu_lock": "tools/gpu_lane_lock.sh dsv-host-wall",
+  "gpu_time_definition": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait; 137/137 CBs observed on every rep. CPU wait is reported separately and is not GPU time.",
+  "prior_expected": {
+    "note": "Job brief expected ~1.299 s/token, ~0.77 tok/s, host-exclusive ~641 ms, Metal GPU ~401 ms, ~137 CBs. Reality is faster on body and host-exclusive. GPU matches. Reality wins.",
+    "s_per_token": 1.299,
+    "tok_per_s": 0.77,
+    "host_exclusive_ms": 641,
+    "metal_gpu_ms": 401,
+    "command_buffers": 137
+  },
+  "authority": {
+    "set": "warm R2-R6, one process per token, GPU-locked, page-warm",
+    "discarded": "R1 cold page-cache (body 8408 ms) \u2014 page-cache confound, not an authority number",
+    "body_ns_median": 1037764208,
+    "body_ms_median": 1037,
+    "body_ns_min": 1024054500,
+    "body_ns_max": 1067674625,
+    "wall_ms_median": 1205,
+    "wall_ms_min": 1189,
+    "wall_ms_max": 1234,
+    "ns_per_token_body_median": 1037764208,
+    "ns_per_token_wall_median": 1205000000,
+    "tok_per_s_body_median": 0.9636,
+    "tok_per_s_wall_median": 0.8299,
+    "host_exclusive_ns_median": 564853792,
+    "host_exclusive_ms_median": 564.9,
+    "host_exclusive_ns_min": 553797500,
+    "host_exclusive_ns_max": 583971625,
+    "metal_gpu_ns_median": 399023000,
+    "metal_gpu_ms_median": 399.0,
+    "metal_gpu_ns_min": 396549000,
+    "metal_gpu_ns_max": 407558000,
+    "metal_wait_ns_median": 244428000,
+    "metal_wait_ms_median": 244.4,
+    "gpu_idle_host_ms_median": 410.3,
+    "command_buffers": 137,
+    "dispatches": 1857,
+    "gpu_timestamps_observed_cbs": 137,
+    "gpu_timestamps_missing_cbs": 0,
+    "layers": 43,
+    "fallbacks": 0
+  },
+  "reps": {
+    "R1_cold": {
+      "wall_ms": 9578,
+      "init_ms": 1165,
+      "body_ms": 8408,
+      "body_ns": 8408485000,
+      "host_exclusive_ns": 6224007000,
+      "metal_gpu_ns": 565477000,
+      "metal_wait_ns": 101170000,
+      "note": "page-cache cold, discarded from authority"
+    },
+    "R2": {
+      "wall_ms": 1234,
+      "init_ms": 162,
+      "body_ms": 1067,
+      "body_ns": 1067674625,
+      "host_exclusive_ns": 583971625,
+      "metal_gpu_ns": 407558000,
+      "metal_wait_ns": 247691000
+    },
+    "R3": {
+      "wall_ms": 1197,
+      "init_ms": 159,
+      "body_ms": 1033,
+      "body_ns": 1033458375,
+      "host_exclusive_ns": 556527375,
+      "metal_gpu_ns": 400201000,
+      "metal_wait_ns": 249227000
+    },
+    "R4": {
+      "wall_ms": 1210,
+      "init_ms": 164,
+      "body_ms": 1040,
+      "body_ns": 1040717792,
+      "host_exclusive_ns": 564853792,
+      "metal_gpu_ns": 399023000,
+      "metal_wait_ns": 244428000
+    },
+    "R5": {
+      "wall_ms": 1205,
+      "init_ms": 162,
+      "body_ms": 1037,
+      "body_ns": 1037764208,
+      "host_exclusive_ns": 565210208,
+      "metal_gpu_ns": 398013000,
+      "metal_wait_ns": 243913000
+    },
+    "R6": {
+      "wall_ms": 1189,
+      "init_ms": 159,
+      "body_ms": 1024,
+      "body_ns": 1024054500,
+      "host_exclusive_ns": 553797500,
+      "metal_gpu_ns": 396549000,
+      "metal_wait_ns": 243374000
+    }
+  },
+  "correctness": {
+    "fallbacks": 0,
+    "host_expert_gather": 0,
+    "host_expert_output_readback": 0,
+    "host_route_id_readback": 40,
+    "hash_invocations": 0,
+    "bytes_hashed": 0,
+    "admission_trust_hits": 3314,
+    "admission_trust_fallbacks": 0,
+    "admission_receipt_loaded": true,
+    "artifact_index_loaded": true,
+    "greedy_token_id": 5,
+    "greedy_token_id_oracle": 5,
+    "greedy_logit": 16.7818546295166,
+    "greedy_logit_oracle": 16.767437,
+    "greedy_logit_abs_delta": 0.0144176295166,
+    "logit_gate": "e2e |delta| <= 0.05; measured 0.0144; PASS",
+    "hc_sha_native": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+    "hc_sha_cpu_oracle": "d541c0a25a3bef30dac153d9bf7d1714aebfb4462af1bfb8b4648c1ea5e50c69",
+    "hc_sha_bit_identical_to_cpu_oracle": false,
+    "hc_sha_stable_across_6_reps": true,
+    "hc_sha_matches_prior_native_receipts": true,
+    "note": "Native graph HC SHA is c94da765 on every rep, matching prior native receipts. It does not match the CPU-oracle constant d541c0a25. The e2e test warns on SHA and asserts token_id plus logit \u00b10.05. This lane did not change operators, kernels, or the oracle constant. Drift is pre-existing, not introduced here."
+  },
+  "verification_per_token": {
+    "note": "One token per process. SHA is not the per-token tax. Admission mode skips hash (0 hash_invocations, 3314 admission_trust_hits). The remaining tax is path resolve + stat + remap of 3314 unique chunks. verify_ns is the SUM of parallel worker-thread time, not wall.",
+    "chunks_first_touched": 3314,
+    "sha256_invocations": 0,
+    "bytes_hashed": 0,
+    "identity_calls_second_stat": 3314,
+    "identity_ns_parallel_sum_median": 71932988,
+    "path_resolve_calls_includes_first_stat": 3314,
+    "path_resolve_ns_parallel_sum_median": 1318045536,
+    "mmap_calls": 3314,
+    "mmap_ns_parallel_sum_median": 985130384,
+    "digest_cache_probes": 3314,
+    "digest_cache_hits_during_token": 0,
+    "verify_ns_parallel_sum_median": 2505505105,
+    "double_stat": "resolve_trusted_chunk_path stats the file, then can_trust_without_hash stats it again. Cache check happens AFTER resolve, so a hit still pays path_resolve + open + mmap + metadata.",
+    "correct_shape": "cold artifact proof once, sealed session proof, token path trusts the seal. Integrity stays; only the repetition disappears.",
+    "second_touch_probe": {
+      "what": "re-read layer-0 attention tensors on the same reader after the token (not in body_ns)",
+      "ns_range": [
+        4449000,
+        5882584
+      ],
+      "cache_hits_delta": 26,
+      "identity_calls_delta": 0,
+      "mmap_calls_delta": 26,
+      "finding": "Identity is skipped on second touch. path_resolve + mmap are not. Session-local verified_digests does not remove the remap."
+    }
+  },
+  "allocations_per_token": {
+    "note": "read_verified_range at :1190 is NOT an unbounded alloc \u2014 max_output_bytes is mandatory. It still copies when the caller uses the owned API.",
+    "read_view_calls": 2808,
+    "read_owned_calls": 16,
+    "mapped_windows": 2671,
+    "mapped_window_bytes": 5028920940,
+    "owned_windows_multi_chunk": 137,
+    "owned_window_bytes": 5387583488,
+    "owned_allocs": 145,
+    "owned_alloc_bytes": 5387862180,
+    "owned_copy_ns_warm": 65834,
+    "owned_copy_note": "Warm into_owned of already-resident pages is cheap. The 5.39 GiB owned_window_bytes are mostly multi-chunk concatenations inside lm_head tiles, timed in host.lm_head_io not owned_copy_ns."
+  },
+  "host_exclusive_classes": {
+    "overlap_note": "host.memcpy and file_source_reads overlap: metal fills live inside expert/shared I/O walls. Do not add the class totals. GPU-idle host \u2248 host_exclusive - (metal_gpu - metal_wait) \u2248 410 ms and matches expert_slab_io.",
+    "file_source_reads": {
+      "ns_per_token_median": 415126416,
+      "wall_stage": "host.expert_slab_io dominates (406-437 ms). Also lm_head_io 33 ms, shared.w1/w2/w3 35/33/33 ms (GPU-overlapped), moe_control_io 10 ms, attn layer0 7 ms, embed 0.12 ms. attn prefetch is the same wall as expert_slab_io \u2014 do not add it.",
+      "bytes": 3449290752,
+      "disappear_under_resident_packed": "YES \u2014 streamed expert/attn/shared/lm_head reads exist only because the 148 GiB model is not resident.",
+      "move_to_admission": "YES \u2014 map once, keep the maps. Do not re-resolve 3314 paths per process.",
+      "move_device_side": "YES \u2014 resident weights never return to the host.",
+      "can_be_cached": "YES \u2014 OS page cache (R1 8408 ms vs warm 1024-1067 ms). Process-local chunk cache does not survive one-token-per-process.",
+      "can_overlap_gpu": "PARTIAL \u2014 shared + moe_control already overlap attn GPU. Expert slab is after the route CB and is GPU-idle host."
+    },
+    "mmap_page_fault": {
+      "ns_per_token_parallel_sum_median": 985130384,
+      "note": "mmap_ns is parallel-sum of 3314 open+metadata+mmap syscalls, not wall. First-touch faults live inside memcpy/I/O. Cold R1 is the page-fault picture; warm is page-cache.",
+      "disappear_under_resident_packed": "YES",
+      "move_to_admission": "YES \u2014 mmap the sealed working set once.",
+      "move_device_side": "N/A \u2014 residency deletes the host map.",
+      "can_be_cached": "YES \u2014 OS page cache. mmap syscall still repeats every process.",
+      "can_overlap_gpu": "YES \u2014 happens inside the already-overlapped I/O stages."
+    },
+    "memcpy": {
+      "ns_per_token_median": 545325512,
+      "bytes": 10280249760,
+      "note": "host.memcpy is metal-buffer fills (write_bytes/write_at), ~10.3 GiB. Nested inside expert_slab + shared I/O + counted again as prefetch_fill 95 ms and lm_head_upload 51 ms. Not a second 545 ms on top of I/O.",
+      "disappear_under_resident_packed": "YES \u2014 no host staging into scratch slabs.",
+      "move_to_admission": "YES \u2014 pack into device buffers once.",
+      "move_device_side": "YES",
+      "can_be_cached": "PARTIAL \u2014 prefetch_fill is the next-layer cache; it still copies.",
+      "can_overlap_gpu": "PARTIAL \u2014 prefetch_fill overlaps moe GPU; expert slab memcpy does not."
+    },
+    "address_lookup": {
+      "path_resolve_ns_parallel_sum_median": 1318045536,
+      "tensor_lookup_ns_includes_init": 12343113,
+      "tensor_lookup_calls": 140261,
+      "note": "path_resolve (checked_regular_path + file_identity stat) is the dominant identity tax and runs BEFORE the digest cache. 3314 calls, ~400 us each in parallel-sum. tensor_lookup is 140k BTreeMap probes including init/anchors, ~12 ms.",
+      "disappear_under_resident_packed": "YES",
+      "move_to_admission": "YES \u2014 resolve paths and bind fds/mmaps once into a sealed session table.",
+      "move_device_side": "NO NEED",
+      "can_be_cached": "The digest cache skips SHA/identity but not path_resolve. That is the remaining repetition.",
+      "can_overlap_gpu": "YES \u2014 inside parallel I/O."
+    },
+    "table_construction": {
+      "ns_per_token_median": 19104161,
+      "calls": 345,
+      "bytes": 135988296,
+      "stage": "host.decode of MHC / norm tables from mmap windows",
+      "disappear_under_resident_packed": "NO \u2014 MHC still needs host tables unless MHC moves.",
+      "move_to_admission": "NO \u2014 they depend on the residual.",
+      "move_device_side": "ONLY with device MHC, which changes the SHA-sealed host algorithm.",
+      "can_be_cached": "NO",
+      "can_overlap_gpu": "SOME \u2014 decode of control tensors happens beside I/O."
+    },
+    "route_preparation": {
+      "ns_per_token_median": 100000,
+      "note": "40 route-id readbacks, ~0.1 ms total. Confirms the DSV4F route-ID serializer hypothesis remains REFUTED.",
+      "disappear_under_resident_packed": "YES \u2014 host IDs exist to choose which 6 expert slabs to stream.",
+      "move_to_admission": "NO",
+      "move_device_side": "ALREADY device-side; host readback is for streaming residency. dsv-cb-collapse owns CB topology.",
+      "can_be_cached": "N/A",
+      "can_overlap_gpu": "NO \u2014 after the route CB."
+    },
+    "buffer_lifecycle": {
+      "ns_per_token": "not a wall",
+      "note": "Scratch Metal buffers are reused. After layer 0, attn bind-or-fill is ~0.2-2 ms per upload because prefetch_fill already wrote them.",
+      "disappear_under_resident_packed": "YES \u2014 no per-layer acquire/release of streamed weights.",
+      "move_to_admission": "YES \u2014 create device buffers once.",
+      "move_device_side": "YES",
+      "can_be_cached": "ALREADY \u2014 scratch reuse.",
+      "can_overlap_gpu": "N/A"
+    },
+    "state_movement": {
+      "ns_per_token_median": 30300000,
+      "breakdown_ms": {
+        "mhc_pre": 25.48,
+        "mhc_post": 3.63,
+        "rmsnorm": 0.74,
+        "lm_head_mhc_merge": 0.41
+      },
+      "disappear_under_resident_packed": "NO \u2014 host MHC is the SHA-sealed verified route.",
+      "move_to_admission": "NO",
+      "move_device_side": "POSSIBLE but would change hc_sha. Do not do that in this lane.",
+      "can_be_cached": "NO",
+      "can_overlap_gpu": "NO \u2014 between CBs, on the critical path."
+    },
+    "synchronization": {
+      "ns_per_token_median": 130000,
+      "note": "attn/moe/lm_head activation readbacks, ~0.13 ms. Not a wall. Exists because host MHC needs wo_b and moe_out.",
+      "disappear_under_resident_packed": "ONLY if MHC moves device-side.",
+      "move_to_admission": "NO",
+      "move_device_side": "YES with device MHC.",
+      "can_be_cached": "NO",
+      "can_overlap_gpu": "NO \u2014 after the CB wait."
+    },
+    "validation_identity": {
+      "sha_ns": 0,
+      "identity_ns_parallel_sum_median": 71932988,
+      "path_resolve_ns_parallel_sum_median": 1318045536,
+      "verify_ns_parallel_sum_median": 2505505105,
+      "disappear_under_resident_packed": "The repetition disappears. The seal must remain.",
+      "move_to_admission": "YES \u2014 this is the prescribed shape. Cold proof once, session trusts the seal.",
+      "move_device_side": "NO \u2014 integrity is a host/artifact property.",
+      "can_be_cached": "Partial today: SHA is cached; path_resolve+stat+mmap are not.",
+      "can_overlap_gpu": "YES \u2014 already inside parallel I/O. Still not free: expert-slab wall includes it."
+    }
+  },
+  "do_not_polish": {
+    "streamed_source_io": "Expert slab / attn prefetch / shared I/O exist because the model is streamed. dsv-resident-gravity owns deleting them. This lane does not polish that infrastructure.",
+    "command_buffer_topology": "137 CBs untouched. dsv-cb-collapse owns that."
+  },
+  "next_bottleneck": {
+    "name": "host.expert_slab_io (streamed top-6 expert read + metal fill, GPU-idle)",
+    "ns_per_token_median": 415126416,
+    "ms_per_token_median": 415.13,
+    "after_resident_deletes_streaming": {
+      "name": "Metal GPU occupancy across 137 command buffers",
+      "ns_per_token_median": 399023000,
+      "ms_per_token_median": 399.0,
+      "note": "True GPU timestamps. dsv-cb-collapse owns topology. Host MHC+decode that would survive residency is ~50 ms."
+    }
+  },
+  "evidence_files": [
+    "receipts/ascent-2026-08-16/dsv-host-wall-rep1.json",
+    "receipts/ascent-2026-08-16/dsv-host-wall-rep2.json",
+    "receipts/ascent-2026-08-16/dsv-host-wall-rep3.json",
+    "receipts/ascent-2026-08-16/dsv-host-wall-rep4.json",
+    "receipts/ascent-2026-08-16/dsv-host-wall-rep5.json",
+    "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json"
+  ]
+}

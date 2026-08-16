@@ -12,8 +12,36 @@
 
 use std::mem::size_of;
 use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Instant;
+
+static HOST_MEMCPY_NS: AtomicU64 = AtomicU64::new(0);
+static HOST_MEMCPY_BYTES: AtomicU64 = AtomicU64::new(0);
+static HOST_MEMCPY_CALLS: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_NS: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_BYTES: AtomicU64 = AtomicU64::new(0);
+static HOST_DECODE_CALLS: AtomicU64 = AtomicU64::new(0);
+
+fn reset_host_copy_stats() {
+    HOST_MEMCPY_NS.store(0, Ordering::Relaxed);
+    HOST_MEMCPY_BYTES.store(0, Ordering::Relaxed);
+    HOST_MEMCPY_CALLS.store(0, Ordering::Relaxed);
+    HOST_DECODE_NS.store(0, Ordering::Relaxed);
+    HOST_DECODE_BYTES.store(0, Ordering::Relaxed);
+    HOST_DECODE_CALLS.store(0, Ordering::Relaxed);
+}
+
+fn note_memcpy(bytes: usize, ns: u64) {
+    HOST_MEMCPY_NS.fetch_add(ns, Ordering::Relaxed);
+    HOST_MEMCPY_BYTES.fetch_add(bytes as u64, Ordering::Relaxed);
+    HOST_MEMCPY_CALLS.fetch_add(1, Ordering::Relaxed);
+}
+
+fn note_decode(bytes: usize, ns: u64) {
+    HOST_DECODE_NS.fetch_add(ns, Ordering::Relaxed);
+    HOST_DECODE_BYTES.fetch_add(bytes as u64, Ordering::Relaxed);
+    HOST_DECODE_CALLS.fetch_add(1, Ordering::Relaxed);
+}
 
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -196,10 +224,54 @@ pub struct NativeTokenGraphReport {
     pub body_ms: u128,
     pub token_ns_ledger: Option<TokenNsLedger>,
     pub chunk_verification: DeepSeekV4ChunkVerificationStats,
+    pub second_touch_probe_ns: u64,
+    pub second_touch_cache_hits_delta: u64,
+    pub second_touch_identity_calls_delta: u64,
+    pub second_touch_mmap_calls_delta: u64,
 }
 
 impl NativeTokenGraphReport {
     pub fn to_receipt_json(&self) -> serde_json::Value {
+        let host_read = self.chunk_verification.host_read;
+        let chunk_verification = serde_json::json!({
+            "hash_invocations": self.chunk_verification.hash_invocations,
+            "cache_hits": self.chunk_verification.cache_hits,
+            "bytes_hashed": self.chunk_verification.bytes_hashed,
+            "chunks_verified": self.chunk_verification.chunks_verified,
+            "admission_trust_hits": self.chunk_verification.admission_trust_hits,
+            "admission_trust_fallbacks": self.chunk_verification.admission_trust_fallbacks,
+            "verify_ns": self.chunk_verification.verify_ns,
+            "admission_receipt_loaded": self.chunk_verification.admission_receipt_loaded,
+            "artifact_index_loaded": self.chunk_verification.artifact_index_loaded,
+            "host_read": {
+                "read_view_calls": host_read.read_view_calls,
+                "read_owned_calls": host_read.read_owned_calls,
+                "mapped_windows": host_read.mapped_windows,
+                "mapped_window_bytes": host_read.mapped_window_bytes,
+                "owned_windows": host_read.owned_windows,
+                "owned_window_bytes": host_read.owned_window_bytes,
+                "owned_allocs": host_read.owned_allocs,
+                "owned_alloc_bytes": host_read.owned_alloc_bytes,
+                "owned_copy_ns": host_read.owned_copy_ns,
+                "mmap_calls": host_read.mmap_calls,
+                "mmap_ns": host_read.mmap_ns,
+                "identity_calls": host_read.identity_calls,
+                "identity_ns": host_read.identity_ns,
+                "path_resolve_calls": host_read.path_resolve_calls,
+                "path_resolve_ns": host_read.path_resolve_ns,
+                "digest_cache_probes": host_read.digest_cache_probes,
+                "digest_cache_ns": host_read.digest_cache_ns,
+                "tensor_lookup_calls": host_read.tensor_lookup_calls,
+                "tensor_lookup_ns": host_read.tensor_lookup_ns,
+            },
+        });
+        let second_touch = serde_json::json!({
+            "note": "re-read layer-0 attention tensors after the token; cache-hit remap cost, not in body_ns",
+            "ns": self.second_touch_probe_ns,
+            "cache_hits_delta": self.second_touch_cache_hits_delta,
+            "identity_calls_delta": self.second_touch_identity_calls_delta,
+            "mmap_calls_delta": self.second_touch_mmap_calls_delta,
+        });
         serde_json::json!({
             "schema": self.schema,
             "execution_path": self.execution_path,
@@ -250,17 +322,8 @@ impl NativeTokenGraphReport {
             "body_ms": self.body_ms,
             "token_ns_ledger": self.token_ns_ledger,
             "startup_timing": crate::startup_timing::snapshot().to_json(),
-            "chunk_verification": {
-                "hash_invocations": self.chunk_verification.hash_invocations,
-                "cache_hits": self.chunk_verification.cache_hits,
-                "bytes_hashed": self.chunk_verification.bytes_hashed,
-                "chunks_verified": self.chunk_verification.chunks_verified,
-                "admission_trust_hits": self.chunk_verification.admission_trust_hits,
-                "admission_trust_fallbacks": self.chunk_verification.admission_trust_fallbacks,
-                "verify_ns": self.chunk_verification.verify_ns,
-                "admission_receipt_loaded": self.chunk_verification.admission_receipt_loaded,
-                "artifact_index_loaded": self.chunk_verification.artifact_index_loaded,
-            },
+            "chunk_verification": chunk_verification,
+            "second_touch_probe": second_touch,
         })
     }
 }
@@ -321,20 +384,26 @@ fn decode_u16_le(bytes: &[u8], name: &str) -> Result<Vec<u16>> {
     if bytes.len() % size_of::<u16>() != 0 {
         return Err(graph_error(format!("{name} is not u16 aligned")));
     }
-    Ok(bytes
+    let started = Instant::now();
+    let out = bytes
         .chunks_exact(2)
         .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
-        .collect())
+        .collect();
+    note_decode(bytes.len(), started.elapsed().as_nanos() as u64);
+    Ok(out)
 }
 
 fn decode_f32_le(bytes: &[u8], name: &str) -> Result<Vec<f32>> {
     if bytes.len() % size_of::<f32>() != 0 {
         return Err(graph_error(format!("{name} is not f32 aligned")));
     }
-    Ok(bytes
+    let started = Instant::now();
+    let out = bytes
         .chunks_exact(4)
         .map(|chunk| f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]))
-        .collect())
+        .collect();
+    note_decode(bytes.len(), started.elapsed().as_nanos() as u64);
+    Ok(out)
 }
 
 fn load_bos_embed_hc(
@@ -726,7 +795,9 @@ mod macos {
     }
 
     fn write_bytes(buf: &metal::Buffer, values: &[u8]) {
+        let started = Instant::now();
         MetalContext::write_buffer_bytes(buf, values);
+        super::note_memcpy(values.len(), started.elapsed().as_nanos() as u64);
     }
 
     fn read_u16(buf: &metal::Buffer, n: usize) -> Result<Vec<u16>> {
@@ -889,10 +960,12 @@ mod macos {
         if ptr.is_null() || values.is_empty() {
             return;
         }
+        let started = Instant::now();
         unsafe {
             ptr.add(offset)
                 .copy_from_nonoverlapping(values.as_ptr(), values.len());
         }
+        super::note_memcpy(values.len(), started.elapsed().as_nanos() as u64);
     }
 
     fn refill_fp8(
@@ -1050,6 +1123,7 @@ mod macos {
         compute_final_head: bool,
     ) -> Result<NativeTokenGraphReport> {
         let wall = Instant::now();
+        super::reset_host_copy_stats();
         if max_layer >= DSV4F_LAYER_SOURCE_ANCHOR_BASE_LAYER_COUNT {
             return Err(graph_error(format!(
                 "max_layer {max_layer} is outside the 0..42 base body"
@@ -1166,7 +1240,75 @@ mod macos {
         let body_ns = raw_body_ns.saturating_sub(probe_overhead_ns);
         let wall_ns = wall.elapsed().as_nanos() as u64;
         let init_ns = (init_ms as u64).saturating_mul(1_000_000);
-        let chunk_verification = reader.chunk_verification_stats();
+        let before_reread = reader.chunk_verification_stats();
+        let reread_started = Instant::now();
+        if let Ok(layer0) = anchors.layer(0) {
+            let jobs = attn_read_jobs(layer0);
+            let _ = par_read_views(&reader, &jobs);
+        }
+        let second_touch_probe_ns = reread_started.elapsed().as_nanos() as u64;
+        let after_reread = reader.chunk_verification_stats();
+        let second_touch_cache_hits_delta = after_reread
+            .cache_hits
+            .saturating_sub(before_reread.cache_hits);
+        let second_touch_identity_calls_delta = after_reread
+            .host_read
+            .identity_calls
+            .saturating_sub(before_reread.host_read.identity_calls);
+        let second_touch_mmap_calls_delta = after_reread
+            .host_read
+            .mmap_calls
+            .saturating_sub(before_reread.host_read.mmap_calls);
+        let chunk_verification = before_reread;
+        profiler.add_stage(
+            "host.memcpy",
+            super::HOST_MEMCPY_NS.load(Ordering::Relaxed),
+            super::HOST_MEMCPY_CALLS.load(Ordering::Relaxed),
+            super::HOST_MEMCPY_BYTES.load(Ordering::Relaxed),
+        );
+        profiler.add_stage(
+            "host.decode",
+            super::HOST_DECODE_NS.load(Ordering::Relaxed),
+            super::HOST_DECODE_CALLS.load(Ordering::Relaxed),
+            super::HOST_DECODE_BYTES.load(Ordering::Relaxed),
+        );
+        profiler.add_stage(
+            "host.owned_copy",
+            chunk_verification.host_read.owned_copy_ns,
+            chunk_verification.host_read.owned_allocs,
+            chunk_verification.host_read.owned_alloc_bytes,
+        );
+        profiler.add_stage(
+            "reader.mmap",
+            chunk_verification.host_read.mmap_ns,
+            chunk_verification.host_read.mmap_calls,
+            0,
+        );
+        profiler.add_stage(
+            "reader.identity",
+            chunk_verification.host_read.identity_ns,
+            chunk_verification.host_read.identity_calls,
+            0,
+        );
+        profiler.add_stage(
+            "reader.path_resolve",
+            chunk_verification.host_read.path_resolve_ns,
+            chunk_verification.host_read.path_resolve_calls,
+            0,
+        );
+        profiler.add_stage(
+            "reader.digest_cache",
+            chunk_verification.host_read.digest_cache_ns,
+            chunk_verification.host_read.digest_cache_probes,
+            0,
+        );
+        profiler.add_stage(
+            "reader.tensor_lookup",
+            chunk_verification.host_read.tensor_lookup_ns,
+            chunk_verification.host_read.tensor_lookup_calls,
+            0,
+        );
+        profiler.add_stage("probe.second_touch", second_touch_probe_ns, 1, 0);
         let token_ns_ledger = Some(profiler.finish(
             body_ns,
             init_ns,
@@ -1199,6 +1341,10 @@ mod macos {
             body_ms: (body_ns / 1_000_000) as u128,
             token_ns_ledger,
             chunk_verification,
+            second_touch_probe_ns,
+            second_touch_cache_hits_delta,
+            second_touch_identity_calls_delta,
+            second_touch_mmap_calls_delta,
         })
     }
 
