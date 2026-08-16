@@ -8,7 +8,10 @@
 //!   non-expert   HGRAVU01 uniform-q8 group-64
 //!
 //! Packed bytes go to registers/simdgroup and are consumed in the same
-//! kernel. A dense `W` is never allocated on this path.
+//! kernel. A dense `W` is never allocated on this path. Occupancy tiles
+//! (`HAWKING_Q80_RECON_FUSE`, default on) delete the serial bit-loop
+//! reconstruct: binary tg256, fused binary+CSR, 3-bit 8-unpack, Q8 byte
+//! load. Serial 1-thread/row remains behind `HAWKING_Q80_RECON_FUSE=0`.
 
 use super::qwen80_complete_runtime::{
     qwen80_gqa_apply_sigmoid_gate, qwen80_gqa_causal_attention,
@@ -59,6 +62,22 @@ pub fn qwen80_host_facet1_enabled() -> bool {
 /// restore one-CB-per-matvec for A/B.
 pub fn qwen80_host_facet2_enabled() -> bool {
     crate::env_opt_out("HAWKING_Q80_HOST_FACET2")
+}
+
+/// Default **on**. Consume packed codes in-register on occupancy tiles:
+/// binary tg256, fused binary+CSR, 3-bit simd3, Q8 byte extract. Set
+/// `HAWKING_Q80_RECON_FUSE=0` to restore the serial 1-thread/row path
+/// (the 863 ms gpu_matvec baseline).
+pub fn qwen80_recon_fuse_enabled() -> bool {
+    crate::env_opt_out("HAWKING_Q80_RECON_FUSE")
+}
+
+fn tg256_grid(rows: u32) -> (u32, u32, u32) {
+    (rows.saturating_mul(256), 1, 1)
+}
+
+fn simd8_grid(rows: u32) -> (u32, u32, u32) {
+    (rows.div_ceil(8).saturating_mul(256).max(256), 1, 1)
 }
 
 /// Requested, logged capability-bar probe. Not a silent fallback.
@@ -396,6 +415,27 @@ fn encode_binary(
 }
 
 #[cfg(target_os = "macos")]
+fn encode_binary_csr(
+    enc: &metal::ComputeCommandEncoderRef,
+    packed: &GpuResidual,
+    input: &crate::metal::PinnedBuffer,
+    output: &crate::metal::PinnedBuffer,
+    output_offset: u64,
+) {
+    enc.set_buffer(0, Some(&packed.binary.signs), packed.binary.sign_off);
+    enc.set_buffer(1, Some(&packed.binary.scales), packed.binary.scale_off);
+    enc.set_buffer(2, Some(input), 0);
+    enc.set_buffer(3, Some(output), output_offset);
+    enc.set_buffer(4, Some(&packed.indices), 0);
+    enc.set_buffer(5, Some(&packed.row_ptr), 0);
+    enc.set_buffer(6, Some(&packed.residual_signs), packed.residual_sign_off);
+    set_u32(enc, 7, packed.binary.rows);
+    set_u32(enc, 8, packed.binary.cols);
+    set_u32(enc, 9, packed.binary.group_size);
+    set_u32(enc, 10, packed.binary.groups_per_row);
+    set_u32(enc, 11, packed.residual_scale_f16);
+}
+
 fn encode_csr(
     enc: &metal::ComputeCommandEncoderRef,
     packed: &GpuResidual,
@@ -439,6 +479,118 @@ fn encode_factor(
     set_u32(enc, 6, group_size);
     set_u32(enc, 7, bits);
     set_u32(enc, 8, bound);
+}
+
+#[cfg(target_os = "macos")]
+fn dispatch_binary(
+    tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+    body: &GpuBinary,
+    input: &crate::metal::PinnedBuffer,
+    output: &crate::metal::PinnedBuffer,
+    output_offset: u64,
+    serial_name: &str,
+) -> Result<()> {
+    if qwen80_recon_fuse_enabled() {
+        tcb.dispatch_threads(
+            "q80_binary_group_matvec_tg256",
+            tg256_grid(body.rows),
+            (256, 1, 1),
+            |enc| encode_binary(enc, body, input, output, output_offset),
+        )
+    } else {
+        tcb.dispatch_threads(
+            serial_name,
+            (body.rows, 1, 1),
+            (256, 1, 1),
+            |enc| encode_binary(enc, body, input, output, output_offset),
+        )
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn dispatch_residual(
+    tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+    body: &GpuResidual,
+    input: &crate::metal::PinnedBuffer,
+    output: &crate::metal::PinnedBuffer,
+    output_offset: u64,
+    serial_binary: &str,
+) -> Result<()> {
+    if qwen80_recon_fuse_enabled() {
+        tcb.dispatch_threads(
+            "q80_binary_group_csr_matvec_tg256",
+            tg256_grid(body.binary.rows),
+            (256, 1, 1),
+            |enc| encode_binary_csr(enc, body, input, output, output_offset),
+        )
+    } else {
+        tcb.dispatch_threads(
+            serial_binary,
+            (body.binary.rows, 1, 1),
+            (256, 1, 1),
+            |enc| encode_binary(enc, &body.binary, input, output, output_offset),
+        )?;
+        tcb.dispatch_threads(
+            "q80_sparse_q1_apply_csr",
+            (body.binary.rows, 1, 1),
+            (256, 1, 1),
+            |enc| encode_csr(enc, body, input, output, output_offset),
+        )
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn dispatch_factor(
+    tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+    codes: &crate::metal::PinnedBuffer,
+    scales: &crate::metal::PinnedBuffer,
+    input: &crate::metal::PinnedBuffer,
+    input_offset: u64,
+    output: &crate::metal::PinnedBuffer,
+    output_offset: u64,
+    rows: u32,
+    cols: u32,
+    group_size: u32,
+    bits: u32,
+    bound: u32,
+    code_off: u64,
+    scale_off: u64,
+    serial_name: &str,
+) -> Result<()> {
+    let encode = |enc: &metal::ComputeCommandEncoderRef| {
+        encode_factor(
+            enc,
+            codes,
+            scales,
+            input,
+            input_offset,
+            output,
+            output_offset,
+            rows,
+            cols,
+            group_size,
+            bits,
+            bound,
+            code_off,
+            scale_off,
+        )
+    };
+    if qwen80_recon_fuse_enabled() {
+        let (name, grid) = if bits == 8 {
+            if cols >= 2048 {
+                ("q80_uniform8_matvec_tg256", tg256_grid(rows))
+            } else {
+                ("q80_uniform8_matvec_simd_bytes", simd8_grid(rows))
+            }
+        } else if bits == 3 {
+            ("q80_hgravs01_factor_matvec_simd3", simd8_grid(rows))
+        } else {
+            ("q80_hgravs01_factor_matvec_simd", simd8_grid(rows))
+        };
+        tcb.dispatch_threads(name, grid, (256, 1, 1), encode)
+    } else {
+        tcb.dispatch_threads(serial_name, (rows, 1, 1), (256, 1, 1), encode)
+    }
 }
 
 #[cfg(target_os = "macos")]
@@ -736,58 +888,36 @@ impl MetalMixedAccel {
     ) -> Result<()> {
         match weight {
             GpuWeight::Binary(body) => {
-                tcb.dispatch_threads(
-                    "q80_binary_group_matvec",
-                    (body.rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| encode_binary(enc, body, input, output, 0),
-                )?;
+                dispatch_binary(tcb, body, input, output, 0, "q80_binary_group_matvec")?;
                 native.binary_dispatches = native.binary_dispatches.saturating_add(1);
             }
             GpuWeight::Residual(body) => {
-                tcb.dispatch_threads(
-                    "q80_binary_group_matvec",
-                    (body.binary.rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| encode_binary(enc, &body.binary, input, output, 0),
-                )?;
-                tcb.dispatch_threads(
-                    "q80_sparse_q1_apply_csr",
-                    (body.binary.rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| encode_csr(enc, body, input, output, 0),
-                )?;
+                dispatch_residual(tcb, body, input, output, 0, "q80_binary_group_matvec")?;
                 native.binary_dispatches = native.binary_dispatches.saturating_add(1);
                 native.residual_dispatches = native.residual_dispatches.saturating_add(1);
             }
-            GpuWeight::Hgravs(body) => {
+            GpuWeight::Hgravs(_body) => {
                 return Err(mixed_error(
                     "hgravs encode_weight needs a mid buffer; use matvec",
                 ));
             }
             GpuWeight::Uniform(body) => {
-                tcb.dispatch_threads(
+                dispatch_factor(
+                    tcb,
+                    &body.codes,
+                    &body.scales,
+                    input,
+                    0,
+                    output,
+                    0,
+                    body.rows,
+                    body.cols,
+                    body.group_size,
+                    body.bits,
+                    body.bound,
+                    body.code_off,
+                    body.scale_off,
                     "q80_hgravs01_factor_matvec",
-                    (body.rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| {
-                        encode_factor(
-                            enc,
-                            &body.codes,
-                            &body.scales,
-                            input,
-                            0,
-                            output,
-                            0,
-                            body.rows,
-                            body.cols,
-                            body.group_size,
-                            body.bits,
-                            body.bound,
-                            body.code_off,
-                            body.scale_off,
-                        )
-                    },
                 )?;
                 native.uniform8_dispatches = native.uniform8_dispatches.saturating_add(1);
             }
@@ -853,26 +983,24 @@ impl MetalMixedAccel {
         let mut tcb = crate::metal::TokenCommandBuffer::new(&self.context);
         match self.weights.get(name).expect("uploaded") {
             GpuWeight::Binary(body) => {
-                tcb.dispatch_threads(
+                dispatch_binary(
+                    &mut tcb,
+                    body,
+                    &input_buf,
+                    &output_buf,
+                    0,
                     crate::decode_family::MATVEC_BINARY,
-                    (body.rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| encode_binary(enc, body, &input_buf, &output_buf, 0),
                 )?;
                 native.binary_dispatches = native.binary_dispatches.saturating_add(1);
             }
             GpuWeight::Residual(body) => {
-                tcb.dispatch_threads(
+                dispatch_residual(
+                    &mut tcb,
+                    body,
+                    &input_buf,
+                    &output_buf,
+                    0,
                     crate::decode_family::MATVEC_BINARY,
-                    (body.binary.rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| encode_binary(enc, &body.binary, &input_buf, &output_buf, 0),
-                )?;
-                tcb.dispatch_threads(
-                    "q80_sparse_q1_apply_csr",
-                    (body.binary.rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| encode_csr(enc, body, &input_buf, &output_buf, 0),
                 )?;
                 native.binary_dispatches = native.binary_dispatches.saturating_add(1);
                 native.residual_dispatches = native.residual_dispatches.saturating_add(1);
@@ -881,78 +1009,60 @@ impl MetalMixedAccel {
                 let mid = self
                     .context
                     .new_buffer_checked(body.right_rows as usize * 4)?;
-                tcb.dispatch_threads(
+                dispatch_factor(
+                    &mut tcb,
+                    &body.right_codes,
+                    &body.right_scales,
+                    &input_buf,
+                    0,
+                    &mid,
+                    0,
+                    body.right_rows,
+                    body.right_cols,
+                    body.group_size,
+                    body.bits,
+                    body.bound,
+                    body.right_code_off,
+                    body.right_scale_off,
                     crate::decode_family::MATVEC_HGRAVS,
-                    (body.right_rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| {
-                        encode_factor(
-                            enc,
-                            &body.right_codes,
-                            &body.right_scales,
-                            &input_buf,
-                            0,
-                            &mid,
-                            0,
-                            body.right_rows,
-                            body.right_cols,
-                            body.group_size,
-                            body.bits,
-                            body.bound,
-                            body.right_code_off,
-                            body.right_scale_off,
-                        )
-                    },
                 )?;
-                tcb.dispatch_threads(
+                dispatch_factor(
+                    &mut tcb,
+                    &body.left_codes,
+                    &body.left_scales,
+                    &mid,
+                    0,
+                    &output_buf,
+                    0,
+                    body.left_rows,
+                    body.left_cols,
+                    body.group_size,
+                    body.bits,
+                    body.bound,
+                    body.left_code_off,
+                    body.left_scale_off,
                     crate::decode_family::MATVEC_HGRAVS,
-                    (body.left_rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| {
-                        encode_factor(
-                            enc,
-                            &body.left_codes,
-                            &body.left_scales,
-                            &mid,
-                            0,
-                            &output_buf,
-                            0,
-                            body.left_rows,
-                            body.left_cols,
-                            body.group_size,
-                            body.bits,
-                            body.bound,
-                            body.left_code_off,
-                            body.left_scale_off,
-                        )
-                    },
                 )?;
                 native.hgravs_factor_dispatches =
                     native.hgravs_factor_dispatches.saturating_add(2);
             }
             GpuWeight::Uniform(body) => {
-                tcb.dispatch_threads(
+                dispatch_factor(
+                    &mut tcb,
+                    &body.codes,
+                    &body.scales,
+                    &input_buf,
+                    0,
+                    &output_buf,
+                    0,
+                    body.rows,
+                    body.cols,
+                    body.group_size,
+                    body.bits,
+                    body.bound,
+                    body.code_off,
+                    body.scale_off,
                     crate::decode_family::MATVEC_HGRAVS,
-                    (body.rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| {
-                        encode_factor(
-                            enc,
-                            &body.codes,
-                            &body.scales,
-                            &input_buf,
-                            0,
-                            &output_buf,
-                            0,
-                            body.rows,
-                            body.cols,
-                            body.group_size,
-                            body.bits,
-                            body.bound,
-                            body.code_off,
-                            body.scale_off,
-                        )
-                    },
                 )?;
                 native.uniform8_dispatches = native.uniform8_dispatches.saturating_add(1);
             }
@@ -1163,31 +1273,21 @@ impl MetalMixedAccel {
                 .get(&(_layer, expert))
                 .ok_or_else(|| mixed_error("expert missing after ensure"))?;
             let mid_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
-            tcb.dispatch_threads(
+            dispatch_binary(
+                &mut tcb,
+                &trip.gate,
+                &self.wave.input,
+                &self.wave.gate,
+                mid_off,
                 "q80_binary_group_matvec",
-                (trip.gate.rows, 1, 1),
-                (256, 1, 1),
-                |enc| encode_binary(enc, &trip.gate, &self.wave.input, &self.wave.gate, mid_off),
             )?;
-            tcb.dispatch_threads(
+            dispatch_residual(
+                &mut tcb,
+                &trip.up,
+                &self.wave.input,
+                &self.wave.up,
+                mid_off,
                 "q80_binary_group_matvec",
-                (trip.up.binary.rows, 1, 1),
-                (256, 1, 1),
-                |enc| {
-                    encode_binary(
-                        enc,
-                        &trip.up.binary,
-                        &self.wave.input,
-                        &self.wave.up,
-                        mid_off,
-                    )
-                },
-            )?;
-            tcb.dispatch_threads(
-                "q80_sparse_q1_apply_csr",
-                (trip.up.binary.rows, 1, 1),
-                (256, 1, 1),
-                |enc| encode_csr(enc, &trip.up, &self.wave.input, &self.wave.up, mid_off),
             )?;
             native.binary_dispatches = native.binary_dispatches.saturating_add(2);
             native.residual_dispatches = native.residual_dispatches.saturating_add(1);
@@ -1212,51 +1312,39 @@ impl MetalMixedAccel {
             let act_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
             let mid_off = (slot * Q80_HGRAVS_RANK * 4) as u64;
             let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
-            tcb.dispatch_threads(
+            dispatch_factor(
+                &mut tcb,
+                &trip.down.right_codes,
+                &trip.down.right_scales,
+                &self.wave.act,
+                act_off,
+                &self.wave.mid,
+                mid_off,
+                trip.down.right_rows,
+                trip.down.right_cols,
+                trip.down.group_size,
+                trip.down.bits,
+                trip.down.bound,
+                trip.down.right_code_off,
+                trip.down.right_scale_off,
                 "q80_hgravs01_factor_matvec",
-                (trip.down.right_rows, 1, 1),
-                (256, 1, 1),
-                |enc| {
-                    encode_factor(
-                        enc,
-                        &trip.down.right_codes,
-                        &trip.down.right_scales,
-                        &self.wave.act,
-                        act_off,
-                        &self.wave.mid,
-                        mid_off,
-                        trip.down.right_rows,
-                        trip.down.right_cols,
-                        trip.down.group_size,
-                        trip.down.bits,
-                        trip.down.bound,
-                        trip.down.right_code_off,
-                        trip.down.right_scale_off,
-                    )
-                },
             )?;
-            tcb.dispatch_threads(
+            dispatch_factor(
+                &mut tcb,
+                &trip.down.left_codes,
+                &trip.down.left_scales,
+                &self.wave.mid,
+                mid_off,
+                &self.wave.down,
+                down_off,
+                trip.down.left_rows,
+                trip.down.left_cols,
+                trip.down.group_size,
+                trip.down.bits,
+                trip.down.bound,
+                trip.down.left_code_off,
+                trip.down.left_scale_off,
                 "q80_hgravs01_factor_matvec",
-                (trip.down.left_rows, 1, 1),
-                (256, 1, 1),
-                |enc| {
-                    encode_factor(
-                        enc,
-                        &trip.down.left_codes,
-                        &trip.down.left_scales,
-                        &self.wave.mid,
-                        mid_off,
-                        &self.wave.down,
-                        down_off,
-                        trip.down.left_rows,
-                        trip.down.left_cols,
-                        trip.down.group_size,
-                        trip.down.bits,
-                        trip.down.bound,
-                        trip.down.left_code_off,
-                        trip.down.left_scale_off,
-                    )
-                },
             )?;
             native.hgravs_factor_dispatches = native.hgravs_factor_dispatches.saturating_add(2);
         }
@@ -1312,31 +1400,21 @@ impl MetalMixedAccel {
                 .get(&(layer, expert))
                 .ok_or_else(|| mixed_error("expert missing after ensure"))?;
             let mid_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
-            tcb.dispatch_threads(
+            dispatch_binary(
+                &mut tcb,
+                &trip.gate,
+                &self.wave.input,
+                &self.wave.gate,
+                mid_off,
                 crate::decode_family::MATVEC_BINARY,
-                (trip.gate.rows, 1, 1),
-                (256, 1, 1),
-                |enc| encode_binary(enc, &trip.gate, &self.wave.input, &self.wave.gate, mid_off),
             )?;
-            tcb.dispatch_threads(
+            dispatch_residual(
+                &mut tcb,
+                &trip.up,
+                &self.wave.input,
+                &self.wave.up,
+                mid_off,
                 crate::decode_family::MATVEC_BINARY,
-                (trip.up.binary.rows, 1, 1),
-                (256, 1, 1),
-                |enc| {
-                    encode_binary(
-                        enc,
-                        &trip.up.binary,
-                        &self.wave.input,
-                        &self.wave.up,
-                        mid_off,
-                    )
-                },
-            )?;
-            tcb.dispatch_threads(
-                "q80_sparse_q1_apply_csr",
-                (trip.up.binary.rows, 1, 1),
-                (256, 1, 1),
-                |enc| encode_csr(enc, &trip.up, &self.wave.input, &self.wave.up, mid_off),
             )?;
             native.binary_dispatches = native.binary_dispatches.saturating_add(2);
             native.residual_dispatches = native.residual_dispatches.saturating_add(1);
@@ -1380,53 +1458,41 @@ impl MetalMixedAccel {
                 .ok_or_else(|| mixed_error("expert missing after ensure"))?;
             let act_off = (slot * QWEN80_MOE_INTERMEDIATE * 4) as u64;
             let mid_off = (slot * Q80_HGRAVS_RANK * 4) as u64;
-            tcb.dispatch_threads(
+            dispatch_factor(
+                &mut tcb,
+                &trip.down.right_codes,
+                &trip.down.right_scales,
+                &self.wave.act,
+                act_off,
+                &self.wave.mid,
+                mid_off,
+                trip.down.right_rows,
+                trip.down.right_cols,
+                trip.down.group_size,
+                trip.down.bits,
+                trip.down.bound,
+                trip.down.right_code_off,
+                trip.down.right_scale_off,
                 crate::decode_family::MATVEC_HGRAVS,
-                (trip.down.right_rows, 1, 1),
-                (256, 1, 1),
-                |enc| {
-                    encode_factor(
-                        enc,
-                        &trip.down.right_codes,
-                        &trip.down.right_scales,
-                        &self.wave.act,
-                        act_off,
-                        &self.wave.mid,
-                        mid_off,
-                        trip.down.right_rows,
-                        trip.down.right_cols,
-                        trip.down.group_size,
-                        trip.down.bits,
-                        trip.down.bound,
-                        trip.down.right_code_off,
-                        trip.down.right_scale_off,
-                    )
-                },
             )?;
             if fused {
                 let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
-                tcb.dispatch_threads(
+                dispatch_factor(
+                    &mut tcb,
+                    &trip.down.left_codes,
+                    &trip.down.left_scales,
+                    &self.wave.mid,
+                    mid_off,
+                    &self.wave.down,
+                    down_off,
+                    trip.down.left_rows,
+                    trip.down.left_cols,
+                    trip.down.group_size,
+                    trip.down.bits,
+                    trip.down.bound,
+                    trip.down.left_code_off,
+                    trip.down.left_scale_off,
                     crate::decode_family::MATVEC_HGRAVS,
-                    (trip.down.left_rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| {
-                        encode_factor(
-                            enc,
-                            &trip.down.left_codes,
-                            &trip.down.left_scales,
-                            &self.wave.mid,
-                            mid_off,
-                            &self.wave.down,
-                            down_off,
-                            trip.down.left_rows,
-                            trip.down.left_cols,
-                            trip.down.group_size,
-                            trip.down.bits,
-                            trip.down.bound,
-                            trip.down.left_code_off,
-                            trip.down.left_scale_off,
-                        )
-                    },
                 )?;
             }
             native.hgravs_factor_dispatches = native.hgravs_factor_dispatches.saturating_add(1);
@@ -1451,28 +1517,22 @@ impl MetalMixedAccel {
                     .ok_or_else(|| mixed_error("expert missing after ensure"))?;
                 let mid_off = (slot * Q80_HGRAVS_RANK * 4) as u64;
                 let down_off = (slot * QWEN80_HIDDEN * 4) as u64;
-                tcb.dispatch_threads(
+                dispatch_factor(
+                    &mut tcb,
+                    &trip.down.left_codes,
+                    &trip.down.left_scales,
+                    &self.wave.mid,
+                    mid_off,
+                    &self.wave.down,
+                    down_off,
+                    trip.down.left_rows,
+                    trip.down.left_cols,
+                    trip.down.group_size,
+                    trip.down.bits,
+                    trip.down.bound,
+                    trip.down.left_code_off,
+                    trip.down.left_scale_off,
                     crate::decode_family::MATVEC_HGRAVS,
-                    (trip.down.left_rows, 1, 1),
-                    (256, 1, 1),
-                    |enc| {
-                        encode_factor(
-                            enc,
-                            &trip.down.left_codes,
-                            &trip.down.left_scales,
-                            &self.wave.mid,
-                            mid_off,
-                            &self.wave.down,
-                            down_off,
-                            trip.down.left_rows,
-                            trip.down.left_cols,
-                            trip.down.group_size,
-                            trip.down.bits,
-                            trip.down.bound,
-                            trip.down.left_code_off,
-                            trip.down.left_scale_off,
-                        )
-                    },
                 )?;
                 native.hgravs_factor_dispatches =
                     native.hgravs_factor_dispatches.saturating_add(1);

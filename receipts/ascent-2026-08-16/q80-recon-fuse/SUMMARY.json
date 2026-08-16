@@ -1,0 +1,283 @@
+{
+  "schema": "hawking.ascension.q80_reconstruction_fuse.v1",
+  "date": "2026-08-16",
+  "lane": "q80-matvec-reconstruction",
+  "vehicle": "mixed-1p5-v1",
+  "complete_physical_bpw": 1.4444457,
+  "gpu_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime",
+  "pairs": 3,
+  "alternating": "BASE(HAWKING_Q80_RECON_FUSE=0) then OURS(HAWKING_Q80_RECON_FUSE=1) per pair, new process each arm",
+  "generated_token_ids": [
+    8420,
+    748,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    320,
+    72,
+    1734
+  ],
+  "ids_identical_all_six": true,
+  "silent_fallbacks_all_zero": true,
+  "gpu_timestamps_missing_all_zero": true,
+  "sample_parity_all_passed": true,
+  "gpu_matvec_ns_per_token": {
+    "base": {
+      "all": [
+        862974929.5454545,
+        864580707.1818181,
+        863724974.4545455
+      ],
+      "min": 862974929.5454545,
+      "median": 863724974.4545455,
+      "max": 864580707.1818181,
+      "spread": 1605777.6363636255,
+      "n": 3
+    },
+    "ours": {
+      "all": [
+        35902863.81818182,
+        36630332.90909091,
+        36217843.09090909
+      ],
+      "min": 35902863.81818182,
+      "median": 36217843.09090909,
+      "max": 36630332.90909091,
+      "spread": 727469.0909090862,
+      "n": 3
+    },
+    "median_delta_ns": -827507131.3636364,
+    "speedup_x": 23.848051146683165
+  },
+  "wall_ns_per_token": {
+    "base": {
+      "all": [
+        1166133560.6363637,
+        1200875678.0,
+        1173378598.5454545
+      ],
+      "min": 1166133560.6363637,
+      "median": 1173378598.5454545,
+      "max": 1200875678.0,
+      "spread": 34742117.363636255,
+      "n": 3
+    },
+    "ours": {
+      "all": [
+        320844560.6363636,
+        325043284.09090906,
+        326603117.45454544
+      ],
+      "min": 320844560.6363636,
+      "median": 325043284.09090906,
+      "max": 326603117.45454544,
+      "spread": 5758556.818181813,
+      "n": 3
+    },
+    "speedup_x": 3.6099149128005994
+  },
+  "host_expert_bind_ns_per_token": {
+    "base": {
+      "all": [
+        45158446.54545455,
+        49526141.36363637,
+        45318496.45454545
+      ],
+      "min": 45158446.54545455,
+      "median": 45318496.45454545,
+      "max": 49526141.36363637,
+      "spread": 4367694.81818182,
+      "n": 3
+    },
+    "ours": {
+      "all": [
+        46656616.45454545,
+        47858012.81818182,
+        48190065.09090909
+      ],
+      "min": 46656616.45454545,
+      "median": 47858012.81818182,
+      "max": 48190065.09090909,
+      "spread": 1533448.6363636404,
+      "n": 3
+    }
+  },
+  "wait_minus_gpu_ns_per_token": {
+    "base": {
+      "all": [
+        119928141.0909091,
+        126393513.54545455,
+        119950239.72727273
+      ],
+      "min": 119928141.0909091,
+      "median": 119950239.72727273,
+      "max": 126393513.54545455,
+      "spread": 6465372.454545453,
+      "n": 3
+    },
+    "ours": {
+      "all": [
+        95647474.9090909,
+        92341745.0909091,
+        93264680.54545455
+      ],
+      "min": 92341745.0909091,
+      "median": 93264680.54545455,
+      "max": 95647474.9090909,
+      "spread": 3305729.8181818128,
+      "n": 3
+    }
+  },
+  "dispatches_per_token": {
+    "base": 2893.0,
+    "ours": 2413.0,
+    "delta": -480.0,
+    "note": "48 layers * 10 experts residual apply fused into binary"
+  },
+  "command_buffers_per_token": {
+    "base": 337.0,
+    "ours": 337.0
+  },
+  "bandwidth": {
+    "active_bytes_per_token_gb": 2.218,
+    "honest_ceiling_gb_s": 411.51,
+    "base_achieved_gb_s": 2.5679470498125845,
+    "ours_achieved_gb_s": 61.24053258590464,
+    "base_factor_off_ceiling": 160.24863130648782,
+    "ours_factor_off_ceiling": 6.719569256239858,
+    "base_pct_of_ceiling": 0.6240302908343867,
+    "ours_pct_of_ceiling": 14.88190629289802
+  },
+  "pair_table": [
+    {
+      "pair": 1,
+      "base": {
+        "ids_match": true,
+        "silent": 0,
+        "silent_count_field": 0,
+        "dense_w": false,
+        "gpu_missing": 0,
+        "recon_fuse": false,
+        "parity": true
+      },
+      "ours": {
+        "ids_match": true,
+        "silent": 0,
+        "silent_count_field": 0,
+        "dense_w": false,
+        "gpu_missing": 0,
+        "recon_fuse": true,
+        "parity": true
+      },
+      "base_gpu": 862974929.5454545,
+      "ours_gpu": 35902863.81818182,
+      "base_wall": 1166133560.6363637,
+      "ours_wall": 320844560.6363636,
+      "base_bind": 45158446.54545455,
+      "ours_bind": 46656616.45454545,
+      "base_wmg": 119928141.0909091,
+      "ours_wmg": 95647474.9090909,
+      "base_cbs": 337.0,
+      "ours_cbs": 337.0,
+      "base_disp": 2893.0,
+      "ours_disp": 2413.0
+    },
+    {
+      "pair": 2,
+      "base": {
+        "ids_match": true,
+        "silent": 0,
+        "silent_count_field": 0,
+        "dense_w": false,
+        "gpu_missing": 0,
+        "recon_fuse": false,
+        "parity": true
+      },
+      "ours": {
+        "ids_match": true,
+        "silent": 0,
+        "silent_count_field": 0,
+        "dense_w": false,
+        "gpu_missing": 0,
+        "recon_fuse": true,
+        "parity": true
+      },
+      "base_gpu": 864580707.1818181,
+      "ours_gpu": 36630332.90909091,
+      "base_wall": 1200875678.0,
+      "ours_wall": 325043284.09090906,
+      "base_bind": 49526141.36363637,
+      "ours_bind": 47858012.81818182,
+      "base_wmg": 126393513.54545455,
+      "ours_wmg": 92341745.0909091,
+      "base_cbs": 337.0,
+      "ours_cbs": 337.0,
+      "base_disp": 2893.0,
+      "ours_disp": 2413.0
+    },
+    {
+      "pair": 3,
+      "base": {
+        "ids_match": true,
+        "silent": 0,
+        "silent_count_field": 0,
+        "dense_w": false,
+        "gpu_missing": 0,
+        "recon_fuse": false,
+        "parity": true
+      },
+      "ours": {
+        "ids_match": true,
+        "silent": 0,
+        "silent_count_field": 0,
+        "dense_w": false,
+        "gpu_missing": 0,
+        "recon_fuse": true,
+        "parity": true
+      },
+      "base_gpu": 863724974.4545455,
+      "ours_gpu": 36217843.09090909,
+      "base_wall": 1173378598.5454545,
+      "ours_wall": 326603117.45454544,
+      "base_bind": 45318496.45454545,
+      "ours_bind": 48190065.09090909,
+      "base_wmg": 119950239.72727273,
+      "ours_wmg": 93264680.54545455,
+      "base_cbs": 337.0,
+      "ours_cbs": 337.0,
+      "base_disp": 2893.0,
+      "ours_disp": 2413.0
+    }
+  ],
+  "mechanisms": {
+    "won": [
+      "Wired already-measured occupancy tiles onto the shipping token path (they existed; serial 1-thread/row was still dispatched).",
+      "Q8: deleted the 8-iteration bit-loop extract; one byte load + (code-127)*scale FMA in-register.",
+      "Binary: tg256, 8 signs from one byte, consumed in the same FMA. No dense W.",
+      "Up: fused binary+CSR into one dispatch; deleted 480 residual kernels/token.",
+      "HGRAVS 3-bit: simd3 8-unpack, including 160-col L which the old 256-tile loop never 8-unpacked."
+    ],
+    "negative_retained": [
+      {
+        "mechanism": "Fused y=L@(R@x) in one threadgroup (every TG recomputes R into threadgroup mid)",
+        "result": "Already measured 5-13x SLOWER. Metal has no grid-wide barrier. Kept two-dispatch simd3 with 640 B device mid[rank]. mid is R@x activation, not reconstructed W.",
+        "source": "receipts/ascent-2026-08-16/q80-lowrank-algebra.json"
+      },
+      {
+        "mechanism": "Remap codec symbol layout at identical BPW and identical numerics",
+        "result": "No cheaper packing exists at identical BPW. Q8 is already 1 byte. 3-bit is already 8 codes / 3 bytes (the simd3 pack). Binary is already 1-bit LSB. Rice residuals are irregular top-2% positions; arithmetic addressing would change which weights are corrected."
+      }
+    ]
+  },
+  "remaining_after": {
+    "gpu_matvec_ms": 36.21784309090909,
+    "wall_ms": 325.0432840909091,
+    "host_bind_ms": 47.85801281818182,
+    "wait_minus_gpu_ms": 93.26468054545455,
+    "note": "Reconstruction wall is gone. Remaining wall is host bind + wait-minus-gpu + a 36 ms gpu_matvec still 6.7x off the 411.51 GB/s honest ceiling."
+  }
+}

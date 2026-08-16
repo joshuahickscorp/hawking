@@ -1132,6 +1132,8 @@ mod imp {
             "q80_hgravs01_factor_matvec" => "q80_hgravs01_factor_matvec",
             "q80_hgravs01_factor_matvec_simd" => "q80_hgravs01_factor_matvec_simd",
             "q80_hgravs01_factor_matvec_simd3" => "q80_hgravs01_factor_matvec_simd3",
+            "q80_uniform8_matvec_simd_bytes" => "q80_uniform8_matvec_simd_bytes",
+            "q80_uniform8_matvec_tg256" => "q80_uniform8_matvec_tg256",
             "q80_hgravs01_two_stage_matvec" => "q80_hgravs01_two_stage_matvec",
             "q80_hgravs01_two_stage_matvec_rowblock4" => {
                 "q80_hgravs01_two_stage_matvec_rowblock4"
