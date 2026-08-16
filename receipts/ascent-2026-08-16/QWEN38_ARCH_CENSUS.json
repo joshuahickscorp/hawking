@@ -142,5 +142,45 @@
     "evidence": "vision_tower.* is a separate top-level root with 333 of 1184 tensors. No text tensor references it; language_model.* is self-contained at 851 tensors.",
     "action": "load language_model.* only for the developer unit. Saves bytes and all vision bring-up work.",
     "note": "config has language_model_only:false, but that is a config default - the tensor graph shows the text path stands alone."
+  },
+  "DENSITY_VS_TPS_ARITHMETIC": {
+    "active_weights_per_token": 23611000000,
+    "breakdown_G": {
+      "mlp": 17.11,
+      "linear_attn": 4.05,
+      "full_attn": 1.17,
+      "lm_head": 1.27
+    },
+    "vs_q80": "Q80 MoE activates 3.562 G/token. Qwen3.8 dense activates 6.63x MORE despite being a 3x smaller model.",
+    "dram_floors": {
+      "4.0": {
+        "ms": 14.414,
+        "ceiling_tok_s": 69.4,
+        "headroom_50tps": 1.39
+      },
+      "3.0": {
+        "ms": 10.811,
+        "ceiling_tok_s": 92.5,
+        "headroom_50tps": 1.85
+      },
+      "2.5": {
+        "ms": 9.009,
+        "ceiling_tok_s": 111.0,
+        "headroom_50tps": 2.22
+      },
+      "2.0": {
+        "ms": 7.207,
+        "ceiling_tok_s": 138.8,
+        "headroom_50tps": 2.78
+      },
+      "1.5": {
+        "ms": 5.405,
+        "ceiling_tok_s": 185.0,
+        "headroom_50tps": 3.7
+      }
+    },
+    "HARD_CONSEQUENCE_1": "100 TPS is PHYSICALLY IMPOSSIBLE at 3.0 BPW - the ceiling is 92.5 tok/s. It becomes physical at 2.0 BPW (138.8).",
+    "HARD_CONSEQUENCE_2": "50 TPS requires 54% of pure-DRAM-floor efficiency at 3.0 BPW versus 36% at 2.0 BPW. Packed kernels currently run ~0.4% of the measured 560-647 GB/s control, so that difference materially de-risks the floor.",
+    "VERDICT_ON_EASE": "The architecture PORT is easy - 48/64 layers are Q80's DeltaNet recurrence with a projection-fusion adapter. The TPS is HARDER than Q80, not easier, because dense activation dominates. Do not carry the 'similar to Q80' intuition across from architecture to velocity."
   }
 }
