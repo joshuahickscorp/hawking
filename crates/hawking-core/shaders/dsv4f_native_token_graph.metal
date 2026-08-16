@@ -507,3 +507,78 @@ kernel void dsv4f_fp4_matvec_interleaved(
     output[row] = row_accumulator;
 }
 #pragma clang fp contract(on)
+
+// Diagnostic only. Same launch geometry and the same packed/act/scale
+// addresses as dsv4f_fp4_matvec_split_simd, but the loaded bytes are
+// accumulated as floats with no e2m1/e4m3/e8m0 decode and no MAC. If this
+// runs at the same GPU time as the real kernel, reconstruction is free.
+#pragma clang fp contract(off)
+kernel void dsv4f_diag_fp4_load_only_simd(
+    device const uchar* packed_weights [[buffer(0)]],
+    device const uchar* weight_scales  [[buffer(1)]],
+    device const uchar* quantized      [[buffer(2)]],
+    device const uchar* act_scales     [[buffer(3)]],
+    device       float* output         [[buffer(4)]],
+    constant uint& rows                 [[buffer(5)]],
+    constant uint& packed_cols          [[buffer(6)]],
+    constant uint& scale_cols           [[buffer(7)]],
+    uint group_id                       [[threadgroup_position_in_grid]],
+    uint simd_lane                      [[thread_index_in_simdgroup]],
+    uint simd_id                        [[simdgroup_index_in_threadgroup]])
+{
+    if (rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * DSV4F_FP4_BLOCK) {
+        return;
+    }
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) return;
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const uint col = block * DSV4F_FP4_BLOCK + simd_lane;
+        const uchar packed = packed_weights[weight_base + (ulong)(col >> 1u)];
+        const uchar act = quantized[col];
+        float block_accumulator = float(packed) + float(act);
+        block_accumulator = simd_sum(block_accumulator);
+        if (simd_lane == 0u) {
+            const uchar activation_scale =
+                act_scales[block / (DSV4F_ACT_BLOCK / DSV4F_FP4_BLOCK)];
+            const uchar weight_scale = weight_scales[scale_base + (ulong)block];
+            row_accumulator = row_accumulator
+                + block_accumulator + float(activation_scale) + float(weight_scale);
+        }
+    }
+    if (simd_lane == 0u) output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)
+
+// Diagnostic only. Uncompressed F32 matvec at the same 8-simdgroup
+// threadgroup geometry as dsv4f_fp4_matvec_split_simd. Isolates access
+// pattern / occupancy from FP4 reconstruction.
+#pragma clang fp contract(off)
+kernel void dsv4f_diag_f32_matvec_simd(
+    device const float* weights [[buffer(0)]],
+    device const float* x       [[buffer(1)]],
+    device       float* output  [[buffer(2)]],
+    constant uint& rows          [[buffer(3)]],
+    constant uint& cols          [[buffer(4)]],
+    uint group_id                [[threadgroup_position_in_grid]],
+    uint simd_lane               [[thread_index_in_simdgroup]],
+    uint simd_id                 [[simdgroup_index_in_threadgroup]])
+{
+    if (rows == 0u || cols == 0u || (cols % 32u) != 0u) return;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) return;
+    const ulong weight_base = (ulong)row * (ulong)cols;
+    float row_accumulator = 0.0f;
+    for (uint col = simd_lane; col < cols; col += 32u) {
+        row_accumulator = row_accumulator
+            + weights[weight_base + (ulong)col] * x[col];
+    }
+    row_accumulator = simd_sum(row_accumulator);
+    if (simd_lane == 0u) output[row] = row_accumulator;
+}
+#pragma clang fp contract(on)
