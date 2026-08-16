@@ -1,0 +1,737 @@
+{
+  "capture": {
+    "determined_fit_floor": {
+      "do_not_cap_rank_to_n_fit_rows": true,
+      "recommended_rows_for_rank_256": 512,
+      "rule": "rows < input_dim is underdetermined for a full-rank score; rows < rank is underdetermined for a rank-r score",
+      "w1_w3_dim": 4096,
+      "w2_dim": 2048
+    },
+    "existing": {
+      "activation_x_batch_parity_sample_rows": 1,
+      "fullseq_L0_tokens": 255,
+      "fullseq_L1_tokens": 1020,
+      "fullseq_sequences": 160,
+      "fullseq_total_tokens": 1275,
+      "late_hidden_export": "32 x 4096 per layer (one vector per L0 sequence)",
+      "per_expert_first_n_real_source": false,
+      "post_swiglu_x_captured": false
+    },
+    "layer_tiled_capture_bytes_rank256": {
+      "experts": 256,
+      "note": "Keep one layer, fit, discard X. Never emit a giant JSON index.",
+      "rows": 512,
+      "w1_x_bytes_one_layer": 2147483648,
+      "w2_x_bytes_one_layer": 1073741824
+    },
+    "teacher": "Official mixed-precision source (FP4 experts, FP8 control, BF16 embed/head). There is no local full-BF16 DSV4F. Fit against this teacher, not a degraded pack, not Gaussian X.",
+    "tokens_to_fill_512_rows_if_uniform": {
+      "formula": "experts * rows / top_k",
+      "hash_layers_0_2": "Layers 0-2 route by token id (tid2eid). Expert coverage is whatever the corpus token-id histogram hits. Report holes; do not fabricate rows.",
+      "reuse_across_layers": "The same sequences feed every layer; 21,846 tokens is the uniform-routing fill, not 43 independent corpora.",
+      "tokens_per_layer": 21846
+    },
+    "writer_defaults_are_underdetermined": {
+      "default_max_hidden_tokens_per_expert": 64,
+      "default_row_threshold": 16,
+      "rows_16_vs_w1_dim": "UNDERDETERMINED",
+      "rows_64_vs_w1_dim": "UNDERDETERMINED",
+      "w1_w3_input_dim": 4096,
+      "w2_input_dim": 2048
+    }
+  },
+  "claim_boundary": {
+    "activation_weighted_fit": false,
+    "artifact_packed": false,
+    "coherence_generation_tested": false,
+    "note": "Census and residency arithmetic only. Q80 codec rates are an unfitted envelope. Model-level gate is coherent generation.",
+    "runtime_modified": false
+  },
+  "codec_proposal": {
+    "forbidden": [
+      "shared cross-expert basis (Q80 REFUTED, cos 0.004)",
+      "single codec family across w1/w3/w2 (Q80 INSUFFICIENT; down inverts)",
+      "fit w2 against hidden instead of post-SwiGLU X",
+      "Q30 static <=1.5 approach (FAILED)",
+      "Gaussian or degraded-pack activations",
+      "rank = min(budget, n_fit_rows) caps on underdetermined X"
+    ],
+    "mla_indexer_embed_head_router_norms_mhc": "protect at source",
+    "routed_w1": "binary_group family (Q80 gate analog) \u2014 UNFITTED",
+    "routed_w2": "activation-weighted low-rank family against post-SwiGLU X, not the layer hidden (Q80 down analog) \u2014 UNFITTED",
+    "routed_w3": "binary + rice_q1 residual (Q80 up analog) \u2014 UNFITTED",
+    "shared_expert": "protect at source FP8 (always-on)",
+    "status": "HYPOTHESIS_NOT_A_PRESCRIPTION"
+  },
+  "complete_physical_targets": {
+    "1.0": {
+      "complete_bpw": 1.0,
+      "payload_bytes": 36367786171,
+      "payload_gib": 33.870140249840915,
+      "with_packaging_bytes": 36398642179,
+      "with_packaging_gib": 33.89887714665383
+    },
+    "1.3": {
+      "complete_bpw": 1.3,
+      "payload_bytes": 47278122022,
+      "payload_gib": 44.03118232451379,
+      "with_packaging_bytes": 47308978030,
+      "with_packaging_gib": 44.05991922132671
+    },
+    "1.4": {
+      "complete_bpw": 1.4,
+      "payload_bytes": 50914900639,
+      "payload_gib": 47.41819634940475,
+      "with_packaging_bytes": 50945756647,
+      "with_packaging_gib": 47.44693324621767
+    },
+    "1.5": {
+      "complete_bpw": 1.5,
+      "payload_bytes": 54551679256,
+      "payload_gib": 50.80521037429571,
+      "with_packaging_bytes": 54582535264,
+      "with_packaging_gib": 50.83394727110863
+    }
+  },
+  "coverage": {
+    "byte_mass": 159609485896,
+    "byte_residual": 0,
+    "covers_all_tensors": true,
+    "expected_byte_mass": 159609485896,
+    "expected_tensor_count": 69187,
+    "logical_params": 290942289362,
+    "scope_logical": {
+      "base": 283273109074,
+      "global": 1059131397,
+      "mtp": 6610048891
+    },
+    "shape_mismatch": 0,
+    "tensor_count": 69187,
+    "undetermined": []
+  },
+  "geometry": {
+    "base_layers": 43,
+    "hash_layers": 3,
+    "hc_mult": 4,
+    "head_dim": 512,
+    "hidden": 4096,
+    "index_head_dim": 128,
+    "index_n_heads": 64,
+    "index_topk": 512,
+    "max_position_embeddings": 1048576,
+    "moe_intermediate": 2048,
+    "mtp_layers": 1,
+    "n_heads": 64,
+    "num_key_value_heads": 1,
+    "o_lora_rank": 1024,
+    "q_lora_rank": 1024,
+    "ratio128_layers": [
+      3,
+      5,
+      7,
+      9,
+      11,
+      13,
+      15,
+      17,
+      19,
+      21,
+      23,
+      25,
+      27,
+      29,
+      31,
+      33,
+      35,
+      37,
+      39,
+      41
+    ],
+    "ratio4_layers": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24,
+      26,
+      28,
+      30,
+      32,
+      34,
+      36,
+      38,
+      40,
+      42
+    ],
+    "rope_head_dim": 64,
+    "routed_experts": 256,
+    "shared_experts": 1,
+    "sliding_layers": [
+      0,
+      1
+    ],
+    "sliding_window": 128,
+    "source_dtypes": "fp4 e2m1fn_x2 experts + ue8m0/32; fp8 e4m3 control; bf16 embed/head; f32 mHC",
+    "top_k": 6,
+    "vocab": 129280
+  },
+  "host_reserve": {
+    "available_for_model_and_kv_bytes": 91268055040,
+    "decode_scratch_budget_bytes": 1073741824,
+    "host_ram_bytes": 103079215104,
+    "metal_runtime_budget_bytes": 2147483648,
+    "os_wired_budget_bytes": 8589934592,
+    "reserved_bytes": 11811160064
+  },
+  "identity": {
+    "artifact_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "chunk_sha_matches": true,
+    "chunks_opened": 0,
+    "content_addressed_chunk_sha256": "15e00fb1b91ac074b7f24686de4e289f76d66eb1c3fb4ad643de027adc78ca13",
+    "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+    "schema": "hawking.gravity.deepseek_v4.full_stream.v1",
+    "seal_matches_prefix": true
+  },
+  "lane": "dsv-resident-gravity",
+  "mass_split": {
+    "official_card": {
+      "active_note": "Lower bound is 43*(6+1)*3*2048*4096 + 43*MLA + embed + head. Matches the 13B card to ~0.1B; embed is a lookup.",
+      "active_params_claimed": 13000000000,
+      "active_params_geometry_lower_bound": 13233029120,
+      "measured_all_logical": 290942289362,
+      "measured_base_logical": 283273109074,
+      "measured_global_logical": 1059131397,
+      "measured_mtp_logical": 6610048891,
+      "measured_routed_logical": 283467841536,
+      "total_params_claimed": 284000000000
+    },
+    "q80_analogous": {
+      "crush": "routed_expert",
+      "f_protect": 0.025690482612172105,
+      "f_routed": 0.9743095173878279,
+      "protect": [
+        "shared_expert",
+        "mla",
+        "mhc",
+        "indexer_compressor",
+        "hash_layers",
+        "embeddings",
+        "lm_head",
+        "norms",
+        "router_gate",
+        "other"
+      ],
+      "protect_bytes": 9017195080,
+      "protect_logical": 7474447826,
+      "routed_bytes": 150592290816,
+      "routed_logical": 283467841536,
+      "source_protect_bpw": 9.651222714950022,
+      "source_routed_bpw": 4.25,
+      "why": "Q80 crushed routed experts and left shared + attention + embed + lm_head at 8-bit. Shared fires every token."
+    },
+    "schedule_routed_plus_shared": {
+      "f_expert": 0.9781154139401241,
+      "note": "DSV4F_TENSOR_SCHEDULE lumped shared with routed. This lane does not: shared is protected."
+    }
+  },
+  "mixed_policy": {
+    "envelope": [
+      {
+        "clears_1_5": true,
+        "complete_bpw": 1.2222540867324518,
+        "protect_bpw": 9.651222714950022,
+        "protect_policy": "source_precision",
+        "routed_bpw": 1.0
+      },
+      {
+        "clears_1_5": true,
+        "complete_bpw": 1.1798333782852048,
+        "protect_bpw": 8.0,
+        "protect_policy": "uniform_8bit",
+        "routed_bpw": 1.0
+      },
+      {
+        "clears_1_5": true,
+        "complete_bpw": 1.3458939644889674,
+        "protect_bpw": 9.651222714950022,
+        "protect_policy": "source_precision",
+        "routed_bpw": 1.1269
+      },
+      {
+        "clears_1_5": true,
+        "complete_bpw": 1.3034732560417202,
+        "protect_bpw": 8.0,
+        "protect_policy": "uniform_8bit",
+        "routed_bpw": 1.1269
+      },
+      {
+        "clears_1_5": true,
+        "complete_bpw": 1.4459263226391756,
+        "protect_bpw": 9.651222714950022,
+        "protect_policy": "source_precision",
+        "routed_bpw": 1.22957
+      },
+      {
+        "clears_1_5": true,
+        "complete_bpw": 1.4035056141919284,
+        "protect_bpw": 8.0,
+        "protect_policy": "uniform_8bit",
+        "routed_bpw": 1.22957
+      },
+      {
+        "clears_1_5": false,
+        "complete_bpw": 1.5145469419488005,
+        "protect_bpw": 9.651222714950022,
+        "protect_policy": "source_precision",
+        "routed_bpw": 1.3
+      },
+      {
+        "clears_1_5": true,
+        "complete_bpw": 1.4721262335015532,
+        "protect_bpw": 8.0,
+        "protect_policy": "uniform_8bit",
+        "routed_bpw": 1.3
+      },
+      {
+        "clears_1_5": false,
+        "complete_bpw": 1.5429967798565247,
+        "protect_bpw": 9.651222714950022,
+        "protect_policy": "source_precision",
+        "routed_bpw": 1.3292
+      },
+      {
+        "clears_1_5": false,
+        "complete_bpw": 1.5005760714092775,
+        "protect_bpw": 8.0,
+        "protect_policy": "uniform_8bit",
+        "routed_bpw": 1.3292
+      },
+      {
+        "clears_1_5": false,
+        "complete_bpw": 1.611977893687583,
+        "protect_bpw": 9.651222714950022,
+        "protect_policy": "source_precision",
+        "routed_bpw": 1.4
+      },
+      {
+        "clears_1_5": false,
+        "complete_bpw": 1.5695571852403358,
+        "protect_bpw": 8.0,
+        "protect_policy": "uniform_8bit",
+        "routed_bpw": 1.4
+      },
+      {
+        "clears_1_5": false,
+        "complete_bpw": 1.671313343296502,
+        "protect_bpw": 9.651222714950022,
+        "protect_policy": "source_precision",
+        "routed_bpw": 1.4609
+      },
+      {
+        "clears_1_5": false,
+        "complete_bpw": 1.6288926348492547,
+        "protect_bpw": 8.0,
+        "protect_policy": "uniform_8bit",
+        "routed_bpw": 1.4609
+      }
+    ],
+    "max_routed_bpw_protect_8bit_for_1_5": 1.32860873880528,
+    "max_routed_bpw_protect_source_for_1_5": 1.2850694859393332,
+    "protect_at_8bit": {
+      "clears_1_5": true,
+      "complete_bpw": 1.4035056141919284,
+      "complete_physical_bpw_from_bytes": 1.4043540575967073,
+      "complete_physical_bytes": 51073248074,
+      "complete_physical_gib": 47.56566889025271,
+      "packaging_bytes": 30856008,
+      "protect_bpw": 8.0,
+      "protect_bytes": 7474447826,
+      "protect_policy": "uniform_8bit",
+      "routed_bpw": 1.22957,
+      "routed_bytes": 43567944240
+    },
+    "protect_at_source": {
+      "clears_1_5": true,
+      "complete_bpw": 1.4459263226391756,
+      "complete_physical_bpw_from_bytes": 1.4467747660439543,
+      "complete_physical_bytes": 52615995328,
+      "complete_physical_gib": 49.00246423482895,
+      "packaging_bytes": 30856008,
+      "protect_bpw": 9.651222714950022,
+      "protect_bytes": 9017195080,
+      "protect_policy": "source_precision",
+      "routed_bpw": 1.22957,
+      "routed_bytes": 43567944240
+    }
+  },
+  "negative_science_honored": [
+    "Q80 cross-expert shared-basis REFUTED",
+    "Q80 simply-bandwidth-bound REFUTED (not used as a premise)",
+    "DSV4F route-ID readback serializer REFUTED",
+    "shader compile as primary wall REFUTED / deprioritized",
+    "single-family Q80 representation INSUFFICIENT",
+    "Q30 static <=1.5 FAILED \u2014 not copied",
+    "no giant JSON index"
+  ],
+  "next_bottleneck": {
+    "estimated_from": "21846 tokens * 3323 ms ledger median, DIRTY_ENGINEERING",
+    "estimated_streamed_forward_ns": 72594258000000,
+    "name": "determined_teacher_x_capture_then_fit",
+    "post_resident_runtime_wall": {
+      "label": "DIRTY_ENGINEERING",
+      "name": "metal.gpu_act_quant",
+      "ns": 2082931000,
+      "source": "receipts/DSV4F_TOKEN_NS_LEDGER.json metal.gpu"
+    },
+    "why": "Bytes fit if 1.5 complete is achieved. Existing X is underdetermined. A 21846-token uniform fill is the next paid experiment."
+  },
+  "organs": {
+    "embeddings": {
+      "byte_mass": 1059061760,
+      "logical_params": 529530880,
+      "scale_bytes": 0,
+      "stored_elements": 529530880,
+      "tensor_count": 1,
+      "weight_bytes": 1059061760
+    },
+    "hash_layers": {
+      "byte_mass": 18616320,
+      "logical_params": 0,
+      "scale_bytes": 0,
+      "stored_elements": 2327040,
+      "tensor_count": 3,
+      "weight_bytes": 0
+    },
+    "indexer_compressor": {
+      "byte_mass": 801075968,
+      "logical_params": 487194752,
+      "scale_bytes": 10752,
+      "stored_elements": 487205504,
+      "tensor_count": 311,
+      "weight_bytes": 795392256
+    },
+    "lm_head": {
+      "byte_mass": 1059061760,
+      "logical_params": 529530880,
+      "scale_bytes": 0,
+      "stored_elements": 529530880,
+      "tensor_count": 1,
+      "weight_bytes": 1059061760
+    },
+    "mhc": {
+      "byte_mass": 138945864,
+      "logical_params": 34736466,
+      "scale_bytes": 0,
+      "stored_elements": 34736466,
+      "tensor_count": 270,
+      "weight_bytes": 138936320
+    },
+    "mla": {
+      "byte_mass": 4706307584,
+      "logical_params": 4706011904,
+      "scale_bytes": 287232,
+      "stored_elements": 4706299136,
+      "tensor_count": 484,
+      "weight_bytes": 4706020352
+    },
+    "norms": {
+      "byte_mass": 888832,
+      "logical_params": 444416,
+      "scale_bytes": 0,
+      "stored_elements": 444416,
+      "tensor_count": 180,
+      "weight_bytes": 888832
+    },
+    "other": {
+      "byte_mass": 33556480,
+      "logical_params": 33554432,
+      "scale_bytes": 2048,
+      "stored_elements": 33556480,
+      "tensor_count": 4,
+      "weight_bytes": 33554432
+    },
+    "routed_expert": {
+      "byte_mass": 150592290816,
+      "logical_params": 283467841536,
+      "scale_bytes": 8858370048,
+      "stored_elements": 150592290816,
+      "tensor_count": 67584,
+      "weight_bytes": 141733920768
+    },
+    "router_gate": {
+      "byte_mass": 92316672,
+      "logical_params": 46147840,
+      "scale_bytes": 0,
+      "stored_elements": 46147840,
+      "tensor_count": 85,
+      "weight_bytes": 92316672
+    },
+    "shared_expert": {
+      "byte_mass": 1107363840,
+      "logical_params": 1107296256,
+      "scale_bytes": 67584,
+      "stored_elements": 1107363840,
+      "tensor_count": 264,
+      "weight_bytes": 1107296256
+    }
+  },
+  "packaging": {
+    "align_pad_bytes": 4194304,
+    "compact_index_bytes": 26661704,
+    "refused_144mb_json_manifest": true,
+    "total_bytes": 30856008
+  },
+  "q80_rate_hypothesis": {
+    "claim_boundary": "Q80 organ rates transferred as an arithmetic envelope only. DSV4F experts are native FP4, not BF16. No activation-weighted score, no packed artifact, no generation.",
+    "mixed_expert_bpw": 1.22957,
+    "per_proj_logical": 94489280512,
+    "routed_complete_bpw_from_bytes": 1.229566666720943,
+    "routed_complete_bytes": 43567826130,
+    "status": "HYPOTHESIS_UNFITTED",
+    "w1_bytes": 13309996277,
+    "w1_gate_analog_bpw": 1.1269,
+    "w2_bytes": 15000173282,
+    "w2_down_analog_bpw": 1.27,
+    "w3_bytes": 15257656571,
+    "w3_up_analog_bpw": 1.2918
+  },
+  "recorded_at": "2026-08-16T04:29:55Z",
+  "residency": {
+    "at_1_5_uniform": {
+      "1048576": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": true,
+        "fits_raw_96gib": true,
+        "margin_bytes": 29453179808,
+        "margin_gib": 27.430411249399185,
+        "model_bytes": 54582535264,
+        "model_plus_working_bytes": 61814875232,
+        "model_plus_working_gib": 57.569588750600815,
+        "seq_len": 1048576,
+        "working_bytes": 7232339968
+      },
+      "131072": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": true,
+        "fits_raw_96gib": true,
+        "margin_bytes": 35765607328,
+        "margin_gib": 33.309317499399185,
+        "model_bytes": 54582535264,
+        "model_plus_working_bytes": 55502447712,
+        "model_plus_working_gib": 51.690682500600815,
+        "seq_len": 131072,
+        "working_bytes": 919912448
+      },
+      "32768": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": true,
+        "fits_raw_96gib": true,
+        "margin_bytes": 36441938848,
+        "margin_gib": 33.939200311899185,
+        "model_bytes": 54582535264,
+        "model_plus_working_bytes": 54826116192,
+        "model_plus_working_gib": 51.060799688100815,
+        "seq_len": 32768,
+        "working_bytes": 243580928
+      },
+      "4096": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": true,
+        "fits_raw_96gib": true,
+        "margin_bytes": 36639202208,
+        "margin_gib": 34.122916132211685,
+        "model_bytes": 54582535264,
+        "model_plus_working_bytes": 54628852832,
+        "model_plus_working_gib": 50.877083867788315,
+        "seq_len": 4096,
+        "working_bytes": 46317568
+      }
+    },
+    "at_q80_rate_protect_source": {
+      "1048576": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": true,
+        "fits_raw_96gib": true,
+        "margin_bytes": 31419719744,
+        "margin_gib": 29.261894285678864,
+        "model_bytes": 52615995328,
+        "model_plus_working_bytes": 59848335296,
+        "model_plus_working_gib": 55.73810571432114,
+        "seq_len": 1048576,
+        "working_bytes": 7232339968
+      },
+      "131072": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": true,
+        "fits_raw_96gib": true,
+        "margin_bytes": 37732147264,
+        "margin_gib": 35.14080053567886,
+        "model_bytes": 52615995328,
+        "model_plus_working_bytes": 53535907776,
+        "model_plus_working_gib": 49.85919946432114,
+        "seq_len": 131072,
+        "working_bytes": 919912448
+      },
+      "32768": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": true,
+        "fits_raw_96gib": true,
+        "margin_bytes": 38408478784,
+        "margin_gib": 35.77068334817886,
+        "model_bytes": 52615995328,
+        "model_plus_working_bytes": 52859576256,
+        "model_plus_working_gib": 49.22931665182114,
+        "seq_len": 32768,
+        "working_bytes": 243580928
+      },
+      "4096": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": true,
+        "fits_raw_96gib": true,
+        "margin_bytes": 38605742144,
+        "margin_gib": 35.95439916849136,
+        "model_bytes": 52615995328,
+        "model_plus_working_bytes": 52662312896,
+        "model_plus_working_gib": 49.04560083150864,
+        "seq_len": 4096,
+        "working_bytes": 46317568
+      }
+    },
+    "at_source_precision": {
+      "1048576": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": false,
+        "fits_raw_96gib": false,
+        "margin_bytes": -75604626832,
+        "margin_gib": -70.41229571402073,
+        "model_bytes": 159640341904,
+        "model_plus_working_bytes": 166872681872,
+        "model_plus_working_gib": 155.41229571402073,
+        "seq_len": 1048576,
+        "working_bytes": 7232339968
+      },
+      "131072": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": false,
+        "fits_raw_96gib": false,
+        "margin_bytes": -69292199312,
+        "margin_gib": -64.53338946402073,
+        "model_bytes": 159640341904,
+        "model_plus_working_bytes": 160560254352,
+        "model_plus_working_gib": 149.53338946402073,
+        "seq_len": 131072,
+        "working_bytes": 919912448
+      },
+      "32768": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": false,
+        "fits_raw_96gib": false,
+        "margin_bytes": -68615867792,
+        "margin_gib": -63.90350665152073,
+        "model_bytes": 159640341904,
+        "model_plus_working_bytes": 159883922832,
+        "model_plus_working_gib": 148.90350665152073,
+        "seq_len": 32768,
+        "working_bytes": 243580928
+      },
+      "4096": {
+        "available_gib": 85.0,
+        "fits_clean_exclusive": false,
+        "fits_raw_96gib": false,
+        "margin_bytes": -68418604432,
+        "margin_gib": -63.71979083120823,
+        "model_bytes": 159640341904,
+        "model_plus_working_bytes": 159686659472,
+        "model_plus_working_gib": 148.71979083120823,
+        "seq_len": 4096,
+        "working_bytes": 46317568
+      }
+    }
+  },
+  "schema": "hawking.dsv4f.resident_gravity.feasibility.v1",
+  "source_complete": {
+    "bpw_vs_logical": 4.388760018242892,
+    "bytes": 159609485896,
+    "gib": 148.64791733771563,
+    "routed_already_fp4_bpw": 4.25,
+    "second_packing": true,
+    "second_packing_note": "Q80 1.23 BPW was BF16\u2192low-bit. DSV4F routed source is already 4.25 complete BPW (4-bit codes + UE8M0/32). 1.23 is a second collapse of a 16-level discrete matrix."
+  },
+  "status": "ARITHMETIC_FEASIBLE_QUALITY_UNPROVEN",
+  "streamed_baseline": {
+    "label": "DIRTY_ENGINEERING",
+    "median_ns_per_token": 3323000000,
+    "ns_per_token": [
+      3275000000,
+      3323000000,
+      3425000000
+    ],
+    "reps_body_ms": [
+      3275,
+      3323,
+      3425
+    ],
+    "source": "receipts/DSV4F_TOKEN_NS_LEDGER.json baseline_warm.reps_body_ms",
+    "this_lane_did_not_retime": true
+  },
+  "verdict": {
+    "arithmetic": "FEASIBLE",
+    "do_not_declare_success": true,
+    "generation": "NOT_RUN",
+    "plain": "A <=1.5 complete-physical DSV4F *would* sit in the 96 GiB envelope with working room, because 97.43% of logical mass is routed experts and MLA KV is a 512-wide latent. Source precision (148.7 GiB) does not. Whether any codec actually reaches 1.5 complete *and* coherent generation is unproven: experts are already FP4, existing X is underdetermined, and organ cosine is not the gate.",
+    "quality": "UNPROVEN",
+    "source_precision_resident": false,
+    "target_1_5_resident_if_rate_achieved": true
+  },
+  "working_set": {
+    "1048576": {
+      "attention_kv_bytes": 5810552832,
+      "compressor_state_bytes": 12206080,
+      "decode_activation_bytes": 294912,
+      "elem_bytes": 2,
+      "indexer_kv_bytes": 1409286144,
+      "seq_len": 1048576,
+      "total_kv_plus_index_bytes": 7219838976,
+      "total_working_bytes": 7232339968
+    },
+    "131072": {
+      "attention_kv_bytes": 731250688,
+      "compressor_state_bytes": 12206080,
+      "decode_activation_bytes": 294912,
+      "elem_bytes": 2,
+      "indexer_kv_bytes": 176160768,
+      "seq_len": 131072,
+      "total_kv_plus_index_bytes": 907411456,
+      "total_working_bytes": 919912448
+    },
+    "32768": {
+      "attention_kv_bytes": 187039744,
+      "compressor_state_bytes": 12206080,
+      "decode_activation_bytes": 294912,
+      "elem_bytes": 2,
+      "indexer_kv_bytes": 44040192,
+      "seq_len": 32768,
+      "total_kv_plus_index_bytes": 231079936,
+      "total_working_bytes": 243580928
+    },
+    "4096": {
+      "attention_kv_bytes": 28311552,
+      "compressor_state_bytes": 12206080,
+      "decode_activation_bytes": 294912,
+      "elem_bytes": 2,
+      "indexer_kv_bytes": 5505024,
+      "seq_len": 4096,
+      "total_kv_plus_index_bytes": 33816576,
+      "total_working_bytes": 46317568
+    }
+  }
+}
