@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.dsv4f.gate_below_dram_floor.v1",
+  "date": "2026-08-16",
+  "CLAIM": "G004's 20 ms gate is BELOW DSV4F's DRAM floor on the current artifact. This is a physical-limit claim and it names the saturated resource, as S004 s4 requires.",
+  "named_saturated_resource": "memory bandwidth: 10.280 GB moved per token against a MEASURED honest decode ceiling of 411.51 GB/s",
+  "arithmetic": {
+    "bytes_per_token": 10280000000,
+    "honest_ceiling_gb_s": 411.51358589633037,
+    "dram_floor_ms": 24.98,
+    "gate_ms": 20.0,
+    "floor_exceeds_gate_by_ms": 4.98,
+    "max_bytes_for_20ms_at_ceiling_gb": 8.23,
+    "must_shed_gb": 2.05,
+    "must_shed_pct": 19.9
+  },
+  "instrument_confirms": {
+    "tool": "tools/ascent/roof_rungs.py",
+    "roof_tok_s": 40.03,
+    "roof_is_below_the_50_tps_gate": true,
+    "roof_limited_below_next_rung": true,
+    "next_rung_blocked_by_bytes": "A",
+    "current_fraction_of_roof": 0.0626
+  },
+  "measured_today": {
+    "gb_s": 25.76,
+    "factor_off_ceiling": 16,
+    "alu_utilisation_pct": 0.77,
+    "diagnosis": "occupancy / launch-geometry bound on MLA+gate plus an FP4 access-pattern issue",
+    "hc_sha": "held 7/7, 0 fallbacks"
+  },
+  "NOT_the_q80_story": "Q80's wall was serial reconstruction and fell 23.7x when codes were consumed in-register. DSV4F's ALU is IDLE at 0.77%, so there is no equivalent reconstruction tax to remove. Porting the Q80 fix here would waste the lane, and the diagnosis lane says so explicitly.",
+  "EXACT_MISSING_INPUT": "A DSV4F artifact whose per-token ACTIVE bytes are <= 8.230 GB - and realistically far lower, since 8.230 GB assumes running AT the ceiling and nothing does. At today's 6.3% of roof it would need roughly 0.5 GB. Reducing bytes means fewer active weights per token or a lower-BPW representation; occupancy work alone cannot reach the gate.",
+  "what_occupancy_work_CAN_buy": "DSV4F is at 6.3% of its own 40 TPS roof. Closing that gap is worth up to ~16x and takes it from 2.5 to ~40 TPS. That is real and worth doing - it simply cannot cross 50 TPS on this artifact."
+}
