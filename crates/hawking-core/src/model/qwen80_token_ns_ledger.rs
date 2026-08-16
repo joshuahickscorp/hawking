@@ -100,6 +100,10 @@ pub struct CommandBufferRecord {
     pub operator_classes: Vec<String>,
     pub submit_ns: u64,
     pub gpu_ns: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_ns: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_ns: Option<u64>,
     pub cpu_wait_ns: u64,
     pub encode_ns: u64,
     pub dispatches: u64,
@@ -158,6 +162,8 @@ pub struct Diagnosis {
     pub wall_ns: u64,
     pub gpu_busy_fraction_of_wall: f64,
     pub wait_minus_gpu_ns: Option<i64>,
+    pub gpu_gap_ns: u64,
+    pub gpu_gap_edges: f64,
     pub command_buffers_per_token: f64,
     pub dispatches_per_token: f64,
     pub weight_bytes_per_token: u64,
@@ -195,6 +201,8 @@ pub struct SteadyStateMean {
     pub command_buffers: f64,
     pub dispatches: f64,
     pub weight_bytes: f64,
+    pub gpu_gap_ns: f64,
+    pub gpu_gap_edges: f64,
 }
 
 #[derive(Debug, Default)]
@@ -275,6 +283,8 @@ impl Qwen80TokenNsSession {
                 operator_classes: operator_classes.iter().map(|s| (*s).to_string()).collect(),
                 submit_ns: timing.submit_ns,
                 gpu_ns: timing.gpu_ns,
+                gpu_start_ns: timing.gpu_start_ns,
+                gpu_end_ns: timing.gpu_end_ns,
                 cpu_wait_ns: timing.wait_ns,
                 encode_ns: timing.encode_ns,
                 dispatches: timing.dispatches,
@@ -351,6 +361,8 @@ impl Qwen80TokenNsSession {
                 command_buffers: mean(steady.iter().map(|t| t.command_buffers.len() as f64)),
                 dispatches: mean(steady.iter().map(|t| sum_disp(t) as f64)),
                 weight_bytes: mean(steady.iter().map(|t| t.weight_bytes_observed as f64)),
+                gpu_gap_ns: mean(steady.iter().map(|t| sum_gap(t) as f64)),
+                gpu_gap_edges: mean(steady.iter().map(|t| gap_edges(t) as f64)),
             })
         };
         let ranked = rank_aggregates(&steady);
@@ -411,6 +423,32 @@ fn sum_sync(t: &Qwen80TokenNsToken) -> u64 {
 
 fn sum_host_work(t: &Qwen80TokenNsToken) -> u64 {
     t.host_work.iter().map(|s| s.ns).sum()
+}
+
+fn consecutive_gaps(t: &Qwen80TokenNsToken) -> (u64, u64) {
+    let mut prev_end: Option<u64> = None;
+    let mut gap = 0u64;
+    let mut edges = 0u64;
+    for cb in &t.command_buffers {
+        if let (Some(start), Some(end)) = (cb.gpu_start_ns, cb.gpu_end_ns) {
+            if let Some(prev) = prev_end {
+                if start > prev {
+                    gap = gap.saturating_add(start - prev);
+                    edges = edges.saturating_add(1);
+                }
+            }
+            prev_end = Some(end);
+        }
+    }
+    (gap, edges)
+}
+
+fn sum_gap(t: &Qwen80TokenNsToken) -> u64 {
+    consecutive_gaps(t).0
+}
+
+fn gap_edges(t: &Qwen80TokenNsToken) -> u64 {
+    consecutive_gaps(t).1
 }
 
 fn rank_aggregates(tokens: &[&Qwen80TokenNsToken]) -> Vec<OperatorClassLine> {
@@ -632,6 +670,8 @@ fn diagnose(
         wall_ns: wall as u64,
         gpu_busy_fraction_of_wall: gpu_frac,
         wait_minus_gpu_ns: wait_minus_gpu,
+        gpu_gap_ns: mean.gpu_gap_ns as u64,
+        gpu_gap_edges: mean.gpu_gap_edges,
         command_buffers_per_token: mean.command_buffers,
         dispatches_per_token: mean.dispatches,
         weight_bytes_per_token: mean.weight_bytes.max(theoretical.total_bytes as f64) as u64,

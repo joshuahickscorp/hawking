@@ -1,3 +1,4 @@
+#![recursion_limit = "256"]
 //! Multi-token greedy decode of Qwen3-Coder-Next through the hybrid token
 //! graph, bound to the sealed uniform-Q4 group-64 catalog.
 //!
@@ -225,6 +226,42 @@ fn run() -> Result<(), String> {
         result.stages.q4_matvec_secs,
         result.stages.host_expert_bind_secs
     );
+    let fam = &result.family_gpu;
+    println!(
+        "family_gpu overlap={} mode={} serial_mixer={} component_matvec={} deltanet_cbs={} deltanet_disp={} deltanet_gpu_ms={:.3} deltanet_wait_ms={:.3} deltanet_mixed={} gqa_cbs={} gqa_disp={} gqa_gpu_ms={:.3} gqa_wait_ms={:.3} gqa_mixed={} prefix_cbs={} prefix_gpu_ms={:.3} suffix_cbs={} suffix_gpu_ms={:.3} suffix_wait_ms={:.3} suffix_combine_disp={} fused_cbs={} fused_gpu_ms={:.3} gpu_gap_ms={:.3} gpu_gap_edges={} weight_bytes={}",
+        fam.overlap_cbs,
+        fam.overlap_mode,
+        fam.serial_mixer,
+        fam.component_matvec_kernel,
+        fam.deltanet_mixer_cbs,
+        fam.deltanet_mixer_dispatches,
+        fam.deltanet_mixer_gpu_ns as f64 / 1e6,
+        fam.deltanet_mixer_wait_ns as f64 / 1e6,
+        fam.deltanet_mixer_mixed_with_moe_prefix,
+        fam.gqa_mixer_cbs,
+        fam.gqa_mixer_dispatches,
+        fam.gqa_mixer_gpu_ns as f64 / 1e6,
+        fam.gqa_mixer_wait_ns as f64 / 1e6,
+        fam.gqa_mixer_mixed_with_moe_prefix,
+        fam.moe_prefix_cbs,
+        fam.moe_prefix_gpu_ns as f64 / 1e6,
+        fam.moe_suffix_cbs,
+        fam.moe_suffix_gpu_ns as f64 / 1e6,
+        fam.moe_suffix_wait_ns as f64 / 1e6,
+        fam.moe_suffix_combine_dispatches,
+        fam.fused_layer_cbs,
+        fam.fused_layer_gpu_ns as f64 / 1e6,
+        fam.gpu_gap_ns as f64 / 1e6,
+        fam.gpu_gap_edges,
+        fam.bytes_read_weight
+    );
+    println!(
+        "activation_class_secs conv={:.6} recurrent={:.6} gqa_rms={:.6} gqa_rope={:.6} (device-path values are encode-wall, not GPU)",
+        result.stages.activation.deltanet_conv_secs,
+        result.stages.activation.deltanet_recurrent_secs,
+        result.stages.activation.gqa_input_layernorm_secs,
+        result.stages.activation.gqa_norm_rope_secs
+    );
     println!(
         "complete_physical_bpw={:.6} claim={} metal_q4_matvec_used={}",
         result.complete_physical_bpw, result.claim, result.metal_q4_matvec_used
@@ -301,6 +338,43 @@ fn run() -> Result<(), String> {
                     "terminal_secs": result.stages.terminal_secs,
                     "q4_matvec_secs": result.stages.q4_matvec_secs,
                     "host_expert_bind_secs": result.stages.host_expert_bind_secs,
+                    "activation": {
+                        "deltanet_conv_secs": result.stages.activation.deltanet_conv_secs,
+                        "deltanet_recurrent_secs": result.stages.activation.deltanet_recurrent_secs,
+                        "gqa_input_layernorm_secs": result.stages.activation.gqa_input_layernorm_secs,
+                        "gqa_norm_rope_secs": result.stages.activation.gqa_norm_rope_secs,
+                        "note": "On the device-activation path these are host encode-wall of the named kernels, not GPU time. They were previously unwritten (~0) because only the host fallback populated them."
+                    },
+                },
+                "family_gpu": {
+                    "overlap_cbs": result.family_gpu.overlap_cbs,
+                    "overlap_mode": result.family_gpu.overlap_mode,
+                    "serial_mixer": result.family_gpu.serial_mixer,
+                    "component_matvec_kernel": result.family_gpu.component_matvec_kernel,
+                    "deltanet_mixer_cbs": result.family_gpu.deltanet_mixer_cbs,
+                    "deltanet_mixer_dispatches": result.family_gpu.deltanet_mixer_dispatches,
+                    "deltanet_mixer_gpu_ns": result.family_gpu.deltanet_mixer_gpu_ns,
+                    "deltanet_mixer_wait_ns": result.family_gpu.deltanet_mixer_wait_ns,
+                    "deltanet_mixer_mixed_with_moe_prefix": result.family_gpu.deltanet_mixer_mixed_with_moe_prefix,
+                    "gqa_mixer_cbs": result.family_gpu.gqa_mixer_cbs,
+                    "gqa_mixer_dispatches": result.family_gpu.gqa_mixer_dispatches,
+                    "gqa_mixer_gpu_ns": result.family_gpu.gqa_mixer_gpu_ns,
+                    "gqa_mixer_wait_ns": result.family_gpu.gqa_mixer_wait_ns,
+                    "gqa_mixer_mixed_with_moe_prefix": result.family_gpu.gqa_mixer_mixed_with_moe_prefix,
+                    "moe_prefix_cbs": result.family_gpu.moe_prefix_cbs,
+                    "moe_prefix_gpu_ns": result.family_gpu.moe_prefix_gpu_ns,
+                    "moe_suffix_cbs": result.family_gpu.moe_suffix_cbs,
+                    "moe_suffix_gpu_ns": result.family_gpu.moe_suffix_gpu_ns,
+                    "moe_suffix_wait_ns": result.family_gpu.moe_suffix_wait_ns,
+                    "moe_suffix_combine_dispatches": result.family_gpu.moe_suffix_combine_dispatches,
+                    "fused_layer_cbs": result.family_gpu.fused_layer_cbs,
+                    "fused_layer_dispatches": result.family_gpu.fused_layer_dispatches,
+                    "fused_layer_gpu_ns": result.family_gpu.fused_layer_gpu_ns,
+                    "fused_layer_wait_ns": result.family_gpu.fused_layer_wait_ns,
+                    "gpu_gap_ns": result.family_gpu.gpu_gap_ns,
+                    "gpu_gap_edges": result.family_gpu.gpu_gap_edges,
+                    "bytes_read_weight": result.family_gpu.bytes_read_weight,
+                    "gpu_timestamp_authority": "MTLCommandBuffer GPUEndTime-GPUStartTime after wait; overlapped CBs resolve after a later same-queue wait",
                 },
                 "fallbacks": {
                     "total": result.fallbacks.total(),

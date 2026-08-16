@@ -568,6 +568,13 @@ pub struct CommandBufferTiming {
     pub wait_ns: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gpu_ns: Option<u64>,
+    /// `GPUStartTime` as ns since the driver epoch. Used only to compute
+    /// `next.start − previous.end` gaps; never a CPU-wall proxy.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_ns: Option<u64>,
+    /// `GPUEndTime` as ns since the driver epoch.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_ns: Option<u64>,
     pub dispatches: u64,
     pub encode_ns: u64,
 }
@@ -4941,6 +4948,79 @@ mod imp {
             Ok(())
         }
 
+        /// Commit without waiting and keep the command buffer so a later
+        /// same-queue wait can resolve `GPUStartTime`/`GPUEndTime`.
+        ///
+        /// Diagnostic trace modes that need a completed CB fall back to
+        /// [`commit_and_wait_timed`] and return an already-resolved handle.
+        pub fn commit_submit_retain(mut self) -> Result<SubmittedTokenCommandBuffer> {
+            use crate::cost_ledger::{self, Bucket};
+            use std::time::Instant;
+
+            if matches!(
+                self.mode,
+                TcbTraceMode::SplitCbGpu | TcbTraceMode::ProdCbGpu
+            ) {
+                let timing = self.commit_and_wait_split()?;
+                return Ok(SubmittedTokenCommandBuffer::Resolved(timing));
+            }
+
+            let encode_ns = self.ledger_encode_ns as u64;
+            let dispatches = self.dispatch_count as u64;
+            let Some(cmd) = self.cmd.take() else {
+                return Err(Error::Metal(
+                    "TokenCommandBuffer already committed".into(),
+                ));
+            };
+            if let Some(enc) = self.concurrent_encoder.take() {
+                enc.end_encoding();
+            }
+            if cost_ledger::is_recording() {
+                if self.ledger_encode_ns > 0 {
+                    cost_ledger::add_duration(
+                        Bucket::MetalEncode,
+                        std::time::Duration::from_nanos(self.ledger_encode_ns as u64),
+                    );
+                    self.ledger_encode_ns = 0;
+                }
+                cost_ledger::record_dispatches(dispatches);
+            }
+            let t_submit = Instant::now();
+            cmd.commit();
+            if self.ctx.trace_dispatch {
+                self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
+            let submit_ns = t_submit.elapsed().as_nanos() as u64;
+            if cost_ledger::is_recording() {
+                cost_ledger::add_duration(
+                    Bucket::MetalSubmit,
+                    std::time::Duration::from_nanos(submit_ns),
+                );
+                cost_ledger::record_command_buffer();
+            }
+            match self.mode {
+                TcbTraceMode::Off => {}
+                TcbTraceMode::CpuEncode => {
+                    let layer = super::current_layer();
+                    for s in self.tcb_samples.drain(..) {
+                        self.ctx
+                            .trace
+                            .record(s.kernel_name, s.wall_us, s.layer_hint);
+                    }
+                    self.ctx.trace.record("tcb_commit_submit_retain", 0, layer);
+                }
+                TcbTraceMode::SplitCbGpu | TcbTraceMode::ProdCbGpu => unreachable!(),
+            }
+            self.has_encoded_work = false;
+            self.recycle_unused_prod_cb_tracer();
+            Ok(SubmittedTokenCommandBuffer::Pending {
+                cmd,
+                encode_ns,
+                submit_ns,
+                dispatches,
+            })
+        }
+
         /// Like [`commit_and_wait`], but when the per-token cost ledger is
         /// recording, attributes CPU wall time of `commit` and
         /// `wait_until_completed` to separate buckets and counts one
@@ -5004,6 +5084,8 @@ mod imp {
 
                 let (gpu_start, gpu_end) = unsafe { cb_gpu_start_end_s(&cmd) };
                 if let (Some(start), Some(end)) = (gpu_start, gpu_end) {
+                    timing.gpu_start_ns = Some((start * 1_000_000_000.0) as u64);
+                    timing.gpu_end_ns = Some((end * 1_000_000_000.0) as u64);
                     if end > start {
                         timing.gpu_ns = Some(((end - start) * 1_000_000_000.0) as u64);
                     }
@@ -5118,6 +5200,54 @@ mod imp {
         }
     }
 
+    /// A command buffer that has been `commit`ted but not necessarily waited.
+    ///
+    /// `resolve` calls `wait_until_completed` (instant if a later same-queue
+    /// wait already drained it) and then reads `GPUStartTime`/`GPUEndTime`.
+    pub enum SubmittedTokenCommandBuffer {
+        Pending {
+            cmd: metal::CommandBuffer,
+            encode_ns: u64,
+            submit_ns: u64,
+            dispatches: u64,
+        },
+        Resolved(super::CommandBufferTiming),
+    }
+
+    impl SubmittedTokenCommandBuffer {
+        pub fn resolve(self) -> super::CommandBufferTiming {
+            match self {
+                Self::Resolved(timing) => timing,
+                Self::Pending {
+                    cmd,
+                    encode_ns,
+                    submit_ns,
+                    dispatches,
+                } => {
+                    let t_wait = std::time::Instant::now();
+                    cmd.wait_until_completed();
+                    let wait_ns = t_wait.elapsed().as_nanos() as u64;
+                    let mut timing = super::CommandBufferTiming {
+                        encode_ns,
+                        submit_ns,
+                        wait_ns,
+                        dispatches,
+                        ..super::CommandBufferTiming::default()
+                    };
+                    let (gpu_start, gpu_end) = unsafe { cb_gpu_start_end_s(&cmd) };
+                    if let (Some(start), Some(end)) = (gpu_start, gpu_end) {
+                        timing.gpu_start_ns = Some((start * 1_000_000_000.0) as u64);
+                        timing.gpu_end_ns = Some((end * 1_000_000_000.0) as u64);
+                        if end > start {
+                            timing.gpu_ns = Some(((end - start) * 1_000_000_000.0) as u64);
+                        }
+                    }
+                    timing
+                }
+            }
+        }
+    }
+
     impl Drop for TokenCommandBuffer<'_> {
         fn drop(&mut self) {
             // Only auto-commit when work was encoded. An empty Drop used to
@@ -5222,6 +5352,14 @@ mod imp {
             Err(Error::Metal("metal unavailable on this platform".into()))
         }
 
+        pub fn commit_no_wait(self) -> Result<()> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
+        pub fn commit_submit_retain(self) -> Result<SubmittedTokenCommandBuffer> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
         #[test]
         fn dsv4f_native_token_graph_kernels_are_trace_named_and_compiled() {
             const KERNELS: &[&str] = &[
@@ -5239,11 +5377,22 @@ mod imp {
                 );
             }
         }
+    }
 
+    pub enum SubmittedTokenCommandBuffer {
+        Resolved(super::CommandBufferTiming),
+    }
+
+    impl SubmittedTokenCommandBuffer {
+        pub fn resolve(self) -> super::CommandBufferTiming {
+            match self {
+                Self::Resolved(timing) => timing,
+            }
+        }
     }
 }
 
-pub use imp::{MetalContext, PinnedBuffer, TokenCommandBuffer};
+pub use imp::{MetalContext, PinnedBuffer, SubmittedTokenCommandBuffer, TokenCommandBuffer};
 
 #[cfg(target_os = "macos")]
 pub use imp::{
