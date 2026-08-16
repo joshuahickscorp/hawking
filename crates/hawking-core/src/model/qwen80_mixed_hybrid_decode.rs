@@ -72,6 +72,15 @@ pub fn qwen80_recon_fuse_enabled() -> bool {
     crate::env_opt_out("HAWKING_Q80_RECON_FUSE")
 }
 
+/// Default **off**. Dispatch G023 `gk_*_simd` (1 simdgroup / row, wide
+/// extract) instead of the recon-fuse occupancy tiles. The 8-45x in the
+/// discriminator was vs serial bit-walk; this is the A/B against the
+/// tiles that already deleted that walk. Residual CSR stays on the
+/// fused q80 kernel — there is no family equivalent.
+pub fn qwen80_gk_simd_enabled() -> bool {
+    crate::env_on("HAWKING_Q80_GK_SIMD")
+}
+
 fn tg256_grid(rows: u32) -> (u32, u32, u32) {
     (rows.saturating_mul(256), 1, 1)
 }
@@ -490,7 +499,14 @@ fn dispatch_binary(
     output_offset: u64,
     serial_name: &str,
 ) -> Result<()> {
-    if qwen80_recon_fuse_enabled() {
+    if qwen80_gk_simd_enabled() {
+        tcb.dispatch_threads(
+            crate::decode_family::MATVEC_BINARY_SIMD,
+            simd8_grid(body.rows),
+            (256, 1, 1),
+            |enc| encode_binary(enc, body, input, output, output_offset),
+        )
+    } else if qwen80_recon_fuse_enabled() {
         tcb.dispatch_threads(
             "q80_binary_group_matvec_tg256",
             tg256_grid(body.rows),
@@ -575,7 +591,14 @@ fn dispatch_factor(
             scale_off,
         )
     };
-    if qwen80_recon_fuse_enabled() {
+    if qwen80_gk_simd_enabled() {
+        tcb.dispatch_threads(
+            crate::decode_family::MATVEC_HGRAVS_SIMD,
+            simd8_grid(rows),
+            (256, 1, 1),
+            encode,
+        )
+    } else if qwen80_recon_fuse_enabled() {
         let (name, grid) = if bits == 8 {
             if cols >= 2048 {
                 ("q80_uniform8_matvec_tg256", tg256_grid(rows))

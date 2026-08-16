@@ -1,0 +1,350 @@
+{
+  "schema": "hawking.ascension.q80_gk_simd_generate_ab.v1",
+  "lane": "q80-wire-gk-simd",
+  "vehicle": "mixed-1p5-v1",
+  "alternating": "BASE(HAWKING_Q80_GK_SIMD=0, recon-fuse default on) then OURS(HAWKING_Q80_GK_SIMD=1) per pair, new process each arm",
+  "expected_ids": [
+    8420,
+    748,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    320,
+    72,
+    1734
+  ],
+  "ids_identical_all_six": true,
+  "silent_fallbacks_all_zero": true,
+  "gpu_timestamps_missing_all_zero": true,
+  "gpu_matvec_ns_per_token": {
+    "base": {
+      "all": [
+        36503874.63636363,
+        36527529.27272727,
+        36661261.54545455
+      ],
+      "min": 36503874.63636363,
+      "median": 36527529.27272727,
+      "max": 36661261.54545455,
+      "spread": 157386.90909091383
+    },
+    "ours": {
+      "all": [
+        91277102.27272727,
+        86936753.18181819,
+        93392342.81818181
+      ],
+      "min": 86936753.18181819,
+      "median": 91277102.27272727,
+      "max": 93392342.81818181,
+      "spread": 6455589.6363636255
+    },
+    "speedup_x": 0.4001828318737212
+  },
+  "wall_ns_per_token": {
+    "base": {
+      "all": [
+        317840833.27272725,
+        303259060.6363636,
+        295858155.3636364
+      ],
+      "min": 295858155.3636364,
+      "median": 303259060.6363636,
+      "max": 317840833.27272725,
+      "spread": 21982677.909090877
+    },
+    "ours": {
+      "all": [
+        362729617.45454544,
+        348777795.45454544,
+        359593340.9090909
+      ],
+      "min": 348777795.45454544,
+      "median": 359593340.9090909,
+      "max": 362729617.45454544,
+      "spread": 13951822.0
+    },
+    "speedup_x": 0.8433389224330237
+  },
+  "host_expert_bind_ns_per_token": {
+    "base": {
+      "all": [
+        56814584.18181818,
+        44829072.63636363,
+        41823392.45454545
+      ],
+      "min": 41823392.45454545,
+      "median": 44829072.63636363,
+      "max": 56814584.18181818,
+      "spread": 14991191.727272727
+    },
+    "ours": {
+      "all": [
+        44985018.90909091,
+        42981261.81818182,
+        43656598.63636363
+      ],
+      "min": 42981261.81818182,
+      "median": 43656598.63636363,
+      "max": 44985018.90909091,
+      "spread": 2003757.0909090862
+    },
+    "speedup_x": 1.0268567418585697
+  },
+  "wait_minus_gpu_ns_per_token": {
+    "base": {
+      "all": [
+        91635847.81818181,
+        92911903.18181819,
+        94460583.63636364
+      ],
+      "min": 91635847.81818181,
+      "median": 92911903.18181819,
+      "max": 94460583.63636364,
+      "spread": 2824735.8181818277
+    },
+    "ours": {
+      "all": [
+        94425699.45454545,
+        94722091.81818181,
+        96972682.63636364
+      ],
+      "min": 94425699.45454545,
+      "median": 94722091.81818181,
+      "max": 96972682.63636364,
+      "spread": 2546983.1818181872
+    },
+    "speedup_x": 0.9808894778227844
+  },
+  "pair_table": [
+    {
+      "pair": 1,
+      "base": {
+        "ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          72,
+          1734
+        ],
+        "ids_match": true,
+        "silent": 0,
+        "gpu_missing": 0,
+        "gpu_matvec_ns": 36503874.63636363,
+        "wall_ns": 317840833.27272725,
+        "bind_ns": 56814584.18181818,
+        "wait_minus_gpu_ns": 91635847.81818181,
+        "cbs": 337.0,
+        "dispatches": 2413.0,
+        "gk_simd_enabled": false,
+        "recon_fuse_enabled": true,
+        "stages": {
+          "deltanet_secs": 3.273870906000004,
+          "gqa_secs": 0.5679083379999998,
+          "moe_shared_secs": 0.946770446999999,
+          "moe_routed_secs": 3.698175806000004,
+          "terminal_secs": 0.33768257999999995,
+          "gpu_matvec_ns": 1018055834
+        },
+        "dense_w": false
+      },
+      "ours": {
+        "ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          72,
+          1734
+        ],
+        "ids_match": true,
+        "silent": 0,
+        "gpu_missing": 0,
+        "gpu_matvec_ns": 91277102.27272727,
+        "wall_ns": 362729617.45454544,
+        "bind_ns": 44985018.90909091,
+        "wait_minus_gpu_ns": 94425699.45454545,
+        "cbs": 337.0,
+        "dispatches": 2413.0,
+        "gk_simd_enabled": true,
+        "recon_fuse_enabled": true,
+        "stages": {
+          "deltanet_secs": 3.648643721000005,
+          "gqa_secs": 0.7017067940000004,
+          "moe_shared_secs": 1.104740801999999,
+          "moe_routed_secs": 4.271248133000003,
+          "terminal_secs": 0.40020004,
+          "gpu_matvec_ns": 2565397925
+        },
+        "dense_w": false
+      }
+    },
+    {
+      "pair": 2,
+      "base": {
+        "ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          72,
+          1734
+        ],
+        "ids_match": true,
+        "silent": 0,
+        "gpu_missing": 0,
+        "gpu_matvec_ns": 36527529.27272727,
+        "wall_ns": 303259060.6363636,
+        "bind_ns": 44829072.63636363,
+        "wait_minus_gpu_ns": 92911903.18181819,
+        "cbs": 337.0,
+        "dispatches": 2413.0,
+        "gk_simd_enabled": false,
+        "recon_fuse_enabled": true,
+        "stages": {
+          "deltanet_secs": 3.260393922000002,
+          "gqa_secs": 0.5682610550000002,
+          "moe_shared_secs": 0.9300839959999995,
+          "moe_routed_secs": 3.562968272000001,
+          "terminal_secs": 0.33124383400000007,
+          "gpu_matvec_ns": 1017911517
+        },
+        "dense_w": false
+      },
+      "ours": {
+        "ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          72,
+          1734
+        ],
+        "ids_match": true,
+        "silent": 0,
+        "gpu_missing": 0,
+        "gpu_matvec_ns": 86936753.18181819,
+        "wall_ns": 348777795.45454544,
+        "bind_ns": 42981261.81818182,
+        "wait_minus_gpu_ns": 94722091.81818181,
+        "cbs": 337.0,
+        "dispatches": 2413.0,
+        "gk_simd_enabled": true,
+        "recon_fuse_enabled": true,
+        "stages": {
+          "deltanet_secs": 3.5471100279999996,
+          "gqa_secs": 0.6752717919999999,
+          "moe_shared_secs": 1.0764042779999998,
+          "moe_routed_secs": 4.1544782709999994,
+          "terminal_secs": 0.381401623,
+          "gpu_matvec_ns": 2542082841
+        },
+        "dense_w": false
+      }
+    },
+    {
+      "pair": 3,
+      "base": {
+        "ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          72,
+          1734
+        ],
+        "ids_match": true,
+        "silent": 0,
+        "gpu_missing": 0,
+        "gpu_matvec_ns": 36661261.54545455,
+        "wall_ns": 295858155.3636364,
+        "bind_ns": 41823392.45454545,
+        "wait_minus_gpu_ns": 94460583.63636364,
+        "cbs": 337.0,
+        "dispatches": 2413.0,
+        "gk_simd_enabled": false,
+        "recon_fuse_enabled": true,
+        "stages": {
+          "deltanet_secs": 3.1312188320000014,
+          "gqa_secs": 0.5510864600000002,
+          "moe_shared_secs": 0.9078299210000004,
+          "moe_routed_secs": 3.436963527999994,
+          "terminal_secs": 0.30730875600000007,
+          "gpu_matvec_ns": 1021554061
+        },
+        "dense_w": false
+      },
+      "ours": {
+        "ids": [
+          8420,
+          748,
+          264,
+          729,
+          429,
+          17431,
+          288,
+          264,
+          914,
+          320,
+          72,
+          1734
+        ],
+        "ids_match": true,
+        "silent": 0,
+        "gpu_missing": 0,
+        "gpu_matvec_ns": 93392342.81818181,
+        "wall_ns": 359593340.9090909,
+        "bind_ns": 43656598.63636363,
+        "wait_minus_gpu_ns": 96972682.63636364,
+        "cbs": 337.0,
+        "dispatches": 2413.0,
+        "gk_simd_enabled": true,
+        "recon_fuse_enabled": true,
+        "stages": {
+          "deltanet_secs": 3.5531779189999986,
+          "gqa_secs": 0.6886440389999997,
+          "moe_shared_secs": 1.0948875809999998,
+          "moe_routed_secs": 4.267901779000002,
+          "terminal_secs": 0.38082941499999995,
+          "gpu_matvec_ns": 2535472147
+        },
+        "dense_w": false
+      }
+    }
+  ]
+}

@@ -30,7 +30,11 @@ pub const COMBINE_BF16: &str = "gk_combine_bf16";
 pub const PACK_WORKLIST: &str = "gk_pack_worklist";
 
 /// Kernels the Q80 mixed hybrid graph must dispatch after G023.
+/// Serial names are the `HAWKING_Q80_RECON_FUSE=0` fallback. Occupancy
+/// tiles live in `q80_mixed_decode.metal` (default). `*_SIMD` is the
+/// unused family 1-SG/row tile, opt-in via `HAWKING_Q80_GK_SIMD=1`.
 pub const Q80_GRAPH_KERNELS: &[&str] = &[MATVEC_BINARY, MATVEC_HGRAVS];
+pub const Q80_GRAPH_SIMD_KERNELS: &[&str] = &[MATVEC_BINARY_SIMD, MATVEC_HGRAVS_SIMD];
 
 /// Kernels the DSV4F native token graph must dispatch after G023.
 pub const DSV4F_GRAPH_KERNELS: &[&str] = &[

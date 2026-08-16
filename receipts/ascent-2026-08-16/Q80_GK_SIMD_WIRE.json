@@ -1,0 +1,101 @@
+{
+  "schema": "hawking.ascension.q80_gk_simd_wire.v1",
+  "date": "2026-08-16",
+  "lane": "q80-wire-gk-simd",
+  "vehicle": "mixed-1p5-v1",
+  "complete_physical_bpw": 1.4444457,
+  "gpu_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime",
+  "question": "Does wiring gk_*_simd still help after recon-fuse occupancy tiles deleted the serial bit-walk?",
+  "verdict": "NEGATIVE_SUBSUMED",
+  "do_not_default_on": true,
+  "pairs": 3,
+  "alternating": "BASE(HAWKING_Q80_GK_SIMD=0, recon-fuse default on) then OURS(HAWKING_Q80_GK_SIMD=1) per pair, new process each arm",
+  "generated_token_ids": [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734],
+  "ids_identical_all_six": true,
+  "silent_fallbacks_all_zero": true,
+  "gpu_timestamps_missing_all_zero": true,
+  "dense_w_materialized_all_false": true,
+  "gpu_matvec_ns_per_token": {
+    "base": {
+      "all": [36503874.63636363, 36527529.27272727, 36661261.54545455],
+      "min": 36503874.63636363,
+      "median": 36527529.27272727,
+      "max": 36661261.54545455,
+      "spread": 157386.90909091383
+    },
+    "ours": {
+      "all": [91277102.27272727, 86936753.18181819, 93392342.81818181],
+      "min": 86936753.18181819,
+      "median": 91277102.27272727,
+      "max": 93392342.81818181,
+      "spread": 6455589.6363636255
+    },
+    "median_delta_ns": 54749573.0,
+    "speedup_x": 0.4001828318737212,
+    "regression_x": 2.498856
+  },
+  "wall_ns_per_token": {
+    "base": {
+      "all": [317840833.27272725, 303259060.6363636, 295858155.3636364],
+      "min": 295858155.3636364,
+      "median": 303259060.6363636,
+      "max": 317840833.27272725,
+      "spread": 21982677.909090877
+    },
+    "ours": {
+      "all": [362729617.45454544, 348777795.45454544, 359593340.9090909],
+      "min": 348777795.45454544,
+      "median": 359593340.9090909,
+      "max": 362729617.45454544,
+      "spread": 13951822.0
+    },
+    "speedup_x": 0.8433389224330237
+  },
+  "isolated_organs": {
+    "source": "receipts/ascent-2026-08-16/Q80_GK_SIMD_AFTER_RECON.json",
+    "protocol": "warmup=2; 3 alternating BASE(shipping tile) then OURS(gk_*_simd) pairs; GPUEnd-GPUStart",
+    "note_hgravs_R_numeric": "Both shipping simd3 and gk_hgravs_simd report max_abs=3.0517578125e-05 against 2e-5. Same number is in Q80_MATVEC_DISCRIMINATOR.json. Pre-existing, not a gk_simd regression.",
+    "median_gpu_ns": {
+      "binary_gate_512x2048": {"shipping": 6916, "gk_simd": 28791, "speedup_x": 0.240, "shipping_kernel": "q80_binary_group_matvec_tg256"},
+      "hgravs_down_R_160x512": {"shipping": 7416, "gk_simd": 11875, "speedup_x": 0.625, "shipping_kernel": "q80_hgravs01_factor_matvec_simd3"},
+      "hgravs_down_L_2048x160": {"shipping": 8459, "gk_simd": 8000, "speedup_x": 1.057, "shipping_kernel": "q80_hgravs01_factor_matvec_simd3", "note": "noise: pair ratios 1.095/1.030/0.990"},
+      "q8_ba_64x2048": {"shipping": 5875, "gk_simd": 35500, "speedup_x": 0.165, "shipping_kernel": "q80_uniform8_matvec_tg256"},
+      "q8_router_512x2048": {"shipping": 7250, "gk_simd": 36875, "speedup_x": 0.197, "shipping_kernel": "q80_uniform8_matvec_tg256"},
+      "q8_shared_gate_512x2048": {"shipping": 7125, "gk_simd": 37125, "speedup_x": 0.192, "shipping_kernel": "q80_uniform8_matvec_tg256"},
+      "q8_shared_up_512x2048": {"shipping": 7166, "gk_simd": 37000, "speedup_x": 0.194, "shipping_kernel": "q80_uniform8_matvec_tg256"},
+      "q8_shared_down_2048x512": {"shipping": 7416, "gk_simd": 16125, "speedup_x": 0.460, "shipping_kernel": "q80_uniform8_matvec_simd_bytes"},
+      "q8_out_2048x4096": {"shipping": 22709, "gk_simd": 111125, "speedup_x": 0.204, "shipping_kernel": "q80_uniform8_matvec_tg256"},
+      "q8_qkvz_12288x2048": {"shipping": 69250, "gk_simd": 285500, "speedup_x": 0.243, "shipping_kernel": "q80_uniform8_matvec_tg256"}
+    },
+    "token_projection_isolated_ms": {
+      "method": "isolated median GPU ns * count per token. Residual up omitted. Not a wall.",
+      "shipping_sum_ms": 16.124,
+      "gk_simd_sum_ms": 46.352
+    }
+  },
+  "why_subsumed": [
+    "The discriminator 8-45x was gk_*_simd vs serial 1-thread/row bit-walk.",
+    "Recon-fuse (merged 9e99870b1) already dispatches occupancy tiles that consume codes in-register: binary tg256 (8 signs/byte), Q8 tg256/simd_bytes (byte load, no bit loop), 3-bit simd3 (8-unpack).",
+    "gk_matvec_hgravs_simd still wide-extracts one code per lane, including Q8 (8-bit unpack of a byte). Same 1-SG/row geometry as simd_bytes, worse ALU.",
+    "gk_matvec_binary_simd is 1 sign/lane vs shipping tg256 8 signs/lane. 512-row binary gate: 6.9 us -> 28.8 us.",
+    "The only isolated ratio > 1.05 is hgravs L 1.057x and the three pair ratios straddle 1.0. Not a win."
+  ],
+  "shipping_disposition": {
+    "default": "recon-fuse occupancy tiles remain the mixed token path",
+    "opt_in": "HAWKING_Q80_GK_SIMD=1 dispatches gk_matvec_binary_simd / gk_matvec_hgravs_simd. Residual CSR stays on q80_binary_group_csr_matvec_tg256 (no family equivalent).",
+    "do_not_merge_as_default": true
+  },
+  "proposed_negative_science": {
+    "id": "NS-G003-GK-SIMD-AFTER-RECON",
+    "mechanism": "Wire unused gk_*_simd onto the post-reconstruction mixed token path for an 8-45x organ win",
+    "class": "SUPERSEDED",
+    "what_was_measured": "gpu_matvec 36.53 ms -> 91.28 ms (0.40x). Isolated Q8 ba 5.9 us -> 35.5 us; router 7.3 us -> 36.9 us; binary gate 6.9 us -> 28.8 us.",
+    "why": "The 8-45x was vs the old serial extract. Occupancy+byte tiles already shipped. Family simd is the weaker of the two occupancy geometries and still bit-unpacks Q8."
+  },
+  "sources": [
+    "receipts/ascent-2026-08-16/Q80_GK_SIMD_AFTER_RECON.json",
+    "receipts/ascent-2026-08-16/q80-gk-simd/SUMMARY.json",
+    "receipts/ascent-2026-08-16/Q80_MATVEC_DISCRIMINATOR.json",
+    "receipts/ascent-2026-08-16/Q80_RECONSTRUCTION_WON.json"
+  ]
+}
