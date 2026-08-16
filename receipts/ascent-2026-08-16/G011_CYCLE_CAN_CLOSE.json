@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.g011.cycle_can_close.v1",
+  "date": "2026-08-16",
+  "verified": "The autonomously-launched brief carries everything needed for the loop to self-sustain, checked directly rather than assumed.",
+  "brief": "workspace/ops/ascent-lanes/auto-q80-host-preparation-residual-embed.md",
+  "checks": {
+    "requests_NEXT_BOTTLENECK": 2,
+    "has_ACCEPTANCE": 1,
+    "has_EDIT_scope": 3,
+    "carries_corrected_negative_science": "3 references to the honest 411.51 GB/s decode ceiling, so the lane inherits today's corrections rather than the refuted 560-647 GB/s reuse band"
+  },
+  "why_this_matters": "Each piece closes one of the five faults. NEXT_BOTTLENECK means the lane's report will feed harvest(). ACCEPTANCE and EDIT mean the contract gate accepts it. The corrected ceiling means it will not re-derive a number that was disproven today. And reclaim_safe.sh now preserves the report so harvest can read it.",
+  "the_cycle": "harvest -> generate_targets -> launch -> lane emits NEXT_BOTTLENECK -> reclaim preserves the report -> harvest. Every link is now exercised except the last hop, which needs this lane to finish.",
+  "G011_remains_open": "The obligation is that the pipeline survives my absence and keeps making MEASURABLE PROGRESS. One autonomous launch is not that. It needs the launched lane to finish, emit its bottleneck, and drive a second generation with nobody driving.",
+  "what_would_prove_it": "Two consecutive non-null 'launched' fields in the tick log, the second traceable to the first lane's NEXT_BOTTLENECK. That is a full cycle and it cannot be faked by seeding."
+}
