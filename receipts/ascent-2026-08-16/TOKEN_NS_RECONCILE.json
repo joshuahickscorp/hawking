@@ -1,0 +1,134 @@
+[
+  {
+    "discrepancy_ns": 2834126416,
+    "honesty": "DSV4F authority token is 1,037,764,208 ns (DIRTY_ENGINEERING, host-wall warm median). Sum of ASCENT_STATE recoverable claims on this model is 2834126416 ns (2.73× the token). Measured whole-token delta on main is 0 ns. Discrepancy = 2834126416 ns. Lane wins do not add up to a token improvement because there is no token improvement.",
+    "identity_note": "sum(claimed lane ns) is NOT (token_before - token_after)",
+    "lanes": [
+      {
+        "claimed_ns_saved": 500000000,
+        "discrepancy_ns": 500000000,
+        "kind": "identified_not_saved",
+        "lane": "dsv-host-wall",
+        "measured_token_delta_ns": 0,
+        "model": "dsv4f",
+        "why": "Named host.expert_slab_io at 415 ms. Did not remove it. That 415 ms is still the token wall."
+      },
+      {
+        "claimed_ns_saved": 300000000,
+        "discrepancy_ns": 300000000,
+        "kind": "measurement_artifact",
+        "lane": "dsv-cb-collapse",
+        "measured_token_delta_ns": 0,
+        "model": "dsv4f",
+        "why": "Receipt median 2265→1464 ms is cold-contaminated (pair1A 12.9 s). Warm B bodies 1447/1716/1447 ms are SLOWER than the 1024–1067 ms host-wall authority. The 35 ms GPU movement is real and does not appear in the authority token. Off the critical path relative to expert_slab_io."
+      },
+      {
+        "claimed_ns_saved": 900000000,
+        "discrepancy_ns": 900000000,
+        "kind": "not_measured",
+        "lane": "dsv-resident-gravity",
+        "measured_token_delta_ns": 0,
+        "model": "dsv4f",
+        "why": "Architectural claim that residency deletes streaming. No packed artifact, no token measurement. Arithmetic only."
+      },
+      {
+        "claimed_ns_saved": 150000000,
+        "discrepancy_ns": 150000000,
+        "kind": "overlapped_time",
+        "lane": "dsv-mla",
+        "measured_token_delta_ns": 0,
+        "model": "dsv4f",
+        "why": "Attention GPU 198→128 ms on isolated/paired GPU. Host expert_slab_io (~415 ms, GPU-idle) is still the token wall. A GPU win under an IO wait does not move body_ns."
+      },
+      {
+        "claimed_ns_saved": 200000000,
+        "discrepancy_ns": 200000000,
+        "kind": "cost_moved_sideways",
+        "lane": "dsv-expert",
+        "measured_token_delta_ns": 0,
+        "model": "dsv4f",
+        "why": "slab_io 481→262 ms is a real component movement on the serial wall, but one of three body pairs flipped (1404>1278) and the branch is not on main. Whole-token authority is unchanged."
+      },
+      {
+        "claimed_ns_saved": 415126416,
+        "discrepancy_ns": 415126416,
+        "kind": "not_measured",
+        "lane": "dsv-expert-cache",
+        "measured_token_delta_ns": 0,
+        "model": "dsv4f",
+        "why": "Would attack the actual critical path (415 ms expert_slab_io). No after-token exists yet."
+      },
+      {
+        "claimed_ns_saved": 80000000,
+        "discrepancy_ns": 80000000,
+        "kind": "parallel_sum_presented_as_latency",
+        "lane": "dsv-admission-identity",
+        "measured_token_delta_ns": 0,
+        "model": "dsv4f",
+        "why": "path_resolve 1318 ms and verify 2505 ms are parallel-thread sums against a 1038 ms token. Moving them behind a seal may help, but the 80 ms claim must be proven on body_ns, not on the parallel sum."
+      },
+      {
+        "claimed_ns_saved": 289000000,
+        "discrepancy_ns": 289000000,
+        "kind": "not_measured",
+        "lane": "dsv-integrate-graph",
+        "measured_token_delta_ns": 0,
+        "model": "dsv4f",
+        "why": "289 ms is the sum of other lanes' claims. Summing claims is the error this reconciler exists to catch."
+      }
+    ],
+    "measured_delta_ns": 0,
+    "model": "dsv4f",
+    "sum_claimed_ns": 2834126416,
+    "token_after_ns": 1037764208,
+    "token_before_ns": 1037764208
+  },
+  {
+    "discrepancy_ns": 810000000,
+    "honesty": "Q80 TOKEN_NS decode wall is 559,171,655 ns (DIRTY_ENGINEERING). The registered 403 ms incumbent is not used here (P1: unpaired, 1637 fallbacks, no GPU timestamps). Sum of claimed recoverables is 810000000 ns. Measured whole-token delta is 0 ns. Discrepancy = 810000000 ns. decode-kernels' 192 ms is not a token.",
+    "identity_note": "sum(claimed lane ns) is NOT (token_before - token_after)",
+    "lanes": [
+      {
+        "claimed_ns_saved": 269000000,
+        "discrepancy_ns": 269000000,
+        "kind": "not_measured",
+        "lane": "q80-runtime-residency",
+        "measured_token_delta_ns": 0,
+        "model": "q80",
+        "why": "269 ms claimed against compact-slab pack. No paired whole-token after on this worktree."
+      },
+      {
+        "claimed_ns_saved": 180000000,
+        "discrepancy_ns": 180000000,
+        "kind": "not_measured",
+        "lane": "q80-deltanet-gqa2",
+        "measured_token_delta_ns": 0,
+        "model": "q80",
+        "why": "180 ms claimed on attention. Prefix CBs mix attention+shared+router; a component GPU win may be overlapped. No token after."
+      },
+      {
+        "claimed_ns_saved": 150000000,
+        "discrepancy_ns": 150000000,
+        "kind": "not_measured",
+        "lane": "q80-decode-throughput",
+        "measured_token_delta_ns": 0,
+        "model": "q80",
+        "why": "150 ms claimed on mixed-codec decode. The 192 ms organ product is not the current Q4 token."
+      },
+      {
+        "claimed_ns_saved": 211000000,
+        "discrepancy_ns": 211000000,
+        "kind": "isolated_microbench_not_token",
+        "lane": "q80-decode-kernels",
+        "measured_token_delta_ns": 0,
+        "model": "q80",
+        "why": "192 ms is 48*10*(gate+up+down) isolated-organ GPU, not a full token. CROSS P1-DECODE-192MS-NOT-A-TOKEN. Cannot sit beside the 403/559 ms incumbent."
+      }
+    ],
+    "measured_delta_ns": 0,
+    "model": "q80",
+    "sum_claimed_ns": 810000000,
+    "token_after_ns": 559171655,
+    "token_before_ns": 559171655
+  }
+]

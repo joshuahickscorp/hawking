@@ -104,6 +104,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         file.write_all(&ledger_json)?;
         file.write_all(b"\n")?;
         eprintln!("wrote {}", ledger_path.display());
+        let commit = std::env::var("HAWKING_GIT_COMMIT").unwrap_or_else(|_| "unknown".to_owned());
+        let unified = hawking_core::token_ns::from_dsv4f_ledger(
+            ledger,
+            &hawking_core::token_ns::EmitMeta::new(commit, ledger_path.display().to_string()),
+        );
+        let token_ns_path = ledger_path.with_file_name("TOKEN_NS.json");
+        let unified_json = serde_json::to_vec_pretty(&unified)?;
+        let mut file = fs::File::create(&token_ns_path)?;
+        file.write_all(&unified_json)?;
+        file.write_all(b"\n")?;
+        eprintln!("wrote {}", token_ns_path.display());
     }
     let greedy = report.greedy.as_ref();
     eprintln!(

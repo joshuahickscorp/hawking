@@ -1,0 +1,378 @@
+{
+  "authority_reps": {
+    "dsv4f_host_wall_warm_body_ms": [
+      1067,
+      1033,
+      1040,
+      1037,
+      1024
+    ],
+    "dsv4f_host_wall_warm_gpu_ms": [
+      407.6,
+      400.2,
+      399.0,
+      398.0,
+      396.5
+    ],
+    "dsv4f_label": "DIRTY_ENGINEERING",
+    "q80_registered_incumbent_ns": 403000000,
+    "q80_registered_note": "P1-invalid: unpaired, 1637 fallbacks, no GPU timestamps",
+    "q80_token_ns_decode_wall_ns_mean": 559171655
+  },
+  "commit": "9aeb1949c64a1d9640512cb9c3f4387694df39f1",
+  "correctness": "N/A — schema/adapter/reconciler only. Existing ledgers and gates were not edited.",
+  "critical_path": {
+    "dsv4f": {
+      "model": "dsv4f",
+      "overlappable_ns": 1594961335,
+      "parallel_sum_ns": 2337391674,
+      "serial_ns": 749028102,
+      "statement": "DSV4F critical path is GPU-idle expert_slab_io then metal.wait/GPU, plus host MHC between CBs. reader.path_resolve and verify_ns are parallel sums and are not the token.",
+      "token_definition": "body_ns = host_exclusive + sum(cb.host_wall_ns)",
+      "top_serial_stages": [
+        "host.expert_slab_io (406.3 ms)",
+        "metal.wait (243.4 ms)",
+        "host.lm_head_io (36.9 ms)",
+        "host.mhc_pre (25.4 ms)",
+        "host.decode (19.1 ms)",
+        "host.attn_weight_io (7.3 ms)"
+      ],
+      "warning": "Any receipt that quotes path_resolve or verify_ns as token latency is presenting a parallel sum."
+    },
+    "q80_baseline_run": {
+      "model": "q80",
+      "overlappable_ns": 0,
+      "parallel_sum_ns": 0,
+      "serial_ns": 15233938076,
+      "statement": "Named stage buckets sum to less than the run. moe_table_build dominates the run. Per-token decode is 403384727 ns and is a different object from this residual.",
+      "token_definition": "WHOLE RUN (prefill+decode), not per-token. decode/token ≈ 403384727 ns",
+      "top_serial_stages": [
+        "moe_table_build_secs (9077.7 ms)",
+        "deltanet_secs (3326.9 ms)",
+        "moe_combine_secs (1695.8 ms)",
+        "gqa_secs (1133.5 ms)"
+      ],
+      "warning": "1637 fallbacks. No GPU timestamps. Single run. CROSS_ADVERSARIAL P1-Q80-403MS-NOT-A-LEGAL-MEASUREMENT."
+    },
+    "q80_decode": {
+      "model": "q80",
+      "overlappable_ns": 231968522,
+      "parallel_sum_ns": 0,
+      "serial_ns": 555087250,
+      "statement": "Q80 decode critical path is host compact_expert_slab_pack plus metal.wait.",
+      "token_definition": "decode token wall_ns",
+      "top_serial_stages": [
+        "host.compact_expert_slab_pack (280.8 ms)",
+        "metal.wait (273.7 ms)",
+        "metal.submit (0.6 ms)",
+        "host.sync (0.0 ms)",
+        "metal.encode (0.0 ms)"
+      ],
+      "warning": null
+    }
+  },
+  "date": "2026-08-16",
+  "dsv4f_residual_decomposition": {
+    "body_ns": 1024054500,
+    "named_serial_ns": 749028102,
+    "note": "Most of residual_ns is metal host_wall minus (encode+submit+wait): intra-CB host time that the named encode/submit/wait rows do not cover. The rest is host_exclusive not captured by the named serial host stages.",
+    "residual_ns": 275026398
+  },
+  "honesty": {
+    "dsv4f": "DSV4F authority token is 1,037,764,208 ns (DIRTY_ENGINEERING, host-wall warm median). Sum of ASCENT_STATE recoverable claims on this model is 2834126416 ns (2.73× the token). Measured whole-token delta on main is 0 ns. Discrepancy = 2834126416 ns. Lane wins do not add up to a token improvement because there is no token improvement.",
+    "plain": "Lane wins do not add up to a measured token improvement. DSV4F: claimed 2834126416 ns against a 1037764208 ns token; measured delta 0 ns; discrepancy 2834126416 ns. Q80: claimed 810000000 ns against a 559171655 ns TOKEN_NS wall; measured delta 0 ns; discrepancy 810000000 ns.",
+    "q80": "Q80 TOKEN_NS decode wall is 559,171,655 ns (DIRTY_ENGINEERING). The registered 403 ms incumbent is not used here (P1: unpaired, 1637 fallbacks, no GPU timestamps). Sum of claimed recoverables is 810000000 ns. Measured whole-token delta is 0 ns. Discrepancy = 810000000 ns. decode-kernels' 192 ms is not a token."
+  },
+  "lane": "joint-token-ns",
+  "measurement_law": "This lane does not produce a new GPU timing. Every cited number keeps its original DIRTY_ENGINEERING / CLEAN_CANDIDATE / BASE_TRUE label. A CPU wall is never reported as GPU time.",
+  "next_bottleneck": {
+    "dsv4f": {
+      "gpu_busy_ns": 396549000,
+      "label": "DIRTY_ENGINEERING",
+      "name": "host.expert_slab_io (GPU-idle streamed top-6 expert read+fill) then the unattributed residual inside metal host_wall, then metal GPU across 137 CBs",
+      "ns_per_token": 415126416,
+      "residual_ns_this_receipt": 275026398
+    },
+    "q80": {
+      "gpu_busy_ns": 231968522,
+      "label": "DIRTY_ENGINEERING",
+      "name": "host.compact_expert_slab_pack (~281 ms serial) then metal.wait (~274 ms, contains ~232 ms GPU)",
+      "ns_per_token": 281428935
+    }
+  },
+  "receipt_flags": [
+    {
+      "detail": "Host-wall baseline correctly states verify_ns/path_resolve are parallel sums, not wall.",
+      "kind": "parallel_sum_correctly_labeled",
+      "path": "receipts/ascent-2026-08-16/DSV4F_HOST_WALL_BASELINE.json",
+      "severity": "note"
+    },
+    {
+      "detail": "reader.digest_cache ns=7673721 is 1% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/DSV4F_TOKEN_NS_LEDGER.json",
+      "severity": "note"
+    },
+    {
+      "detail": "reader.identity ns=68884263 is 7% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/DSV4F_TOKEN_NS_LEDGER.json",
+      "severity": "note"
+    },
+    {
+      "detail": "reader.mmap ns=930549893 is 91% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/DSV4F_TOKEN_NS_LEDGER.json",
+      "severity": "note"
+    },
+    {
+      "detail": "reader.path_resolve ns=1318045536 is 129% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/DSV4F_TOKEN_NS_LEDGER.json",
+      "severity": "p1"
+    },
+    {
+      "detail": "reader.tensor_lookup ns=12238261 is 1% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/DSV4F_TOKEN_NS_LEDGER.json",
+      "severity": "note"
+    },
+    {
+      "detail": "verify_ns=2333329911 > body_ns=1024054500 (228% of body). Presented without a parallel-sum label. This is not token latency.",
+      "kind": "parallel_sum_as_verify_ns",
+      "path": "receipts/ascent-2026-08-16/DSV4F_TOKEN_NS_LEDGER.json",
+      "severity": "p1"
+    },
+    {
+      "detail": "A bodies [12902363042, 2264718167, 1652235791] ns. First A is a cold 12.9 s run; the published median is not a critical-path number vs the 1038 ms host-wall authority.",
+      "kind": "cold_contaminated_median",
+      "path": "receipts/ascent-2026-08-16/dsv-cb-collapse.json",
+      "severity": "p1"
+    },
+    {
+      "detail": "reader.digest_cache ns=7673721 is 1% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+      "severity": "note"
+    },
+    {
+      "detail": "reader.identity ns=68884263 is 7% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+      "severity": "note"
+    },
+    {
+      "detail": "reader.mmap ns=930549893 is 91% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+      "severity": "note"
+    },
+    {
+      "detail": "reader.path_resolve ns=1318045536 is 129% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+      "severity": "p1"
+    },
+    {
+      "detail": "reader.tensor_lookup ns=12238261 is 1% of body_ns=1024054500. This is a parallel-thread sum, not critical-path latency.",
+      "kind": "parallel_sum_as_stage_ns",
+      "path": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+      "severity": "note"
+    },
+    {
+      "detail": "verify_ns=2333329911 > body_ns=1024054500 (228% of body). Presented without a parallel-sum label. This is not token latency.",
+      "kind": "parallel_sum_as_verify_ns",
+      "path": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+      "severity": "p1"
+    },
+    {
+      "detail": "result_ns_per_token=192000000 but claim_boundary.not_full_token_runtime=true. This number is not a token.",
+      "kind": "isolated_product_as_result_ns_per_token",
+      "path": "receipts/ascent-2026-08-16/q80-decode-kernels.json",
+      "severity": "p1"
+    }
+  ],
+  "reconciliation": [
+    {
+      "discrepancy_ns": 2834126416,
+      "honesty": "DSV4F authority token is 1,037,764,208 ns (DIRTY_ENGINEERING, host-wall warm median). Sum of ASCENT_STATE recoverable claims on this model is 2834126416 ns (2.73× the token). Measured whole-token delta on main is 0 ns. Discrepancy = 2834126416 ns. Lane wins do not add up to a token improvement because there is no token improvement.",
+      "identity_note": "sum(claimed lane ns) is NOT (token_before - token_after)",
+      "lanes": [
+        {
+          "claimed_ns_saved": 500000000,
+          "discrepancy_ns": 500000000,
+          "kind": "identified_not_saved",
+          "lane": "dsv-host-wall",
+          "measured_token_delta_ns": 0,
+          "model": "dsv4f",
+          "why": "Named host.expert_slab_io at 415 ms. Did not remove it. That 415 ms is still the token wall."
+        },
+        {
+          "claimed_ns_saved": 300000000,
+          "discrepancy_ns": 300000000,
+          "kind": "measurement_artifact",
+          "lane": "dsv-cb-collapse",
+          "measured_token_delta_ns": 0,
+          "model": "dsv4f",
+          "why": "Receipt median 2265→1464 ms is cold-contaminated (pair1A 12.9 s). Warm B bodies 1447/1716/1447 ms are SLOWER than the 1024–1067 ms host-wall authority. The 35 ms GPU movement is real and does not appear in the authority token. Off the critical path relative to expert_slab_io."
+        },
+        {
+          "claimed_ns_saved": 900000000,
+          "discrepancy_ns": 900000000,
+          "kind": "not_measured",
+          "lane": "dsv-resident-gravity",
+          "measured_token_delta_ns": 0,
+          "model": "dsv4f",
+          "why": "Architectural claim that residency deletes streaming. No packed artifact, no token measurement. Arithmetic only."
+        },
+        {
+          "claimed_ns_saved": 150000000,
+          "discrepancy_ns": 150000000,
+          "kind": "overlapped_time",
+          "lane": "dsv-mla",
+          "measured_token_delta_ns": 0,
+          "model": "dsv4f",
+          "why": "Attention GPU 198→128 ms on isolated/paired GPU. Host expert_slab_io (~415 ms, GPU-idle) is still the token wall. A GPU win under an IO wait does not move body_ns."
+        },
+        {
+          "claimed_ns_saved": 200000000,
+          "discrepancy_ns": 200000000,
+          "kind": "cost_moved_sideways",
+          "lane": "dsv-expert",
+          "measured_token_delta_ns": 0,
+          "model": "dsv4f",
+          "why": "slab_io 481→262 ms is a real component movement on the serial wall, but one of three body pairs flipped (1404>1278) and the branch is not on main. Whole-token authority is unchanged."
+        },
+        {
+          "claimed_ns_saved": 415126416,
+          "discrepancy_ns": 415126416,
+          "kind": "not_measured",
+          "lane": "dsv-expert-cache",
+          "measured_token_delta_ns": 0,
+          "model": "dsv4f",
+          "why": "Would attack the actual critical path (415 ms expert_slab_io). No after-token exists yet."
+        },
+        {
+          "claimed_ns_saved": 80000000,
+          "discrepancy_ns": 80000000,
+          "kind": "parallel_sum_presented_as_latency",
+          "lane": "dsv-admission-identity",
+          "measured_token_delta_ns": 0,
+          "model": "dsv4f",
+          "why": "path_resolve 1318 ms and verify 2505 ms are parallel-thread sums against a 1038 ms token. Moving them behind a seal may help, but the 80 ms claim must be proven on body_ns, not on the parallel sum."
+        },
+        {
+          "claimed_ns_saved": 289000000,
+          "discrepancy_ns": 289000000,
+          "kind": "not_measured",
+          "lane": "dsv-integrate-graph",
+          "measured_token_delta_ns": 0,
+          "model": "dsv4f",
+          "why": "289 ms is the sum of other lanes' claims. Summing claims is the error this reconciler exists to catch."
+        }
+      ],
+      "measured_delta_ns": 0,
+      "model": "dsv4f",
+      "sum_claimed_ns": 2834126416,
+      "token_after_ns": 1037764208,
+      "token_before_ns": 1037764208
+    },
+    {
+      "discrepancy_ns": 810000000,
+      "honesty": "Q80 TOKEN_NS decode wall is 559,171,655 ns (DIRTY_ENGINEERING). The registered 403 ms incumbent is not used here (P1: unpaired, 1637 fallbacks, no GPU timestamps). Sum of claimed recoverables is 810000000 ns. Measured whole-token delta is 0 ns. Discrepancy = 810000000 ns. decode-kernels' 192 ms is not a token.",
+      "identity_note": "sum(claimed lane ns) is NOT (token_before - token_after)",
+      "lanes": [
+        {
+          "claimed_ns_saved": 269000000,
+          "discrepancy_ns": 269000000,
+          "kind": "not_measured",
+          "lane": "q80-runtime-residency",
+          "measured_token_delta_ns": 0,
+          "model": "q80",
+          "why": "269 ms claimed against compact-slab pack. No paired whole-token after on this worktree."
+        },
+        {
+          "claimed_ns_saved": 180000000,
+          "discrepancy_ns": 180000000,
+          "kind": "not_measured",
+          "lane": "q80-deltanet-gqa2",
+          "measured_token_delta_ns": 0,
+          "model": "q80",
+          "why": "180 ms claimed on attention. Prefix CBs mix attention+shared+router; a component GPU win may be overlapped. No token after."
+        },
+        {
+          "claimed_ns_saved": 150000000,
+          "discrepancy_ns": 150000000,
+          "kind": "not_measured",
+          "lane": "q80-decode-throughput",
+          "measured_token_delta_ns": 0,
+          "model": "q80",
+          "why": "150 ms claimed on mixed-codec decode. The 192 ms organ product is not the current Q4 token."
+        },
+        {
+          "claimed_ns_saved": 211000000,
+          "discrepancy_ns": 211000000,
+          "kind": "isolated_microbench_not_token",
+          "lane": "q80-decode-kernels",
+          "measured_token_delta_ns": 0,
+          "model": "q80",
+          "why": "192 ms is 48*10*(gate+up+down) isolated-organ GPU, not a full token. CROSS P1-DECODE-192MS-NOT-A-TOKEN. Cannot sit beside the 403/559 ms incumbent."
+        }
+      ],
+      "measured_delta_ns": 0,
+      "model": "q80",
+      "sum_claimed_ns": 810000000,
+      "token_after_ns": 559171655,
+      "token_before_ns": 559171655
+    }
+  ],
+  "role": "WHOLE_TOKEN_LEDGER_AND_RECONCILER",
+  "schema": "hawking.ascent.joint_token_ns.v1",
+  "status": "SHIPPED",
+  "timing_label": "N/A",
+  "token_ns": {
+    "dsv4f_body": {
+      "TOTAL_COMMAND_BUFFERS": 137,
+      "TOTAL_CPU_CRITICAL_NS": 553797500,
+      "TOTAL_DISPATCHES": 1857,
+      "TOTAL_GPU_BUSY_NS": 396549000,
+      "authority": "receipts/ascent-2026-08-16/DSV4F_HOST_WALL_BASELINE.json",
+      "authority_body_ns_median": 1037764208,
+      "closure_failed": true,
+      "closure_failure": "CLOSURE FAIL: residual_ns=275026398 is 26.9% of TOTAL_TOKEN_NS=1024054500, exceeding the stated 5.0% limit. Unattributed cost is hiding here.",
+      "document": "receipts/ascent-2026-08-16/TOKEN_NS_DSV4F.json",
+      "label": "DIRTY_ENGINEERING",
+      "naive_all_stage_sum_ns": 4681381111,
+      "naive_overcount_ns": 3657326611,
+      "residual_fraction": 0.2685661729917695,
+      "residual_ns": 275026398,
+      "source": "receipts/ascent-2026-08-16/dsv-host-wall-rep6.json",
+      "this_receipt_body_ns": 1024054500
+    },
+    "q80_baseline_run": {
+      "TOTAL_TOKEN_NS": 15595782000,
+      "closure_failed": false,
+      "document": "receipts/ascent-2026-08-16/TOKEN_NS_Q80_BASELINE_RUN.json",
+      "note": "This is the 15.23 s named-stage sum vs the 15.60 s run. TOTAL_TOKEN_NS here is the WHOLE RUN, not per-token.",
+      "residual_fraction": 0.023201396634038612,
+      "residual_ns": 361843924,
+      "source": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json",
+      "sum_serial_stage_ns": 15233938076
+    },
+    "q80_decode": {
+      "TOTAL_COMMAND_BUFFERS": 98,
+      "TOTAL_CPU_CRITICAL_NS": 281428935,
+      "TOTAL_DISPATCHES": 1155,
+      "TOTAL_GPU_BUSY_NS": 231968522,
+      "TOTAL_TOKEN_NS": 559171655,
+      "closure_failed": false,
+      "closure_failure": null,
+      "document": "receipts/ascent-2026-08-16/TOKEN_NS_Q80.json",
+      "label": "DIRTY_ENGINEERING",
+      "residual_fraction": 0.007304384911999876,
+      "residual_ns": 4084405,
+      "source": "receipts/QWEN80_TOKEN_NS_LEDGER.json"
+    }
+  },
+  "token_ns_schema": "hawking.ascent.token_ns.v1"
+}
