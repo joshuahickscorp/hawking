@@ -1345,6 +1345,9 @@ mod imp {
             "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate" => {
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate"
             }
+            "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate" => {
+                "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate"
+            }
             // Bounded P3A layer-0 pre-attention authority probes.  These
             // symbols are intentionally traceable but are not registered in
             // an Engine, token loop, or HCLI runtime path.
@@ -1352,9 +1355,15 @@ mod imp {
                 "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority"
             }
             "deepseek_v4_p3a_rmsnorm_bf16_authority" => "deepseek_v4_p3a_rmsnorm_bf16_authority",
+            "deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate" => {
+                "deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate"
+            }
             "deepseek_v4_p3a_fp32_to_bf16_authority" => "deepseek_v4_p3a_fp32_to_bf16_authority",
             "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority" => {
                 "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority"
+            }
+            "deepseek_v4_p3a_per_head_rmsnorm_bf16_simdgroup_candidate" => {
+                "deepseek_v4_p3a_per_head_rmsnorm_bf16_simdgroup_candidate"
             }
             // Bounded P4A continuation: complete layer-0 attention at the
             // fixed BOS/position-zero specialization. These remain separate
@@ -1370,6 +1379,9 @@ mod imp {
             }
             "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority" => {
                 "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority"
+            }
+            "deepseek_v4_p4a_wo_a_convert_bf16_einsum_simdgroup_candidate" => {
+                "deepseek_v4_p4a_wo_a_convert_bf16_einsum_simdgroup_candidate"
             }
             "deepseek_v4_p4a_hc_attn_post_authority" => "deepseek_v4_p4a_hc_attn_post_authority",
             // Bounded P4B continuation: real position-one, ratio-zero RoPE
@@ -1858,6 +1870,7 @@ mod imp {
                 "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate",
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate",
+                "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
             ];
             for &kernel in KERNELS {
                 assert_eq!(static_kernel_name(kernel), kernel);
@@ -1873,8 +1886,10 @@ mod imp {
             const KERNELS: &[&str] = &[
                 "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority",
                 "deepseek_v4_p3a_rmsnorm_bf16_authority",
+                "deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate",
                 "deepseek_v4_p3a_fp32_to_bf16_authority",
                 "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority",
+                "deepseek_v4_p3a_per_head_rmsnorm_bf16_simdgroup_candidate",
             ];
             for &kernel in KERNELS {
                 assert_eq!(static_kernel_name(kernel), kernel);
@@ -1892,6 +1907,7 @@ mod imp {
                 "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate",
                 "deepseek_v4_p4a_sparse_attention_position0_sink_authority",
                 "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority",
+                "deepseek_v4_p4a_wo_a_convert_bf16_einsum_simdgroup_candidate",
                 "deepseek_v4_p4a_hc_attn_post_authority",
             ];
             for &kernel in KERNELS {
