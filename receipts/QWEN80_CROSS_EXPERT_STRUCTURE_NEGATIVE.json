@@ -1,0 +1,26 @@
+{
+  "layer": 10,
+  "n_experts": 96,
+  "components": {
+    "gate_proj": {
+      "k50": 44,
+      "k90": 84,
+      "k99": 94,
+      "n": 96,
+      "mean_direction_cosine": 0.12191439419984818,
+      "pairwise_cosine_mean": 0.004142791032791138,
+      "pairwise_cosine_p95": 0.007685263641178608,
+      "subspace_overlap_top32": 0.02506876550614834
+    },
+    "up_proj": {
+      "k50": 45,
+      "k90": 84,
+      "k99": 94,
+      "n": 96,
+      "mean_direction_cosine": 0.10192517191171646,
+      "pairwise_cosine_mean": -5.968913319520652e-05,
+      "pairwise_cosine_p95": 0.0016296349931508303,
+      "subspace_overlap_top32": 0.020372524857521057
+    }
+  }
+}
