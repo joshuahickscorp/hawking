@@ -1269,6 +1269,10 @@ mod device {
         let _ = super::device_activations::dispatch_qwen80_deltanet_gated_rmsnorm_f32_tcb;
         let _ = super::device_activations::dispatch_qwen80_gqa_qk_norm_rope_cache_f32_tcb;
         let _ = super::device_activations::dispatch_qwen80_gated_delta_decode_tg_tcb;
+        let _ = super::device_activations::dispatch_qwen80_add_residual_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_shared_expert_sigmoid_gate_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_attention_apply_sigmoid_gate_f32_tcb;
+        let _ = super::device_activations::dispatch_qwen80_moe_combine_second_residual_f32_tcb;
         let _ = super::device_activations::QWEN80_DEVICE_ACTIVATION_KERNELS;
     }
 }
@@ -1284,8 +1288,10 @@ pub use device::{
     Qwen80HybridTokenGraphEncode, Qwen80HybridTokenGraphWorkspace, Qwen80TokenGraphLayerResident,
 };
 
-/// Additive f32 activation dispatch sites for the uniform-Q4 hybrid decode.
-/// These keep residuals device-resident between already-native Q4 matvecs.
+/// Additive f32 activation dispatch sites for the Q4 and mixed hybrid decodes.
+/// These keep residuals device-resident between already-native GEMVs so a
+/// layer prefix (mixer + shared + router) and a layer suffix (routed wave +
+/// combine) can each be one command buffer.
 #[cfg(target_os = "macos")]
 mod device_activations {
     use crate::metal::{PinnedBuffer, TokenCommandBuffer};
@@ -1315,7 +1321,7 @@ mod device_activations {
         }
     }
 
-    pub const QWEN80_DEVICE_ACTIVATION_KERNELS: [&str; 7] = [
+    pub const QWEN80_DEVICE_ACTIVATION_KERNELS: [&str; 10] = [
         "qwen80_residual_rmsnorm_f32",
         "qwen80_silu_mul_f32",
         "qwen80_qkvz_rearrange_conv_l2_f32",
@@ -1323,6 +1329,9 @@ mod device_activations {
         "qwen80_deltanet_gated_rmsnorm_f32",
         "qwen80_gated_delta_decode_tg",
         "qwen80_gqa_qk_norm_rope_cache_f32",
+        "qwen80_add_residual_f32",
+        "qwen80_shared_expert_sigmoid_gate_f32",
+        "qwen80_moe_combine_second_residual_f32",
     ];
 
     pub fn dispatch_qwen80_residual_rmsnorm_f32_tcb(
@@ -1542,15 +1551,104 @@ mod device_activations {
             },
         )
     }
+
+    pub fn dispatch_qwen80_add_residual_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        input: &PinnedBuffer,
+        mixer: &PinnedBuffer,
+        output: &PinnedBuffer,
+        elements: u32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_add_residual_f32",
+            (elements, 1, 1),
+            (elements.min(256).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(input), 0);
+                encoder.set_buffer(1, Some(mixer), 0);
+                encoder.set_buffer(2, Some(output), 0);
+                encoder.stage_set_u32(3, elements);
+            },
+        )
+    }
+
+    pub fn dispatch_qwen80_shared_expert_sigmoid_gate_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        shared_output: &PinnedBuffer,
+        gate_logit: &PinnedBuffer,
+        gated_output: &PinnedBuffer,
+        elements: u32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_shared_expert_sigmoid_gate_f32",
+            (elements, 1, 1),
+            (elements.min(256).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(shared_output), 0);
+                encoder.set_buffer(1, Some(gate_logit), 0);
+                encoder.set_buffer(2, Some(gated_output), 0);
+                encoder.stage_set_u32(3, elements);
+            },
+        )
+    }
+
+    pub fn dispatch_qwen80_attention_apply_sigmoid_gate_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        attention: &PinnedBuffer,
+        q_proj: &PinnedBuffer,
+        gated: &PinnedBuffer,
+        elements: u32,
+        head_dim: u32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_attention_apply_sigmoid_gate",
+            (elements, 1, 1),
+            (elements.min(256).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(attention), 0);
+                encoder.set_buffer(1, Some(q_proj), 0);
+                encoder.set_buffer(2, Some(gated), 0);
+                encoder.stage_set_u32(3, elements);
+                encoder.stage_set_u32(4, head_dim);
+            },
+        )
+    }
+
+    pub fn dispatch_qwen80_moe_combine_second_residual_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        first_residual: &PinnedBuffer,
+        routed: &PinnedBuffer,
+        shared: &PinnedBuffer,
+        gate_logit: &PinnedBuffer,
+        output: &PinnedBuffer,
+        hidden: u32,
+    ) -> Result<()> {
+        tcb.dispatch_threads(
+            "qwen80_moe_combine_second_residual_f32",
+            (hidden, 1, 1),
+            (hidden.min(256).max(1), 1, 1),
+            |encoder| {
+                encoder.set_buffer(0, Some(first_residual), 0);
+                encoder.set_buffer(1, Some(routed), 0);
+                encoder.set_buffer(2, Some(shared), 0);
+                encoder.set_buffer(3, Some(gate_logit), 0);
+                encoder.set_buffer(4, Some(output), 0);
+                encoder.stage_set_u32(5, hidden);
+            },
+        )
+    }
 }
 
 #[cfg(target_os = "macos")]
 #[allow(unused_imports)]
 pub use device_activations::{
+    dispatch_qwen80_add_residual_f32_tcb, dispatch_qwen80_attention_apply_sigmoid_gate_f32_tcb,
     dispatch_qwen80_ba_to_decay_beta_f32_tcb, dispatch_qwen80_deltanet_gated_rmsnorm_f32_tcb,
     dispatch_qwen80_gated_delta_decode_tg_tcb, dispatch_qwen80_gqa_qk_norm_rope_cache_f32_tcb,
+    dispatch_qwen80_moe_combine_second_residual_f32_tcb,
     dispatch_qwen80_qkvz_rearrange_conv_l2_f32_tcb, dispatch_qwen80_residual_rmsnorm_f32_tcb,
-    dispatch_qwen80_silu_mul_f32_tcb, QWEN80_DEVICE_ACTIVATION_KERNELS,
+    dispatch_qwen80_shared_expert_sigmoid_gate_f32_tcb, dispatch_qwen80_silu_mul_f32_tcb,
+    QWEN80_DEVICE_ACTIVATION_KERNELS,
 };
 
 #[cfg(target_os = "macos")]
@@ -1572,6 +1670,33 @@ mod tests {
         assert_eq!(
             qwen80_native_operator_wiring().last().unwrap().gap.as_str(),
             "device_resident_autoregressive_state_and_feedback"
+        );
+    }
+
+    #[test]
+    fn device_activation_family_covers_the_cb_collapse_kernels() {
+        let source = include_str!("../../shaders/qwen80_device_activations.metal");
+        for kernel in [
+            "qwen80_residual_rmsnorm_f32",
+            "qwen80_silu_mul_f32",
+            "qwen80_qkvz_rearrange_conv_l2_f32",
+            "qwen80_ba_to_decay_beta_f32",
+            "qwen80_deltanet_gated_rmsnorm_f32",
+            "qwen80_gated_delta_decode_tg",
+            "qwen80_gqa_qk_norm_rope_cache_f32",
+            "qwen80_add_residual_f32",
+            "qwen80_shared_expert_sigmoid_gate_f32",
+            "qwen80_moe_combine_second_residual_f32",
+        ] {
+            assert!(
+                source.contains(&format!("kernel void {kernel}(")),
+                "device-activation kernel {kernel} missing from qwen80_device_activations.metal"
+            );
+        }
+        let attn = include_str!("../../shaders/qwen80_direct_packed_attention_stage.metal");
+        assert!(
+            attn.contains("kernel void qwen80_attention_apply_sigmoid_gate("),
+            "GQA sigmoid-gate kernel missing"
         );
     }
 

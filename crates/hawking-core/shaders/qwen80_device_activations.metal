@@ -1,16 +1,22 @@
-// Device-resident Qwen80 hybrid-decode activations (uniform-Q4 neighbor ops).
+// Device-resident Qwen80 hybrid-decode activations.
 //
 // These kernels keep the residual / mixer / SwiGLU / DeltaNet / GQA control
-// stream on Metal between the already-native Q4 matvecs. Weights that are
-// small vectors are uploaded once as f32 (the catalog already decodes them
-// that way). Math mirrors the host oracles in qwen80_complete_runtime.rs:
+// stream on Metal between the already-native mixed (and Q4) matvecs. Weights
+// that are small vectors are uploaded once as f32 (the catalog already
+// decodes them that way). Math mirrors the host oracles in
+// qwen80_complete_runtime.rs:
 //   residual RMSNorm: x * rsqrt(mean(x^2)+eps) * (1+w)
 //   SwiGLU: silu(gate) * up
 //   DeltaNet conv + L2 + BA + gated RMSNorm
 //   GQA per-head (1+w) RMSNorm + rotate_half RoPE on the first 64 dims
+//   second residual: first + routed + shared * sigmoid(gate_logit)
 //
 // Serial reductions follow the host left-to-right f32 sum so greedy tokens
 // stay on the measured "Hi" sequence.
+//
+// Mixed-decode CB collapse (G003 rank-2) encodes these into the same
+// TokenCommandBuffer as the mixed GEMVs. The remaining host wait is the
+// 512-logit router readback that binds the ten mixed expert payloads.
 
 #include <metal_stdlib>
 using namespace metal;
@@ -336,4 +342,43 @@ kernel void qwen80_gqa_qk_norm_rope_cache_f32(
             value_cache[cache_base + dim] = v_proj[kv_base + dim];
         }
     }
+}
+
+kernel void qwen80_add_residual_f32(
+    device const float* input  [[buffer(0)]],
+    device const float* mixer  [[buffer(1)]],
+    device float* output       [[buffer(2)]],
+    constant uint& elements    [[buffer(3)]],
+    uint id                     [[thread_position_in_grid]])
+{
+    if (id >= elements) return;
+    output[id] = input[id] + mixer[id];
+}
+
+kernel void qwen80_shared_expert_sigmoid_gate_f32(
+    device const float* shared_output [[buffer(0)]],
+    device const float* gate_logit    [[buffer(1)]],
+    device float* gated_output        [[buffer(2)]],
+    constant uint& elements           [[buffer(3)]],
+    uint id                            [[thread_position_in_grid]])
+{
+    if (id >= elements) return;
+    const float gate = 1.0f / (1.0f + exp(-gate_logit[0]));
+    gated_output[id] = shared_output[id] * gate;
+}
+
+// first + routed + shared * sigmoid(gate). One dispatch at the layer
+// boundary so suffix + next mixer can share a command buffer.
+kernel void qwen80_moe_combine_second_residual_f32(
+    device const float* first_residual [[buffer(0)]],
+    device const float* routed         [[buffer(1)]],
+    device const float* shared         [[buffer(2)]],
+    device const float* gate_logit     [[buffer(3)]],
+    device float* output               [[buffer(4)]],
+    constant uint& hidden              [[buffer(5)]],
+    uint id                             [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    const float gate = 1.0f / (1.0f + exp(-gate_logit[0]));
+    output[id] = first_residual[id] + routed[id] + shared[id] * gate;
 }
