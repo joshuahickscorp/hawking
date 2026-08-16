@@ -1,0 +1,61 @@
+{
+  "schema": "hawking.ascension.qwen80_mixed_representation.v1",
+  "status": "SCREEN_PASSED_NOT_YET_PACKED_OR_GENERATED",
+  "bar_source": "D23 measured residual-identity break-even from Q80's own 25258-token capture",
+  "organ_cosine_bar": 0.8604,
+  "identity": "complete_bpw = 0.97032*expert_bpw + 0.02968*nonexpert_bpw",
+  "components": {
+    "gate_proj": {
+      "codec": "binary_group",
+      "expert_bpw": 1.1269,
+      "cosine_range": [
+        0.8586,
+        0.8932
+      ],
+      "clears_bar": true
+    },
+    "up_proj": {
+      "codec": "binary + rice_q1_rms sparse residual @2% outliers",
+      "bits_per_outlier": 8.24,
+      "expert_bpw": 1.2918,
+      "cosine_range": [
+        0.86416,
+        0.86524
+      ],
+      "clears_bar": true
+    },
+    "down_proj": {
+      "codec": "hgravs01_r160_b3 activation-weighted low-rank",
+      "expert_bpw": 1.27,
+      "cosine_range": [
+        0.8862,
+        0.8978
+      ],
+      "clears_bar": true,
+      "note": "scored on post-SwiGLU intermediate; first time down_proj was measurable"
+    }
+  },
+  "mixed_expert_bpw": 1.22957,
+  "complete_bpw": {
+    "nonexpert_8bit": 1.43051,
+    "nonexpert_6bit": 1.37115,
+    "nonexpert_4bit": 1.31179
+  },
+  "ceiling": 1.5,
+  "margin_at_8bit_nonexpert": 0.06949,
+  "sensitive_3pct_untouched": true,
+  "claim_boundary": {
+    "artifact_packed": false,
+    "coherence_generation_tested": false,
+    "decode_kernel_exists": false,
+    "note": "organ cosine is a screen; generation is the gate. No <=1.5 claim until packed, generated, and executed on a native kernel."
+  },
+  "evidence": [
+    "receipts/QWEN80_RESIDUAL_ENCODING.json",
+    "receipts/QWEN80_DOWN_PROJ_FRONTIER_SWEEP.json",
+    "receipts/QWEN80_REPRESENTATION_FRONTIER_SWEEP.json",
+    "receipts/QWEN80_SWIGLU_INTERMEDIATE_VERIFY.json",
+    "receipts/QWEN80_BIT_BUDGET_LEDGER.json",
+    "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json"
+  ]
+}
