@@ -579,14 +579,31 @@ def _walk_hidden_hits(
     *,
     wanted_keys: set[tuple[int, int]] | None,
     load_vectors: bool,
+    use_index: bool | None = None,
 ) -> tuple[dict[tuple[int, int], list[np.ndarray] | int], dict[str, Any]]:
     """Walk the capture once.
 
     load_vectors=False: values are integer counts (no .f32le reads).
     load_vectors=True: values are lists of row vectors, optionally filtered
     to wanted_keys so unsampled (layer, expert) pairs are never materialized.
+
+    use_index: True requires a valid capture-index.v1 sidecar; False skips it;
+    None (default) uses the sidecar when it is present and valid, otherwise
+    today's JSON path. A stale or corrupt sidecar is never served.
     """
     run_dir = Path(run_dir)
+    if capture is None and use_index is not False:
+        from lab.operators.q80_capture_index import try_walk_from_index
+
+        indexed = try_walk_from_index(
+            run_dir, wanted_keys=wanted_keys, load_vectors=load_vectors
+        )
+        if indexed is not None:
+            return indexed
+        if use_index is True:
+            raise ActivationWeightedRepackError(
+                f"capture index missing or stale under {run_dir}"
+            )
     if capture is None:
         path = run_dir / _CAPTURE_RESULT_NAME
         if path.is_file():
@@ -729,11 +746,18 @@ def _walk_hidden_hits(
 
 
 def count_expert_activations(
-    run_dir: Path, capture: Mapping[str, Any] | None = None
+    run_dir: Path,
+    capture: Mapping[str, Any] | None = None,
+    *,
+    use_index: bool | None = None,
 ) -> tuple[dict[tuple[int, int], int], dict[str, Any]]:
     """Per-(layer, expert) row counts. Does not read or store x vectors."""
     raw, provenance = _walk_hidden_hits(
-        run_dir, capture, wanted_keys=None, load_vectors=False
+        run_dir,
+        capture,
+        wanted_keys=None,
+        load_vectors=False,
+        use_index=use_index,
     )
     counts = {key: int(value) for key, value in raw.items()}
     hit_counts = {
@@ -754,6 +778,7 @@ def collect_expert_activations(
     wanted_keys: set[tuple[int, int]] | None = None,
     max_rows_per_expert: int | None = None,
     row_sample_seed: int = ROW_CAP_SEED,
+    use_index: bool | None = None,
 ) -> tuple[dict[tuple[int, int], np.ndarray], dict[str, Any]]:
     """Collect router-input hiddens keyed by (layer, expert_id).
 
@@ -766,6 +791,7 @@ def collect_expert_activations(
     max_rows_per_expert: optional cap; excess rows are a seeded random
     subsample (row_sample_seed mixed with layer/expert). Does not change
     which organs are eligible — apply the cap after sampling.
+    use_index: see ``_walk_hidden_hits``.
     """
 
     raw, provenance = _walk_hidden_hits(
@@ -773,6 +799,7 @@ def collect_expert_activations(
         capture,
         wanted_keys=wanted_keys,
         load_vectors=True,
+        use_index=use_index,
     )
     stacked: dict[tuple[int, int], np.ndarray] = {}
     n_before_cap: dict[str, int] = {}
@@ -820,6 +847,25 @@ def collect_expert_activations(
         }
     )
     return stacked, provenance
+
+
+def collect_expert_activations_from_json(
+    run_dir: Path,
+    capture: Mapping[str, Any] | None = None,
+    *,
+    wanted_keys: set[tuple[int, int]] | None = None,
+    max_rows_per_expert: int | None = None,
+    row_sample_seed: int = ROW_CAP_SEED,
+) -> tuple[dict[tuple[int, int], np.ndarray], dict[str, Any]]:
+    """JSON-path collect. Used by expert-pack verify and index equivalence."""
+    return collect_expert_activations(
+        run_dir,
+        capture,
+        wanted_keys=wanted_keys,
+        max_rows_per_expert=max_rows_per_expert,
+        row_sample_seed=row_sample_seed,
+        use_index=False,
+    )
 
 
 def organ_activations(
