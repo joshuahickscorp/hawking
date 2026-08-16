@@ -1442,6 +1442,69 @@ kernel void deepseek_v4_p4a_kv_nonrope_qat_inplace_authority(
     }
 }
 
+// SIMDgroup candidate for the same in-place KV QAT. One SIMDgroup owns one
+// 64-wide non-RoPE block. `amax` is a max-reduction (order-independent on
+// finite values) and every element still uses the authority E4M3FN table
+// encoder, so the written bytes match the one-thread-per-block kernel.
+kernel void deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate(
+    device const ushort* input_bf16 [[buffer(0)]],
+    device       ushort* output_bf16 [[buffer(1)]],
+    device       uchar* quantized [[buffer(2)]],
+    device       uchar* act_scales [[buffer(3)]],
+    constant uint& head_dim [[buffer(4)]],
+    constant uint& rope_head_dim [[buffer(5)]],
+    constant uint& block_size [[buffer(6)]],
+    uint simdgroup_id [[simdgroup_index_in_threadgroup]],
+    uint lane_id [[thread_index_in_simdgroup]],
+    uint threads_per_tg [[threads_per_threadgroup]])
+{
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kMaxSimdgroups = 32u;
+    threadgroup uchar scale_bits_by_simdgroup[kMaxSimdgroups];
+
+    if (head_dim == 0u || rope_head_dim == 0u || rope_head_dim >= head_dim
+        || block_size != 64u || ((head_dim - rope_head_dim) % block_size) != 0u
+        || (threads_per_tg % kSimdWidth) != 0u
+        || threads_per_tg / kSimdWidth > kMaxSimdgroups) {
+        return;
+    }
+    const uint non_rope = head_dim - rope_head_dim;
+    const uint blocks = non_rope / block_size;
+    const uint simdgroups = threads_per_tg / kSimdWidth;
+    if (simdgroup_id == 0u) {
+        for (uint index = lane_id; index < rope_head_dim; index += kSimdWidth) {
+            output_bf16[non_rope + index] = input_bf16[non_rope + index];
+        }
+    }
+    const bool active = simdgroup_id < blocks;
+    const uint start = simdgroup_id * block_size;
+    float local_amax = 0.0f;
+    if (active) {
+        const uint first = start + lane_id * 2u;
+        local_amax = max(fabs(deepseek_v4_bf16_value(input_bf16[first])),
+            fabs(deepseek_v4_bf16_value(input_bf16[first + 1u])));
+    }
+    const float block_amax = simd_max(local_amax);
+    if (active && lane_id == 0u) {
+        scale_bits_by_simdgroup[simdgroup_id] = deepseek_v4_act_quant_ue8m0_scale(block_amax);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (!active) return;
+    const uchar scale_bits = scale_bits_by_simdgroup[simdgroup_id];
+    const float scale = deepseek_v4_e8m0fnu_value(scale_bits);
+    if (lane_id == 0u) act_scales[simdgroup_id] = scale_bits;
+    const uint first = start + lane_id * 2u;
+    for (uint offset = 0u; offset < 2u; ++offset) {
+        const uint index = first + offset;
+        const float value = deepseek_v4_bf16_value(input_bf16[index]);
+        const uchar encoded = deepseek_v4_e4m3fn_encode_rne(
+            clamp(value / scale, -448.0f, 448.0f));
+        quantized[index] = encoded;
+        output_bf16[index] = deepseek_v4_bf16_encode_rne(
+            deepseek_v4_e4m3fn_value(encoded) * scale);
+    }
+}
+
 // Exact source specialization at position zero: one selected causal KV row
 // and no compressor/indexer path.  The learned sink competes in the softmax
 // denominator; it is not added to the score.  Source RoPE is identity at this

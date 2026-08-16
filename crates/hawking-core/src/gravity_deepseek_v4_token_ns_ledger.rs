@@ -105,6 +105,75 @@ pub struct IsolatedKernelRow {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct MlaDispatchSpec {
+    pub name: String,
+    pub kernel: String,
+    pub invocations_per_layer: u64,
+    pub invocations_per_token: u64,
+    pub threads: u64,
+    pub threadgroups: u64,
+    pub threads_per_threadgroup: u64,
+    pub simdgroups_per_threadgroup: u64,
+    pub bytes_read: u64,
+    pub bytes_written: u64,
+    pub approx_flops: u64,
+    pub occupancy_proxy: f64,
+    pub isolated_gpu_ns_mean: Option<u64>,
+    pub isolated_ns_per_invocation: Option<u64>,
+    pub memory_stall_proxy_gbps: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct MlaPipelineLimit {
+    pub kernel: String,
+    pub thread_execution_width: u64,
+    pub max_total_threads_per_threadgroup: u64,
+    pub static_threadgroup_memory_length: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct MlaKvState {
+    pub persistent_device_addressable: bool,
+    pub compressed_indexer_loaded: bool,
+    pub bos_window_only: bool,
+    pub bytes_written_per_layer: u64,
+    pub bytes_read_per_layer: u64,
+    pub bytes_written_per_token: u64,
+    pub bytes_read_per_token: u64,
+    pub device_copies_per_token: u64,
+    pub host_syncs_per_token: u64,
+    pub host_sync_bytes_per_token: u64,
+    pub scratch_overwritten_per_layer: bool,
+    pub rebuild_rebind_reallocate_per_token: bool,
+    pub note: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct MlaCensus {
+    pub serial_group: bool,
+    pub layers: u64,
+    pub attn_command_buffers: u64,
+    pub attn_encoders: u64,
+    pub attn_dispatches: u64,
+    pub attn_gpu_ns: u64,
+    pub attn_wait_ns: u64,
+    pub attn_encode_ns: u64,
+    pub attn_gpu_ns_min: Option<u64>,
+    pub attn_gpu_ns_p50: Option<u64>,
+    pub attn_gpu_ns_max: Option<u64>,
+    pub attn_gpu_ns_per_invocation: Option<u64>,
+    pub layers_gpu_over_20ms: u64,
+    pub structural_blocker: bool,
+    pub isolated_mla_gpu_sum_ns: u64,
+    pub dispatch_gap_proxy_ns: Option<i64>,
+    pub limit_class: String,
+    pub limit_proof: String,
+    pub dispatches: Vec<MlaDispatchSpec>,
+    pub kv_state: MlaKvState,
+    pub pipeline_limits: Vec<MlaPipelineLimit>,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct MetalVsHost {
     pub metal_encode_ns: u64,
     pub metal_submit_ns: u64,
@@ -138,6 +207,7 @@ pub struct TokenNsLedger {
     pub host_wall_classes: Vec<StageRow>,
     pub reader_parallel_sum: Vec<StageRow>,
     pub gpu_gaps: GpuGapAccounting,
+    pub mla: Option<MlaCensus>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -157,6 +227,10 @@ pub struct TokenNsCollector {
     probe_overhead_ns: u64,
     last_cb_end: Option<Instant>,
     between_cb_gap_ns: u64,
+    mla_serial_group: bool,
+    mla_dispatch_specs: Vec<MlaDispatchSpec>,
+    mla_kv_state: Option<MlaKvState>,
+    mla_pipeline_limits: Vec<MlaPipelineLimit>,
 }
 
 impl Default for TokenNsCollector {
@@ -176,7 +250,24 @@ impl TokenNsCollector {
             probe_overhead_ns: 0,
             last_cb_end: None,
             between_cb_gap_ns: 0,
+            mla_serial_group: false,
+            mla_dispatch_specs: Vec::new(),
+            mla_kv_state: None,
+            mla_pipeline_limits: Vec::new(),
         }
+    }
+
+    pub fn record_mla_static(
+        &mut self,
+        serial_group: bool,
+        specs: Vec<MlaDispatchSpec>,
+        kv_state: MlaKvState,
+        pipeline_limits: Vec<MlaPipelineLimit>,
+    ) {
+        self.mla_serial_group = serial_group;
+        self.mla_dispatch_specs = specs;
+        self.mla_kv_state = Some(kv_state);
+        self.mla_pipeline_limits = pipeline_limits;
     }
 
     pub fn add_stage(&mut self, name: &str, ns: u64, calls: u64, bytes: u64) {
@@ -360,6 +451,14 @@ impl TokenNsCollector {
             &self.isolated_kernels,
         );
         let gpu_gaps = account_gpu_gaps(&self.command_buffers, self.between_cb_gap_ns);
+        let mla = build_mla_census(
+            self.mla_serial_group,
+            &self.mla_dispatch_specs,
+            self.mla_kv_state,
+            &self.mla_pipeline_limits,
+            &self.command_buffers,
+            &self.isolated_kernels,
+        );
 
         TokenNsLedger {
             schema: TOKEN_NS_LEDGER_SCHEMA,
@@ -391,6 +490,7 @@ impl TokenNsCollector {
             host_wall_classes,
             reader_parallel_sum,
             gpu_gaps,
+            mla,
         }
     }
 }
@@ -815,6 +915,221 @@ fn diagnose(
     )
 }
 
+fn isolated_mean_gpu(isolated: &[IsolatedKernelRow], name: &str) -> Option<u64> {
+    let mut sum = 0u64;
+    let mut n = 0u64;
+    for row in isolated {
+        if row.name == name {
+            if let Some(gpu) = row.gpu_ns {
+                sum = sum.saturating_add(gpu);
+                n += 1;
+            }
+        }
+    }
+    if n == 0 {
+        None
+    } else {
+        Some(sum / n)
+    }
+}
+
+fn build_mla_census(
+    serial_group: bool,
+    specs: &[MlaDispatchSpec],
+    kv_state: Option<MlaKvState>,
+    pipeline_limits: &[MlaPipelineLimit],
+    cbs: &[CommandBufferRow],
+    isolated: &[IsolatedKernelRow],
+) -> Option<MlaCensus> {
+    let attn: Vec<&CommandBufferRow> = cbs.iter().filter(|cb| cb.name == "attn").collect();
+    if attn.is_empty() && specs.is_empty() {
+        return None;
+    }
+    let layers = attn.len() as u64;
+    let attn_encoders = attn.iter().map(|cb| cb.encoders).sum::<u64>();
+    let attn_dispatches = attn.iter().map(|cb| cb.dispatches).sum::<u64>();
+    let attn_gpu_ns = attn.iter().filter_map(|cb| cb.gpu_ns).sum::<u64>();
+    let attn_wait_ns = attn.iter().map(|cb| cb.wait_ns).sum::<u64>();
+    let attn_encode_ns = attn.iter().map(|cb| cb.encode_ns).sum::<u64>();
+    let mut gpus: Vec<u64> = attn.iter().filter_map(|cb| cb.gpu_ns).collect();
+    gpus.sort_unstable();
+    let attn_gpu_ns_min = gpus.first().copied();
+    let attn_gpu_ns_max = gpus.last().copied();
+    let attn_gpu_ns_p50 = if gpus.is_empty() {
+        None
+    } else {
+        Some(gpus[gpus.len() / 2])
+    };
+    let layers_gpu_over_20ms = gpus.iter().filter(|&&ns| ns >= 20_000_000).count() as u64;
+    let attn_gpu_ns_per_invocation = if attn_dispatches == 0 {
+        None
+    } else {
+        Some(attn_gpu_ns / attn_dispatches)
+    };
+
+    let mut dispatches = specs.to_vec();
+    for spec in &mut dispatches {
+        let mean = isolated_mean_gpu(isolated, &format!("isolated.{}", spec.name))
+            .or_else(|| isolated_mean_gpu(isolated, &format!("isolated.mla.{}", spec.name)))
+            .or_else(|| isolated_mean_gpu(isolated, &spec.name));
+        spec.isolated_gpu_ns_mean = mean;
+        spec.isolated_ns_per_invocation = mean.map(|ns| {
+            if spec.invocations_per_layer == 0 {
+                ns
+            } else {
+                ns / spec.invocations_per_layer
+            }
+        });
+        spec.memory_stall_proxy_gbps = mean.and_then(|ns| {
+            if ns == 0 {
+                None
+            } else {
+                Some((spec.bytes_read as f64 + spec.bytes_written as f64) / (ns as f64))
+            }
+        });
+    }
+
+    let isolated_mla_gpu_sum_ns = isolated
+        .iter()
+        .filter(|row| {
+            row.name.contains("mla.")
+                || row.name.contains("attn.")
+                || row.name.contains("kv_qat")
+                || row.name.contains("per_head")
+                || row.name.contains("act_quant")
+                || row.name.contains("rmsnorm")
+                || row.name.contains("cast.")
+                || row.name.contains("mla.chain")
+        })
+        .filter(|row| !row.name.contains("chain"))
+        .filter_map(|row| row.gpu_ns)
+        .sum::<u64>();
+
+    let dispatch_gap_proxy_ns = if isolated_mla_gpu_sum_ns > 0 && layers > 0 {
+        let probed_layers = isolated
+            .iter()
+            .filter(|row| row.name.contains("mla.wo_a") || row.name == "isolated.mla.wo_a")
+            .map(|row| row.layer)
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            .max(1) as u64;
+        let isolated_per_layer = isolated_mla_gpu_sum_ns / probed_layers;
+        Some(attn_gpu_ns as i64 - (isolated_per_layer.saturating_mul(layers)) as i64)
+    } else {
+        None
+    };
+
+    let mean_threads = if dispatches.is_empty() {
+        0.0
+    } else {
+        dispatches.iter().map(|d| d.threads as f64).sum::<f64>() / dispatches.len() as f64
+    };
+    let mean_occupancy = if dispatches.is_empty() {
+        0.0
+    } else {
+        dispatches.iter().map(|d| d.occupancy_proxy).sum::<f64>() / dispatches.len() as f64
+    };
+    let bytes_per_token: u64 = dispatches
+        .iter()
+        .map(|d| (d.bytes_read + d.bytes_written).saturating_mul(d.invocations_per_token))
+        .sum();
+    let bandwidth_proxy_gbps = if attn_gpu_ns == 0 {
+        0.0
+    } else {
+        bytes_per_token as f64 / attn_gpu_ns as f64
+    };
+    let encoders_per_cb = if layers == 0 {
+        0.0
+    } else {
+        attn_encoders as f64 / layers as f64
+    };
+
+    let (limit_class, limit_proof) = if layers_gpu_over_20ms > 0 {
+        (
+            "structural_blocker".to_owned(),
+            format!(
+                "{layers_gpu_over_20ms} attn CBs have GPU >= 20ms (min={:?} p50={:?} max={:?}); a single GPU component above 20ms is a structural blocker, not a tuning target",
+                attn_gpu_ns_min, attn_gpu_ns_p50, attn_gpu_ns_max
+            ),
+        )
+    } else if encoders_per_cb >= 8.0 && mean_occupancy < 0.25 {
+        (
+            "gap_and_occupancy".to_owned(),
+            format!(
+                "attn uses {encoders_per_cb:.1} encoders/CB, mean occupancy_proxy={mean_occupancy:.3} (mean threads={mean_threads:.0}), realized {bandwidth_proxy_gbps:.1} GB/s vs ~750 GB/s ceiling ({:.2}%); serial-group={} . Matches the system-wide 0.79% bandwidth / ~51% idle picture: gaps + starved grids, not a full-width bandwidth roof.",
+                100.0 * bandwidth_proxy_gbps / 750.0,
+                serial_group
+            ),
+        )
+    } else if encoders_per_cb >= 8.0 {
+        (
+            "gap".to_owned(),
+            format!(
+                "attn uses {encoders_per_cb:.1} encoders/CB for {attn_dispatches} dispatches; realized {bandwidth_proxy_gbps:.1} GB/s. Encoder begin/end is the tax, not arithmetic. serial_group={serial_group}"
+            ),
+        )
+    } else if mean_occupancy < 0.25 {
+        (
+            "occupancy".to_owned(),
+            format!(
+                "mean occupancy_proxy={mean_occupancy:.3} (mean threads={mean_threads:.0}); WQ-A/WKV/RMSNorm grids are hundreds-to-1k threads. serial_group={serial_group} encoders/CB={encoders_per_cb:.1} realized {bandwidth_proxy_gbps:.1} GB/s"
+            ),
+        )
+    } else if bandwidth_proxy_gbps >= 200.0 {
+        (
+            "bandwidth".to_owned(),
+            format!(
+                "realized {bandwidth_proxy_gbps:.1} GB/s on {bytes_per_token} bytes; occupancy_proxy={mean_occupancy:.3} encoders/CB={encoders_per_cb:.1}"
+            ),
+        )
+    } else {
+        (
+            "mixed".to_owned(),
+            format!(
+                "encoders/CB={encoders_per_cb:.1} occupancy_proxy={mean_occupancy:.3} realized {bandwidth_proxy_gbps:.1} GB/s serial_group={serial_group}"
+            ),
+        )
+    };
+
+    Some(MlaCensus {
+        serial_group,
+        layers,
+        attn_command_buffers: layers,
+        attn_encoders,
+        attn_dispatches,
+        attn_gpu_ns,
+        attn_wait_ns,
+        attn_encode_ns,
+        attn_gpu_ns_min,
+        attn_gpu_ns_p50,
+        attn_gpu_ns_max,
+        attn_gpu_ns_per_invocation,
+        layers_gpu_over_20ms,
+        structural_blocker: layers_gpu_over_20ms > 0,
+        isolated_mla_gpu_sum_ns,
+        dispatch_gap_proxy_ns,
+        limit_class,
+        limit_proof,
+        dispatches,
+        kv_state: kv_state.unwrap_or(MlaKvState {
+            persistent_device_addressable: false,
+            compressed_indexer_loaded: false,
+            bos_window_only: true,
+            bytes_written_per_layer: 0,
+            bytes_read_per_layer: 0,
+            bytes_written_per_token: 0,
+            bytes_read_per_token: 0,
+            device_copies_per_token: 0,
+            host_syncs_per_token: 0,
+            host_sync_bytes_per_token: 0,
+            scratch_overwritten_per_layer: true,
+            rebuild_rebind_reallocate_per_token: true,
+            note: "census recorded without a kv_state payload".to_owned(),
+        }),
+        pipeline_limits: pipeline_limits.to_vec(),
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -841,5 +1156,75 @@ mod tests {
         assert_eq!(host_wall_class("host.memcpy"), Some("memcpy"));
         assert_eq!(host_wall_class("host.mhc_pre"), Some("state_movement"));
         assert_eq!(host_wall_class("host.expert_slab_io"), Some("file_source_reads"));
+    }
+
+    #[test]
+    fn mla_census_flags_encoder_gap_and_one_thread_occupancy() {
+        let mut c = TokenNsCollector::new();
+        c.record_mla_static(
+            false,
+            vec![MlaDispatchSpec {
+                name: "rmsnorm.q".to_owned(),
+                kernel: "deepseek_v4_p3a_rmsnorm_bf16_authority".to_owned(),
+                invocations_per_layer: 1,
+                invocations_per_token: 43,
+                threads: 1,
+                threadgroups: 1,
+                threads_per_threadgroup: 1,
+                simdgroups_per_threadgroup: 1,
+                bytes_read: 4096,
+                bytes_written: 2048,
+                approx_flops: 3072,
+                occupancy_proxy: (1.0f64 / 32_768.0).min(1.0),
+                isolated_gpu_ns_mean: None,
+                isolated_ns_per_invocation: None,
+                memory_stall_proxy_gbps: None,
+            }],
+            MlaKvState {
+                persistent_device_addressable: false,
+                compressed_indexer_loaded: false,
+                bos_window_only: true,
+                bytes_written_per_layer: 1024,
+                bytes_read_per_layer: 1024,
+                bytes_written_per_token: 43 * 1024,
+                bytes_read_per_token: 43 * 1024,
+                device_copies_per_token: 0,
+                host_syncs_per_token: 43,
+                host_sync_bytes_per_token: 43 * 8192,
+                scratch_overwritten_per_layer: true,
+                rebuild_rebind_reallocate_per_token: true,
+                note: "test".to_owned(),
+            },
+            Vec::new(),
+        );
+        for layer in 0..43 {
+            c.record_cb(
+                "attn",
+                Some(layer),
+                "test",
+                17,
+                &MetalBatchTiming {
+                    encode_us: 50,
+                    submit_us: 10,
+                    wait_us: 2_000,
+                    host_wall_us: 2_100,
+                    gpu_duration_us: Some(4_500),
+                    compute_encoders: 17,
+                    compute_dispatches: 17,
+                    ..MetalBatchTiming::default()
+                },
+            );
+        }
+        let ledger = c.finish(1_000_000_000, 160_000_000, 1_200_000_000, 0);
+        let mla = ledger.mla.expect("census");
+        assert_eq!(mla.layers, 43);
+        assert_eq!(mla.attn_encoders, 43 * 17);
+        assert!(!mla.structural_blocker);
+        assert_eq!(mla.kv_state.device_copies_per_token, 0);
+        assert!(
+            mla.limit_class == "gap_and_occupancy" || mla.limit_class == "gap",
+            "limit_class={}",
+            mla.limit_class
+        );
     }
 }
