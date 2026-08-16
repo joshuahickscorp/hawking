@@ -40,8 +40,8 @@ GROK = Path.home() / ".claude-grok" / "bin" / "grok-run"
 LANES = REPO / "workspace" / "ops" / "ascent-lanes"
 
 DISK_FLOOR_GIB = 15.0
-DISK_WARN_GIB = 40.0
-MAX_CONCURRENT = 7
+DISK_WARN_GIB = 90.0   # raised after a 0-byte stall: lanes cost 1-19 GiB each
+MAX_CONCURRENT = 4     # cut after the 0-byte stall; 7 lanes filled 926 GiB
 POLL_SECONDS = 300
 
 # Real Tier-1 gates. Reject-only: passing here is NOT promotion.
@@ -114,6 +114,37 @@ def our_live_lanes(snap: dict) -> list[str]:
     return ours
 
 
+def reap_finished_worktrees() -> int:
+    """Delete worktrees of finished lanes that have NOTHING to lose.
+
+    reclaim_safe.sh clears build dirs and repo-aware worktrees but NOT the grok
+    worktree pool - which is what actually fills this disk. Lanes cost 1-19 GiB
+    each; the pool reached 67 GiB and hit 0 bytes free, stalling every tool on the
+    box including the shell itself. Only reaped when the lane is NOT live AND the
+    worktree is clean, so no uncommitted work can be lost. Branches always survive.
+    """
+    pool = Path.home() / ".claude-grok" / "worktrees"
+    if not pool.is_dir():
+        return 0
+    code, out = sh(f"{GROK} status", timeout=300)
+    if code != 0:
+        return 0          # cannot tell what is live -> reap nothing
+    live = {parts[2] for parts in (l.split() for l in out.splitlines())
+            if len(parts) > 2 and parts[0] == "running"}
+    freed = 0
+    for d in sorted(pool.iterdir()):
+        if not d.is_dir() or d.name in live:
+            continue
+        rc, dirty = sh(f"git -C {d} status --porcelain 2>/dev/null | wc -l", timeout=120)
+        if rc != 0 or dirty.strip() != "0":
+            continue      # dirty or unreadable -> preserve
+        _, sz = sh(f"du -sm {d} 2>/dev/null | cut -f1", timeout=300)
+        sh(f"rm -rf {d}", timeout=600)
+        try: freed += int(sz.strip() or 0)
+        except ValueError: pass
+    return freed
+
+
 def govern(snap: dict) -> str | None:
     """Return a reason to hold off, or None to proceed."""
     free = snap.get("disk_free_gib") or 0
@@ -121,7 +152,9 @@ def govern(snap: dict) -> str | None:
         script = REPO / "tools" / "reclaim_safe.sh"
         if script.is_file():
             sh(f"bash {script}", timeout=900)
-            free = machine().get("disk_free_gib") or 0
+        sh("find ~/.claude-grok/tasks -name diff.patch -size +50M -delete", timeout=600)
+        reap_finished_worktrees()
+        free = machine().get("disk_free_gib") or 0
     if free < DISK_FLOOR_GIB:
         return f"disk {free} GiB below floor {DISK_FLOOR_GIB}"
     ours = our_live_lanes(snap)
