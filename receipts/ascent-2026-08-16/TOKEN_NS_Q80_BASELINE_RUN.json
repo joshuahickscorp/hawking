@@ -13,7 +13,7 @@
     "sum_serial_stage_ns": 15233938076,
     "total_token_ns": 15595782000
   },
-  "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+  "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
   "critical_path": {
     "model": "q80",
     "overlappable_ns": 0,
@@ -170,7 +170,7 @@
   "stages": [
     {
       "calls_per_token": 1.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant bucket over the whole baseline run (prefill + decode); CPU wall, not GPU timestamps",
       "ns_per_call": 9077696633.999994,
@@ -184,7 +184,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant bucket over the whole baseline run (prefill + decode); CPU wall, not GPU timestamps",
       "ns_per_call": 3326900827.9999995,
@@ -198,7 +198,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant bucket over the whole baseline run (prefill + decode); CPU wall, not GPU timestamps",
       "ns_per_call": 1695811704.0000024,
@@ -212,7 +212,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant bucket over the whole baseline run (prefill + decode); CPU wall, not GPU timestamps",
       "ns_per_call": 1133528909.9999998,

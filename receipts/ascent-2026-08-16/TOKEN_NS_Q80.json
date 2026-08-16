@@ -13,7 +13,7 @@
     "sum_serial_stage_ns": 555087250,
     "total_token_ns": 559171655
   },
-  "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+  "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
   "critical_path": {
     "model": "q80",
     "overlappable_ns": 231968522,
@@ -170,7 +170,7 @@
   "stages": [
     {
       "calls_per_token": 48.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant around compact expert-slab pack",
       "ns_per_call": 5850404.770833333,
@@ -184,7 +184,7 @@
     },
     {
       "calls_per_token": 98.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant around wait_until_completed; includes GPU + queue delay",
       "ns_per_call": 2792431.785714286,
@@ -198,7 +198,7 @@
     },
     {
       "calls_per_token": 98.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
       "ns_per_call": 2367025.7346938774,
@@ -212,7 +212,7 @@
     },
     {
       "calls_per_token": 98.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant around command-buffer commit",
       "ns_per_call": 5769.010204081633,
@@ -226,7 +226,7 @@
     },
     {
       "calls_per_token": 1.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant around post-wait sync",
       "ns_per_call": 44143.0,
@@ -240,7 +240,7 @@
     },
     {
       "calls_per_token": 98.0,
-      "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+      "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
       "confidence": "measured",
       "method": "host Instant around Metal encode",
       "ns_per_call": 0.0,

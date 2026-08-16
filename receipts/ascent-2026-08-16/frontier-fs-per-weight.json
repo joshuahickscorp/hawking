@@ -5,7 +5,7 @@
   "status": "SHIPPED",
   "timing_label": "N/A \u2014 this lane does not produce a new GPU timing",
   "role": "PER_WEIGHT_AND_PER_BIT_UNITS_ON_TOKEN_NS",
-  "commit": "4f03a828ba7a588d7b435c52268a2a182783deac",
+  "commit": "f3ac8e6e96df7713f96238dcc41df47ace0a7707",
   "honesty": {
     "field": "fs_per_weight_served (amortized throughput-derived, NOT latency)",
     "not_latency": true,
