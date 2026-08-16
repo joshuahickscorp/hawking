@@ -1,0 +1,295 @@
+{
+  "schema": "hawking.ascent.promotion_queue.v1",
+  "entries": [
+    {
+      "lane": "codec-switching-activity-20260816-013121",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "down_proj fused two-stage still 299000 ns/expert (143520000 ns/token at 48\u00d710); occupancy/dispatch, not switching activity",
+      "branch": "grok/codec-switching-activity-20260816-013121",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "cross-adversarial-20260816-003214",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "DSV4F host.expert_slab_io 415126416 ns (DIRTY_ENGINEERING), then metal.gpu 399023000 ns across 137 CBs. Q80 wall is still hybrid host+metal (~175 ms GPU / ~400-570 ms CPU-wall, 1637-3401 fallbacks); <=1.5 is not a packed generated artifact.",
+      "branch": "grok/cross-adversarial-20260816-003214",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "dram-row-locality-20260816-013210",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "not DRAM rows. Q80 host moe_table_build ~246 ms; DSV4F attn_weight_io_prefetch ~253 ms. GPU packed matvecs sit at ~2.5 GB/s against a 560\u2013647 GB/s read-reduce on the same box.",
+      "branch": "grok/dram-row-locality-20260816-013210",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-admission-identity-20260816-003824",
+      "model": "dsv4f",
+      "status": "PARTIAL",
+      "next_bottleneck": "host.expert_slab_io (streamed top-6 read + metal fill); 477893164 ns this-window B median, 415126416 ns host-wall authority",
+      "branch": "grok/dsv-admission-identity-20260816-003824",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-attn-weight-io-20260816-010759",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "metal.gpu 393375000 ns/token median (true GPU timestamps, 129 CBs). Next host-streamed candidate is shared expert + moe_control I/O (~254 ms summed on B2/B3, same per-layer reuse shape).",
+      "branch": "grok/dsv-attn-weight-io-20260816-010759",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-cb-collapse-20260816-001742",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "host exclusive / inter-CB GPU idle from streaming weight IO + host MHC \u2014 870578334 ns host exclusive and 1036353092 ns inter-CB device gap on pair 3B (73% of GPU span idle). Largest remaining GPU family is attn at 201280000 ns. Reader/IO is dsv-host-wall.",
+      "branch": "grok/dsv-cb-collapse-20260816-001742",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-expert-20260816-003212",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "post-route host remap of 6 expert chunks + next-layer attn views, 262400000 ns (iso_nocopy2 host.expert_slab_io; joint with attn prefetch 274.0 ms). GPU arithmetic 374150000 ns.",
+      "branch": "grok/dsv-expert-20260816-003212",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-expert-cache-20260816-003822",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "host.attn_weight_io_prefetch 481955669 ns (median on the 100% hit path; was hidden behind expert_slab_io)",
+      "branch": "grok/dsv-expert-cache-20260816-003822",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-host-wall-20260816-001740",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "host.expert_slab_io 415126416 ns/token (GPU-idle streamed top-6 expert read+fill). After residency deletes that: Metal GPU 399023000 ns/token across 137 CBs; surviving host MHC+decode ~50 ms.",
+      "branch": "grok/dsv-host-wall-20260816-001740",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-integrate-graph-20260816-005613",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "host.attn_weight_io_prefetch 252900000 ns (pair1_nocopy); leftover host.expert_slab_io 239426001 ns is now mmap/bind of 40 learned experts, not slab memcpy; host.memcpy 232630000 ns sits beside it. GPU 302157000 ns is not the wall.",
+      "branch": "grok/dsv-integrate-graph-20260816-005613",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-integrate-occupancy-20260816-012855",
+      "model": "dsv4f",
+      "status": "PARTIAL",
+      "next_bottleneck": "attention GPU still ~127236000 ns on the default path (WO-A / WQ-A / WKV / WO-B still one-thread-per-row). Host exclusive remains the token-level majority (~1.0 s clean body).",
+      "branch": "grok/dsv-integrate-occupancy-20260816-012855",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-mla-20260816-003211",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "token-level host exclusive ~670 ms (not this lane). MLA GPU now ~128 ms; largest remaining isolated kernels are wo_a ~0.67\u20131.08 ms and wo_b ~0.64\u20131.01 ms per layer (~29\u201344 ms/token), then wq_a/wkv on 1024/512-thread grids. Still ~9\u00d7 the 15 ms GPU-body budget. Occupancy + convert+einsum, not bandwidth.",
+      "branch": "grok/dsv-mla-20260816-003211",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-occupancy-geometry-20260816-010044",
+      "model": "dsv4f",
+      "status": "SHIPPED",
+      "next_bottleneck": "host exclusive ~625-680 ms/token (not this lane). Inside attention after this win: wq_b ~267-319 us/layer already at 32768 threads, then wo_a ~233 us, wo_b ~190 us, sparse_pos0 ~131 us on 64 threads (~5.6 ms/token). Layer p50 1.19 ms. Realized 92 GB/s of ~750.",
+      "branch": "grok/dsv-occupancy-geometry-20260816-010044",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-resident-gravity-20260816-001744",
+      "model": "dsv4f",
+      "status": "PARTIAL",
+      "next_bottleneck": "determined teacher-X capture/fit (existing X underdetermined). 21846-token fill \u00d7 3.323e9 ns \u2248 7.26e13 ns streamed forward (DIRTY_ENGINEERING, ~20 h). After a hypothetical resident pack the already-measured wall is metal.gpu 2082931000 ns/token (act_quant), not I/O.",
+      "branch": "grok/dsv-resident-gravity-20260816-001744",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "frontier-fs-per-weight-20260816-013121",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "Q80 host.compact_expert_slab_pack 280819429 ns (78831 fs/weight amortized, DIRTY_ENGINEERING); DSV4F host.expert_slab_io 415126416 ns (32563 fs/weight amortized, DIRTY_ENGINEERING)",
+      "branch": "grok/frontier-fs-per-weight-20260816-013121",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "joint-token-ns-20260816-010044",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "DSV4F host.expert_slab_io 415126416 ns (DIRTY_ENGINEERING), then the 275026398 ns unattributed residual inside metal host_wall, then metal GPU 399023000 ns across 137 CBs. Q80 host.compact_expert_slab_pack 280819429 ns serial, then metal.wait 273658315 ns (contains 231968522 ns GPU).",
+      "branch": "grok/joint-token-ns-20260816-010044",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-capture-coverage-20260816-003209",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "route-starved tail \u2014 p10 = 34 rows (measured); 221 never-routed pairs; ~119k tokens to put p10 at rank 160, ~171k to put the median at 2048. The 25k capture also has no on-disk post-SwiGLU X.",
+      "branch": "grok/q80-capture-coverage-20260816-003209",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-coherence-probe-20260816-002153",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "all-48 mixed generate (untested). Secondary: L0 structured error (mix/null 2.06) and typical-organ capture (p50 258 rows vs dim 2048/512).",
+      "branch": "grok/q80-coherence-probe-20260816-002153",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "q80-component-simdgroup-20260816-010759",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "host moe_table_build ~197000000 ns/token (A1 5.530 s / 28 forwards; B1 spiked to 11.24 s). Mixer occupancy is no longer the complete-token wall.",
+      "branch": "grok/q80-component-simdgroup-20260816-010759",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "q80-decode-kernels-20260816-002157",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "down_proj hgravs01 two-stage factor matvec, 259000 ns/organ (124320000 ns at 48\u00d710)",
+      "branch": "grok/q80-decode-kernels-20260816-002157",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-decode-throughput-20260816-004451",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "up_proj fused binary+CSR, 17250 ns (8280000 ns at 48\u00d710)",
+      "branch": "grok/q80-decode-throughput-20260816-004451",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-deltanet-gqa2-20260816-003206",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "host top-10 + expert address-table bind, 157820565 ns/token (A1 host_work; moe_table_build 5.92 s over 28 forwards)",
+      "branch": "grok/q80-deltanet-gqa2-20260816-003206",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-device-topk-20260816-010759",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "expert first-touch upload (q80-expert-first-touch), 241542041 ns/token on B1; after that, mixer+expert GPU is ~132 ms/token",
+      "branch": "grok/q80-device-topk-20260816-010759",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "q80-expert-first-touch-20260816-010044",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "DeltaNet mixer, 92600000 ns/token (D3 deltanet 2.594 s / 28 steps)",
+      "branch": "grok/q80-expert-first-touch-20260816-010044",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-integrate-graph-20260816-012855",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "DeltaNet mixed prefix CB (mixer+shared+router+wait), 79081238 ns/token on D3 identity (DIRTY_ENGINEERING)",
+      "branch": "grok/q80-integrate-graph-20260816-012855",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-lowrank-algebra-20260816-015251",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "up_proj binary decode/occupancy, 17250 ns (DIRTY_ENGINEERING, quieter up_b median); ~45% of the remaining 38 us/expert, ~15 GB/s, not DRAM-bound and not reconstruct-W-bound",
+      "branch": "grok/q80-lowrank-algebra-20260816-015251",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-ns-ledger-20260816-010044",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "moe_table_build 246283892 ns/token (57.4% of 428985708 ns wall)",
+      "branch": "grok/q80-ns-ledger-20260816-010044",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-pack-20260816-002155",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "native mixed decode kernel does not exist (kernel lane). Until that kernel runs, generation cannot be measured; no ns/token for this artifact.",
+      "branch": "grok/q80-pack-20260816-002155",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "q80-runtime-residency-20260816-003204",
+      "model": "q80",
+      "status": "SHIPPED",
+      "next_bottleneck": "first-touch expert payload upload (catalog read + SHA-256 + MTLBuffer copy), 90\u2013245 ms/token on late tokens; after that DeltaNet is ~134 ms/token of the dirty run",
+      "branch": "grok/q80-runtime-residency-20260816-003204",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    }
+  ]
+}
