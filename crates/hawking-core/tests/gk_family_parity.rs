@@ -85,6 +85,21 @@ fn both_graphs_dispatch_the_shared_family() {
     // Residual CSR is STRUCTURAL — must stay on the Q80-only kernel.
     assert!(mixed.contains("q80_sparse_q1_apply_csr"));
 
+    let q38 = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/src/model/qwen38_hybrid_decode.rs"
+    ));
+    assert!(
+        q38.contains("decode_family::"),
+        "Qwen3.8 hybrid is not routed through decode_family"
+    );
+    assert!(q38.contains("MATVEC_BINARY") || q38.contains("matvec_binary()"));
+    assert!(q38.contains("MATVEC_HGRAVS") || q38.contains("matvec_hgravs()"));
+    assert!(
+        q38.contains("q80_sparse_q1_apply_csr"),
+        "Qwen3.8 rice residual must reuse the Q80 CSR kernel"
+    );
+
     let dsv = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/src/gravity_deepseek_v4_native_token_graph.rs"
@@ -95,10 +110,26 @@ fn both_graphs_dispatch_the_shared_family() {
             "DSV4F graph does not name {kernel}"
         );
     }
-    assert!(dsv.contains("PACK_WORKLIST") || dsv.contains(PACK_WORKLIST));
-    assert!(dsv.contains("WORKLIST_FP4") || dsv.contains(WORKLIST_FP4));
-    assert!(dsv.contains("SWIGLU_BF16_WORKLIST") || dsv.contains(SWIGLU_BF16_WORKLIST));
-    assert!(dsv.contains("COMBINE_BF16") || dsv.contains(COMBINE_BF16));
+    assert!(
+        dsv.contains("PACK_WORKLIST")
+            || dsv.contains(PACK_WORKLIST)
+            || dsv.contains("pack_worklist()")
+    );
+    assert!(
+        dsv.contains("WORKLIST_FP4")
+            || dsv.contains(WORKLIST_FP4)
+            || dsv.contains("worklist_fp4()")
+    );
+    assert!(
+        dsv.contains("SWIGLU_BF16_WORKLIST")
+            || dsv.contains(SWIGLU_BF16_WORKLIST)
+            || dsv.contains("swiglu_bf16_worklist()")
+    );
+    assert!(
+        dsv.contains("COMBINE_BF16")
+            || dsv.contains(COMBINE_BF16)
+            || dsv.contains("combine_bf16()")
+    );
 
     // Silence unused if the path check is enough.
     let _ = Path::new(".");
