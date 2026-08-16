@@ -11,7 +11,14 @@
       "measured_steady_state_tok_s": 2.479023,
       "measured_ns_per_token": 403000000,
       "measurement_label": "DIRTY_ENGINEERING",
-      "receipt": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json"
+      "receipt": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json",
+      "runtime_residency": {
+        "branch": "grok/q80-runtime-residency-20260816-003204 (7ced3732) - not merged",
+        "outcome": "HONEST NEGATIVE on wall time. C(old) 370/574/295 ms vs D(persistent 8 GiB) 461/387/356 ms - spreads overlap, no clean speedup claimed. All 12 runs bit-identical.",
+        "real_finding": "Once an expert is resident the bind is microseconds, but expert_address_table_bind is still 90-245 ms/token on LATE tokens because new (layer,expert) pairs keep appearing and each miss pays catalog read + SHA-256 + MTLBuffer copy.",
+        "why_it_matters": "A SHA-256 per expert first-touch is immutable-identity work paid in the token loop - the pattern that has been the top latency finding three separate times on this box.",
+        "next": "first-touch expert payload upload 90-245 ms/token; then DeltaNet ~134 ms/token"
+      }
     },
     "q80_density_frontier": {
       "complete_bpw_at_8bit_nonexpert": 1.43051,
@@ -326,8 +333,9 @@
       "information_gain": 250000000,
       "transfer_value": 400000000,
       "experiment_cost": 2.0,
-      "status": "running",
-      "note": "Highest transfer value of any runtime lane: the mechanism, not the Q4 win, is the deliverable."
+      "status": "retained_negative",
+      "note": "Highest transfer value of any runtime lane: the mechanism, not the Q4 win, is the deliverable.",
+      "tier1": "bit-identical but no clean wall-time win; its VALUE is locating the SHA-per-first-touch cost"
     },
     {
       "id": "q80-deltanet-gqa2",
@@ -488,6 +496,70 @@
       "experiment_cost": 1.0,
       "status": "running",
       "note": "Three independent restructurings of the same hot path. Relaunched to absorb all three in one pass rather than two sequential integrations."
+    },
+    {
+      "id": "q80-expert-first-touch",
+      "model": "q80",
+      "hypothesis": "catalog read + SHA-256 + MTLBuffer copy per expert first-touch is immutable-identity work in the token loop; seal once at admission and no-copy bind the mmap window",
+      "target_stage": "runtime/identity",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-expert-first-touch.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.8,
+      "recoverable_ns_per_token": 170000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 200000000,
+      "transfer_value": 350000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "Directly transfers the dsv-expert no-copy bind pattern back to Q80. Same class killed 28s of startup and 48x'd a repack before."
+    },
+    {
+      "id": "q80-ns-ledger",
+      "model": "q80",
+      "hypothesis": "Seven of eleven Q80 stages report 0.0000 because nothing populates them, hiding real cost",
+      "target_stage": "measurement",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-ns-ledger.md",
+      "resource_class": "COMPILE",
+      "probability_of_success": 0.85,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 700000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "Enforces sum(stages)+residual == token. The baseline already has a 0.37 s unattributed residual."
+    },
+    {
+      "id": "dsv-occupancy-geometry",
+      "model": "dsv4f",
+      "hypothesis": "DSV4F attention is occupancy-limited at 24-36 GB/s of ~750; RMSNorm runs on ONE thread",
+      "target_stage": "gpu/occupancy",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-occupancy-geometry.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 120000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 200000000,
+      "transfer_value": 250000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "note": "Success condition is becoming bandwidth-bound, since bandwidth is the physical floor."
+    },
+    {
+      "id": "joint-token-ns",
+      "model": "both",
+      "hypothesis": "Per-stage lanes will each report a win while tok/s barely moves; only a whole-token reconciliation catches that",
+      "target_stage": "measurement/anti-specialization",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/joint-token-ns.md",
+      "resource_class": "STATIC_ANALYSIS",
+      "probability_of_success": 0.8,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 900000000,
+      "transfer_value": 500000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "Owns the closure identity and the per-lane savings-vs-measured-delta discrepancy. Guards against local optima."
     }
   ],
   "history": [],
@@ -530,5 +602,8 @@
       "SwiGLU formula cosine >= 0.999999999997",
       "Q80 generated-id list MATCHES on the baseline"
     ]
+  },
+  "machine_truth": {
+    "note": "macOS `top` PhysMem 'used' counts inactive/cached pages and is MISLEADING. Verified 2026-08-16: top said 93G used / 2.5G unused while memory_pressure said 90% free, swap 0.19 MB of 1024 MB, pageouts 1709. Real availability = (pages_free + pages_inactive) * 16384 ~= 56 GiB. Use memory_pressure and vm_stat, never top, to decide whether to launch a memory-heavy lane."
   }
 }
