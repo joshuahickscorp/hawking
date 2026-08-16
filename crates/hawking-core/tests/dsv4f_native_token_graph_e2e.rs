@@ -20,6 +20,12 @@ fn native_graph_kernels_have_trace_names() {
     }
 }
 
+/// The hash the native graph itself produces, sealed in
+/// receipts/DSV4F_TOKEN_NS_LEDGER.json (correctness.hc_sha) and re-confirmed on the
+/// gk_* shared kernel family. This is the regression gate; ORACLE_HC_BF16_SHA256 is not.
+const SEALED_GRAPH_HC_BF16_SHA256: &str =
+    "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597";
+
 #[test]
 fn native_graph_e2e_parity_and_zero_host_gather() {
     let Some(artifact) = discover_sealed_dsv4f_artifact() else {
@@ -62,12 +68,22 @@ fn native_graph_e2e_parity_and_zero_host_gather() {
         greedy.logit,
         ORACLE_GREEDY_LOGIT
     );
+    // The CPU oracle accumulates in a different order, so it is NOT a bit-identity
+    // gate and never was. Comparing against it stays informational.
     if report.hc_bf16_sha256 != ORACLE_HC_BF16_SHA256 {
         eprintln!(
-            "HC SHA diverged from the CPU oracle: got {} expected {}",
+            "HC SHA differs from the CPU oracle (known add-order difference): got {} oracle {}",
             report.hc_bf16_sha256, ORACLE_HC_BF16_SHA256
         );
     }
+    // The real gate: the graph must keep reproducing its own sealed hash. Until now
+    // this test only printed on divergence and asserted nothing about numerics, so it
+    // would have passed on arbitrarily wrong output.
+    assert_eq!(
+        report.hc_bf16_sha256, SEALED_GRAPH_HC_BF16_SHA256,
+        "DSV4F native graph hc_sha regressed: got {} sealed {}. The graph's numerics changed.",
+        report.hc_bf16_sha256, SEALED_GRAPH_HC_BF16_SHA256
+    );
     assert!(report.rss_within_bound);
     assert!(report.weight_within_bound);
 }
