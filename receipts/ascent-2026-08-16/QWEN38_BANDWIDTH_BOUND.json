@@ -1,0 +1,39 @@
+{
+  "schema": "hawking.special_unit.qwen38_bandwidth_bound.v1",
+  "date": "2026-08-16",
+  "finding": "Qwen3.8 already runs at 406.2 GB/s. It is AT the bandwidth wall, not behind it. It has essentially NO kernel headroom, which is the exact opposite of Q80's situation (15.2 GB/s, a 21-27x kernel gap). The two models therefore need OPPOSITE levers: Q80 needs kernels, Qwen3.8 needs fewer bytes.",
+  "derivation": {
+    "total_payload_bytes": 14297694680,
+    "embed_table_bytes": 675865079,
+    "embed_note": "Dense model: every weight is read every token EXCEPT the embedding table, of which exactly one row is gathered. So the table's bytes are not moved and must be excluded from the active budget.",
+    "active_bytes_per_token": 13621829601,
+    "measured_gpu_ns": 33536999,
+    "measured_gpu_source": "fresh on-main run, G015_NATIVE_LEG_VERIFY_ON_MAIN.json, median of 25 steady steps",
+    "achieved_gb_s": 406.2
+  },
+  "access_pattern_caveat": "The 320-411 GB/s control was measured in Q80's 10-of-512 GATHER shape, which is close to the worst case for bandwidth. Qwen3.8 reads dense and sequential, which is the best case. So exceeding the control is expected and legitimate rather than suspicious - it is not evidence that the control is wrong. The honest statement is that Qwen3.8 is in a friendlier access regime AND is exploiting it well.",
+  "projections": {
+    "bpw_2.0": {
+      "ms_per_token": 15.77,
+      "tps": 63.4,
+      "clears_50": true
+    },
+    "bpw_1.8863": {
+      "ms_per_token": 14.88,
+      "tps": 67.2,
+      "clears_50": true
+    },
+    "bpw_2.5": {
+      "ms_per_token": 19.71,
+      "tps": 50.7,
+      "clears_50": true
+    },
+    "bpw_3.0": {
+      "ms_per_token": 23.66,
+      "tps": 42.3,
+      "clears_50": false
+    }
+  },
+  "why_this_makes_G016_load_bearing": "At the 3.0 BPW HARD LIMIT Qwen3.8 reaches only 42.3 TPS and MISSES the 50 TPS gate. Only the 2.0 BPW TARGET clears it, at 63.4 TPS. So G016's target is not a preference - it is the binding requirement for G017. A pack that lands between 2.0 and 3.0 satisfies G016's letter while failing G017.",
+  "host_overhead_note": "These are GPU times. Measured wait exceeds GPU by ~0.4 ms, so a 2.0 BPW wall would be ~16.2 ms = ~61.7 TPS, still clearing 50."
+}
