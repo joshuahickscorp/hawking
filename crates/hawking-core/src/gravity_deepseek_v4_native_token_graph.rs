@@ -119,11 +119,18 @@ const ACT_QUANT_VECTOR_WIDTH: u32 = 4;
 const FP8_KERNEL: &str = "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority";
 const CAST_KERNEL: &str = "deepseek_v4_p3a_fp32_to_bf16_authority";
 const RMSNORM_KERNEL: &str = "deepseek_v4_p3a_rmsnorm_bf16_authority";
+const RMSNORM_SIMD_KERNEL: &str = "deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate";
 const PER_HEAD_RMS_KERNEL: &str = "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority";
+const PER_HEAD_RMS_SIMD_KERNEL: &str = "deepseek_v4_p3a_per_head_rmsnorm_bf16_simdgroup_candidate";
 const KV_QAT_KERNEL: &str = "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority";
 const KV_QAT_SIMD_KERNEL: &str = "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate";
 const ATTN_KERNEL: &str = "deepseek_v4_p4a_sparse_attention_position0_sink_authority";
 const WO_A_KERNEL: &str = "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority";
+const WO_A_SIMD_KERNEL: &str = "deepseek_v4_p4a_wo_a_convert_bf16_einsum_simdgroup_candidate";
+const FP8_OCC_KERNEL: &str =
+    "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate";
+const FP8_OCC_MAX_BLOCKS: u32 = 128;
+const SIMD_WIDTH: u32 = 32;
 const GATE_KERNEL: &str = "deepseek_v4_p6a_gate_bf16_matvec_authority";
 const HASH_ROUTE_KERNEL: &str = "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority";
 const LEARNED_ROUTE_KERNEL: &str = "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority";
@@ -534,7 +541,18 @@ mod macos {
         )
     }
 
+    fn env_flag(name: &str, default_on: bool) -> bool {
+        match std::env::var(name) {
+            Ok(raw) => !matches!(
+                raw.trim().to_ascii_lowercase().as_str(),
+                "0" | "false" | "off" | "no"
+            ),
+            Err(_) => default_on,
+        }
+    }
+
     fn kernel_probe_enabled() -> bool {
+        // Preserve the historical empty-env-is-on reading used by A/B probes.
         !matches!(
             std::env::var("HAWKING_DSV4F_KERNEL_PROBE")
                 .unwrap_or_default()
@@ -546,25 +564,32 @@ mod macos {
     }
 
     fn mla_serial_group_enabled() -> bool {
-        !matches!(
-            std::env::var("HAWKING_DSV4F_MLA_SERIAL_GROUP")
-                .unwrap_or_else(|_| "1".to_owned())
-                .trim()
-                .to_ascii_lowercase()
-                .as_str(),
-            "0" | "false" | "off" | "no"
-        )
+        env_flag("HAWKING_DSV4F_MLA_SERIAL_GROUP", true)
     }
 
     fn mla_kv_qat_simd_enabled() -> bool {
-        !matches!(
-            std::env::var("HAWKING_DSV4F_MLA_KV_QAT_SIMD")
-                .unwrap_or_else(|_| "1".to_owned())
-                .trim()
-                .to_ascii_lowercase()
-                .as_str(),
-            "0" | "false" | "off" | "no"
-        )
+        env_flag("HAWKING_DSV4F_MLA_KV_QAT_SIMD", true)
+    }
+
+    /// Ordered RMSNorm: parallel squares, authority left-fold. Bit-identical
+    /// to the one-thread kernel. Default on.
+    fn mla_rmsnorm_simd_enabled() -> bool {
+        env_flag("HAWKING_DSV4F_MLA_RMSNORM_SIMD", true)
+    }
+
+    /// WO-A simdgroup tree reduction. Not bit-identical. Default off.
+    fn mla_wo_a_simd_enabled() -> bool {
+        env_flag("HAWKING_DSV4F_MLA_WO_A_SIMD", false)
+    }
+
+    /// FP8 occupancy grid (wq_a / wkv / wo_b). Not bit-identical. Default off.
+    fn mla_fp8_simd_enabled() -> bool {
+        env_flag("HAWKING_DSV4F_MLA_FP8_SIMD", false)
+    }
+
+    fn align_simd(threads: u32) -> u32 {
+        let aligned = threads - (threads % SIMD_WIDTH);
+        aligned.max(SIMD_WIDTH)
     }
 
     /// Default **off**. Set `HAWKING_DSV4F_EXPERT_SLAB_PACK=1` to restore the
@@ -787,10 +812,13 @@ mod macos {
         counters: NativeTokenGraphCounters,
         act_tg: u32,
         fp8_tg: u32,
+        fp8_occ_tg: u32,
         fp4_tg: u32,
         cast_tg: u32,
         gate_tg: u32,
         wo_a_tg: u32,
+        wo_a_occ_tg: u32,
+        rms_tg: u32,
         lm_tg: u32,
         attn_scratch_ready: bool,
         mla_pipeline_limits: Vec<crate::gravity_deepseek_v4_token_ns_ledger::MlaPipelineLimit>,
@@ -807,10 +835,13 @@ mod macos {
             Ok(Self {
                 act_tg: pipeline_tg(&metal, ACT_QUANT_SIMD_KERNEL, 256)?,
                 fp8_tg: pipeline_tg(&metal, FP8_KERNEL, 256)?,
+                fp8_occ_tg: align_simd(pipeline_tg(&metal, FP8_OCC_KERNEL, 256)?),
                 fp4_tg: pipeline_tg(&metal, WORKLIST_FP4_KERNEL, 256)?,
                 cast_tg: pipeline_tg(&metal, CAST_KERNEL, 256)?,
                 gate_tg: pipeline_tg(&metal, GATE_KERNEL, 256)?,
                 wo_a_tg: pipeline_tg(&metal, WO_A_KERNEL, 256)?,
+                wo_a_occ_tg: align_simd(pipeline_tg(&metal, WO_A_SIMD_KERNEL, 256)?),
+                rms_tg: align_simd(pipeline_tg(&metal, RMSNORM_SIMD_KERNEL, 256)?),
                 lm_tg: pipeline_tg(&metal, LM_HEAD_KERNEL, 256)?,
                 metal,
                 scratch,
@@ -891,13 +922,17 @@ mod macos {
         let names = [
             ACT_QUANT_SIMD_KERNEL,
             FP8_KERNEL,
+            FP8_OCC_KERNEL,
             CAST_KERNEL,
             RMSNORM_KERNEL,
+            RMSNORM_SIMD_KERNEL,
             PER_HEAD_RMS_KERNEL,
+            PER_HEAD_RMS_SIMD_KERNEL,
             KV_QAT_KERNEL,
             KV_QAT_SIMD_KERNEL,
             ATTN_KERNEL,
             WO_A_KERNEL,
+            WO_A_SIMD_KERNEL,
         ];
         let mut out = Vec::with_capacity(names.len());
         for kernel in names {
@@ -936,8 +971,11 @@ mod macos {
         layers: u64,
         act_tg: u32,
         fp8_tg: u32,
+        fp8_occ_tg: u32,
         cast_tg: u32,
         wo_a_tg: u32,
+        wo_a_occ_tg: u32,
+        rms_tg: u32,
     ) -> Vec<crate::gravity_deepseek_v4_token_ns_ledger::MlaDispatchSpec> {
         use crate::gravity_deepseek_v4_token_ns_ledger::MlaDispatchSpec;
         let spec = |name: &str,
@@ -974,10 +1012,70 @@ mod macos {
         let (aq_o_th, aq_o_tg, aq_o_tptg, aq_o_sg) =
             act_quant_geometry(WO_B_COLS as u32, act_tg);
         let fp8_tg = fp8_tg.max(1);
+        let fp8_occ_tg = align_simd(fp8_occ_tg.max(SIMD_WIDTH));
         let cast_tg = cast_tg.max(1);
         let wo_tg = wo_a_tg.min(WO_A_ROWS as u32).max(1);
+        let wo_occ_tg = align_simd(wo_a_occ_tg.max(SIMD_WIDTH));
+        let rms_tg = align_simd(rms_tg.max(SIMD_WIDTH));
+        let rms_simd = mla_rmsnorm_simd_enabled();
+        let wo_a_simd = mla_wo_a_simd_enabled();
+        let fp8_simd = mla_fp8_simd_enabled();
         let qat_blocks = ((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK) as u64;
         let kv_qat_simd = mla_kv_qat_simd_enabled();
+        let rms_q_threads = if rms_simd {
+            Q_LORA_RANK.min(rms_tg as usize) as u64
+        } else {
+            1
+        };
+        let rms_kv_threads = if rms_simd {
+            HEAD_DIM.min(rms_tg as usize) as u64
+        } else {
+            1
+        };
+        let per_head_threads = if rms_simd {
+            (NUM_HEADS as u64) * SIMD_WIDTH as u64
+        } else {
+            NUM_HEADS as u64
+        };
+        let fp8_row_geom = |rows: u64| -> (u64, u64, u64, u64, &'static str) {
+            if fp8_simd {
+                (
+                    rows * fp8_occ_tg as u64,
+                    rows,
+                    fp8_occ_tg as u64,
+                    (fp8_occ_tg / SIMD_WIDTH) as u64,
+                    FP8_OCC_KERNEL,
+                )
+            } else {
+                (
+                    rows,
+                    ((rows as u32 + fp8_tg - 1) / fp8_tg) as u64,
+                    fp8_tg.min(rows as u32) as u64,
+                    (fp8_tg.min(rows as u32) / 32).max(1) as u64,
+                    FP8_KERNEL,
+                )
+            }
+        };
+        let (wq_a_th, wq_a_tg, wq_a_tptg, wq_a_sg, wq_a_kern) = fp8_row_geom(Q_LORA_RANK as u64);
+        let (wkv_th, wkv_tg, wkv_tptg, wkv_sg, wkv_kern) = fp8_row_geom(WKV_ROWS as u64);
+        let (wo_b_th, wo_b_tg, wo_b_tptg, wo_b_sg, wo_b_kern) = fp8_row_geom(WO_B_ROWS as u64);
+        let (wo_a_th, wo_a_n_tg, wo_a_tptg, wo_a_sg, wo_a_kern) = if wo_a_simd {
+            (
+                WO_A_ROWS as u64 * wo_occ_tg as u64,
+                WO_A_ROWS as u64,
+                wo_occ_tg as u64,
+                (wo_occ_tg / SIMD_WIDTH) as u64,
+                WO_A_SIMD_KERNEL,
+            )
+        } else {
+            (
+                WO_A_ROWS as u64,
+                ((WO_A_ROWS as u32 + wo_tg - 1) / wo_tg) as u64,
+                wo_tg as u64,
+                (wo_tg / 32) as u64,
+                WO_A_KERNEL,
+            )
+        };
         let kv_qat_threads = if kv_qat_simd {
             qat_blocks.max(1) * ACT_QUANT_SIMD_WIDTH as u64
         } else {
@@ -1005,11 +1103,11 @@ mod macos {
             ),
             spec(
                 "mla.wq_a",
-                FP8_KERNEL,
-                Q_LORA_RANK as u64,
-                ((Q_LORA_RANK as u32 + fp8_tg - 1) / fp8_tg) as u64,
-                fp8_tg.min(Q_LORA_RANK as u32) as u64,
-                (fp8_tg.min(Q_LORA_RANK as u32) / 32) as u64,
+                wq_a_kern,
+                wq_a_th,
+                wq_a_tg,
+                wq_a_tptg,
+                wq_a_sg,
                 (Q_LORA_RANK * HIDDEN_SIZE) as u64
                     + scale_bytes(Q_LORA_RANK, HIDDEN_SIZE)
                     + HIDDEN_SIZE as u64
@@ -1030,11 +1128,19 @@ mod macos {
             ),
             spec(
                 "rmsnorm.q",
-                RMSNORM_KERNEL,
+                if rms_simd {
+                    RMSNORM_SIMD_KERNEL
+                } else {
+                    RMSNORM_KERNEL
+                },
+                rms_q_threads,
                 1,
-                1,
-                1,
-                1,
+                rms_q_threads,
+                if rms_simd {
+                    (rms_q_threads / SIMD_WIDTH as u64).max(1)
+                } else {
+                    1
+                },
                 (Q_LORA_RANK * 4) as u64,
                 (Q_LORA_RANK * 2) as u64,
                 (Q_LORA_RANK * 3) as u64,
@@ -1077,22 +1183,34 @@ mod macos {
             ),
             spec(
                 "per_head_rms",
-                PER_HEAD_RMS_KERNEL,
-                NUM_HEADS as u64,
-                1,
-                NUM_HEADS.min(64) as u64,
-                (NUM_HEADS.min(64) / 32) as u64,
+                if rms_simd {
+                    PER_HEAD_RMS_SIMD_KERNEL
+                } else {
+                    PER_HEAD_RMS_KERNEL
+                },
+                per_head_threads,
+                if rms_simd { NUM_HEADS as u64 } else { 1 },
+                if rms_simd {
+                    SIMD_WIDTH as u64
+                } else {
+                    NUM_HEADS.min(64) as u64
+                },
+                if rms_simd {
+                    1
+                } else {
+                    (NUM_HEADS.min(64) / 32) as u64
+                },
                 (NUM_HEADS * HEAD_DIM * 2) as u64,
                 (NUM_HEADS * HEAD_DIM * 2) as u64,
                 (NUM_HEADS * HEAD_DIM * 3) as u64,
             ),
             spec(
                 "mla.wkv",
-                FP8_KERNEL,
-                WKV_ROWS as u64,
-                ((WKV_ROWS as u32 + fp8_tg - 1) / fp8_tg) as u64,
-                fp8_tg.min(WKV_ROWS as u32) as u64,
-                (fp8_tg.min(WKV_ROWS as u32) / 32).max(1) as u64,
+                wkv_kern,
+                wkv_th,
+                wkv_tg,
+                wkv_tptg,
+                wkv_sg,
                 (WKV_ROWS * HIDDEN_SIZE) as u64
                     + scale_bytes(WKV_ROWS, HIDDEN_SIZE)
                     + HIDDEN_SIZE as u64
@@ -1113,11 +1231,19 @@ mod macos {
             ),
             spec(
                 "rmsnorm.kv",
-                RMSNORM_KERNEL,
+                if rms_simd {
+                    RMSNORM_SIMD_KERNEL
+                } else {
+                    RMSNORM_KERNEL
+                },
+                rms_kv_threads,
                 1,
-                1,
-                1,
-                1,
+                rms_kv_threads,
+                if rms_simd {
+                    (rms_kv_threads / SIMD_WIDTH as u64).max(1)
+                } else {
+                    1
+                },
                 (HEAD_DIM * 4) as u64,
                 (HEAD_DIM * 2) as u64,
                 (HEAD_DIM * 3) as u64,
@@ -1146,11 +1272,11 @@ mod macos {
             ),
             spec(
                 "mla.wo_a",
-                WO_A_KERNEL,
-                WO_A_ROWS as u64,
-                ((WO_A_ROWS as u32 + wo_tg - 1) / wo_tg) as u64,
-                wo_tg as u64,
-                (wo_tg / 32) as u64,
+                wo_a_kern,
+                wo_a_th,
+                wo_a_n_tg,
+                wo_a_tptg,
+                wo_a_sg,
                 (WO_A_ROWS * WO_A_COLS) as u64
                     + scale_bytes(WO_A_ROWS, WO_A_COLS)
                     + (NUM_HEADS * HEAD_DIM * 2) as u64,
@@ -1170,11 +1296,11 @@ mod macos {
             ),
             spec(
                 "mla.wo_b",
-                FP8_KERNEL,
-                WO_B_ROWS as u64,
-                ((WO_B_ROWS as u32 + fp8_tg - 1) / fp8_tg) as u64,
-                fp8_tg.min(WO_B_ROWS as u32) as u64,
-                (fp8_tg.min(WO_B_ROWS as u32) / 32) as u64,
+                wo_b_kern,
+                wo_b_th,
+                wo_b_tg,
+                wo_b_tptg,
+                wo_b_sg,
                 (WO_B_ROWS * WO_B_COLS) as u64
                     + scale_bytes(WO_B_ROWS, WO_B_COLS)
                     + WO_B_COLS as u64
@@ -1320,19 +1446,46 @@ mod macos {
         rows: u32,
         cols: u32,
         tg: u32,
+        occupancy: bool,
     ) -> Result<()> {
         let scale_cols = cols / ACT_QUANT_BLOCK as u32;
-        let tg = tg.min(rows.max(1));
-        batch.dispatch_threads(FP8_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(weight), 0);
-            enc.set_buffer(1, Some(scale), 0);
-            enc.set_buffer(2, Some(quant), 0);
-            enc.set_buffer(3, Some(act_scale), 0);
-            enc.set_buffer(4, Some(out_f32), 0);
-            set_u32(enc, 5, &rows);
-            set_u32(enc, 6, &cols);
-            set_u32(enc, 7, &scale_cols);
-        })
+        let occ_ok = occupancy
+            && mla_fp8_simd_enabled()
+            && rows > 0
+            && scale_cols > 0
+            && scale_cols <= FP8_OCC_MAX_BLOCKS
+            && (cols % ACT_QUANT_BLOCK as u32) == 0;
+        if occ_ok {
+            let threads_x = align_simd(tg);
+            batch.dispatch_threads(
+                FP8_OCC_KERNEL,
+                (threads_x, rows, 1),
+                (threads_x, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(weight), 0);
+                    enc.set_buffer(1, Some(scale), 0);
+                    enc.set_buffer(2, Some(quant), 0);
+                    enc.set_buffer(3, Some(act_scale), 0);
+                    enc.set_buffer(4, Some(out_f32), 0);
+                    set_u32(enc, 5, &rows);
+                    set_u32(enc, 6, &cols);
+                    set_u32(enc, 7, &scale_cols);
+                    set_u32(enc, 8, &threads_x);
+                },
+            )
+        } else {
+            let tg = tg.min(rows.max(1));
+            batch.dispatch_threads(FP8_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
+                enc.set_buffer(0, Some(weight), 0);
+                enc.set_buffer(1, Some(scale), 0);
+                enc.set_buffer(2, Some(quant), 0);
+                enc.set_buffer(3, Some(act_scale), 0);
+                enc.set_buffer(4, Some(out_f32), 0);
+                set_u32(enc, 5, &rows);
+                set_u32(enc, 6, &cols);
+                set_u32(enc, 7, &scale_cols);
+            })
+        }
     }
 
     fn dispatch_cast(
@@ -1357,14 +1510,109 @@ mod macos {
         output: &metal::Buffer,
         width: u32,
         eps: f32,
+        rms_tg: u32,
     ) -> Result<()> {
-        batch.dispatch_threads(RMSNORM_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
-            enc.set_buffer(0, Some(input), 0);
-            enc.set_buffer(1, Some(weight), 0);
-            enc.set_buffer(2, Some(output), 0);
-            set_u32(enc, 3, &width);
-            set_f32(enc, 4, &eps);
-        })
+        if mla_rmsnorm_simd_enabled() && width >= SIMD_WIDTH {
+            let threads = align_simd(width.min(rms_tg.max(SIMD_WIDTH)));
+            batch.dispatch_threads(RMSNORM_SIMD_KERNEL, (threads, 1, 1), (threads, 1, 1), |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(weight), 0);
+                enc.set_buffer(2, Some(output), 0);
+                set_u32(enc, 3, &width);
+                set_f32(enc, 4, &eps);
+            })
+        } else {
+            batch.dispatch_threads(RMSNORM_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(weight), 0);
+                enc.set_buffer(2, Some(output), 0);
+                set_u32(enc, 3, &width);
+                set_f32(enc, 4, &eps);
+            })
+        }
+    }
+
+    fn dispatch_per_head_rms(
+        batch: &mut CommandBatch<'_>,
+        input: &metal::Buffer,
+        output: &metal::Buffer,
+        heads: u32,
+        dim: u32,
+        eps: f32,
+    ) -> Result<()> {
+        if mla_rmsnorm_simd_enabled() {
+            batch.dispatch_threads(
+                PER_HEAD_RMS_SIMD_KERNEL,
+                (heads * SIMD_WIDTH, 1, 1),
+                (SIMD_WIDTH, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(input), 0);
+                    enc.set_buffer(1, Some(output), 0);
+                    set_u32(enc, 2, &heads);
+                    set_u32(enc, 3, &dim);
+                    set_f32(enc, 4, &eps);
+                },
+            )
+        } else {
+            batch.dispatch_threads(
+                PER_HEAD_RMS_KERNEL,
+                (heads, 1, 1),
+                (heads.min(64), 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(input), 0);
+                    enc.set_buffer(1, Some(output), 0);
+                    set_u32(enc, 2, &heads);
+                    set_u32(enc, 3, &dim);
+                    set_f32(enc, 4, &eps);
+                },
+            )
+        }
+    }
+
+    fn dispatch_wo_a(
+        batch: &mut CommandBatch<'_>,
+        weight: &metal::Buffer,
+        scale: &metal::Buffer,
+        attn: &metal::Buffer,
+        output: &metal::Buffer,
+        wo_a_tg: u32,
+        wo_a_occ_tg: u32,
+    ) -> Result<()> {
+        let rows = WO_A_ROWS as u32;
+        let cols = WO_A_COLS as u32;
+        let scale_cols = (WO_A_COLS / ACT_QUANT_BLOCK) as u32;
+        let ranks = O_LORA_RANK as u32;
+        if mla_wo_a_simd_enabled() {
+            let threads_x = align_simd(wo_a_occ_tg);
+            batch.dispatch_threads(
+                WO_A_SIMD_KERNEL,
+                (threads_x, rows, 1),
+                (threads_x, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(weight), 0);
+                    enc.set_buffer(1, Some(scale), 0);
+                    enc.set_buffer(2, Some(attn), 0);
+                    enc.set_buffer(3, Some(output), 0);
+                    set_u32(enc, 4, &rows);
+                    set_u32(enc, 5, &cols);
+                    set_u32(enc, 6, &scale_cols);
+                    set_u32(enc, 7, &ranks);
+                    set_u32(enc, 8, &threads_x);
+                },
+            )
+        } else {
+            let tg = wo_a_tg.min(rows);
+            batch.dispatch_threads(WO_A_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
+                enc.set_buffer(0, Some(weight), 0);
+                enc.set_buffer(1, Some(scale), 0);
+                enc.set_buffer(2, Some(attn), 0);
+                enc.set_buffer(3, Some(output), 0);
+                set_u32(enc, 4, &rows);
+                set_u32(enc, 5, &cols);
+                set_u32(enc, 6, &scale_cols);
+                set_u32(enc, 7, &ranks);
+            })
+        }
     }
 
     fn dispatch_kv_qat(
@@ -1900,8 +2148,11 @@ mod macos {
                 (max_layer + 1) as u64,
                 graph.act_tg,
                 graph.fp8_tg,
+                graph.fp8_occ_tg,
                 graph.cast_tg,
                 graph.wo_a_tg,
+                graph.wo_a_occ_tg,
+                graph.rms_tg,
             ),
             mla_kv_state((max_layer + 1) as u64),
             graph.mla_pipeline_limits.clone(),
@@ -2380,8 +2631,11 @@ mod macos {
         let eps = RMS_NORM_EPS;
         let act_tg = graph.act_tg;
         let fp8_tg = graph.fp8_tg;
+        let fp8_occ_tg = graph.fp8_occ_tg;
         let cast_tg = graph.cast_tg;
         let wo_a_tg = graph.wo_a_tg;
+        let wo_a_occ_tg = graph.wo_a_occ_tg;
+        let rms_tg = graph.rms_tg;
         let layer_idx = layer.layer;
 
         let collapse = cb_collapse_enabled();
@@ -2414,7 +2668,8 @@ mod macos {
                 &s.f32_tmp,
                 Q_LORA_RANK as u32,
                 HIDDEN_SIZE as u32,
-                fp8_tg,
+                fp8_occ_tg,
+                true,
             )?;
             n += 1;
             dispatch_cast(batch, &s.f32_tmp, &s.q_lora, Q_LORA_RANK as u32, cast_tg)?;
@@ -2426,6 +2681,7 @@ mod macos {
                 &s.q_lora,
                 Q_LORA_RANK as u32,
                 eps,
+                rms_tg,
             )?;
             n += 1;
             dispatch_act_quant(
@@ -2450,24 +2706,14 @@ mod macos {
                 WQ_B_ROWS as u32,
                 Q_LORA_RANK as u32,
                 fp8_tg,
+                false,
             )?;
             n += 1;
             dispatch_cast(batch, &s.f32_tmp, &s.wq_b, WQ_B_ROWS as u32, cast_tg)?;
             n += 1;
             let heads = NUM_HEADS as u32;
             let dim = HEAD_DIM as u32;
-            batch.dispatch_threads(
-                PER_HEAD_RMS_KERNEL,
-                (heads, 1, 1),
-                (heads.min(64), 1, 1),
-                |enc| {
-                    enc.set_buffer(0, Some(&s.wq_b), 0);
-                    enc.set_buffer(1, Some(&s.attn), 0);
-                    set_u32(enc, 2, &heads);
-                    set_u32(enc, 3, &dim);
-                    set_f32(enc, 4, &eps);
-                },
-            )?;
+            dispatch_per_head_rms(batch, &s.wq_b, &s.attn, heads, dim, eps)?;
             n += 1;
             dispatch_fp8(
                 batch,
@@ -2478,12 +2724,21 @@ mod macos {
                 &s.f32_tmp,
                 WKV_ROWS as u32,
                 HIDDEN_SIZE as u32,
-                fp8_tg,
+                fp8_occ_tg,
+                true,
             )?;
             n += 1;
             dispatch_cast(batch, &s.f32_tmp, &s.wkv, WKV_ROWS as u32, cast_tg)?;
             n += 1;
-            dispatch_rmsnorm(batch, &s.wkv, &kv_norm_buf, &s.wkv, HEAD_DIM as u32, eps)?;
+            dispatch_rmsnorm(
+                batch,
+                &s.wkv,
+                &kv_norm_buf,
+                &s.wkv,
+                HEAD_DIM as u32,
+                eps,
+                rms_tg,
+            )?;
             n += 1;
             dispatch_kv_qat(
                 batch,
@@ -2505,21 +2760,15 @@ mod macos {
                 set_f32(enc, 8, &softmax_scale);
             })?;
             n += 1;
-            let rows = WO_A_ROWS as u32;
-            let cols = WO_A_COLS as u32;
-            let scale_cols = (WO_A_COLS / ACT_QUANT_BLOCK) as u32;
-            let ranks = O_LORA_RANK as u32;
-            let tg = wo_a_tg.min(rows);
-            batch.dispatch_threads(WO_A_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&wo_a_p.weight), 0);
-                enc.set_buffer(1, Some(&wo_a_p.scale), 0);
-                enc.set_buffer(2, Some(&s.attn), 0);
-                enc.set_buffer(3, Some(&s.wo_a), 0);
-                set_u32(enc, 4, &rows);
-                set_u32(enc, 5, &cols);
-                set_u32(enc, 6, &scale_cols);
-                set_u32(enc, 7, &ranks);
-            })?;
+            dispatch_wo_a(
+                batch,
+                &wo_a_p.weight,
+                &wo_a_p.scale,
+                &s.attn,
+                &s.wo_a,
+                wo_a_tg,
+                wo_a_occ_tg,
+            )?;
             n += 1;
             dispatch_act_quant(
                 batch,
@@ -2542,7 +2791,8 @@ mod macos {
                 &s.f32_tmp,
                 WO_B_ROWS as u32,
                 WO_B_COLS as u32,
-                fp8_tg,
+                fp8_occ_tg,
+                true,
             )?;
             n += 1;
             dispatch_cast(batch, &s.f32_tmp, &s.hidden_b, WO_B_ROWS as u32, cast_tg)?;
@@ -2995,6 +3245,7 @@ mod macos {
             MOE_INTER_DIM as u32,
             HIDDEN_SIZE as u32,
             p.fp8_tg,
+            false,
         )?;
         n += 1;
         dispatch_fp8(
@@ -3007,6 +3258,7 @@ mod macos {
             MOE_INTER_DIM as u32,
             HIDDEN_SIZE as u32,
             p.fp8_tg,
+            false,
         )?;
         n += 1;
         dispatch_cast(
@@ -3060,6 +3312,7 @@ mod macos {
             HIDDEN_SIZE as u32,
             MOE_INTER_DIM as u32,
             p.fp8_tg,
+            false,
         )?;
         n += 1;
         dispatch_cast(
@@ -3606,8 +3859,11 @@ mod macos {
         let s = &graph.scratch;
         let act_tg = graph.act_tg;
         let fp8_tg = graph.fp8_tg;
+        let fp8_occ_tg = graph.fp8_occ_tg;
         let cast_tg = graph.cast_tg;
         let wo_a_tg = graph.wo_a_tg;
+        let wo_a_occ_tg = graph.wo_a_occ_tg;
+        let rms_tg = graph.rms_tg;
         let eps = RMS_NORM_EPS;
         let softmax_scale = (HEAD_DIM as f32).powf(-0.5);
         let heads = NUM_HEADS as u32;
@@ -3635,14 +3891,23 @@ mod macos {
                 &s.f32_tmp,
                 Q_LORA_RANK as u32,
                 HIDDEN_SIZE as u32,
-                fp8_tg,
+                fp8_occ_tg,
+                true,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.cast.q_lora", layer_idx, |batch| {
             dispatch_cast(batch, &s.f32_tmp, &s.q_lora, Q_LORA_RANK as u32, cast_tg)
         })?;
         probe_one(&graph.metal, profiler, "isolated.rmsnorm.q", layer_idx, |batch| {
-            dispatch_rmsnorm(batch, &s.q_lora, q_norm, &s.q_lora, Q_LORA_RANK as u32, eps)
+            dispatch_rmsnorm(
+                batch,
+                &s.q_lora,
+                q_norm,
+                &s.q_lora,
+                Q_LORA_RANK as u32,
+                eps,
+                rms_tg,
+            )
         })?;
         probe_one(&graph.metal, profiler, "isolated.mla.wq_b", layer_idx, |batch| {
             dispatch_fp8(
@@ -3655,6 +3920,7 @@ mod macos {
                 WQ_B_ROWS as u32,
                 Q_LORA_RANK as u32,
                 fp8_tg,
+                false,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.mla.wkv", layer_idx, |batch| {
@@ -3667,25 +3933,20 @@ mod macos {
                 &s.f32_tmp,
                 WKV_ROWS as u32,
                 HIDDEN_SIZE as u32,
-                fp8_tg,
+                fp8_occ_tg,
+                true,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.mla.wo_a", layer_idx, |batch| {
-            let rows = WO_A_ROWS as u32;
-            let cols = WO_A_COLS as u32;
-            let scale_cols = (WO_A_COLS / ACT_QUANT_BLOCK) as u32;
-            let ranks = O_LORA_RANK as u32;
-            let tg = wo_a_tg.min(rows);
-            batch.dispatch_threads(WO_A_KERNEL, (rows, 1, 1), (tg, 1, 1), |enc| {
-                enc.set_buffer(0, Some(&wo_a.weight), 0);
-                enc.set_buffer(1, Some(&wo_a.scale), 0);
-                enc.set_buffer(2, Some(&s.attn), 0);
-                enc.set_buffer(3, Some(&s.wo_a), 0);
-                set_u32(enc, 4, &rows);
-                set_u32(enc, 5, &cols);
-                set_u32(enc, 6, &scale_cols);
-                set_u32(enc, 7, &ranks);
-            })
+            dispatch_wo_a(
+                batch,
+                &wo_a.weight,
+                &wo_a.scale,
+                &s.attn,
+                &s.wo_a,
+                wo_a_tg,
+                wo_a_occ_tg,
+            )
         })?;
         probe_one(&graph.metal, profiler, "isolated.mla.wo_b", layer_idx, |batch| {
             dispatch_fp8(
@@ -3697,7 +3958,8 @@ mod macos {
                 &s.f32_tmp,
                 WO_B_ROWS as u32,
                 WO_B_COLS as u32,
-                fp8_tg,
+                fp8_occ_tg,
+                true,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.attn.sparse_pos0", layer_idx, |batch| {
@@ -3717,7 +3979,18 @@ mod macos {
             dispatch_kv_qat(batch, &s.wkv, &s.wkv, &s.kv_qat_bytes, &s.kv_qat_scales)
         })?;
         probe_one(&graph.metal, profiler, "isolated.rmsnorm.kv", layer_idx, |batch| {
-            dispatch_rmsnorm(batch, &s.wkv, kv_norm, &s.wkv, HEAD_DIM as u32, RMS_NORM_EPS)
+            dispatch_rmsnorm(
+                batch,
+                &s.wkv,
+                kv_norm,
+                &s.wkv,
+                HEAD_DIM as u32,
+                RMS_NORM_EPS,
+                rms_tg,
+            )
+        })?;
+        probe_one(&graph.metal, profiler, "isolated.per_head_rms", layer_idx, |batch| {
+            dispatch_per_head_rms(batch, &s.wq_b, &s.attn, heads, dim, eps)
         })?;
         Ok(())
     }
@@ -3856,6 +4129,7 @@ mod macos {
                 MOE_INTER_DIM as u32,
                 HIDDEN_SIZE as u32,
                 fp8_tg,
+                false,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.shared.w3", layer_idx, |batch| {
@@ -3869,6 +4143,7 @@ mod macos {
                 MOE_INTER_DIM as u32,
                 HIDDEN_SIZE as u32,
                 fp8_tg,
+                false,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.shared.w2", layer_idx, |batch| {
@@ -3882,6 +4157,7 @@ mod macos {
                 HIDDEN_SIZE as u32,
                 MOE_INTER_DIM as u32,
                 fp8_tg,
+                false,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.moe_combine", layer_idx, |batch| {
