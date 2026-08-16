@@ -18,6 +18,32 @@
         "real_finding": "Once an expert is resident the bind is microseconds, but expert_address_table_bind is still 90-245 ms/token on LATE tokens because new (layer,expert) pairs keep appearing and each miss pays catalog read + SHA-256 + MTLBuffer copy.",
         "why_it_matters": "A SHA-256 per expert first-touch is immutable-identity work paid in the token loop - the pattern that has been the top latency finding three separate times on this box.",
         "next": "first-touch expert payload upload 90-245 ms/token; then DeltaNet ~134 ms/token"
+      },
+      "deltanet_gqa": {
+        "merged": "49b452f1",
+        "rejected_all_bit_identical": {
+          "overlap_no_wait_suffix_mixer": "not robust; extra CBs 146 vs 98 tax prefill",
+          "fuse_to_51_cbs": "REGRESSED on cleanest pair, 516 ms vs 307 ms",
+          "serial_encoder": "failed to win complete-token wall"
+        },
+        "defaults": "historical topology retained; all three behind env flags",
+        "key_defect": "DeltaNet/GQA still use qwen_uniform_q4_group64_matvec - SERIAL, ONE THREAD PER ROW. Commit a47f8259 switched the expert-table kernel to simdgroup but the component dispatcher never followed. The simdgroup component kernel is documented not bit-identical, so it was never made default.",
+        "correctness": "bit-identical 18/18 runs; fixture state-contract tests passed",
+        "next": "host top-10 + 512-entry address-table rewrite ~157820565 ns/token of HOST work with the GPU IDLE"
+      },
+      "capture_coverage": {
+        "verdict": "ROUTE-STARVED - the underdetermined-fit failure, MEASURED not suspected",
+        "rows_per_fit_vs_2048_dim": {
+          "p10": 34,
+          "p50": 258,
+          "pairs_reaching_2048": 782
+        },
+        "never_routed_pairs": 221,
+        "down_proj_defect": "the 25258-token capture has NO on-disk post-SwiGLU X, so the organ whose codec choice depends on post-SwiGLU scoring was not scored against it",
+        "explains": "the 395/2048 clamped hgravs ranks the coherence probe reported",
+        "cost_to_fix": "~119k tokens to put p10 at rank 160; ~171k to put the median at 2048",
+        "extension_status": "running, checkpointed at layer 16/48; clone-fd cache fix drops resume from 15.5 to 3.68 GiB",
+        "commit_note": "macl blocked the lane's commit; recovered to main at 19928d56, patch kept"
       }
     },
     "q80_density_frontier": {
@@ -214,6 +240,22 @@
         "correctness": "bit-identical hc_sha c94da765, 0 fallbacks, 0 hash, drift 0.0144",
         "lane_honesty": "Explicitly warned against comparing its 1303 ms B median to the host-wall 1038 ms authority because the box was dirtier - correct discipline.",
         "next": "host.expert_slab_io again: 477.9 ms this window vs 415.1 ms host-wall authority"
+      },
+      "expert_cache": {
+        "branch": "grok/dsv-expert-cache-20260816-003822 (072427c8) - HELD, skews with in-flight integration",
+        "expert_slab_io_off_ms": [
+          776.4,
+          612.1,
+          1044.0
+        ],
+        "expert_slab_io_hit_us": [
+          24.5,
+          29.5,
+          27.3
+        ],
+        "correctness": "bit-identical hc_sha c94da765 every BOS token; cached==fresh memcmp 8/8 over 106954752 bytes; 0 fallbacks",
+        "CAVEAT": "B numbers are a repeated-BOS token-2 100%-HIT best case, not a varied-routing result. Treat as a ceiling, not the expected win.",
+        "newly_exposed_wall": "host.attn_weight_io_prefetch 481955669 ns/token median (379-533 ms) - was HIDDEN behind expert_slab_io and is now DSV4F's largest single cost"
       }
     },
     "dsv4f_density_frontier": {
@@ -365,7 +407,8 @@
       "information_gain": 150000000,
       "transfer_value": 300000000,
       "experiment_cost": 1.5,
-      "status": "running"
+      "status": "retained",
+      "tier1": "merged 49b452f1; three topology attacks rejected, all bit-identical"
     },
     {
       "id": "q80-capture-coverage",
@@ -380,8 +423,9 @@
       "information_gain": 600000000,
       "transfer_value": 200000000,
       "experiment_cost": 1.5,
-      "status": "running",
-      "note": "Guards the input to every density claim. Two prior campaigns were destroyed by invisible capture defects."
+      "status": "retained_partial",
+      "note": "Guards the input to every density claim. Two prior campaigns were destroyed by invisible capture defects.",
+      "tier1": "preserved to main at 19928d56; extension capture checkpointed at layer 16/48"
     },
     {
       "id": "dsv-mla",
@@ -445,8 +489,9 @@
       "information_gain": 200000000,
       "transfer_value": 150000000,
       "experiment_cost": 1.5,
-      "status": "running",
-      "note": "Buys the residency win NOW without waiting on the capture. Refuted if routing is near-uniform - the lane must compute the hit-rate ceiling from a trace before building."
+      "status": "retained_held",
+      "note": "Buys the residency win NOW without waiting on the capture. Refuted if routing is near-uniform - the lane must compute the hit-rate ceiling from a trace before building.",
+      "tier1": "huge win on a 100%-hit best case, bit-identical; HELD - skews with in-flight integration"
     },
     {
       "id": "dsv-admission-identity",
@@ -576,6 +621,51 @@
       "experiment_cost": 1.0,
       "status": "running",
       "note": "Owns the closure identity and the per-lane savings-vs-measured-delta discrepancy. Guards against local optima."
+    },
+    {
+      "id": "dsv-attn-weight-io",
+      "model": "dsv4f",
+      "hypothesis": "Attention weights are per-layer and reused EVERY token with no routing, so they are a better residency candidate than experts were",
+      "target_stage": "host/io",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-attn-weight-io.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 480000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 300000000,
+      "transfer_value": 200000000,
+      "experiment_cost": 1.5,
+      "status": "running"
+    },
+    {
+      "id": "q80-component-simdgroup",
+      "model": "q80",
+      "hypothesis": "DeltaNet/GQA run a serial one-thread-per-row matvec while a simdgroup kernel already exists; wiring it through with bit-identity is the untested occupancy lever",
+      "target_stage": "gpu/occupancy",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-component-simdgroup.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 150000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 250000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.5,
+      "status": "running"
+    },
+    {
+      "id": "q80-device-topk",
+      "model": "q80",
+      "hypothesis": "~158 ms/token of host top-k and address construction sits between the GPU router and GPU experts with the GPU idle",
+      "target_stage": "gpu/routing",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-device-topk.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 158000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 250000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.5,
+      "status": "running"
     }
   ],
   "history": [],
@@ -591,7 +681,9 @@
     "never calibrate on a degraded baseline or on synthetic/Gaussian activations",
     "immutable-identity recomputation per token has been the real latency three times",
     "DSV4F attention: collapsing 17 dispatches into one serial encoder is bit-identical and reduces encoders 731->43 but does NOT reduce attention GPU time. Encoder gaps are not the attention wall.",
-    "DSV4F path_resolve/verify identity tax is NOT on the critical path. Reducing it 2.9x (983->343 ms parallel-sum) produced ZERO whole-token improvement, because a parallel sum across threads is not token latency. Do not attack it again for wall time."
+    "DSV4F path_resolve/verify identity tax is NOT on the critical path. Reducing it 2.9x (983->343 ms parallel-sum) produced ZERO whole-token improvement, because a parallel sum across threads is not token latency. Do not attack it again for wall time.",
+    "Q80 topology collapse is NOT the lever: overlap, fuse-to-51-CBs and serial-encoder are all bit-identical and all fail to win complete-token wall (fuse REGRESSED 516 vs 307 ms). Matches DSV4F where 731->43 encoders moved attention GPU by nothing. Occupancy, not topology.",
+    "Q80 density fits are route-starved: p10=34 rows against 2048 dims, 221 never-routed pairs, and no on-disk post-SwiGLU X for down_proj. Any organ score from the 25k capture is suspect."
   ],
   "saturation": {
     "measured": "2026-08-16 after wave 2",
