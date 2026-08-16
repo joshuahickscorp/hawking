@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.ascent.drain_requirement.v1",
+  "date": "2026-08-16",
+  "finding": "G003 and G008 both require CLEAN_CANDIDATE paired reps on a DRAINED BOX. Every timing taken today is labelled DIRTY_ENGINEERING because lanes were running. So no qualifying measurement can be taken while the fan-out continues, no matter how fast the model gets.",
+  "acceptance_text": {
+    "G003": "CLEAN_CANDIDATE paired reps on a drained box, coherent output, 0 fallbacks, correct generated ids, honest timing, correct state semantics",
+    "G008": "CLEAN_CANDIDATE paired reps on a drained box at >=100 valid TPS ... then FREEZE: receipt, protected incumbent, full Femtosecond Frontier receipt, rollback"
+  },
+  "why_this_is_not_urgent_yet": "Q80 is at 301 ms/token against a 20 ms gate - 15x off. There is nothing to qualify. Draining the box now would cost throughput and certify nothing.",
+  "why_it_must_be_planned": "The parallel fan-out and the qualifying measurement are MUTUALLY EXCLUSIVE. There must be an explicit drain phase before any seal attempt: stop launching, let live lanes finish or be stopped with work preserved, confirm no GPU lock holder, then run the paired reps. Discovering this at seal time would waste the seal attempt.",
+  "drain_checklist": [
+    "stop launching new lanes",
+    "grok-run status: no running lanes (verify with pgrep, NOT the status file - it reports running for dead processes)",
+    "python3 tools/lane_health.py returns 0 dead lanes and nothing dirty",
+    "/tmp/hawking-gpu-lane.lock absent",
+    "no cargo build in flight (build contention has already corrupted one run today)",
+    "then: >=3 alternating paired reps under gpu_lane_lock.sh, full spread, label CLEAN not DIRTY"
+  ],
+  "current_labels": "Everything measured today - the Q80 4.57x, the Qwen3.8 38.217 ms wall, the DSV4F 399 ms - is DIRTY_ENGINEERING. Those are valid as ENGINEERING evidence and are recorded as such; none of them is a qualifying CLEAN_CANDIDATE result and none has been claimed as one."
+}
