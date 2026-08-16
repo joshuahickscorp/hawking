@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.g008.preferred_target_unreachable.v1",
+  "date": "2026-08-16",
+  "finding": "G008's PREFERRED target, TG3/333, is unreachable on the 1.44445 BPW artifact its own acceptance names. The 100 TPS sealing FLOOR is reachable.",
+  "the_acceptance_claim": "'TG3/333 preferred, 3.82x headroom says it is reachable at 1.44445 BPW'",
+  "the_arithmetic": {
+    "artifact_bytes_per_token_gb": 2.218,
+    "artifact_bpw": 1.44445,
+    "honest_decode_ceiling_gb_s": 411.51,
+    "100_tps": {
+      "ms": 10.0,
+      "max_bytes_gb_at_ceiling": 4.115,
+      "max_bpw": 2.68,
+      "verdict": "REACHABLE - current 2.218 GB is well inside"
+    },
+    "333_tps": {
+      "ms": 3.0,
+      "max_bytes_gb_at_ceiling": 1.236,
+      "max_bpw": 0.805,
+      "verdict": "UNREACHABLE at 1.44445 BPW - needs roughly HALF the bytes"
+    }
+  },
+  "why_the_headroom_claim_fails": "3.82x headroom was presumably measured against something other than the unique-once decode ceiling. Against 411.51 GB/s, 333 TPS needs 1.236 GB/token and the artifact moves 2.218. And that figure assumes running AT the ceiling; Q80 currently achieves about 8.85 GB/s, so the real requirement is far lower than 0.805 BPW.",
+  "is_G008_blocked": "NO. Its sealing FLOOR of 100 TPS is reachable - it needs BPW <= 2.680 and the artifact is at 1.44445, so bytes are not the constraint. The remaining 11.2x from today's 111.733 ms is an EXECUTION gap beneath the 185.5 TPS roof.",
+  "what_this_changes": "Only the preferred target. G008 should be read as: seal at >=100 TPS on the 1.44445 BPW artifact, and treat TG3/333 as aspirational and byte-blocked rather than as a target this artifact can serve.",
+  "pattern_count": "This is the FOURTH acceptance bar found unreachable today, after G006's undefined 'coherent', G015's undefined 'capability', and G005's 0.50 against a 0.35 ceiling. The rule holds: check the metric's ceiling against the threshold."
+}
