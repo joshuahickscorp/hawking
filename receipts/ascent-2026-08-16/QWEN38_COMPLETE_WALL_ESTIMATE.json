@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.special_unit.qwen38_complete_wall_estimate.v1",
+  "date": "2026-08-16",
+  "status": "ESTIMATE from an existing single run's aggregate, NOT a dedicated paired measurement. Lane qwen38-complete-wall is doing it properly; this is the cheap answer available now.",
+  "source": "receipts/ascent-2026-08-16/qwen38-verify-on-main.json, 26 steps (1 cold + 25 steady) for 11 prompt ids + 16 new tokens - the runtime forwards one token per step, so prefill is sequential not batched",
+  "measured": {
+    "wall_ns_total": 1068090708,
+    "sum_wait_ns": 1041700000,
+    "unattributed_ns": 26400000,
+    "unattributed_pct_of_wall": 2.5,
+    "steady_gpu_median_ms": 33.536,
+    "steady_wait_median_ms": 33.897,
+    "wait_minus_gpu_ms": 0.361,
+    "unattributed_per_step_ms": 1.054,
+    "cold_step0_gpu_ms": 108.0
+  },
+  "complete_wall_estimate_ms": 34.951,
+  "complete_wall_tps": 28.6,
+  "gpu_only_ms": 33.536,
+  "gpu_only_tps": 29.8,
+  "VERDICT": "GPU is an HONEST PROXY for wall on this model, understating it by 4.2%. S004 section 10's bar is met in substance: GPU demonstrably approximates the complete token wall. Prior GPU-based claims stand with a 4.2% haircut.",
+  "projection_method_correction": {
+    "error": "Rescaling the WHOLE wall by the BPW ratio is wrong - the 0.361 ms wait gap and 1.054 ms unattributed overhead are fixed per token and do not shrink with bytes.",
+    "naive_2p0_bpw_tps": 60.8,
+    "correct_2p0_bpw_tps": 58.2,
+    "consequence": "Fixed overhead becomes a LARGER share as BPW falls, so it bounds the density ladder. At some BPW it, not bytes, is the wall."
+  },
+  "projections_corrected": {
+    "2.0": 58.2,
+    "1.75": 65.7,
+    "1.5": 75.5,
+    "1.25": 88.7
+  }
+}
