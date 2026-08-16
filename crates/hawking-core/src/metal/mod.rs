@@ -1096,10 +1096,25 @@ mod imp {
             // packed decode, state, and routed-expert time rather than fold
             // it into an opaque "other" bucket.
             "q80_binary_group_matvec" => "q80_binary_group_matvec",
+            "q80_binary_group_matvec_simd" => "q80_binary_group_matvec_simd",
+            "q80_binary_group_matvec_simd_bytes" => "q80_binary_group_matvec_simd_bytes",
+            "q80_binary_group_matvec_chunk" => "q80_binary_group_matvec_chunk",
+            "q80_binary_group_matvec_tg256" => "q80_binary_group_matvec_tg256",
+            "q80_binary_group_matvec_rowblock4" => "q80_binary_group_matvec_rowblock4",
+            "q80_binary_group_csr_matvec" => "q80_binary_group_csr_matvec",
+            "q80_binary_group_csr_matvec_bytes" => "q80_binary_group_csr_matvec_bytes",
+            "q80_binary_group_csr_matvec_tg256" => "q80_binary_group_csr_matvec_tg256",
             "q80_rice_q1_residual_apply" => "q80_rice_q1_residual_apply",
             "q80_sparse_q1_apply_csr" => "q80_sparse_q1_apply_csr",
+            "q80_sparse_q1_apply_csr_simd" => "q80_sparse_q1_apply_csr_simd",
             "q80_rice_q1_expand_indices" => "q80_rice_q1_expand_indices",
             "q80_hgravs01_factor_matvec" => "q80_hgravs01_factor_matvec",
+            "q80_hgravs01_factor_matvec_simd" => "q80_hgravs01_factor_matvec_simd",
+            "q80_hgravs01_factor_matvec_simd3" => "q80_hgravs01_factor_matvec_simd3",
+            "q80_hgravs01_two_stage_matvec" => "q80_hgravs01_two_stage_matvec",
+            "q80_hgravs01_two_stage_matvec_rowblock4" => {
+                "q80_hgravs01_two_stage_matvec_rowblock4"
+            },
             "qwen_binary_sign_scale_matvec" => "qwen_binary_sign_scale_matvec",
             "qwen_binary_sign_scale_matvec_serial" => "qwen_binary_sign_scale_matvec_serial",
             "qwen_binary_sign_scale_matvec_tiled" => "qwen_binary_sign_scale_matvec_tiled",

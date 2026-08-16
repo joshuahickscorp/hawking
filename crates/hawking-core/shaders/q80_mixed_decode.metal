@@ -297,3 +297,776 @@ kernel void q80_hgravs01_factor_matvec(
     }
     output[row] = sum;
 }
+
+// ── throughput path (decode in registers / simdgroup, never dense W) ──────
+//
+// Serial kernels above are the association-preserving baseline. These kernels
+// raise occupancy: one simdgroup owns one (or R) output row(s), columns walk
+// in 32-wide tiles, simd_sum reduces. A value is still decoded into a register
+// and consumed in the same FMA. Nothing writes a (rows × cols) reconstruction.
+
+static inline uint q80_uniform_extract_wide(
+    device const uchar* codes,
+    uint element,
+    uint bits)
+{
+    const uint bit0 = element * bits;
+    const uint byte0 = bit0 >> 3u;
+    const uint shift = bit0 & 7u;
+    uint packed = uint(codes[byte0]);
+    if (shift + bits > 8u) {
+        packed |= uint(codes[byte0 + 1u]) << 8u;
+    }
+    return (packed >> shift) & ((1u << bits) - 1u);
+}
+
+static inline float q80_uniform_value_wide(
+    device const uchar* codes,
+    device const half* scales,
+    uint element,
+    uint group_size,
+    uint bits,
+    uint bound)
+{
+    const uint group = element / group_size;
+    const uint code = q80_uniform_extract_wide(codes, element, bits);
+    const int q = int(code) - int(bound);
+    return float(q) * float(scales[group]);
+}
+
+static inline float q80_binary_lane_term(
+    device const uchar* signs,
+    device const half* scales,
+    device const float* input,
+    uint row_base,
+    uint scale_base,
+    uint col,
+    uint group_size)
+{
+    const float scale = float(scales[scale_base + col / group_size]);
+    const uint flat = row_base + col;
+    const uchar byte = signs[flat >> 3u];
+    const bool positive = ((byte >> (flat & 7u)) & 1u) != 0u;
+    return (positive ? scale : -scale) * input[col];
+}
+
+// Eight consecutive columns from one sign byte. Col must be 8-aligned and
+// lie inside a single scale group (true for group_size=128 and col%8==0).
+static inline float q80_binary_byte_dot(
+    device const uchar* signs,
+    device const half* scales,
+    device const float* input,
+    uint row_base,
+    uint scale_base,
+    uint col,
+    uint group_size)
+{
+    const float scale = float(scales[scale_base + col / group_size]);
+    const uchar byte = signs[(row_base + col) >> 3u];
+    float sum = 0.0f;
+    sum += ((byte & 0x01u) ? scale : -scale) * input[col];
+    sum += ((byte & 0x02u) ? scale : -scale) * input[col + 1u];
+    sum += ((byte & 0x04u) ? scale : -scale) * input[col + 2u];
+    sum += ((byte & 0x08u) ? scale : -scale) * input[col + 3u];
+    sum += ((byte & 0x10u) ? scale : -scale) * input[col + 4u];
+    sum += ((byte & 0x20u) ? scale : -scale) * input[col + 5u];
+    sum += ((byte & 0x40u) ? scale : -scale) * input[col + 6u];
+    sum += ((byte & 0x80u) ? scale : -scale) * input[col + 7u];
+    return sum;
+}
+
+// One simdgroup per row, 8 rows / 256-thread TG. Grid: ceil(rows/8)*256.
+kernel void q80_binary_group_matvec_simd(
+    device const uchar* signs       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kSimdWidth = 32u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) {
+        return;
+    }
+    float partial = 0.0f;
+    const uint row_base = row * cols;
+    const uint scale_base = row * groups_per_row;
+    for (uint base = 0u; base < cols; base += kSimdWidth) {
+        const uint col = base + simd_lane;
+        if (col >= cols) {
+            continue;
+        }
+        partial += q80_binary_lane_term(
+            signs, scales, input, row_base, scale_base, col, group_size);
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        output[row] = partial;
+    }
+}
+
+// 4 rows / simdgroup, 32 rows / TG. Grid: ceil(rows/32)*256.
+kernel void q80_binary_group_matvec_rowblock4(
+    device const uchar* signs       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint R = 4u;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kRowsPerTg = kSimdgroupsPerThreadgroup * R;
+    const uint row0 = group_id * kRowsPerTg + simd_id * R;
+    if (row0 >= rows) {
+        return;
+    }
+    const uint row1 = row0 + 1u;
+    const uint row2 = row0 + 2u;
+    const uint row3 = row0 + 3u;
+    const bool has1 = row1 < rows;
+    const bool has2 = row2 < rows;
+    const bool has3 = row3 < rows;
+    const uint r1 = has1 ? row1 : row0;
+    const uint r2 = has2 ? row2 : row0;
+    const uint r3 = has3 ? row3 : row0;
+    const uint rb0 = row0 * cols, rb1 = r1 * cols, rb2 = r2 * cols, rb3 = r3 * cols;
+    const uint sb0 = row0 * groups_per_row, sb1 = r1 * groups_per_row;
+    const uint sb2 = r2 * groups_per_row, sb3 = r3 * groups_per_row;
+    float a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
+    for (uint base = 0u; base < cols; base += kSimdWidth) {
+        const uint col = base + simd_lane;
+        if (col >= cols) {
+            continue;
+        }
+        a0 += q80_binary_lane_term(signs, scales, input, rb0, sb0, col, group_size);
+        a1 += q80_binary_lane_term(signs, scales, input, rb1, sb1, col, group_size);
+        a2 += q80_binary_lane_term(signs, scales, input, rb2, sb2, col, group_size);
+        a3 += q80_binary_lane_term(signs, scales, input, rb3, sb3, col, group_size);
+    }
+    a0 = simd_sum(a0);
+    a1 = simd_sum(a1);
+    a2 = simd_sum(a2);
+    a3 = simd_sum(a3);
+    if (simd_lane == 0u) {
+        output[row0] = a0;
+        if (has1) output[row1] = a1;
+        if (has2) output[row2] = a2;
+        if (has3) output[row3] = a3;
+    }
+}
+
+// Binary simd + CSR residual in the same dispatch. Residual add order is
+// serial on lane 0 after the binary reduction (same as shipped CSR apply).
+kernel void q80_binary_group_csr_matvec(
+    device const uchar* signs           [[buffer(0)]],
+    device const half* scales           [[buffer(1)]],
+    device const float* input           [[buffer(2)]],
+    device float* output                [[buffer(3)]],
+    device const uint* indices          [[buffer(4)]],
+    device const uint* row_ptr          [[buffer(5)]],
+    device const uchar* residual_signs  [[buffer(6)]],
+    constant uint& rows                 [[buffer(7)]],
+    constant uint& cols                 [[buffer(8)]],
+    constant uint& group_size           [[buffer(9)]],
+    constant uint& groups_per_row       [[buffer(10)]],
+    constant uint& residual_scale_bits  [[buffer(11)]],
+    uint group_id                        [[threadgroup_position_in_grid]],
+    uint simd_lane                       [[thread_index_in_simdgroup]],
+    uint simd_id                         [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kSimdWidth = 32u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows || cols == 0u) {
+        return;
+    }
+    float partial = 0.0f;
+    const uint row_base = row * cols;
+    const uint scale_base = row * groups_per_row;
+    for (uint base = 0u; base < cols; base += kSimdWidth) {
+        const uint col = base + simd_lane;
+        if (col >= cols) {
+            continue;
+        }
+        partial += q80_binary_lane_term(
+            signs, scales, input, row_base, scale_base, col, group_size);
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        const float rscale = float(as_type<half>(ushort(residual_scale_bits)));
+        const uint begin = row_ptr[row];
+        const uint end = row_ptr[row + 1u];
+        float acc = partial;
+        for (uint n = begin; n < end; ++n) {
+            const uint col = indices[n] % cols;
+            acc += q80_residual_q1_value(residual_signs, n, rscale) * input[col];
+        }
+        output[row] = acc;
+    }
+}
+
+// Cooperative CSR-only apply (used if binary is already in `output`).
+// 32 lanes split the row's outliers, then simd_sum. Grid: ceil(rows/8)*256.
+kernel void q80_sparse_q1_apply_csr_simd(
+    device const uint* indices          [[buffer(0)]],
+    device const uint* row_ptr          [[buffer(1)]],
+    device const uchar* residual_signs  [[buffer(2)]],
+    device const float* input           [[buffer(3)]],
+    device float* output                [[buffer(4)]],
+    constant uint& rows                 [[buffer(5)]],
+    constant uint& cols                 [[buffer(6)]],
+    constant uint& residual_scale_bits  [[buffer(7)]],
+    uint group_id                        [[threadgroup_position_in_grid]],
+    uint simd_lane                       [[thread_index_in_simdgroup]],
+    uint simd_id                         [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows || cols == 0u) {
+        return;
+    }
+    const float scale = float(as_type<half>(ushort(residual_scale_bits)));
+    const uint begin = row_ptr[row];
+    const uint end = row_ptr[row + 1u];
+    float partial = 0.0f;
+    for (uint n = begin + simd_lane; n < end; n += 32u) {
+        const uint col = indices[n] % cols;
+        partial += q80_residual_q1_value(residual_signs, n, scale) * input[col];
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        output[row] += partial;
+    }
+}
+
+// One simdgroup per factor row. Grid: ceil(rows/8)*256, TG 256.
+kernel void q80_hgravs01_factor_matvec_simd(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kSimdWidth = 32u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) {
+        return;
+    }
+    float partial = 0.0f;
+    const uint row_base = row * cols;
+    for (uint base = 0u; base < cols; base += kSimdWidth) {
+        const uint col = base + simd_lane;
+        if (col >= cols) {
+            continue;
+        }
+        const uint element = row_base + col;
+        partial += q80_uniform_value_wide(
+            codes, scales, element, group_size, bits, bound) * input[col];
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        output[row] = partial;
+    }
+}
+
+// Fused y = L @ (R @ x) in one dispatch. Each threadgroup recomputes mid[rank]
+// into threadgroup memory (640 B, not dense W), then its L-rows consume it.
+// Rank is the shipped hgravs01_r160 codec; larger rank is refused.
+// Grid: ceil(left_rows/8)*256, TG 256.
+kernel void q80_hgravs01_two_stage_matvec(
+    device const uchar* right_codes [[buffer(0)]],
+    device const half* right_scales [[buffer(1)]],
+    device const uchar* left_codes  [[buffer(2)]],
+    device const half* left_scales  [[buffer(3)]],
+    device const float* input       [[buffer(4)]],
+    device float* output            [[buffer(5)]],
+    constant uint& right_rows       [[buffer(6)]],
+    constant uint& right_cols       [[buffer(7)]],
+    constant uint& left_rows        [[buffer(8)]],
+    constant uint& left_cols        [[buffer(9)]],
+    constant uint& group_size       [[buffer(10)]],
+    constant uint& bits             [[buffer(11)]],
+    constant uint& bound             [[buffer(12)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kRankCap = 160u;
+    constexpr uint kXCap = 512u;
+    threadgroup float mid[kRankCap];
+    threadgroup float x_tg[kXCap];
+
+    if (right_rows > kRankCap || right_rows != left_cols || right_cols > kXCap) {
+        return;
+    }
+
+    for (uint i = lid; i < right_cols; i += 256u) {
+        x_tg[i] = input[i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint rbase = 0u; rbase < right_rows; rbase += kSimdgroupsPerThreadgroup) {
+        const uint r = rbase + simd_id;
+        float partial = 0.0f;
+        if (r < right_rows) {
+            const uint row_base = r * right_cols;
+            for (uint base = 0u; base < right_cols; base += kSimdWidth) {
+                const uint col = base + simd_lane;
+                if (col >= right_cols) {
+                    continue;
+                }
+                partial += q80_uniform_value_wide(
+                    right_codes, right_scales, row_base + col, group_size, bits, bound)
+                    * x_tg[col];
+            }
+            partial = simd_sum(partial);
+            if (simd_lane == 0u) {
+                mid[r] = partial;
+            }
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint lrow = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (lrow >= left_rows) {
+        return;
+    }
+    float partial = 0.0f;
+    const uint row_base = lrow * left_cols;
+    for (uint base = 0u; base < left_cols; base += kSimdWidth) {
+        const uint col = base + simd_lane;
+        if (col >= left_cols) {
+            continue;
+        }
+        partial += q80_uniform_value_wide(
+            left_codes, left_scales, row_base + col, group_size, bits, bound)
+            * mid[col];
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        output[lrow] = partial;
+    }
+}
+
+// Byte-unpack simd: each lane consumes 8 consecutive weights per tile.
+// Grid: ceil(rows/8)*256, TG 256.
+kernel void q80_binary_group_matvec_simd_bytes(
+    device const uchar* signs       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows) {
+        return;
+    }
+    float partial = 0.0f;
+    const uint row_base = row * cols;
+    const uint scale_base = row * groups_per_row;
+    for (uint base = 0u; base < cols; base += 256u) {
+        const uint col = base + simd_lane * 8u;
+        if (col + 8u > cols) {
+            continue;
+        }
+        partial += q80_binary_byte_dot(
+            signs, scales, input, row_base, scale_base, col, group_size);
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        output[row] = partial;
+    }
+}
+
+// Contiguous 64-col chunks (2048/32), left-to-right inside the chunk, then
+// simd_sum. Closer association to the serial oracle than strided tiles.
+// Grid: ceil(rows/8)*256, TG 256.
+kernel void q80_binary_group_matvec_chunk(
+    device const uchar* signs       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows || cols == 0u) {
+        return;
+    }
+    const uint chunk = (cols + 31u) / 32u;
+    const uint start = simd_lane * chunk;
+    const uint end = min(start + chunk, cols);
+    float partial = 0.0f;
+    const uint row_base = row * cols;
+    const uint scale_base = row * groups_per_row;
+    uint col = start;
+    while (col + 8u <= end && (col & 7u) == 0u) {
+        partial += q80_binary_byte_dot(
+            signs, scales, input, row_base, scale_base, col, group_size);
+        col += 8u;
+    }
+    while (col < end) {
+        partial += q80_binary_lane_term(
+            signs, scales, input, row_base, scale_base, col, group_size);
+        col += 1u;
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        output[row] = partial;
+    }
+}
+
+// One 256-thread TG per row; each lane dots 8 columns (one sign byte), then
+// 8-simdgroup reduce. Grid: rows*256, TG 256.
+kernel void q80_binary_group_matvec_tg256(
+    device const uchar* signs       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& groups_per_row   [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    if (row >= rows) {
+        return;
+    }
+    const uint row_base = row * cols;
+    const uint scale_base = row * groups_per_row;
+    const uint col = lid * 8u;
+    float partial = 0.0f;
+    if (col + 8u <= cols) {
+        partial = q80_binary_byte_dot(
+            signs, scales, input, row_base, scale_base, col, group_size);
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        output[row] = acc;
+    }
+}
+
+// tg256 binary + serial CSR residual. Grid: rows*256, TG 256.
+kernel void q80_binary_group_csr_matvec_tg256(
+    device const uchar* signs           [[buffer(0)]],
+    device const half* scales           [[buffer(1)]],
+    device const float* input           [[buffer(2)]],
+    device float* output                [[buffer(3)]],
+    device const uint* indices          [[buffer(4)]],
+    device const uint* row_ptr          [[buffer(5)]],
+    device const uchar* residual_signs  [[buffer(6)]],
+    constant uint& rows                 [[buffer(7)]],
+    constant uint& cols                 [[buffer(8)]],
+    constant uint& group_size           [[buffer(9)]],
+    constant uint& groups_per_row       [[buffer(10)]],
+    constant uint& residual_scale_bits  [[buffer(11)]],
+    uint group_id                        [[threadgroup_position_in_grid]],
+    uint lid                             [[thread_index_in_threadgroup]],
+    uint simd_lane                       [[thread_index_in_simdgroup]],
+    uint simd_id                         [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    const uint row = group_id;
+    if (row >= rows || cols == 0u) {
+        return;
+    }
+    const uint row_base = row * cols;
+    const uint scale_base = row * groups_per_row;
+    const uint col = lid * 8u;
+    float partial = 0.0f;
+    if (col + 8u <= cols) {
+        partial = q80_binary_byte_dot(
+            signs, scales, input, row_base, scale_base, col, group_size);
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        red[simd_id] = partial;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (lid == 0u) {
+        float acc = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            acc += red[i];
+        }
+        const float rscale = float(as_type<half>(ushort(residual_scale_bits)));
+        const uint begin = row_ptr[row];
+        const uint end = row_ptr[row + 1u];
+        for (uint n = begin; n < end; ++n) {
+            const uint c = indices[n] % cols;
+            acc += q80_residual_q1_value(residual_signs, n, rscale) * input[c];
+        }
+        output[row] = acc;
+    }
+}
+
+// Fused byte-unpack binary + serial CSR residual. Grid: ceil(rows/8)*256.
+kernel void q80_binary_group_csr_matvec_bytes(
+    device const uchar* signs           [[buffer(0)]],
+    device const half* scales           [[buffer(1)]],
+    device const float* input           [[buffer(2)]],
+    device float* output                [[buffer(3)]],
+    device const uint* indices          [[buffer(4)]],
+    device const uint* row_ptr          [[buffer(5)]],
+    device const uchar* residual_signs  [[buffer(6)]],
+    constant uint& rows                 [[buffer(7)]],
+    constant uint& cols                 [[buffer(8)]],
+    constant uint& group_size           [[buffer(9)]],
+    constant uint& groups_per_row       [[buffer(10)]],
+    constant uint& residual_scale_bits  [[buffer(11)]],
+    uint group_id                        [[threadgroup_position_in_grid]],
+    uint simd_lane                       [[thread_index_in_simdgroup]],
+    uint simd_id                         [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows || cols == 0u) {
+        return;
+    }
+    float partial = 0.0f;
+    const uint row_base = row * cols;
+    const uint scale_base = row * groups_per_row;
+    for (uint base = 0u; base < cols; base += 256u) {
+        const uint col = base + simd_lane * 8u;
+        if (col + 8u > cols) {
+            continue;
+        }
+        partial += q80_binary_byte_dot(
+            signs, scales, input, row_base, scale_base, col, group_size);
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        const float rscale = float(as_type<half>(ushort(residual_scale_bits)));
+        const uint begin = row_ptr[row];
+        const uint end = row_ptr[row + 1u];
+        float acc = partial;
+        for (uint n = begin; n < end; ++n) {
+            const uint col = indices[n] % cols;
+            acc += q80_residual_q1_value(residual_signs, n, rscale) * input[col];
+        }
+        output[row] = acc;
+    }
+}
+
+// 3-bit specialized factor: 8 codes / lane, 256-col tiles.
+// Grid: ceil(rows/8)*256, TG 256. bits must be 3, bound 3.
+kernel void q80_hgravs01_factor_matvec_simd3(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint row = group_id * kSimdgroupsPerThreadgroup + simd_id;
+    if (row >= rows || bits != 3u) {
+        return;
+    }
+    float partial = 0.0f;
+    const uint row_base = row * cols;
+    const uint tiled = (cols / 256u) * 256u;
+    for (uint base = 0u; base < tiled; base += 256u) {
+        const uint col = base + simd_lane * 8u;
+        const uint byte0 = ((row_base + col) * 3u) >> 3u;
+        const uint b0 = uint(codes[byte0]);
+        const uint b1 = uint(codes[byte0 + 1u]);
+        const uint b2 = uint(codes[byte0 + 2u]);
+        const int q0 = int(b0 & 7u) - 3;
+        const int q1 = int((b0 >> 3u) & 7u) - 3;
+        const int q2 = int(((b0 >> 6u) | (b1 << 2u)) & 7u) - 3;
+        const int q3 = int((b1 >> 1u) & 7u) - 3;
+        const int q4 = int((b1 >> 4u) & 7u) - 3;
+        const int q5 = int(((b1 >> 7u) | (b2 << 1u)) & 7u) - 3;
+        const int q6 = int((b2 >> 2u) & 7u) - 3;
+        const int q7 = int((b2 >> 5u) & 7u) - 3;
+        const float s0 = float(scales[(row_base + col) / group_size]);
+        const float s1 = float(scales[(row_base + col + 1u) / group_size]);
+        const float s2 = float(scales[(row_base + col + 2u) / group_size]);
+        const float s3 = float(scales[(row_base + col + 3u) / group_size]);
+        const float s4 = float(scales[(row_base + col + 4u) / group_size]);
+        const float s5 = float(scales[(row_base + col + 5u) / group_size]);
+        const float s6 = float(scales[(row_base + col + 6u) / group_size]);
+        const float s7 = float(scales[(row_base + col + 7u) / group_size]);
+        partial += float(q0) * s0 * input[col];
+        partial += float(q1) * s1 * input[col + 1u];
+        partial += float(q2) * s2 * input[col + 2u];
+        partial += float(q3) * s3 * input[col + 3u];
+        partial += float(q4) * s4 * input[col + 4u];
+        partial += float(q5) * s5 * input[col + 5u];
+        partial += float(q6) * s6 * input[col + 6u];
+        partial += float(q7) * s7 * input[col + 7u];
+    }
+    for (uint col = tiled + simd_lane; col < cols; col += 32u) {
+        partial += q80_uniform_value_wide(
+            codes, scales, row_base + col, group_size, bits, bound) * input[col];
+    }
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        output[row] = partial;
+    }
+}
+
+// Same fused contract, 4 L-rows per simdgroup (32 L-rows / TG). Fewer
+// threadgroups recompute R; four independent FMA chains hide decode latency.
+// Grid: ceil(left_rows/32)*256, TG 256.
+kernel void q80_hgravs01_two_stage_matvec_rowblock4(
+    device const uchar* right_codes [[buffer(0)]],
+    device const half* right_scales [[buffer(1)]],
+    device const uchar* left_codes  [[buffer(2)]],
+    device const half* left_scales  [[buffer(3)]],
+    device const float* input       [[buffer(4)]],
+    device float* output            [[buffer(5)]],
+    constant uint& right_rows       [[buffer(6)]],
+    constant uint& right_cols       [[buffer(7)]],
+    constant uint& left_rows        [[buffer(8)]],
+    constant uint& left_cols        [[buffer(9)]],
+    constant uint& group_size       [[buffer(10)]],
+    constant uint& bits             [[buffer(11)]],
+    constant uint& bound             [[buffer(12)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint lid                         [[thread_index_in_threadgroup]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint R = 4u;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kRowsPerTg = kSimdgroupsPerThreadgroup * R;
+    constexpr uint kRankCap = 160u;
+    constexpr uint kXCap = 512u;
+    threadgroup float mid[kRankCap];
+    threadgroup float x_tg[kXCap];
+
+    if (right_rows > kRankCap || right_rows != left_cols || right_cols > kXCap) {
+        return;
+    }
+
+    for (uint i = lid; i < right_cols; i += 256u) {
+        x_tg[i] = input[i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint rbase = 0u; rbase < right_rows; rbase += kSimdgroupsPerThreadgroup) {
+        const uint r = rbase + simd_id;
+        float partial = 0.0f;
+        if (r < right_rows) {
+            const uint row_base = r * right_cols;
+            for (uint base = 0u; base < right_cols; base += kSimdWidth) {
+                const uint col = base + simd_lane;
+                if (col >= right_cols) {
+                    continue;
+                }
+                partial += q80_uniform_value_wide(
+                    right_codes, right_scales, row_base + col, group_size, bits, bound)
+                    * x_tg[col];
+            }
+            partial = simd_sum(partial);
+            if (simd_lane == 0u) {
+                mid[r] = partial;
+            }
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint row0 = group_id * kRowsPerTg + simd_id * R;
+    if (row0 >= left_rows) {
+        return;
+    }
+    const uint row1 = row0 + 1u;
+    const uint row2 = row0 + 2u;
+    const uint row3 = row0 + 3u;
+    const bool has1 = row1 < left_rows;
+    const bool has2 = row2 < left_rows;
+    const bool has3 = row3 < left_rows;
+    const uint r1 = has1 ? row1 : row0;
+    const uint r2 = has2 ? row2 : row0;
+    const uint r3 = has3 ? row3 : row0;
+    const uint rb0 = row0 * left_cols;
+    const uint rb1 = r1 * left_cols;
+    const uint rb2 = r2 * left_cols;
+    const uint rb3 = r3 * left_cols;
+
+    float a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;
+    for (uint base = 0u; base < left_cols; base += kSimdWidth) {
+        const uint col = base + simd_lane;
+        if (col >= left_cols) {
+            continue;
+        }
+        const float mv = mid[col];
+        a0 += q80_uniform_value_wide(
+            left_codes, left_scales, rb0 + col, group_size, bits, bound) * mv;
+        a1 += q80_uniform_value_wide(
+            left_codes, left_scales, rb1 + col, group_size, bits, bound) * mv;
+        a2 += q80_uniform_value_wide(
+            left_codes, left_scales, rb2 + col, group_size, bits, bound) * mv;
+        a3 += q80_uniform_value_wide(
+            left_codes, left_scales, rb3 + col, group_size, bits, bound) * mv;
+    }
+    a0 = simd_sum(a0);
+    a1 = simd_sum(a1);
+    a2 = simd_sum(a2);
+    a3 = simd_sum(a3);
+    if (simd_lane == 0u) {
+        output[row0] = a0;
+        if (has1) output[row1] = a1;
+        if (has2) output[row2] = a2;
+        if (has3) output[row3] = a3;
+    }
+}
