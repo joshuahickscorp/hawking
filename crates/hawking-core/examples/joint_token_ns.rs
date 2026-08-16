@@ -220,7 +220,10 @@ fn main() {
             "body_ns": dsv_doc.totals.total_token_ns,
             "named_serial_ns": dsv_doc.closure.sum_serial_stage_ns,
             "residual_ns": dsv_doc.residual_ns,
-            "note": "Most of residual_ns is metal host_wall minus (encode+submit+wait): intra-CB host time that the named encode/submit/wait rows do not cover. The rest is host_exclusive not captured by the named serial host stages."
+            "residual_fraction": dsv_doc.closure.residual_fraction,
+            "residual_within_limit": dsv_doc.closure.residual_within_limit,
+            "remaining_residual_name": "inter_stage_gap_plus_in_wall_decode_doublecount_jitter",
+            "note": "The former anonymous 275 ms residual is now exclusive serial: metal.cb_overlap.hidden_io (shared+control I/O during attn GPU), metal.cb_overlap.buffer_lifecycle (prefetch_fill during moe GPU), metal.cb_overlap.other_cpu_feed (in-wall decode / buffer writes / timestamp), and host.lm_head_upload (GPU-idle tile fill, previously misclassified as nested). Remaining residual is Instant/us-truncation jitter plus the known host.decode ∩ in-wall-decode intersection on receipts that do not split decode."
         },
         "next_bottleneck": {
             "dsv4f": {
