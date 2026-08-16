@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.special_unit.g016_bpw_feasibility.v1",
+  "date": "2026-08-16",
+  "method": "Apply Q80's MEASURED per-organ physical BPW (mixed-sub655-v1 PACK_REPORT) to Qwen3.8 DENSE geometry. Qwen3.8 has no experts; its per-layer SwiGLU gate/up/down take the roles Q80 routed gate/up/down take.",
+  "geometry": {
+    "layers": 64,
+    "hidden": 5120,
+    "intermediate": 17408,
+    "vocab": 248320,
+    "total_params": 26895998464,
+    "mlp_params": 17112760320,
+    "embed_plus_lm_head": 2542796800,
+    "attention_and_norms": 7240441344
+  },
+  "mass_fractions": {
+    "mlp": 0.6363,
+    "embed_lm_head": 0.0945,
+    "attention_norms": 0.2692
+  },
+  "critical_difference_from_q80": "Q80 routed experts carry about 97.5 percent of its mass, so its complete BPW is nearly its expert BPW. Qwen3.8 MLP is only 63.6 percent, so the non-MLP mass DOMINATES the average. Compressing the MLP alone cannot reach the target; embedding and attention mass decides it.",
+  "q80_measured_organ_bpw": {
+    "gate_proj": 0.14319598612686,
+    "up_proj": 0.3336358508095145,
+    "down_proj": 1.126922607421875,
+    "nonexpert_4bit": 4.250595793629995,
+    "mlp_mean": 0.5345848147860832
+  },
+  "scenarios": {
+    "A_q80_recipe_verbatim_nonMLP_at_4bit": {
+      "complete_bpw": 1.8863,
+      "meets_2p0_target": true,
+      "meets_3p0_hard_limit": true
+    },
+    "B_nonMLP_at_q8": {
+      "complete_bpw": 3.2501,
+      "meets_2p0_target": false,
+      "meets_3p0_hard_limit": false
+    },
+    "C_emb_8bit_attention_compressed": {
+      "complete_bpw": 1.2404,
+      "meets_2p0_target": true,
+      "meets_3p0_hard_limit": true
+    }
+  },
+  "verdict": "G016 2.0 BPW target is REACHABLE with Q80 existing recipe applied verbatim, at about 1.886 BPW, leaving non-MLP mass at 4 bits. It clears the 3.0 hard limit comfortably. No new codec research required; the work is generalising the packer tensor classification from MoE to dense, plus a real Qwen3.8 activation capture.",
+  "blocking_work": [
+    "lab/operators/q80_mixed_representation_pack.py classify() and execution_order() key on model.layers.N.mlp.experts.M.* and must generalise to dense mlp.{gate,up,down}_proj",
+    "down_proj HGRAVS01 low-rank needs REAL post-SwiGLU X captured from the Qwen3.8 BF16 source. Synthetic activations are known-invalid here: every prior sub-bit negative was a gaussian-proxy artifact.",
+    "Dense means NO never-routed experts, so the weight-space-SVD fallback caveat Q80 carries DISAPPEARS - every row has real activations."
+  ]
+}
