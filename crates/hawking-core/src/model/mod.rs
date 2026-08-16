@@ -22,6 +22,9 @@ pub mod qwen80_source_bf16_layer_major;
 pub mod qwen80_uniform_q4_hybrid_decode;
 /// Per-token ns ledger for the uniform-Q4 hybrid vehicle (profile before optimize).
 pub mod qwen80_token_ns_ledger;
+/// Compact mixed-representation catalog for the Q80 ≤1.5 pack.
+/// Admission/index only — not a decode kernel and not a generation runtime.
+pub mod qwen80_mixed_catalog;
 
 /// Memory-bounded DSV4F activation-X capture writer.
 ///
