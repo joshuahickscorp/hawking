@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -113,6 +114,17 @@ def tier1_verify(target: dict) -> tuple[bool, str]:
     return True, "tier1 pass (reject-only; NOT a promotion)"
 
 
+def _extract_task_id(text: str, slug: str) -> str | None:
+    """Pull `<slug>-<YYYYMMDD>-<HHMMSS>` out of grok-run's launch output.
+
+    grok-run only ever emits the id embedded in a path or a branch name
+    ("...worktrees/<slug>-<stamp>", "grok/<slug>-<stamp>"), never as a bare
+    leading token -- so match anywhere, not at a token boundary.
+    """
+    hit = re.search(rf"{re.escape(slug)}-\d{{8}}-\d{{6}}", text)
+    return hit.group(0) if hit else None
+
+
 def launch(target: dict) -> str | None:
     """Launch one isolated Grok lane. Returns task id, or None if it failed."""
     contract = Path(target["contract"])
@@ -128,12 +140,7 @@ def launch(target: dict) -> str | None:
         ],
         capture_output=True, text=True,
     )
-    for line in (proc.stdout + proc.stderr).splitlines():
-        if slug in line and "-2026" in line:
-            for tok in line.split():
-                if tok.startswith(slug + "-2026"):
-                    return tok
-    return None
+    return _extract_task_id(proc.stdout + proc.stderr, slug)
 
 
 def wait_for(task_id: str, timeout: int = 14400) -> str:
@@ -221,6 +228,14 @@ def _selfcheck() -> None:
     assert not ok, "missing expected marker must reject"
     ok, _ = tier1_verify({"tier1_command": "echo boom", "tier1_forbid": "boom"})
     assert not ok, "forbidden marker must reject"
+
+    # Real grok-run launch output: the id appears only inside a path and a
+    # branch name, never as a bare leading token. A token-prefix match misses it.
+    real = ("grok-run: DRY RUN - would create worktree "
+            "/Users/x/.claude-grok/worktrees/q80-pack-20260816-002534 "
+            "on grok/q80-pack-20260816-002534 from ac69ffd3")
+    assert _extract_task_id(real, "q80-pack") == "q80-pack-20260816-002534"
+    assert _extract_task_id("no id here", "q80-pack") is None
     print("selfcheck ok")
 
 
