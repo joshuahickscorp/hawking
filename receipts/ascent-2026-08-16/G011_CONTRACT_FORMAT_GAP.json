@@ -1,0 +1,14 @@
+{
+  "schema": "hawking.g011.contract_format_starves_harvest.v1",
+  "date": "2026-08-16",
+  "second_root_cause": "My hand-written contracts never carried the _COMMON.md reporting block, so no lane of mine emitted NEXT_BOTTLENECK - the one field harvest() mines to generate the next autonomous target.",
+  "evidence": {
+    "_COMMON.md_line_63": "NEXT_BOTTLENECK: <what is now the top cost, with its measured ns>",
+    "daemon_behaviour": "generate_targets() prepends _COMMON.md to every AUTO-GENERATED brief, so daemon-launched lanes would feed the loop correctly",
+    "my_contracts": "used CLAIM/STATUS/EVIDENCE/ACTION/UNRESOLVED, later ACCEPTANCE/VERIFY/EDIT - never the reporting block",
+    "result": "~20 excellent lane results today, zero of which advanced the autonomous queue"
+  },
+  "both_ends_starved": "reclaim_safe.sh deleted the reports (fixed this turn), AND the surviving reports carried nothing harvestable. Either alone would have stopped the loop.",
+  "the_standing_fix": "Every contract ends with the _COMMON.md reporting block, or at minimum NEXT_BOTTLENECK with its measured ns. Recorded as REPLAN R010.",
+  "why_this_matters_beyond_today": "G011 asks whether the pipeline keeps making progress in my absence. A lane that finishes without naming the next wall is a dead end for the loop even when its own work is excellent - and today proves the two are independent. The Q80 work was a 12.3x improvement and fed the autonomous queue nothing."
+}
