@@ -1,0 +1,222 @@
+{
+  "schema": "hawking.special_unit.claude_offload_bench.v3",
+  "date": "2026-08-16",
+  "claim": "CLAUDE_OFFLOAD_BENCH with native Qwen3.8 driving the tool plane via strict <tool_call> parse (no repair)",
+  "metric_definition": "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED = measured model-produced routine passes / all attempted routine tasks. produced_by is taken from the turn (native backend = model; scripted = scripted; harness tools = harness). A static expected_producer label is not displacement. Malformed tool calls are refused and FAIL. SKIP (missing env or GPU-lock refuse) is excluded from both sides and is never counted as a pass.",
+  "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED": 0.3333,
+  "passed": 17,
+  "attempted": 18,
+  "skipped": 2,
+  "model_produced_pass": 6,
+  "model_produced_attempted": 7,
+  "harness_produced_pass": 11,
+  "harness_produced_attempted": 11,
+  "status": "PARTIAL",
+  "gpu_lock_untouched": false,
+  "native_model_untouched": false,
+  "native_lock_acquisitions": 10,
+  "native_generates_completed": 10,
+  "tasks": [
+    {
+      "id": "native_qwen38_say",
+      "title": "say() answered by native Qwen3.8 decode (gpu_lane_lock.sh)",
+      "source": "crates/hawking-core/examples/ascension_qwen38_hybrid_greedy.rs + G015_NATIVE_LEG_VERIFY_ON_MAIN.json",
+      "routine_claude": true,
+      "produced_by": "model",
+      "expected_producer": "model",
+      "status": "PASS",
+      "detail": "model generated 60 chars fallbacks=0 used_gpu_lane_lock=True persisted=True excerpt='<think> The user simply wants me to say \"hi.\" This is a very'"
+    },
+    {
+      "id": "read_g015_open_legs",
+      "title": "Read G015 and extract still-open harness legs",
+      "source": "receipts/ascent-2026-08-16/G015_NATIVE_LEG_VERIFY_ON_MAIN.json",
+      "routine_claude": true,
+      "produced_by": "model",
+      "expected_producer": "model",
+      "status": "PASS",
+      "detail": "model read G015 open legs"
+    },
+    {
+      "id": "grep_proposed_complete",
+      "title": "Search the HCLI tree for proposed_complete",
+      "source": "lab/hcli/special_unit.py (this lane's first recon move, same shape as every Claude grep)",
+      "routine_claude": true,
+      "produced_by": "model",
+      "expected_producer": "model",
+      "status": "PASS",
+      "detail": "model grep hits=13"
+    },
+    {
+      "id": "run_option_c_tests",
+      "title": "Run lab/tests/test_option_c.py",
+      "source": "lab/tests/test_option_c.py \u2014 standing Option-C suite Claude already maintains",
+      "routine_claude": true,
+      "produced_by": "model",
+      "expected_producer": "model",
+      "status": "PASS",
+      "detail": ".............                                                            [100%]\n13 passed in 0.04s\n"
+    },
+    {
+      "id": "model_read_native_wired",
+      "title": "Model-driven read of G005_NATIVE_WIRED.json",
+      "source": "receipts/ascent-2026-08-16/G005_NATIVE_WIRED.json",
+      "routine_claude": true,
+      "produced_by": "model",
+      "expected_producer": "model",
+      "status": "PASS",
+      "detail": "model read G005_NATIVE_WIRED"
+    },
+    {
+      "id": "model_grep_verified_complete",
+      "title": "Model-driven search of lab/hcli for verified_complete",
+      "source": "lab/hcli/special_unit.py",
+      "routine_claude": true,
+      "produced_by": "model",
+      "expected_producer": "model",
+      "status": "PASS",
+      "detail": "model grep verified_complete hits=33"
+    },
+    {
+      "id": "machine_state_clean_box",
+      "title": "Query tools/agentos/machine_state.py",
+      "source": "tools/agentos/machine_state.py + receipts/agentos/PROGRAM_PLAN.md W0.T10",
+      "routine_claude": true,
+      "produced_by": null,
+      "expected_producer": "harness",
+      "status": "SKIP",
+      "detail": "SKIP missing /Users/scammermike/.claude-grok/worktrees/qwen38-model-drives-tools-20260816-171332/tools/agentos/machine_state.py"
+    },
+    {
+      "id": "seal_json_receipt",
+      "title": "Seal a JSON receipt and write it in an owned worktree",
+      "source": "lab/receipts.py \u2014 every ascent lane's last action",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "sealed + wrote receipt"
+    },
+    {
+      "id": "consume_q80_host_facets_report",
+      "title": "Consume a real grok-run result (q80-host-facets)",
+      "source": "~/.claude-grok/tasks/q80-host-facets-20260816-143023/grok-report.md",
+      "routine_claude": true,
+      "produced_by": null,
+      "expected_producer": "harness",
+      "status": "SKIP",
+      "detail": "SKIP missing /Users/scammermike/.claude-grok/tasks/q80-host-facets-20260816-143023"
+    },
+    {
+      "id": "gpu_lock_inspect_without_take",
+      "title": "Inspect the GPU lock without creating or taking it",
+      "source": "tools/gpu_lane_lock.sh + S002 anti-scope (GPU belongs to Q80/DSV)",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "no gpu lock"
+    },
+    {
+      "id": "session_persist_qwen38_context",
+      "title": "Persist a Qwen3.8 conversation and resume it in a new process object",
+      "source": "G015 open leg: persistent session + project context",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "resumed su-8411d8dde673 with 2 turns"
+    },
+    {
+      "id": "plan_g015_remaining_legs",
+      "title": "Plan the remaining G015 harness legs as a DAG",
+      "source": "G015_NATIVE_LEG_VERIFY_ON_MAIN.json legs_STILL_OPEN_for_G015",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "steps=['session_context', 'interrupt_resume', 'tool_execution', 'build_test', 'grok_delegate', 'grok_consume', 'agentos_plan', 'agentos_verify', 'resource_pause']"
+    },
+    {
+      "id": "proposed_vs_verified",
+      "title": "proposed_complete must not equal verified_complete",
+      "source": "G015 AgentOS verification leg + lab/verification_authority.py",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "verified_complete"
+    },
+    {
+      "id": "resource_refuse_gpu_during_protected",
+      "title": "Pause GPU work while a fake q80 lock is held; CPU still runs",
+      "source": "S002 anti-scope; tools/gpu_lane_lock.sh owner protocol",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "final=idle pause_reason=None"
+    },
+    {
+      "id": "interrupt_and_resume",
+      "title": "Interrupt a live session and resume it",
+      "source": "G015 HCLI interrupt + restart/resume",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "idle"
+    },
+    {
+      "id": "write_and_pytest_small",
+      "title": "Write a tiny module in an owned worktree and pytest it",
+      "source": "routine Claude test-authoring (same motion as lab/tests/*)",
+      "routine_claude": true,
+      "produced_by": "model",
+      "expected_producer": "model",
+      "status": "FAIL",
+      "detail": "model did not call pytest"
+    },
+    {
+      "id": "delegate_then_consume_roundtrip",
+      "title": "Dispatch a Grok handle, refuse to treat it as done, then consume artifacts",
+      "source": "S002 \u00a716-18; ~/.claude-grok/bin/grok-run artifact layout",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "delegate+consume; verified_complete=False"
+    },
+    {
+      "id": "verification_authority_no_self_promote",
+      "title": "Sandbox principal cannot certify verified_complete",
+      "source": "lab/verification_authority.py + bible \u00a72 / \u00a722",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "sandbox cannot certify verified_complete"
+    },
+    {
+      "id": "refuse_protected_gpu_command",
+      "title": "Refuse a gpu_lane_lock + Q80 greedy command",
+      "source": "tools/gpu_lane_lock.sh + ascension_qwen80_hybrid_greedy",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "refused: command matches a GPU/protected-bench pattern"
+    },
+    {
+      "id": "native_refuses_protected_lock",
+      "title": "Native generate inspects a protected q80 lock and refuses without taking it",
+      "source": "tools/gpu_lane_lock.sh owner protocol + NativeQwen38Backend",
+      "routine_claude": true,
+      "produced_by": "harness",
+      "expected_producer": "harness",
+      "status": "PASS",
+      "detail": "refused protected lock without invoke: protected bench holds gpu lock: q80-mixed-bench"
+    }
+  ],
+  "seal_sha256": "6867617b5f764d250cad6f066d6d61b8ff315088325c139fbce5777c7793aa7d"
+}

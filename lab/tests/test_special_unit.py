@@ -7,6 +7,12 @@ from pathlib import Path
 import pytest
 
 from lab.hcli.special_unit import (
+    DEFAULT_TOOL_NAMES,
+    TOOL_CALL_CLOSE,
+    TOOL_CALL_OPEN,
+    TOOL_MAX_NEW_TOKENS,
+    TOOL_MAX_SEQ_LEN,
+    MalformedToolCall,
     NativeDecodeError,
     NativeDecodeRefused,
     NativeQwen38Backend,
@@ -20,7 +26,9 @@ from lab.hcli.special_unit import (
     consume_grok_task,
     looks_gpu_command,
     main,
+    parse_tool_calls,
     project_context,
+    render_tool_prompt,
 )
 from lab.layout import REPO_ROOT
 from lab.verification_authority import AuthorityPrincipal, SelfPromotionError
@@ -241,6 +249,15 @@ def test_offload_catalog_cites_real_repo_files() -> None:
     assert PRODUCER_HARNESS in producers
     assert PRODUCER_MODEL in producers
     assert any(t.id == "native_qwen38_say" and t.producer == PRODUCER_MODEL for t in TASKS)
+    model_ids = {t.id for t in TASKS if t.producer == PRODUCER_MODEL}
+    assert "grep_proposed_complete" in model_ids
+    assert "read_g015_open_legs" in model_ids
+    assert "run_option_c_tests" in model_ids
+    assert "write_and_pytest_small" in model_ids
+    harness_ids = {t.id for t in TASKS if t.producer == PRODUCER_HARNESS}
+    assert "proposed_vs_verified" in harness_ids
+    assert "native_refuses_protected_lock" in harness_ids
+    assert "refuse_protected_gpu_command" in harness_ids
 
 
 def test_native_backend_refuses_protected_lock_without_invoke(tmp_path: Path) -> None:
@@ -393,3 +410,312 @@ def test_proposed_complete_fence_holds_with_native_stub(tmp_path: Path) -> None:
     assert step["status"] != StepStatus.VERIFIED_COMPLETE.value
     with pytest.raises(SelfPromotionError):
         unit.verify("s", principal=AuthorityPrincipal.SANDBOX_MODEL, certifier_id="qwen38")
+
+
+def _call(name: str, arguments: dict) -> str:
+    return (
+        f"{TOOL_CALL_OPEN}\n"
+        + json.dumps({"name": name, "arguments": arguments}, separators=(",", ":"))
+        + f"\n{TOOL_CALL_CLOSE}\n"
+    )
+
+
+def test_parse_tool_calls_well_formed_single() -> None:
+    text = _call("grep", {"pattern": "proposed_complete", "path": "lab/hcli"})
+    calls = parse_tool_calls(text)
+    assert calls is not None
+    assert len(calls) == 1
+    assert calls[0].name == "grep"
+    assert calls[0].arguments["pattern"] == "proposed_complete"
+
+
+def test_parse_tool_calls_well_formed_multiple() -> None:
+    text = _call("write", {"path": "tiny.py", "content": "x"}) + _call(
+        "pytest", {"target": "test_tiny.py"}
+    )
+    calls = parse_tool_calls(text)
+    assert calls is not None
+    assert [c.name for c in calls] == ["write", "pytest"]
+
+
+def test_parse_tool_calls_plain_text_is_none() -> None:
+    assert parse_tool_calls("no tools here, just an answer") is None
+
+
+def test_parse_tool_calls_refuses_unclosed() -> None:
+    with pytest.raises(MalformedToolCall, match="opening tag without closing tag"):
+        parse_tool_calls(f'{TOOL_CALL_OPEN}\n{{"name":"grep","arguments":{{}}}}')
+
+
+def test_parse_tool_calls_refuses_close_without_open() -> None:
+    with pytest.raises(MalformedToolCall, match="closing tag without opening tag"):
+        parse_tool_calls(f'{TOOL_CALL_CLOSE}\n')
+
+
+def test_parse_tool_calls_refuses_invalid_json() -> None:
+    with pytest.raises(MalformedToolCall, match="not JSON"):
+        parse_tool_calls(f"{TOOL_CALL_OPEN}\nnot-json\n{TOOL_CALL_CLOSE}")
+
+
+def test_parse_tool_calls_refuses_extra_keys() -> None:
+    body = json.dumps({"name": "grep", "arguments": {"pattern": "x"}, "extra": 1})
+    with pytest.raises(MalformedToolCall, match="exactly name and arguments"):
+        parse_tool_calls(f"{TOOL_CALL_OPEN}\n{body}\n{TOOL_CALL_CLOSE}")
+
+
+def test_parse_tool_calls_refuses_args_alias() -> None:
+    body = json.dumps({"name": "grep", "args": {"pattern": "x"}})
+    with pytest.raises(MalformedToolCall, match="exactly name and arguments"):
+        parse_tool_calls(f"{TOOL_CALL_OPEN}\n{body}\n{TOOL_CALL_CLOSE}")
+
+
+def test_parse_tool_calls_refuses_string_arguments() -> None:
+    body = json.dumps({"name": "grep", "arguments": "{\"pattern\":\"x\"}"})
+    with pytest.raises(MalformedToolCall, match="arguments must be a JSON object"):
+        parse_tool_calls(f"{TOOL_CALL_OPEN}\n{body}\n{TOOL_CALL_CLOSE}")
+
+
+def test_parse_tool_calls_refuses_unknown_tool() -> None:
+    with pytest.raises(MalformedToolCall, match="unknown tool"):
+        parse_tool_calls(_call("rm", {"path": "/"}))
+
+
+def test_parse_tool_calls_refuses_untagged_json() -> None:
+    # Untagged JSON is a plain reply, not a repaired call.
+    text = json.dumps({"name": "grep", "arguments": {"pattern": "proposed_complete"}})
+    assert parse_tool_calls(text) is None
+
+
+def test_parse_tool_calls_refuses_empty_body() -> None:
+    with pytest.raises(MalformedToolCall, match="empty tool_call body"):
+        parse_tool_calls(f"{TOOL_CALL_OPEN}\n\n{TOOL_CALL_CLOSE}")
+
+
+def test_act_executes_scripted_well_formed_call(unit: SpecialUnit) -> None:
+    unit.backend = ScriptedBackend(
+        [_call("grep", {"pattern": "proposed_complete", "path": "lab/hcli", "max_hits": 10})]
+    )
+    result = unit.act("Search lab/hcli for proposed_complete.", known_tools=["grep"])
+    assert result.malformed is None
+    assert result.produced_by == "scripted"
+    assert result.produced_by != "model"
+    assert result.calls and result.calls[0].name == "grep"
+    assert result.ok
+    assert result.results[0].ok
+    assert result.results[0].detail.get("hits", 0) >= 1
+
+
+def test_act_refuses_malformed_and_does_not_execute(tmp_path: Path) -> None:
+    # Alias "args" would work if we repaired. We must not.
+    unit = SpecialUnit(
+        repo=REPO_ROOT,
+        session_root=tmp_path / "sessions",
+        owned_worktree=tmp_path / "wt",
+        backend=ScriptedBackend(
+            [f'{TOOL_CALL_OPEN}\n{{"name":"write","args":{{"path":"x","content":"nope"}}}}\n{TOOL_CALL_CLOSE}']
+        ),
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    result = unit.act("write a file", known_tools=["write"])
+    assert result.ok is False
+    assert result.malformed
+    assert result.results == []
+    assert result.calls is None
+    assert not (tmp_path / "wt" / "x").exists()
+    assert not any(t.role == "tool" for t in unit.session.transcript)
+
+
+def test_act_refuses_malformed_json_and_does_not_execute(tmp_path: Path) -> None:
+    unit = SpecialUnit(
+        repo=REPO_ROOT,
+        session_root=tmp_path / "sessions",
+        owned_worktree=tmp_path / "wt",
+        backend=ScriptedBackend([f"{TOOL_CALL_OPEN}\n{{name: grep}}\n{TOOL_CALL_CLOSE}"]),
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    result = unit.act("search", known_tools=["grep"])
+    assert result.ok is False
+    assert "not JSON" in (result.malformed or "")
+    assert result.results == []
+
+
+def test_act_multi_round_accumulates_model_chosen_calls(tmp_path: Path) -> None:
+    wt = tmp_path / "wt"
+    wt.mkdir()
+    unit = SpecialUnit(
+        repo=wt,
+        session_root=tmp_path / "sessions",
+        owned_worktree=wt,
+        backend=ScriptedBackend(
+            [
+                _call("write", {"path": "tiny.py", "content": "def add(a, b):\n    return a + b\n"}),
+                _call(
+                    "write",
+                    {
+                        "path": "test_tiny.py",
+                        "content": "from tiny import add\n\ndef test_add():\n    assert add(2, 3) == 5\n",
+                    },
+                ),
+                _call("pytest", {"target": "test_tiny.py"}),
+                "done",
+            ]
+        ),
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    result = unit.act(
+        "write tiny.py and test_tiny.py then pytest",
+        known_tools=["write", "pytest"],
+        max_rounds=4,
+    )
+    assert result.malformed is None
+    assert result.produced_by == "scripted"
+    assert result.calls is not None
+    assert [c.name for c in result.calls] == ["write", "write", "pytest"]
+    assert (wt / "tiny.py").is_file()
+    assert (wt / "test_tiny.py").is_file()
+    assert result.ok
+
+
+def test_scripted_act_is_not_counted_as_model(unit: SpecialUnit) -> None:
+    unit.backend = ScriptedBackend([_call("read", {"path": str(
+        REPO_ROOT / "receipts/ascent-2026-08-16/G015_NATIVE_LEG_VERIFY_ON_MAIN.json"
+    ), "limit": 20})])
+    result = unit.act("read G015", known_tools=["read"])
+    assert result.ok
+    assert result.produced_by == "scripted"
+    from lab.hcli.claude_offload_bench import PRODUCER_MODEL
+
+    assert result.produced_by != PRODUCER_MODEL
+
+
+def test_act_does_not_let_sandbox_verify(unit: SpecialUnit) -> None:
+    unit.backend = ScriptedBackend([_call("grep", {"pattern": "x", "path": "lab/hcli"})])
+    unit.act("search", known_tools=["grep"])
+    unit.plan("x", steps=[{"id": "s", "title": "S", "dependencies": [], "oracle": {"kind": "predicate"}}])
+    unit.propose("s", author="qwen38")
+    step = unit.session.plan["steps"][0]
+    assert step["status"] == StepStatus.PROPOSED_COMPLETE.value
+    assert step["status"] != StepStatus.VERIFIED_COMPLETE.value
+    with pytest.raises(SelfPromotionError):
+        unit.verify("s", principal=AuthorityPrincipal.SANDBOX_MODEL, certifier_id="qwen38")
+
+
+def test_render_tool_prompt_is_raw_chat() -> None:
+    prompt = render_tool_prompt("Search lab/hcli for proposed_complete.", DEFAULT_TOOL_NAMES)
+    assert prompt.startswith("<|im_start|>system\n")
+    assert "<tools>" in prompt
+    assert TOOL_CALL_OPEN in prompt
+    assert prompt.rstrip().endswith("</think>")
+    assert "<|im_start|>assistant\n" in prompt
+
+
+def test_native_backend_tool_budget_uses_raw_prompt(tmp_path: Path) -> None:
+    import subprocess
+
+    seen: list[list[str]] = []
+
+    def runner(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        seen.append(cmd)
+        out = Path(cmd[cmd.index("--out") + 1])
+        out.write_text(json.dumps({"generated_text": _call("grep", {"pattern": "x"}), "fallbacks": 0}))
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    backend = NativeQwen38Backend(
+        repo=REPO_ROOT,
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+        runner=runner,
+    )
+    text = backend.complete(
+        render_tool_prompt("x"),
+        {"raw_prompt": True, "max_new_tokens": TOOL_MAX_NEW_TOKENS, "max_seq_len": TOOL_MAX_SEQ_LEN},
+    )
+    assert TOOL_CALL_OPEN in text
+    assert seen
+    cmd = seen[0]
+    assert "--raw-prompt" in cmd
+    assert cmd[cmd.index("--max-new-tokens") + 1] == str(TOOL_MAX_NEW_TOKENS)
+    assert cmd[cmd.index("--max-seq-len") + 1] == str(TOOL_MAX_SEQ_LEN)
+    assert backend.last_receipt is not None
+    assert backend.last_receipt["raw_prompt"] is True
+    assert backend.last_receipt["max_new_tokens"] == TOOL_MAX_NEW_TOKENS
+
+
+def test_act_native_stub_records_model_producer(tmp_path: Path) -> None:
+    import subprocess
+
+    def runner(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        assert "--raw-prompt" in cmd
+        out = Path(cmd[cmd.index("--out") + 1])
+        out.write_text(
+            json.dumps(
+                {
+                    "generated_text": _call(
+                        "grep", {"pattern": "proposed_complete", "path": "lab/hcli"}
+                    ),
+                    "fallbacks": 0,
+                }
+            )
+        )
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    unit = SpecialUnit(
+        repo=REPO_ROOT,
+        session_root=tmp_path / "sessions",
+        owned_worktree=tmp_path / "wt",
+        backend=NativeQwen38Backend(
+            repo=REPO_ROOT,
+            gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+            runner=runner,
+        ),
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    result = unit.act("Search lab/hcli for proposed_complete.", known_tools=["grep"])
+    assert result.produced_by == "model"
+    assert result.ok
+    assert result.calls and result.calls[0].name == "grep"
+    assert result.native and result.native.get("raw_prompt") is True
+
+
+def test_act_refuses_protected_lock_without_invoke(tmp_path: Path) -> None:
+    lock = tmp_path / "lock"
+    lock.mkdir()
+    (lock / "owner").write_text("q80-mixed-bench\n", encoding="utf-8")
+    called: list[list[str]] = []
+
+    def runner(cmd: list[str]) -> object:
+        called.append(cmd)
+        raise AssertionError("must not invoke generate")
+
+    unit = SpecialUnit(
+        repo=REPO_ROOT,
+        session_root=tmp_path / "sessions",
+        owned_worktree=tmp_path / "wt",
+        backend=NativeQwen38Backend(
+            repo=REPO_ROOT,
+            gate=ResourceGate(lock_path=lock, allow_gpu=True),
+            runner=runner,  # type: ignore[arg-type]
+        ),
+        gate=ResourceGate(lock_path=lock, allow_gpu=True),
+    )
+    with pytest.raises(NativeDecodeRefused, match="protected"):
+        unit.act("Search lab/hcli for proposed_complete.")
+    assert called == []
+
+
+def test_bench_skip_is_not_a_pass() -> None:
+    from lab.hcli.claude_offload_bench import _is_skip
+
+    assert _is_skip("SKIP missing /tmp/nope")
+    assert not _is_skip("malformed tool call refused: extra key")
+    assert not _is_skip("model produced no tool call: 'hi'")
+
+
+def test_bench_unpack_preserves_measured_producer() -> None:
+    from lab.hcli.claude_offload_bench import _unpack_run
+
+    ok, detail, produced = _unpack_run((True, "hits=3", "model"))
+    assert ok and produced == "model"
+    ok, detail, produced = _unpack_run((True, "hits=3", "scripted"))
+    assert produced == "scripted"
+    ok, detail, produced = _unpack_run((True, "hits=3"))
+    assert produced is None

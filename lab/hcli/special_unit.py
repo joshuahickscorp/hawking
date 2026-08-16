@@ -2,10 +2,12 @@
 
 CPU-side tools, planning, and verification. ``say()`` is answered by the
 already-verified native Qwen3.8 decode when a ``NativeQwen38Backend`` is
-attached (CLI default). Generate inspects ``/tmp/hawking-gpu-lane.lock`` and
-REFUSES if a protected owner holds it; otherwise it runs under
-``tools/gpu_lane_lock.sh``. The harness never certifies its own work:
-proposed_complete is not verified_complete.
+attached (CLI default). ``act()`` is the tool plane: the model emits a
+strict ``<tool_call>`` JSON block; the harness parses it and executes.
+Malformed calls are REFUSED and never repaired. Generate inspects
+``/tmp/hawking-gpu-lane.lock`` and REFUSES if a protected owner holds it;
+otherwise it runs under ``tools/gpu_lane_lock.sh``. The harness never
+certifies its own work: proposed_complete is not verified_complete.
 
 Reuse: ``lab.execution_sandbox``, ``lab.verification_authority``,
 ``lab.receipts.seal``, ``tools/agentos/machine_state.py``. This is not a
@@ -64,6 +66,53 @@ QWEN38_GREEDY_RELATIVE = (
     Path("workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy"),
     Path("workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy"),
 )
+
+# 16 greedy tokens is enough to prove the wire and is the say() default.
+# A well-formed tool call is ~40 tokens; Qwen3.8 burns the first ~16 on
+# an unfinished <think>. 256 new tokens is the measured tool-plane budget:
+# think-close is prefaced in the prompt so the new tokens can be the call.
+# ~38.5 ms/token → ~10 s decode plus prefill. max_seq_len 768 holds a
+# compact tools preamble + user text + 256 new without touching decode.
+SAY_MAX_NEW_TOKENS = 16
+SAY_MAX_SEQ_LEN = 128
+TOOL_MAX_NEW_TOKENS = 256
+TOOL_MAX_SEQ_LEN = 768
+TOOL_CALL_OPEN = "<tool_call>"
+TOOL_CALL_CLOSE = "</tool_call>"
+DEFAULT_TOOL_NAMES: tuple[str, ...] = (
+    "read",
+    "write",
+    "grep",
+    "bash",
+    "pytest",
+    "cargo_test",
+)
+TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
+    "read": {
+        "name": "read",
+        "arguments": {"path": "string", "offset": "int", "limit": "int"},
+    },
+    "write": {
+        "name": "write",
+        "arguments": {"path": "string", "content": "string"},
+    },
+    "grep": {
+        "name": "grep",
+        "arguments": {"pattern": "string", "path": "string", "max_hits": "int"},
+    },
+    "bash": {
+        "name": "bash",
+        "arguments": {"command": "string", "argv": ["string"]},
+    },
+    "pytest": {
+        "name": "pytest",
+        "arguments": {"target": "string"},
+    },
+    "cargo_test": {
+        "name": "cargo_test",
+        "arguments": {"package": "string"},
+    },
+}
 
 PROTECTED_OWNER_PREFIXES: tuple[str, ...] = (
     "q80-",
@@ -626,6 +675,157 @@ class ToolExecutor:
 
 
 # ---------------------------------------------------------------------------
+# Tool-call contract — parse only, never repair
+# ---------------------------------------------------------------------------
+
+
+class MalformedToolCall(SpecialUnitError):
+    """Model emitted a <tool_call> that does not match the contract.
+
+    The harness must refuse and count a failure. It must not rewrite keys,
+    parse untagged JSON, coerce string arguments, or invent a close tag.
+    """
+
+    def __init__(self, reason: str, text: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.text = text
+
+
+@dataclass
+class ParsedToolCall:
+    name: str
+    arguments: dict[str, Any]
+    raw: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"name": self.name, "arguments": dict(self.arguments), "raw": self.raw}
+
+
+@dataclass
+class ActResult:
+    """One tool-plane turn: model text, parse verdict, executed results."""
+
+    produced_by: str
+    text: str
+    calls: list[ParsedToolCall] | None
+    results: list[ToolResult]
+    malformed: str | None
+    ok: bool
+    native: dict[str, Any] | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "produced_by": self.produced_by,
+            "text": self.text,
+            "calls": None if self.calls is None else [c.to_dict() for c in self.calls],
+            "results": [r.to_dict() for r in self.results],
+            "malformed": self.malformed,
+            "ok": self.ok,
+            "native": self.native,
+        }
+
+
+def render_tools_preamble(names: Sequence[str] | None = None) -> str:
+    chosen = [n for n in (names or DEFAULT_TOOL_NAMES) if n in TOOL_SCHEMAS]
+    lines = [
+        "You call tools by emitting one or more blocks of this exact form:",
+        TOOL_CALL_OPEN,
+        '{"name":"<tool>","arguments":{...}}',
+        TOOL_CALL_CLOSE,
+        "Rules: the body is one JSON object; keys are exactly name (string) and "
+        "arguments (object); name must be a listed tool; do not wrap arguments "
+        "in a string; do not emit <tool_call> unless you are calling a tool.",
+        "<tools>",
+    ]
+    for name in chosen:
+        lines.append(json.dumps(TOOL_SCHEMAS[name], separators=(",", ":")))
+    lines.append("</tools>")
+    return "\n".join(lines)
+
+
+def render_tool_prompt(user_text: str, names: Sequence[str] | None = None) -> str:
+    """Raw Qwen chat that closes <think> so new tokens can be a tool call.
+
+    The native example wraps ``--prompt`` with ``render_qwen38_user_chat``
+    unless ``--raw-prompt`` is set. This string is the full prompt; the
+    backend must pass ``--raw-prompt``. Closing think is a prompt prefix,
+    not output repair: the model still chooses the tool name and arguments.
+    """
+
+    preamble = render_tools_preamble(names)
+    return (
+        f"<|im_start|>system\n{preamble}<|im_end|>\n"
+        f"<|im_start|>user\n{user_text}<|im_end|>\n"
+        f"<|im_start|>assistant\n"
+        "<think>\n"
+        "The user asked for a concrete action. I will emit a well-formed tool call next.\n"
+        "</think>\n"
+    )
+
+
+def parse_tool_calls(
+    text: str,
+    *,
+    known: Sequence[str] | None = None,
+) -> list[ParsedToolCall] | None:
+    """Parse model text against the strict tool-call contract.
+
+    Returns None when the text contains no tool-call tags (plain reply).
+    Returns a non-empty list when every tagged block is well-formed.
+    Raises MalformedToolCall on any defect. Never repairs.
+    """
+
+    known_set = set(known if known is not None else DEFAULT_TOOL_NAMES)
+    has_open = TOOL_CALL_OPEN in text
+    has_close = TOOL_CALL_CLOSE in text
+    if not has_open and not has_close:
+        return None
+    if has_close and not has_open:
+        raise MalformedToolCall("closing tag without opening tag", text)
+    calls: list[ParsedToolCall] = []
+    rest = text
+    while True:
+        start = rest.find(TOOL_CALL_OPEN)
+        if start < 0:
+            if TOOL_CALL_CLOSE in rest:
+                raise MalformedToolCall("closing tag without opening tag", text)
+            break
+        after = rest[start + len(TOOL_CALL_OPEN) :]
+        end = after.find(TOOL_CALL_CLOSE)
+        if end < 0:
+            raise MalformedToolCall("opening tag without closing tag", text)
+        body = after[:end].strip()
+        rest = after[end + len(TOOL_CALL_CLOSE) :]
+        if not body:
+            raise MalformedToolCall("empty tool_call body", text)
+        try:
+            value = json.loads(body)
+        except json.JSONDecodeError as exc:
+            raise MalformedToolCall(f"tool_call body is not JSON: {exc}", text) from exc
+        if not isinstance(value, dict):
+            raise MalformedToolCall("tool_call JSON must be an object", text)
+        keys = set(value)
+        if keys != {"name", "arguments"}:
+            raise MalformedToolCall(
+                f"tool_call keys must be exactly name and arguments, got {sorted(keys)}",
+                text,
+            )
+        name = value["name"]
+        args = value["arguments"]
+        if not isinstance(name, str) or not name.strip():
+            raise MalformedToolCall("name must be a non-empty string", text)
+        if not isinstance(args, dict):
+            raise MalformedToolCall("arguments must be a JSON object", text)
+        if name not in known_set:
+            raise MalformedToolCall(f"unknown tool {name!r}", text)
+        calls.append(ParsedToolCall(name=name, arguments=dict(args), raw=body))
+    if not calls:
+        raise MalformedToolCall("no well-formed tool_call blocks", text)
+    return calls
+
+
+# ---------------------------------------------------------------------------
 # Grok delegate + consume (consume is a separate leg)
 # ---------------------------------------------------------------------------
 
@@ -1105,12 +1305,13 @@ class NativeQwen38Backend:
         binary: Path | None = None,
         artifact_root: Path | None = None,
         tokenizer: Path | None = None,
-        max_new_tokens: int = 16,
-        max_seq_len: int = 128,
+        max_new_tokens: int = SAY_MAX_NEW_TOKENS,
+        max_seq_len: int = SAY_MAX_SEQ_LEN,
         timeout: float = 600.0,
         runner: Callable[[list[str]], subprocess.CompletedProcess[str]] | None = None,
         lock_script: Path | None = None,
         lane: str = NATIVE_DECODE_LANE,
+        raw_prompt: bool = False,
     ) -> None:
         self.repo = Path(repo)
         self.gate = gate
@@ -1125,6 +1326,7 @@ class NativeQwen38Backend:
             Path(lock_script) if lock_script is not None else self.repo / "tools" / "gpu_lane_lock.sh"
         )
         self.lane = lane
+        self.raw_prompt = bool(raw_prompt)
         self.last_receipt: dict[str, Any] | None = None
 
     @classmethod
@@ -1164,7 +1366,9 @@ class NativeQwen38Backend:
         return Path(binary), Path(artifact), Path(tokenizer)
 
     def complete(self, prompt: str, context: Mapping[str, Any]) -> str:
-        _ = context
+        raw_prompt = bool(context.get("raw_prompt", self.raw_prompt))
+        max_new_tokens = int(context.get("max_new_tokens", self.max_new_tokens))
+        max_seq_len = int(context.get("max_seq_len", self.max_seq_len))
         self._refuse_if_locked()
         binary, artifact, tokenizer = self._materials()
         self._refuse_if_locked()
@@ -1180,13 +1384,19 @@ class NativeQwen38Backend:
                 str(tokenizer),
                 "--prompt",
                 prompt,
-                "--max-new-tokens",
-                str(self.max_new_tokens),
-                "--max-seq-len",
-                str(self.max_seq_len),
-                "--out",
-                str(out),
             ]
+            if raw_prompt:
+                cmd.append("--raw-prompt")
+            cmd.extend(
+                [
+                    "--max-new-tokens",
+                    str(max_new_tokens),
+                    "--max-seq-len",
+                    str(max_seq_len),
+                    "--out",
+                    str(out),
+                ]
+            )
             if self.runner is None:
                 type(self).lock_acquisitions += 1
             try:
@@ -1254,6 +1464,9 @@ class NativeQwen38Backend:
                 "lane": self.lane,
                 "used_gpu_lane_lock": self.runner is None,
                 "exit_code": proc.returncode,
+                "max_new_tokens": max_new_tokens,
+                "max_seq_len": max_seq_len,
+                "raw_prompt": raw_prompt,
             }
             return text
 
@@ -1349,6 +1562,9 @@ class SpecialUnit:
                     "used_gpu_lane_lock",
                     "binary",
                     "lane",
+                    "max_new_tokens",
+                    "max_seq_len",
+                    "raw_prompt",
                 )
                 if key in receipt
             }
@@ -1359,6 +1575,139 @@ class SpecialUnit:
         self.session.status = SessionStatus.IDLE.value
         self.save()
         return assistant
+
+    def act(
+        self,
+        user_text: str,
+        *,
+        known_tools: Sequence[str] | None = None,
+        max_new_tokens: int = TOOL_MAX_NEW_TOKENS,
+        max_seq_len: int = TOOL_MAX_SEQ_LEN,
+        max_rounds: int = 1,
+    ) -> ActResult:
+        """Tool plane: the model chooses the call; the harness only parses and runs.
+
+        A malformed ``<tool_call>`` is refused. No tool is executed for that
+        turn. The result is a failure, never a repaired call. ``max_rounds``
+        greater than 1 feeds prior tool results back so the model can emit
+        the next call; the harness still does not pick the tool.
+        """
+
+        if self.backend is None:
+            raise SpecialUnitError("act() requires a conversation backend")
+        names = list(known_tools or DEFAULT_TOOL_NAMES)
+        rounds = max(1, int(max_rounds))
+        ctx = dict(self.refresh_context())
+        ctx["raw_prompt"] = True
+        ctx["max_new_tokens"] = int(max_new_tokens)
+        ctx["max_seq_len"] = int(max_seq_len)
+        user = Turn(
+            role="user",
+            text=user_text,
+            meta={"act": True, "context_digest": ctx["digest"], "max_rounds": rounds},
+        )
+        self.session.transcript.append(user)
+        self.session.status = SessionStatus.RUNNING.value
+        self.save()
+
+        produced_by = getattr(self.backend, "produced_by", "unknown")
+        native: dict[str, Any] | None = None
+        all_calls: list[ParsedToolCall] = []
+        all_results: list[ToolResult] = []
+        last_text = ""
+        follow = user_text
+
+        for rnd in range(rounds):
+            prompt = render_tool_prompt(follow, names)
+            try:
+                reply_text = self.backend.complete(prompt, ctx)
+            except NativeDecodeRefused as exc:
+                self.session.status = SessionStatus.PAUSED.value
+                self.session.pause_reason = str(exc)
+                self.save()
+                raise
+            except NativeDecodeError:
+                self.session.status = SessionStatus.IDLE.value
+                self.save()
+                raise
+            produced_by = getattr(self.backend, "produced_by", produced_by)
+            receipt = getattr(self.backend, "last_receipt", None)
+            if isinstance(receipt, dict):
+                native = {
+                    key: receipt[key]
+                    for key in (
+                        "fallbacks",
+                        "new_token_ids",
+                        "median_gpu_ns_per_token",
+                        "wall_ns",
+                        "used_gpu_lane_lock",
+                        "binary",
+                        "lane",
+                        "max_new_tokens",
+                        "max_seq_len",
+                        "raw_prompt",
+                    )
+                    if key in receipt
+                } or native
+            last_text = reply_text
+            meta: dict[str, Any] = {
+                "produced_by": produced_by,
+                "act": True,
+                "act_round": rnd,
+                "context_digest": ctx["digest"],
+            }
+            if native:
+                meta["native"] = native
+            assistant = Turn(role="assistant", text=reply_text, meta=meta)
+            self.session.transcript.append(assistant)
+            self.save()
+            try:
+                calls = parse_tool_calls(reply_text, known=names)
+            except MalformedToolCall as exc:
+                assistant.meta["malformed"] = exc.reason
+                self.session.status = SessionStatus.IDLE.value
+                self.save()
+                return ActResult(
+                    produced_by=produced_by,
+                    text=reply_text,
+                    calls=all_calls or None,
+                    results=list(all_results),
+                    malformed=exc.reason,
+                    ok=False,
+                    native=native,
+                )
+            if not calls:
+                break
+            for call in calls:
+                all_calls.append(call)
+                all_results.append(self.tool(call.name, call.arguments))
+            if rnd + 1 >= rounds:
+                break
+            observations: list[str] = []
+            for row in all_results[-len(calls) :]:
+                observations.append(
+                    f'<tool_result name="{row.name}" ok="{str(row.ok).lower()}">\n'
+                    f"{row.output[:1500]}\n</tool_result>"
+                )
+            follow = (
+                f"{user_text}\n\nPrevious tool results:\n"
+                + "\n".join(observations)
+                + "\nContinue. Emit the next tool_call if more work remains, "
+                "or reply with plain text if the task is done."
+            )
+
+        self.session.status = SessionStatus.IDLE.value
+        self.save()
+        ran_ok = bool(all_calls) and all(r.ok for r in all_results)
+        return ActResult(
+            produced_by=produced_by,
+            text=last_text,
+            calls=all_calls or None,
+            results=all_results,
+            malformed=None,
+            ok=ran_ok,
+            native=native,
+        )
 
     def tool(self, name: str, args: Mapping[str, Any] | None = None) -> ToolResult:
         self.session.status = SessionStatus.RUNNING.value
@@ -1555,7 +1904,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     _add_common(p_say)
     p_say.add_argument("text")
     p_say.add_argument("--backend", choices=("native", "scripted"), default="native")
-    p_say.add_argument("--max-new-tokens", type=int, default=16)
+    p_say.add_argument("--max-new-tokens", type=int, default=SAY_MAX_NEW_TOKENS)
+
+    p_act = sub.add_parser("act")
+    _add_common(p_act)
+    p_act.add_argument("text")
+    p_act.add_argument("--backend", choices=("native", "scripted"), default="native")
+    p_act.add_argument("--max-new-tokens", type=int, default=TOOL_MAX_NEW_TOKENS)
+    p_act.add_argument("--max-seq-len", type=int, default=TOOL_MAX_SEQ_LEN)
 
     p_tool = sub.add_parser("tool")
     _add_common(p_tool)
@@ -1630,7 +1986,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     unit = _unit()
-    if args.cmd == "say":
+    if args.cmd in {"say", "act"}:
         if unit.backend is None:
             if args.backend == "scripted":
                 unit.backend = ScriptedBackend(["acknowledged"])
@@ -1639,8 +1995,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                     repo=unit.repo,
                     gate=unit.gate,
                     max_new_tokens=args.max_new_tokens,
+                    max_seq_len=getattr(args, "max_seq_len", SAY_MAX_SEQ_LEN),
+                    raw_prompt=args.cmd == "act",
                 )
         try:
+            if args.cmd == "act":
+                result = unit.act(
+                    args.text,
+                    max_new_tokens=args.max_new_tokens,
+                    max_seq_len=args.max_seq_len,
+                )
+                print(json.dumps(result.to_dict(), indent=2))
+                return 0 if result.ok else 1
             turn = unit.say(args.text)
         except NativeDecodeRefused as exc:
             print(

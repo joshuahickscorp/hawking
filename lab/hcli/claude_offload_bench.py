@@ -8,6 +8,10 @@ tasks whose result was produced by the native Qwen3.8 model. Harness-executed
 passes (tools, fences, scripted say) are reported separately; they are not
 model displacement. Environment-missing and GPU-lock refusals are SKIP and
 are excluded from both sides. A skip is never a pass.
+
+A model-driven task counts only when the native backend emitted the text
+and a strict tool-call parse succeeded. Malformed calls are refused and
+FAIL. The harness never rewrites the model's call into something that works.
 """
 from __future__ import annotations
 
@@ -20,6 +24,7 @@ from typing import Any, Callable
 from lab.hcli.special_unit import (
     GROK_TASKS,
     GPU_LOCK,
+    ActResult,
     NativeDecodeError,
     NativeDecodeRefused,
     NativeQwen38Backend,
@@ -34,12 +39,13 @@ from lab.layout import REPO_ROOT
 from lab.receipts import seal
 from lab.verification_authority import AuthorityPrincipal, SelfPromotionError
 
-SCHEMA = "hawking.special_unit.claude_offload_bench.v2"
-DEFAULT_RECEIPT = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G005_MODEL_WIRED_OFFLOAD.json"
+SCHEMA = "hawking.special_unit.claude_offload_bench.v3"
+DEFAULT_RECEIPT = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G005_MODEL_DRIVES_TOOLS.json"
 G015 = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G015_NATIVE_LEG_VERIFY_ON_MAIN.json"
 REAL_GROK_TASK = "q80-host-facets-20260816-143023"
 PRODUCER_MODEL = "model"
 PRODUCER_HARNESS = "harness"
+TaskRun = tuple[bool, str] | tuple[bool, str, str | None]
 
 
 @dataclass
@@ -48,8 +54,16 @@ class OffloadTask:
     title: str
     source: str
     routine_claude: bool
-    run: Callable[[Path], tuple[bool, str]]
+    run: Callable[[Path], TaskRun]
     producer: str = PRODUCER_HARNESS
+
+
+def _unpack_run(result: TaskRun) -> tuple[bool, str, str | None]:
+    if len(result) == 3:
+        ok, detail, produced_by = result
+        return bool(ok), str(detail), produced_by
+    ok, detail = result
+    return bool(ok), str(detail), None
 
 
 def _unit(repo: Path, tmp: Path, **kwargs: Any) -> SpecialUnit:
@@ -62,27 +76,133 @@ def _unit(repo: Path, tmp: Path, **kwargs: Any) -> SpecialUnit:
     )
 
 
-def _t_read_g015(tmp: Path) -> tuple[bool, str]:
-    unit = _unit(REPO_ROOT, tmp)
-    result = unit.tool("read", {"path": str(G015), "limit": 80})
-    if not result.ok:
-        return False, result.output
-    ok = "legs_STILL_OPEN_for_G015" in result.output and "HCLI conversation" in result.output
-    return ok, "extracted G015 open legs" if ok else "G015 payload missing expected legs"
+def _begin_native_unit(
+    tmp: Path,
+    *,
+    repo: Path = REPO_ROOT,
+    owned_worktree: Path | None = None,
+) -> tuple[SpecialUnit | None, str]:
+    """Open a native-backed unit, or return a SKIP detail."""
+
+    gate = ResourceGate(lock_path=GPU_LOCK)
+    live, why = gate.protected_bench_live()
+    if live:
+        return None, f"SKIP {why}"
+    owner = gate.lock_owner()
+    if owner:
+        return None, f"SKIP gpu lock held by {owner}; will not contend"
+    backend = NativeQwen38Backend(repo=REPO_ROOT, gate=gate)
+    unit = SpecialUnit(
+        repo=repo,
+        session_root=tmp / "sessions",
+        owned_worktree=owned_worktree or (tmp / "wt"),
+        backend=backend,
+        gate=gate,
+    )
+    return unit, ""
 
 
-def _t_grep_proposed(tmp: Path) -> tuple[bool, str]:
-    unit = _unit(REPO_ROOT, tmp)
-    result = unit.tool("grep", {"pattern": "proposed_complete", "path": "lab/hcli", "max_hits": 20})
-    if not result.ok:
-        return False, result.output
-    return result.detail.get("hits", 0) > 0, f"hits={result.detail.get('hits')}"
+def _act_or_skip(
+    tmp: Path,
+    user_text: str,
+    *,
+    repo: Path = REPO_ROOT,
+    owned_worktree: Path | None = None,
+    known_tools: list[str] | None = None,
+    max_rounds: int = 1,
+) -> tuple[ActResult | None, str, str | None]:
+    unit, skip = _begin_native_unit(tmp, repo=repo, owned_worktree=owned_worktree)
+    if unit is None:
+        return None, skip, None
+    try:
+        result = unit.act(user_text, known_tools=known_tools, max_rounds=max_rounds)
+    except NativeDecodeRefused as exc:
+        return None, exc.bench_detail(), None
+    except NativeDecodeError as exc:
+        return None, f"native generate failed: {exc}", PRODUCER_MODEL
+    return result, "", result.produced_by
 
 
-def _t_pytest_option_c(tmp: Path) -> tuple[bool, str]:
-    unit = _unit(REPO_ROOT, tmp)
-    result = unit.tool("pytest", {"target": "lab/tests/test_option_c.py", "timeout": 90})
-    return result.ok, result.output[-500:]
+def _require_model_calls(
+    result: ActResult,
+    *,
+    tool: str | None = None,
+) -> tuple[bool, str]:
+    if result.malformed:
+        return False, f"malformed tool call refused: {result.malformed}"
+    if not result.calls:
+        excerpt = result.text.replace("\n", " ")[:240]
+        return False, f"model produced no tool call: {excerpt!r}"
+    if result.produced_by != PRODUCER_MODEL:
+        return False, f"not model-produced: {result.produced_by}"
+    if tool is not None and not any(c.name == tool for c in result.calls):
+        names = [c.name for c in result.calls]
+        return False, f"model did not call {tool}: {names}"
+    return True, ""
+
+
+def _t_read_g015(tmp: Path) -> tuple[bool, str, str | None]:
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Read receipts/ascent-2026-08-16/G015_NATIVE_LEG_VERIFY_ON_MAIN.json "
+        "(limit 80 lines) so the still-open G015 harness legs can be extracted.",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "read")
+    path = str(call.arguments.get("path") or "")
+    if "G015_NATIVE_LEG_VERIFY_ON_MAIN.json" not in path:
+        return False, f"model read the wrong path: {path!r}", produced
+    blob = "\n".join(r.output for r in result.results if r.name == "read")
+    found = "legs_STILL_OPEN_for_G015" in blob and "HCLI conversation" in blob
+    return found, "model read G015 open legs" if found else "G015 payload missing expected legs", produced
+
+
+def _t_grep_proposed(tmp: Path) -> tuple[bool, str, str | None]:
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Search the HCLI tree at lab/hcli for the symbol proposed_complete.",
+        known_tools=["grep"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="grep")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "grep")
+    pattern = str(call.arguments.get("pattern") or "")
+    if "proposed_complete" not in pattern:
+        return False, f"model grep pattern missed proposed_complete: {pattern!r}", produced
+    hits = 0
+    for row in result.results:
+        if row.name == "grep":
+            hits = int(row.detail.get("hits") or 0)
+    return hits > 0, f"model grep hits={hits}", produced
+
+
+def _t_pytest_option_c(tmp: Path) -> tuple[bool, str, str | None]:
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Run the Option-C unit tests at lab/tests/test_option_c.py.",
+        known_tools=["pytest"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="pytest")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "pytest")
+    target = str(call.arguments.get("target") or "")
+    if "test_option_c.py" not in target:
+        return False, f"model pytest target missed test_option_c.py: {target!r}", produced
+    ran = next((r for r in result.results if r.name == "pytest"), None)
+    if ran is None:
+        return False, "pytest tool did not run", produced
+    return ran.ok, (ran.output or "")[-500:], produced
 
 
 def _t_machine_state(tmp: Path) -> tuple[bool, str]:
@@ -223,23 +343,81 @@ def _t_interrupt_resume(tmp: Path) -> tuple[bool, str]:
     return unit.session.status == "idle" and unit.session.pending_interrupt is None, unit.session.status
 
 
-def _t_write_and_pytest(tmp: Path) -> tuple[bool, str]:
+def _t_write_and_pytest(tmp: Path) -> tuple[bool, str, str | None]:
     wt = tmp / "wt"
     wt.mkdir(parents=True, exist_ok=True)
-    unit = _unit(wt, tmp)
-    src = wt / "tiny.py"
-    test = wt / "test_tiny.py"
-    w1 = unit.tool("write", {"path": str(src), "content": "def add(a, b):\n    return a + b\n"})
-    if not w1.ok:
-        return False, w1.output
-    w2 = unit.tool(
-        "write",
-        {"path": str(test), "content": "from tiny import add\n\ndef test_add():\n    assert add(2, 3) == 5\n"},
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "In the current directory write tiny.py implementing add(a, b) that returns "
+        "a + b, write test_tiny.py that asserts add(2, 3) == 5, then run pytest on "
+        "test_tiny.py. Emit one tool_call per action, in that order.",
+        repo=wt,
+        owned_worktree=wt,
+        known_tools=["write", "pytest"],
+        max_rounds=4,
     )
-    if not w2.ok:
-        return False, w2.output
-    result = unit.tool("pytest", {"target": str(test.resolve()), "timeout": 30})
-    return result.ok, result.output[-300:]
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result)
+    if not ok:
+        return False, why, produced
+    writes = [c for c in (result.calls or []) if c.name == "write"]
+    pytests = [c for c in (result.calls or []) if c.name == "pytest"]
+    if len(writes) < 2:
+        return False, f"model wrote {len(writes)} file(s), need tiny.py and test_tiny.py", produced
+    if not pytests:
+        return False, "model did not call pytest", produced
+    paths = [str(c.arguments.get("path") or "") for c in writes]
+    if not any(p.endswith("tiny.py") and not p.endswith("test_tiny.py") for p in paths):
+        return False, f"model did not write tiny.py: {paths}", produced
+    if not any("test_tiny.py" in p for p in paths):
+        return False, f"model did not write test_tiny.py: {paths}", produced
+    ran = next((r for r in result.results if r.name == "pytest"), None)
+    if ran is None or not ran.ok:
+        return False, (ran.output if ran else "pytest did not run")[-300:], produced
+    return True, ran.output[-300:], produced
+
+
+def _t_model_read_native_wired(tmp: Path) -> tuple[bool, str, str | None]:
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Read receipts/ascent-2026-08-16/G005_NATIVE_WIRED.json (limit 60 lines).",
+        known_tools=["read"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="read")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "read")
+    path = str(call.arguments.get("path") or "")
+    if "G005_NATIVE_WIRED.json" not in path:
+        return False, f"model read the wrong path: {path!r}", produced
+    blob = "\n".join(r.output for r in result.results if r.name == "read")
+    found = "NativeQwen38Backend" in blob or "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED" in blob
+    return found, "model read G005_NATIVE_WIRED" if found else "native-wired receipt missing expected keys", produced
+
+
+def _t_model_grep_verified(tmp: Path) -> tuple[bool, str, str | None]:
+    result, skip, produced = _act_or_skip(
+        tmp,
+        "Search lab/hcli for the symbol verified_complete.",
+        known_tools=["grep"],
+    )
+    if result is None:
+        return False, skip, produced
+    ok, why = _require_model_calls(result, tool="grep")
+    if not ok:
+        return False, why, produced
+    call = next(c for c in result.calls or [] if c.name == "grep")
+    pattern = str(call.arguments.get("pattern") or "")
+    if "verified_complete" not in pattern:
+        return False, f"model grep pattern missed verified_complete: {pattern!r}", produced
+    hits = 0
+    for row in result.results:
+        if row.name == "grep":
+            hits = int(row.detail.get("hits") or 0)
+    return hits > 0, f"model grep verified_complete hits={hits}", produced
 
 
 def _t_delegate_then_consume(tmp: Path) -> tuple[bool, str]:
@@ -407,6 +585,7 @@ TASKS: list[OffloadTask] = [
         "receipts/ascent-2026-08-16/G015_NATIVE_LEG_VERIFY_ON_MAIN.json",
         True,
         _t_read_g015,
+        PRODUCER_MODEL,
     ),
     OffloadTask(
         "grep_proposed_complete",
@@ -414,6 +593,7 @@ TASKS: list[OffloadTask] = [
         "lab/hcli/special_unit.py (this lane's first recon move, same shape as every Claude grep)",
         True,
         _t_grep_proposed,
+        PRODUCER_MODEL,
     ),
     OffloadTask(
         "run_option_c_tests",
@@ -421,6 +601,23 @@ TASKS: list[OffloadTask] = [
         "lab/tests/test_option_c.py — standing Option-C suite Claude already maintains",
         True,
         _t_pytest_option_c,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "model_read_native_wired",
+        "Model-driven read of G005_NATIVE_WIRED.json",
+        "receipts/ascent-2026-08-16/G005_NATIVE_WIRED.json",
+        True,
+        _t_model_read_native_wired,
+        PRODUCER_MODEL,
+    ),
+    OffloadTask(
+        "model_grep_verified_complete",
+        "Model-driven search of lab/hcli for verified_complete",
+        "lab/hcli/special_unit.py",
+        True,
+        _t_model_grep_verified,
+        PRODUCER_MODEL,
     ),
     OffloadTask(
         "machine_state_clean_box",
@@ -491,6 +688,7 @@ TASKS: list[OffloadTask] = [
         "routine Claude test-authoring (same motion as lab/tests/*)",
         True,
         _t_write_and_pytest,
+        PRODUCER_MODEL,
     ),
     OffloadTask(
         "delegate_then_consume_roundtrip",
@@ -541,8 +739,9 @@ def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> di
     with tempfile.TemporaryDirectory(prefix="su-offload-") as td:
         tmp = Path(td)
         for task in TASKS:
+            actual_producer: str | None = None
             try:
-                ok, detail = task.run(tmp)
+                ok, detail, actual_producer = _unpack_run(task.run(tmp))
             except NativeDecodeRefused as exc:
                 ok, detail = False, exc.bench_detail()
             except Exception as exc:  # noqa: BLE001 — bench must record, not crash
@@ -562,11 +761,15 @@ def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> di
                     }
                 )
                 continue
+            produced_by = actual_producer if actual_producer is not None else task.producer
             if task.routine_claude:
                 attempted += 1
                 if ok:
                     passed += 1
-                if task.producer == PRODUCER_MODEL:
+                # Displacement counts only measured model production.
+                # A scripted or harness result on a model-tagged task is not
+                # model work. A model result on a harness-tagged task is.
+                if produced_by == PRODUCER_MODEL:
                     model_attempted += 1
                     if ok:
                         model_passed += 1
@@ -580,7 +783,7 @@ def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> di
                     "title": task.title,
                     "source": task.source,
                     "routine_claude": task.routine_claude,
-                    "produced_by": task.producer,
+                    "produced_by": produced_by,
                     "expected_producer": task.producer,
                     "status": "PASS" if ok else "FAIL",
                     "detail": detail[:800],
@@ -595,11 +798,17 @@ def run_bench(*, repo: Path = REPO_ROOT, receipt_path: Path | None = None) -> di
         {
             "schema": SCHEMA,
             "date": "2026-08-16",
-            "claim": "CLAUDE_OFFLOAD_BENCH with native Qwen3.8 answering say()",
+            "claim": (
+                "CLAUDE_OFFLOAD_BENCH with native Qwen3.8 driving the tool plane "
+                "via strict <tool_call> parse (no repair)"
+            ),
             "metric_definition": (
                 "FRACTION_OF_ROUTINE_CLAUDE_WORK_DISPLACED = "
-                "model-produced routine passes / all attempted routine tasks. "
-                "Harness-executed passes are not model displacement. "
+                "measured model-produced routine passes / all attempted routine tasks. "
+                "produced_by is taken from the turn (native backend = model; "
+                "scripted = scripted; harness tools = harness). "
+                "A static expected_producer label is not displacement. "
+                "Malformed tool calls are refused and FAIL. "
                 "SKIP (missing env or GPU-lock refuse) is excluded from both sides "
                 "and is never counted as a pass."
             ),
