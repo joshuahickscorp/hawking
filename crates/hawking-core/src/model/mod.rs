@@ -25,6 +25,9 @@ pub mod qwen80_token_ns_ledger;
 /// Compact mixed-representation catalog for the Q80 ≤1.5 pack.
 /// Admission/index only — not a decode kernel and not a generation runtime.
 pub mod qwen80_mixed_catalog;
+/// Mixed-catalog binding of the Q4 hybrid token graph. Expert organs use the
+/// packed mixed codecs; non-experts stay HGRAVU01-q8. Not a dense-W path.
+pub mod qwen80_mixed_hybrid_decode;
 
 /// Memory-bounded DSV4F activation-X capture writer.
 ///

@@ -1,0 +1,201 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 1.4444456847927971,
+    "manifest_seal_sha256": "6a09fa747af1431b67e53691bc24dfa421c0a7643c5befb297b2eed0f4a95af6",
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+    "tensor_count": 74391
+  },
+  "claim": "MIXED_1P5_GENERATION_GATE_NOT_BASE_TRUE_TPS",
+  "claim_boundary": {
+    "dense_w_materialized": false,
+    "generation_is_the_gate": true,
+    "graded_against": "artifact CPU/numpy oracle, never BF16 parent",
+    "not_bit_exact_vs_q4": true,
+    "packing_is_not_a_coherence_claim": true
+  },
+  "coherence_class": "COHERENT",
+  "correctness": {
+    "dense_w_materialized": false,
+    "designed_host_ops": 12781,
+    "fallbacks": {
+      "dense_w_materialized": 0,
+      "host_activation": 12460,
+      "host_expert_payload_bind": 0,
+      "host_mixed_matvec": 0,
+      "host_q8_embed_gather": 28,
+      "host_q8_vector_decode": 265,
+      "host_sample": 28
+    },
+    "gate_kind": "numeric_equivalence_vs_artifact_oracle",
+    "parity": {
+      "dense_w_materialized": false,
+      "passed": true,
+      "samples": [
+        {
+          "codec": 0,
+          "dense_w_materialized": false,
+          "max_abs_error": 2.086162567138672e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.gate_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 1,
+          "dense_w_materialized": false,
+          "max_abs_error": 1.4901161193847656e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.up_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 2,
+          "dense_w_materialized": false,
+          "max_abs_error": 1.341104507446289e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.down_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "dense_w_materialized": false,
+          "max_abs_error": 3.5762786865234375e-7,
+          "passed": true,
+          "tensor": "model.layers.3.self_attn.q_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "note": "1d HGRAVU01 host decode, not a weight GEMV",
+          "passed": true,
+          "tensor": "model.layers.0.input_layernorm.weight",
+          "vector_elements": 2048
+        }
+      ]
+    },
+    "silent_fallback_count": 0,
+    "tolerance": 0.00002
+  },
+  "execution": {
+    "metal_error": null,
+    "native": {
+      "binary_dispatches": 26882,
+      "command_buffers": 13808,
+      "hgravs_factor_dispatches": 26882,
+      "residual_dispatches": 13441,
+      "routed_expert_waves": 1344,
+      "uniform8_dispatches": 11117
+    },
+    "peak_rss_bytes": 9814999040,
+    "stages": {
+      "deltanet_secs": 12.906572738000005,
+      "embed_secs": 0.438135583,
+      "gpu_matvec_ns": 24313305444,
+      "gpu_matvec_timestamps_missing": 0,
+      "gqa_secs": 4.382278628999999,
+      "mixed_matvec_secs": 30.209359727999914,
+      "moe_combine_secs": 2.7662853530000007,
+      "moe_norm_router_secs": 3.114002406000003,
+      "moe_routed_secs": 12.247797282,
+      "moe_shared_secs": 7.752178054000006,
+      "terminal_secs": 1.1359787940000003
+    },
+    "weight_codec": "mixed_gate_binary_up_rice_q1_down_hgravs01_r160_b3_nonexpert_q8"
+  },
+  "generated_text": "Here’s a function that reverses a string (i.e",
+  "generated_token_ids": [
+    8420,
+    748,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    320,
+    72,
+    1734
+  ],
+  "lane": "q80-mixed-generate",
+  "prompt": "<|im_start|>user\nWrite a function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    7985,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "reps_generated_text": [
+    "Here’s a function that reverses a string (i.e",
+    "Here’s a function that reverses a string (i.e",
+    "Here’s a function that reverses a string (i.e",
+    "Here’s a function that reverses a string (i.e",
+    "Here’s a function that reverses a string (i.e",
+    "Here’s a function that reverses a string (i.e"
+  ],
+  "reps_ids_match_first": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "schema": "hawking.ascent.q80_mixed_generate.v1",
+  "status": "COHERENT",
+  "q4_vehicle_reference": {
+    "generated_text": "Here's a simple function in Python that reverses a string",
+    "generated_token_ids": [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914],
+    "note": "Different representation, not a bit-exact requantization. First token 8420 matches. Continuation diverges (748 vs 594) and is still English that answers the prompt."
+  },
+  "timing": {
+    "label": "DIRTY_ENGINEERING",
+    "authority": {
+      "wall_decode_ns_per_token": "decode_secs / 11 steady-state new tokens (same denominator as Q80_BASELINE 403e6). Other lanes were running.",
+      "gpu_matvec": "MTLCommandBuffer.GPUEndTime - GPUStartTime after wait. Rep 1 is the only complete-generate GPU total; later reps accumulated session GPU and are discarded."
+    },
+    "baseline_ns_per_token": 403384727,
+    "baseline_source": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json decode_secs/11",
+    "prefill_secs_rep1": 25.560301542,
+    "decode_secs_rep1": 19.187348333,
+    "steady_state_tokens": 11,
+    "forwards_per_generate": 28,
+    "wall_decode_ns_per_token_reps": [1744304394, 1228194485, 1201536125, 1269822364, 1639601269, 1185657858],
+    "wall_decode_ns_per_token_median": 1249008424,
+    "wall_decode_ns_per_token_min": 1185657858,
+    "wall_decode_ns_per_token_max": 1744304394,
+    "gpu_matvec_ns_rep1_total": 24313305444,
+    "gpu_matvec_ns_per_forward_rep1": 868332337,
+    "gpu_timestamps_missing": 0,
+    "stage_split_rep1_wall_secs": {
+      "embed": 0.438135583,
+      "deltanet": 12.906572738,
+      "gqa": 4.382278629,
+      "moe_norm_router": 3.114002406,
+      "moe_shared": 7.752178054,
+      "moe_routed": 12.247797282,
+      "moe_combine": 2.766285353,
+      "terminal": 1.135978794,
+      "mixed_matvec_included_in_stages": 30.209359728
+    }
+  },
+  "next_bottleneck": {
+    "what": "Weight GEMV dispatch: 10-expert mixed wave (binary+rice+hgravs two-stage) plus Q8 mixer/shared/lm_head, host-activated graph, ~13808 CBs/generate. Not bandwidth-bound.",
+    "measured_ns": 868332337,
+    "measured_what": "GPU matvec ns per forward, rep 1, MTLCommandBuffer GPUEnd-GPUStart",
+    "wall_moe_routed_ns_per_forward": 437421331,
+    "wall_deltanet_ns_per_forward": 460948312
+  }
+}

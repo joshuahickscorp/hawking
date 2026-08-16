@@ -1123,7 +1123,7 @@ impl Qwen80HybridDecodeState {
         format!("{:x}", hasher.finalize())
     }
 
-    fn linear_slot_for_layer(&self, layer: usize) -> Result<usize> {
+    pub(crate) fn linear_slot_for_layer(&self, layer: usize) -> Result<usize> {
         let mut slot = 0usize;
         for index in 0..=layer {
             if matches!(qwen80_layer_kind(index)?, Qwen80LayerKind::LinearAttention) {
@@ -1138,7 +1138,7 @@ impl Qwen80HybridDecodeState {
         )))
     }
 
-    fn gqa_slot_for_layer(&self, layer: usize) -> Result<usize> {
+    pub(crate) fn gqa_slot_for_layer(&self, layer: usize) -> Result<usize> {
         let mut slot = 0usize;
         for index in 0..=layer {
             if matches!(qwen80_layer_kind(index)?, Qwen80LayerKind::FullAttention) {
