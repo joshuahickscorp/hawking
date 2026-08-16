@@ -1089,3 +1089,91 @@ kernel void dram_row_locality_read_reduce(
     }
     out[tid] = acc;
 }
+
+// Unique-bytes-once sequential read. Each thread owns a disjoint 16-byte-aligned
+// slice and walks it once. No wrap, no decode, no model math. This is the honest
+// batch=1 decode traffic shape: every active packed byte is touched exactly once.
+kernel void q80_decode_shape_unique_once(
+    device const uchar* data        [[buffer(0)]],
+    device float* out               [[buffer(1)]],
+    constant uint& nbytes           [[buffer(2)]],
+    uint tid                         [[thread_position_in_grid]],
+    uint nthreads                    [[threads_per_grid]])
+{
+    if (tid >= nthreads || nbytes < 16u) {
+        return;
+    }
+    const uint nvec = nbytes / 16u;
+    const uint mine = nvec / nthreads;
+    const uint extra = nvec % nthreads;
+    const uint start_vec = tid * mine + min(tid, extra);
+    const uint count = mine + (tid < extra ? 1u : 0u);
+    float acc = 0.0f;
+    uint off = start_vec * 16u;
+    for (uint i = 0u; i < count; ++i) {
+        const float4 v = *((device const float4*)(data + off));
+        acc += v.x + v.y + v.z + v.w;
+        off += 16u;
+    }
+    out[tid] = acc;
+}
+
+// Gathered organ read. `organ_offsets[i]` is a byte offset into `data`.
+// threads_per_organ lanes walk one organ sequentially. No decode.
+kernel void q80_decode_shape_gather(
+    device const uchar* data        [[buffer(0)]],
+    device const uint* organ_offsets [[buffer(1)]],
+    device float* out               [[buffer(2)]],
+    constant uint& n_organs         [[buffer(3)]],
+    constant uint& organ_bytes      [[buffer(4)]],
+    constant uint& threads_per_organ [[buffer(5)]],
+    uint tid                         [[thread_position_in_grid]])
+{
+    if (threads_per_organ == 0u) {
+        return;
+    }
+    const uint organ = tid / threads_per_organ;
+    const uint lane = tid % threads_per_organ;
+    if (organ >= n_organs || organ_bytes < 16u) {
+        return;
+    }
+    const uint base = organ_offsets[organ];
+    const uint nvec = organ_bytes / 16u;
+    const uint mine = nvec / threads_per_organ;
+    const uint extra = nvec % threads_per_organ;
+    const uint start_vec = lane * mine + min(lane, extra);
+    const uint count = mine + (lane < extra ? 1u : 0u);
+    float acc = 0.0f;
+    uint off = base + start_vec * 16u;
+    for (uint i = 0u; i < count; ++i) {
+        const float4 v = *((device const float4*)(data + off));
+        acc += v.x + v.y + v.z + v.w;
+        off += 16u;
+    }
+    out[tid] = acc;
+}
+
+// Minimum live store so a dispatch cannot be DCE'd. Dispatch-tax probe.
+kernel void q80_decode_shape_nop(
+    device float* out [[buffer(0)]],
+    uint tid [[thread_position_in_grid]])
+{
+    out[tid] = float(tid);
+}
+
+// Dense f32 row-dot at one-thread-per-row. Same launch geometry as a serial
+// decode organ, but the arithmetic is a fused multiply-add, not a codec.
+kernel void q80_decode_shape_fma(
+    device const float* w [[buffer(0)]],
+    device const float* x [[buffer(1)]],
+    device float* out     [[buffer(2)]],
+    constant uint& cols   [[buffer(3)]],
+    uint tid               [[thread_position_in_grid]])
+{
+    float acc = 0.0f;
+    const uint row_off = tid * cols;
+    for (uint c = 0u; c < cols; ++c) {
+        acc += w[row_off + c] * x[c];
+    }
+    out[tid] = acc;
+}
