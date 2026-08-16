@@ -1,0 +1,330 @@
+{
+  "schema": "hawking.ascension.g002_transfer_matrix.v1",
+  "date": "2026-08-16",
+  "lane": "kernel-transfer-screen-20260816-154011",
+  "steer": "S004 section 5 / G002: screen every last-day win for cross-model transfer",
+  "class": "STATIC / CPU / ANALYSIS",
+  "gpu_touched": false,
+  "timing_label": "N/A_STATIC_LANE",
+  "status": "SHIPPED",
+  "head": "a67c37ba0",
+  "authority": [
+    "receipts/ascent-2026-08-16/G023_KERNEL_AXES.json",
+    "receipts/ascent-2026-08-16/G023_REUSE_MATRIX.json",
+    "receipts/ascent-2026-08-16/QWEN38_REUSE_MATRIX.json",
+    "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+    "receipts/ascent-2026-08-16/q80-host-facets/SUMMARY.json",
+    "receipts/ascent-2026-08-16/qwen38-layer-dense-q4-swiglu.json",
+    "receipts/ascent-2026-08-16/THREE_MODEL_REGIME_SPLIT.json",
+    "receipts/ascent-2026-08-16/DSV4F_HOST_WALL_BASELINE.json",
+    "receipts/ascent-2026-08-16/dsv-cb-collapse.json",
+    "receipts/ascent-2026-08-16/q80-deltanet-gqa2.json"
+  ],
+  "regimes": {
+    "q80_mixed_1p5": {
+      "wall_ns_per_token": 1170700000,
+      "gpu_matvec_ns": 863400000,
+      "host_expert_bind_ns": 45800000,
+      "wait_minus_gpu_ns": 123500000,
+      "cbs": 337,
+      "regime": "GPU_MATVEC_BOUND (reconstruction). Host is the remaining 307 ms."
+    },
+    "q80_q4_hybrid": {
+      "wall_ns_per_token": 225000000,
+      "gpu_ns": 125000000,
+      "cbs": 98,
+      "regime": "HOST_SYNC_BOUND. GPU wins inside a prefix CB are often absorbed."
+    },
+    "dsv4f_native": {
+      "body_ns_per_token": 1109000000,
+      "metal_gpu_ns": 410000000,
+      "host_expert_slab_io_ns": 406000000,
+      "cbs": 137,
+      "regime": "IO_BOUND. Expert slab after route is GPU-idle host."
+    },
+    "qwen38_q4": {
+      "gpu_ns_per_token": 33449499,
+      "wait_minus_gpu_ns": 500000,
+      "cbs": 1,
+      "regime": "GPU_BOUND. Host is not the wall."
+    }
+  },
+  "axes": {
+    "axis_1_deltanet": ["Q80", "Qwen3.8"],
+    "axis_2_moe": ["Q80", "DSV4F"],
+    "structural_do_not_unify": [
+      "DSV4F act-quant vs Qwen f32 x",
+      "DSV4F MHC/sparse attn vs Gated DeltaNet",
+      "Q80 rice CSR / hgravs two-stage",
+      "RMSNorm reduction order"
+    ]
+  },
+
+  "wins_screened": [
+    {
+      "id": "Q80.SHA_SKIP",
+      "landed_on": "Q80 mixed",
+      "commit": "31aa3585c (facet 1; earlier 5f78cb35e)",
+      "mechanism": "After admit_session, payload_view returns the mmap window without SHA-256. Catalog file SHA is checked at open; a four-tensor sample is rehashed once. Token path does not walk 74k tensor digests.",
+      "measured": {
+        "host_expert_bind_ms": {"base": 63.6, "ours": 45.8, "delta": -17.8},
+        "note": "Facet 1 also switched bind from parse-to_vec+copy to mmap no-copy MTLBuffer. The 17.8 ms is SHA-skip plus the copy elimination, not SHA alone."
+      },
+      "transfer": {
+        "DSV4F": {
+          "verdict": "does_NOT_transfer",
+          "why": "Admission-trust already sets hash_invocations=0 (3314 trust hits). The leftover tax is path_resolve+stat+remap of 3314 chunks, not SHA.",
+          "expected_ns": 0
+        },
+        "Qwen3.8": {
+          "verdict": "does_NOT_transfer",
+          "why": "Dense. open() fs::reads every tensor once into persistent MTLBuffers. There is no per-token payload SHA and no expert first-touch.",
+          "expected_ns": 0
+        }
+      }
+    },
+    {
+      "id": "Q80.CB_FUSION",
+      "landed_on": "Q80 mixed",
+      "commit": "31aa3585c (facet 2)",
+      "mechanism": "Independent same-input GEMVs share one serial encoder; the ten-expert wave is one fence with device SiLU + weighted sum. 493 waits become 337. GPU arithmetic is unchanged.",
+      "measured": {
+        "cbs": {"base": 493, "ours": 337, "delta": -156},
+        "wait_minus_gpu_ms": {"base": 175.1, "ours": 123.5, "delta": -51.6},
+        "gpu_matvec_ms": 863.4,
+        "dispatches": {"base": 2797, "ours": 2893}
+      },
+      "transfer": {
+        "DSV4F": {
+          "verdict": "does_NOT_transfer",
+          "why": "Already collapsed 137→134. The leftover CBs wait because host MHC must read wo_b bf16 before FFN, and learned-bias layers must read 6 route IDs before the slab bind. That is a host data edge, not a missing encoder merge.",
+          "expected_ns": 0,
+          "already_applied": "ordered encoder per CB; 6 expert act_quants fused to 1; hash route+moe share one CB"
+        },
+        "Qwen3.8": {
+          "verdict": "does_NOT_transfer",
+          "why": "step() already encodes embed + 64 layers + terminal into one MTLCommandBuffer and waits once. wait ≈ gpu + 0.5 ms. There is no 493-CB tax to fold.",
+          "expected_ns": 0
+        }
+      }
+    },
+    {
+      "id": "DSV4F.ACT_QUANT_SIMDGROUP",
+      "landed_on": "DSV4F native",
+      "commit": "341825888 (bundled with I/O overlap); shipping dispatch is ACT_QUANT_SIMD_KERNEL",
+      "mechanism": "One simdgroup owns one 128-col block, simd_max for amax, same UE8M0 rung and E4M3 RNE encoder as the 1-thread authority kernel.",
+      "g023": "STRUCTURAL. Q80/Q38 consume f32 x. Act-quant is an extra bf16→e4m3+e8m0 pass DSV4F must do before every FP4/FP8 matvec.",
+      "transfer": {
+        "Q80": {
+          "verdict": "does_NOT_transfer",
+          "why": "There is no 128-col amax→e8m0→e4m3 stage. Inserting one would add bytes and a kernel. G023 forbade folding act-quant into Q80.",
+          "expected_ns": 0
+        },
+        "Qwen3.8": {
+          "verdict": "does_NOT_transfer",
+          "why": "Q4 matvec reads f32 activations. Same missing stage as Q80.",
+          "expected_ns": 0
+        }
+      }
+    },
+    {
+      "id": "DSV4F.PERSISTENT_MTLBUFFERS",
+      "landed_on": "DSV4F native",
+      "mechanism": "Scratch MTLBuffers allocated once at graph open. Expert payloads are 16 KiB-aligned mmap windows bound with new_buffer_from_verified_bytes; a silent copy is a hard error.",
+      "transfer": {
+        "Q80": {
+          "verdict": "transfers_with_parameterization",
+          "why": "Facet 1 already pins mmap weight windows. Grouped GEMVs and the routed wave already reuse scratch/wave buffers. The leftover is MixedGpu::matvec still new_buffer_checked for input and output on the ungrouped path (down_proj, out_proj, singles).",
+          "expected_ns": 5000000,
+          "expected_ns_note": "Order-of-magnitude: tens of ungrouped creates per token × 10–100 µs Metal alloc. Not measured in isolation. After facet 2 most mixer traffic is grouped.",
+          "probability": 0.55
+        },
+        "Qwen3.8": {
+          "verdict": "does_NOT_transfer",
+          "why": "Qwen38HybridWorkspace and every Q4/f32 weight buffer are allocated once in open(). Decode does not create buffers.",
+          "expected_ns": 0
+        }
+      }
+    },
+    {
+      "id": "DSV4F.IO_OVERLAP",
+      "landed_on": "DSV4F native",
+      "commit": "341825888; preload_moe_io during attn CB",
+      "mechanism": "While the attention command buffer is on the GPU, the host mmaps shared-expert and (on hash layers) the six expert slabs. Learned-bias layers cannot do this: route IDs are not known until the route CB returns.",
+      "measured_bundle": "simdgroup act_quant + overlap + no-copy: body 3286 ms → 1109 ms. Expert slab after route is still 406–437 ms GPU-idle.",
+      "transfer": {
+        "Q80": {
+          "verdict": "transfers_with_parameterization",
+          "why": "Same shape as DSV4F learned-bias: host top-k must produce the 10 IDs before those payloads can be bound. You cannot hide bind under the mixer GEMVs. You can only pipeline bind with the routed-wave GEMVs, or submit the previous suffix without waiting (Q4 split-overlap; not a robust wall win).",
+          "expected_ns": 15000000,
+          "expected_ns_note": "Upper bound is leftover bind 45.8 ms. Realistic is a fraction: first-touch of new (layer,expert) pairs over a generate is ~10k unique, but IDs arrive after the router. Q4 HAWKING_QWEN80_OVERLAP_CBS=split was not robust (B1 −34 ms, B2 +80 ms).",
+          "probability": 0.35
+        },
+        "Qwen3.8": {
+          "verdict": "does_NOT_transfer",
+          "why": "All 755 catalog tensors are resident after open. There is no per-token weight I/O to hide.",
+          "expected_ns": 0
+        }
+      }
+    },
+    {
+      "id": "Q38.DELTANET_VI_PARALLEL",
+      "landed_on": "Qwen3.8",
+      "commit": "e8d1dfeb8",
+      "mechanism": "qwen80_gated_delta_decode_tg launches 1 threadgroup per value head and loops 128 independent value columns behind threadgroup barriers. qwen38_gated_delta_decode_vi launches 1 threadgroup per (head, vi). Same left-to-right key reduction, same association. Occupancy ×128.",
+      "measured_q38": {
+        "isolated_gated_delta_gpu_ns": {"serial": 11490666, "vi": 2141916, "delta": -9348750},
+        "complete_token_gpu_ns": {"serial": 42734499, "vi": 33449499, "delta": -9285000},
+        "greedy": "bit-identical, 0 fallbacks",
+        "layers": 48,
+        "value_heads": 48,
+        "state": "128×128 f32"
+      },
+      "transfer": {
+        "Q80": {
+          "verdict": "transfers_with_parameterization",
+          "why": "Same S/δ/S/o recurrence (QWEN38_REUSE_MATRIX). heads/key_dim/value_dim are already buffers. Mixed-1p5 still runs source_qwen80_recurrent_deltanet on the host between two GPU CBs; the Q4 hybrid already dispatches qwen80_gated_delta_decode_tg with grid (kd, heads, 1). Port is: put mixed on that kernel, then set grid.z = value_dim. Do not rewrite the math.",
+          "expected_ns_detail": "see deltanet_q80_estimate"
+        },
+        "DSV4F": {
+          "verdict": "does_NOT_transfer",
+          "why": "No Gated DeltaNet. Attention is MHC + compressed-indexer sparse + learned-bias route. G023 STRUCTURAL.",
+          "expected_ns": 0
+        }
+      }
+    }
+  ],
+
+  "deltanet_q80_estimate": {
+    "question": "Does Q38 vi-parallel transfer to Q80's 36 DeltaNet layers, and how many ns?",
+    "math": "SAME_RECURRENCE. Q80 36×32×128×128 vs Q38 48×48×128×128. Metal already takes heads.",
+    "shipping_graphs_on_this_head": {
+      "q80_mixed_1p5": "HOST recurrence (source_qwen80_recurrent_deltanet) between GPU qkvz/ba and GPU out_proj. host_activation fallbacks=12460 on the facet generate. vi-parallel is not dispatched.",
+      "q80_q4_hybrid": "GPU qwen80_gated_delta_decode_tg, grid (128, 32, 1). Serial vi loop. Encode-wall of the recurrent dispatch is microseconds; GPU is absorbed into the prefix CB.",
+      "qwen38": "GPU qwen38_gated_delta_decode_vi default ON, grid (128, 48, 128)."
+    },
+    "isolated_scaling": {
+      "serial_occupancy": "1 TG/head. 32 TGs (Q80) and 48 TGs (Q38) both sit far below 60 GPU cores, so per-layer serial time is the 128-column barrier loop, not head count.",
+      "q80_serial_isolated_ns": 8618000,
+      "q80_serial_isolated_how": "11490666 × 36/48. Do not also scale by 32/48 heads.",
+      "q80_vi_isolated_ns_work_bound": 1071000,
+      "q80_vi_isolated_how_work": "2141916 × (36/48)×(32/48)",
+      "q80_vi_isolated_ns_layer_bound": 1606000,
+      "q80_vi_isolated_how_layer": "2141916 × 36/48",
+      "isolated_save_ns": {"low": 7012000, "high": 7547000, "use": 7300000}
+    },
+    "unmerged_same_box_same_day": {
+      "note": "Not on this HEAD. Same machine, 2026-08-16. Cited so the estimate is not only a scaling argument.",
+      "7257a1ad7": "Q4 prefix CB: isolated mixer GPU 23.3→13.2 ms; token 135.0→122.8 ms (−12.2 ms). 3/3 pairs, 12/12 ids.",
+      "f5ce492cd": "mixed-prefix GPU 16.5→7.2 ms; warm decode 66.8/65.5→55.8/56.8 ms (−10 ms).",
+      "773fbbf49": "column-parallel (1 thread/vi, no barriers, not the Q38 TG launch): prefix-linear GPU 63.9→44.8 ms; wall 144.8→138.6 ms (−6.2 ms). Host still ate most of the GPU save."
+    },
+    "expected_wall_ns": {
+      "q80_q4_hybrid": {
+        "gpu_ns": 7300000,
+        "wall_ns": 4000000,
+        "why": "Q4 is host-sync bound (table-build). A 7 ms GPU cut inside a prefix CB that already waits on host top-k often does not land 1:1 on the token. Unmerged token −12.2 ms was on a 135 ms vehicle with a more exposed mixer CB."
+      },
+      "q80_mixed_1p5": {
+        "gpu_ns_once_on_device": 7300000,
+        "wall_ns": 10000000,
+        "why": "Host recurrence is on the critical path between two waited CBs, so every host nanosecond is wall. Moving it to vi-GPU removes that host slice and adds ~1.1–1.6 ms of GPU that can share the out_proj / mixer CB. Unmerged mixed-prefix cuts were 6–12 ms wall. Mixed-1p5 wall is 1171 ms; this is ~1% but it is real and cheap.",
+        "prerequisite": "Wire qwen80_gated_delta_decode_tg (or the Q38 vi kernel with heads=32) into qwen80_mixed_hybrid_decode::deltanet_mixer. Then set grid.z=128. Do not keep the host loop."
+      }
+    },
+    "probability": {
+      "isolated_gpu": 0.95,
+      "q4_wall": 0.35,
+      "mixed_wall_after_gpu_port": 0.80
+    },
+    "implementation_cost": {
+      "q4_hybrid_grid_only": 1,
+      "mixed_gpu_port_plus_vi": 2,
+      "scale": "1 = hours (flag + grid), 2 = a day (wire existing kernel, keep host as refuse-not-fallback), 3 = multi-day topology"
+    }
+  },
+
+  "ranked": [
+    {
+      "rank": 1,
+      "candidate": "Q80 mixed: port GPU Gated-Delta + vi-parallel (from Q38)",
+      "from": "Qwen3.8",
+      "to": "Q80 mixed-1p5",
+      "verdict": "transfers_with_parameterization",
+      "expected_ns": 10000000,
+      "probability": 0.80,
+      "cost": 2,
+      "score": 4000000,
+      "score_def": "expected_ns × probability / cost",
+      "why_first": "Only last-day win whose math is shared (axis 1), whose save is on the mixed sealing vehicle's critical path, and whose implementation is a kernel that already exists."
+    },
+    {
+      "rank": 2,
+      "candidate": "Q80 mixed: reuse scratch in ungrouped matvec (from DSV4F persistent buffers)",
+      "from": "DSV4F",
+      "to": "Q80 mixed",
+      "verdict": "transfers_with_parameterization",
+      "expected_ns": 5000000,
+      "probability": 0.55,
+      "cost": 1,
+      "score": 2750000,
+      "why": "Stop new_buffer on the ungrouped path. Small, local, already have the buffers."
+    },
+    {
+      "rank": 3,
+      "candidate": "Q80 mixed: pipeline expert bind with routed-wave GPU (from DSV4F I/O overlap)",
+      "from": "DSV4F",
+      "to": "Q80 mixed",
+      "verdict": "transfers_with_parameterization",
+      "expected_ns": 15000000,
+      "probability": 0.35,
+      "cost": 3,
+      "score": 1750000,
+      "why": "Cannot hide bind under mixer (IDs unknown). Q4 split-overlap was not robust. Do not start this before rank 1."
+    },
+    {
+      "rank": 4,
+      "candidate": "Q80 Q4 hybrid: vi-parallel grid on qwen80_gated_delta_decode_tg",
+      "from": "Qwen3.8",
+      "to": "Q80 Q4 hybrid",
+      "verdict": "transfers_as_is",
+      "expected_ns": 4000000,
+      "expected_ns_gpu": 7300000,
+      "probability": 0.35,
+      "cost": 1,
+      "score": 1400000,
+      "why": "Grid change only. Wall probability is low because Q4 is host-bound and this vehicle is de-authorised. Do not spend a GPU window on it."
+    }
+  ],
+
+  "ranked_note": "Work order is the rank list. Rank 1 is the only axis-1 transfer that moves the mixed sealing vehicle. Rank 4 is as-is but on a de-authorised host-bound vehicle.",
+
+  "negative_transfers": [
+    "Q80 SHA-skip → DSV4F: already 0 hashes/token. Next DSV4F lever is persist maps / skip path_resolve, which is not this win.",
+    "Q80 SHA-skip → Qwen3.8: no per-token SHA, no experts.",
+    "Q80 CB fusion 493→337 → DSV4F: leftover CBs are MHC/route host edges.",
+    "Q80 CB fusion → Qwen3.8: already 1 CB/token.",
+    "DSV4F act_quant simdgroup → Q80 or Qwen3.8: STRUCTURAL, missing stage. Do not add act-quant to make the family look symmetric.",
+    "DSV4F persistent buffers → Qwen3.8: already persistent.",
+    "DSV4F I/O overlap → Qwen3.8: no per-token I/O.",
+    "Qwen3.8 vi-parallel → DSV4F: STRUCTURAL, no DeltaNet."
+  ],
+
+  "do_not": [
+    "Do not unify DSV4F act-quant with Qwen f32 matvec to cut kernel count.",
+    "Do not abstract MHC/sparse attention over Gated DeltaNet.",
+    "Do not port Q80 moe_table_build / expert address tables / first-touch onto Qwen3.8.",
+    "Do not treat Q80 mixed 863 ms GPU as a host-facet problem. Facet 1+2 already took the host 74 ms that was available."
+  ],
+
+  "files_read_not_modified_except_this_receipt": [
+    "crates/hawking-core/shaders/qwen38_device_activations.metal",
+    "crates/hawking-core/shaders/qwen80_device_activations.metal",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs",
+    "crates/hawking-core/src/model/qwen80_mixed_catalog.rs",
+    "crates/hawking-core/src/model/qwen80_uniform_q4_hybrid_decode.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+    "crates/hawking-core/shaders/matmul.metal"
+  ]
+}
