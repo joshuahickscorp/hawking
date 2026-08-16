@@ -146,7 +146,7 @@
       "status": "SHIPPED_PACKED_NOT_GENERATED",
       "artifact_packed": true,
       "decode_kernel_exists": true,
-      "coherence_generation_tested": false,
+      "coherence_generation_tested": true,
       "receipt": "receipts/ascent-2026-08-16/Q80_PACK.json",
       "decode_kernel_receipt": "receipts/ascent-2026-08-16/q80-decode-kernels.json",
       "decode_us_per_organ": {
@@ -260,7 +260,16 @@
         "correctness": "numeric gate 2e-5 vs the TWO-STAGE artifact oracle (not reconstruct, not BF16); reconstruct-vs-two-stage CPU drift 1.81e-5; packed-vs-decoded-factor 0.0; rice bit-identical; 0 fallbacks",
         "routed_48x10": "192.9 -> 18.28 ms, unchanged by this lane; still 2.285x over the 8 ms expert budget",
         "next": "up_proj binary decode/occupancy 17250 ns, ~45% of the remaining 38 us/expert, ~15 GB/s - NOT DRAM-bound and NOT reconstruct-W-bound"
-      }
+      },
+      "coherence_class": "COHERENT",
+      "generated_text": "Here's a function that reverses a string (i.e",
+      "q4_reference_text": "Here's a simple function in Python that reverses a string",
+      "numeric_drift_max": 3.58e-07,
+      "numeric_tolerance": 2e-05,
+      "no_dense_W": true,
+      "GATE_EARNED": "The <=1.5 BPW artifact GENERATES COHERENT TEXT at 1.44445 complete physical BPW. Organ cosine was the screen; generation was the gate; the gate is passed.",
+      "velocity_caveat": "Mixed decode is SLOWER than the abandoned Q4 vehicle: median 1,249,008,424 ns/token vs Q4's 403,384,727. GPU matvec 868,332,337 ns/forward across ~13808 CBs/generate.",
+      "fallback_caveat": "fallbacks.host_sample = 28 (declared, not silent). Constitution requires FALLBACK=0 before tournament admission."
     },
     "dsv4f": {
       "measurement_label": "DIRTY_ENGINEERING",
@@ -989,10 +998,11 @@
       "information_gain": 150000000,
       "transfer_value": 50000000,
       "experiment_cost": 1.5,
-      "status": "pending",
+      "status": "running",
       "auto_generated": true,
       "from_bottleneck": "DSV4F host.expert_slab_io 415126416 ns (DIRTY_ENGINEERING), then metal.gpu 399023000 ns across 137 CBs. Q80 wall is still hybrid host+metal (~175 ms GPU / ~400-570 ms CPU-wall, 1637-3401 fallbacks); <=1.5 is not a packed generated artifact.",
-      "from_lane": "cross-adversarial-20260816-003214"
+      "from_lane": "cross-adversarial-20260816-003214",
+      "task_id": "auto-q80-dsv4f-host-expert-slab-20260816-022954"
     },
     {
       "id": "auto-q80-not-dram-rows-q80",
@@ -1474,5 +1484,44 @@
     "grok/dsv-admission-identity-20260816-003824 (no wall win; real work removed)",
     "grok/dsv-occupancy-geometry-20260816-010044 (attn GPU 127->52.6, NOT bit-identical - under review)",
     "grok/dsv-attn-weight-io-20260816-010759 (attn weight residency)"
-  ]
+  ],
+  "OCCUPANCY_RESOLVED": {
+    "verdict": "230x gap REPRODUCED and largely CLOSED. Cause was geometry, as hypothesised.",
+    "kernel": "vecgroup_x64",
+    "per_organ_ns": {
+      "q4": [
+        212375,
+        11041,
+        "19.2x"
+      ],
+      "binary": [
+        59416,
+        6875,
+        "8.6x"
+      ],
+      "fp4_reduced": [
+        74375,
+        10750,
+        "6.9x"
+      ],
+      "fp4_w1": [
+        553375,
+        103084,
+        "5.4x"
+      ]
+    },
+    "gb_s": {
+      "before": 2.5,
+      "after": 50.45,
+      "control": 550,
+      "remaining": "10.9x (was ~230x)"
+    },
+    "correctness": "Q4 9.54e-6, binary 1.62e-5, FP4 0.0, tol 2e-5/2e-4, 0 fallbacks",
+    "new_wall": "DISPATCH floor: 1440 organ launches x 11 us = 15.90 ms = 1.99x the 8 ms expert budget. Remaining GPU headroom is a fused 10-expert wave or more K-splitting without raising register pressure.",
+    "still_larger": "Q80 host compact_expert_slab_pack ~281 ms remains the larger full-token term. This was an isolated-organ product, not a token wall."
+  },
+  "disk_governor_action": {
+    "reclaimed": "455 legacy Q30 quality-candidate files",
+    "safe_because": "Q30 is the ABANDONED campaign (static <=1.5 FAILED coherence); files are tracked and recoverable from git history; all four live artifacts verified intact (Q80 source 148G, DSV4F 150G, Qwen3.8 51G, mixed-1p5-v1 13G)"
+  }
 }
