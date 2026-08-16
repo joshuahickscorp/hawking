@@ -13,6 +13,9 @@ use super::schema::{
 };
 use super::served_weight::ServedWeightMetrics;
 use crate::gravity_deepseek_v4_token_ns_ledger::TokenNsLedger as DsvLedger;
+use crate::model::qwen38_token_ns_ledger::{
+    Qwen38TokenNsLedger, QWEN38_TOKEN_NS_LEDGER_SCHEMA,
+};
 use crate::model::qwen80_token_ns_ledger::{
     Qwen80TokenNsLedger, Qwen80TokenNsToken, QWEN80_TOKEN_NS_LEDGER_SCHEMA,
 };
@@ -806,6 +809,87 @@ pub fn from_q80_ledger(ledger: &Qwen80TokenNsLedger, meta: &EmitMeta) -> TokenNs
                 .map(|d| format!("source verdict: {} — {}", d.verdict, d.rationale))
                 .unwrap_or_else(|| "no diagnosis on this ledger".to_owned()),
         ],
+    }
+    .seal()
+}
+
+/// Adapt a sealed Qwen3.8 TOKEN_NS ledger. Every required component is a
+/// serial exclusive row; the named residual is already inside `components`.
+pub fn from_qwen38_ledger(ledger: &Qwen38TokenNsLedger, meta: &EmitMeta) -> TokenNsDocument {
+    let total = ledger.median_wall_ns;
+    let commit = meta.commit.clone();
+    let stages: Vec<TokenNsStage> = ledger
+        .components
+        .iter()
+        .map(|c| {
+            TokenNsStage::new(
+                c.component.clone(),
+                c.component.clone(),
+                c.dispatches as f64,
+                c.ns_per_token,
+                total,
+                match c.resource_class {
+                    "cpu" => ResourceClass::Cpu,
+                    "sync" => ResourceClass::Sync,
+                    "dram" => ResourceClass::Dram,
+                    _ => ResourceClass::Gpu,
+                },
+                SerialOrOverlappable::Serial,
+                RemovableOrNecessary::Necessary,
+                match c.confidence {
+                    "derived" => Confidence::Derived,
+                    "estimated" => Confidence::Estimated,
+                    _ => Confidence::Measured,
+                },
+                c.method.clone(),
+                commit.clone(),
+            )
+        })
+        .collect();
+    TokenNsDocument {
+        schema: TOKEN_NS_SCHEMA,
+        model: "qwen38".to_owned(),
+        vehicle: ledger.vehicle.to_owned(),
+        source_schema: QWEN38_TOKEN_NS_LEDGER_SCHEMA.to_owned(),
+        source_path: meta.source_path.clone(),
+        measurement_label: meta.measurement_label,
+        commit: meta.commit.clone(),
+        gpu_timestamp_authority: GPU_TIMESTAMP_AUTHORITY,
+        residual_limit_fraction: meta.residual_limit_fraction,
+        stages,
+        totals: TokenNsTotals {
+            total_token_ns: total,
+            total_gpu_busy_ns: ledger.median_gpu_ns,
+            total_gpu_idle_ns: total.saturating_sub(ledger.median_gpu_ns),
+            total_gpu_gap_ns: ledger.wait_minus_gpu_ns.max(0) as u64,
+            total_cpu_critical_ns: ledger.median_encode_ns + ledger.median_submit_ns,
+            total_dispatches: ledger.dispatches.total,
+            total_command_buffers: ledger.dispatches.production_command_buffers,
+            total_sync_points: 1,
+            total_readbacks: 1,
+            total_buffer_creations: 0,
+            total_buffer_rebinds: 0,
+            dram_bytes_per_token: ledger.weight_bytes.active_bytes,
+            temp_bytes_per_token: ledger.state_bytes.total_rw_bytes,
+        },
+        served_weight: ServedWeightMetrics::default(),
+        residual_ns: 0,
+        physical_token_ns_override: meta.physical_token_ns,
+        joules_per_token_in: meta.joules_per_token,
+        closure: ClosureReport::compute(total, &[], meta.residual_limit_fraction),
+        critical_path: CriticalPath {
+            model: "qwen38".to_owned(),
+            token_definition: "complete token wall = encode + submit + wait; GPU is GPUEnd-GPUStart inside wait".to_owned(),
+            serial_ns: 0,
+            overlappable_ns: 0,
+            parallel_sum_ns: 0,
+            top_serial_stages: Vec::new(),
+            statement: "Qwen3.8 is GPU-bound: wait ≈ gpu + 0.4 ms. The exclusive cover is the twelve named physical components.".to_owned(),
+            warning: Some(
+                "uniform-q4-v1 is an oracle for profiling only, never an endpoint.".to_owned(),
+            ),
+        },
+        notes: ledger.notes.clone(),
     }
     .seal()
 }

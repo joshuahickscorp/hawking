@@ -1179,6 +1179,12 @@ mod imp {
             "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128" => {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
             }
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe" => {
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe"
+            }
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe" => {
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe"
+            }
             "qwen_uniform_q4_group64_matvec_qkv" => "qwen_uniform_q4_group64_matvec_qkv",
             "qwen_uniform_q4_group64_matvec_qkv_simdgroup" => {
                 "qwen_uniform_q4_group64_matvec_qkv_simdgroup"
@@ -1274,6 +1280,7 @@ mod imp {
             "qwen38_gqa_qk_norm_rope_cache_f32" => "qwen38_gqa_qk_norm_rope_cache_f32",
             "qwen38_gated_delta_decode_vi" => "qwen38_gated_delta_decode_vi",
             "qwen38_attention_apply_sigmoid_gate" => "qwen38_attention_apply_sigmoid_gate",
+            "qwen38_f32_stream_probe" => "qwen38_f32_stream_probe",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen30_expert_table_hgravs_gemv_rowblock2" => {
                 "qwen30_expert_table_hgravs_gemv_rowblock2"
@@ -2065,13 +2072,24 @@ mod imp {
 
         #[test]
         fn qwen38_device_activation_kernels_are_trace_named_and_compiled() {
-            use crate::metal::SHADER_QWEN38_DEVICE_ACTIVATIONS;
+            use crate::metal::{SHADER_QWEN38_DEVICE_ACTIVATIONS, SHADER_QWEN_UNIFORM_Q4};
             const KERNELS: &[&str] = &[
                 "qwen38_qkvz_rearrange_conv_l2_f32",
                 "qwen38_gqa_qk_norm_rope_cache_f32",
                 "qwen38_gated_delta_decode_vi",
                 "qwen38_attention_apply_sigmoid_gate",
+                "qwen38_f32_stream_probe",
             ];
+            for &kernel in &[
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+            ] {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN_UNIFORM_Q4.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from qwen_uniform_q4.metal"
+                );
+            }
             for &kernel in KERNELS {
                 assert_eq!(static_kernel_name(kernel), kernel);
                 assert!(

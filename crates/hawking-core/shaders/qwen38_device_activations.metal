@@ -264,3 +264,16 @@ kernel void qwen38_attention_apply_sigmoid_gate(
     const float sigmoid = 1.0f / (1.0f + exp(-gate));
     gated_output[index] = attention_output[index] * sigmoid;
 }
+
+// Diagnostic sequential f32 copy. Used to put a bandwidth floor under
+// conv/recurrent/GQA state traffic without the fused activation ALU.
+kernel void qwen38_f32_stream_probe(
+    device const float* src [[buffer(0)]],
+    device float* dst       [[buffer(1)]],
+    constant uint& n        [[buffer(2)]],
+    uint i                   [[thread_position_in_grid]])
+{
+    if (i < n) {
+        dst[i] = src[i];
+    }
+}
