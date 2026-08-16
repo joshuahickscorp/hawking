@@ -174,6 +174,13 @@
         ],
         "next": "DeltaNet mixed prefix CB (mixer+shared+router+wait) 79081238 ns/token",
         "label": "DIRTY_ENGINEERING - a CLEAN paired baseline is still owed for G001"
+      },
+      "fs_per_weight_served": {
+        "value": 156970,
+        "unit": "fs",
+        "label": "AMORTIZED THROUGHPUT METRIC - NOT PHYSICAL SINGLE-WEIGHT LATENCY",
+        "floor_at_1_392_bpw": 212.53,
+        "distance_from_floor": "~739x"
       }
     },
     "q80_density_frontier": {
@@ -549,6 +556,12 @@
         "opt_in_vs_claim": "73-77 ms, NOT the 52.57 ms the standalone lane reported, and not the default",
         "default_correctness": "bit-identical hc_sha c94da765, token 5, logit 16.7818546295166, 0 fallbacks",
         "next": "attention GPU still ~127236000 ns on the default path; WO-A/WQ-A/WKV/WO-B still one-thread-per-row. Host exclusive remains the token-level majority (~1.0 s clean body)."
+      },
+      "fs_per_weight_served": {
+        "value": 81402,
+        "unit": "fs",
+        "label": "AMORTIZED THROUGHPUT METRIC - NOT PHYSICAL SINGLE-WEIGHT LATENCY",
+        "active_weights_per_token": 12748587008
       }
     },
     "dsv4f_density_frontier": {
@@ -1017,7 +1030,10 @@
     "Q80 topology collapse is NOT the lever: overlap, fuse-to-51-CBs and serial-encoder are all bit-identical and all fail to win complete-token wall (fuse REGRESSED 516 vs 307 ms). Matches DSV4F where 731->43 encoders moved attention GPU by nothing. Occupancy, not topology.",
     "Q80 density fits are route-starved: p10=34 rows against 2048 dims, 221 never-routed pairs, and no on-disk post-SwiGLU X for down_proj. Any organ score from the 25k capture is suspect.",
     "Q80 decoded-weight caching is REFUTED by arithmetic: dense restore is 12 MiB/expert = 288 GiB for all (layer,expert) versus 11 GiB packed. Caching decoded W undoes the representation it exists to create.",
-    "DSV4F simd_sum WO-A+FP8 occupancy is NOT closer to the CPU oracle: 0.02107 vs oracle against authority's 0.01442. The apparent improvement required reassociating RMSNorm too. Do not treat reduction-order changes as accuracy gains without isolating each one."
+    "DSV4F simd_sum WO-A+FP8 occupancy is NOT closer to the CPU oracle: 0.02107 vs oracle against authority's 0.01442. The apparent improvement required reassociating RMSNorm too. Do not treat reduction-order changes as accuracy gains without isolating each one.",
+    "DRAM row-locality interleaving is NOT the Q80/DSV4F lever: Q4 interleaved LOST (210500 -> 224916 ns), binary LOST (59750 -> 61000), only FP4 gained (75000 -> 64291). Live wall unchanged. Next bottleneck is not DRAM rows.",
+    "Expert routing co-occurrence layout is WEAK: greedy co-route order cuts mean |id_i - id_j| only 170.29 -> 164.28 (1.037x). Not worth pursuing as a layout lever.",
+    "Q80 packed code streams already sit at alpha ~0.48-0.52, i.e. essentially RANDOM switching activity (alpha_vs_random 0.96-1.03). Transition-optimized permutation is therefore a real but unshipped opportunity - and the measured next bottleneck is occupancy/dispatch, NOT switching activity."
   ],
   "saturation": {
     "measured": "2026-08-16 after wave 2",
@@ -1076,5 +1092,26 @@
     "grok/dsv-admission-identity-20260816-003824 (no wall win; real work removed)",
     "grok/dsv-occupancy-geometry-20260816-010044 (attn GPU 127->52.6, NOT bit-identical - under review)",
     "grok/dsv-attn-weight-io-20260816-010759 (attn weight residency)"
-  ]
+  ],
+  "THE_DECISIVE_MEASUREMENT": {
+    "source": "receipts/ascent-2026-08-16/dram-row-locality.json (merged)",
+    "control_same_box_same_run": {
+      "dram_row_probe_sequential_gbps": 560.25,
+      "dram_row_probe_conflict_gbps": 646.71,
+      "note": "This is a CONTROL, not a datasheet ceiling. The memory system demonstrably delivers 560-647 GB/s on this machine in this run."
+    },
+    "actual_kernels": {
+      "q80_q4_gate_matvec_gbps": 2.65,
+      "q80_mixed_binary_gate_matvec_gbps": 2.47,
+      "dsv4f_fp4_reduced_gbps": 0.93
+    },
+    "gap": "~230x. The packed matvecs are NOT memory-bound - they are catastrophically under-occupied. The control proves the hardware can do it.",
+    "implication": "If packed matvec reached even 100 GB/s (still 6x below the control), the routed decode projection would fall from 18.28 ms to roughly 0.46 ms. This is the largest single identified headroom in the campaign.",
+    "corroborates": [
+      "Q80 measured ~1% of ceiling",
+      "DSV4F MLA 24-36 GB/s of ~750",
+      "component matvec was one-thread-per-row",
+      "topology collapse failed on BOTH models while occupancy fixes worked"
+    ]
+  }
 }
