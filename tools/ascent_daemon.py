@@ -149,6 +149,22 @@ def harvest() -> list[dict]:
     for d in sorted(TASKS.iterdir()):
         report = d / "grok-report.md"
         if not report.is_file():
+            # A lane that died or timed out writes NO report, so it was invisible
+            # here and its work vanished silently. q80-coherence-deep exited 124
+            # yet had produced 40 layers of drift data that later VERIFIED an
+            # obligation. Surface these for manual review instead of dropping them.
+            exit_code = (d / "exit_code")
+            if exit_code.is_file():
+                try:
+                    code = exit_code.read_text().strip()
+                except Exception:
+                    code = "?"
+                found.append({
+                    "lane": d.name,
+                    "status": f"NO_REPORT_exit_{code}",
+                    "next_bottleneck": "",
+                    "needs_manual_review": True,
+                })
             continue
         try:
             text = report.read_text(errors="replace")
@@ -207,6 +223,8 @@ def generate_targets(state: dict, harvested: list[dict]) -> int:
     for h in harvested:
         if generated + made >= MAX_GENERATED:
             break
+        if h.get("needs_manual_review"):
+            continue          # no bottleneck text to build a contract from
         bn = h["next_bottleneck"]
         if not bn or bn in seen_bn:
             continue
@@ -344,7 +362,9 @@ def one_pass() -> dict:
             "skew": skew(branch) if code == 0 else "NO_BRANCH",
             "disposition": "MERGE_READY", "promoted": False,
         }
-        if entry["skew"] == "SKEWED":
+        if h.get("needs_manual_review"):
+            entry["disposition"] = "NO_REPORT_MANUAL_REVIEW"
+        elif entry["skew"] == "SKEWED":
             entry["disposition"] = "NEEDS_COMPOSITION"
         elif entry["skew"] in ("NO_BRANCH", "EMPTY"):
             entry["disposition"] = "CHECK_FOR_UNCOMMITTED_WORK"

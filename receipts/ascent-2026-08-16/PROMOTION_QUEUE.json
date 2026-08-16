@@ -420,6 +420,126 @@
       "skew": "STALE_CLEAN",
       "disposition": "MERGE_READY",
       "promoted": false
+    },
+    {
+      "lane": "auto-dsv4f-host-expert-slab-io-20260816-025622",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "probe.attn_prefetch_thread (next-layer attn I/O on the GPU-idle joint wall) 267869705 ns/token; after that leftover expert-only I/O ~155 ms and Metal GPU 274317000\u2013280577000 ns across 134 CBs",
+      "branch": "grok/auto-dsv4f-host-expert-slab-io-20260816-025622",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "deadcode-audit-20260815-152714",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "deadcode-audit2-20260815-153050",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "dsv-integrate-expert-20260816-005423",
+      "model": "dsv4f",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/dsv-integrate-expert-20260816-005423",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "lfs-audit-20260815-152711",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "lfs-audit2-20260815-153044",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "p3p4-profile-20260815-152336",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "p3p4-profile2-20260815-153056",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "q80-activation-device-20260816-001736",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/q80-activation-device-20260816-001736",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "q80-coherence-deep-20260816-004855",
+      "model": "q80",
+      "status": "NO_REPORT_exit_124",
+      "next_bottleneck": "",
+      "branch": "grok/q80-coherence-deep-20260816-004855",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "q80-deltanet-gqa-20260816-001738",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/q80-deltanet-gqa-20260816-001738",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "q80-resident-table-20260816-001734",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/q80-resident-table-20260816-001734",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
     }
   ]
 }
