@@ -1,0 +1,276 @@
+{
+  "budget": {
+    "expert_work_budget_ns": 8000000,
+    "honest": "Algebra is already applied. This lane does not move the 18.28 ms routed-expert number. Still ~2.285x over the 8 ms budget.",
+    "inherited_routed_ns_quiet": 18280320,
+    "layers": 48,
+    "over_budget": 2.28504,
+    "top_k": 10
+  },
+  "claim_boundary": {
+    "artifact_packed": false,
+    "coherence_generation_tested": false,
+    "cpu_wall_is_not_gpu_time": true,
+    "decode_kernel_exists": true,
+    "dense_w_never_materialized": true,
+    "not_bf16_parent_parity": true,
+    "not_full_token_runtime": true,
+    "reconstruct_gpu_kernel_not_implemented": true,
+    "this_lane_did_not_run_metal": true
+  },
+  "correctness": {
+    "fallbacks": 0,
+    "gates_not_weakened": true,
+    "numeric_equivalence_gate": {
+      "shipped_measured_kernel_drift": {
+        "down": 0.000011444091796875,
+        "gate": 0.00001811981201171875,
+        "source": "receipts/ascent-2026-08-16/q80-decode-throughput.json",
+        "up": 0.000010967254638671875
+      },
+      "shipped_tolerance": 0.000019999999494757503,
+      "statement": "Reassociating L@(R@x) versus (L@R)@x changes f32 add order. Kernels are graded against the two-stage artifact oracle at tolerance 2e-5. Reconstruct-vs-two-stage drift is reported and is NOT a fail.",
+      "this_lane_cpu": {
+        "packed_two_stage_vs_decoded_factor_two_stage": 0.0,
+        "reconstruct_LR_then_Wx_vs_two_stage": 0.00001811981201171875,
+        "reconstruct_exceeds_shipped_tol": false,
+        "rice_indices": "bit-identical",
+        "up_reconstruct_W_then_x_vs_fused": 0.000010251998901367188
+      }
+    },
+    "oracle": "packed two-stage / fused rice artifact, never BF16 parent, never dense (L@R)@x"
+  },
+  "date": "2026-08-16",
+  "doctrine": "REPRESENTATION -> ALGEBRA. Never reconstruct a structured representation when the algebra can consume it directly.",
+  "findings": {
+    "additive_codebooks": {
+      "note": "No PQ / additive-codebook organ is in the mixed-1p5 recipe.",
+      "present_on_q80_mixed": false
+    },
+    "down_proj": {
+      "already_factored": true,
+      "codec": "hgravs01_r160_b3",
+      "cpu_oracle": {
+        "file": "crates/hawking-core/src/model/qwen_complete_binary/q80_mixed_decode.rs",
+        "fn": "hgravs01_two_stage_matvec_f32",
+        "lines": "566-580",
+        "quote": "let mid = uniform_factor_matvec_f32(right, input)?; uniform_factor_matvec_f32(left, &mid)"
+      },
+      "forbidden_path_absent": "packed -> dense (2048 x 512) W -> W @ x is not implemented on the token path. decode_hgravs01_dense_f32_for_parity is CPU parity only (activation_weighted_svd.rs:677).",
+      "metal_fused_single_dispatch": {
+        "kernel": "q80_hgravs01_two_stage_matvec",
+        "lines": "594-674",
+        "quote": "Fused y = L @ (R @ x) in one dispatch. Each threadgroup recomputes mid[rank]",
+        "status": "EXISTS but REJECTED as token path: sibling receipt fusion_negative, 5-13x slower because every TG recomputes R[160x512]. Metal has no grid-wide barrier."
+      },
+      "metal_two_dispatch": {
+        "file": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+        "kernel": "q80_hgravs01_factor_matvec_simd3 R then L",
+        "lines": "903-964 plus host two-dispatch in ascension_qwen80_mixed_decode_throughput.rs:935+",
+        "temporary": "device mid[rank=160] f32 = 640 B"
+      },
+      "token_path": "y = L @ (R @ x)"
+    },
+    "gate_proj": {
+      "algebra_question": "not applicable; there is no low-rank / codebook / residual factor to consume",
+      "codec": "binary_group 128",
+      "structure": "none — unstructured sign+scale",
+      "token_path": "decode-in-register FMA, no W temporary"
+    },
+    "nonexpert_hgravu01": {
+      "algebra_question": "decode-in-register vs reconstruct; no U@(V@x) available. Shared expert is 8-bit, not hgravs01.",
+      "codec": "uniform-q8 group-64",
+      "covers": "embed, lm_head, attention, DeltaNet, norms, router, shared expert",
+      "structure": "none — not low-rank"
+    },
+    "up_proj": {
+      "already_fused": true,
+      "codec": "binary + rice_q1_rms sparse residual @ 2%",
+      "cpu_oracle": {
+        "file": "crates/hawking-core/src/model/qwen_complete_binary/q80_mixed_decode.rs",
+        "fn": "binary_rice_q1_matvec_f32",
+        "lines": "459-478",
+        "quote": "y = binary_group(x) + rice_q1 residual corrections"
+      },
+      "metal_fused": {
+        "kernels": [
+          "q80_binary_group_csr_matvec",
+          "q80_binary_group_csr_matvec_bytes",
+          "q80_binary_group_csr_matvec_tg256"
+        ],
+        "lines": "472-520, 800-895",
+        "quote": "Binary simd + CSR residual in the same dispatch. Residual add order is serial on lane 0 after the binary reduction."
+      },
+      "not_reconstruct": "Residual is a sparse correction fused into y, not applied to a dense reconstructed W.",
+      "token_path": "y = binary_group(x) + sparse residual scatter-add"
+    }
+  },
+  "flops": {
+    "down_proj": {
+      "dense_w_x_flops_muladd": 2097152,
+      "dense_w_x_macs": 1048576,
+      "factored_breakdown": {
+        "L_mid_macs": 327680,
+        "R_x_macs": 81920
+      },
+      "factored_flops_muladd": 819200,
+      "factored_macs": 409600,
+      "mac_reduction": 2.56,
+      "note": "Shipped path already pays only factored_macs. Reconstruct-then-multiply would pay form_w + dense_w_x every token unless W were cached — and a decoded-W cache is already rejected (12 MiB/expert, 288 GiB if every layer-expert is cached).",
+      "reconstruct_form_w_macs": 167772160
+    },
+    "gate_proj": {
+      "algebra_reduction": 1.0,
+      "macs": 1048576
+    },
+    "shape": {
+      "down": [
+        2048,
+        512
+      ],
+      "gate_up": [
+        512,
+        2048
+      ],
+      "rank": 160
+    },
+    "up_proj": {
+      "binary_macs": 1048576,
+      "flop_reduction_vs_reconstruct": 1.0,
+      "fused_macs": 1069548,
+      "note": "Fusing the 2% residual does not reduce FLOPs versus (B+R)@x. It eliminates the dense W temporary and the write of B+R.",
+      "reconstruct_w_then_x_macs": 1048576,
+      "residual_macs": 20972
+    }
+  },
+  "inherited_gpu_from_q80_decode_throughput": {
+    "down_a_ns": [
+      259166,
+      272250,
+      261291,
+      259666,
+      257125,
+      265250
+    ],
+    "down_b_ns": [
+      13750,
+      13959,
+      12875,
+      14000,
+      12875,
+      14834
+    ],
+    "gate_a_ns": [
+      61041,
+      60791,
+      60500,
+      59750,
+      60541,
+      60166
+    ],
+    "gate_b_ns": [
+      6875,
+      6959,
+      6709,
+      6625,
+      6625,
+      6959
+    ],
+    "label": "DIRTY_ENGINEERING",
+    "median_a_ns": {
+      "down": 261291,
+      "gate": 60541,
+      "organ_sum": 401873,
+      "routed_48x10": 192899040,
+      "up": 80041
+    },
+    "median_b_ns": {
+      "down": 13959,
+      "gate": 6875,
+      "organ_sum": 38084,
+      "routed_48x10": 18280320,
+      "up": 17250
+    },
+    "protocol": "warmup=2; 6 alternating A,B pairs; GPUEndTime-GPUStartTime",
+    "receipt": "receipts/ascent-2026-08-16/q80-decode-throughput.json",
+    "selected_b": {
+      "down": "q80_hgravs01_factor_matvec_simd3 R then L",
+      "gate": "q80_binary_group_matvec_tg256",
+      "up": "q80_binary_group_csr_matvec_bytes"
+    },
+    "up_a_ns": [
+      80709,
+      79791,
+      79834,
+      80041,
+      79500,
+      80541
+    ],
+    "up_b_ns": [
+      17334,
+      17625,
+      17250,
+      17250,
+      17166,
+      17125
+    ],
+    "window": "quieter_A_matched_shipped"
+  },
+  "lane": "q80-lowrank-algebra",
+  "next_bottleneck": {
+    "label": "DIRTY_ENGINEERING",
+    "measured_ns": 17250,
+    "source": "receipts/ascent-2026-08-16/q80-decode-throughput.json quieter window up_b median",
+    "what": "up_proj binary decode / occupancy, ~17.25 us, ~45% of the remaining 38 us per expert. Achieved ~15 GB/s. Still decode/occupancy bound, not DRAM bound, not reconstruct-W bound."
+  },
+  "schema": "hawking.ascension.qwen80_lowrank_algebra.v1",
+  "status": "SHIPPED_CONFIRMED_NEGATIVE_ALREADY_FACTORED",
+  "temporaries": {
+    "down_dense_w_f32_bytes_eliminated": 4194304,
+    "down_mid_f32_bytes": 640,
+    "down_packed_factor_bytes": 166400,
+    "down_packed_left_bytes": 133120,
+    "down_packed_right_bytes": 33280,
+    "gate_body_bytes": 147456,
+    "up_binary_body_bytes": 147456,
+    "up_dense_w_f32_bytes_eliminated": 4194304,
+    "up_outlier_count": 20972,
+    "zero_temporary_principle": "mid[160] f32 is the only down_proj temporary. No (2048 x 512) W. up residual uses bind-time expanded indices, not dense W."
+  },
+  "timing": {
+    "baseline_ns_per_token": 192899040,
+    "label": "DIRTY_ENGINEERING",
+    "organ_sum_ns": 38084,
+    "per_organ_us": {
+      "down": {
+        "after_us": 13.959,
+        "before_us": 261.291,
+        "note": "both arms already L@(R@x). Serial two-dispatch vs simd3 two-dispatch. Not reconstruct vs factors."
+      },
+      "gate": {
+        "after_us": 6.875,
+        "before_us": 60.541,
+        "note": "occupancy, not algebra. Already decode-in-register both arms."
+      },
+      "up": {
+        "after_us": 17.25,
+        "before_us": 80.041,
+        "note": "both arms already fuse residual into y. Occupancy, not reconstruct-vs-fuse."
+      }
+    },
+    "reps_down_b_ns": [
+      13750,
+      13959,
+      12875,
+      14000,
+      12875,
+      14834
+    ],
+    "result_ns_per_token": 18280320,
+    "routed_48x10_ns": 18280320,
+    "source": "receipts/ascent-2026-08-16/q80-decode-throughput.json windows.quieter_A_matched_shipped",
+    "this_lane_new_gpu_reps": [],
+    "why_no_new_gpu": "Algebra question is already answered in shipped kernels. A reconstruct-then-multiply Metal arm is forbidden (faster-by-reconstructing is rejected; never materialize dense W). Re-timing the already-factored kernels would only restate the occupancy lane."
+  },
+  "verdict": "The shipped Q80 down_proj token path already executes y = L @ (R @ x). It does not reconstruct dense W. Implementing a reconstruct-then-multiply kernel would be a regression against the standing law and is refused. This lane is a confirmed negative, not a kernel rewrite."
+}

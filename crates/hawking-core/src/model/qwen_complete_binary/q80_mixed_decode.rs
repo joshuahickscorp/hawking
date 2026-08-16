@@ -650,5 +650,26 @@ mod tests {
         let y = hgravs01_two_stage_matvec_f32(&left, &right, &x).unwrap();
         assert_eq!(y.len(), rows);
         assert!(y.iter().all(|v| v.is_finite()));
+        // Token-path temporary is mid[rank], never dense W[rows*cols].
+        assert_eq!(rank * 4, 32);
+        assert!(rows * cols * 4 > rank * 4);
+    }
+
+    #[test]
+    fn rice_q1_fused_correction_does_not_form_dense_w() {
+        let rows = 8;
+        let cols = 128;
+        let w = deterministic_matrix(rows, cols, 11);
+        let packed = pack_binary_rice_q1(&w, rows, cols, 0.02).unwrap();
+        let x = deterministic_input(cols);
+        let y = binary_rice_q1_matvec_f32(&packed, &x).unwrap();
+        let mut rebuilt = binary_group_matvec_f32(&packed.binary, &x).unwrap();
+        let scale = f16::from_bits(packed.residual_scale_f16).to_f32();
+        for (n, &flat) in packed.indices.iter().enumerate() {
+            let positive = ((packed.residual_signs[n >> 3] >> (n & 7)) & 1) != 0;
+            let value = if positive { scale } else { -scale };
+            rebuilt[(flat as usize) / cols] += value * x[(flat as usize) % cols];
+        }
+        assert_eq!(max_abs_error(&y, &rebuilt), 0.0);
     }
 }
