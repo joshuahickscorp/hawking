@@ -124,6 +124,42 @@
           "what_survives": "GPU time stable at 377.085/378.531/377.122 ms vs A ~412 ms = ~35 ms real GPU win; encoders 1857->134; bit-identical hc_sha on all 6 pairs; 0 fallbacks.",
           "source": "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json"
         }
+      },
+      "expert_nocopy": {
+        "branch": "grok/dsv-expert-20260816-003212 (858894e3) - NOT yet on main, integration lane running",
+        "refuted_hypothesis": "My contract assumed per-expert GEMVs underfilling the GPU. FALSE: DSV4F already used device route -> compact top-6 worklist -> ONE dsv4f_worklist_fp4_matvec + shared expert + fused combine. host_expert_gather and host_expert_output_readback were already 0.",
+        "real_anti_pattern": "host payload STAGING - after the route CB the host mmapped 36 tensors and write_at-packed 76 MiB/layer into compact slabs.",
+        "fix": "Pin the six mmap'd expert-chunk windows as MTLBuffers, write a six-entry gpuAddress table, worklist kernel indexes them (useResources required). This is the Q80 cached-address-table pattern transferring across models, as predicted.",
+        "same_binary_ab_ms": {
+          "pack_body": [
+            1602,
+            1111,
+            1278
+          ],
+          "nocopy_body": [
+            1016,
+            987,
+            1404
+          ],
+          "pack_slab_io": [
+            535,
+            452,
+            481
+          ],
+          "nocopy_slab_io": [
+            257,
+            262,
+            351
+          ]
+        },
+        "expert_slab_io_ms": {
+          "before": 481,
+          "after": 262
+        },
+        "correctness": "bit-identical hc_sha c94da765..., greedy token 5 logit 16.781855, 0 fallbacks, 43/43 no-copy binds",
+        "honest_caveat": "One of three pairs FLIPPED (no-copy 1404 > pack 1278). Median improves; the spread is wide on a loaded box.",
+        "hard_constraint": "384 MiB Metal weight bound means all 256 experts cannot be pinned (3.3 GiB/layer). Streaming 6-of-256 is forced.",
+        "next_wall": "post-route host remap/open of the six expert chunks + next-layer attn views ~262 ms; GPU arithmetic 374 ms"
       }
     },
     "dsv4f_density_frontier": {
@@ -320,7 +356,8 @@
       "information_gain": 150000000,
       "transfer_value": 250000000,
       "experiment_cost": 1.5,
-      "status": "running"
+      "status": "retained_pending_integration",
+      "tier1": "SHIPPED and bit-identical, but SKEWED against main (cb-collapse touched the same MoE dispatch path). 4 conflicts, two large. Delegated to dsv-integrate-expert rather than hand-guessed."
     },
     {
       "id": "cross-adversarial",
@@ -402,6 +439,22 @@
       "experiment_cost": 2.0,
       "status": "running",
       "note": "DECIDES whether the Q80 <=1.5 path is alive. Ranks first in the queue."
+    },
+    {
+      "id": "dsv-integrate-expert",
+      "model": "dsv4f",
+      "hypothesis": "The no-copy expert bind and the collapsed single-encoder topology are complementary and can both land with bit-identity and the win intact",
+      "target_stage": "integration",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-integrate-expert.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.8,
+      "recoverable_ns_per_token": 219000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 100000000,
+      "transfer_value": 100000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "Two independent restructurings of the same hot path. Guessing at 262 lines of Metal dispatch would risk silently breaking bit-identity."
     }
   ],
   "history": [],
