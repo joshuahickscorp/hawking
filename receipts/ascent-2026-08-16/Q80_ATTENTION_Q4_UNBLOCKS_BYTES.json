@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.q80.attention_q4_unblocks_bytes.v1",
+  "date": "2026-08-16",
+  "finding": "Dropping Q80 mixed-1p5 attention from Q8 to Q4 - holding lm_head at Q8 per the cross-lane resolution - removes the byte constraint from EVERY rung.",
+  "measured_by_probe": {
+    "attention_bytes_today_q8": 1587953664,
+    "attention_bytes_at_q4": 818036736,
+    "saving_bytes": 769916928,
+    "attention_q4_cosines": "0.992-0.997 on the attention mass",
+    "lm_head_NOT_moved": "held at Q8: the terminal-head lane measured 11-13 greedy flips at Q4, and behaviour outranks the cosine screen"
+  },
+  "rung_effect": {
+    "before": {
+      "bytes": 2218000000,
+      "roof_tok_s": 185.5,
+      "highest_rung_at_bytes": "B",
+      "byte_blocked_at": "C"
+    },
+    "after": {
+      "bytes": 1448083072,
+      "roof_tok_s": 284.2,
+      "highest_rung_at_bytes": "C",
+      "byte_blocked_at": null
+    }
+  },
+  "why_it_is_cheap": "Same kernel family, and the Q4 vehicle already generates. This is a pack change, not a kernel change.",
+  "what_it_does_NOT_do": "It does not make Q80 fast. Q80 is at 3.32 tok/s against a 185 TPS roof - 1.8% - so execution remains the binding lever. This removes a FUTURE ceiling rather than a present wall, and it should be sequenced accordingly: it matters at rung C, not at rung A.",
+  "required_gate": "Attention numerics change, so the multi-prompt coherence gate applies. A 12-token single-prompt check is a smoke test - the lm_head screen found 11-13 flips across 384 samples that such a check would miss."
+}
