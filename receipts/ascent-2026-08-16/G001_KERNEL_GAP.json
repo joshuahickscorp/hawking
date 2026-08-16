@@ -1,0 +1,23 @@
+{
+  "schema": "hawking.ascension.g001_kernel_gap.v1",
+  "date": "2026-08-16",
+  "same_vehicle_discipline": "Q80's 125 ms GPU and 15.2 GB/s were measured on the Q4 vehicle, so this compares them against the Q4 byte budget (1.8925 GB/token). Mixing a mixed-artifact byte budget with a Q4 runtime is exactly the category error that invalidated G013 v1.",
+  "q4_bytes_per_token": 1892511808,
+  "measured_gpu_ms": 124.377087,
+  "measured_implied_gb_s": 15.215919973655378,
+  "no_model_control_gb_s": [
+    320,
+    411
+  ],
+  "control_time_for_same_bytes_ms": {
+    "320": 5.914,
+    "411": 4.605
+  },
+  "kernel_gap_x": {
+    "320": 21.0,
+    "411": 27.0
+  },
+  "finding": "Q80's GPU achieves 15.2 GB/s where a no-model control moving the SAME bytes in the SAME 98-CB, 10-of-512 gather shape achieves 320-411 GB/s. The kernels are 21-27x off a control that is itself already measured on this box, in this access pattern, with no model logic. This is not a bandwidth-ceiling problem and not a density problem.",
+  "why_this_outranks_density": "Routed experts are 9% of per-token bytes (G013_FS_EFFICIENCY_CLOSURE_V2). Even compressing them to zero removes 9% of traffic. Closing a 21-27x kernel gap is worth an order of magnitude more, and it is the SAME lever for G001, G017 and G020.",
+  "caveat": "The control is a load-only kernel. Real decode must also compute, so 21-27x is an upper bound on the recoverable factor, not a promise. The honest claim is that the headroom between 15.2 GB/s and 320 GB/s is kernel-shaped, not ceiling-shaped."
+}
