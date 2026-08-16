@@ -1,7 +1,7 @@
 {
   "schema": "hawking.special_unit.qwen38_bandwidth_bound.v1",
   "date": "2026-08-16",
-  "finding": "Qwen3.8 already runs at 406.2 GB/s. It is AT the bandwidth wall, not behind it. It has essentially NO kernel headroom, which is the exact opposite of Q80's situation (15.2 GB/s, a 21-27x kernel gap). The two models therefore need OPPOSITE levers: Q80 needs kernels, Qwen3.8 needs fewer bytes.",
+  "finding": "Qwen3.8 already runs at 352-406 GB/s. It is AT the bandwidth wall, not behind it. It has essentially NO kernel headroom, which is the exact opposite of Q80's situation (15.2 GB/s, a 21-27x kernel gap). The two models therefore need OPPOSITE levers: Q80 needs kernels, Qwen3.8 needs fewer bytes.",
   "derivation": {
     "total_payload_bytes": 14297694680,
     "embed_table_bytes": 675865079,
@@ -35,5 +35,18 @@
     }
   },
   "why_this_makes_G016_load_bearing": "At the 3.0 BPW HARD LIMIT Qwen3.8 reaches only 42.3 TPS and MISSES the 50 TPS gate. Only the 2.0 BPW TARGET clears it, at 63.4 TPS. So G016's target is not a preference - it is the binding requirement for G017. A pack that lands between 2.0 and 3.0 satisfies G016's letter while failing G017.",
-  "host_overhead_note": "These are GPU times. Measured wait exceeds GPU by ~0.4 ms, so a 2.0 BPW wall would be ~16.2 ms = ~61.7 TPS, still clearing 50."
+  "host_overhead_note": "These are GPU times. Measured wait exceeds GPU by ~0.4 ms, so a 2.0 BPW wall would be ~16.2 ms = ~61.7 TPS, still clearing 50.",
+  "achieved_bandwidth_CORRECTED": {
+    "range_gb_s": [
+      352,
+      406
+    ],
+    "why_a_range": "Depends on whether lm_head's bytes are counted. I count them (greedy argmax over a 248,320 vocab must read the full lm_head, and at 675 MB it cannot sit in cache), giving 13.622 GB and 406 GB/s. The bring-up lane's own dram_floor_at_4bpw_ms of 14.414 implies 11.805 GB and 352 GB/s, which excludes lm_head. I have not resolved the residual ~1.1 GB between those, so the honest figure is a RANGE, not the single 406 I first asserted.",
+    "conclusion_unaffected": "Both ends sit at or near the top of the 320-411 GB/s control, so Qwen3.8 is bandwidth-bound either way."
+  },
+  "projection_robustness": {
+    "claim": "The TPS projection is INVARIANT to this byte-count uncertainty.",
+    "why": "ms_at_target = measured_ms * (target_bpw / current_bpw). Absolute bytes cancel: they scale the numerator and the achieved-bandwidth denominator identically.",
+    "verified": "Both 13.622 GB and 11.805 GB assumptions yield 15.77 ms (63.4 TPS) at 2.0 BPW and 23.66 ms (42.3 TPS) at 3.0 BPW."
+  }
 }
