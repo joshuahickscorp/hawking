@@ -1,0 +1,144 @@
+{
+  "schema": "hawking.ascent_controller.v1",
+  "generated": "2026-08-16",
+  "note": "Value units are ns/token-equivalent. They only have to ORDER the queue; no fake precision is claimed. Density gains are expressed as ns-equivalent because for both contenders density is a velocity mechanism, not a storage concern.",
+  "incumbents": {
+    "q80": {
+      "vehicle": "uniform-Q4 group64 v1",
+      "complete_physical_bpw": 4.259241,
+      "tournament_valid": false,
+      "reason_invalid": "BPW 4.259241 exceeds the 1.500000 ceiling; ABANDONED as a target by user order 2026-08-16, retained only as a correctness reference",
+      "measured_steady_state_tok_s": 2.479023,
+      "measured_ns_per_token": 403000000,
+      "measurement_label": "DIRTY_ENGINEERING",
+      "receipt": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json"
+    },
+    "q80_density_frontier": {
+      "complete_bpw_at_8bit_nonexpert": 1.43051,
+      "status": "SCREEN_PASSED_NOT_YET_PACKED_OR_GENERATED",
+      "artifact_packed": false,
+      "decode_kernel_exists": false,
+      "coherence_generation_tested": false,
+      "receipt": "receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json"
+    },
+    "dsv4f": {
+      "expected_ns_per_token": 1299000000,
+      "expected_tok_s": 0.77,
+      "measurement_label": "UNVERIFIED_CARRIED_FORWARD",
+      "note": "dsv-host-wall lane is the baseline authority; its number supersedes this one"
+    }
+  },
+  "sources_on_device": {
+    "q80_bf16": "workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next (148 GB, 40 shards)",
+    "dsv4f": "workspace/campaign/records/runs/deepseek-v4 (150 GB)"
+  },
+  "targets": [
+    {
+      "id": "q80-coherence-probe",
+      "model": "q80",
+      "hypothesis": "Per-organ cosine 0.86 compounds across 48 layers into incoherence; measure the per-layer error growth ratio before committing to a 40 GiB pack",
+      "target_stage": "density/representation",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-coherence-probe.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.9,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 900000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "Information-dominated: a NO_GO here is worth more than a week of packing. Highest value in the queue despite recovering zero ns directly."
+    },
+    {
+      "id": "q80-pack",
+      "model": "q80",
+      "hypothesis": "The mixed per-component recipe packs to a real on-disk artifact at <=1.5 complete physical BPW",
+      "target_stage": "density/artifact",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-pack.md",
+      "resource_class": "MEMORY_HEAVY",
+      "probability_of_success": 0.65,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 800000000,
+      "information_gain": 200000000,
+      "transfer_value": 100000000,
+      "experiment_cost": 2.0,
+      "status": "running"
+    },
+    {
+      "id": "q80-decode-kernels",
+      "model": "q80",
+      "hypothesis": "Metal kernels can consume the three packed formats in-register without ever reconstructing a dense tensor",
+      "target_stage": "runtime/representation-execution",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-decode-kernels.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.6,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 600000000,
+      "information_gain": 150000000,
+      "transfer_value": 250000000,
+      "experiment_cost": 2.0,
+      "status": "running",
+      "note": "Transfer value is high: a working packed-matvec pattern applies to DSV4F resident gravity too."
+    },
+    {
+      "id": "dsv-host-wall",
+      "model": "dsv4f",
+      "hypothesis": "The ~641 ms host-exclusive wall is dominated by repeated immutable-identity work that belongs in admission",
+      "target_stage": "host",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-host-wall.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 500000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 200000000,
+      "transfer_value": 100000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "note": "Strong prior: identity recomputation has been the real latency three separate times on this machine."
+    },
+    {
+      "id": "dsv-cb-collapse",
+      "model": "dsv4f",
+      "hypothesis": "137 command buffers/token means a wait-per-CB pipeline drain; collapsing submissions recovers GPU gap time",
+      "target_stage": "gpu/dispatch",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-cb-collapse.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.6,
+      "recoverable_ns_per_token": 300000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 150000000,
+      "transfer_value": 100000000,
+      "experiment_cost": 1.5,
+      "status": "running"
+    },
+    {
+      "id": "dsv-resident-gravity",
+      "model": "dsv4f",
+      "hypothesis": "A <=1.5 BPW DSV4F becomes resident on 96 GB, deleting the entire streamed-source runtime regime rather than optimizing it",
+      "target_stage": "density/architecture",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-resident-gravity.md",
+      "resource_class": "MEMORY_HEAVY",
+      "probability_of_success": 0.5,
+      "recoverable_ns_per_token": 900000000,
+      "density_frontier_gain_ns_equiv": 400000000,
+      "information_gain": 300000000,
+      "transfer_value": 200000000,
+      "experiment_cost": 3.0,
+      "status": "running",
+      "note": "Largest single recoverable class for DSV4F: it removes the reason the host wall exists at all."
+    }
+  ],
+  "history": [],
+  "negative_science": [
+    "Q30 static <=1.5 coherence FAILED",
+    "Q80 cross-expert shared-basis REFUTED (experts mutually orthogonal, cos 0.004)",
+    "Q80 simplistic bandwidth-bound thesis REFUTED (0.79% of ceiling, ~51% GPU idle)",
+    "DSV4F route-ID readback serializer hypothesis REFUTED",
+    "shader compile as primary wall REFUTED/deprioritized",
+    "single-family Q80 representation INSUFFICIENT",
+    "raw activation cosine is deceptive here: measured null baseline 0.898",
+    "fits with rows < fitted dimension are UNDERDETERMINED and their scores meaningless",
+    "never calibrate on a degraded baseline or on synthetic/Gaussian activations",
+    "immutable-identity recomputation per token has been the real latency three times"
+  ]
+}
