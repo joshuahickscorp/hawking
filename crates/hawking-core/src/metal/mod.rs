@@ -388,6 +388,10 @@ pub const SHADER_DEEPSEEK_V4_P7: &str = include_str!("../../shaders/deepseek_v4_
 /// Compact top-6 device worklist for one DeepSeek-V4-Flash BOS token.
 pub const SHADER_DSV4F_NATIVE_TOKEN_GRAPH: &str =
     include_str!("../../shaders/dsv4f_native_token_graph.metal");
+/// Batched (M=N) DSV4F activation-X linears. Appended after the native
+/// worklist file so its `dsv4f_ax_*` helpers cannot collide with matmul/moe.
+pub const SHADER_DSV4F_ACTIVATION_X_BATCH: &str =
+    include_str!("../../shaders/dsv4f_activation_x_batch.metal");
 /// TQ G4 bitslice decode→GEMV kernel family (`tq` feature). Ported verbatim from
 /// `vendor/strand-decode-kernel/shaders/strand_bitslice.metal`. Compiled into the
 /// runtime library so `pipeline("strand_bitslice_decode")` etc. resolve by name.
@@ -437,6 +441,7 @@ pub fn all_shader_sources() -> String {
         SHADER_DEEPSEEK_V4_P7,
     ];
     srcs.push(SHADER_DSV4F_NATIVE_TOKEN_GRAPH);
+    srcs.push(SHADER_DSV4F_ACTIVATION_X_BATCH);
     // The TQ bitslice family is feature-gated: only compiled into the library
     // when `tq` is on.
     #[cfg(feature = "tq")]
@@ -1398,6 +1403,14 @@ mod imp {
             "dsv4f_worklist_fp4_matvec" => "dsv4f_worklist_fp4_matvec",
             "dsv4f_worklist_swiglu" => "dsv4f_worklist_swiglu",
             "dsv4f_worklist_combine" => "dsv4f_worklist_combine",
+            "dsv4f_ax_act_quant_bf16_ue8m0_batched" => "dsv4f_ax_act_quant_bf16_ue8m0_batched",
+            "dsv4f_ax_fp8_e4m3fn_e8m0_gemm" => "dsv4f_ax_fp8_e4m3fn_e8m0_gemm",
+            "dsv4f_ax_fp4_e2m1fn_x2_e8m0_gemm" => "dsv4f_ax_fp4_e2m1fn_x2_e8m0_gemm",
+            "dsv4f_ax_gate_bf16_gemm" => "dsv4f_ax_gate_bf16_gemm",
+            "dsv4f_ax_wo_a_convert_bf16_einsum_batched" => {
+                "dsv4f_ax_wo_a_convert_bf16_einsum_batched"
+            }
+            "dsv4f_ax_pack_expert_csr" => "dsv4f_ax_pack_expert_csr",
             "gemv_f32_moe" => "gemv_f32_moe",
             "moe_grouped_gemm_q4" => "moe_grouped_gemm_q4",
             // indexed moe batched gemm variants
@@ -1657,7 +1670,7 @@ mod imp {
         use super::static_kernel_name;
         use crate::metal::{
             SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP, SHADER_DEEPSEEK_V4_P7,
-            SHADER_DSV4F_NATIVE_TOKEN_GRAPH, SHADER_GRAVITY_PQ, SHADER_MATMUL, SHADER_MOE,
+            SHADER_DSV4F_ACTIVATION_X_BATCH, SHADER_GRAVITY_PQ, SHADER_MATMUL, SHADER_MOE,
         };
         #[test]
         fn compiled_dormant_resident_kernels_have_static_trace_names() {
@@ -1856,6 +1869,25 @@ mod imp {
                 SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP.contains("deepseek_v4_mhc_control_expf"),
                 "mHC control exp helper must compile into the shared Metal library"
             );
+        }
+
+        #[test]
+        fn dsv4f_activation_x_batch_kernels_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "dsv4f_ax_act_quant_bf16_ue8m0_batched",
+                "dsv4f_ax_fp8_e4m3fn_e8m0_gemm",
+                "dsv4f_ax_fp4_e2m1fn_x2_e8m0_gemm",
+                "dsv4f_ax_gate_bf16_gemm",
+                "dsv4f_ax_wo_a_convert_bf16_einsum_batched",
+                "dsv4f_ax_pack_expert_csr",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_DSV4F_ACTIVATION_X_BATCH.contains(&format!("kernel void {kernel}(")),
+                    "DSV4F activation-X batch kernel must remain in dsv4f_activation_x_batch.metal"
+                );
+            }
         }
 
         #[test]

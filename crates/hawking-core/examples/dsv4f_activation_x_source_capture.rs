@@ -7,8 +7,12 @@
 //! not a multi-token sequence, and not the full ratio-4/128 compressed
 //! indexer graph.
 //!
-//! Layer-major: for each layer, run every token, retain, flush, free, then
-//! checkpoint HC + layer metadata so the run can resume.
+//! Layer-major: for each layer, stream the weights once, run a token tile as
+//! GEMMs (dense organs + per-expert grouped routed GEMMs), retain, flush,
+//! free, then checkpoint HC + layer metadata so the run can resume.
+//!
+//! `--no-batch` keeps the original per-token GEMV loop for parity. `--resume`
+//! still accepts a checkpoint written by that older driver.
 //!
 //! ```text
 //! cargo run --profile release-fast -p hawking-core --example dsv4f_activation_x_source_capture -- \
@@ -24,10 +28,10 @@ use hawking_core::gravity_deepseek_v4_layer_source_anchors::{
 };
 use hawking_core::gravity_deepseek_v4_runtime_spine::DSV4F_VOCAB_SIZE;
 use hawking_core::gravity_deepseek_v4_streamed_forward::{
-    discover_sealed_dsv4f_artifact, execute_one_layer_with_x, load_token_embed_hc, peak_rss_bytes,
-    prepare_sealed_admission_root, OperatorProfile, ResidentLedger, StreamedLayerCapture,
-    DECLARED_PEAK_RSS_BOUND_BYTES, DECLARED_WEIGHT_RESIDENT_BOUND_BYTES,
-    STREAMED_EXECUTION_PATH, STREAMED_EXECUTION_PATH_METAL,
+    default_token_tile, discover_sealed_dsv4f_artifact, execute_layer_tile, execute_one_layer_with_x,
+    load_token_embed_hc, peak_rss_bytes, prepare_sealed_admission_root, OperatorProfile,
+    ResidentLedger, StreamedLayerCapture, DECLARED_PEAK_RSS_BOUND_BYTES,
+    DECLARED_WEIGHT_RESIDENT_BOUND_BYTES, STREAMED_EXECUTION_PATH, STREAMED_EXECUTION_PATH_METAL,
 };
 use hawking_core::gravity_deepseek_v4_streamed_native::StreamedNativeSession;
 use hawking_core::model::dsv4f_activation_capture::{
@@ -60,12 +64,15 @@ struct Arguments {
     row_threshold: usize,
     use_metal: bool,
     resume: bool,
+    batch: bool,
+    token_tile: usize,
 }
 
 fn usage() -> &'static str {
     "usage: dsv4f_activation_x_source_capture --output-dir ABSOLUTE_PATH \\\n\
      \x20  [--artifact PATH] [--tokens N] [--max-layer N] \\\n\
      \x20  [--max-hidden-tokens-per-expert N] [--row-threshold N] \\\n\
+     \x20  [--token-tile N] [--batch] [--no-batch] \\\n\
      \x20  [--metal] [--cpu] [--resume]"
 }
 
@@ -92,6 +99,8 @@ fn parse_arguments() -> Result<Arguments, String> {
     let mut row_threshold = DEFAULT_ROW_THRESHOLD;
     let mut use_metal = true;
     let mut resume = false;
+    let mut batch = true;
+    let mut token_tile = 0usize;
     let mut args = env::args().skip(1);
     while let Some(flag) = args.next() {
         match flag.as_str() {
@@ -136,6 +145,14 @@ fn parse_arguments() -> Result<Arguments, String> {
                     .ok_or_else(|| format!("missing value for --row-threshold; {}", usage()))?;
                 row_threshold = parse_usize(&value, "--row-threshold")?;
             }
+            "--token-tile" => {
+                let value = args
+                    .next()
+                    .ok_or_else(|| format!("missing value for --token-tile; {}", usage()))?;
+                token_tile = parse_usize(&value, "--token-tile")?;
+            }
+            "--batch" => batch = true,
+            "--no-batch" => batch = false,
             "--metal" => use_metal = true,
             "--cpu" => use_metal = false,
             "--resume" => resume = true,
@@ -173,6 +190,8 @@ fn parse_arguments() -> Result<Arguments, String> {
         row_threshold,
         use_metal,
         resume,
+        batch,
+        token_tile,
     })
 }
 
@@ -410,6 +429,8 @@ fn patch_honesty(
     wall_ms: u128,
     artifact: &str,
     manifest_seal: &str,
+    batched: bool,
+    token_tile: usize,
 ) -> Result<(), String> {
     let text = fs::read_to_string(result_path).map_err(|e| e.to_string())?;
     let mut doc: Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
@@ -427,6 +448,8 @@ fn patch_honesty(
             "independent_position0_token_ids_not_a_sequence".into(),
             json!(true),
         );
+        obj.insert("token_tile_batched".into(), json!(batched));
+        obj.insert("token_tile".into(), json!(token_tile));
     }
     if let Some(obj) = doc["claim_boundary"].as_object_mut() {
         obj.insert(
@@ -467,6 +490,8 @@ fn patch_honesty(
         "position": 0,
         "seqlen": 1,
         "attention": "window_only_sparse_bos",
+        "token_tile_batched": batched,
+        "token_tile": token_tile,
     });
     fs::remove_file(result_path).map_err(|e| e.to_string())?;
     write_json_new(result_path, &doc).map_err(|e| e.to_string())?;
@@ -482,6 +507,14 @@ fn main() {
     };
     let set = CaptureSet::doctor6_only();
     let token_ids = token_ids_for_budget(args.tokens);
+    let token_tile = if args.token_tile == 0 {
+        default_token_tile(token_ids.len())
+    } else {
+        args.token_tile
+    };
+    if token_tile == 0 {
+        fail("--token-tile must be > 0");
+    }
     let probes = vec![(PROBE_ID.to_string(), token_ids.clone())];
     let token_index = build_token_index(&probes);
     let ckpt_path = args.output_dir.join(CKPT_NAME);
@@ -507,12 +540,14 @@ fn main() {
         )
     );
     eprintln!(
-        "dsv4f source capture: artifact={} tokens={} layers=0..{} metal={} resume={}",
+        "dsv4f source capture: artifact={} tokens={} layers=0..{} metal={} resume={} batch={} token_tile={}",
         args.artifact.display(),
         args.tokens,
         args.max_layer,
         args.use_metal,
-        args.resume
+        args.resume,
+        args.batch,
+        token_tile
     );
 
     let admission =
@@ -618,46 +653,103 @@ fn main() {
         let layer_wall = Instant::now();
         let mut routes: Vec<(Vec<u32>, Vec<f32>)> = Vec::with_capacity(token_ids.len());
         let mut packed = vec![0.0f32; token_ids.len() * HIDDEN_SIZE];
-        for (t, &tid) in token_ids.iter().enumerate() {
-            let captured: StreamedLayerCapture = execute_one_layer_with_x(
-                &reader,
-                &layer_anchor,
-                &hc_states[t],
-                tid as u64,
-                &mut ledger,
-                &mut profile,
-                metal.as_mut(),
-            )
-            .unwrap_or_else(|e| fail(format!("L{next_layer} token {tid}: {e}")));
-            if captured.h_post_ffn_norm.len() != HIDDEN_SIZE {
-                fail(format!(
-                    "L{next_layer} token {tid}: h_post_ffn_norm width {}",
-                    captured.h_post_ffn_norm.len()
-                ));
-            }
-            packed[t * HIDDEN_SIZE..(t + 1) * HIDDEN_SIZE]
-                .copy_from_slice(&captured.h_post_ffn_norm);
-            routes.push((
-                captured.selected_expert_ids,
-                captured.normalized_route_weights,
-            ));
-            hc_states[t] = captured.next_hc_bf16;
-            write_hc(&hc_path(&args.output_dir, t), &hc_states[t]).unwrap_or_else(|e| fail(e));
-            peak_rss = peak_rss.max(peak_rss_bytes());
-            if t == 0 || (t + 1) % 8 == 0 || t + 1 == token_ids.len() {
+        if args.batch {
+            let mut t0 = 0usize;
+            while t0 < token_ids.len() {
+                let t1 = (t0 + token_tile).min(token_ids.len());
+                let tile_ids: Vec<u64> = token_ids[t0..t1].iter().map(|&id| id as u64).collect();
+                let tile_hc: Vec<Vec<u16>> = hc_states[t0..t1].to_vec();
+                let captured = execute_layer_tile(
+                    &reader,
+                    &layer_anchor,
+                    &tile_hc,
+                    &tile_ids,
+                    &mut ledger,
+                    &mut profile,
+                    metal.as_mut(),
+                )
+                .unwrap_or_else(|e| fail(format!("L{next_layer} tile {t0}..{t1}: {e}")));
+                if captured.len() != t1 - t0 {
+                    fail(format!(
+                        "L{next_layer} tile {t0}..{t1} returned {} rows",
+                        captured.len()
+                    ));
+                }
+                for (i, cap) in captured.into_iter().enumerate() {
+                    let t = t0 + i;
+                    let tid = token_ids[t];
+                    if cap.h_post_ffn_norm.len() != HIDDEN_SIZE {
+                        fail(format!(
+                            "L{next_layer} token {tid}: h_post_ffn_norm width {}",
+                            cap.h_post_ffn_norm.len()
+                        ));
+                    }
+                    packed[t * HIDDEN_SIZE..(t + 1) * HIDDEN_SIZE]
+                        .copy_from_slice(&cap.h_post_ffn_norm);
+                    routes.push((cap.selected_expert_ids, cap.normalized_route_weights));
+                    hc_states[t] = cap.next_hc_bf16;
+                    write_hc(&hc_path(&args.output_dir, t), &hc_states[t])
+                        .unwrap_or_else(|e| fail(e));
+                }
+                peak_rss = peak_rss.max(peak_rss_bytes());
                 eprintln!(
-                    "  L{next_layer} token {}/{} id={} rss={} live_w={}",
-                    t + 1,
-                    token_ids.len(),
-                    tid,
+                    "  L{next_layer} tile {}/{} tokens {}..{} rss={} live_w={}",
+                    (t0 / token_tile) + 1,
+                    token_ids.len().div_ceil(token_tile),
+                    t0,
+                    t1,
                     peak_rss,
                     ledger.live_bytes()
                 );
+                if peak_rss > DECLARED_PEAK_RSS_BOUND_BYTES {
+                    fail(format!(
+                        "measured peak RSS {peak_rss} exceeded bound {DECLARED_PEAK_RSS_BOUND_BYTES}"
+                    ));
+                }
+                t0 = t1;
             }
-            if peak_rss > DECLARED_PEAK_RSS_BOUND_BYTES {
-                fail(format!(
-                    "measured peak RSS {peak_rss} exceeded bound {DECLARED_PEAK_RSS_BOUND_BYTES}"
+        } else {
+            for (t, &tid) in token_ids.iter().enumerate() {
+                let captured: StreamedLayerCapture = execute_one_layer_with_x(
+                    &reader,
+                    &layer_anchor,
+                    &hc_states[t],
+                    tid as u64,
+                    &mut ledger,
+                    &mut profile,
+                    metal.as_mut(),
+                )
+                .unwrap_or_else(|e| fail(format!("L{next_layer} token {tid}: {e}")));
+                if captured.h_post_ffn_norm.len() != HIDDEN_SIZE {
+                    fail(format!(
+                        "L{next_layer} token {tid}: h_post_ffn_norm width {}",
+                        captured.h_post_ffn_norm.len()
+                    ));
+                }
+                packed[t * HIDDEN_SIZE..(t + 1) * HIDDEN_SIZE]
+                    .copy_from_slice(&captured.h_post_ffn_norm);
+                routes.push((
+                    captured.selected_expert_ids,
+                    captured.normalized_route_weights,
                 ));
+                hc_states[t] = captured.next_hc_bf16;
+                write_hc(&hc_path(&args.output_dir, t), &hc_states[t]).unwrap_or_else(|e| fail(e));
+                peak_rss = peak_rss.max(peak_rss_bytes());
+                if t == 0 || (t + 1) % 8 == 0 || t + 1 == token_ids.len() {
+                    eprintln!(
+                        "  L{next_layer} token {}/{} id={} rss={} live_w={}",
+                        t + 1,
+                        token_ids.len(),
+                        tid,
+                        peak_rss,
+                        ledger.live_bytes()
+                    );
+                }
+                if peak_rss > DECLARED_PEAK_RSS_BOUND_BYTES {
+                    fail(format!(
+                        "measured peak RSS {peak_rss} exceeded bound {DECLARED_PEAK_RSS_BOUND_BYTES}"
+                    ));
+                }
             }
         }
         let batch = LayerActivationBatch {
@@ -736,6 +828,13 @@ fn main() {
     }
 
     let n_fit = n_fit_distribution(&captures, &geometry, args.row_threshold);
+    // A resumed run that already emitted a result (for example after a
+    // shorter --max-layer) must replace that file. Layer rows stay
+    // create-new; only the summary is rewritten.
+    let existing_result = args.output_dir.join("capture-result.json");
+    if existing_result.is_file() {
+        fs::remove_file(&existing_result).unwrap_or_else(|e| fail(e.to_string()));
+    }
     let result_path = emit_capture_result(
         &args.output_dir,
         &probes,
@@ -773,6 +872,8 @@ fn main() {
         wall_ms,
         &admission.source_path.display().to_string(),
         reader.manifest_seal_sha256(),
+        args.batch,
+        token_tile,
     )
     .unwrap_or_else(|e| fail(e));
 
@@ -792,6 +893,8 @@ fn main() {
         "fallbacks": fallbacks,
         "wall_ms": wall_ms,
         "n_fit_distribution": n_fit,
+        "token_tile_batched": args.batch,
+        "token_tile": token_tile,
         "honesty": {
             "synthetic_activations": false,
             "sealed_artifact_opened_read_only": true,

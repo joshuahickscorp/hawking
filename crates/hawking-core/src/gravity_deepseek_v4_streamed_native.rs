@@ -29,6 +29,11 @@ const WO_A_KERNEL: &str = "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority";
 const CAST_KERNEL: &str = "deepseek_v4_p3a_fp32_to_bf16_authority";
 const GATE_KERNEL: &str = "deepseek_v4_p6a_gate_bf16_matvec_authority";
 const LM_HEAD_KERNEL: &str = "gemv_native_bf16_seq";
+const AX_ACT_QUANT_KERNEL: &str = "dsv4f_ax_act_quant_bf16_ue8m0_batched";
+const AX_FP8_GEMM_KERNEL: &str = "dsv4f_ax_fp8_e4m3fn_e8m0_gemm";
+const AX_FP4_GEMM_KERNEL: &str = "dsv4f_ax_fp4_e2m1fn_x2_e8m0_gemm";
+const AX_GATE_GEMM_KERNEL: &str = "dsv4f_ax_gate_bf16_gemm";
+const AX_WO_A_KERNEL: &str = "dsv4f_ax_wo_a_convert_bf16_einsum_batched";
 
 /// Stated per-element tolerance for Metal vs CPU linear outputs (decoded BF16).
 pub const LINEAR_ABS_TOL: f32 = 1.0e-3;
@@ -59,6 +64,16 @@ pub struct StreamedNativeSession {
     gate_tg: u32,
     #[cfg(target_os = "macos")]
     lm_head_tg: u32,
+    #[cfg(target_os = "macos")]
+    ax_act_quant_tg: u32,
+    #[cfg(target_os = "macos")]
+    ax_fp8_tg: u32,
+    #[cfg(target_os = "macos")]
+    ax_fp4_tg: u32,
+    #[cfg(target_os = "macos")]
+    ax_gate_tg: u32,
+    #[cfg(target_os = "macos")]
+    ax_wo_a_tg: u32,
     dispatches: usize,
     fallbacks: usize,
     fallback_reasons: Vec<String>,
@@ -82,6 +97,11 @@ impl StreamedNativeSession {
             let cast_tg = pipeline_tg(&metal, CAST_KERNEL, 256)?;
             let gate_tg = pipeline_tg(&metal, GATE_KERNEL, 256)?;
             let lm_head_tg = pipeline_tg(&metal, LM_HEAD_KERNEL, 256)?;
+            let ax_act_quant_tg = pipeline_tg(&metal, AX_ACT_QUANT_KERNEL, 32)?;
+            let ax_fp8_tg = pipeline_tg(&metal, AX_FP8_GEMM_KERNEL, 256)?;
+            let ax_fp4_tg = pipeline_tg(&metal, AX_FP4_GEMM_KERNEL, 256)?;
+            let ax_gate_tg = pipeline_tg(&metal, AX_GATE_GEMM_KERNEL, 256)?;
+            let ax_wo_a_tg = pipeline_tg(&metal, AX_WO_A_KERNEL, 256)?;
             Ok(Self {
                 metal,
                 act_quant_tg,
@@ -91,6 +111,11 @@ impl StreamedNativeSession {
                 cast_tg,
                 gate_tg,
                 lm_head_tg,
+                ax_act_quant_tg,
+                ax_fp8_tg,
+                ax_fp4_tg,
+                ax_gate_tg,
+                ax_wo_a_tg,
                 dispatches: 0,
                 fallbacks: 0,
                 fallback_reasons: Vec::new(),
@@ -196,6 +221,95 @@ impl StreamedNativeSession {
         #[cfg(target_os = "macos")]
         {
             self.lm_head_block_macos(residual_f32, weight_bf16_bytes, rows)
+        }
+    }
+
+    /// Batched FP8 linear: `input` is packed `[batch, logical_k]`, output is
+    /// packed `[batch, rows]`. One weight upload, one GEMM.
+    pub fn fp8_linear_batched(
+        &mut self,
+        input_bf16: &[u16],
+        weights: &[u8],
+        scales: &[u8],
+        rows: usize,
+        logical_k: usize,
+        batch: usize,
+    ) -> Result<Vec<u16>> {
+        if batch == 1 {
+            return self.fp8_linear(input_bf16, weights, scales, rows, logical_k);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (input_bf16, weights, scales, rows, logical_k, batch);
+            Err(native_error("fp8_linear_batched requires macOS Metal"))
+        }
+        #[cfg(target_os = "macos")]
+        {
+            self.fp8_linear_batched_macos(input_bf16, weights, scales, rows, logical_k, batch)
+        }
+    }
+
+    pub fn fp4_linear_batched(
+        &mut self,
+        input_bf16: &[u16],
+        weights: &[u8],
+        scales: &[u8],
+        rows: usize,
+        logical_k: usize,
+        batch: usize,
+    ) -> Result<Vec<u16>> {
+        if batch == 1 {
+            return self.fp4_linear(input_bf16, weights, scales, rows, logical_k);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (input_bf16, weights, scales, rows, logical_k, batch);
+            Err(native_error("fp4_linear_batched requires macOS Metal"))
+        }
+        #[cfg(target_os = "macos")]
+        {
+            self.fp4_linear_batched_macos(input_bf16, weights, scales, rows, logical_k, batch)
+        }
+    }
+
+    pub fn wo_a_einsum_batched(
+        &mut self,
+        attention_bf16: &[u16],
+        weights: &[u8],
+        scales: &[u8],
+        batch: usize,
+    ) -> Result<Vec<u16>> {
+        if batch == 1 {
+            return self.wo_a_einsum(attention_bf16, weights, scales);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (attention_bf16, weights, scales, batch);
+            Err(native_error("wo_a_einsum_batched requires macOS Metal"))
+        }
+        #[cfg(target_os = "macos")]
+        {
+            self.wo_a_einsum_batched_macos(attention_bf16, weights, scales, batch)
+        }
+    }
+
+    pub fn gate_logits_batched(
+        &mut self,
+        input_bf16: &[u16],
+        weight_bf16: &[u16],
+        batch: usize,
+    ) -> Result<Vec<f32>> {
+        if batch == 1 {
+            return self.gate_logits(input_bf16, weight_bf16);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (input_bf16, weight_bf16, batch);
+            Err(native_error("gate_logits_batched requires macOS Metal"))
+        }
+        #[cfg(target_os = "macos")]
+        {
+            self.gate_logits_batched_macos(input_bf16, weight_bf16, batch)
         }
     }
 
@@ -454,6 +568,297 @@ impl StreamedNativeSession {
         })?;
         self.dispatches += 1;
         read_f32_buffer(&out_buf, rows)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn fp8_linear_batched_macos(
+        &mut self,
+        input_bf16: &[u16],
+        weights: &[u8],
+        scales: &[u8],
+        rows: usize,
+        logical_k: usize,
+        batch: usize,
+    ) -> Result<Vec<u16>> {
+        if batch == 0
+            || input_bf16.len() != batch * logical_k
+            || logical_k == 0
+            || rows == 0
+            || logical_k % ACT_QUANT_BLOCK != 0
+            || rows % ACT_QUANT_BLOCK != 0
+        {
+            return Err(native_error("fp8_linear_batched geometry is invalid"));
+        }
+        if weights.len() != rows * logical_k {
+            return Err(native_error("fp8_linear_batched weight byte count mismatch"));
+        }
+        let scale_cols = logical_k / ACT_QUANT_BLOCK;
+        if scales.len() != (rows / ACT_QUANT_BLOCK) * scale_cols {
+            return Err(native_error("fp8_linear_batched scale byte count mismatch"));
+        }
+
+        let nblocks = logical_k / ACT_QUANT_BLOCK;
+        let input_buf = self
+            .metal
+            .new_buffer_with_bytes_checked(u16_as_bytes(input_bf16))?;
+        let quant_buf = self.metal.new_buffer_checked(batch * logical_k)?;
+        let act_scale_buf = self.metal.new_buffer_checked(batch * scale_cols)?;
+        let weight_buf = self.metal.new_buffer_from_verified_bytes(weights)?;
+        let scale_buf = self.metal.new_buffer_from_verified_bytes(scales)?;
+        let out_f32_buf = self
+            .metal
+            .new_buffer_checked(batch * rows * size_of::<f32>())?;
+        let out_bf16_buf = self
+            .metal
+            .new_buffer_checked(batch * rows * size_of::<u16>())?;
+
+        let cols_u = logical_k as u32;
+        let rows_u = rows as u32;
+        let scale_cols_u = scale_cols as u32;
+        let batch_u = batch as u32;
+        let aq_grid = (batch * nblocks) as u32;
+        let gemm_grid = (batch * rows) as u32;
+        let aq_tg = self.ax_act_quant_tg.min(aq_grid.max(1));
+        let fp8_tg = self.ax_fp8_tg.min(gemm_grid.max(1));
+        let cast_tg = self.cast_tg.min(gemm_grid.max(1));
+
+        self.metal.dispatch_batch(|batch_enc| {
+            batch_enc.dispatch_threads(
+                AX_ACT_QUANT_KERNEL,
+                (aq_grid, 1, 1),
+                (aq_tg, 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&input_buf), 0);
+                    encoder.set_buffer(1, Some(&quant_buf), 0);
+                    encoder.set_buffer(2, Some(&act_scale_buf), 0);
+                    set_u32(encoder, 3, &cols_u);
+                    set_u32(encoder, 4, &batch_u);
+                },
+            )?;
+            batch_enc.dispatch_threads(
+                AX_FP8_GEMM_KERNEL,
+                (gemm_grid, 1, 1),
+                (fp8_tg, 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&weight_buf), 0);
+                    encoder.set_buffer(1, Some(&scale_buf), 0);
+                    encoder.set_buffer(2, Some(&quant_buf), 0);
+                    encoder.set_buffer(3, Some(&act_scale_buf), 0);
+                    encoder.set_buffer(4, Some(&out_f32_buf), 0);
+                    set_u32(encoder, 5, &rows_u);
+                    set_u32(encoder, 6, &cols_u);
+                    set_u32(encoder, 7, &scale_cols_u);
+                    set_u32(encoder, 8, &batch_u);
+                },
+            )?;
+            batch_enc.dispatch_threads(
+                CAST_KERNEL,
+                (gemm_grid, 1, 1),
+                (cast_tg, 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&out_f32_buf), 0);
+                    encoder.set_buffer(1, Some(&out_bf16_buf), 0);
+                    set_u32(encoder, 2, &gemm_grid);
+                },
+            )
+        })?;
+        self.dispatches += 3;
+        read_u16_buffer(&out_bf16_buf, batch * rows)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn fp4_linear_batched_macos(
+        &mut self,
+        input_bf16: &[u16],
+        weights: &[u8],
+        scales: &[u8],
+        rows: usize,
+        logical_k: usize,
+        batch: usize,
+    ) -> Result<Vec<u16>> {
+        if batch == 0
+            || input_bf16.len() != batch * logical_k
+            || logical_k == 0
+            || rows == 0
+            || logical_k % ACT_QUANT_BLOCK != 0
+            || logical_k % FP4_BLOCK != 0
+        {
+            return Err(native_error("fp4_linear_batched geometry is invalid"));
+        }
+        let packed_k = logical_k / 2;
+        let scale_cols = logical_k / FP4_BLOCK;
+        if weights.len() != rows * packed_k {
+            return Err(native_error(
+                "fp4_linear_batched packed weight byte count mismatch",
+            ));
+        }
+        if scales.len() != rows * scale_cols {
+            return Err(native_error("fp4_linear_batched scale byte count mismatch"));
+        }
+
+        let nblocks = logical_k / ACT_QUANT_BLOCK;
+        let input_buf = self
+            .metal
+            .new_buffer_with_bytes_checked(u16_as_bytes(input_bf16))?;
+        let quant_buf = self.metal.new_buffer_checked(batch * logical_k)?;
+        let act_scale_buf = self.metal.new_buffer_checked(batch * nblocks)?;
+        let weight_buf = self.metal.new_buffer_from_verified_bytes(weights)?;
+        let scale_buf = self.metal.new_buffer_from_verified_bytes(scales)?;
+        let out_f32_buf = self
+            .metal
+            .new_buffer_checked(batch * rows * size_of::<f32>())?;
+        let out_bf16_buf = self
+            .metal
+            .new_buffer_checked(batch * rows * size_of::<u16>())?;
+
+        let cols_u = logical_k as u32;
+        let rows_u = rows as u32;
+        let packed_u = packed_k as u32;
+        let scale_cols_u = scale_cols as u32;
+        let batch_u = batch as u32;
+        let aq_grid = (batch * nblocks) as u32;
+        let gemm_grid = (batch * rows) as u32;
+        let aq_tg = self.ax_act_quant_tg.min(aq_grid.max(1));
+        let fp4_tg = self.ax_fp4_tg.min(gemm_grid.max(1));
+        let cast_tg = self.cast_tg.min(gemm_grid.max(1));
+
+        self.metal.dispatch_batch(|batch_enc| {
+            batch_enc.dispatch_threads(
+                AX_ACT_QUANT_KERNEL,
+                (aq_grid, 1, 1),
+                (aq_tg, 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&input_buf), 0);
+                    encoder.set_buffer(1, Some(&quant_buf), 0);
+                    encoder.set_buffer(2, Some(&act_scale_buf), 0);
+                    set_u32(encoder, 3, &cols_u);
+                    set_u32(encoder, 4, &batch_u);
+                },
+            )?;
+            batch_enc.dispatch_threads(
+                AX_FP4_GEMM_KERNEL,
+                (gemm_grid, 1, 1),
+                (fp4_tg, 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&weight_buf), 0);
+                    encoder.set_buffer(1, Some(&scale_buf), 0);
+                    encoder.set_buffer(2, Some(&quant_buf), 0);
+                    encoder.set_buffer(3, Some(&act_scale_buf), 0);
+                    encoder.set_buffer(4, Some(&out_f32_buf), 0);
+                    set_u32(encoder, 5, &rows_u);
+                    set_u32(encoder, 6, &packed_u);
+                    set_u32(encoder, 7, &scale_cols_u);
+                    set_u32(encoder, 8, &batch_u);
+                },
+            )?;
+            batch_enc.dispatch_threads(
+                CAST_KERNEL,
+                (gemm_grid, 1, 1),
+                (cast_tg, 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(&out_f32_buf), 0);
+                    encoder.set_buffer(1, Some(&out_bf16_buf), 0);
+                    set_u32(encoder, 2, &gemm_grid);
+                },
+            )
+        })?;
+        self.dispatches += 3;
+        read_u16_buffer(&out_bf16_buf, batch * rows)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn wo_a_einsum_batched_macos(
+        &mut self,
+        attention_bf16: &[u16],
+        weights: &[u8],
+        scales: &[u8],
+        batch: usize,
+    ) -> Result<Vec<u16>> {
+        if batch == 0 || attention_bf16.len() != batch * O_GROUPS * WO_A_COLS {
+            return Err(native_error("wo_a_batched attention is not [batch, 8, 4096]"));
+        }
+        if weights.len() != WO_A_ROWS * WO_A_COLS {
+            return Err(native_error("wo_a_batched weight byte count mismatch"));
+        }
+        let scale_cols = WO_A_COLS / ACT_QUANT_BLOCK;
+        if scales.len() != (WO_A_ROWS / ACT_QUANT_BLOCK) * scale_cols {
+            return Err(native_error("wo_a_batched scale byte count mismatch"));
+        }
+
+        let attn_buf = self
+            .metal
+            .new_buffer_with_bytes_checked(u16_as_bytes(attention_bf16))?;
+        let weight_buf = self.metal.new_buffer_from_verified_bytes(weights)?;
+        let scale_buf = self.metal.new_buffer_from_verified_bytes(scales)?;
+        let out_buf = self
+            .metal
+            .new_buffer_checked(batch * WO_A_ROWS * size_of::<u16>())?;
+
+        let rows_u = WO_A_ROWS as u32;
+        let cols_u = WO_A_COLS as u32;
+        let scale_cols_u = scale_cols as u32;
+        let ranks_u = O_LORA_RANK as u32;
+        let batch_u = batch as u32;
+        let grid = (batch * WO_A_ROWS) as u32;
+        let tg = self.ax_wo_a_tg.min(grid.max(1));
+
+        self.metal.dispatch_batch(|batch_enc| {
+            batch_enc.dispatch_threads(AX_WO_A_KERNEL, (grid, 1, 1), (tg, 1, 1), |encoder| {
+                encoder.set_buffer(0, Some(&weight_buf), 0);
+                encoder.set_buffer(1, Some(&scale_buf), 0);
+                encoder.set_buffer(2, Some(&attn_buf), 0);
+                encoder.set_buffer(3, Some(&out_buf), 0);
+                set_u32(encoder, 4, &rows_u);
+                set_u32(encoder, 5, &cols_u);
+                set_u32(encoder, 6, &scale_cols_u);
+                set_u32(encoder, 7, &ranks_u);
+                set_u32(encoder, 8, &batch_u);
+            })
+        })?;
+        self.dispatches += 1;
+        read_u16_buffer(&out_buf, batch * WO_A_ROWS)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn gate_logits_batched_macos(
+        &mut self,
+        input_bf16: &[u16],
+        weight_bf16: &[u16],
+        batch: usize,
+    ) -> Result<Vec<f32>> {
+        use crate::gravity_deepseek_v4_layer0_moe::ROUTED_EXPERTS;
+        if batch == 0 || input_bf16.len() != batch * HIDDEN_SIZE {
+            return Err(native_error("gate_batched input is not BF16[batch, 4096]"));
+        }
+        if weight_bf16.len() != ROUTED_EXPERTS * HIDDEN_SIZE {
+            return Err(native_error("gate_batched weight is not BF16[256, 4096]"));
+        }
+        let input_buf = self
+            .metal
+            .new_buffer_with_bytes_checked(u16_as_bytes(input_bf16))?;
+        let weight_buf = self
+            .metal
+            .new_buffer_with_bytes_checked(u16_as_bytes(weight_bf16))?;
+        let out_buf = self
+            .metal
+            .new_buffer_checked(batch * ROUTED_EXPERTS * size_of::<f32>())?;
+        let rows_u = ROUTED_EXPERTS as u32;
+        let cols_u = HIDDEN_SIZE as u32;
+        let batch_u = batch as u32;
+        let grid = (batch * ROUTED_EXPERTS) as u32;
+        let tg = self.ax_gate_tg.min(grid.max(1));
+        self.metal.dispatch_batch(|batch_enc| {
+            batch_enc.dispatch_threads(AX_GATE_GEMM_KERNEL, (grid, 1, 1), (tg, 1, 1), |encoder| {
+                encoder.set_buffer(0, Some(&weight_buf), 0);
+                encoder.set_buffer(1, Some(&input_buf), 0);
+                encoder.set_buffer(2, Some(&out_buf), 0);
+                set_u32(encoder, 3, &rows_u);
+                set_u32(encoder, 4, &cols_u);
+                set_u32(encoder, 5, &batch_u);
+            })
+        })?;
+        self.dispatches += 1;
+        read_f32_buffer(&out_buf, batch * ROUTED_EXPERTS)
     }
 }
 
@@ -722,6 +1127,42 @@ mod tests {
             "fp8 metal vs cpu failed max_abs={max_abs} max_rel={max_rel}"
         );
         assert!(session.metal_dispatches() > before);
+        assert_eq!(session.fallbacks(), 0);
+    }
+
+    #[test]
+    fn synthetic_fp8_batched_matches_looped_gemv() {
+        let Some(mut session) = try_session() else {
+            eprintln!("Metal unavailable; synthetic fp8 batch parity skipped");
+            return;
+        };
+        let rows = 128;
+        let k = 256;
+        let batch = 4;
+        let mut packed = Vec::with_capacity(batch * k);
+        let mut looped = Vec::new();
+        let weights: Vec<u8> = (0..rows * k).map(finite_e4m3).collect();
+        let scales: Vec<u8> = (0..(rows / ACT_QUANT_BLOCK) * (k / ACT_QUANT_BLOCK))
+            .map(finite_e8m0)
+            .collect();
+        for b in 0..batch {
+            let input = finite_bf16_row(k, 19 + b as u32);
+            packed.extend_from_slice(&input);
+            looped.extend(
+                session
+                    .fp8_linear(&input, &weights, &scales, rows, k)
+                    .expect("metal fp8 gemv"),
+            );
+        }
+        let batched = session
+            .fp8_linear_batched(&packed, &weights, &scales, rows, k, batch)
+            .expect("metal fp8 gemm");
+        let (max_abs, max_rel, pass) =
+            bf16_parity(&looped, &batched, LINEAR_ABS_TOL, LINEAR_REL_TOL).expect("parity");
+        assert!(
+            pass,
+            "fp8 batched vs looped failed max_abs={max_abs} max_rel={max_rel}"
+        );
         assert_eq!(session.fallbacks(), 0);
     }
 

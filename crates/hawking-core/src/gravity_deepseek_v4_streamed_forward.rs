@@ -2260,6 +2260,10 @@ fn gravity(message: impl Into<String>) -> Error {
     Error::Gravity(message.into())
 }
 
+#[path = "gravity_deepseek_v4_streamed_batched.rs"]
+mod streamed_batched;
+pub use streamed_batched::{default_token_tile, execute_layer_tile, pack_expert_token_worklists};
+
 #[cfg(test)]
 mod tests {
     use super::*;
