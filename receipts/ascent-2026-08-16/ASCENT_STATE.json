@@ -10,7 +10,7 @@
       "reason_invalid": "BPW 4.259241 exceeds the 1.500000 ceiling; ABANDONED as a target by user order 2026-08-16, retained only as a correctness reference",
       "measured_steady_state_tok_s": 2.479023,
       "measured_ns_per_token": 403000000,
-      "measurement_label": "DIRTY_ENGINEERING",
+      "measurement_label": "DIRTY_ENGINEERING_P1_INVALID_SINGLE_RUN",
       "receipt": "receipts/ascent-2026-08-16/Q80_BASELINE_2026_08_16.json",
       "runtime_residency": {
         "branch": "grok/q80-runtime-residency-20260816-003204 (7ced3732) - not merged",
@@ -44,6 +44,29 @@
         "cost_to_fix": "~119k tokens to put p10 at rank 160; ~171k to put the median at 2048",
         "extension_status": "running, checkpointed at layer 16/48; clone-fd cache fix drops resume from 15.5 to 3.68 GiB",
         "commit_note": "macl blocked the lane's commit; recovered to main at 19928d56, patch kept"
+      },
+      "baseline_caveat": "403000000 ns is a single steady-state run, not paired. joint-token-ns measured 559171655 ns as a decode mean. A clean paired Q80 baseline is still owed.",
+      "expert_first_touch": {
+        "branch": "grok/q80-expert-first-touch-20260816-010044 (5f78cb35) - in q80-integrate-graph",
+        "reps_ms": {
+          "C": [
+            518.7,
+            556.7,
+            339.2
+          ],
+          "D": [
+            208.6,
+            383.0,
+            188.2
+          ]
+        },
+        "correctness": "bit-identical; ids matched on all 6 runs; mmap == rehash verified",
+        "what_it_killed": "catalog read + SHA-256 + MTLBuffer copy on expert first-touch",
+        "next": "DeltaNet mixer 92600000 ns/token"
+      },
+      "ns_ledger": {
+        "branch": "grok/q80-ns-ledger-20260816-010044 - in q80-integrate-graph",
+        "finding": "moe_table_build 246283892 ns = 57.4% of a 428985708 ns wall; the seven zero-reporting stages now populate"
       }
     },
     "q80_density_frontier": {
@@ -329,6 +352,32 @@
           "gpu_ns": 302157000,
           "gpu_verdict": "explicitly NOT the wall"
         }
+      },
+      "occupancy_geometry": {
+        "branch": "grok/dsv-occupancy-geometry-20260816-010044 - in dsv-integrate-occupancy",
+        "attn_gpu_ms": {
+          "A": [
+            127.04,
+            128.29,
+            127.1
+          ],
+          "B": [
+            52.57,
+            58.02,
+            53.62
+          ]
+        },
+        "layer_p50_ms": {
+          "before": 2.9,
+          "after": 1.19
+        },
+        "whole_token_gpu_ms": {
+          "before": 330,
+          "after": 273
+        },
+        "realized_bandwidth_gb_s": 92,
+        "of_ceiling": 750,
+        "NOT_BIT_IDENTICAL": "reduction order changes the SHA. logit 16.76857566833496 vs baseline 16.7818546295166, |delta| 0.013279; versus CPU ORACLE only 0.001139 - i.e. possibly CLOSER to true than the baseline. Under review; must not become default on lane authority."
       }
     },
     "dsv4f_density_frontier": {
@@ -795,5 +844,22 @@
     "note": "Direct confirmation that per-stage wins need not appear in the token, which is why joint-token-ns exists.",
     "case": "dsv-admission-identity cut its target metric 2.9x and moved the whole token by nothing measurable. The metric was a thread-summed quantity off the critical path.",
     "rule": "A lane's win counts only when it appears in the complete token. Parallel sums, isolated microbenches and organ-level products are not token latency."
+  },
+  "measurement_audit_joint_token_ns": {
+    "receipt": "receipts/ascent-2026-08-16/JOINT_TOKEN_NS.json",
+    "merged": "e3068e69",
+    "P1_against_our_own_ledger": "The registered Q80 incumbent 403000000 ns is P1-INVALID as a baseline - it is a single steady-state figure, not a paired A/B set. The lane's own Q80 TOKEN_NS decode mean is 559171655 ns. Both are DIRTY_ENGINEERING.",
+    "dsv4f_critical_path": "host.expert_slab_io 406-415 ms (GPU-idle) -> metal.wait 243-244 ms (contains GPU) -> MHC/decode/lm_head. reader.path_resolve 1318 ms and verify_ns 2505 ms are NOT the token.",
+    "q80_critical_path": "host.compact_expert_slab_pack 281 ms + metal.wait 274 ms (contains 232 ms GPU)",
+    "unattributed_residual_ns": 275026398,
+    "receipts_flagged_for_presenting_non_token_as_token": [
+      "DSV4F_TOKEN_NS_LEDGER.json - path_resolve at 129% of body, verify_ns unlabeled",
+      "dsv-host-wall-rep6.json - same",
+      "dsv-cb-collapse.json - cold median",
+      "q80-decode-kernels.json - 192 ms organ product presented beside a full-token incumbent"
+    ],
+    "receipts_that_labelled_correctly": [
+      "DSV4F_HOST_WALL_BASELINE.json"
+    ]
   }
 }
