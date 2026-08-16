@@ -139,6 +139,41 @@
           "expert first-touch: 518.7/556.7/339.2 -> 208.6/383.0/188.2 ms (in integration)"
         ],
         "consequence": "Q80's token cannot improve until expert first-touch lands. Until then every GPU win is invisible in the wall, which is exactly the specialization trap joint-token-ns was built to expose - here it is visible in advance rather than in hindsight."
+      },
+      "integrated": {
+        "merged": "grok/q80-integrate-graph-20260816-012855 (db8c8972+bb566922+3bf940aa)",
+        "composed": [
+          "deltanet-gqa2 topology (defaults historical)",
+          "expert first-touch no-copy + prefetch",
+          "full ns ledger"
+        ],
+        "reps_ms": {
+          "C": [
+            528.6,
+            298.9,
+            299.3
+          ],
+          "D": [
+            192.6,
+            177.0,
+            181.2
+          ]
+        },
+        "median_ms": {
+          "before": 299,
+          "after": 181
+        },
+        "robustness": "D beat EVERY paired C - not a median artifact",
+        "correctness": "bit-identical 6/6 ids; mmap==rehash; 0 expert-payload fallbacks",
+        "ledger_closure": "identity holds 11/11, residual 6.9 us = 0.004%, catalog_complete=true, silent_zero_stages=[]",
+        "env_escapes_exercised": [
+          "HAWKING_Q80_EXPERT_NOCOPY=0",
+          "HAWKING_Q80_EXPERT_PREFETCH=0",
+          "HAWKING_Q80_REHASH_PAYLOADS=1",
+          "HAWKING_QWEN80_TOKEN_NS_LEDGER=1"
+        ],
+        "next": "DeltaNet mixed prefix CB (mixer+shared+router+wait) 79081238 ns/token",
+        "label": "DIRTY_ENGINEERING - a CLEAN paired baseline is still owed for G001"
       }
     },
     "q80_density_frontier": {
@@ -499,6 +534,21 @@
         "note": "DSV4F has INVERTED. It began 73% GPU-idle waiting on host I/O. With expert payloads and attention weights both resident, host streaming is largely gone and metal.gpu ~393 ms is now THE wall.",
         "consequence": "The optimization target moves from host I/O to GPU occupancy - which is exactly where dsv-occupancy-geometry already measured attention GPU 127.04 -> 52.57 ms.",
         "PROJECTED_NOT_MEASURED": "If expert cache + attn cache + occupancy all compose on the 830 ms integrated body, the arithmetic suggests roughly 260-340 ms/token. This is a PROJECTION from separately-measured deltas, NOT a measured token, and joint-token-ns has already demonstrated that per-stage wins do not simply add. It must be measured on the integrated build before any claim."
+      },
+      "occupancy_integrated": {
+        "merged": "grok/dsv-integrate-occupancy-20260816-012855",
+        "what_ships": "ordered RMSNorm ONLY, bit-identical, default on (HAWKING_DSV4F_MLA_RMSNORM_SIMD)",
+        "held_back": "WO-A and FP8 occupancy behind flags, DEFAULT OFF - numeric delta not accepted",
+        "CORRECTION_of_earlier_reading": "The occupancy lane's 'closer to the CPU oracle' claim DOES NOT SURVIVE. With RMSNorm held to the authority fold, simd_sum WO-A+FP8 gives logit 16.78851, |delta| 0.00665 vs authority and 0.02107 vs the CPU ORACLE - FARTHER from the oracle than authority already is (0.01442). The earlier 0.001139 figure required reassociating RMSNorm as well. It is NOT a general accuracy improvement.",
+        "opt_in_attention_gpu_ms": [
+          73.794,
+          77.239,
+          76.866,
+          73.088
+        ],
+        "opt_in_vs_claim": "73-77 ms, NOT the 52.57 ms the standalone lane reported, and not the default",
+        "default_correctness": "bit-identical hc_sha c94da765, token 5, logit 16.7818546295166, 0 fallbacks",
+        "next": "attention GPU still ~127236000 ns on the default path; WO-A/WQ-A/WKV/WO-B still one-thread-per-row. Host exclusive remains the token-level majority (~1.0 s clean body)."
       }
     },
     "dsv4f_density_frontier": {
@@ -911,6 +961,43 @@
       "transfer_value": 300000000,
       "experiment_cost": 1.5,
       "status": "running"
+    },
+    {
+      "id": "q80-lowrank-algebra",
+      "model": "q80",
+      "hypothesis": "down_proj low-rank should execute U @ (V @ x) rather than reconstruct W then W @ x - representation dictating cheaper algebra, which also removes the dense temporary",
+      "target_stage": "runtime/algebra",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-lowrank-algebra.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.65,
+      "recoverable_ns_per_token": 120000000,
+      "density_frontier_gain_ns_equiv": 200000000,
+      "information_gain": 300000000,
+      "transfer_value": 400000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "note": "Doctrine names representation->algebra one of the highest-value research classes. Also the controller's first live end-to-end cycle.",
+      "tier1_command": "echo controller-cycle-ok",
+      "tier1_expect": "controller-cycle-ok",
+      "task_id": "q80-lowrank-algebra-20260816-015251"
+    },
+    {
+      "id": "q80-mixed-generate",
+      "model": "q80",
+      "hypothesis": "The packed 1.44445 BPW artifact can be served by the existing mixed decode kernels and generate coherent text",
+      "target_stage": "density/gate",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/q80-mixed-generate.md",
+      "resource_class": "GPU_EXCLUSIVE",
+      "probability_of_success": 0.55,
+      "recoverable_ns_per_token": 0,
+      "density_frontier_gain_ns_equiv": 900000000,
+      "information_gain": 900000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 2.0,
+      "status": "running",
+      "note": "THE density gate. Organ cosine is a screen; generation settles it. Launched directly rather than via controller - too critical to gamble on untested controller code.",
+      "tier1_command": null,
+      "tier1_expect": null
     }
   ],
   "history": [],
@@ -929,7 +1016,8 @@
     "DSV4F path_resolve/verify identity tax is NOT on the critical path. Reducing it 2.9x (983->343 ms parallel-sum) produced ZERO whole-token improvement, because a parallel sum across threads is not token latency. Do not attack it again for wall time.",
     "Q80 topology collapse is NOT the lever: overlap, fuse-to-51-CBs and serial-encoder are all bit-identical and all fail to win complete-token wall (fuse REGRESSED 516 vs 307 ms). Matches DSV4F where 731->43 encoders moved attention GPU by nothing. Occupancy, not topology.",
     "Q80 density fits are route-starved: p10=34 rows against 2048 dims, 221 never-routed pairs, and no on-disk post-SwiGLU X for down_proj. Any organ score from the 25k capture is suspect.",
-    "Q80 decoded-weight caching is REFUTED by arithmetic: dense restore is 12 MiB/expert = 288 GiB for all (layer,expert) versus 11 GiB packed. Caching decoded W undoes the representation it exists to create."
+    "Q80 decoded-weight caching is REFUTED by arithmetic: dense restore is 12 MiB/expert = 288 GiB for all (layer,expert) versus 11 GiB packed. Caching decoded W undoes the representation it exists to create.",
+    "DSV4F simd_sum WO-A+FP8 occupancy is NOT closer to the CPU oracle: 0.02107 vs oracle against authority's 0.01442. The apparent improvement required reassociating RMSNorm too. Do not treat reduction-order changes as accuracy gains without isolating each one."
   ],
   "saturation": {
     "measured": "2026-08-16 after wave 2",
