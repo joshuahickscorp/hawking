@@ -1,0 +1,331 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 1.4444456847927971,
+    "manifest_seal_sha256": "6a09fa747af1431b67e53691bc24dfa421c0a7643c5befb297b2eed0f4a95af6",
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-1p5-v1",
+    "tensor_count": 74391
+  },
+  "claim": "MIXED_1P5_GENERATION_GATE_NOT_BASE_TRUE_TPS",
+  "claim_boundary": {
+    "dense_w_materialized": false,
+    "generation_is_the_gate": true,
+    "graded_against": "artifact CPU/numpy oracle, never BF16 parent",
+    "not_bit_exact_vs_q4": true,
+    "packing_is_not_a_coherence_claim": true
+  },
+  "coherence_class": "COHERENT",
+  "correctness": {
+    "dense_w_materialized": false,
+    "designed_host_ops": 12781,
+    "fallbacks": {
+      "dense_w_materialized": 0,
+      "host_activation": 12460,
+      "host_expert_payload_bind": 0,
+      "host_mixed_matvec": 0,
+      "host_q8_embed_gather": 28,
+      "host_q8_vector_decode": 265,
+      "host_sample": 28
+    },
+    "gate_kind": "numeric_equivalence_vs_artifact_oracle",
+    "greedy_bit_identical": true,
+    "greedy_oracle_12": [
+      8420,
+      748,
+      264,
+      729,
+      429,
+      17431,
+      288,
+      264,
+      914,
+      320,
+      72,
+      1734
+    ],
+    "parity": {
+      "dense_w_materialized": false,
+      "passed": true,
+      "samples": [
+        {
+          "codec": 0,
+          "dense_w_materialized": false,
+          "max_abs_error": 9.5367431640625e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.gate_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 1,
+          "dense_w_materialized": false,
+          "max_abs_error": 8.493661880493164e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.up_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 2,
+          "dense_w_materialized": false,
+          "max_abs_error": 2.086162567138672e-7,
+          "passed": true,
+          "tensor": "model.layers.10.mlp.experts.453.down_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "dense_w_materialized": false,
+          "max_abs_error": 1.9073486328125e-6,
+          "passed": true,
+          "tensor": "model.layers.3.self_attn.q_proj.weight",
+          "tolerance": 0.000019999999494757503
+        },
+        {
+          "codec": 3,
+          "note": "1d HGRAVU01 host decode, not a weight GEMV",
+          "passed": true,
+          "tensor": "model.layers.0.input_layernorm.weight",
+          "vector_elements": 2048
+        }
+      ]
+    },
+    "silent_fallback_count": 0,
+    "tolerance": 0.00002
+  },
+  "degrade": {
+    "down_mix": 1.0,
+    "gate_mix": 1.0,
+    "hgravs_rank_cap": 160,
+    "mix_seed": 3232857105,
+    "up_mix": 1.0
+  },
+  "execution": {
+    "metal_error": null,
+    "native": {
+      "binary_dispatches": 26880,
+      "command_buffers": 9436,
+      "compute_dispatches": 67564,
+      "expert_copy_binds": 0,
+      "expert_nocopy_binds": 13098,
+      "hgravs_factor_dispatches": 26880,
+      "packed_calls": 293,
+      "packed_skipped": 11116,
+      "residual_dispatches": 13440,
+      "routed_expert_waves": 1344,
+      "segment_nocopy_binds": 0,
+      "uniform8_dispatches": 11116
+    },
+    "peak_rss_bytes": 9762783232,
+    "stages": {
+      "cb_encode_ns": 76459188,
+      "cb_submit_ns": 46066254,
+      "cb_wait_minus_gpu_ns": 2754943924,
+      "cb_wait_ns": 3748894136,
+      "deltanet_secs": 4.327095952999989,
+      "embed_secs": 0.256128793,
+      "gpu_matvec_ns": 993950212,
+      "gpu_matvec_timestamps_missing": 0,
+      "gpu_organ": {
+        "deltanet": 107204200,
+        "gqa": 32650502,
+        "moe_combine_gate": 12674379,
+        "moe_routed": 757091817,
+        "moe_router": 17241369,
+        "moe_shared": 46266664,
+        "other": 0,
+        "terminal": 20821281
+      },
+      "gqa_secs": 0.8294988799999993,
+      "host_excl": {
+        "argmax": 1771625,
+        "buffer_prep": 123656429,
+        "catalog_reparse": 275044709,
+        "combine": 2243624,
+        "dn_conv": 62532839,
+        "dn_gated": 10564211,
+        "dn_rearrange_l2": 17438685,
+        "dn_recurrent": 1209427090,
+        "dn_residual": 389670,
+        "dn_rms": 2463306,
+        "embed": 256129583,
+        "expert_bind": 7450354316,
+        "final_rms": 69751,
+        "gqa_attn": 15738123,
+        "gqa_interleave": 578452,
+        "gqa_kv_copy": 1224304,
+        "gqa_residual": 116083,
+        "gqa_rms": 813586,
+        "gqa_rope": 4362453,
+        "post_rms": 3219343,
+        "silu": 1105086,
+        "topk": 11009145,
+        "vector_clone": 4988095
+      },
+      "host_expert_bind_ns": 7450354316,
+      "host_expert_bind_secs": 7.450354316000006,
+      "mixed_matvec_secs": 5.844772979999989,
+      "moe_combine_secs": 0.41379379000000055,
+      "moe_norm_router_secs": 0.5131954730000022,
+      "moe_routed_secs": 8.90635525099999,
+      "moe_shared_secs": 1.1063831739999992,
+      "terminal_secs": 0.06163433600000001
+    },
+    "weight_codec": "mixed_gate_binary_up_rice_q1_down_hgravs01_r160_b3_nonexpert_q8"
+  },
+  "generated_text": "Here’s a function that reverses a string (i.e",
+  "generated_token_ids": [
+    8420,
+    748,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    320,
+    72,
+    1734
+  ],
+  "lane": "q80-mixed-generate",
+  "prompt": "<|im_start|>user\nWrite a function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+  "prompt_token_ids": [
+    151644,
+    872,
+    198,
+    7985,
+    264,
+    729,
+    429,
+    17431,
+    288,
+    264,
+    914,
+    13,
+    151645,
+    198,
+    151644,
+    77091,
+    198
+  ],
+  "reps_generated_text": [
+    "Here’s a function that reverses a string (i.e"
+  ],
+  "reps_ids_match_first": [
+    true
+  ],
+  "schema": "hawking.ascent.q80_mixed_generate.v1",
+  "status": "COHERENT",
+  "timing": {
+    "authority": "wall decode_secs/generated_tokens; GPU is MTLCommandBuffer.GPUEndTime-GPUStartTime of weight GEMVs only",
+    "cache_geom_enabled": true,
+    "command_buffers_per_token_reps": [
+      337.0
+    ],
+    "decode_family_binary": "gk_matvec_binary",
+    "decode_family_enabled": true,
+    "decode_family_hgravs": "gk_matvec_hgravs",
+    "decode_secs": 3.85589125,
+    "dispatches_per_token_reps": [
+      2413.0
+    ],
+    "facet1_enabled": true,
+    "facet2_enabled": true,
+    "gk_simd_enabled": false,
+    "gpu_matvec_ns_per_token_reps": [
+      35569625.63636363
+    ],
+    "gpu_timestamps_missing": 0,
+    "host_expert_bind_ns_per_token_reps": [
+      149423886.1818182
+    ],
+    "host_preparation_decode": {
+      "buffer_prep_ns_median": 4489701,
+      "catalog_reparse_ns_median": 8565292,
+      "catalog_reparse_ns_reps": [
+        8077792,
+        8487083,
+        8712959,
+        8665334,
+        8642833,
+        8555333,
+        8647833,
+        8598083,
+        8565292,
+        8526542,
+        8355625
+      ],
+      "decode_tokens": 11,
+      "embed_ns_median": 8577209,
+      "encode_ns_median": 2515288,
+      "expert_bind_ns_median": 140511794,
+      "gpu_ns_median": 35515039,
+      "host_preparation_ns_median": 165122504,
+      "host_preparation_ns_reps": [
+        305513967,
+        216486691,
+        214964118,
+        159567427,
+        165122504,
+        123556726,
+        90356841,
+        109056504,
+        124492526,
+        215075643,
+        187067469
+      ],
+      "vector_clone_ns_median": 178660,
+      "wall_ns_median": 337288458
+    },
+    "label": "DIRTY_ENGINEERING",
+    "packed_calls": 293,
+    "packed_skipped": 11116,
+    "prefill_secs": 12.560514874999999,
+    "recon_fuse_enabled": true,
+    "reps_host_preparation_decode": [
+      {
+        "buffer_prep_ns_median": 4489701,
+        "catalog_reparse_ns_median": 8565292,
+        "catalog_reparse_ns_reps": [
+          8077792,
+          8487083,
+          8712959,
+          8665334,
+          8642833,
+          8555333,
+          8647833,
+          8598083,
+          8565292,
+          8526542,
+          8355625
+        ],
+        "decode_tokens": 11,
+        "embed_ns_median": 8577209,
+        "encode_ns_median": 2515288,
+        "expert_bind_ns_median": 140511794,
+        "gpu_ns_median": 35515039,
+        "host_preparation_ns_median": 165122504,
+        "host_preparation_ns_reps": [
+          305513967,
+          216486691,
+          214964118,
+          159567427,
+          165122504,
+          123556726,
+          90356841,
+          109056504,
+          124492526,
+          215075643,
+          187067469
+        ],
+        "vector_clone_ns_median": 178660,
+        "wall_ns_median": 337288458
+      }
+    ],
+    "steady_state_tok_s": 2.8527779216773714,
+    "wait_minus_gpu_ns_per_token_reps": [
+      95242968.81818181
+    ],
+    "wall_ns_per_token_reps": [
+      350535522.72727275
+    ]
+  }
+}

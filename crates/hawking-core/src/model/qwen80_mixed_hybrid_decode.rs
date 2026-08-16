@@ -81,6 +81,14 @@ pub fn qwen80_gk_simd_enabled() -> bool {
     crate::env_on("HAWKING_Q80_GK_SIMD")
 }
 
+/// Default **on**. After `ensure_named_weight` the session already has
+/// rows/cols (and a resident MTLBuffer). Skip `catalog.load_packed` on
+/// the GEMV path and reuse that geometry. Set `HAWKING_Q80_CACHE_GEOM=0`
+/// to restore per-GEMV mmap-header reparse for A/B.
+pub fn qwen80_cache_geom_enabled() -> bool {
+    crate::env_opt_out("HAWKING_Q80_CACHE_GEOM")
+}
+
 fn tg256_grid(rows: u32) -> (u32, u32, u32) {
     (rows.saturating_mul(256), 1, 1)
 }
@@ -277,6 +285,8 @@ pub struct Qwen80MixedNativeCounts {
     pub expert_nocopy_binds: u64,
     pub expert_copy_binds: u64,
     pub segment_nocopy_binds: u64,
+    pub packed_calls: u64,
+    pub packed_skipped: u64,
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize)]
@@ -427,6 +437,18 @@ impl MixedExclusiveSnap {
             host_excl: self.host_excl.saturating_sub(rhs.host_excl),
         }
     }
+
+    /// encode + buffer write/read + expert first-touch bind + embed gather
+    /// + catalog.load_packed + vector cache clone. Matches the TOKEN_NS
+    /// host_preparation composition.
+    pub fn host_preparation_ns(&self) -> u64 {
+        self.encode_ns
+            .saturating_add(self.host_excl.buffer_prep)
+            .saturating_add(self.host_excl.expert_bind)
+            .saturating_add(self.host_excl.embed)
+            .saturating_add(self.host_excl.catalog_reparse)
+            .saturating_add(self.host_excl.vector_clone)
+    }
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -471,12 +493,14 @@ pub struct Qwen80MixedParityReport {
 
 struct VectorCache {
     vectors: HashMap<String, Vec<f32>>,
+    geometry: HashMap<String, (usize, usize)>,
 }
 
 impl VectorCache {
     fn new() -> Self {
         Self {
             vectors: HashMap::new(),
+            geometry: HashMap::new(),
         }
     }
 }
@@ -809,6 +833,16 @@ fn dispatch_factor(
         tcb.dispatch_threads(name, grid, (256, 1, 1), encode)
     } else {
         tcb.dispatch_threads(serial_name, (rows, 1, 1), (256, 1, 1), encode)
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn gpu_weight_rows_cols(weight: &GpuWeight) -> (usize, usize) {
+    match weight {
+        GpuWeight::Binary(body) => (body.rows as usize, body.cols as usize),
+        GpuWeight::Residual(body) => (body.binary.rows as usize, body.binary.cols as usize),
+        GpuWeight::Hgravs(body) => (body.left_rows as usize, body.right_cols as usize),
+        GpuWeight::Uniform(body) => (body.rows as usize, body.cols as usize),
     }
 }
 
@@ -1183,17 +1217,32 @@ impl MetalMixedAccel {
         }
     }
 
+    fn weight_geometry(&self, name: &str) -> Result<(usize, usize)> {
+        self.weights
+            .get(name)
+            .map(gpu_weight_rows_cols)
+            .ok_or_else(|| mixed_error(format!("{name} is not bound")))
+    }
+
     fn matvec(
         &mut self,
         name: &str,
-        packed: &MixedPackedTensor,
+        packed: Option<&MixedPackedTensor>,
         input: &[f32],
         output: &mut [f32],
         native: &mut Qwen80MixedNativeCounts,
         stages: &mut Qwen80MixedStageTimes,
         organ: MixedGpuOrgan,
     ) -> Result<()> {
-        let (rows, cols) = packed.rows_cols()?;
+        if !self.weights.contains_key(name) {
+            let packed = packed.ok_or_else(|| {
+                mixed_error(format!("{name} is not bound and no packed tensor was supplied"))
+            })?;
+            native.expert_copy_binds = native.expert_copy_binds.saturating_add(1);
+            let uploaded = self.upload_tensor(packed)?;
+            self.weights.insert(name.to_owned(), uploaded);
+        }
+        let (rows, cols) = self.weight_geometry(name)?;
         if input.len() != cols || output.len() != rows {
             return Err(mixed_error(format!(
                 "{name} metal matvec geometry {}x{} vs in={} out={}",
@@ -1202,11 +1251,6 @@ impl MetalMixedAccel {
                 input.len(),
                 output.len()
             )));
-        }
-        if !self.weights.contains_key(name) {
-            native.expert_copy_binds = native.expert_copy_binds.saturating_add(1);
-            let uploaded = self.upload_tensor(packed)?;
-            self.weights.insert(name.to_owned(), uploaded);
         }
         let prep = Instant::now();
         let input_buf = self
@@ -1313,7 +1357,7 @@ impl MetalMixedAccel {
         &mut self,
         catalog: &Qwen80MixedStreamingCatalog,
         name: &str,
-        packed: &MixedPackedTensor,
+        packed: Option<&MixedPackedTensor>,
         native: &mut Qwen80MixedNativeCounts,
     ) -> Result<()> {
         if self.weights.contains_key(name) {
@@ -1322,6 +1366,11 @@ impl MetalMixedAccel {
         let uploaded = if qwen80_host_facet1_enabled() {
             self.upload_from_catalog(catalog, name, native)?
         } else {
+            let packed = packed.ok_or_else(|| {
+                mixed_error(format!(
+                    "{name}: facet1 off requires packed() on first bind"
+                ))
+            })?;
             native.expert_copy_binds = native.expert_copy_binds.saturating_add(1);
             self.upload_tensor(packed)?
         };
@@ -1345,10 +1394,10 @@ impl MetalMixedAccel {
         }
         if !qwen80_host_facet2_enabled() || names.len() == 1 {
             for i in 0..names.len() {
-                self.ensure_named_weight(catalog, names[i], &packed[i], native)?;
+                self.ensure_named_weight(catalog, names[i], Some(&packed[i]), native)?;
                 self.matvec(
                     names[i],
-                    &packed[i],
+                    Some(&packed[i]),
                     input,
                     outputs[i],
                     native,
@@ -1359,7 +1408,7 @@ impl MetalMixedAccel {
             return Ok(());
         }
         for i in 0..names.len() {
-            self.ensure_named_weight(catalog, names[i], &packed[i], native)?;
+            self.ensure_named_weight(catalog, names[i], Some(&packed[i]), native)?;
         }
         if names.iter().any(|name| {
             self.weights
@@ -1370,13 +1419,72 @@ impl MetalMixedAccel {
             for i in 0..names.len() {
                 self.matvec(
                     names[i],
-                    &packed[i],
+                    Some(&packed[i]),
                     input,
                     outputs[i],
                     native,
                     stages,
                     organ,
                 )?;
+            }
+            return Ok(());
+        }
+        let prep = Instant::now();
+        write_f32(&self.scratch.input, input);
+        add_ns(&mut stages.host_excl.buffer_prep, prep);
+        let outs = [
+            self.scratch.out_a.clone(),
+            self.scratch.out_b.clone(),
+            self.scratch.out_c.clone(),
+            self.scratch.out_d.clone(),
+        ];
+        if names.len() > outs.len() {
+            return Err(mixed_error("matvec group exceeds scratch slots"));
+        }
+        let input_buf = self.scratch.input.clone();
+        let mut tcb = crate::metal::TokenCommandBuffer::new(&self.context);
+        tcb.begin_serial_group()?;
+        for (i, name) in names.iter().enumerate() {
+            let weight = self
+                .weights
+                .get(*name)
+                .ok_or_else(|| mixed_error("weight missing after ensure"))?;
+            Self::encode_weight(&mut tcb, weight, &input_buf, &outs[i], native)?;
+        }
+        tcb.end_concurrent_group()?;
+        let timing = tcb.commit_and_wait_timed()?;
+        Self::note_timing(stages, native, &timing, organ);
+        let readback = Instant::now();
+        for (i, out) in outputs.iter_mut().enumerate() {
+            out.copy_from_slice(&read_f32(&outs[i], out.len()));
+        }
+        add_ns(&mut stages.host_excl.buffer_prep, readback);
+        Ok(())
+    }
+
+    fn matvec_group_bound(
+        &mut self,
+        names: &[&str],
+        input: &[f32],
+        outputs: &mut [&mut [f32]],
+        native: &mut Qwen80MixedNativeCounts,
+        stages: &mut Qwen80MixedStageTimes,
+        organ: MixedGpuOrgan,
+    ) -> Result<()> {
+        if names.len() != outputs.len() || names.is_empty() {
+            return Err(mixed_error("matvec group arity drifted"));
+        }
+        if !qwen80_host_facet2_enabled()
+            || names.len() == 1
+            || names.iter().any(|name| {
+                self.weights
+                    .get(*name)
+                    .map(|w| matches!(w, GpuWeight::Hgravs(_)))
+                    .unwrap_or(false)
+            })
+        {
+            for (name, out) in names.iter().zip(outputs.iter_mut()) {
+                self.matvec(name, None, input, out, native, stages, organ)?;
             }
             return Ok(());
         }
@@ -2290,6 +2398,10 @@ impl Qwen80MixedHybridDecodeSession {
         self.state.reset();
     }
 
+    pub fn cached_geometry_count(&self) -> usize {
+        self.cache.geometry.len()
+    }
+
     pub fn exclusive_snap(&self) -> MixedExclusiveSnap {
         MixedExclusiveSnap {
             encode_ns: self.stages.cb_encode_ns,
@@ -2419,10 +2531,31 @@ impl Qwen80MixedHybridDecodeSession {
     }
 
     fn packed(&mut self, name: &str) -> Result<MixedPackedTensor> {
+        self.native.packed_calls = self.native.packed_calls.saturating_add(1);
         let started = Instant::now();
         let packed = self.catalog.load_packed(name)?;
         add_ns(&mut self.stages.host_excl.catalog_reparse, started);
+        if let Ok(rc) = packed.rows_cols() {
+            self.cache.geometry.entry(name.to_owned()).or_insert(rc);
+        }
         Ok(packed)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn weight_is_bound(&self, name: &str) -> bool {
+        self.metal
+            .as_ref()
+            .map(|metal| metal.weights.contains_key(name))
+            .unwrap_or(false)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn remember_bound_geometry(&mut self, name: &str) {
+        if let Some(metal) = self.metal.as_ref() {
+            if let Ok(rc) = metal.weight_geometry(name) {
+                self.cache.geometry.entry(name.to_owned()).or_insert(rc);
+            }
+        }
     }
 
     fn matvec_named(
@@ -2433,18 +2566,53 @@ impl Qwen80MixedHybridDecodeSession {
         organ: MixedGpuOrgan,
     ) -> Result<()> {
         let started = Instant::now();
-        let packed = self.packed(name)?;
         #[cfg(target_os = "macos")]
         {
+            let skip_packed = qwen80_cache_geom_enabled()
+                && (self.weight_is_bound(name) || qwen80_host_facet1_enabled());
+            if skip_packed {
+                {
+                    let Some(metal) = self.metal.as_mut() else {
+                        return Err(mixed_error(format!(
+                            "Metal required for {name}; refusing host mixed matvec"
+                        )));
+                    };
+                    metal.ensure_named_weight(
+                        &self.catalog,
+                        name,
+                        None,
+                        &mut self.native,
+                    )?;
+                    metal.matvec(
+                        name,
+                        None,
+                        input,
+                        output,
+                        &mut self.native,
+                        &mut self.stages,
+                        organ,
+                    )?;
+                }
+                self.remember_bound_geometry(name);
+                self.native.packed_skipped = self.native.packed_skipped.saturating_add(1);
+                add_secs(&mut self.stages.mixed_matvec_secs, started);
+                return Ok(());
+            }
+            let packed = self.packed(name)?;
             let Some(metal) = self.metal.as_mut() else {
                 return Err(mixed_error(format!(
                     "Metal required for {name}; refusing host mixed matvec"
                 )));
             };
-            metal.ensure_named_weight(&self.catalog, name, &packed, &mut self.native)?;
+            metal.ensure_named_weight(
+                &self.catalog,
+                name,
+                Some(&packed),
+                &mut self.native,
+            )?;
             metal.matvec(
                 name,
-                &packed,
+                Some(&packed),
                 input,
                 output,
                 &mut self.native,
@@ -2456,7 +2624,8 @@ impl Qwen80MixedHybridDecodeSession {
         }
         #[cfg(not(target_os = "macos"))]
         {
-            let _ = (packed, started, organ);
+            let _ = (started, organ, input, output);
+            let _ = self.packed(name)?;
             self.fallbacks.host_mixed_matvec = self.fallbacks.host_mixed_matvec.saturating_add(1);
             Err(mixed_error(format!(
                 "refusing host mixed matvec for {name}"
@@ -2481,12 +2650,47 @@ impl Qwen80MixedHybridDecodeSession {
             return Ok(());
         }
         let started = Instant::now();
-        let mut packed = Vec::with_capacity(names.len());
-        for name in names {
-            packed.push(self.packed(name)?);
-        }
         #[cfg(target_os = "macos")]
         {
+            let skip_packed = qwen80_cache_geom_enabled()
+                && (qwen80_host_facet1_enabled()
+                    || names.iter().all(|name| self.weight_is_bound(name)));
+            if skip_packed {
+                {
+                    let Some(metal) = self.metal.as_mut() else {
+                        return Err(mixed_error("Metal required for grouped mixed matvec"));
+                    };
+                    for name in names {
+                        metal.ensure_named_weight(
+                            &self.catalog,
+                            name,
+                            None,
+                            &mut self.native,
+                        )?;
+                    }
+                    metal.matvec_group_bound(
+                        names,
+                        input,
+                        outputs,
+                        &mut self.native,
+                        &mut self.stages,
+                        organ,
+                    )?;
+                }
+                for name in names {
+                    self.remember_bound_geometry(name);
+                }
+                self.native.packed_skipped = self
+                    .native
+                    .packed_skipped
+                    .saturating_add(names.len() as u64);
+                add_secs(&mut self.stages.mixed_matvec_secs, started);
+                return Ok(());
+            }
+            let mut packed = Vec::with_capacity(names.len());
+            for name in names {
+                packed.push(self.packed(name)?);
+            }
             let Some(metal) = self.metal.as_mut() else {
                 return Err(mixed_error("Metal required for grouped mixed matvec"));
             };
