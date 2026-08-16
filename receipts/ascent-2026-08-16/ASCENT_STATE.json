@@ -22,10 +22,40 @@
       "receipt": "receipts/QWEN80_MIXED_REPRESENTATION_UNDER_1_5.json"
     },
     "dsv4f": {
-      "expected_ns_per_token": 1299000000,
-      "expected_tok_s": 0.77,
-      "measurement_label": "UNVERIFIED_CARRIED_FORWARD",
-      "note": "dsv-host-wall lane is the baseline authority; its number supersedes this one"
+      "measurement_label": "DIRTY_ENGINEERING",
+      "authority": "receipts/ascent-2026-08-16/DSV4F_HOST_WALL_BASELINE.json (6 reps, cold discarded, GPU lock held)",
+      "body_ns_per_token_median": 1037764208,
+      "wall_ns_per_token_median": 1205000000,
+      "host_exclusive_ns_median": 564853792,
+      "metal_gpu_ns_median": 399023000,
+      "command_buffers_per_token": 137,
+      "fallbacks": 0,
+      "hc_sha": "c94da765",
+      "superseded_claims": [
+        "job brief's 1.299 s/token: NOT reproduced, body is faster",
+        "3275-3425 ms/token cited by dsv-resident-gravity: stale DSV4F_TOKEN_NS_LEDGER baseline_warm, superseded"
+      ],
+      "top_cost_classes": {
+        "host.expert_slab_io_ns": 415126416,
+        "note": "GPU-idle streamed top-6 expert read+fill = 40% of body. Deleted by residency OR by a RAM expert cache.",
+        "after_residency_gpu_ns": 399023000,
+        "surviving_host_ns": 50000000
+      },
+      "path_to_20ms": "1205 -> kill expert_slab_io 415 -> kill identity tax -> leaves GPU body 399 ms across 137 CBs as THE wall. GPU body must reach the 10-15 ms class; that is a ~27x reduction and the dominant open problem."
+    },
+    "dsv4f_density_frontier": {
+      "feasibility": "CONFIRMED_BY_ARITHMETIC_NOT_FITTED",
+      "f_routed": 0.97431,
+      "complete_bpw_1_5_gib": 50.83,
+      "resident_on_96gb": true,
+      "max_routed_bpw_protect_at_source": 1.285,
+      "unfitted_envelope_if_q80_rates_transfer": {
+        "bpw": 1.447,
+        "gib": 49.0
+      },
+      "blocker": "determined teacher-X capture ~21846 tokens x 3.3s = ~20 h streamed forward; existing X underdetermined",
+      "caveat": "DSV4F experts are ALREADY 16-level FP4, whereas Q80's 1.23 came from BF16 -> low-bit. Q80 rates may NOT transfer.",
+      "receipt": "receipts/ascent-2026-08-16/dsv-resident-gravity.json"
     }
   },
   "sources_on_device": {
@@ -93,8 +123,9 @@
       "information_gain": 200000000,
       "transfer_value": 100000000,
       "experiment_cost": 1.5,
-      "status": "running",
-      "note": "Strong prior: identity recomputation has been the real latency three separate times on this machine."
+      "status": "retained",
+      "note": "Strong prior: identity recomputation has been the real latency three separate times on this machine.",
+      "tier1": "merged to main; skew guard STALE_CLEAN (no file overlap with trunk)"
     },
     {
       "id": "dsv-cb-collapse",
@@ -124,8 +155,9 @@
       "information_gain": 300000000,
       "transfer_value": 200000000,
       "experiment_cost": 3.0,
-      "status": "running",
-      "note": "Largest single recoverable class for DSV4F: it removes the reason the host wall exists at all."
+      "status": "retained",
+      "note": "Largest single recoverable class for DSV4F: it removes the reason the host wall exists at all.",
+      "tier1": "merged to main; skew guard STALE_CLEAN (no file overlap with trunk)"
     },
     {
       "id": "q80-runtime-residency",
@@ -219,6 +251,38 @@
       "experiment_cost": 1.0,
       "status": "running",
       "note": "Reject-only. On this box plausible-but-wrong wins have repeatedly survived review."
+    },
+    {
+      "id": "dsv-expert-cache",
+      "model": "dsv4f",
+      "hypothesis": "A bounded RAM-resident LRU expert cache absorbs the 415 ms/token expert_slab_io on the EXISTING artifact, with no re-fit and no 20h capture",
+      "target_stage": "host/streaming",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-expert-cache.md",
+      "resource_class": "MEMORY_HEAVY",
+      "probability_of_success": 0.7,
+      "recoverable_ns_per_token": 415126416,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 200000000,
+      "transfer_value": 150000000,
+      "experiment_cost": 1.5,
+      "status": "running",
+      "note": "Buys the residency win NOW without waiting on the capture. Refuted if routing is near-uniform - the lane must compute the hit-rate ceiling from a trace before building."
+    },
+    {
+      "id": "dsv-admission-identity",
+      "model": "dsv4f",
+      "hypothesis": "3314 path_resolve+stat calls/token run BEFORE the digest cache; moving them behind a session seal removes the tax without weakening integrity",
+      "target_stage": "host/identity",
+      "contract": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d51d4904-9fa1-4f81-8170-5e7eb27a291d/scratchpad/lanes/dsv-admission-identity.md",
+      "resource_class": "IO_HEAVY",
+      "probability_of_success": 0.75,
+      "recoverable_ns_per_token": 80000000,
+      "density_frontier_gain_ns_equiv": 0,
+      "information_gain": 250000000,
+      "transfer_value": 300000000,
+      "experiment_cost": 1.0,
+      "status": "running",
+      "note": "SHA already went to 0 on this path, proving the pattern works. Same class killed 28s of startup and 48x'd a repack previously."
     }
   ],
   "history": [],
