@@ -20,7 +20,7 @@ pub const QWEN38_DELTANET_MIXER_PREFIX_KERNELS: [&str; QWEN38_MIXER_PREFIX_DISPA
     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
     "qwen38_qkvz_rearrange_conv_l2_f32",
     "qwen80_ba_to_decay_beta_f32",
-    "qwen80_gated_delta_decode_tg",
+    "qwen38_gated_delta_decode_vi",
     "qwen80_deltanet_gated_rmsnorm_f32",
     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
     "qwen_next_add_residual",

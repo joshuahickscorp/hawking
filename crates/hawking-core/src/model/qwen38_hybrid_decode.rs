@@ -20,6 +20,83 @@ use std::path::Path;
 
 pub const QWEN38_Q4_MATVEC_KERNEL: &str = "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128";
 
+/// Shipped uniform-Q4 matvec bindings. The Qwen3.8 default is the geometry-
+/// sweep winner (`geo_tpr64_tg128`), tuned on Q80's 512×2048 organs. The
+/// other names are already in `qwen_uniform_q4.metal`; this enum only
+/// retargets launch geometry. It does not generate new shaders.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum Qwen38MatvecKernel {
+    GeoTpr64Tg128,
+    Vecgroup,
+    VecgroupX64,
+    VecgroupR4,
+}
+
+impl Qwen38MatvecKernel {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::GeoTpr64Tg128 => QWEN38_Q4_MATVEC_KERNEL,
+            Self::Vecgroup => "qwen_uniform_q4_group64_matvec_vecgroup",
+            Self::VecgroupX64 => "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+            Self::VecgroupR4 => "qwen_uniform_q4_group64_matvec_vecgroup_r4",
+        }
+    }
+
+    /// (grid, threadgroup) for `rows` output elements.
+    pub fn launch(self, rows: u32) -> ((u32, u32, u32), (u32, u32, u32)) {
+        match self {
+            Self::GeoTpr64Tg128 => {
+                let tg = 128u32;
+                let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+                ((grid, 1, 1), (tg, 1, 1))
+            }
+            Self::Vecgroup => {
+                let tg = 256u32;
+                let grid = rows.div_ceil(8).saturating_mul(tg).max(tg);
+                ((grid, 1, 1), (tg, 1, 1))
+            }
+            Self::VecgroupX64 => {
+                let tg = 256u32;
+                let grid = rows.div_ceil(4).saturating_mul(tg).max(tg);
+                ((grid, 1, 1), (tg, 1, 1))
+            }
+            Self::VecgroupR4 => {
+                let tg = 256u32;
+                let grid = rows.div_ceil(32).saturating_mul(tg).max(tg);
+                ((grid, 1, 1), (tg, 1, 1))
+            }
+        }
+    }
+
+    pub fn all() -> &'static [Self] {
+        &[
+            Self::GeoTpr64Tg128,
+            Self::Vecgroup,
+            Self::VecgroupX64,
+            Self::VecgroupR4,
+        ]
+    }
+}
+
+/// Per-class GPU times from residual-correct split command buffers.
+/// Each field's `gpu_ns` is `GPUEndTime-GPUStartTime` on that class's CBs.
+#[derive(Clone, Debug, Default, serde::Serialize)]
+pub struct Qwen38ClassTiming {
+    pub embed_gpu_ns: Option<u64>,
+    pub embed_wait_ns: u64,
+    pub mixer_gpu_ns: u64,
+    pub mixer_wait_ns: u64,
+    pub mlp_gpu_ns: u64,
+    pub mlp_wait_ns: u64,
+    pub terminal_gpu_ns: Option<u64>,
+    pub terminal_wait_ns: u64,
+    pub deltanet_gpu_ns: u64,
+    pub gqa_gpu_ns: u64,
+    pub sampled: u32,
+    pub layer_mlp_gpu_ns: Vec<u64>,
+    pub layer_mixer_gpu_ns: Vec<u64>,
+}
+
 pub fn render_qwen38_user_chat(user_text: &str) -> String {
     format!("<|im_start|>user\n{user_text}<|im_end|>\n<|im_start|>assistant\n")
 }
@@ -146,6 +223,18 @@ mod device {
         max_seq_len: usize,
         position: usize,
         pub fallbacks: u32,
+        /// Default matches the shipped bring-up binding. Diagnostic lanes may
+        /// retarget to another shipped kernel; they must not invent one.
+        pub matvec_kernel: Qwen38MatvecKernel,
+        /// Overlap independent projections (gate+up, qkvz+ba, q/k/v) in one
+        /// concurrent encoder. Off by default so `step` stays bit-identical
+        /// to the bring-up vehicle.
+        pub concurrent_independent: bool,
+        /// Launch one threadgroup per (value-head, value-dim) for the
+        /// gated-delta recurrence. Same serial reduction as the Q80 kernel;
+        /// the vi columns are independent. Default ON after paired generate
+        /// admitted a 42.7→33.4 ms token cut with greedy-identical ids.
+        pub deltanet_vi_parallel: bool,
     }
 
     impl Qwen38HybridDecodeSession {
@@ -229,6 +318,9 @@ mod device {
                 max_seq_len,
                 position: 0,
                 fallbacks: 0,
+                matvec_kernel: Qwen38MatvecKernel::GeoTpr64Tg128,
+                concurrent_independent: false,
+                deltanet_vi_parallel: true,
             })
         }
 
@@ -263,11 +355,11 @@ mod device {
             let groups_per_row = weight.cols.div_ceil(UNIFORM_Q4_GROUP_SIZE) as u32;
             let rows = weight.rows as u32;
             let cols = weight.cols as u32;
-            let grid_x = rows.div_ceil(2).saturating_mul(128);
+            let (grid, tg) = self.matvec_kernel.launch(rows);
             tcb.dispatch_threads(
-                QWEN38_Q4_MATVEC_KERNEL,
-                (grid_x.max(128), 1, 1),
-                (128, 1, 1),
+                self.matvec_kernel.as_str(),
+                grid,
+                tg,
                 |encoder| {
                     encoder.set_buffer(0, Some(&weight.codes), 0);
                     encoder.set_buffer(1, Some(&weight.scales), 0);
@@ -278,6 +370,344 @@ mod device {
                     encoder.set_bytes(6, 4, &groups_per_row as *const u32 as *const _);
                 },
             )
+        }
+
+        fn encode_independent_q4_pair(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            a_name: &str,
+            a_input: &PinnedBuffer,
+            a_output: &PinnedBuffer,
+            b_name: &str,
+            b_input: &PinnedBuffer,
+            b_output: &PinnedBuffer,
+        ) -> Result<()> {
+            if self.concurrent_independent {
+                tcb.begin_concurrent_group()?;
+            }
+            self.encode_q4_matvec(tcb, a_name, a_input, a_output)?;
+            self.encode_q4_matvec(tcb, b_name, b_input, b_output)?;
+            if self.concurrent_independent {
+                tcb.end_concurrent_group()?;
+            }
+            Ok(())
+        }
+
+        fn timed_cb(
+            &self,
+            encode: impl FnOnce(&mut TokenCommandBuffer<'_>) -> Result<()>,
+        ) -> Result<CommandBufferTiming> {
+            let mut tcb = TokenCommandBuffer::new(&self.context);
+            encode(&mut tcb)?;
+            tcb.commit_and_wait_timed()
+        }
+
+        fn encode_gated_delta(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            rec_off: u64,
+        ) -> Result<()> {
+            let layout = Qwen38DeltaNetLayout::source_exact();
+            let heads = layout.value_heads as u32;
+            let kd = layout.key_head_dim as u32;
+            let vd = layout.value_head_dim as u32;
+            let (kernel, grid) = if self.deltanet_vi_parallel {
+                (
+                    "qwen38_gated_delta_decode_vi",
+                    (kd, heads, vd),
+                )
+            } else {
+                (
+                    "qwen80_gated_delta_decode_tg",
+                    (kd, heads, 1),
+                )
+            };
+            tcb.dispatch_threads(kernel, grid, (kd, 1, 1), |encoder| {
+                encoder.set_buffer(0, Some(&self.workspace.rec_state), rec_off);
+                encoder.set_buffer(1, Some(&self.workspace.repeated_q), 0);
+                encoder.set_buffer(2, Some(&self.workspace.repeated_k), 0);
+                encoder.set_buffer(3, Some(&self.workspace.conv_v), 0);
+                encoder.set_buffer(4, Some(&self.workspace.decay), 0);
+                encoder.set_buffer(5, Some(&self.workspace.beta), 0);
+                encoder.set_buffer(6, Some(&self.workspace.rec_out), 0);
+                encoder.set_bytes(7, 4, &heads as *const u32 as *const _);
+                encoder.set_bytes(8, 4, &kd as *const u32 as *const _);
+                encoder.set_bytes(9, 4, &vd as *const u32 as *const _);
+                encoder.set_threadgroup_memory_length(0, 128 * 4);
+            })
+        }
+
+        fn encode_mixer(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
+            match qwen38_mixer_kind(layer)? {
+                Qwen38MixerKind::DeltaNet => self.encode_deltanet(tcb, layer),
+                Qwen38MixerKind::Gqa => self.encode_gqa(tcb, layer),
+            }
+        }
+
+        fn encode_mixer_gemvs_only(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            layer: usize,
+        ) -> Result<()> {
+            match qwen38_mixer_kind(layer)? {
+                Qwen38MixerKind::DeltaNet => {
+                    self.encode_independent_q4_pair(
+                        tcb,
+                        &qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.qkvz,
+                        &qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.ba,
+                    )?;
+                    self.encode_q4_matvec(
+                        tcb,
+                        &qwen38_layer_name(layer, "linear_attn.out_proj.weight"),
+                        &self.workspace.gated,
+                        &self.workspace.mixer,
+                    )
+                }
+                Qwen38MixerKind::Gqa => {
+                    if self.concurrent_independent {
+                        tcb.begin_concurrent_group()?;
+                    }
+                    self.encode_q4_matvec(
+                        tcb,
+                        &qwen38_layer_name(layer, "self_attn.q_proj.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.q_proj,
+                    )?;
+                    self.encode_q4_matvec(
+                        tcb,
+                        &qwen38_layer_name(layer, "self_attn.k_proj.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.k_proj,
+                    )?;
+                    self.encode_q4_matvec(
+                        tcb,
+                        &qwen38_layer_name(layer, "self_attn.v_proj.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.v_proj,
+                    )?;
+                    if self.concurrent_independent {
+                        tcb.end_concurrent_group()?;
+                    }
+                    self.encode_q4_matvec(
+                        tcb,
+                        &qwen38_layer_name(layer, "self_attn.o_proj.weight"),
+                        &self.workspace.gated_attn,
+                        &self.workspace.mixer,
+                    )
+                }
+            }
+        }
+
+        fn encode_mlp_matvecs_only(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            layer: usize,
+        ) -> Result<()> {
+            self.encode_independent_q4_pair(
+                tcb,
+                &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
+                &self.workspace.normalized,
+                &self.workspace.gate,
+                &qwen38_layer_name(layer, "mlp.up_proj.weight"),
+                &self.workspace.normalized,
+                &self.workspace.up,
+            )?;
+            self.encode_q4_matvec(
+                tcb,
+                &qwen38_layer_name(layer, "mlp.down_proj.weight"),
+                &self.workspace.act,
+                &self.workspace.down,
+            )
+        }
+
+        pub fn read_f32_workspace(&self, which: &str, n: usize) -> Result<Vec<f32>> {
+            let buffer = match which {
+                "gate" => &self.workspace.gate,
+                "up" => &self.workspace.up,
+                "act" => &self.workspace.act,
+                "down" => &self.workspace.down,
+                "hidden" => &self.workspace.hidden,
+                "normalized" => &self.workspace.normalized,
+                "logits" => &self.workspace.logits,
+                "mixer" => &self.workspace.mixer,
+                other => {
+                    return Err(Error::Model(format!(
+                        "qwen38 unknown workspace buffer {other}"
+                    )))
+                }
+            };
+            let bytes = n
+                .checked_mul(std::mem::size_of::<f32>())
+                .ok_or_else(|| Error::Model("qwen38 read overflow".into()))?;
+            if buffer.length() < bytes as u64 {
+                return Err(Error::Model(format!(
+                    "qwen38 {which} is {} bytes, need {bytes}",
+                    buffer.length()
+                )));
+            }
+            let mut out = vec![0.0f32; n];
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    buffer.contents() as *const f32,
+                    out.as_mut_ptr(),
+                    n,
+                );
+            }
+            Ok(out)
+        }
+
+        pub fn measure_named_matvec(&self, name: &str, output: &str) -> Result<CommandBufferTiming> {
+            match output {
+                "gate" | "up" | "down" | "logits" | "mixer" | "qkvz" | "hidden" => {}
+                other => {
+                    return Err(Error::Model(format!(
+                        "qwen38 unknown matvec output {other}"
+                    )))
+                }
+            }
+            self.timed_cb(|tcb| {
+                let out_buf = match output {
+                    "gate" => &self.workspace.gate,
+                    "up" => &self.workspace.up,
+                    "down" => &self.workspace.down,
+                    "logits" => &self.workspace.logits,
+                    "mixer" => &self.workspace.mixer,
+                    "qkvz" => &self.workspace.qkvz,
+                    _ => &self.workspace.hidden,
+                };
+                self.encode_q4_matvec(tcb, name, &self.workspace.normalized, out_buf)
+            })
+        }
+
+        pub fn measure_isolated_mlp_full(&self) -> Result<CommandBufferTiming> {
+            self.timed_cb(|tcb| {
+                for layer in 0..QWEN38_LAYERS {
+                    self.encode_dense_mlp(tcb, layer, &self.workspace.first_residual)?;
+                }
+                Ok(())
+            })
+        }
+
+        pub fn measure_isolated_mlp_matvecs(&self) -> Result<CommandBufferTiming> {
+            self.timed_cb(|tcb| {
+                for layer in 0..QWEN38_LAYERS {
+                    self.encode_mlp_matvecs_only(tcb, layer)?;
+                }
+                Ok(())
+            })
+        }
+
+        pub fn measure_isolated_mlp_one_proj(&self, which: &str) -> Result<CommandBufferTiming> {
+            let suffix = match which {
+                "gate" => "mlp.gate_proj.weight",
+                "up" => "mlp.up_proj.weight",
+                "down" => "mlp.down_proj.weight",
+                other => {
+                    return Err(Error::Model(format!(
+                        "qwen38 mlp proj {other} is not gate/up/down"
+                    )))
+                }
+            };
+            self.timed_cb(|tcb| {
+                for layer in 0..QWEN38_LAYERS {
+                    let (input, output) = match which {
+                        "gate" => (&self.workspace.normalized, &self.workspace.gate),
+                        "up" => (&self.workspace.normalized, &self.workspace.up),
+                        _ => (&self.workspace.act, &self.workspace.down),
+                    };
+                    self.encode_q4_matvec(
+                        tcb,
+                        &qwen38_layer_name(layer, suffix),
+                        input,
+                        output,
+                    )?;
+                }
+                Ok(())
+            })
+        }
+
+        pub fn measure_isolated_gated_delta(&self) -> Result<CommandBufferTiming> {
+            let layout = Qwen38DeltaNetLayout::source_exact();
+            self.timed_cb(|tcb| {
+                for layer in 0..QWEN38_LAYERS {
+                    if qwen38_mixer_kind(layer)? != Qwen38MixerKind::DeltaNet {
+                        continue;
+                    }
+                    let slot = qwen38_deltanet_state_slot(layer)?;
+                    let rec_off = (slot * layout.recurrent_state_elements() * 4) as u64;
+                    self.encode_gated_delta(tcb, rec_off)?;
+                }
+                Ok(())
+            })
+        }
+
+        pub fn measure_isolated_mixer_gemvs(&self) -> Result<CommandBufferTiming> {
+            self.timed_cb(|tcb| {
+                for layer in 0..QWEN38_LAYERS {
+                    self.encode_mixer_gemvs_only(tcb, layer)?;
+                }
+                Ok(())
+            })
+        }
+
+        pub fn measure_isolated_lm_head(&self) -> Result<CommandBufferTiming> {
+            self.timed_cb(|tcb| {
+                self.encode_q4_matvec(
+                    tcb,
+                    "language_model.lm_head.weight",
+                    &self.workspace.normalized,
+                    &self.workspace.logits,
+                )
+            })
+        }
+
+        pub fn measure_isolated_embed(&self, token: u32) -> Result<CommandBufferTiming> {
+            self.timed_cb(|tcb| self.encode_embed(tcb, token))
+        }
+
+        pub fn step_decomposed(&mut self, token: u32) -> Result<(u32, Qwen38ClassTiming)> {
+            if self.fallbacks != 0 {
+                return Err(Error::Model(
+                    "qwen38 decode refuses a run after a fallback".into(),
+                ));
+            }
+            let mut out = Qwen38ClassTiming::default();
+            let embed = self.timed_cb(|tcb| self.encode_embed(tcb, token))?;
+            out.embed_gpu_ns = embed.gpu_ns;
+            out.embed_wait_ns = embed.wait_ns;
+            for layer in 0..QWEN38_LAYERS {
+                let mixer = self.timed_cb(|tcb| self.encode_mixer(tcb, layer))?;
+                let mixer_gpu = mixer.gpu_ns.unwrap_or(0);
+                out.mixer_gpu_ns = out.mixer_gpu_ns.saturating_add(mixer_gpu);
+                out.mixer_wait_ns = out.mixer_wait_ns.saturating_add(mixer.wait_ns);
+                out.layer_mixer_gpu_ns.push(mixer_gpu);
+                match qwen38_mixer_kind(layer)? {
+                    Qwen38MixerKind::DeltaNet => {
+                        out.deltanet_gpu_ns = out.deltanet_gpu_ns.saturating_add(mixer_gpu);
+                    }
+                    Qwen38MixerKind::Gqa => {
+                        out.gqa_gpu_ns = out.gqa_gpu_ns.saturating_add(mixer_gpu);
+                    }
+                }
+                let mlp = self.timed_cb(|tcb| {
+                    self.encode_dense_mlp(tcb, layer, &self.workspace.first_residual)
+                })?;
+                let mlp_gpu = mlp.gpu_ns.unwrap_or(0);
+                out.mlp_gpu_ns = out.mlp_gpu_ns.saturating_add(mlp_gpu);
+                out.mlp_wait_ns = out.mlp_wait_ns.saturating_add(mlp.wait_ns);
+                out.layer_mlp_gpu_ns.push(mlp_gpu);
+            }
+            let term = self.timed_cb(|tcb| self.encode_terminal(tcb))?;
+            out.terminal_gpu_ns = term.gpu_ns;
+            out.terminal_wait_ns = term.wait_ns;
+            let sampled = unsafe { *(self.workspace.sampled.contents() as *const u32) };
+            self.position = self.position.saturating_add(1);
+            out.sampled = sampled;
+            Ok((sampled, out))
         }
 
         fn encode_rmsnorm(
@@ -342,14 +772,11 @@ mod device {
                 &self.workspace.normalized,
                 QWEN38_HIDDEN as u32,
             )?;
-            self.encode_q4_matvec(
+            self.encode_independent_q4_pair(
                 tcb,
                 &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
                 &self.workspace.normalized,
                 &self.workspace.gate,
-            )?;
-            self.encode_q4_matvec(
-                tcb,
                 &qwen38_layer_name(layer, "mlp.up_proj.weight"),
                 &self.workspace.normalized,
                 &self.workspace.up,
@@ -396,14 +823,11 @@ mod device {
                 &self.workspace.normalized,
                 QWEN38_HIDDEN as u32,
             )?;
-            self.encode_q4_matvec(
+            self.encode_independent_q4_pair(
                 tcb,
                 &qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
                 &self.workspace.normalized,
                 &self.workspace.qkvz,
-            )?;
-            self.encode_q4_matvec(
-                tcb,
                 &qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
                 &self.workspace.normalized,
                 &self.workspace.ba,
@@ -453,27 +877,7 @@ mod device {
                     encoder.set_bytes(6, 4, &vpk as *const u32 as *const _);
                 },
             )?;
-            tcb.dispatch_threads(
-                "qwen80_gated_delta_decode_tg",
-                (layout.key_head_dim as u32, layout.value_heads as u32, 1),
-                (layout.key_head_dim as u32, 1, 1),
-                |encoder| {
-                    encoder.set_buffer(0, Some(&self.workspace.rec_state), rec_off);
-                    encoder.set_buffer(1, Some(&self.workspace.repeated_q), 0);
-                    encoder.set_buffer(2, Some(&self.workspace.repeated_k), 0);
-                    encoder.set_buffer(3, Some(&self.workspace.conv_v), 0);
-                    encoder.set_buffer(4, Some(&self.workspace.decay), 0);
-                    encoder.set_buffer(5, Some(&self.workspace.beta), 0);
-                    encoder.set_buffer(6, Some(&self.workspace.rec_out), 0);
-                    let heads = layout.value_heads as u32;
-                    let kd = layout.key_head_dim as u32;
-                    let vd = layout.value_head_dim as u32;
-                    encoder.set_bytes(7, 4, &heads as *const u32 as *const _);
-                    encoder.set_bytes(8, 4, &kd as *const u32 as *const _);
-                    encoder.set_bytes(9, 4, &vd as *const u32 as *const _);
-                    encoder.set_threadgroup_memory_length(0, 128 * 4);
-                },
-            )?;
+            self.encode_gated_delta(tcb, rec_off)?;
             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
             tcb.dispatch_threads(
                 "qwen80_deltanet_gated_rmsnorm_f32",
@@ -523,6 +927,9 @@ mod device {
                 &self.workspace.normalized,
                 QWEN38_HIDDEN as u32,
             )?;
+            if self.concurrent_independent {
+                tcb.begin_concurrent_group()?;
+            }
             self.encode_q4_matvec(
                 tcb,
                 &qwen38_layer_name(layer, "self_attn.q_proj.weight"),
@@ -541,6 +948,9 @@ mod device {
                 &self.workspace.normalized,
                 &self.workspace.v_proj,
             )?;
+            if self.concurrent_independent {
+                tcb.end_concurrent_group()?;
+            }
             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
             tcb.dispatch_threads(

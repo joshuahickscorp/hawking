@@ -1272,6 +1272,7 @@ mod imp {
             "qwen80_gqa_qk_norm_rope_cache_f32" => "qwen80_gqa_qk_norm_rope_cache_f32",
             "qwen38_qkvz_rearrange_conv_l2_f32" => "qwen38_qkvz_rearrange_conv_l2_f32",
             "qwen38_gqa_qk_norm_rope_cache_f32" => "qwen38_gqa_qk_norm_rope_cache_f32",
+            "qwen38_gated_delta_decode_vi" => "qwen38_gated_delta_decode_vi",
             "qwen38_attention_apply_sigmoid_gate" => "qwen38_attention_apply_sigmoid_gate",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen30_expert_table_hgravs_gemv_rowblock2" => {
@@ -2058,6 +2059,24 @@ mod imp {
                 assert!(
                     SHADER_QWEN80_DEVICE_ACTIVATIONS.contains(&format!("kernel void {kernel}(")),
                     "{kernel} must compile from qwen80_device_activations.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn qwen38_device_activation_kernels_are_trace_named_and_compiled() {
+            use crate::metal::SHADER_QWEN38_DEVICE_ACTIVATIONS;
+            const KERNELS: &[&str] = &[
+                "qwen38_qkvz_rearrange_conv_l2_f32",
+                "qwen38_gqa_qk_norm_rope_cache_f32",
+                "qwen38_gated_delta_decode_vi",
+                "qwen38_attention_apply_sigmoid_gate",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN38_DEVICE_ACTIVATIONS.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from qwen38_device_activations.metal"
                 );
             }
         }
