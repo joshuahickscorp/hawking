@@ -23,7 +23,9 @@ MERGE_READY with its skew verdict for a human (or Claude) to land.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
@@ -319,23 +321,30 @@ def slug(text: str) -> str:
 MAX_GENERATED = 96   # widened 2026-08-16: Qwen-first pivot needs a deeper pool
 
 
-GENESIS_BIN = REPO / "workspace" / "ops" / "build" / "rust" / "release" / "examples" / "ascension_qwen38_hybrid_greedy"
-GENESIS_ARTIFACT = REPO / "workspace" / "campaign" / "records" / "runs" / "qwen38-27b" / "uniform-q4-v1"
-GENESIS_TOKENIZER = REPO / "workspace" / "campaign" / "records" / "runs" / "qwen38-27b" / "bf16" / "tokenizer.json"
+_DEFAULT_GENESIS_BIN = (
+    REPO / "workspace" / "ops" / "build" / "rust" / "release" / "examples" / "ascension_qwen38_hybrid_greedy"
+)
+_DEFAULT_GENESIS_ARTIFACT = (
+    REPO / "workspace" / "campaign" / "records" / "runs" / "qwen38-27b" / "uniform-q4-v1"
+)
+_DEFAULT_GENESIS_TOKENIZER = (
+    REPO / "workspace" / "campaign" / "records" / "runs" / "qwen38-27b" / "bf16" / "tokenizer.json"
+)
+# Resolved at call time so tests can override via the environment.
+GENESIS_BIN = _DEFAULT_GENESIS_BIN
+GENESIS_ARTIFACT = _DEFAULT_GENESIS_ARTIFACT
+GENESIS_TOKENIZER = _DEFAULT_GENESIS_TOKENIZER
 
 
-def genesis_proposes(bottleneck: str) -> str:
-    """Ask GENESIS itself for the mechanism before a lane is written.
+def _genesis_paths() -> tuple[Path, Path, Path]:
+    bin_p = Path(os.environ["GENESIS_BIN"]) if os.environ.get("GENESIS_BIN") else _DEFAULT_GENESIS_BIN
+    art = Path(os.environ["GENESIS_ARTIFACT"]) if os.environ.get("GENESIS_ARTIFACT") else _DEFAULT_GENESIS_ARTIFACT
+    tok = Path(os.environ["GENESIS_TOKENIZER"]) if os.environ.get("GENESIS_TOKENIZER") else _DEFAULT_GENESIS_TOKENIZER
+    return bin_p, art, tok
 
-    This is what makes the loop Genesis's rather than a regex's: the resident model
-    reads its own measured bottleneck and names the mechanism, and Grok is then sent
-    to execute that. Best-effort by design - a slow or absent Genesis must NEVER stall
-    the unattended loop, so any failure returns "" and the lane goes out without a
-    proposal rather than not going out at all.
-    """
-    if not GENESIS_BIN.is_file() or not GENESIS_ARTIFACT.is_dir():
-        return ""
-    prompt = (
+
+def _genesis_prompt(bottleneck: str) -> str:
+    return (
         "You are HAWKING GENESIS, optimizing your own execution. Your complete token is "
         "35,227,918 ns; weight_addressing is 21,293,103 ns (60.44%) and moves 13.618 GB "
         "at 97.6% of the 411.51 GB/s unique-once decode ceiling.\n\n"
@@ -349,17 +358,71 @@ def genesis_proposes(bottleneck: str) -> str:
         "shrinking it, then the cheapest experiment that would prove it does NOT work. "
         "Be specific and brief."
     )
-    cmd = [
-        str(REPO / "tools" / "gpu_lane_lock.sh"), "genesis-propose", str(GENESIS_BIN),
-        "--artifact-root", str(GENESIS_ARTIFACT), "--tokenizer", str(GENESIS_TOKENIZER),
-        "--prompt", prompt, "--max-new-tokens", "900", "--max-seq-len", "4096",
-    ]
+
+
+def _resident_mod():
+    path = Path(__file__).resolve().parent / "agentos" / "genesis_resident.py"
+    spec = importlib.util.spec_from_file_location("genesis_resident", path)
+    if spec is None or spec.loader is None:
+        return None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _try_resident_propose(prompt: str) -> str:
+    """Fast no-op when the body is not live. Never waits for a cold load."""
+    try:
+        resident = _resident_mod()
+    except Exception:
+        return ""
+    if resident is None:
+        return ""
+    sock = resident.default_socket(REPO)
+    try:
+        resp = resident.propose(prompt, sock_path=sock, max_new_tokens=900, raw=False)
+    except Exception:
+        return ""
+    if not resp:
+        return ""
+    text = resp.get("text")
+    return text.strip() if isinstance(text, str) else ""
+
+
+def _try_shell_propose(prompt: str) -> str:
+    bin_p, artifact, tokenizer = _genesis_paths()
+    if not bin_p.is_file() or not artifact.is_dir():
+        return ""
+    lock = REPO / "tools" / "gpu_lane_lock.sh"
+    cmd = [str(bin_p),
+           "--artifact-root", str(artifact), "--tokenizer", str(tokenizer),
+           "--prompt", prompt, "--max-new-tokens", "900", "--max-seq-len", "4096"]
+    # Env-overridden binaries are test/operator stubs; do not wait 90 min on
+    # the GPU lock for a script that does not load the body.
+    if lock.is_file() and bin_p == _DEFAULT_GENESIS_BIN:
+        cmd = [str(lock), "genesis-propose", *cmd]
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
     except (OSError, subprocess.SubprocessError):
         return ""
     m = re.search(r"GENERATED_TEXT_VERBATIM:\s*(.*?)\nFALLBACKS:", p.stdout, re.S)
     return m.group(1).strip() if m else ""
+
+
+def genesis_proposes(bottleneck: str) -> str:
+    """Ask GENESIS itself for the mechanism before a lane is written.
+
+    Prefers the resident body (one load, many serves). If that process is not
+    live, falls back to the historical per-proposal shell-out. Best-effort by
+    design - a slow or absent Genesis must NEVER stall the unattended loop, so
+    any failure returns "" and the lane goes out without a proposal rather
+    than not going out at all.
+    """
+    prompt = _genesis_prompt(bottleneck)
+    text = _try_resident_propose(prompt)
+    if text:
+        return text
+    return _try_shell_propose(prompt)
 
 
 def generate_targets(state: dict, harvested: list[dict]) -> int:
@@ -791,23 +854,23 @@ def _selfcheck() -> None:
     # and refuse to run away.
     assert slug("host.expert_slab_io 415126416 ns/token") == "host-expert-slab-io"
     st = {"targets": []}
-    h = [{"lane": "q80-x-1", "status": "SHIPPED", "next_bottleneck": "host.foo 1 ns/token"},
-         {"lane": "dsv-y-1", "status": "SHIPPED", "next_bottleneck": "metal.bar 2 ns/token"}]
+    h = [{"lane": "qwen38-x-1", "status": "SHIPPED", "next_bottleneck": "host.foo 1 ns/token"},
+         {"lane": "qwen38-y-1", "status": "SHIPPED", "next_bottleneck": "metal.bar 2 ns/token"}]
     assert generate_targets(st, h) == 2, "must create a target per new bottleneck"
     assert generate_targets(st, h) == 0, "must dedupe on repeat passes"
-    assert {t["model"] for t in st["targets"]} == {"q80", "dsv4f"}
+    assert {t["model"] for t in st["targets"]} == {"qwen38"}
     assert all(t["status"] == "pending" and t["auto_generated"] for t in st["targets"])
     # MAX_GENERATED bounds the ACTIVE pool, so the cap test must fill it with
     # ACTIVE targets. A pool of finished ones must NOT block new work - that was
     # the 2026-08-16 bug, where 96 lifetime generations wedged the loop shut.
     st["targets"] = [{"auto_generated": True, "from_bottleneck": f"b{i}",
                       "status": "pending"} for i in range(MAX_GENERATED)]
-    assert generate_targets(st, [{"lane": "q80-z-1", "status": "SHIPPED",
+    assert generate_targets(st, [{"lane": "qwen38-z-1", "status": "SHIPPED",
                                   "next_bottleneck": "brand new wall"}]) == 0, \
         "must stop at MAX_GENERATED when the ACTIVE pool is full"
     st["targets"] = [{"auto_generated": True, "from_bottleneck": f"c{i}",
                       "status": "stale_no_process"} for i in range(MAX_GENERATED)]
-    assert generate_targets(st, [{"lane": "q80-z-2", "status": "SHIPPED",
+    assert generate_targets(st, [{"lane": "qwen38-z-2", "status": "SHIPPED",
                                   "next_bottleneck": "another new wall"}]) == 1, \
         "a pool of FINISHED targets must not block new generation"
 

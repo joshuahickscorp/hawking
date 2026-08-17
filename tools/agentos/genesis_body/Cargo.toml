@@ -1,0 +1,16 @@
+[workspace]
+
+[package]
+name = "genesis-resident"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Long-lived Genesis body: one Qwen3.8 weight set, attach-and-serve"
+
+[[bin]]
+name = "genesis-resident"
+path = "src/main.rs"
+
+[dependencies]
+hawking-core = { path = "../../../crates/hawking-core" }
+serde_json = { version = "1", features = ["float_roundtrip"] }
