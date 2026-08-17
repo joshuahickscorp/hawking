@@ -20,6 +20,7 @@ use super::qwen_complete_binary::{
     expand_rice_indices, mixed_gpu_layout, parse_uniform_q4_header, rice_q1_row_ptr,
     uniform_factor_value, BinaryGroupPacked, MixedGpuKind, RiceQ1Packed, UniformFactorPacked,
     MAGIC_BINARY, MAGIC_HGRAVS01, MAGIC_RESIDUAL_COMPACT, MAGIC_UNIFORM, UNIFORM_Q4_GROUP_SIZE,
+    UNIFORM_Q4_GROUP_SIZE_128, uniform_q4_group_size_supported,
 };
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
@@ -545,6 +546,8 @@ fn dequant_hgravu_vector(payload: &[u8], name: &str) -> Result<Vec<f32>> {
 }
 
 pub const QWEN38_Q4_MATVEC_KERNEL: &str = "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128";
+pub const QWEN38_Q4_GROUP128_MATVEC_KERNEL: &str =
+    "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128";
 pub const QWEN38_Q4_ADDR_PROBE_KERNEL: &str =
     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe";
 pub const QWEN38_Q4_DECODE_PROBE_KERNEL: &str =
@@ -570,6 +573,27 @@ pub fn qwen38_hgravu01_geo_tpr64_launch(
     let name = match bits {
         3 => QWEN38_HGRAVU01_Q3_GEO_TPR64,
         4 => QWEN38_HGRAVU01_Q4_GEO_TPR64,
+        _ => return None,
+    };
+    let tg = 128u32;
+    let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+    Some((name, (grid, 1, 1), (tg, 1, 1)))
+}
+
+/// HQ30UQ4 geo_tpr64 bind. Supported group sizes are exactly 64 and 128.
+/// Unsupported sizes, or a width that is not a multiple of the group,
+/// return None so the caller can refuse rather than silently fall back.
+pub fn qwen38_uniform_q4_geo_tpr64_launch(
+    group_size: u32,
+    rows: u32,
+    cols: u32,
+) -> Option<(&'static str, (u32, u32, u32), (u32, u32, u32))> {
+    if !uniform_q4_group_size_supported(group_size as usize) || cols % group_size != 0 {
+        return None;
+    }
+    let name = match group_size {
+        64 => QWEN38_Q4_MATVEC_KERNEL,
+        128 => QWEN38_Q4_GROUP128_MATVEC_KERNEL,
         _ => return None,
     };
     let tg = 128u32;
@@ -762,6 +786,7 @@ mod device {
     struct Q4Weight {
         rows: usize,
         cols: usize,
+        group_size: usize,
         codes: PinnedBuffer,
         scales: PinnedBuffer,
     }
@@ -894,6 +919,7 @@ mod device {
                             Q4Weight {
                                 rows: rows_n,
                                 cols,
+                                group_size: header.group_size,
                                 codes: context.new_buffer_with_bytes_checked(codes)?,
                                 scales: context.new_buffer_with_bytes_checked(scales)?,
                             },
@@ -982,6 +1008,7 @@ mod device {
                             Q4Weight {
                                 rows: rows_n,
                                 cols,
+                                group_size: header.group_size,
                                 codes: context.new_buffer_with_bytes_checked(codes)?,
                                 scales: context.new_buffer_with_bytes_checked(scales)?,
                             },
@@ -1907,9 +1934,27 @@ mod device {
             kernel: &str,
         ) -> Result<()> {
             let weight = self.q4(name)?;
-            let groups_per_row = weight.cols.div_ceil(UNIFORM_Q4_GROUP_SIZE) as u32;
             let rows = weight.rows as u32;
             let cols = weight.cols as u32;
+            if weight.group_size == UNIFORM_Q4_GROUP_SIZE_128 {
+                let (kname, grid, tg) = qwen38_uniform_q4_geo_tpr64_launch(128, rows, cols)
+                    .ok_or_else(|| {
+                        Error::Model(format!(
+                            "{name} HQ30UQ4 group_size=128 does not bind geo_tpr64 (cols={cols})"
+                        ))
+                    })?;
+                let groups_per_row = (weight.cols / UNIFORM_Q4_GROUP_SIZE_128) as u32;
+                return tcb.dispatch_threads(kname, grid, tg, |encoder| {
+                    encoder.set_buffer(0, Some(&weight.codes), 0);
+                    encoder.set_buffer(1, Some(&weight.scales), 0);
+                    encoder.set_buffer(2, Some(input), 0);
+                    encoder.set_buffer(3, Some(output), 0);
+                    encoder.set_bytes(4, 4, &rows as *const u32 as *const _);
+                    encoder.set_bytes(5, 4, &cols as *const u32 as *const _);
+                    encoder.set_bytes(6, 4, &groups_per_row as *const u32 as *const _);
+                });
+            }
+            let groups_per_row = weight.cols.div_ceil(UNIFORM_Q4_GROUP_SIZE) as u32;
             let (grid, tg) = self.matvec_kernel.launch(rows);
             tcb.dispatch_threads(kernel, grid, tg, |encoder| {
                 encoder.set_buffer(0, Some(&weight.codes), 0);
@@ -2861,7 +2906,7 @@ mod device {
             }
             let hidden = QWEN38_HIDDEN as u32;
             let vocab = QWEN38_VOCAB as u32;
-            let group = UNIFORM_Q4_GROUP_SIZE as u32;
+            let group = weight.group_size as u32;
             tcb.dispatch_threads(
                 "qwen_uniform_q4_embedding_lookup",
                 (hidden, 1, 1),
@@ -3219,7 +3264,7 @@ mod device {
                 }
                 let hidden = QWEN38_HIDDEN as u32;
                 let vocab = QWEN38_VOCAB as u32;
-                let group = UNIFORM_Q4_GROUP_SIZE as u32;
+                let group = weight.group_size as u32;
                 return tcb.dispatch_threads(
                     "qwen_uniform_q4_embedding_lookup",
                     (hidden, 1, 1),
@@ -4487,10 +4532,33 @@ mod mixed_catalog_contract_tests {
         assert!(qwen38_hgravu01_geo_tpr64_launch(8, 64, 5120, 5120).is_none());
         assert!(qwen38_hgravu01_geo_tpr64_launch(3, 64, 2048, 160).is_none());
         assert!(qwen38_hgravu01_geo_tpr64_launch(3, 128, 17408, 5120).is_none());
+        assert!(qwen38_hgravu01_geo_tpr64_launch(4, 128, 248320, 5120).is_none());
+        assert!(qwen38_hgravu01_geo_tpr64_launch(4, 32, 5120, 5120).is_none());
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE
             .contains("kernel void qwen_uniform_q3_group64_matvec_geo_tpr64_tg128"));
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE
             .contains("kernel void qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128"));
+
+        // HQ30UQ4 supported set is exactly {64, 128}. An unsupported group
+        // size still refuses — a gate that stops refusing is not a fixed gate.
+        let hq64 = qwen38_uniform_q4_geo_tpr64_launch(64, 248320, 5120).expect("hq64");
+        assert_eq!(hq64.0, QWEN38_Q4_MATVEC_KERNEL);
+        assert_eq!(hq64.1, (248320u32.div_ceil(2) * 128, 1, 1));
+        assert_eq!(hq64.2, (128, 1, 1));
+        let hq128 = qwen38_uniform_q4_geo_tpr64_launch(128, 248320, 5120).expect("hq128");
+        assert_eq!(hq128.0, QWEN38_Q4_GROUP128_MATVEC_KERNEL);
+        assert_eq!(hq128.1, (248320u32.div_ceil(2) * 128, 1, 1));
+        assert_eq!(hq128.2, (128, 1, 1));
+        for group in [0u32, 32, 96, 256, 512] {
+            assert!(
+                qwen38_uniform_q4_geo_tpr64_launch(group, 5120, 5120).is_none(),
+                "HQ30UQ4 group {group} must refuse"
+            );
+        }
+        assert!(qwen38_uniform_q4_geo_tpr64_launch(128, 5120, 160).is_none());
+        assert!(qwen38_uniform_q4_geo_tpr64_launch(64, 5120, 160).is_none());
+        assert!(crate::metal::SHADER_QWEN_UNIFORM_Q4
+            .contains("kernel void qwen_uniform_q4_group128_matvec_geo_tpr64_tg128("));
     }
 
     #[cfg(target_os = "macos")]
@@ -4841,14 +4909,23 @@ mod mixed_catalog_contract_tests {
     fn g0_uniform_q4_geo_tpr64_source_is_unchanged() {
         let src = crate::metal::SHADER_QWEN_UNIFORM_Q4;
         assert!(src.contains("kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128("));
+        assert!(src.contains("kernel void qwen_uniform_q4_group128_matvec_geo_tpr64_tg128("));
         assert!(
             !src.contains("element * bits"),
             "G0 Q4 kernel must not use the overflowing element*bits extract"
         );
         assert!(src.contains("int(nibble) - 8"));
+        assert!(src.contains("const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;"));
+        assert!(src.contains(
+            "const uint packed = *((device const uint*)(codes + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));"
+        ));
         assert_eq!(
             QWEN38_Q4_MATVEC_KERNEL,
             "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+        );
+        assert_eq!(
+            QWEN38_Q4_GROUP128_MATVEC_KERNEL,
+            "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128"
         );
         assert!(
             !crate::metal::SHADER_GK_FAMILY.contains("const uint bit0 = element * bits"),
@@ -4861,6 +4938,462 @@ mod mixed_catalog_contract_tests {
             Some(QWEN38_HGRAVU01_Q4_GEO_TPR64),
             "HGRAVU bits=4 still binds geo; G0 HQ30UQ4 bind is a different kernel"
         );
+        assert_eq!(
+            qwen38_uniform_q4_geo_tpr64_launch(64, 248320, 5120)
+                .map(|(name, _, _)| name),
+            Some(QWEN38_Q4_MATVEC_KERNEL)
+        );
+    }
+
+    fn hq30uq4_cpu_row(
+        codes: &[u8],
+        scales: &[u16],
+        group_size: usize,
+        row: usize,
+        cols: usize,
+        x: &[f32],
+    ) -> f32 {
+        let groups_per_row = cols / group_size;
+        let code_bytes = group_size / 2;
+        let mut sum = 0.0f32;
+        for col in 0..cols {
+            let group = col / group_size;
+            let local = col % group_size;
+            let rgb = row * groups_per_row + group;
+            let packed = codes[rgb * code_bytes + local / 2];
+            let nibble = if local & 1 == 0 {
+                packed & 0x0f
+            } else {
+                packed >> 4
+            };
+            let scale = half::f16::from_bits(scales[rgb]).to_f32();
+            sum += (i32::from(nibble) - 8) as f32 * scale * x[col];
+        }
+        sum
+    }
+
+    fn patterned_hq30uq4_planes(
+        rows: usize,
+        cols: usize,
+        group_size: usize,
+        fill_rows: &[usize],
+    ) -> (Vec<u16>, Vec<u8>) {
+        let groups_per_row = cols / group_size;
+        let groups = rows * groups_per_row;
+        let code_bytes = group_size / 2;
+        let mut scales = vec![0u16; groups];
+        let mut codes = vec![0u8; groups * code_bytes];
+        let one = half::f16::from_f32(1.0).to_bits();
+        for &row in fill_rows {
+            for group in 0..groups_per_row {
+                let rgb = row * groups_per_row + group;
+                scales[rgb] = one;
+                for local in 0..group_size {
+                    let nibble = ((row + group + local) & 0x0f) as u8;
+                    let byte = rgb * code_bytes + local / 2;
+                    if local & 1 == 0 {
+                        codes[byte] |= nibble;
+                    } else {
+                        codes[byte] |= nibble << 4;
+                    }
+                }
+            }
+        }
+        (scales, codes)
+    }
+
+    fn ramp_x(cols: usize) -> Vec<f32> {
+        (0..cols)
+            .map(|i| (i % 17) as f32 * 0.125 - 1.0)
+            .collect()
+    }
+
+    #[cfg(target_os = "macos")]
+    fn dispatch_hq30uq4_geo(
+        context: &crate::metal::MetalContext,
+        kernel: &str,
+        grid: (u32, u32, u32),
+        tg: (u32, u32, u32),
+        codes: &[u8],
+        scales: &[u16],
+        x: &[f32],
+        rows: u32,
+        cols: u32,
+        groups_per_row: u32,
+    ) -> Vec<f32> {
+        let codes_b = context.new_buffer_with_bytes_checked(codes).unwrap();
+        let scales_b = context
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(scales))
+            .unwrap();
+        let input = context
+            .new_buffer_with_bytes_checked(bytemuck::cast_slice(x))
+            .unwrap();
+        let output = context.new_buffer_checked(rows as usize * 4).unwrap();
+        let mut tcb = crate::metal::TokenCommandBuffer::new(context);
+        tcb.dispatch_threads(kernel, grid, tg, |enc| {
+            enc.set_buffer(0, Some(&codes_b), 0);
+            enc.set_buffer(1, Some(&scales_b), 0);
+            enc.set_buffer(2, Some(&input), 0);
+            enc.set_buffer(3, Some(&output), 0);
+            for (index, value) in [(4u64, rows), (5, cols), (6, groups_per_row)] {
+                enc.set_bytes(index, 4, &value as *const u32 as *const _);
+            }
+        })
+        .unwrap();
+        tcb.commit_and_wait().unwrap();
+        let n = rows as usize;
+        unsafe { std::slice::from_raw_parts(output.contents() as *const f32, n) }.to_vec()
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn hq30uq4_group64_geo_matches_serial_and_cpu() {
+        let context = match crate::metal::MetalContext::new() {
+            Ok(ctx) => ctx,
+            Err(err) => {
+                eprintln!("skip: MetalContext::new failed: {err}");
+                return;
+            }
+        };
+        const ROWS: usize = 32;
+        const COLS: usize = 256;
+        let values: Vec<f32> = (0..ROWS * COLS)
+            .map(|i| (i % 19) as f32 * 0.0625 - 0.5)
+            .collect();
+        let (payload, _) =
+            crate::model::qwen_complete_binary::pack_uniform_q4_group64(&values, &[ROWS, COLS])
+                .unwrap();
+        let header = parse_uniform_q4_header(&payload).unwrap();
+        assert_eq!(header.group_size, 64);
+        let scales: Vec<u16> = payload[header.scale_offset..header.sign_offset]
+            .chunks_exact(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+            .collect();
+        let codes = payload[header.sign_offset..header.payload_bytes].to_vec();
+        let x = ramp_x(COLS);
+        let (name, grid, tg) =
+            qwen38_uniform_q4_geo_tpr64_launch(64, ROWS as u32, COLS as u32).expect("g64 bind");
+        assert_eq!(name, QWEN38_Q4_MATVEC_KERNEL);
+        let geo = dispatch_hq30uq4_geo(
+            &context,
+            name,
+            grid,
+            tg,
+            &codes,
+            &scales,
+            &x,
+            ROWS as u32,
+            COLS as u32,
+            (COLS / 64) as u32,
+        );
+        let serial = dispatch_hq30uq4_geo(
+            &context,
+            "qwen_uniform_q4_group64_matvec",
+            (ROWS as u32, 1, 1),
+            (256, 1, 1),
+            &codes,
+            &scales,
+            &x,
+            ROWS as u32,
+            COLS as u32,
+            (COLS / 64) as u32,
+        );
+        let mut max_geo_serial = 0.0f32;
+        let mut max_geo_cpu = 0.0f32;
+        for row in 0..ROWS {
+            let cpu = hq30uq4_cpu_row(&codes, &scales, 64, row, COLS, &x);
+            let d_serial = (geo[row] - serial[row]).abs();
+            let d_cpu = (geo[row] - cpu).abs();
+            max_geo_serial = max_geo_serial.max(d_serial);
+            max_geo_cpu = max_geo_cpu.max(d_cpu);
+            eprintln!(
+                "G64_BITIDENT row={row} cpu={cpu:.8e} serial={:.8e} geo={:.8e} d_serial={d_serial:.3e} d_cpu={d_cpu:.3e}",
+                serial[row], geo[row]
+            );
+            assert_eq!(d_serial, 0.0, "g64 geo vs serial row {row}");
+            assert_eq!(d_cpu, 0.0, "g64 geo vs CPU row {row}");
+        }
+        eprintln!(
+            "G64_BITIDENT_SUMMARY rows={ROWS} cols={COLS} max_geo_serial={max_geo_serial:.8e} max_geo_cpu={max_geo_cpu:.8e}"
+        );
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn hq30uq4_group128_geo_matches_cpu_small_and_above_wrap() {
+        let context = match crate::metal::MetalContext::new() {
+            Ok(ctx) => ctx,
+            Err(err) => {
+                eprintln!("skip: MetalContext::new failed: {err}");
+                return;
+            }
+        };
+
+        const SMALL_ROWS: usize = 16;
+        const SMALL_COLS: usize = 256;
+        let fill: Vec<usize> = (0..SMALL_ROWS).collect();
+        let (scales, codes) = patterned_hq30uq4_planes(SMALL_ROWS, SMALL_COLS, 128, &fill);
+        let x = ramp_x(SMALL_COLS);
+        let (name, grid, tg) =
+            qwen38_uniform_q4_geo_tpr64_launch(128, SMALL_ROWS as u32, SMALL_COLS as u32)
+                .expect("g128 small bind");
+        assert_eq!(name, QWEN38_Q4_GROUP128_MATVEC_KERNEL);
+        let geo = dispatch_hq30uq4_geo(
+            &context,
+            name,
+            grid,
+            tg,
+            &codes,
+            &scales,
+            &x,
+            SMALL_ROWS as u32,
+            SMALL_COLS as u32,
+            (SMALL_COLS / 128) as u32,
+        );
+        let mut small_max = 0.0f32;
+        for row in 0..SMALL_ROWS {
+            let cpu = hq30uq4_cpu_row(&codes, &scales, 128, row, SMALL_COLS, &x);
+            let d = (geo[row] - cpu).abs();
+            small_max = small_max.max(d);
+            eprintln!(
+                "G128_SMALL row={row} cpu={cpu:.8e} geo={:.8e} abs_d={d:.3e}",
+                geo[row]
+            );
+            assert_eq!(d, 0.0, "g128 small row {row} vs CPU");
+        }
+        eprintln!("G128_SMALL_SUMMARY max_abs={small_max:.8e}");
+
+        // element*4 wraps at row 209715 when K=5120. Allocate that height so
+        // rgb = row * (5120/128) is the production address, not a small-tensor
+        // stand-in. Only fill the wrap neighborhood and the last rows.
+        const TALL_ROWS: usize = 209720;
+        const TALL_COLS: usize = 5120;
+        const WRAP_ROW: usize = 209715;
+        let probe = [
+            0usize,
+            1,
+            WRAP_ROW - 1,
+            WRAP_ROW,
+            WRAP_ROW + 1,
+            TALL_ROWS - 2,
+            TALL_ROWS - 1,
+        ];
+        let (scales, codes) = patterned_hq30uq4_planes(TALL_ROWS, TALL_COLS, 128, &probe);
+        let x = ramp_x(TALL_COLS);
+        let (name, grid, tg) =
+            qwen38_uniform_q4_geo_tpr64_launch(128, TALL_ROWS as u32, TALL_COLS as u32)
+                .expect("g128 tall bind");
+        let geo = dispatch_hq30uq4_geo(
+            &context,
+            name,
+            grid,
+            tg,
+            &codes,
+            &scales,
+            &x,
+            TALL_ROWS as u32,
+            TALL_COLS as u32,
+            (TALL_COLS / 128) as u32,
+        );
+        eprintln!(
+            "G128_ABOVE_WRAP header: row cpu geo abs_d codes={} scales={}",
+            codes.len(),
+            scales.len() * 2
+        );
+        let mut wrap_max = 0.0f32;
+        for &row in &probe {
+            let cpu = hq30uq4_cpu_row(&codes, &scales, 128, row, TALL_COLS, &x);
+            let d = (geo[row] - cpu).abs();
+            wrap_max = wrap_max.max(d);
+            eprintln!(
+                "G128_ABOVE_WRAP row={row} cpu={cpu:.8e} geo={:.8e} abs_d={d:.3e}",
+                geo[row]
+            );
+            assert_eq!(d, 0.0, "g128 row {row} vs CPU above wrap");
+        }
+        eprintln!(
+            "G128_ABOVE_WRAP_SUMMARY wrap_row={WRAP_ROW} max_abs={wrap_max:.8e} rows={TALL_ROWS} cols={TALL_COLS}"
+        );
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn g0_lm_head_geo_matches_cpu_above_uint32_wrap() {
+        let root = campaign_qwen38("uniform-q4-v1");
+        if !root.join("manifest.json").is_file() {
+            eprintln!("skip: uniform-q4-v1 not on this host");
+            return;
+        }
+        let context = match crate::metal::MetalContext::new() {
+            Ok(ctx) => ctx,
+            Err(err) => {
+                eprintln!("skip: MetalContext::new failed: {err}");
+                return;
+            }
+        };
+        let (_, rows) = load_qwen38_manifest(&root).unwrap();
+        let row = rows
+            .iter()
+            .find(|r| r.name.ends_with("lm_head.weight"))
+            .expect("G0 lm_head");
+        let payload = std::fs::read(root.join("tensors").join(&row.artifact)).unwrap();
+        let header = parse_uniform_q4_header(&payload).unwrap();
+        assert_eq!(header.group_size, 64, "G0 lm_head must stay group 64");
+        assert_eq!(header.shape.as_slice(), &[248320, 5120]);
+        let scales: Vec<u16> = payload[header.scale_offset..header.sign_offset]
+            .chunks_exact(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+            .collect();
+        let codes = &payload[header.sign_offset..header.payload_bytes];
+        let rows_n = header.shape[0];
+        let cols = header.shape[1];
+        let x = ramp_x(cols);
+        let (name, grid, tg) =
+            qwen38_uniform_q4_geo_tpr64_launch(64, rows_n as u32, cols as u32).expect("g0 bind");
+        assert_eq!(name, QWEN38_Q4_MATVEC_KERNEL);
+        let geo = dispatch_hq30uq4_geo(
+            &context,
+            name,
+            grid,
+            tg,
+            codes,
+            &scales,
+            &x,
+            rows_n as u32,
+            cols as u32,
+            (cols / 64) as u32,
+        );
+        let serial = dispatch_hq30uq4_geo(
+            &context,
+            "qwen_uniform_q4_group64_matvec",
+            (rows_n as u32, 1, 1),
+            (256, 1, 1),
+            codes,
+            &scales,
+            &x,
+            rows_n as u32,
+            cols as u32,
+            (cols / 64) as u32,
+        );
+        const WRAP: usize = 209715;
+        let probe = [0usize, WRAP - 1, WRAP, WRAP + 1, rows_n - 2, rows_n - 1];
+        eprintln!("G0_LM_HEAD header: row cpu serial geo d_serial d_cpu");
+        let mut max_serial = 0.0f32;
+        let mut max_cpu = 0.0f32;
+        for &r in &probe {
+            let cpu = hq30uq4_cpu_row(codes, &scales, 64, r, cols, &x);
+            let d_serial = (geo[r] - serial[r]).abs();
+            let d_cpu = (geo[r] - cpu).abs();
+            max_serial = max_serial.max(d_serial);
+            max_cpu = max_cpu.max(d_cpu);
+            eprintln!(
+                "G0_LM_HEAD row={r} cpu={cpu:.8e} serial={:.8e} geo={:.8e} d_serial={d_serial:.3e} d_cpu={d_cpu:.3e}",
+                serial[r], geo[r]
+            );
+            assert_eq!(d_serial, 0.0, "G0 lm_head row {r} geo vs serial");
+            assert_eq!(d_cpu, 0.0, "G0 lm_head row {r} geo vs CPU");
+        }
+        let mut n_serial_mismatch = 0usize;
+        for i in 0..rows_n {
+            if geo[i] != serial[i] {
+                n_serial_mismatch += 1;
+            }
+        }
+        eprintln!(
+            "G0_LM_HEAD_SUMMARY rows={rows_n} cols={cols} wrap={WRAP} max_d_serial={max_serial:.8e} max_d_cpu={max_cpu:.8e} n_geo_ne_serial={n_serial_mismatch}"
+        );
+        assert_eq!(n_serial_mismatch, 0, "G0 geo must be bit-identical to serial");
+    }
+
+    #[test]
+    fn group128_kernel_addressing_matches_cpu_at_wrap_row() {
+        // CPU stand-in for the sibling's (row, group) ulong walk at the
+        // historical element*4 wrap row. Does not allocate the 537 MiB plane.
+        const COLS: usize = 5120;
+        const GROUP: usize = 128;
+        const GPR: usize = COLS / GROUP;
+        const WRAP: usize = 209715;
+        let x = ramp_x(COLS);
+        let one = half::f16::from_f32(1.0).to_bits();
+        let probe = [WRAP - 1, WRAP, WRAP + 1, 248319];
+        eprintln!(
+            "G128_ADDR_ORACLE header: row cpu kernel abs_d rgb0 u32_rgb0_wraps"
+        );
+        for &row in &probe {
+            let mut codes = vec![0u8; GPR * 64];
+            let mut scales = vec![0u16; GPR];
+            for group in 0..GPR {
+                scales[group] = one;
+                for local in 0..GROUP {
+                    let nibble = ((row + group + local) & 0x0f) as u8;
+                    let byte = group * 64 + local / 2;
+                    if local & 1 == 0 {
+                        codes[byte] |= nibble;
+                    } else {
+                        codes[byte] |= nibble << 4;
+                    }
+                }
+            }
+            let cpu = hq30uq4_cpu_row(&codes, &scales, GROUP, 0, COLS, &x);
+            // Kernel walk: 64 lanes, col = lane*8 + 512k, 8-wide unpack.
+            let mut kernel = 0.0f32;
+            for lane in 0..64u32 {
+                let mut col = lane * 8;
+                while (col as usize) < COLS {
+                    let group = (col as usize) / GROUP;
+                    let local = (col as usize) % GROUP;
+                    let rgb0 = (row as u64) * (GPR as u64);
+                    let rgb = rgb0 + group as u64;
+                    let code_off = rgb * 64 + (local as u64 / 2);
+                    // Plane is stored as one row; rgb's group index is `group`.
+                    let local_off = (code_off - rgb0 * 64) as usize;
+                    let packed = u32::from_le_bytes(codes[local_off..local_off + 4].try_into().unwrap());
+                    let scale = half::f16::from_bits(scales[group]).to_f32();
+                    for i in 0..4u32 {
+                        let byte = (packed >> (8 * i)) & 0xff;
+                        let c0 = col + 2 * i;
+                        let c1 = c0 + 1;
+                        kernel += (i32::from((byte & 0x0f) as u8) - 8) as f32 * scale * x[c0 as usize];
+                        kernel += (i32::from((byte >> 4) as u8) - 8) as f32 * scale * x[c1 as usize];
+                    }
+                    col += 512;
+                }
+            }
+            let d = (kernel - cpu).abs();
+            let rgb0 = (row as u64) * (GPR as u64);
+            let u32_wraps = (row as u32).wrapping_mul(GPR as u32) as u64 != rgb0;
+            eprintln!(
+                "G128_ADDR_ORACLE row={row} cpu={cpu:.8e} kernel={kernel:.8e} abs_d={d:.3e} rgb0={rgb0} u32_rgb0_wraps={u32_wraps}"
+            );
+            assert!(!u32_wraps, "row*{GPR} must not wrap u32 at row {row}");
+            assert_eq!(d, 0.0, "kernel walk vs CPU at row {row}");
+        }
+    }
+
+    #[test]
+    fn group128_code_offset_is_u64_because_u32_wraps() {
+        // New indexing: byte = rgb * 64. In uint32 that product wraps at
+        // rgb >= 2^26 = 67_108_864. The sibling forms it in ulong.
+        let wrap_rgb = 1u64 << 26;
+        let u32_off = (wrap_rgb as u32).wrapping_mul(64);
+        let u64_off = wrap_rgb * 64;
+        assert_eq!(u32_off, 0, "uint32 rgb*64 must wrap at 2^26");
+        assert_eq!(u64_off, 1u64 << 32);
+        let lm_rgb_max = 248320u64 * (5120 / 128) - 1;
+        assert!(lm_rgb_max < wrap_rgb, "lm_head g128 rgb_max={lm_rgb_max}");
+        assert!((lm_rgb_max as u32 as u64) * 64 == lm_rgb_max * 64);
+        let first_overflow_row = ((1u64 << 32) / 4) / 5120;
+        assert_eq!(first_overflow_row, 209715);
+        let rgb_at_wrap_row = 209715u64 * (5120 / 128);
+        assert!(rgb_at_wrap_row * 64 < (1u64 << 32));
+        let src = crate::metal::SHADER_QWEN_UNIFORM_Q4;
+        let g128 = src
+            .split("kernel void qwen_uniform_q4_group128_matvec_geo_tpr64_tg128(")
+            .nth(1)
+            .expect("g128 kernel");
+        assert!(g128.contains("const ulong rgb0 = (ulong)row * (ulong)groups_per_row;"));
+        assert!(g128.contains("rgb * (ulong)QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP_128"));
+        assert!(!g128.contains("element * bits"));
     }
 
     #[test]

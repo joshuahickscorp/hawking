@@ -220,6 +220,57 @@ kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128(
     }
 }
 
+// Group-128 sibling of geo_tpr64_tg128. Same TG / thread map / 8-wide
+// unpack. Compile-time 128 so the group-64 kernel above stays untouched
+// (a runtime group_size would put a non-constant divide on the G0 path).
+// Address by (row, group) in 64-bit so rgb*64 cannot wrap in uint32.
+// Grid: ceil(rows/2)*128, TG 128. Caller binds only when cols % 128 == 0.
+constant uint QWEN_UNIFORM_Q4_GROUP_SIZE_128 = 128u;
+constant uint QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP_128 = 64u;
+
+kernel void qwen_uniform_q4_group128_matvec_geo_tpr64_tg128(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows) {
+        const ulong rgb0 = (ulong)row * (ulong)groups_per_row;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE_128;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE_128;
+            const ulong rgb = rgb0 + (ulong)group;
+            const float scale = float(scales[rgb]);
+            const ulong code_off =
+                rgb * (ulong)QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP_128
+                + (ulong)(local >> 1u);
+            const uint packed = *((device const uint*)(codes + code_off));
+            acc += qwen_uniform_q4_unpack8(packed, scale, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}
+
 // Diagnostic: same launch geometry as geo_tpr64_tg128, but only the
 // addressing + DRAM load of scales and packed codes. The loaded values
 // are sunk into `acc` so the compiler cannot DCE the traffic. No nibble
