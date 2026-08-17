@@ -233,9 +233,6 @@ def test_forged_checksum_verified_true_is_reject() -> None:
 def test_each_new_clause_rejects_when_input_corrupted(label, corrupt, clause, needle) -> None:
     state, parent, child, ev, inv = armed_lineage()
     child, ev = corrupt(parent, child, ev)
-    if hasattr(child, "artifact_sha") and ev is not None:
-        # keep measurement/receipt sha aligned unless the corruptor is the artifact case
-        pass
     verdict = evaluate_promotion(parent=parent, child=child, evidence=ev, invoker=inv, lineage=state)
     assert verdict["verdict"] == "REJECT", (label, _fails(verdict), verdict["checks"])
     assert clause_status(verdict, clause) == "FAIL", (label, verdict["checks"])

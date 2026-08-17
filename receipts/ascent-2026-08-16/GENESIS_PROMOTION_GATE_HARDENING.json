@@ -1,0 +1,164 @@
+{
+  "schema": "hawking.lineage.promotion_gate.hardening.v1",
+  "date": "2026-08-17",
+  "campaign": "ascent-2026-08-16",
+  "title": "Genesis promotion gate now hashes, compares the parent, and refuses paperwork",
+  "authority": "external promotion only; parent and child cannot self-certify",
+  "before": {
+    "observed_at": "2026-08-17T00:00:00Z",
+    "hashlib_in_promotion_py": false,
+    "six_forged_accepts": {
+      "1_paperwork_only": "ACCEPT",
+      "2_lowered_contract_forged_tps": "ACCEPT",
+      "3_missing_timing_authority": "ACCEPT",
+      "4_mixed_stopwatches": "ACCEPT",
+      "5_gen0_different_model": "ACCEPT",
+      "6_forged_checksum": "ACCEPT"
+    },
+    "notes": [
+      "CLAUSE_CAPABILITY compared the child to evidence parent_contract.capability, which the child may lower to 0.",
+      "CLAUSE_TPS_UP_CAP_DOWN trusted ev.child_tps, so setting it equal to parent.tps silenced the rule.",
+      "timing_authority missing skipped the cpu/proxy substring check and then compared invented walls.",
+      "A single timing_authority string let mixed stopwatches (38.217 ms complete-wall vs 35.228 ms encode+submit+wait) look like a 7.8% win.",
+      "identity.model and generation were never checked.",
+      "state_transfer passed when checksum_verified was True and checksum_sha256 was any 64-hex string, including ab*32."
+    ]
+  },
+  "after": {
+    "hashlib_sha256_in_promotion_py": true,
+    "clause_count": 15,
+    "six_forged_inputs_now": "REJECT"
+  },
+  "clauses_added": [
+    "generation_strictly_increases",
+    "identity_model_matches_parent",
+    "greedy_token_ids_agree"
+  ],
+  "clauses_strengthened": {
+    "capability_ge_parent_contract": "Child compared to parent measured capability. Evidence may not lower that floor.",
+    "complete_token_wall_improves_materially": "Missing timing_authority is FAIL. Parent and child authorities must be present and identical. CPU-wait proxy still refused first so existing tests stay red on the same detail.",
+    "artifact_identity_exact": "sha256(preimage) must equal child.artifact_sha, measurement.artifact_sha, and receipt.sha. Asserted sha without a preimage is FAIL.",
+    "state_transfer_test_passes": "checksum recomputed from payload via payload_checksum. checksum_verified is untrusted.",
+    "reject_tps_up_capability_down": "child_tps = 1e9 / mean(wall reps). ev.child_tps and parent_contract.tps are ignored."
+  },
+  "six_forged_inputs": [
+    {
+      "id": 1,
+      "name": "paperwork-only child",
+      "input": "capability floats + three PASS strings; no greedy token ids; no artifact preimage; no transfer payload",
+      "before": "ACCEPT",
+      "after": "REJECT",
+      "watched_fail": [
+        "greedy_token_ids_agree",
+        "artifact_identity_exact",
+        "state_transfer_test_passes",
+        "complete_token_wall_improves_materially"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "lowered contract + forged child_tps",
+      "input": "child.engineering=0.0, parent_contract.capability all 0, child_tps=parent.tps, walls still faster",
+      "before": "ACCEPT",
+      "after": "REJECT",
+      "watched_fail": [
+        "capability_ge_parent_contract",
+        "reject_tps_up_capability_down"
+      ],
+      "derived_tps_detail": "child improves TPS (33.3333 > 28.3866) — from 30 ms child walls vs 35.2 ms parent walls, not from the forged child_tps"
+    },
+    {
+      "id": 3,
+      "name": "missing timing_authority + 1 ms reps",
+      "input": "measurement.timing_authority absent, complete_token_ns_reps = [1e6, 1e6, 1e6]",
+      "before": "ACCEPT",
+      "after": "REJECT",
+      "watched_fail": ["complete_token_wall_improves_materially"],
+      "detail": "timing_authority required on both sides; missing is FAIL, never skip"
+    },
+    {
+      "id": 4,
+      "name": "mixed stopwatches",
+      "input": "parent 38.217 ms complete-wall vs child 35.228 ms encode+submit+wait",
+      "before": "ACCEPT",
+      "after": "REJECT",
+      "watched_fail": ["complete_token_wall_improves_materially"],
+      "detail": "cross-authority comparison refused: parent='complete-wall stopwatch' child='encode+submit+wait stopwatch'"
+    },
+    {
+      "id": 5,
+      "name": "generation-0 child of a different model",
+      "input": "child.generation=0, identity.model='totally-different-weights'",
+      "before": "ACCEPT",
+      "after": "REJECT",
+      "watched_fail": [
+        "generation_strictly_increases",
+        "identity_model_matches_parent"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "forged checksum accepted as verified",
+      "input": "state_transfer.checksum_verified=true, checksum_sha256='ab'*32",
+      "before": "ACCEPT",
+      "after": "REJECT",
+      "watched_fail": ["state_transfer_test_passes"]
+    }
+  ],
+  "new_clause_corruptions_watched_fail": [
+    {
+      "clause": "generation_strictly_increases",
+      "test": "test_each_new_clause_rejects_when_input_corrupted[generation_not_increased]",
+      "corruption": "child.generation == parent.generation"
+    },
+    {
+      "clause": "identity_model_matches_parent",
+      "test": "test_each_new_clause_rejects_when_input_corrupted[model_swapped]",
+      "corruption": "identity.model = totally-different-weights"
+    },
+    {
+      "clause": "greedy_token_ids_agree",
+      "test": "test_each_new_clause_rejects_when_input_corrupted[greedy_only_two_prompts]",
+      "corruption": "only 2 agreeing prompts"
+    },
+    {
+      "clause": "greedy_token_ids_agree",
+      "test": "test_each_new_clause_rejects_when_input_corrupted[greedy_ids_disagree]",
+      "corruption": "child token ids diverge on prompt 0"
+    },
+    {
+      "clause": "artifact_identity_exact",
+      "test": "test_each_new_clause_rejects_when_input_corrupted[artifact_preimage_missing]",
+      "corruption": "receipt.sha asserted, no preimage"
+    },
+    {
+      "clause": "artifact_identity_exact",
+      "test": "test_each_new_clause_rejects_when_input_corrupted[artifact_preimage_wrong]",
+      "corruption": "preimage bytes do not sha256 to the claimed sha"
+    },
+    {
+      "clause": "state_transfer_test_passes",
+      "test": "test_each_new_clause_rejects_when_input_corrupted[checksum_payload_tampered]",
+      "corruption": "payload.NEXT_BOTTLENECK rewritten; claimed checksum left in place"
+    },
+    {
+      "clause": "capability_ge_parent_contract",
+      "test": "test_each_new_clause_rejects_when_input_corrupted[contract_floor_lowered_child_ok]",
+      "corruption": "parent_contract.capability all 0 while child still matches parent"
+    }
+  ],
+  "existing_tests": {
+    "command": "python3 -m pytest -q lab/tests/test_genesis_lineage_state.py lab/tests/test_genesis_promotion_gate.py lab/tests/test_genesis_research_bus.py lab/tests/test_genesis_slots.py",
+    "result": "55 passed",
+    "unweakened": true
+  },
+  "new_tests": {
+    "command": "python3 -m pytest -q lab/tests/test_genesis_promotion_gate_adversarial.py",
+    "combined_with_existing": "74 passed (55 original + 19 new)"
+  },
+  "full_lab_tests": {
+    "command": "python3 -m pytest -q lab/tests/",
+    "result": "cannot collect in this sparse checkout: 129 collection errors on unrelated files missing tools/lab modules",
+    "genesis_lineage_subset": "74 passed"
+  }
+}
