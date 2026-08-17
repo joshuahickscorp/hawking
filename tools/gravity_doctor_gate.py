@@ -86,7 +86,7 @@ def probed_score(W, Wh, d_in, n=256, seed=0):
     return _rowcos(P @ W.T, P @ Wh.T)
 
 
-def _probe(d_in, n=256, seed=0):
+def _probe(d_in, n=256, seed=None):
     rng = np.random.default_rng(seed)
     P = rng.standard_normal((n, d_in)).astype(np.float32)
     P /= np.linalg.norm(P, axis=1, keepdims=True)
@@ -111,14 +111,27 @@ def _worst_unit(A, B):
     return float(cos[live].min()) if live.any() else 1.0
 
 
-def axes(W, Wh, X, seed=0):
-    P = _probe(W.shape[1], seed=seed)
-    return {
-        "observed": observed_score(W, Wh, X),
-        "probed": probed_score(W, Wh, W.shape[1], seed=seed),
-        "worst_unit": min(_worst_unit(X @ W.T, X @ Wh.T),
-                          _worst_unit(P @ W.T, P @ Wh.T)),
-    }
+def axes(W, Wh, X, seed=None, n_probe_sets=3):
+    """Score a candidate on three axes.
+
+    The probe seed defaults to FRESH RANDOMNESS, and several independent probe sets
+    are drawn with the worst taken. A fixed seed is a fitting target: adversarial
+    review demonstrated a candidate fitted onto span(X, P_seed0) that passed all
+    three axes -- observed 1, probed 1, worst_unit 0.999999 -- while retaining only
+    29.4% of the weight energy. A probe you can enumerate is not a probe.
+
+    Pass an explicit seed ONLY to reproduce a specific historical measurement.
+    """
+    ss = np.random.SeedSequence(seed) if seed is not None else np.random.SeedSequence()
+    seeds = ss.spawn(n_probe_sets)
+    obs = observed_score(W, Wh, X)
+    uo = _worst_unit(X @ W.T, X @ Wh.T)
+    pr, up = 1.0, 1.0
+    for sd in seeds:
+        P = _probe(W.shape[1], seed=sd)
+        pr = min(pr, _rowcos(P @ W.T, P @ Wh.T))
+        up = min(up, _worst_unit(P @ W.T, P @ Wh.T))
+    return {"observed": obs, "probed": pr, "worst_unit": min(uo, up)}
 
 
 # How far below the honest-codec reference an axis may fall before the candidate
