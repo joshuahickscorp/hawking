@@ -550,6 +550,32 @@ pub const QWEN38_Q4_ADDR_PROBE_KERNEL: &str =
 pub const QWEN38_Q4_DECODE_PROBE_KERNEL: &str =
     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe";
 pub const QWEN38_F32_STREAM_PROBE_KERNEL: &str = "qwen38_f32_stream_probe";
+pub const QWEN38_HGRAVU01_Q3_GEO_TPR64: &str =
+    "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128";
+pub const QWEN38_HGRAVU01_Q4_GEO_TPR64: &str =
+    "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128";
+
+/// G0-class launch for Uniform HGRAVU01 bits 3/4. None leaves the
+/// incumbent simd / simd3 / uniform8 / serial path in `dispatch_factor`.
+/// HGRAVS r160 factors stay on that path because they are not Uniform.
+pub fn qwen38_hgravu01_geo_tpr64_launch(
+    bits: u32,
+    group_size: u32,
+    rows: u32,
+    cols: u32,
+) -> Option<(&'static str, (u32, u32, u32), (u32, u32, u32))> {
+    if !qwen38_recon_fuse_enabled() || group_size != 64 || cols % 64 != 0 {
+        return None;
+    }
+    let name = match bits {
+        3 => QWEN38_HGRAVU01_Q3_GEO_TPR64,
+        4 => QWEN38_HGRAVU01_Q4_GEO_TPR64,
+        _ => return None,
+    };
+    let tg = 128u32;
+    let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+    Some((name, (grid, 1, 1), (tg, 1, 1)))
+}
 
 /// Shipped uniform-Q4 matvec bindings. The Qwen3.8 default is the geometry-
 /// sweep winner (`geo_tpr64_tg128`), tuned on Q80's 512×2048 organs. The
@@ -1746,6 +1772,27 @@ mod device {
             input: &PinnedBuffer,
             output: &PinnedBuffer,
         ) -> Result<()> {
+            if let Some((name, grid, tg)) = qwen38_hgravu01_geo_tpr64_launch(
+                body.bits,
+                body.group_size,
+                body.rows,
+                body.cols,
+            ) {
+                return tcb.dispatch_threads(name, grid, tg, |enc| {
+                    self.encode_factor_args(
+                        enc,
+                        &body.codes,
+                        &body.scales,
+                        input,
+                        output,
+                        body.rows,
+                        body.cols,
+                        body.group_size,
+                        body.bits,
+                        body.bound,
+                    )
+                });
+            }
             self.dispatch_factor(
                 tcb,
                 &body.codes,
@@ -4426,6 +4473,324 @@ mod mixed_catalog_contract_tests {
         assert_eq!(census.uniform, 0);
         assert_eq!(census.q4, 2);
         assert_eq!(census.f32, 353);
+    }
+
+    #[test]
+    fn hgravu01_geo_tpr64_bind_is_bits_3_and_4_only() {
+        let q3 = qwen38_hgravu01_geo_tpr64_launch(3, 64, 17408, 5120).expect("q3");
+        assert_eq!(q3.0, QWEN38_HGRAVU01_Q3_GEO_TPR64);
+        assert_eq!(q3.1, (17408u32.div_ceil(2) * 128, 1, 1));
+        assert_eq!(q3.2, (128, 1, 1));
+        let q4 = qwen38_hgravu01_geo_tpr64_launch(4, 64, 48, 5120).expect("q4");
+        assert_eq!(q4.0, QWEN38_HGRAVU01_Q4_GEO_TPR64);
+        assert_eq!(q4.1, (48u32.div_ceil(2) * 128, 1, 1));
+        assert!(qwen38_hgravu01_geo_tpr64_launch(8, 64, 5120, 5120).is_none());
+        assert!(qwen38_hgravu01_geo_tpr64_launch(3, 64, 2048, 160).is_none());
+        assert!(qwen38_hgravu01_geo_tpr64_launch(3, 128, 17408, 5120).is_none());
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_uniform_q3_group64_matvec_geo_tpr64_tg128"));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128"));
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn hgravu01_geo_tpr64_matches_incumbent_on_real_tensors() {
+        let root = campaign_qwen38("mixed-q3mlp-v1");
+        if !root.join(QWEN38_MIXED_CATALOG_NAME).is_file() {
+            eprintln!("skip: mixed-q3mlp-v1 not on this host");
+            return;
+        }
+        let context = match crate::metal::MetalContext::new() {
+            Ok(ctx) => ctx,
+            Err(err) => {
+                eprintln!("skip: MetalContext::new failed: {err}");
+                return;
+            }
+        };
+        let rows = parse_qwen38_mixed_catalog(&root).unwrap();
+        let wanted = [
+            "language_model.model.layers.0.mlp.gate_proj.weight",
+            "language_model.model.layers.0.mlp.up_proj.weight",
+            "language_model.model.layers.0.mlp.down_proj.weight",
+            "language_model.model.layers.0.linear_attn.in_proj_a.weight",
+            "language_model.model.layers.0.linear_attn.in_proj_b.weight",
+            "language_model.model.layers.0.linear_attn.in_proj_z.weight",
+            "language_model.model.layers.0.linear_attn.in_proj_qkv.weight",
+            "language_model.model.layers.0.linear_attn.out_proj.weight",
+            "language_model.model.layers.3.self_attn.q_proj.weight",
+            "language_model.model.layers.3.self_attn.k_proj.weight",
+            "language_model.model.layers.3.self_attn.v_proj.weight",
+            "language_model.model.layers.3.self_attn.o_proj.weight",
+            "language_model.lm_head.weight",
+        ];
+        let mut worst_abs = 0.0f32;
+        let mut worst_rel = 0.0f32;
+        let mut worst_name = "";
+        eprintln!(
+            "PARITY_TABLE header: name bits rows cols incumbent max_abs max_rel rms n_abs_gt_1e4 n_abs_gt_1e2"
+        );
+        for name in wanted {
+            let row = rows
+                .iter()
+                .find(|r| r.name == name)
+                .unwrap_or_else(|| panic!("missing {name}"));
+            let payload = read_catalog_payload(row).unwrap();
+            let layout = mixed_gpu_layout(3, &payload).unwrap_or_else(|e| panic!("{name}: {e}"));
+            let MixedGpuKind::Uniform(factor) = layout.kind else {
+                panic!("{name} is not HGRAVU01 Uniform");
+            };
+            let incumbent = if factor.bits == 3 {
+                "q80_hgravs01_factor_matvec_simd3"
+            } else if factor.bits == 4 {
+                "q80_hgravs01_factor_matvec_simd"
+            } else {
+                panic!("{name} bits={} not 3 or 4", factor.bits);
+            };
+            let (geo_name, geo_grid, geo_tg) = qwen38_hgravu01_geo_tpr64_launch(
+                factor.bits,
+                factor.group_size,
+                factor.rows,
+                factor.cols,
+            )
+            .unwrap_or_else(|| panic!("{name} refused geo bind"));
+            let codes = context
+                .new_buffer_with_bytes_checked(
+                    &payload[factor.code_off..factor.code_off + factor.code_bytes],
+                )
+                .unwrap();
+            let scales = context
+                .new_buffer_with_bytes_checked(
+                    &payload[factor.scale_off..factor.scale_off + factor.scale_bytes],
+                )
+                .unwrap();
+            let mut x = vec![0.0f32; factor.cols as usize];
+            for (i, slot) in x.iter_mut().enumerate() {
+                *slot = (i % 17) as f32 * 0.125 - 1.0;
+            }
+            let input = context
+                .new_buffer_with_bytes_checked(bytemuck::cast_slice(&x))
+                .unwrap();
+            let out_inc = context
+                .new_buffer_checked(factor.rows as usize * 4)
+                .unwrap();
+            let out_geo = context
+                .new_buffer_checked(factor.rows as usize * 4)
+                .unwrap();
+            let bind = |enc: &metal::ComputeCommandEncoderRef, out: &metal::Buffer| {
+                enc.set_buffer(0, Some(&codes), 0);
+                enc.set_buffer(1, Some(&scales), 0);
+                enc.set_buffer(2, Some(&input), 0);
+                enc.set_buffer(3, Some(out), 0);
+                for (index, value) in [
+                    (4u64, factor.rows),
+                    (5, factor.cols),
+                    (6, factor.group_size),
+                    (7, factor.bits),
+                    (8, factor.bound),
+                ] {
+                    enc.set_bytes(index, 4, &value as *const u32 as *const _);
+                }
+            };
+            let inc_grid = (
+                factor.rows.div_ceil(8).saturating_mul(256).max(256),
+                1,
+                1,
+            );
+            let mut tcb = crate::metal::TokenCommandBuffer::new(&context);
+            tcb.dispatch_threads(incumbent, inc_grid, (256, 1, 1), |enc| {
+                bind(enc, &out_inc)
+            })
+            .unwrap();
+            tcb.dispatch_threads(geo_name, geo_grid, geo_tg, |enc| {
+                bind(enc, &out_geo)
+            })
+            .unwrap();
+            tcb.commit_and_wait().unwrap();
+            let n = factor.rows as usize;
+            let inc = unsafe {
+                std::slice::from_raw_parts(out_inc.contents() as *const f32, n)
+            };
+            let geo = unsafe {
+                std::slice::from_raw_parts(out_geo.contents() as *const f32, n)
+            };
+            let inc_nonzero = inc.iter().filter(|v| v.abs() > 0.0).count();
+            let geo_nonzero = geo.iter().filter(|v| v.abs() > 0.0).count();
+            let inc_max = inc.iter().fold(0.0f32, |a, &b| a.max(b.abs()));
+            let geo_max = geo.iter().fold(0.0f32, |a, &b| a.max(b.abs()));
+            eprintln!(
+                "PARITY_SAMPLE {name} codes={} scales={} inc_nz={inc_nonzero}/{n} geo_nz={geo_nonzero}/{n} inc_max={inc_max:.6e} geo_max={geo_max:.6e} inc[0..4]={:?} geo[0..4]={:?}",
+                factor.code_bytes,
+                factor.scale_bytes,
+                &inc[..4.min(n)],
+                &geo[..4.min(n)]
+            );
+            assert!(
+                inc_nonzero > n / 2 && geo_nonzero > n / 2,
+                "{name} output looks dead (inc_nz={inc_nonzero} geo_nz={geo_nonzero} n={n})"
+            );
+            if n <= 48 {
+                let scales = &payload[factor.scale_off..factor.scale_off + factor.scale_bytes];
+                let mut scales_f16 = Vec::with_capacity(factor.scale_bytes / 2);
+                for chunk in scales.chunks_exact(2) {
+                    scales_f16.push(u16::from_le_bytes([chunk[0], chunk[1]]));
+                }
+                let packed = UniformFactorPacked {
+                    rows: factor.rows as usize,
+                    cols: factor.cols as usize,
+                    bits: u8::try_from(factor.bits).unwrap(),
+                    group_size: factor.group_size as usize,
+                    groups: (factor.rows as usize * factor.cols as usize)
+                        .div_ceil(factor.group_size as usize),
+                    bound: u16::try_from(factor.bound).unwrap(),
+                    scales_f16,
+                    codes: payload[factor.code_off..factor.code_off + factor.code_bytes].to_vec(),
+                };
+                let mut cpu_max = 0.0f32;
+                for r in 0..packed.rows {
+                    let mut sum = 0.0f32;
+                    for c in 0..packed.cols {
+                        sum += uniform_factor_value(&packed, r, c) * x[c];
+                    }
+                    let d = (geo[r] - sum).abs();
+                    if d > cpu_max {
+                        cpu_max = d;
+                    }
+                }
+                eprintln!("PARITY_CPU {name} max_abs_vs_serial={cpu_max:.8e}");
+                assert!(cpu_max <= 1.0e-2, "{name} vs CPU serial max_abs={cpu_max}");
+            }
+            let mut max_abs = 0.0f32;
+            let mut max_rel = 0.0f32;
+            let mut sumsq = 0.0f64;
+            let mut n_1e4 = 0usize;
+            let mut n_1e2 = 0usize;
+            for i in 0..n {
+                let d = (geo[i] - inc[i]).abs();
+                let denom = inc[i].abs().max(1.0);
+                let rel = d / denom;
+                if d > max_abs {
+                    max_abs = d;
+                }
+                if rel > max_rel {
+                    max_rel = rel;
+                }
+                sumsq += f64::from(d) * f64::from(d);
+                if d > 1.0e-4 {
+                    n_1e4 += 1;
+                }
+                if d > 1.0e-2 {
+                    n_1e2 += 1;
+                }
+            }
+            let rms = (sumsq / n as f64).sqrt();
+            eprintln!(
+                "PARITY {name} bits={} {}x{} {incumbent} max_abs={max_abs:.8e} max_rel={max_rel:.8e} rms={rms:.8e} n>1e-4={n_1e4} n>1e-2={n_1e2}",
+                factor.bits, factor.rows, factor.cols
+            );
+            if max_abs > worst_abs {
+                worst_abs = max_abs;
+                worst_name = name;
+            }
+            if max_rel > worst_rel {
+                worst_rel = max_rel;
+            }
+            let mut first_bad = None;
+            let mut last_bad = 0usize;
+            if n_1e2 > 0 {
+                let mut even_bad = 0usize;
+                let mut odd_bad = 0usize;
+                let mut samples = Vec::new();
+                for i in 0..n {
+                    if (geo[i] - inc[i]).abs() > 1.0e-2 {
+                        if first_bad.is_none() {
+                            first_bad = Some(i);
+                        }
+                        last_bad = i;
+                        if i % 2 == 0 {
+                            even_bad += 1;
+                        } else {
+                            odd_bad += 1;
+                        }
+                        if samples.len() < 8 {
+                            samples.push((i, inc[i], geo[i]));
+                        }
+                    }
+                }
+                eprintln!(
+                    "PARITY_BAD {name} first={first_bad:?} last={last_bad} even={even_bad} odd={odd_bad} samples={samples:?} n={n}"
+                );
+                if n > 48 {
+                    let scales = &payload[factor.scale_off..factor.scale_off + factor.scale_bytes];
+                    let mut scales_f16 = Vec::with_capacity(factor.scale_bytes / 2);
+                    for chunk in scales.chunks_exact(2) {
+                        scales_f16.push(u16::from_le_bytes([chunk[0], chunk[1]]));
+                    }
+                    let packed = UniformFactorPacked {
+                        rows: factor.rows as usize,
+                        cols: factor.cols as usize,
+                        bits: u8::try_from(factor.bits).unwrap(),
+                        group_size: factor.group_size as usize,
+                        groups: (factor.rows as usize * factor.cols as usize)
+                            .div_ceil(factor.group_size as usize),
+                        bound: u16::try_from(factor.bound).unwrap(),
+                        scales_f16,
+                        codes: payload[factor.code_off..factor.code_off + factor.code_bytes]
+                            .to_vec(),
+                    };
+                    for &(r, inc_v, geo_v) in samples.iter().take(3) {
+                        let mut sum = 0.0f32;
+                        for c in 0..packed.cols {
+                            sum += uniform_factor_value(&packed, r, c) * x[c];
+                        }
+                        let d_inc = (inc_v - sum).abs();
+                        let d_geo = (geo_v - sum).abs();
+                        eprintln!(
+                            "PARITY_CPU_ROW {name} row={r} cpu={sum:.8e} inc={inc_v:.8e} geo={geo_v:.8e} d_inc={d_inc:.3e} d_geo={d_geo:.3e}"
+                        );
+                        assert_eq!(d_geo, 0.0, "{name} row {r} geo must match CPU serial");
+                        assert!(
+                            d_inc > 1.0e-3,
+                            "{name} row {r} incumbent should miss CPU on the overflow tail"
+                        );
+                    }
+                    if let Some(r0) = first_bad {
+                        if r0 > 0 {
+                            let mut sum = 0.0f32;
+                            for c in 0..packed.cols {
+                                sum += uniform_factor_value(&packed, r0 - 1, c) * x[c];
+                            }
+                            eprintln!(
+                                "PARITY_CPU_ROW {name} row={} cpu={sum:.8e} inc={:.8e} geo={:.8e}",
+                                r0 - 1,
+                                inc[r0 - 1],
+                                geo[r0 - 1]
+                            );
+                        }
+                    }
+                }
+            }
+            if name.ends_with("lm_head.weight") {
+                // Incumbent simd does `bit0 = element * bits` in uint32.
+                // bits=4 overflows at element >= 2^30. For K=5120 that is
+                // row >= 209715. geo addresses by group and does not overflow;
+                // CPU serial agrees with geo, not with simd, on the tail.
+                let overflow_el = (1u64 << 32) / u64::from(factor.bits);
+                let first_overflow_row = (overflow_el / u64::from(factor.cols)) as usize;
+                assert_eq!(first_bad, Some(first_overflow_row), "lm_head first-bad row");
+                assert!(last_bad + 1 == n, "lm_head tail should run to the last row");
+                assert!(n_1e2 > 30_000, "lm_head incumbent overflow should be a fat tail");
+            } else {
+                assert_eq!(
+                    max_abs, 0.0,
+                    "{name} max_abs={max_abs} is not bit-identical to incumbent"
+                );
+                assert_eq!(n_1e2, 0, "{name} has {n_1e2} rows with |d|>1e-2");
+            }
+        }
+        eprintln!(
+            "PARITY_WORST tensor={worst_name} max_abs={worst_abs:.8e} max_rel={worst_rel:.8e}"
+        );
     }
 }
 
