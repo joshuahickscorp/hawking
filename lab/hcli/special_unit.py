@@ -63,8 +63,8 @@ QWEN38_TOKENIZER_RELATIVE = Path(
     "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json"
 )
 QWEN38_GREEDY_RELATIVE = (
-    Path("workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy"),
     Path("workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy"),
+    Path("workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy"),
 )
 
 # 16 greedy tokens is enough to prove the wire and is the say() default.
