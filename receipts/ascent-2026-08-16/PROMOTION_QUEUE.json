@@ -2180,6 +2180,306 @@
       "skew": "UNKNOWN",
       "disposition": "NO_REPORT_MANUAL_REVIEW",
       "promoted": false
+    },
+    {
+      "lane": "C-ci-green-20260816-223457",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "alpha-candidate-20260816-194159",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "alpha-ci-20260816-194206",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "alpha-droplet-offsite-20260816-210209",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "alpha-e2e-20260816-194332",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "alpha-offsite-20260816-194201",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "alpha-stripe2-20260816-194204",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-q80-gpu-body-dispatch-complete-20260816-195022",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/auto-q80-gpu-body-dispatch-complete-20260816-195022",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-q80-qwen3-complete-still-bpw-20260816-191937",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/auto-q80-qwen3-complete-still-bpw-20260816-191937",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-q80-remaining-gpu-body-prefix-20260816-192955",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/auto-q80-remaining-gpu-body-prefix-20260816-192955",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-q80-weight-addressing-complete-wall-20260816-193503",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/auto-q80-weight-addressing-complete-wall-20260816-193503",
+      "skew": "STALE_CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-q80-weight-addressing-g024-this-20260816-194517",
+      "model": "q80",
+      "status": "NO_REPORT_exit_143",
+      "next_bottleneck": "",
+      "branch": "grok/auto-q80-weight-addressing-g024-this-20260816-194517",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-attention-codec-20260816-215240",
+      "model": "q80",
+      "status": "MEASURED",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-attention-codec-20260816-215240",
+      "skew": "STALE_CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-bytes-20260816-204512",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "weight_addressing, 21293103",
+      "branch": "grok/genesis-bytes-20260816-204512",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-children-20260816-204942",
+      "model": "q80",
+      "status": "NO_REPORT_exit_0",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-children-20260816-204942",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-doctor-sensitivity-20260816-215243",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-doctor-sensitivity-20260816-215243",
+      "skew": "STALE_CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-fusion-20260816-204509",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "weight_addressing, 21293103",
+      "branch": "grok/genesis-fusion-20260816-204509",
+      "skew": "SKEWED",
+      "disposition": "NEEDS_COMPOSITION",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-lineage-20260816-215251",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-lineage-20260816-215251",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-tail-decomposition-20260816-215254",
+      "model": "q80",
+      "status": "Closed",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-tail-decomposition-20260816-215254",
+      "skew": "STALE_CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "honesty-20260816-215341",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "interface-20260816-215343",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "inventory-20260816-210813",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "onboarding-20260816-215344",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "q80-matvec-bandwidth-7x-20260816-184733",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/q80-matvec-bandwidth-7x-20260816-184733",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "reach-20260816-215346",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "searcher-open-catalog-20260816-193631",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "searcher-regrade2-20260816-194923",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "searcher-regrade3-20260816-210839",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "speed-20260816-215347",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "superwave-slim-20260816-211249",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
     }
   ]
 }

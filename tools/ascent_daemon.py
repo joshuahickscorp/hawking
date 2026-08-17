@@ -161,9 +161,50 @@ def govern(snap: dict) -> str | None:
         return f"disk {free} GiB below floor {DISK_FLOOR_GIB}"
     ours = our_live_lanes(snap)
     snap["our_live_lanes"] = ours
-    if len(ours) >= MAX_CONCURRENT:
-        return f"{len(ours)} OUR lanes live, at the {MAX_CONCURRENT} cap"
+    cap = memory_lane_cap()
+    snap["memory_lane_cap"] = cap
+    if len(ours) >= cap:
+        return f"{len(ours)} OUR lanes live, at the memory-derived cap {cap}"
     return None
+
+
+# A Grok lane measured 6 GiB of worktree and working set on this box. The old cap was
+# a flat 10, which either starved a big box or over-subscribed a busy one; drive it
+# from what is ACTUALLY free instead, and keep the generation reserve untouchable so
+# a promoted successor always has somewhere to launch.
+LANE_WORKING_SET_GIB = 6.0
+GENERATION_RESERVE_GIB = 14.08
+NO_SWAP_FLOOR_GIB = 4.0
+TARGET_FILL = 0.90
+
+
+def memory_lane_cap() -> int:
+    """How many concurrent lanes fit under TARGET_FILL, reserving a generation slot."""
+    try:
+        total = int(subprocess.run(["sysctl", "-n", "hw.memsize"],
+                                   capture_output=True, text=True, timeout=30).stdout.strip())
+        out = subprocess.run(["vm_stat"], capture_output=True, text=True, timeout=30).stdout
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return MAX_CONCURRENT
+    page, vals = 16384, {}
+    for line in out.splitlines():
+        if ":" not in line:
+            continue
+        k, v = line.split(":", 1)
+        v = v.strip().rstrip(".")
+        if v.isdigit():
+            vals[k.strip()] = int(v) * page
+    gib = 1024 ** 3
+    # Inactive and purgeable pages are reclaimable; counting only "free" understates
+    # what is available badly enough to starve the loop on an otherwise idle box.
+    available = (vals.get("Pages free", 0) + vals.get("Pages inactive", 0)
+                 + vals.get("Pages purgeable", 0)) / gib
+    used = total / gib - available
+    budget = min(TARGET_FILL * total / gib - used,
+                 available - NO_SWAP_FLOOR_GIB) - GENERATION_RESERVE_GIB
+    if budget <= 0:
+        return 1                       # never zero: the loop must still make progress
+    return max(1, min(40, int(budget // LANE_WORKING_SET_GIB)))
 
 
 # ---------------------------------------------------------------- harvest
