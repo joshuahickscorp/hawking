@@ -23,6 +23,11 @@ import pytest
 REPO = Path(__file__).resolve().parents[2]
 RESIDENT = REPO / "tools" / "agentos" / "genesis_resident.py"
 DAEMON = REPO / "tools" / "ascent_daemon.py"
+AGENTOS = REPO / "tools" / "agentos"
+if str(AGENTOS) not in sys.path:
+    sys.path.insert(0, str(AGENTOS))
+
+import genesis_contract as contract  # noqa: E402
 
 
 def _load(path: Path, name: str):
@@ -199,6 +204,7 @@ def test_daemon_fallback_when_service_killed(tmp_path: Path, monkeypatch: pytest
     monkeypatch.setenv("GENESIS_BIN", str(greedy))
     monkeypatch.setenv("GENESIS_ARTIFACT", str(artifact))
     monkeypatch.setenv("GENESIS_TOKENIZER", str(tokenizer))
+    monkeypatch.setenv("GENESIS_ALLOW_COLD_FALLBACK", "1")
     assert daemon.genesis_proposes("host.foo 1 ns") == "from-resident"
     os.kill(proc.pid, signal.SIGKILL)
     proc.wait(timeout=2)
@@ -219,6 +225,7 @@ def test_daemon_fallback_when_service_never_started(tmp_path: Path, monkeypatch:
     monkeypatch.setenv("GENESIS_BIN", str(greedy))
     monkeypatch.setenv("GENESIS_ARTIFACT", str(artifact))
     monkeypatch.setenv("GENESIS_TOKENIZER", str(tmp_path / "tok.json"))
+    monkeypatch.setenv("GENESIS_ALLOW_COLD_FALLBACK", "1")
     assert daemon.genesis_proposes("metal.bar 2 ns") == "shell-only"
 
 
@@ -249,3 +256,146 @@ def test_reload_bumps_generation_on_stub(tmp_path: Path) -> None:
         assert third["load_count"] == 2
     finally:
         _stop_proc(proc)
+
+
+def test_serve_passes_one_provenance_json_argument(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifact = tmp_path / "artifact"
+    artifact.mkdir()
+    (artifact / "manifest.json").write_text("{}\n")
+    tokenizer = tmp_path / "tokenizer.json"
+    tokenizer.write_text("{}\n")
+    fake_bin = tmp_path / "genesis-resident"
+    fake_bin.write_text("#!/bin/sh\n")
+    fake_bin.chmod(fake_bin.stat().st_mode | stat.S_IEXEC)
+    seen: dict = {}
+
+    def fake_execv(path, argv):
+        seen["path"] = path
+        seen["argv"] = list(argv)
+        raise OSError("execv mocked")
+
+    monkeypatch.setattr(resident.os, "execv", fake_execv)
+    monkeypatch.setattr(resident, "discover_body_bin", lambda: fake_bin)
+    with pytest.raises(OSError, match="execv mocked"):
+        resident.main(
+            [
+                "serve",
+                "--artifact-root",
+                str(artifact),
+                "--tokenizer",
+                str(tokenizer),
+                "--repo",
+                str(REPO),
+                "--socket",
+                str(tmp_path / "x.sock"),
+                "--stopfile",
+                str(tmp_path / "STOP"),
+            ]
+        )
+    argv = seen["argv"]
+    assert "--genesis-contract" not in argv
+    assert "--genesis-continuity-contract" not in argv
+    assert "--genesis-contract-set-sha" not in argv
+    flag = argv.index("--genesis-contract-provenance")
+    payload = json.loads(argv[flag + 1])
+    assert payload == contract.contract_provenance()
+    assert payload["schema"] == "hawking.genesis.system_contract_set.v1"
+    assert len(payload["contracts"]) == 3
+    assert isinstance(payload["contracts"][0]["size_bytes"], int)
+
+
+def test_stub_health_and_propose_carry_verified_binding(tmp_path: Path) -> None:
+    proc, sock, _stop = _start_stub(tmp_path, reply="bound-text")
+    try:
+        binding = contract.contract_provenance()
+        info = resident.health(sock, timeout=2)
+        assert info is not None
+        assert info["genesis_system_contract"] == binding
+        resp = resident.propose("binding-check", sock_path=sock, max_new_tokens=4)
+        assert resp is not None
+        assert resp["text"] == "bound-text"
+        assert resp["fallbacks"] == 0
+        assert resp["genesis_contract_mode"] == "runtime_capsule_injected"
+        assert resp["genesis_system_contract"] == binding
+    finally:
+        _stop_proc(proc)
+
+
+def _discover_body_for_test() -> Path | None:
+    env = os.environ.get("GENESIS_BODY_BIN")
+    if env and os.access(env, os.X_OK):
+        return Path(env)
+    found = resident.discover_body_bin()
+    if found is not None:
+        return found
+    for cand in (
+        REPO / "workspace/ops/build/rust/release/genesis-resident",
+        Path("/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/genesis-resident"),
+        Path("/tmp/genesis-resident-target/release/genesis-resident"),
+    ):
+        if os.access(cand, os.X_OK):
+            return cand
+    return None
+
+
+def test_body_refuses_to_start_when_provenance_sha_does_not_match_disk(
+    tmp_path: Path,
+) -> None:
+    """A body launched against a stale/wrong contract set must not serve."""
+    binary = _discover_body_for_test()
+    if binary is None:
+        pytest.fail("genesis-resident binary not built; cannot prove refuse-to-start")
+
+    repo = tmp_path / "repo"
+    for rel, src in (
+        (
+            contract.CANONICAL_RELATIVE_PATH,
+            contract.CANONICAL_PATH,
+        ),
+        (
+            contract.CONTINUITY_RELATIVE_PATH,
+            contract.CONTINUITY_PATH,
+        ),
+        (
+            contract.OUTPUT_LAW_RELATIVE_PATH,
+            contract.OUTPUT_LAW_PATH,
+        ),
+    ):
+        dest = repo / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(src.read_bytes())
+
+    binding = contract.contract_provenance()
+    binding["contracts"][0]["sha256"] = "0" * 64
+    artifact = tmp_path / "artifact"
+    artifact.mkdir()
+    tokenizer = tmp_path / "tokenizer.json"
+    tokenizer.write_text("{}\n")
+    proc = subprocess.run(
+        [
+            str(binary),
+            "--artifact-root",
+            str(artifact),
+            "--tokenizer",
+            str(tokenizer),
+            "--repo",
+            str(repo),
+            "--socket",
+            str(_short_sock("bad-prov")),
+            "--stopfile",
+            str(tmp_path / "STOP"),
+            "--genesis-contract-provenance",
+            json.dumps(binding),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert proc.returncode != 0
+    err = (proc.stderr or "") + (proc.stdout or "")
+    assert "unknown" not in err.lower()
+    assert (
+        "sha256" in err.lower() or "mismatch" in err.lower() or "integrity" in err.lower()
+    ), err

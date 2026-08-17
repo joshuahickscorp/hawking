@@ -2,7 +2,7 @@
 """Resident Genesis client, stub server, and launcher.
 
 Production body is tools/agentos/genesis_body (one process, one weight set,
-one attached session). This module is the socket protocol + the fallback-safe
+four isolated logical sessions). This module is the socket protocol + the
 client the ascent loop calls. Liveness is always process state (kill 0 / the
 live socket answering), never a status file.
 
@@ -23,10 +23,21 @@ import time
 from pathlib import Path
 from typing import Any
 
+_AGENTOS_DIR = Path(__file__).resolve().parent
+if str(_AGENTOS_DIR) not in sys.path:
+    sys.path.insert(0, str(_AGENTOS_DIR))
+
+from genesis_contract import (  # noqa: E402
+    RESIDENT_SESSION_ROLES,
+    contract_provenance,
+    inject_runtime_contract,
+)
+
 # macOS sockaddr_un.sun_path is 104 bytes including NUL.
 _UNIX_PATH_MAX = 103
 
 PROTOCOL = "hawking.genesis.resident.v1"
+SESSION_ROLES = RESIDENT_SESSION_ROLES
 PARENT_HAWKING = Path("/Users/scammermike/Downloads/hawking")
 CONNECT_TIMEOUT_S = 0.25
 PROPOSE_TIMEOUT_S = 1800.0
@@ -93,10 +104,10 @@ def discover_body_bin() -> Path | None:
         return None
     here = Path(__file__).resolve().parent
     candidates = [
-        here / "genesis_body" / "target" / "release" / "genesis-resident",
-        Path("/tmp/genesis-resident-target/release/genesis-resident"),
         default_repo() / "workspace/ops/build/rust/release/genesis-resident",
         PARENT_HAWKING / "workspace/ops/build/rust/release/genesis-resident",
+        here / "genesis_body" / "target" / "release" / "genesis-resident",
+        Path("/tmp/genesis-resident-target/release/genesis-resident"),
     ]
     target = os.environ.get("CARGO_TARGET_DIR")
     if target:
@@ -151,6 +162,7 @@ def rpc(sock_path: Path, request: dict[str, Any], timeout: float) -> dict[str, A
 
 
 def health(sock_path: Path | None = None, timeout: float = CONNECT_TIMEOUT_S) -> dict[str, Any] | None:
+    binding = contract_provenance()
     path = sock_path or default_socket()
     try:
         resp = rpc(path, {"op": "health"}, timeout=timeout)
@@ -164,6 +176,8 @@ def health(sock_path: Path | None = None, timeout: float = CONNECT_TIMEOUT_S) ->
     if not process_alive(pid_i):
         return None
     if not resp.get("ok"):
+        return None
+    if resp.get("genesis_system_contract") != binding:
         return None
     return resp
 
@@ -179,9 +193,30 @@ def propose(
     sock_path: Path | None = None,
     max_new_tokens: int = 900,
     raw: bool = False,
+    session: str = "parent",
+    protected_capability: bool = False,
     timeout: float = PROPOSE_TIMEOUT_S,
 ) -> dict[str, Any] | None:
     path = sock_path or default_socket()
+    if session not in SESSION_ROLES:
+        raise ValueError(f"unknown Genesis session {session!r}; expected one of {SESSION_ROLES!r}")
+    binding = contract_provenance()
+    if protected_capability:
+        if session != "protected_test":
+            raise ValueError(
+                "protected capability prompt preservation requires session='protected_test'"
+            )
+        wire_prompt = prompt
+        wire_raw = bool(raw)
+        contract_mode = "protected_capability_prompt_preserved"
+    else:
+        wire_prompt = inject_runtime_contract(
+            prompt,
+            role=session,
+            raw_prompt=bool(raw),
+        )
+        wire_raw = True
+        contract_mode = "runtime_capsule_injected"
     if not body_is_up(path):
         return None
     try:
@@ -189,15 +224,24 @@ def propose(
             path,
             {
                 "op": "propose",
-                "prompt": prompt,
+                "prompt": wire_prompt,
                 "max_new_tokens": int(max_new_tokens),
-                "raw": bool(raw),
+                "raw": wire_raw,
+                "session": session,
+                "genesis_system_contract": binding,
+                "genesis_contract_mode": contract_mode,
             },
             timeout=timeout,
         )
     except (OSError, ConnectionError, TimeoutError, json.JSONDecodeError, socket.timeout):
         return None
     if not resp.get("ok"):
+        return None
+    if resp.get("fallbacks") != 0:
+        return None
+    if resp.get("genesis_system_contract") != binding:
+        return None
+    if resp.get("genesis_contract_mode") != contract_mode:
         return None
     text = resp.get("text")
     if not isinstance(text, str) or not text.strip():
@@ -257,6 +301,7 @@ class StubServer:
         self.started_unix_ns = time.time_ns()
         self.load_count = 0
         self.serve_count = 0
+        self.session_serve_counts = {role: 0 for role in SESSION_ROLES}
         self.load_ns = 0
         self.body_resident = False
         self.stop = False
@@ -284,10 +329,23 @@ class StubServer:
             "serve_count": self.serve_count,
             "resident_weight_bytes": 0,
             "workspace_bytes": 0,
+            "session_count": len(SESSION_ROLES),
+            "session_roles": list(SESSION_ROLES),
+            "session_semantics": {
+                "parent": {"kind": "lineage_parent", "front": "integration_profiling_synthesis"},
+                "child_a": {"kind": "worker_session", "front": "gravity_doctor_representation"},
+                "child_b": {"kind": "worker_session", "front": "execution_metal_kernel_runtime"},
+                "protected_test": {"kind": "protected_test_slot", "front": "candidate_qualification_ab"},
+            },
+            "lineage_children": 0,
+            "session_workspace_bytes": {role: 0 for role in SESSION_ROLES},
+            "session_serve_counts": dict(self.session_serve_counts),
+            "decode_concurrency": 1,
             "artifact": self.artifact,
             "artifact_sha": self.artifact_sha,
             "generation": self.generation,
             "max_seq_len": 4096,
+            "genesis_system_contract": contract_provenance(),
             "stub": True,
         }
 
@@ -299,7 +357,16 @@ class StubServer:
             prompt = req.get("prompt") or ""
             if not prompt:
                 return {"ok": False, "error": "prompt required", "protocol": PROTOCOL}
+            session = str(req.get("session") or "parent")
+            if session not in SESSION_ROLES:
+                return {
+                    "ok": False,
+                    "error": f"unknown session role {session!r}",
+                    "allowed_sessions": list(SESSION_ROLES),
+                    "protocol": PROTOCOL,
+                }
             self.serve_count += 1
+            self.session_serve_counts[session] += 1
             return {
                 "ok": True,
                 "protocol": PROTOCOL,
@@ -309,10 +376,14 @@ class StubServer:
                 "new_tokens": [1],
                 "prompt_len": 1,
                 "serve_index": self.serve_count,
+                "session": session,
+                "session_serve_index": self.session_serve_counts[session],
                 "load_count": self.load_count,
                 "load_ns": self.load_ns,
                 "body_resident": True,
                 "pid": os.getpid(),
+                "genesis_system_contract": req.get("genesis_system_contract"),
+                "genesis_contract_mode": req.get("genesis_contract_mode"),
                 "stub": True,
             }
         if op == "reload":
@@ -396,6 +467,9 @@ class StubServer:
 
 
 def _exec_body(ns: argparse.Namespace) -> int:
+    # Production resident startup is not allowed without the canonical Genesis
+    # authority. Per-request injection verifies it again to catch later drift.
+    binding = contract_provenance()
     binary = discover_body_bin()
     if binary is None:
         print("genesis-resident: body binary not built", file=sys.stderr)
@@ -426,6 +500,8 @@ def _exec_body(ns: argparse.Namespace) -> int:
         str(stopfile),
         "--repo",
         str(repo),
+        "--genesis-contract-provenance",
+        json.dumps(binding),
         "--max-seq-len",
         str(int(ns.max_seq_len)),
         "--max-new-tokens",
@@ -466,6 +542,8 @@ def _cmd_propose(ns: argparse.Namespace) -> int:
         sock_path=sock,
         max_new_tokens=int(ns.max_new_tokens),
         raw=bool(ns.raw),
+        session=ns.session,
+        protected_capability=bool(ns.protected_capability),
     )
     if resp is None:
         print(json.dumps({"ok": False, "error": "resident not live or propose failed"}))
@@ -504,6 +582,15 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--repo", default=str(repo))
     p.add_argument("--max-new-tokens", type=int, default=900)
     p.add_argument("--raw", action="store_true")
+    p.add_argument("--session", choices=SESSION_ROLES, default="parent")
+    p.add_argument(
+        "--protected-capability",
+        action="store_true",
+        help=(
+            "preserve prompt bytes for a protected capability measurement; "
+            "valid only with --session protected_test"
+        ),
+    )
     p.set_defaults(func=_cmd_propose)
 
     st = sub.add_parser("stop")
