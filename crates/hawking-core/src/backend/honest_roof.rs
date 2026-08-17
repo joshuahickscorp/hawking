@@ -429,7 +429,7 @@ mod gpu {
     pub const REDUCED_RECEIPT: &str =
         "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.reduced.json";
 
-    fn workspace_receipt(rel: &str) -> std::path::PathBuf {
+    pub(super) fn workspace_receipt(rel: &str) -> std::path::PathBuf {
         std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..").join(rel)
     }
 

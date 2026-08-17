@@ -14,6 +14,12 @@ sys.path.insert(0, str(REPO / "tools"))
 from ascent.roof_rungs import (
     FS_FIELD,
     HONEST_DECODE_CEILING_GB_S,
+    QWEN38_CATALOG_ADDR_GB_S,
+    QWEN38_CATALOG_FULL_GB_S,
+    QWEN38_DEFENDED_GEMV_BYTES,
+    QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+    QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S,
+    QWEN38_SINGLE_GEMV_ADDR_GB_S,
     REUSE_BAND_GB_S,
     UNIQUE_ONCE_1024MIB_GB_S,
     TODAY,
@@ -26,6 +32,7 @@ from ascent.roof_rungs import (
     roof_tok_s,
     today_table,
     verify_bandwidth_receipt,
+    verify_qwen38_roof_receipt,
 )
 
 
@@ -58,19 +65,40 @@ class RoofRungsTest(unittest.TestCase):
         self.assertTrue(row["hardware"]["reuse_band_is_not_the_decode_ceiling"])
         self.assertEqual(row["rung"]["current_rung"], "below_A")
 
-    def test_qwen38_is_at_the_honest_roof_and_cannot_clear_rung_a(self) -> None:
+    def test_qwen38_today_is_provisional_roof_only_without_current_token_ns(self) -> None:
         row = place_today("qwen38")
-        approx(row["measured_gpu_bandwidth_gb_s"], 406.2, 0.05)
-        approx(row["gpu_occupancy"]["fraction_of_honest_decode_ceiling"], 0.987, 0.002)
-        self.assertTrue(row["may_claim_physical_limit"])
-        self.assertEqual(row["rung"]["current_rung"], "below_A")
-        approx(row["rung"]["tps"], 29.50, 0.05)
-        self.assertIsNone(
-            row["reachable_at_current_bytes"]["highest_rung_reachable_at_current_bytes"]
+        self.assertIsNone(row["current_token_ns"])
+        self.assertIsNone(row["current_tps"])
+        self.assertIsNone(row["ns_per_token"])
+        self.assertIsNone(row["roof_tok_s"])
+        self.assertEqual(row["rung"]["current_rung"], "UNMEASURED")
+        self.assertFalse(row["may_claim_physical_limit"])
+        self.assertEqual(
+            row["physical_limit"]["verdict"], "PROVISIONAL_NOT_PHYSICAL_LIMIT"
         )
-        approx(row["roof_tok_s"], 30.21, 0.05)
-        self.assertTrue(row["roof_limited_below_next_rung"])
-        self.assertGreater(row[FS_FIELD], 0.0)
+        self.assertEqual(row["defended_gemv_payload_bytes"], QWEN38_DEFENDED_GEMV_BYTES)
+        approx(
+            row["hardware"]["single_gemv_addr_gb_s"],
+            QWEN38_SINGLE_GEMV_ADDR_GB_S,
+            1e-9,
+        )
+        approx(
+            row["hardware"]["sealed_weight_addressing_gb_s"],
+            QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S,
+            1e-9,
+        )
+        approx(
+            row["hardware"]["sealed_over_single_gemv_addr"],
+            QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+            1e-12,
+        )
+        approx(row["hardware"]["catalog_addr_gb_s"], QWEN38_CATALOG_ADDR_GB_S, 1e-9)
+        approx(row["hardware"]["catalog_full_gb_s"], QWEN38_CATALOG_FULL_GB_S, 1e-9)
+        self.assertTrue(row["hardware"]["provisional"])
+        self.assertTrue(row["hardware"]["cpu_contended"])
+        self.assertFalse(row["hardware"]["kernel_and_dispatch_topology_headroom_closed"])
+        self.assertIn("Current complete-token TOKEN_NS/TPS was not rerun", row["hardware"]["caveat"])
+        self.assertIsNone(row[FS_FIELD])
         self.assertTrue(row["fs_honesty"]["not_latency"])
 
     def test_q80_mixed_is_off_the_roof_and_can_still_reach_b(self) -> None:
@@ -124,14 +152,18 @@ class RoofRungsTest(unittest.TestCase):
         self.assertEqual(verdict["verdict"], "FAIL")
         self.assertTrue(any("411.51" in f for f in verdict["failures"]))
 
-    def test_qwen38_style_saturation_passes(self) -> None:
-        verdict = judge_physical_limit_claim(
-            saturated_resource="unique-once decode memory bandwidth",
-            evidence="406.2 / 411.51",
-            achieved=406.2,
-            ceiling=HONEST_DECODE_CEILING_GB_S,
+    def test_qwen38_ratio_and_catalog_gap_leave_topology_headroom(self) -> None:
+        approx(
+            QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+            QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S / QWEN38_SINGLE_GEMV_ADDR_GB_S,
+            1e-12,
         )
-        self.assertEqual(verdict["verdict"], "PASS")
+        approx(QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR, 0.9137740261194911, 1e-12)
+        self.assertLess(QWEN38_CATALOG_ADDR_GB_S, QWEN38_SINGLE_GEMV_ADDR_GB_S)
+        self.assertLess(QWEN38_CATALOG_FULL_GB_S, QWEN38_CATALOG_ADDR_GB_S)
+        row = place_today("qwen38")
+        self.assertFalse(row["may_claim_physical_limit"])
+        self.assertIn("headroom open", row["physical_limit"]["failures"][0])
 
     def test_unsaturated_named_resource_fails(self) -> None:
         verdict = judge_physical_limit_claim(
@@ -167,6 +199,12 @@ class RoofRungsTest(unittest.TestCase):
         self.assertTrue(check["present"])
         self.assertTrue(check["matches_sealed_constants"])
         self.assertTrue(check["reuse_not_decode_ceiling"])
+        qwen_check = verify_qwen38_roof_receipt()
+        self.assertTrue(qwen_check["present"])
+        self.assertTrue(qwen_check["matches_landed_constants"])
+        self.assertTrue(qwen_check["cpu_contended"])
+        self.assertTrue(qwen_check["sealed_ledger_cited_not_rerun"])
+        self.assertFalse(qwen_check["current_token_ns_remeasured"])
         doc = today_table()
         self.assertEqual(set(doc["models"]), {"q80_mixed", "qwen38", "dsv4f"})
         md = markdown_table(doc)
@@ -174,10 +212,20 @@ class RoofRungsTest(unittest.TestCase):
         self.assertIn("qwen38", md)
         self.assertIn("dsv4f", md)
         self.assertIn("below_A", md)
-        self.assertIn("Honest decode roof", md)
+        self.assertIn("Q80 historical unique-once control", md)
+        self.assertIn("699.574", md)
+        self.assertIn("639.252", md)
+        self.assertIn("91.38%", md)
+        self.assertIn("530.654/505.810", md)
+        self.assertIn("CPU-contended", md)
+        self.assertIn("TOKEN_NS/TPS was not rerun", md)
+        self.assertNotIn("98.7%", md)
+        self.assertNotIn("406.2", md)
+        self.assertNotIn("no kernel headroom", md)
         audit = {row["receipt"]: row["verdict"] for row in doc["physical_limit_audit"]}
         self.assertEqual(
-            audit["receipts/ascent-2026-08-16/QWEN38_AT_CEILING_RESOLVED.json"], "PASS"
+            audit["receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"],
+            "PROVISIONAL_NOT_PHYSICAL_LIMIT",
         )
         self.assertEqual(
             audit["receipts/ascent-2026-08-16/TERMINAL_TARGET.json THE_SINGLE_SHARED_BLOCKER"],
@@ -188,8 +236,19 @@ class RoofRungsTest(unittest.TestCase):
             "PASS_NO_LIMIT_CLAIMED",
         )
         self.assertTrue(doc["fs_latency_flags"][0]["flag"]["flagged"])
-        self.assertEqual(TODAY["qwen38"]["dispatches"], 963)
-        self.assertEqual(doc["models"]["qwen38"]["rung"]["current_rung"], "below_A")
+        self.assertIsNone(TODAY["qwen38"]["current_token_ns"])
+        self.assertNotIn("ns_per_token", TODAY["qwen38"])
+        self.assertEqual(doc["models"]["qwen38"]["rung"]["current_rung"], "UNMEASURED")
+        qwen_blob = json.dumps(
+            {
+                "model": doc["models"]["qwen38"],
+                "roof": doc["hardware_roof"]["qwen38_provisional"],
+                "audit": doc["physical_limit_audit"][0],
+            }
+        )
+        self.assertNotIn("411.51", qwen_blob)
+        self.assertNotIn("98.7", qwen_blob)
+        self.assertNotIn("406.2", qwen_blob)
 
     def test_rejects_negative_inputs(self) -> None:
         with self.assertRaises(ValueError):

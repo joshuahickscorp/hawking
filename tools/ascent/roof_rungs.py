@@ -2,10 +2,10 @@
 """S004 §4 rung instrument.
 
 Place any speed claim on the measured-roof ladder from (bytes/token, ns/token)
-plus optional measured facets. Does not run GPU work. Hardware constants are
-the sealed unique-once decode control in
-``receipts/ascent-2026-08-16/Q80_DECODE_SHAPE_BANDWIDTH.json`` (copied from
-branch ``grok/fs-occupancy-20260816-143029``). Do not re-measure that control.
+plus optional measured facets. Does not run GPU work. The 411.51 GB/s control
+is historical and Q80-specific. Qwen3.8 uses the landed, provisional grouped-Q4
+GEMV measurements in ``HONEST_ROOF_WEIGHT_ADDRESSING.json``; that receipt did
+not remeasure a current complete-token wall.
 
     # with repo root or tools/ on sys.path:
     from ascent.roof_rungs import place, today_table, judge_physical_limit_claim
@@ -38,14 +38,42 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BANDWIDTH_RECEIPT = (
     REPO_ROOT / "receipts" / "ascent-2026-08-16" / "Q80_DECODE_SHAPE_BANDWIDTH.json"
 )
+QWEN38_ROOF_RECEIPT = (
+    REPO_ROOT
+    / "receipts"
+    / "ascent-2026-08-16"
+    / "HONEST_ROOF_WEIGHT_ADDRESSING.json"
+)
 
-# Sealed from Q80_DECODE_SHAPE_BANDWIDTH.json. Units: GB/s == bytes/ns.
-HONEST_DECODE_CEILING_GB_S = 411.51358589633037  # unique-once 512 MiB median
+# Historical Q80 control from Q80_DECODE_SHAPE_BANDWIDTH.json.
+# Keep the old export as a compatibility alias, but never use it as Qwen3.8's roof.
+Q80_HISTORICAL_UNIQUE_ONCE_GB_S = 411.51358589633037
+HONEST_DECODE_CEILING_GB_S = Q80_HISTORICAL_UNIQUE_ONCE_GB_S
 UNIQUE_ONCE_1024MIB_GB_S = 301.63405407683126
 UNIQUE_ONCE_256MIB_GB_S = 410.5302328426687
 REUSE_BAND_GB_S = (535.8823163028844, 637.4964044632153)
 PUBLISHED_PEAK_GB_S = 819.0
 FULL_OCCUPANCY_THREADS = 256 * 60  # 15360
+
+# Landed Qwen3.8 grouped-Q4 measurements. These are provisional: the GPU lane
+# was protected, but the host was CPU-contended, and current TOKEN_NS was not
+# rerun. The sealed 639.252 GB/s attribution is cited from the older ledger.
+QWEN38_DEFENDED_GEMV_BYTES = 13_611_663_360
+QWEN38_SINGLE_GEMV_ADDR_GB_S = 699.5736545106142
+QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S = 639.2522348492898
+QWEN38_CATALOG_ADDR_GB_S = 530.6544688491846
+QWEN38_CATALOG_FULL_GB_S = 505.8100047843556
+QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR = (
+    QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S / QWEN38_SINGLE_GEMV_ADDR_GB_S
+)
+QWEN38_PROVISIONAL_CAVEAT = (
+    "PROVISIONAL GPU_PROTECTED_CPU_CONTENDED: 699.574 GB/s is an isolated "
+    "single-GEMV address roof; 639.252 GB/s cites the sealed historical "
+    "weight-addressing attribution; the 401-GEMV catalog measured 530.654 GB/s "
+    "address and 505.810 GB/s full. Current complete-token TOKEN_NS/TPS was not "
+    "rerun. The catalog/single-GEMV gap leaves dispatch and kernel topology "
+    "headroom open."
+)
 
 # Dispatch / CB control, same receipt.
 ONE_NOP_CB_GPU_NS = 3334
@@ -84,8 +112,9 @@ _NO_FURTHER_OPT = (
     "nothing left to target here",
 )
 
-CLAIM_BOUNDARY = {
-    "honest_decode_ceiling_gb_s": HONEST_DECODE_CEILING_GB_S,
+Q80_CLAIM_BOUNDARY = {
+    "scope": "Q80 historical control only",
+    "q80_historical_unique_once_gb_s": Q80_HISTORICAL_UNIQUE_ONCE_GB_S,
     "unique_once_1024mib_gb_s": UNIQUE_ONCE_1024MIB_GB_S,
     "reuse_band_gb_s": list(REUSE_BAND_GB_S),
     "reuse_band_is_cache_resident_not_decode_ceiling": True,
@@ -96,6 +125,26 @@ CLAIM_BOUNDARY = {
     "physical_limit_requires_named_saturated_resource": True,
     "no_further_optimization_is_obvious_is_not_evidence": True,
 }
+
+QWEN38_CLAIM_BOUNDARY = {
+    "scope": "Qwen3.8 provisional grouped-Q4 roof only",
+    "receipt": str(QWEN38_ROOF_RECEIPT.relative_to(REPO_ROOT)),
+    "defended_gemv_bytes": QWEN38_DEFENDED_GEMV_BYTES,
+    "single_gemv_addr_gb_s": QWEN38_SINGLE_GEMV_ADDR_GB_S,
+    "sealed_weight_addressing_gb_s": QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S,
+    "sealed_over_single_gemv_addr": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+    "catalog_addr_gb_s": QWEN38_CATALOG_ADDR_GB_S,
+    "catalog_full_gb_s": QWEN38_CATALOG_FULL_GB_S,
+    "timing_label": "GPU_PROTECTED_CPU_CONTENDED",
+    "provisional": True,
+    "current_token_ns": None,
+    "current_tps": None,
+    "kernel_and_dispatch_topology_headroom_closed": False,
+    "caveat": QWEN38_PROVISIONAL_CAVEAT,
+}
+
+# Compatibility export for callers that use the generic/Q80 ladder.
+CLAIM_BOUNDARY = Q80_CLAIM_BOUNDARY
 
 
 def _finite(name: str, value: float) -> float:
@@ -128,19 +177,38 @@ def gb_s(bytes_moved: float, ns: float) -> float | None:
     return bytes_moved / ns
 
 
-def load_only_floor_ns(bytes_per_token: float) -> float:
-    return bytes_per_token / HONEST_DECODE_CEILING_GB_S
+def _is_qwen38(model: str | None) -> bool:
+    return str(model or "").strip().lower() in {"qwen38", "qwen3.8", "qwen3_8"}
 
 
-def roof_tok_s(bytes_per_token: float) -> float:
+def _roof_gb_s(model: str | None) -> float:
+    if _is_qwen38(model):
+        return QWEN38_SINGLE_GEMV_ADDR_GB_S
+    return Q80_HISTORICAL_UNIQUE_ONCE_GB_S
+
+
+def load_only_floor_ns(
+    bytes_per_token: float,
+    ceiling_gb_s: float = Q80_HISTORICAL_UNIQUE_ONCE_GB_S,
+) -> float:
+    return bytes_per_token / ceiling_gb_s
+
+
+def roof_tok_s(
+    bytes_per_token: float,
+    ceiling_gb_s: float = Q80_HISTORICAL_UNIQUE_ONCE_GB_S,
+) -> float:
     if bytes_per_token <= 0.0:
         return 0.0
-    return 1.0e9 / load_only_floor_ns(bytes_per_token)
+    return 1.0e9 / load_only_floor_ns(bytes_per_token, ceiling_gb_s)
 
 
-def rung_byte_budget(max_ns: float) -> float:
-    """Largest bytes/token that can hit ``max_ns`` at the honest decode ceiling."""
-    return HONEST_DECODE_CEILING_GB_S * max_ns
+def rung_byte_budget(
+    max_ns: float,
+    ceiling_gb_s: float = Q80_HISTORICAL_UNIQUE_ONCE_GB_S,
+) -> float:
+    """Largest bytes/token that can hit ``max_ns`` at the selected roof."""
+    return ceiling_gb_s * max_ns
 
 
 def classify_rung(ns_per_token: float, fraction_of_roof: float | None) -> dict[str, Any]:
@@ -179,14 +247,17 @@ def classify_rung(ns_per_token: float, fraction_of_roof: float | None) -> dict[s
     }
 
 
-def highest_rung_reachable(bytes_per_token: float) -> dict[str, Any]:
-    roof = roof_tok_s(bytes_per_token)
+def highest_rung_reachable(
+    bytes_per_token: float,
+    ceiling_gb_s: float = Q80_HISTORICAL_UNIQUE_ONCE_GB_S,
+) -> dict[str, Any]:
+    roof = roof_tok_s(bytes_per_token, ceiling_gb_s)
     reachable: list[str] = []
-    if roof >= RUNG_A_TPS and bytes_per_token <= rung_byte_budget(RUNG_A_NS):
+    if roof >= RUNG_A_TPS and bytes_per_token <= rung_byte_budget(RUNG_A_NS, ceiling_gb_s):
         reachable.append("A")
-    if roof >= RUNG_B_TPS and bytes_per_token <= rung_byte_budget(RUNG_B_NS):
+    if roof >= RUNG_B_TPS and bytes_per_token <= rung_byte_budget(RUNG_B_NS, ceiling_gb_s):
         reachable.append("B")
-    if roof >= RUNG_C_TPS and bytes_per_token <= rung_byte_budget(RUNG_C_NS):
+    if roof >= RUNG_C_TPS and bytes_per_token <= rung_byte_budget(RUNG_C_NS, ceiling_gb_s):
         reachable.append("C")
     if reachable:
         highest = reachable[-1]
@@ -200,13 +271,13 @@ def highest_rung_reachable(bytes_per_token: float) -> dict[str, Any]:
         "highest_rung_reachable_at_current_bytes": highest,
         "next_rung_blocked_by_bytes": blocked_next if highest != "C" else None,
         "byte_budgets": {
-            "A_max_bytes": rung_byte_budget(RUNG_A_NS),
-            "B_max_bytes": rung_byte_budget(RUNG_B_NS),
-            "C_max_bytes": rung_byte_budget(RUNG_C_NS),
+            "A_max_bytes": rung_byte_budget(RUNG_A_NS, ceiling_gb_s),
+            "B_max_bytes": rung_byte_budget(RUNG_B_NS, ceiling_gb_s),
+            "C_max_bytes": rung_byte_budget(RUNG_C_NS, ceiling_gb_s),
         },
         "note": (
-            "These budgets assume 100% of the honest decode ceiling "
-            f"({HONEST_DECODE_CEILING_GB_S:.2f} GB/s) and zero host tax. "
+            "These budgets assume 100% of the selected roof "
+            f"({ceiling_gb_s:.2f} GB/s) and zero host tax. "
             "Host work can only make them stricter."
         ),
     }
@@ -236,7 +307,9 @@ def judge_physical_limit_claim(
     if cites_published_819_as_decode_ceiling:
         failures.append(
             "Published 819 GB/s was not achieved in the decode-shape control. "
-            f"The honest decode ceiling is {HONEST_DECODE_CEILING_GB_S:.2f} GB/s."
+            f"The Q80 historical unique-once control is "
+            f"{Q80_HISTORICAL_UNIQUE_ONCE_GB_S:.2f} GB/s; a model/access-specific "
+            "roof is still required."
         )
     if not saturated_resource or not str(saturated_resource).strip():
         failures.append("No hardware resource named as saturated.")
@@ -314,14 +387,16 @@ def place(
     occ_threads = _optional_finite("occupancy_threads", occupancy_threads)
     recon_ns = _optional_finite("reconstruction_ns", reconstruction_ns)
     flops = _finite("flops_per_weight", flops_per_weight)
+    selected_roof_gb_s = _roof_gb_s(model)
+    qwen38_profile = _is_qwen38(model)
 
     wall_bw = gb_s(bytes_tok, ns_tok)
     gpu_bw = gb_s(bytes_tok, gpu_ns) if gpu_ns is not None else None
     kernel_bw = gpu_bw if gpu_bw is not None else wall_bw
-    floor_ns = load_only_floor_ns(bytes_tok)
-    roof = roof_tok_s(bytes_tok)
-    frac_wall = None if wall_bw is None else wall_bw / HONEST_DECODE_CEILING_GB_S
-    frac_gpu = None if gpu_bw is None else gpu_bw / HONEST_DECODE_CEILING_GB_S
+    floor_ns = load_only_floor_ns(bytes_tok, selected_roof_gb_s)
+    roof = roof_tok_s(bytes_tok, selected_roof_gb_s)
+    frac_wall = None if wall_bw is None else wall_bw / selected_roof_gb_s
+    frac_gpu = None if gpu_bw is None else gpu_bw / selected_roof_gb_s
     frac_kernel = frac_gpu if frac_gpu is not None else frac_wall
 
     if weights is not None and weights > 0.0:
@@ -396,23 +471,40 @@ def place(
     }
 
     rung = classify_rung(ns_tok, frac_wall)
-    reachable = highest_rung_reachable(bytes_tok)
+    reachable = highest_rung_reachable(bytes_tok, selected_roof_gb_s)
     roof_limited = reachable["highest_rung_reachable_at_current_bytes"] is None
 
-    physical = judge_physical_limit_claim(
-        saturated_resource=(
-            "unique-once decode memory bandwidth"
-            if frac_kernel is not None and frac_kernel >= SATURATION_FRACTION
-            else None
-        ),
-        evidence=(
-            f"kernel {frac_kernel:.4f} of honest decode ceiling {HONEST_DECODE_CEILING_GB_S:.2f} GB/s"
-            if frac_kernel is not None and frac_kernel >= SATURATION_FRACTION
-            else None
-        ),
-        achieved=kernel_bw,
-        ceiling=HONEST_DECODE_CEILING_GB_S,
-    )
+    if qwen38_profile:
+        physical = {
+            "verdict": "PROVISIONAL_NOT_PHYSICAL_LIMIT",
+            "saturated_resource": "grouped-Q4 single-GEMV address stream",
+            "evidence": (
+                f"measurement compared with provisional {selected_roof_gb_s:.3f} GB/s "
+                "single-GEMV address roof"
+            ),
+            "achieved_over_ceiling": frac_kernel,
+            "failures": [QWEN38_PROVISIONAL_CAVEAT],
+            "bar": (
+                "Rerun current complete-token TOKEN_NS under clean conditions and retain "
+                "the catalog/single-GEMV distinction before a physical-limit claim."
+            ),
+        }
+    else:
+        physical = judge_physical_limit_claim(
+            saturated_resource=(
+                "Q80 historical unique-once decode memory bandwidth"
+                if frac_kernel is not None and frac_kernel >= SATURATION_FRACTION
+                else None
+            ),
+            evidence=(
+                f"kernel {frac_kernel:.4f} of Q80 historical control "
+                f"{selected_roof_gb_s:.2f} GB/s"
+                if frac_kernel is not None and frac_kernel >= SATURATION_FRACTION
+                else None
+            ),
+            achieved=kernel_bw,
+            ceiling=selected_roof_gb_s,
+        )
 
     row = {
         "schema": SCHEMA,
@@ -432,15 +524,33 @@ def place(
             f"{flops:g} flop/weight (FMA=2) / bytes_per_weight. "
             "Batch=1 decode reads each weight once; there is no reuse to amortize the load."
         ),
-        "gpu_occupancy": {
-            "fraction_of_honest_decode_ceiling": frac_kernel,
-            "launch_occupancy_vs_15360": launch_occ,
-            "full_occupancy_threads": FULL_OCCUPANCY_THREADS,
-            "note": (
-                "Memory-system occupancy is achieved_gb_s / honest_decode_ceiling. "
-                "Launch occupancy is threads / 15360 from the decode-shape control."
-            ),
-        },
+        "gpu_occupancy": (
+            {
+                "fraction_of_selected_roof": frac_kernel,
+                "fraction_of_single_gemv_addr_roof": frac_kernel,
+                "selected_roof_gb_s": selected_roof_gb_s,
+                "launch_occupancy_vs_15360": launch_occ,
+                "full_occupancy_threads": FULL_OCCUPANCY_THREADS,
+                "note": (
+                    "For Qwen3.8 this ratio uses the provisional isolated single-GEMV "
+                    "address roof, not the Q80 control. It cannot close catalog/topology "
+                    "headroom or substitute for a current complete-token measurement."
+                ),
+            }
+            if qwen38_profile
+            else {
+                "fraction_of_honest_decode_ceiling": frac_kernel,
+                "fraction_of_q80_historical_control": frac_kernel,
+                "selected_roof_gb_s": selected_roof_gb_s,
+                "launch_occupancy_vs_15360": launch_occ,
+                "full_occupancy_threads": FULL_OCCUPANCY_THREADS,
+                "note": (
+                    "Memory-system occupancy is achieved_gb_s / Q80 historical "
+                    "unique-once control. Launch occupancy is threads / 15360 from "
+                    "that Q80 decode-shape control."
+                ),
+            }
+        ),
         "dispatch_floor": dispatch,
         "reconstruction_cost": reconstruction,
         "synchronization_floor": synchronization,
@@ -458,17 +568,34 @@ def place(
         "rung": rung,
         "reachable_at_current_bytes": reachable,
         "roof_limited_below_next_rung": roof_limited,
-        "may_claim_physical_limit": physical["verdict"] == "PASS",
+        "may_claim_physical_limit": physical["verdict"] == "PASS" and not qwen38_profile,
         "physical_limit": physical,
-        "hardware": {
-            "honest_decode_ceiling_gb_s": HONEST_DECODE_CEILING_GB_S,
-            "unique_once_1024mib_gb_s": UNIQUE_ONCE_1024MIB_GB_S,
-            "reuse_band_gb_s": list(REUSE_BAND_GB_S),
-            "reuse_band_is_not_the_decode_ceiling": True,
-            "published_peak_gb_s": PUBLISHED_PEAK_GB_S,
-            "control_receipt": str(BANDWIDTH_RECEIPT.relative_to(REPO_ROOT)),
-        },
-        "claim_boundary": CLAIM_BOUNDARY,
+        "hardware": (
+            {
+                "roof_profile": "qwen38_provisional_single_gemv_addr",
+                "single_gemv_addr_gb_s": QWEN38_SINGLE_GEMV_ADDR_GB_S,
+                "sealed_weight_addressing_gb_s": QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S,
+                "sealed_over_single_gemv_addr": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+                "catalog_addr_gb_s": QWEN38_CATALOG_ADDR_GB_S,
+                "catalog_full_gb_s": QWEN38_CATALOG_FULL_GB_S,
+                "provisional": True,
+                "cpu_contended": True,
+                "current_token_ns": None,
+                "control_receipt": str(QWEN38_ROOF_RECEIPT.relative_to(REPO_ROOT)),
+                "caveat": QWEN38_PROVISIONAL_CAVEAT,
+            }
+            if qwen38_profile
+            else {
+                "roof_profile": "q80_historical_unique_once_control",
+                "q80_historical_unique_once_gb_s": Q80_HISTORICAL_UNIQUE_ONCE_GB_S,
+                "unique_once_1024mib_gb_s": UNIQUE_ONCE_1024MIB_GB_S,
+                "reuse_band_gb_s": list(REUSE_BAND_GB_S),
+                "reuse_band_is_not_the_decode_ceiling": True,
+                "published_peak_gb_s": PUBLISHED_PEAK_GB_S,
+                "control_receipt": str(BANDWIDTH_RECEIPT.relative_to(REPO_ROOT)),
+            }
+        ),
+        "claim_boundary": QWEN38_CLAIM_BOUNDARY if qwen38_profile else Q80_CLAIM_BOUNDARY,
     }
     if extra:
         row["extra"] = dict(extra)
@@ -512,28 +639,28 @@ TODAY: dict[str, dict[str, Any]] = {
         },
     },
     "qwen38": {
-        "bytes_per_token": 13_622_264_240,
-        "ns_per_token": 33_896_792,
-        "active_weights_per_token": 25_624_600_064,
-        "gpu_ns_per_token": 33_535_999,
-        "wait_minus_gpu_ns": 360_793,
-        "command_buffers": None,
-        "dispatches": 64 * 15 + 3,
         "model": "qwen38",
-        "artifact": "qwen38-27b/uniform-q4-v1 (bring-up; 4.2527 BPW, fails G016 2.0/3.0)",
-        "measurement_label": "DIRTY_ENGINEERING",
+        "artifact": "qwen38-27b grouped-Q4 GEMV genome",
+        "measurement_label": "PROVISIONAL_ROOF_ONLY_NO_CURRENT_TOKEN_NS",
+        "defended_gemv_payload_bytes": QWEN38_DEFENDED_GEMV_BYTES,
+        "current_token_ns": None,
+        "current_tps": None,
         "sources": {
-            "bytes": "QWEN38_ACTIVE_BUDGET_MEASURED.json active_bytes_per_token (manifest sum, embed excluded)",
-            "gpu_wait": "G015_NATIVE_LEG_VERIFY_ON_MAIN.json median_gpu_ns_steady / median_wait_ns_steady",
-            "weights": "bytes * 8 / 4.252735126866492 (pack BPW from THREE_MODEL_REGIME_SPLIT.json)",
-            "dispatches": "qwen38_64_layer_execution_schedule.rs: 64 layers * 15 + 3 terminal (schedule, not a generate receipt)",
+            "roof": str(QWEN38_ROOF_RECEIPT.relative_to(REPO_ROOT)),
+            "sealed_attribution": (
+                "HONEST_ROOF_WEIGHT_ADDRESSING.json "
+                "sealed_ledger_cited_not_rerun / denominator_correction"
+            ),
         },
         "extra": {
-            "established_gpu_gb_s": 406.2,
-            "established_pct_of_honest_ceiling": 98.7,
-            "pack_bpw": 4.252735126866492,
-            "complete_token_proxy": "wait_ns; GPU-bound, wait = gpu + 0.36 ms",
-            "command_buffers": "UNMEASURED",
+            "single_gemv_addr_gb_s": QWEN38_SINGLE_GEMV_ADDR_GB_S,
+            "sealed_weight_addressing_gb_s": QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S,
+            "sealed_over_single_gemv_addr": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+            "catalog_addr_gb_s": QWEN38_CATALOG_ADDR_GB_S,
+            "catalog_full_gb_s": QWEN38_CATALOG_FULL_GB_S,
+            "timing_label": "GPU_PROTECTED_CPU_CONTENDED",
+            "provisional": True,
+            "caveat": QWEN38_PROVISIONAL_CAVEAT,
         },
     },
     "dsv4f": {
@@ -565,7 +692,144 @@ TODAY: dict[str, dict[str, Any]] = {
 }
 
 
+def _qwen38_roof_only_today() -> dict[str, Any]:
+    """Report the landed roof without manufacturing a current token wall."""
+    spec = TODAY["qwen38"]
+    hardware = {
+        "roof_profile": "qwen38_provisional_single_gemv_addr",
+        "defended_gemv_payload_bytes": QWEN38_DEFENDED_GEMV_BYTES,
+        "single_gemv_addr_gb_s": QWEN38_SINGLE_GEMV_ADDR_GB_S,
+        "sealed_weight_addressing_gb_s": QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S,
+        "sealed_over_single_gemv_addr": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+        "catalog_addr_gb_s": QWEN38_CATALOG_ADDR_GB_S,
+        "catalog_full_gb_s": QWEN38_CATALOG_FULL_GB_S,
+        "timing_label": "GPU_PROTECTED_CPU_CONTENDED",
+        "provisional": True,
+        "cpu_contended": True,
+        "clean_box": False,
+        "current_token_ns": None,
+        "current_tps": None,
+        "kernel_and_dispatch_topology_headroom_closed": False,
+        "control_receipt": str(QWEN38_ROOF_RECEIPT.relative_to(REPO_ROOT)),
+        "caveat": QWEN38_PROVISIONAL_CAVEAT,
+    }
+    return {
+        "schema": SCHEMA,
+        "model": spec["model"],
+        "artifact": spec["artifact"],
+        "measurement_label": spec["measurement_label"],
+        "sources": dict(spec["sources"]),
+        "bytes_per_token": None,
+        "defended_gemv_payload_bytes": QWEN38_DEFENDED_GEMV_BYTES,
+        "ns_per_token": None,
+        "gpu_ns_per_token": None,
+        "current_token_ns": None,
+        "current_tps": None,
+        "active_weights_per_token": None,
+        "active_decode_bpw": None,
+        "measured_memory_bandwidth_gb_s": None,
+        "measured_gpu_bandwidth_gb_s": None,
+        "arithmetic_intensity_flop_per_byte": None,
+        "arithmetic_intensity_note": (
+            "Not derived: the landed receipt measures grouped-Q4 GEMV roof facets, "
+            "not a current complete-token run."
+        ),
+        "gpu_occupancy": {
+            "fraction_of_selected_roof": None,
+            "sealed_over_single_gemv_addr": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+            "selected_roof_gb_s": QWEN38_SINGLE_GEMV_ADDR_GB_S,
+            "launch_occupancy_vs_15360": None,
+            "full_occupancy_threads": None,
+            "note": (
+                "91.38% is the sealed historical weight-addressing attribution divided "
+                "by the provisional isolated single-GEMV address roof. It is not a "
+                "current complete-token occupancy result."
+            ),
+        },
+        "dispatch_floor": {
+            "dispatches": None,
+            "command_buffers": None,
+            "serial_dispatch_gpu_floor_ns": None,
+            "fused_dispatch_gpu_floor_ns": None,
+            "serial_cb_host_floor_ns": None,
+            "catalog_dispatches": 401,
+            "note": (
+                "No current token dispatch census is asserted. The roof receipt's "
+                "production-shape catalog contains 401 GEMVs."
+            ),
+        },
+        "reconstruction_cost": {
+            "load_only_floor_ns": None,
+            "measured_gpu_or_wall_ns": None,
+            "excess_over_load_only_ns": None,
+            "isolated_reconstruction_ns": None,
+            "isolation_note": "Unmeasured for a current complete token.",
+        },
+        "synchronization_floor": {
+            "wait_minus_gpu_ns": None,
+            "synchronization_floor_ns": None,
+            "how": "unmeasured for a current complete token",
+        },
+        "roof_tok_s": None,
+        "fraction_of_roof": None,
+        "fraction_of_roof_gpu": None,
+        FS_FIELD: None,
+        "fs_per_weight_served_gpu": None,
+        "fs_per_weight_at_honest_roof": None,
+        "fs_honesty": {
+            "not_latency": True,
+            "field_label": FS_FIELD,
+            "caveat": AMORTIZED_CAVEAT,
+        },
+        "rung": {
+            "current_rung": "UNMEASURED",
+            "cleared_rungs": [],
+            "next_rung": None,
+            "ms_per_token": None,
+            "tps": None,
+            "fraction_of_roof": None,
+            "note": "Current complete-token TOKEN_NS/TPS was not rerun.",
+        },
+        "reachable_at_current_bytes": {
+            "roof_tok_s": None,
+            "reachable_at_current_bytes": [],
+            "highest_rung_reachable_at_current_bytes": None,
+            "next_rung_blocked_by_bytes": None,
+            "byte_budgets": None,
+            "note": (
+                "Unknown: a GEMV payload roof does not establish a current complete-token "
+                "wall or all bytes moved by the token."
+            ),
+        },
+        "roof_limited_below_next_rung": None,
+        "may_claim_physical_limit": False,
+        "physical_limit": {
+            "verdict": "PROVISIONAL_NOT_PHYSICAL_LIMIT",
+            "saturated_resource": (
+                "grouped-Q4 single-GEMV unique codes+scales address stream"
+            ),
+            "evidence": (
+                f"sealed attribution {QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S:.3f} / "
+                f"single-GEMV addr {QWEN38_SINGLE_GEMV_ADDR_GB_S:.3f} = "
+                f"{100.0 * QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR:.2f}%; catalog addr/full "
+                f"{QWEN38_CATALOG_ADDR_GB_S:.3f}/{QWEN38_CATALOG_FULL_GB_S:.3f} GB/s"
+            ),
+            "achieved_over_ceiling": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+            "failures": [QWEN38_PROVISIONAL_CAVEAT],
+            "bar": (
+                "Rerun a current complete-token TOKEN_NS under clean conditions and "
+                "retain the catalog/single-GEMV topology distinction."
+            ),
+        },
+        "hardware": hardware,
+        "claim_boundary": QWEN38_CLAIM_BOUNDARY,
+        "extra": dict(spec["extra"]),
+    }
+
+
 def place_today(model_key: str) -> dict[str, Any]:
+    if model_key == "qwen38":
+        return _qwen38_roof_only_today()
     spec = TODAY[model_key]
     kwargs = {k: v for k, v in spec.items()}
     return place(**kwargs)
@@ -578,28 +842,49 @@ def today_table() -> dict[str, Any]:
         "date": DATE,
         "steer": "archived S004 section 4 (hawking-femtosecond-ascent/STEERS_ARCHIVE.md)",
         "hardware_roof": {
-            "honest_decode_ceiling_gb_s": HONEST_DECODE_CEILING_GB_S,
-            "unique_once_1024mib_gb_s": UNIQUE_ONCE_1024MIB_GB_S,
-            "reuse_band_gb_s": list(REUSE_BAND_GB_S),
-            "reuse_band_is_not_the_decode_ceiling": True,
-            "published_peak_gb_s": PUBLISHED_PEAK_GB_S,
-            "control": {
-                "example": "crates/hawking-core/examples/q80_decode_shape_bandwidth.rs",
-                "branch": "grok/fs-occupancy-20260816-143029",
-                "receipt": str(BANDWIDTH_RECEIPT.relative_to(REPO_ROOT)),
+            "q80_historical_control": {
+                "scope": "Q80 only; not a Qwen3.8 roof",
+                "unique_once_512mib_gb_s": Q80_HISTORICAL_UNIQUE_ONCE_GB_S,
+                "unique_once_1024mib_gb_s": UNIQUE_ONCE_1024MIB_GB_S,
+                "reuse_band_gb_s": list(REUSE_BAND_GB_S),
+                "reuse_band_is_not_the_decode_ceiling": True,
+                "published_peak_gb_s": PUBLISHED_PEAK_GB_S,
+                "control": {
+                    "example": "crates/hawking-core/examples/q80_decode_shape_bandwidth.rs",
+                    "branch": "grok/fs-occupancy-20260816-143029",
+                    "receipt": str(BANDWIDTH_RECEIPT.relative_to(REPO_ROOT)),
+                },
             },
-            "established": {
-                "honest_decode_ceiling_gb_s": 411.51,
-                "unique_once_1024mib_gb_s": 301.6,
-                "reuse_band_gb_s": [535.9, 637.5],
-                "qwen38_achieved_gb_s": 406.2,
-                "qwen38_pct_of_ceiling": 98.7,
+            "qwen38_provisional": {
+                "scope": "Qwen3.8 grouped-Q4 GEMV roof facets; not current TOKEN_NS",
+                "defended_gemv_payload_bytes": QWEN38_DEFENDED_GEMV_BYTES,
+                "single_gemv_addr_gb_s": QWEN38_SINGLE_GEMV_ADDR_GB_S,
+                "sealed_weight_addressing_gb_s": QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S,
+                "sealed_over_single_gemv_addr": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+                "catalog_addr_gb_s": QWEN38_CATALOG_ADDR_GB_S,
+                "catalog_full_gb_s": QWEN38_CATALOG_FULL_GB_S,
+                "timing_label": "GPU_PROTECTED_CPU_CONTENDED",
+                "provisional": True,
+                "current_token_ns": None,
+                "current_tps": None,
+                "kernel_and_dispatch_topology_headroom_closed": False,
+                "receipt": str(QWEN38_ROOF_RECEIPT.relative_to(REPO_ROOT)),
+                "caveat": QWEN38_PROVISIONAL_CAVEAT,
+            },
+            "other_established_measurements": {
                 "q80_mixed_gpu_matvec_gb_s": 2.57,
-                "q80_mixed_pct_of_ceiling": 0.62,
+                "q80_mixed_pct_of_q80_historical_control": 0.62,
                 "q80_mixed_factor_off": 160.0,
             },
         },
-        "claim_boundary": CLAIM_BOUNDARY,
+        "claim_boundary": {
+            "q80_historical": Q80_CLAIM_BOUNDARY,
+            "qwen38_provisional": QWEN38_CLAIM_BOUNDARY,
+        },
+        "roof_receipts": {
+            "q80_historical": verify_bandwidth_receipt(),
+            "qwen38_provisional": verify_qwen38_roof_receipt(),
+        },
         "models": models,
         "physical_limit_audit": physical_limit_audit(),
         "fs_latency_flags": fs_latency_flags(),
@@ -610,14 +895,35 @@ def physical_limit_audit() -> list[dict[str, Any]]:
     """Existing claims run through the S004 saturation test."""
     rows = [
         {
-            "receipt": "receipts/ascent-2026-08-16/QWEN38_AT_CEILING_RESOLVED.json",
-            "claim": "Qwen3.8 runs at 98.7% of the measured honest decode ceiling; no kernel headroom.",
-            "result": judge_physical_limit_claim(
-                saturated_resource="unique-once decode memory bandwidth (411.51 GB/s)",
-                evidence="406.2 / 411.51 = 98.7% on GPU ns vs measured active bytes",
-                achieved=406.2,
-                ceiling=HONEST_DECODE_CEILING_GB_S,
+            "receipt": str(QWEN38_ROOF_RECEIPT.relative_to(REPO_ROOT)),
+            "claim": (
+                "Qwen3.8 landed a provisional grouped-Q4 roof: sealed historical "
+                f"weight addressing {QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S:.3f} GB/s "
+                f"is {100.0 * QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR:.2f}% of the "
+                f"{QWEN38_SINGLE_GEMV_ADDR_GB_S:.3f} GB/s isolated address roof; "
+                f"the 401-GEMV catalog is {QWEN38_CATALOG_ADDR_GB_S:.3f}/"
+                f"{QWEN38_CATALOG_FULL_GB_S:.3f} GB/s addr/full."
             ),
+            "result": {
+                "verdict": "PROVISIONAL_NOT_PHYSICAL_LIMIT",
+                "saturated_resource": (
+                    "grouped-Q4 single-GEMV unique codes+scales address stream"
+                ),
+                "evidence": (
+                    f"{QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S:.3f} / "
+                    f"{QWEN38_SINGLE_GEMV_ADDR_GB_S:.3f} = "
+                    f"{100.0 * QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR:.2f}%; "
+                    f"catalog addr/full {QWEN38_CATALOG_ADDR_GB_S:.3f}/"
+                    f"{QWEN38_CATALOG_FULL_GB_S:.3f} GB/s"
+                ),
+                "achieved_over_ceiling": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+                "failures": [QWEN38_PROVISIONAL_CAVEAT],
+                "bar": (
+                    "The isolated roof supports a genome-specific addressing saturation "
+                    "claim only. It does not close catalog/dispatch topology headroom or "
+                    "establish a current complete-token wall."
+                ),
+            },
         },
         {
             "receipt": "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
@@ -736,13 +1042,18 @@ def physical_limit_audit() -> list[dict[str, Any]]:
         },
         {
             "receipt": "QWEN38_ACTIVE_BUDGET_MEASURED.json CORRECTION_TO_MY_OWN_CLAIM (superseded)",
-            "claim": "Whether 406.2 GB/s is Qwen3.8's ceiling is UNMEASURED (gather control does not bind dense sequential).",
+            "claim": (
+                "The older Qwen3.8 current-token ceiling claim was unmeasured against "
+                "its actual grouped-Q4 access pattern."
+            ),
             "result": {
-                "verdict": "SUPERSEDED",
+                "verdict": "REFUTED_BY_LANDED_PROVISIONAL_ROOF",
                 "note": (
-                    "This self-correction used the wrong axis (gather vs sequential). "
-                    "QWEN38_AT_CEILING_RESOLVED restored the original claim against the "
-                    "unique-once control, which is the right axis (reuse vs no-reuse)."
+                    "HONEST_ROOF_WEIGHT_ADDRESSING.json measured the actual grouped-Q4 "
+                    "address genome and refuted use of the Q80 historical control for "
+                    "Qwen3.8. Its CPU-contended roof remains provisional, its token wall "
+                    "was cited rather than rerun, and the catalog gap leaves topology "
+                    "headroom open."
                 ),
             },
         },
@@ -807,10 +1118,18 @@ def markdown_table(doc: Mapping[str, Any]) -> str:
         "",
         "Rungs (complete-token wall): **A** ≤20 ms / ≥50 TPS · **B** ≤10 ms / ≥100 TPS · **C** ≤5 ms / ≥200 TPS · **D** continue toward the measured roof.",
         "",
-        f"Honest decode roof = **{HONEST_DECODE_CEILING_GB_S:.2f} GB/s** (unique-once 512 MiB). "
-        f"Unique-once 1024 MiB = {UNIQUE_ONCE_1024MIB_GB_S:.1f} GB/s. "
-        "Reuse band 535.9–637.5 GB/s is cache-resident and is **not** a decode ceiling. "
-        "Published 819 GB/s was not achieved.",
+        f"Q80 historical unique-once control = **{Q80_HISTORICAL_UNIQUE_ONCE_GB_S:.2f} GB/s** "
+        f"at 512 MiB (1024 MiB = {UNIQUE_ONCE_1024MIB_GB_S:.1f} GB/s); it is Q80-specific. "
+        "The Q80 reuse band 535.9–637.5 GB/s is cache-resident, and published 819 GB/s "
+        "was not achieved.",
+        "",
+        f"Qwen3.8 provisional grouped-Q4 roof: isolated single-GEMV address "
+        f"**{QWEN38_SINGLE_GEMV_ADDR_GB_S:.3f} GB/s**; sealed historical weight-addressing "
+        f"attribution **{QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S:.3f} GB/s** "
+        f"(**{100.0 * QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR:.2f}%**); 401-GEMV catalog "
+        f"address/full **{QWEN38_CATALOG_ADDR_GB_S:.3f}/{QWEN38_CATALOG_FULL_GB_S:.3f} GB/s**. "
+        "The run was GPU-protected but CPU-contended. Current complete-token TOKEN_NS/TPS "
+        "was not rerun, so catalog/dispatch topology headroom remains open.",
         "",
         "| " + " | ".join(headers) + " |",
         "| " + " | ".join("---" for _ in headers) + " |",
@@ -818,6 +1137,27 @@ def markdown_table(doc: Mapping[str, Any]) -> str:
     order = ("q80_mixed", "qwen38", "dsv4f")
     for key in order:
         row = models[key]
+        if key == "qwen38":
+            cells = [
+                key,
+                f"{row['defended_gemv_payload_bytes'] / 1e9:.3f} GB GEMV*",
+                "—",
+                "—",
+                "—",
+                f"{row['hardware']['sealed_weight_addressing_gb_s']:.3f} sealed*",
+                "—",
+                f"{100.0 * row['hardware']['sealed_over_single_gemv_addr']:.2f}%*",
+                "—",
+                "—",
+                "—",
+                "—",
+                "—",
+                "—",
+                row["rung"]["current_rung"],
+                "UNMEASURED",
+            ]
+            lines.append("| " + " | ".join(cells) + " |")
+            continue
         disp = row["dispatch_floor"]["serial_cb_host_floor_ns"]
         recon = row["reconstruction_cost"]["excess_over_load_only_ns"]
         sync = row["synchronization_floor"]["synchronization_floor_ns"]
@@ -862,11 +1202,15 @@ def markdown_table(doc: Mapping[str, Any]) -> str:
             "",
             "## How to read the rungs",
             "",
-            "- **qwen38**: GPU is 98.7% of the honest decode ceiling (may claim that kernel is memory-roofed). "
-            "The *token* is still below rung A, and at 13.622 GB/token the roof is 30.2 TPS, so A is unreachable until bytes drop.",
-            "- **q80_mixed**: 0.62% of the roof on GPU matvec. Reconstruction, not bandwidth, is the wall. "
+            "- **qwen38**: roof-only and provisional. The 91.38% ratio compares a sealed "
+            "historical weight-addressing attribution with the isolated single-GEMV address "
+            "roof. The CPU-contended receipt has no current complete-token TOKEN_NS/TPS; "
+            "the 401-GEMV catalog gap leaves dispatch/kernel topology headroom open.",
+            "- **q80_mixed**: 0.62% of the Q80 historical control on GPU matvec. "
+            "Reconstruction, not bandwidth, is the wall. "
             "Current bytes still physically allow rungs A and B (roof 185.6 TPS).",
-            "- **dsv4f**: 3.57% of the roof on GPU; token wall is host I/O. Current bytes allow A only (roof 70.3 TPS).",
+            "- **dsv4f**: 3.57% of the Q80 historical control on GPU; token wall is host I/O. "
+            "Current bytes allow A only (roof 70.3 TPS).",
         ]
     )
     return "\n".join(lines)
@@ -894,6 +1238,64 @@ def verify_bandwidth_receipt() -> dict[str, Any]:
         "reuse_not_decode_ceiling": data["honest_control"]["reuse_64mib_x_4096_gbps"][
             "not_the_decode_ceiling"
         ],
+    }
+
+
+def verify_qwen38_roof_receipt() -> dict[str, Any]:
+    """Verify the landed Qwen3.8 roof constants without treating it as TOKEN_NS."""
+    if not QWEN38_ROOF_RECEIPT.is_file():
+        return {"present": False, "path": str(QWEN38_ROOF_RECEIPT)}
+    data = json.loads(QWEN38_ROOF_RECEIPT.read_text())
+    observed = {
+        "defended_gemv_payload_bytes": data["denominator_correction"][
+            "correct_attribution"
+        ]["bytes"],
+        "single_gemv_addr_gb_s": data["verdict"][
+            "measured_q4_addr_kernel_roof_gb_s"
+        ],
+        "sealed_weight_addressing_gb_s": data["denominator_correction"][
+            "correct_attribution"
+        ]["achieved_gb_s"],
+        "sealed_over_single_gemv_addr": data["verdict"][
+            "sealed_over_kernel_roof"
+        ],
+        "catalog_addr_gb_s": data["verdict"]["measured_q4_addr_catalog_gb_s"],
+        "catalog_full_gb_s": data["verdict"]["production_catalog_at_13p6gb"][
+            "full_gb_s"
+        ],
+        "timing_label": data["timing_label"],
+    }
+    expected = {
+        "defended_gemv_payload_bytes": QWEN38_DEFENDED_GEMV_BYTES,
+        "single_gemv_addr_gb_s": QWEN38_SINGLE_GEMV_ADDR_GB_S,
+        "sealed_weight_addressing_gb_s": QWEN38_SEALED_WEIGHT_ADDRESSING_GB_S,
+        "sealed_over_single_gemv_addr": QWEN38_SEALED_OVER_SINGLE_GEMV_ADDR,
+        "catalog_addr_gb_s": QWEN38_CATALOG_ADDR_GB_S,
+        "catalog_full_gb_s": QWEN38_CATALOG_FULL_GB_S,
+        "timing_label": "GPU_PROTECTED_CPU_CONTENDED",
+    }
+    field_matches = {
+        key: (
+            observed[key] == value
+            if isinstance(value, (str, int))
+            else abs(observed[key] - value) < 1e-9
+        )
+        for key, value in expected.items()
+    }
+    cited_not_rerun = "sealed_ledger_cited_not_rerun" in data
+    return {
+        "present": True,
+        "path": str(QWEN38_ROOF_RECEIPT),
+        "matches_landed_constants": all(field_matches.values()),
+        "field_matches": field_matches,
+        "observed": observed,
+        "provisional": True,
+        "clean_box": bool(data.get("clean_box", False)),
+        "cpu_contended": data.get("timing_label") == "GPU_PROTECTED_CPU_CONTENDED",
+        "sealed_ledger_cited_not_rerun": cited_not_rerun,
+        "current_token_ns_remeasured": False,
+        "kernel_and_dispatch_topology_headroom_closed": False,
+        "caveat": QWEN38_PROVISIONAL_CAVEAT,
     }
 
 

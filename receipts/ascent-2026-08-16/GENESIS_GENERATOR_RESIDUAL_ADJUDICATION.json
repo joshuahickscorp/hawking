@@ -1,0 +1,45 @@
+{
+  "schema": "hawking.genesis.measurement-adjudication.v1",
+  "measured_at_utc": "2026-08-17T04:43:00Z",
+  "model": "qwen38",
+  "artifact": "uniform-q4-v1",
+  "classification": "NEGATIVE_SCIENCE",
+  "headline_status": "REFUTED",
+  "audited_source": {
+    "branch_commit": "5deb6fdf0df6a21d9c6aa9aa4804eda76b3e5877",
+    "receipt_path": "receipts/ascent-2026-08-16/GENESIS_GENERATOR_RESIDUAL.json",
+    "receipt_sha256": "88a0d7e6af4bba4db829c52e1d2e2bef9c7a1218587636ad36e3e7e513ecd6f5",
+    "landed_on_main": false,
+    "source_bound_at_measurement": false,
+    "gpu_measurement_available": false
+  },
+  "measured_facts_retained": {
+    "q4_tensor_count": 402,
+    "q4_elements": 26893352960,
+    "shared_r64_energy_weighted_explained_fraction": 0.0404921380578193,
+    "shared_r64_unweighted_mean_explained_fraction": 0.14126276629864357,
+    "interpretation": "Shared-r64 explains too little of this Qwen3.8 artifact to establish a useful representation win. GPU reconstruction and complete-token effects were not measured."
+  },
+  "internal_recalculation": {
+    "reported_shared_r64_residual_bytes": 3781882584,
+    "reported_residual_coder": "binary_meanabs_g128",
+    "reported_residual_bpw": 1.1250014350014317,
+    "reported_delta_moved_bytes": 9314876412,
+    "reported_net_reduction": true,
+    "sum_shared_r64_binary_residual_bytes": 3781882584,
+    "sum_shared_r64_hq30uq4_residual_bytes": 14287109840,
+    "sum_original_q4_bytes": 14287109840,
+    "shared_r64_generator_bytes": 726151136,
+    "hq30uq4_residual_bpw_over_q4_elements": 4.250004783338105,
+    "generator_bpw_over_q4_elements": 0.21600910442964713,
+    "corrected_total_bpw_over_q4_elements": 4.466013887767753,
+    "corrected_delta_store_bytes_vs_original_q4": 726151136,
+    "corrected_net_reduction": false
+  },
+  "adjudication": [
+    "The 3,781,882,584-byte headline is exactly the lossy binary residual sum, not the HQ30UQ4 residual selected by the committed harness as the admissible reconstruction-preserving store.",
+    "The HQ30UQ4 residual is exactly as large as the original Q4 tensors; adding the generator increases storage by 726,151,136 bytes.",
+    "The claimed 1.125 residual BPW, 9.315 GB traffic cut, 4.307 GB moved total, and net-reduction=true are invalid for shared-r64 plus HQ30UQ4.",
+    "No artifact, decode hook, protected capability run, GPU reconstruction time, or complete-token A/B exists; this mechanism is not a candidate."
+  ]
+}
