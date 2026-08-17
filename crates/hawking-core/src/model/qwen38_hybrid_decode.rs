@@ -62,6 +62,189 @@ fn mlx_residual_norm_to_delta_named(name: &str, values: &mut [f32]) {
     }
 }
 
+/// Destination lane for one HQ38M20 row. Packed GEMVs stay packed.
+/// Codec 4 is already HF-δ f32v2 and must not be mlx-delta'd.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum MixedCatalogLane {
+    Packed(u8),
+    Hq30Uq4,
+    F32v2,
+    HgravuVector,
+}
+
+/// CPU census of a mixed catalog. Does not open Metal and does not expand
+/// rice indices. `expanded_to_q4` / `expanded_to_float_gemv` stay zero on
+/// this path; they exist so a later reader cannot miss a forbidden fallback.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct MixedCatalogCensus {
+    pub tensors: usize,
+    pub binary: usize,
+    pub residual: usize,
+    pub hgravs: usize,
+    pub uniform: usize,
+    pub q4: usize,
+    pub f32: usize,
+    pub refused: usize,
+    pub expanded_to_q4: usize,
+    pub expanded_to_float_gemv: usize,
+    pub refusals: Vec<String>,
+}
+
+const HQ30UQ4_MAGIC: [u8; 8] = *b"HQ30UQ4\0";
+const K_COMPLETE_TILE_COLS: u32 = 256;
+
+pub fn qwen38_binary_matvec_kernel(cols: u32) -> &'static str {
+    if cols > 2048 {
+        "q80_binary_group_matvec_simd_bytes"
+    } else {
+        "q80_binary_group_matvec_tg256"
+    }
+}
+
+pub fn qwen38_residual_matvec_kernel(cols: u32) -> &'static str {
+    if cols > 2048 {
+        "q80_binary_group_csr_matvec_bytes"
+    } else {
+        "q80_binary_group_csr_matvec_tg256"
+    }
+}
+
+/// simd_bytes tiles 256 columns. A non-multiple would drop a remainder —
+/// refuse rather than silently emit a partial-K GEMV.
+pub fn qwen38_assert_k_complete_cols(cols: u32) -> Result<()> {
+    if cols > 2048 && cols % K_COMPLETE_TILE_COLS != 0 {
+        return Err(mixed_error(format!(
+            "cols={cols} is not a {K_COMPLETE_TILE_COLS}-col tile multiple; \
+             simd_bytes would drop a remainder. Refusing partial-K bind."
+        )));
+    }
+    Ok(())
+}
+
+pub fn qwen38_mixed_k_complete_bind_message() -> String {
+    let fuse = if qwen38_recon_fuse_enabled() {
+        "ON"
+    } else {
+        "OFF"
+    };
+    format!(
+        "qwen38-decode mixed bind: K-complete; recon_fuse={fuse} \
+         uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes \
+         when cols>2048 (256-col tiles; this model K in {{5120,6144}}); \
+         cols<=2048 stay on tg256; recon_fuse=0 walks every column via {}",
+        crate::decode_family::matvec_binary()
+    )
+}
+
+fn hgravu_is_vector(name: &str, shape: &[usize]) -> bool {
+    if name.ends_with("embed_tokens.weight") || name.ends_with("lm_head.weight") {
+        return false;
+    }
+    let gemv = name.ends_with("mlp.gate_proj.weight")
+        || name.ends_with("mlp.up_proj.weight")
+        || name.ends_with("mlp.down_proj.weight")
+        || name.ends_with("self_attn.q_proj.weight")
+        || name.ends_with("self_attn.k_proj.weight")
+        || name.ends_with("self_attn.v_proj.weight")
+        || name.ends_with("self_attn.o_proj.weight")
+        || name.contains("linear_attn.in_proj")
+        || name.ends_with("linear_attn.out_proj.weight");
+    if gemv {
+        return false;
+    }
+    let elements = shape.iter().try_fold(1usize, |a, b| a.checked_mul(*b));
+    matches!(elements, Some(n) if n <= 65_536)
+}
+
+pub fn classify_qwen38_mixed_payload(
+    codec: u8,
+    payload: &[u8],
+    name: &str,
+    shape: &[usize],
+) -> Result<MixedCatalogLane> {
+    match codec {
+        0 | 1 | 2 => Ok(MixedCatalogLane::Packed(codec)),
+        3 => {
+            if payload.len() >= 8 && payload[..8] == MAGIC_UNIFORM {
+                if hgravu_is_vector(name, shape) {
+                    Ok(MixedCatalogLane::HgravuVector)
+                } else {
+                    Ok(MixedCatalogLane::Packed(3))
+                }
+            } else if payload.len() >= 8 && payload[..8] == HQ30UQ4_MAGIC {
+                Ok(MixedCatalogLane::Hq30Uq4)
+            } else {
+                Err(mixed_error(format!(
+                    "{name} codec 3 magic {:?} is not HGRAVU01/HQ30UQ4; refusing silent fallback",
+                    payload.get(..8)
+                )))
+            }
+        }
+        4 => {
+            // Validate the f32v2 envelope now so a short payload refuses at
+            // classify time, not after a later rmsnorm miss.
+            let _ = read_qwen38_f32_payload(payload)?;
+            if let Some(n) = shape.iter().try_fold(1usize, |a, b| a.checked_mul(*b)) {
+                let got = u64::from_le_bytes(payload[0..8].try_into().unwrap()) as usize;
+                if got != n {
+                    return Err(mixed_error(format!(
+                        "{name} f32v2 numel {got} != shape product {n}"
+                    )));
+                }
+            }
+            Ok(MixedCatalogLane::F32v2)
+        }
+        other => Err(mixed_error(format!(
+            "{name} unknown mixed codec {other}; refusing silent fallback"
+        ))),
+    }
+}
+
+/// Walk `catalog.hq38m20` without opening Metal. Rice stays packed.
+pub fn census_qwen38_mixed_catalog(root: impl AsRef<Path>) -> Result<MixedCatalogCensus> {
+    let rows = parse_qwen38_mixed_catalog(root.as_ref())?;
+    let mut census = MixedCatalogCensus {
+        tensors: rows.len(),
+        ..MixedCatalogCensus::default()
+    };
+    for row in &rows {
+        let payload = read_catalog_payload(row)?;
+        match classify_qwen38_mixed_payload(row.codec, &payload, &row.name, &row.shape) {
+            Ok(MixedCatalogLane::Packed(codec)) => match mixed_gpu_layout(codec, &payload) {
+                Ok(_) => match codec {
+                    0 => census.binary += 1,
+                    1 => census.residual += 1,
+                    2 => census.hgravs += 1,
+                    3 => census.uniform += 1,
+                    _ => {}
+                },
+                Err(error) => {
+                    census.refused += 1;
+                    census.refusals.push(format!("{} layout: {error}", row.name));
+                }
+            },
+            Ok(MixedCatalogLane::Hq30Uq4) => match parse_uniform_q4_header(&payload) {
+                Ok(_) => census.q4 += 1,
+                Err(error) => {
+                    census.refused += 1;
+                    census.refusals.push(format!("{} q4: {error}", row.name));
+                }
+            },
+            Ok(MixedCatalogLane::F32v2) => {
+                census.f32 += 1;
+            }
+            Ok(MixedCatalogLane::HgravuVector) => {
+                census.f32 += 1;
+            }
+            Err(error) => {
+                census.refused += 1;
+                census.refusals.push(format!("{error}"));
+            }
+        }
+    }
+    Ok(census)
+}
+
 #[derive(Clone, Debug)]
 struct Qwen38MixedCatalogRow {
     name: String,
@@ -93,6 +276,18 @@ fn read_u64_at(raw: &[u8], off: usize) -> Result<u64> {
     Ok(u64::from_le_bytes(slice.try_into().unwrap()))
 }
 
+/// Segment filenames are `segments/<name>` by default. An absolute filename
+/// (used when a sandbox cannot hardlink into `segments/`) is kept as-is so
+/// the catalog can name already-packed blobs without copying 4.34 GB.
+fn resolve_mixed_segment_path(root: &Path, filename: &str) -> PathBuf {
+    let raw = Path::new(filename);
+    if raw.is_absolute() {
+        raw.to_path_buf()
+    } else {
+        root.join("segments").join(filename)
+    }
+}
+
 fn parse_qwen38_mixed_catalog(root: &Path) -> Result<Vec<Qwen38MixedCatalogRow>> {
     let catalog_path = root.join(QWEN38_MIXED_CATALOG_NAME);
     let raw = fs::read(&catalog_path).map_err(|error| {
@@ -121,7 +316,7 @@ fn parse_qwen38_mixed_catalog(root: &Path) -> Result<Vec<Qwen38MixedCatalogRow>>
             .map_err(|_| mixed_error("segment name is not utf-8"))?
             .to_owned();
         cursor += name_len;
-        by_id.insert(id, root.join("segments").join(filename));
+        by_id.insert(id, resolve_mixed_segment_path(root, &filename));
     }
     let table_bytes = n_tensors
         .checked_mul(QWEN38_MIXED_RECORD_SIZE)
@@ -593,77 +788,96 @@ mod device {
             let mut q4 = HashMap::new();
             let mut f32s = HashMap::new();
             let mut mixed = HashMap::new();
+            let mut census = MixedCatalogCensus {
+                tensors: rows.len(),
+                ..MixedCatalogCensus::default()
+            };
             for (i, row) in rows.iter().enumerate() {
                 if i % 50 == 0 {
                     eprintln!("qwen38-decode mixed upload {i}/{}", rows.len());
                 }
                 let payload = read_catalog_payload(row)?;
-                match row.codec {
-                    0 | 1 | 2 => {
+                match classify_qwen38_mixed_payload(
+                    row.codec,
+                    &payload,
+                    &row.name,
+                    &row.shape,
+                )? {
+                    MixedCatalogLane::Packed(codec) => {
                         mixed.insert(
                             row.name.clone(),
                             Qwen38HybridDecodeSession::upload_mixed(
-                                &context, row.codec, &payload, &row.name,
+                                &context, codec, &payload, &row.name,
                             )?,
                         );
-                    }
-                    3 => {
-                        if payload.len() >= 8 && payload[..8] == MAGIC_UNIFORM {
-                            if Qwen38HybridDecodeSession::hgravu_is_vector(&row.name, &row.shape)
-                            {
-                                let values = dequant_hgravu_vector(&payload, &row.name)?;
-                                f32s.insert(
-                                    row.name.clone(),
-                                    context.new_buffer_with_bytes_checked(bytemuck::cast_slice(
-                                        &values,
-                                    ))?,
-                                );
-                            } else {
-                                mixed.insert(
-                                    row.name.clone(),
-                                    Qwen38HybridDecodeSession::upload_mixed(
-                                        &context, 3, &payload, &row.name,
-                                    )?,
-                                );
-                            }
-                        } else if payload.len() >= 8 && payload[..8] == *b"HQ30UQ4\0" {
-                            let header = parse_uniform_q4_header(&payload)?;
-                            let scales = &payload[header.scale_offset..header.sign_offset];
-                            let codes = &payload[header.sign_offset..header.payload_bytes];
-                            let (rows_n, cols) = match header.shape.as_slice() {
-                                [r, c] => (*r, *c),
-                                other => {
-                                    return Err(mixed_error(format!(
-                                        "{} HQ30UQ4 rank {:?} is not a matrix",
-                                        row.name, other
-                                    )))
-                                }
-                            };
-                            q4.insert(
-                                row.name.clone(),
-                                Q4Weight {
-                                    rows: rows_n,
-                                    cols,
-                                    codes: context.new_buffer_with_bytes_checked(codes)?,
-                                    scales: context.new_buffer_with_bytes_checked(scales)?,
-                                },
-                            );
-                        } else {
-                            return Err(mixed_error(format!(
-                                "{} codec 3 magic {:?} is not HGRAVU01/HQ30UQ4; refusing silent fallback",
-                                row.name,
-                                payload.get(..8)
-                            )));
+                        match codec {
+                            0 => census.binary += 1,
+                            1 => census.residual += 1,
+                            2 => census.hgravs += 1,
+                            3 => census.uniform += 1,
+                            _ => {}
                         }
                     }
-                    other => {
-                        return Err(mixed_error(format!(
-                            "{} unknown mixed codec {other}; refusing silent fallback",
-                            row.name
-                        )))
+                    MixedCatalogLane::Hq30Uq4 => {
+                        let header = parse_uniform_q4_header(&payload)?;
+                        let scales = &payload[header.scale_offset..header.sign_offset];
+                        let codes = &payload[header.sign_offset..header.payload_bytes];
+                        let (rows_n, cols) = match header.shape.as_slice() {
+                            [r, c] => (*r, *c),
+                            other => {
+                                return Err(mixed_error(format!(
+                                    "{} HQ30UQ4 rank {:?} is not a matrix",
+                                    row.name, other
+                                )))
+                            }
+                        };
+                        q4.insert(
+                            row.name.clone(),
+                            Q4Weight {
+                                rows: rows_n,
+                                cols,
+                                codes: context.new_buffer_with_bytes_checked(codes)?,
+                                scales: context.new_buffer_with_bytes_checked(scales)?,
+                            },
+                        );
+                        census.q4 += 1;
+                    }
+                    MixedCatalogLane::F32v2 => {
+                        // Already HF δ (f32v2 oracle). Do not mlx-delta.
+                        let values = read_qwen38_f32_payload(&payload)?;
+                        f32s.insert(
+                            row.name.clone(),
+                            context.new_buffer_with_bytes_checked(bytemuck::cast_slice(
+                                &values,
+                            ))?,
+                        );
+                        census.f32 += 1;
+                    }
+                    MixedCatalogLane::HgravuVector => {
+                        let values = dequant_hgravu_vector(&payload, &row.name)?;
+                        f32s.insert(
+                            row.name.clone(),
+                            context.new_buffer_with_bytes_checked(bytemuck::cast_slice(
+                                &values,
+                            ))?,
+                        );
+                        census.f32 += 1;
                     }
                 }
             }
+            eprintln!(
+                "qwen38-decode mixed census: tensors={} binary={} residual={} \
+                 hgravs={} uniform={} q4={} f32={} refused=0 expanded_to_q4=0 \
+                 expanded_to_float_gemv=0",
+                census.tensors,
+                census.binary,
+                census.residual,
+                census.hgravs,
+                census.uniform,
+                census.q4,
+                census.f32
+            );
+            eprintln!("{}", qwen38_mixed_k_complete_bind_message());
             Qwen38HybridDecodeSession::assert_mixed_mlp_native(&mixed)?;
             Ok(Self {
                 context,
@@ -934,26 +1148,6 @@ mod device {
         }
 
 
-
-        fn hgravu_is_vector(name: &str, shape: &[usize]) -> bool {
-            if name.ends_with("embed_tokens.weight") || name.ends_with("lm_head.weight") {
-                return false;
-            }
-            let gemv = name.ends_with("mlp.gate_proj.weight")
-                || name.ends_with("mlp.up_proj.weight")
-                || name.ends_with("mlp.down_proj.weight")
-                || name.ends_with("self_attn.q_proj.weight")
-                || name.ends_with("self_attn.k_proj.weight")
-                || name.ends_with("self_attn.v_proj.weight")
-                || name.ends_with("self_attn.o_proj.weight")
-                || name.contains("linear_attn.in_proj")
-                || name.ends_with("linear_attn.out_proj.weight");
-            if gemv {
-                return false;
-            }
-            let elements = shape.iter().try_fold(1usize, |a, b| a.checked_mul(*b));
-            matches!(elements, Some(n) if n <= 65_536)
-        }
 
         fn assert_mixed_mlp_native(mixed: &HashMap<String, MixedGpuWeight>) -> Result<()> {
             for layer in 0..QWEN38_LAYERS {
@@ -1328,12 +1522,16 @@ mod device {
             output: &PinnedBuffer,
         ) -> Result<()> {
             if qwen38_recon_fuse_enabled() {
-                tcb.dispatch_threads(
-                    "q80_binary_group_matvec_tg256",
-                    tg256_grid(body.rows),
-                    (256, 1, 1),
-                    |enc| self.encode_binary_args(enc, body, input, output),
-                )
+                qwen38_assert_k_complete_cols(body.cols)?;
+                let name = qwen38_binary_matvec_kernel(body.cols);
+                let grid = if body.cols > 2048 {
+                    simd8_grid(body.rows)
+                } else {
+                    tg256_grid(body.rows)
+                };
+                tcb.dispatch_threads(name, grid, (256, 1, 1), |enc| {
+                    self.encode_binary_args(enc, body, input, output)
+                })
             } else {
                 tcb.dispatch_threads(
                     crate::decode_family::matvec_binary(),
@@ -1352,12 +1550,16 @@ mod device {
             output: &PinnedBuffer,
         ) -> Result<()> {
             if qwen38_recon_fuse_enabled() {
-                tcb.dispatch_threads(
-                    "q80_binary_group_csr_matvec_tg256",
-                    tg256_grid(body.binary.rows),
-                    (256, 1, 1),
-                    |enc| self.encode_binary_csr_args(enc, body, input, output),
-                )
+                qwen38_assert_k_complete_cols(body.binary.cols)?;
+                let name = qwen38_residual_matvec_kernel(body.binary.cols);
+                let grid = if body.binary.cols > 2048 {
+                    simd8_grid(body.binary.rows)
+                } else {
+                    tg256_grid(body.binary.rows)
+                };
+                tcb.dispatch_threads(name, grid, (256, 1, 1), |enc| {
+                    self.encode_binary_csr_args(enc, body, input, output)
+                })
             } else {
                 tcb.dispatch_threads(
                     crate::decode_family::matvec_binary(),
@@ -3796,6 +3998,20 @@ mod mixed_catalog_contract_tests {
     use super::*;
 
     #[test]
+    fn absolute_segment_filename_does_not_join_segments() {
+        let root = Path::new("/artifact/mixed-sub15-v1");
+        let abs = "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-2p0-v1/segments/L00.hq38seg";
+        assert_eq!(
+            resolve_mixed_segment_path(root, abs),
+            PathBuf::from(abs)
+        );
+        assert_eq!(
+            resolve_mixed_segment_path(root, "L00.hq38seg"),
+            root.join("segments").join("L00.hq38seg")
+        );
+    }
+
+    #[test]
     fn hq38m20_magic_and_record_match_q80_layout() {
         assert_eq!(&QWEN38_MIXED_CATALOG_MAGIC, b"HQ38M20\0");
         assert_eq!(QWEN38_MIXED_RECORD_SIZE, 128);
@@ -3804,6 +4020,198 @@ mod mixed_catalog_contract_tests {
             QWEN38_MIXED_SCHEMA,
             "hawking.ascension.qwen38_mixed_representation_candidate.v1"
         );
+    }
+
+    #[test]
+    fn codec_4_f32v2_is_accepted_without_mlx_delta() {
+        let mut payload = Vec::new();
+        payload.extend_from_slice(&2u64.to_le_bytes());
+        payload.extend_from_slice(&1.046875f32.to_le_bytes());
+        payload.extend_from_slice(&0.5f32.to_le_bytes());
+        let name = "language_model.model.layers.0.input_layernorm.weight";
+        let lane = classify_qwen38_mixed_payload(4, &payload, name, &[2]).unwrap();
+        assert_eq!(lane, MixedCatalogLane::F32v2);
+        let values = read_qwen38_f32_payload(&payload).unwrap();
+        assert_eq!(values, vec![1.046875, 0.5]);
+    }
+
+    #[test]
+    fn unknown_codec_5_still_refuses() {
+        let err = classify_qwen38_mixed_payload(5, b"xxxxxxxx", "tensor.x", &[1])
+            .expect_err("codec 5 must refuse");
+        let msg = format!("{err}");
+        assert!(
+            msg.contains("unknown mixed codec 5"),
+            "refuse message was {msg}"
+        );
+    }
+
+    #[test]
+    fn k_complete_bind_retargets_wide_columns() {
+        assert_eq!(
+            qwen38_binary_matvec_kernel(2048),
+            "q80_binary_group_matvec_tg256"
+        );
+        assert_eq!(
+            qwen38_binary_matvec_kernel(5120),
+            "q80_binary_group_matvec_simd_bytes"
+        );
+        assert_eq!(
+            qwen38_binary_matvec_kernel(6144),
+            "q80_binary_group_matvec_simd_bytes"
+        );
+        assert_eq!(
+            qwen38_residual_matvec_kernel(5120),
+            "q80_binary_group_csr_matvec_bytes"
+        );
+        assert_eq!(
+            qwen38_residual_matvec_kernel(2048),
+            "q80_binary_group_csr_matvec_tg256"
+        );
+        qwen38_assert_k_complete_cols(5120).unwrap();
+        qwen38_assert_k_complete_cols(6144).unwrap();
+        qwen38_assert_k_complete_cols(2048).unwrap();
+        let err = qwen38_assert_k_complete_cols(2049).expect_err("remainder must refuse");
+        assert!(format!("{err}").contains("partial-K"));
+        assert!(qwen38_mixed_k_complete_bind_message().contains("K-complete"));
+    }
+
+    fn write_tiny_hq38m20(dir: &Path, name: &str, codec: u8, payload: &[u8]) {
+        let seg_name = "t0.seg";
+        std::fs::write(dir.join("segments").join(seg_name), payload).unwrap();
+        let name_bytes = name.as_bytes();
+        let mut rec = vec![0u8; QWEN38_MIXED_RECORD_SIZE];
+        rec[0..4].copy_from_slice(&0u32.to_le_bytes());
+        rec[4..6].copy_from_slice(&(name_bytes.len() as u16).to_le_bytes());
+        rec[6] = codec;
+        rec[7] = 6;
+        rec[8] = 1;
+        rec[12..16].copy_from_slice(&2u32.to_le_bytes());
+        rec[28..36].copy_from_slice(&2u64.to_le_bytes());
+        rec[36..38].copy_from_slice(&0u16.to_le_bytes());
+        rec[40..48].copy_from_slice(&0u64.to_le_bytes());
+        rec[48..56].copy_from_slice(&(payload.len() as u64).to_le_bytes());
+        let mut catalog = Vec::new();
+        catalog.extend_from_slice(&QWEN38_MIXED_CATALOG_MAGIC);
+        catalog.extend_from_slice(&QWEN38_MIXED_CATALOG_VERSION.to_le_bytes());
+        catalog.extend_from_slice(&1u32.to_le_bytes());
+        catalog.extend_from_slice(&1u32.to_le_bytes());
+        catalog.extend_from_slice(&0u32.to_le_bytes());
+        catalog.extend_from_slice(&(name_bytes.len() as u32).to_le_bytes());
+        catalog.extend_from_slice(&0u32.to_le_bytes());
+        let digest = [0u8; 32];
+        catalog.extend_from_slice(&0u16.to_le_bytes());
+        catalog.extend_from_slice(&(seg_name.len() as u16).to_le_bytes());
+        catalog.extend_from_slice(&(payload.len() as u64).to_le_bytes());
+        catalog.extend_from_slice(&digest);
+        catalog.extend_from_slice(seg_name.as_bytes());
+        catalog.extend_from_slice(&rec);
+        catalog.extend_from_slice(name_bytes);
+        std::fs::write(dir.join(QWEN38_MIXED_CATALOG_NAME), catalog).unwrap();
+    }
+
+    #[test]
+    fn catalog_roundtrip_codec_4_census_and_codec_5_refuses() {
+        let tmp = tempfile::tempdir().unwrap();
+        let root = tmp.path();
+        std::fs::create_dir(root.join("segments")).unwrap();
+        let mut payload = Vec::new();
+        payload.extend_from_slice(&2u64.to_le_bytes());
+        payload.extend_from_slice(&0.046875f32.to_le_bytes());
+        payload.extend_from_slice(&1.0f32.to_le_bytes());
+        write_tiny_hq38m20(
+            root,
+            "language_model.model.layers.0.input_layernorm.weight",
+            4,
+            &payload,
+        );
+        let census = census_qwen38_mixed_catalog(root).unwrap();
+        assert_eq!(census.tensors, 1);
+        assert_eq!(census.f32, 1);
+        assert_eq!(census.refused, 0);
+        assert_eq!(census.expanded_to_q4, 0);
+        assert_eq!(census.expanded_to_float_gemv, 0);
+
+        write_tiny_hq38m20(root, "tensor.x", 5, &payload);
+        let census = census_qwen38_mixed_catalog(root).unwrap();
+        assert_eq!(census.refused, 1);
+        assert!(census.refusals.iter().any(|s| s.contains("unknown mixed codec 5")));
+    }
+
+    #[test]
+    fn sub15_source_payloads_accept_mixed_gpu_layout() {
+        let camp = Path::new(
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b",
+        );
+        let mixed = camp.join("mixed-2p0-v1");
+        let sub15 = camp.join("mixed-sub15-v1");
+        if !mixed.join(QWEN38_MIXED_CATALOG_NAME).is_file() || !sub15.join("packed/attn").is_dir()
+        {
+            eprintln!("skip: mixed-2p0 / mixed-sub15 artifacts not on this host");
+            return;
+        }
+        let rows = parse_qwen38_mixed_catalog(&mixed).unwrap();
+        for (suffix, codec) in [
+            ("mlp.gate_proj.weight", 0u8),
+            ("mlp.up_proj.weight", 1u8),
+            ("mlp.down_proj.weight", 2u8),
+        ] {
+            let row = rows
+                .iter()
+                .find(|r| r.name.contains(".layers.0.") && r.name.ends_with(suffix))
+                .unwrap_or_else(|| panic!("missing L0 {suffix}"));
+            assert_eq!(row.codec, codec);
+            let payload = read_catalog_payload(row).unwrap();
+            let layout = mixed_gpu_layout(codec, &payload).expect(suffix);
+            assert!(layout.cols == 5120 || layout.cols == 17408, "{suffix} cols {}", layout.cols);
+        }
+
+        fn rice(name: &str) -> std::path::PathBuf {
+            use sha2::{Digest, Sha256};
+            let digest = Sha256::digest(name.as_bytes());
+            let stem: String = digest.iter().map(|b| format!("{b:02x}")).collect();
+            PathBuf::from(format!("{stem}.rice"))
+        }
+        let qkv = sub15.join("packed/attn").join(rice(
+            "language_model.model.layers.0.linear_attn.in_proj_qkv.weight",
+        ));
+        let a = sub15.join("packed/attn").join(rice(
+            "language_model.model.layers.0.linear_attn.in_proj_a.weight",
+        ));
+        let qkv_bytes = std::fs::read(&qkv).unwrap();
+        let a_bytes = std::fs::read(&a).unwrap();
+        let qkv_layout = mixed_gpu_layout(1, &qkv_bytes).expect("in_proj_qkv");
+        let a_layout = mixed_gpu_layout(1, &a_bytes).expect("in_proj_a");
+        assert_eq!((qkv_layout.rows, qkv_layout.cols), (10240, 5120));
+        assert_eq!((a_layout.rows, a_layout.cols), (48, 5120));
+    }
+
+    #[test]
+    fn sub15_native_catalog_census_if_emitted() {
+        let artifact = Path::new(
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-sub15-v1",
+        );
+        let staged = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../workspace/superwave/g1/mixed-sub15-native-catalog");
+        let root = if artifact.join(QWEN38_MIXED_CATALOG_NAME).is_file() {
+            artifact
+        } else if staged.join(QWEN38_MIXED_CATALOG_NAME).is_file() {
+            staged.as_path()
+        } else {
+            eprintln!("skip: mixed-sub15 catalog.hq38m20 not emitted yet");
+            return;
+        };
+        let census = census_qwen38_mixed_catalog(root).unwrap();
+        assert_eq!(census.refused, 0, "refusals: {:?}", census.refusals);
+        assert_eq!(census.expanded_to_q4, 0);
+        assert_eq!(census.expanded_to_float_gemv, 0);
+        assert_eq!(census.tensors, 851);
+        assert_eq!(census.binary, 64);
+        assert_eq!(census.residual, 368);
+        assert_eq!(census.hgravs, 64);
+        assert_eq!(census.uniform, 0);
+        assert_eq!(census.q4, 2);
+        assert_eq!(census.f32, 353);
     }
 }
 
