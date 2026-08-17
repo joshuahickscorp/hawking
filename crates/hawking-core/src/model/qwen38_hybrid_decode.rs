@@ -4749,9 +4749,9 @@ mod mixed_catalog_contract_tests {
                             "PARITY_CPU_ROW {name} row={r} cpu={sum:.8e} inc={inc_v:.8e} geo={geo_v:.8e} d_inc={d_inc:.3e} d_geo={d_geo:.3e}"
                         );
                         assert_eq!(d_geo, 0.0, "{name} row {r} geo must match CPU serial");
-                        assert!(
-                            d_inc > 1.0e-3,
-                            "{name} row {r} incumbent should miss CPU on the overflow tail"
+                        assert_eq!(
+                            d_inc, 0.0,
+                            "{name} row {r} incumbent must match CPU serial after source extract fix"
                         );
                     }
                     if let Some(r0) = first_bad {
@@ -4771,15 +4771,21 @@ mod mixed_catalog_contract_tests {
                 }
             }
             if name.ends_with("lm_head.weight") {
-                // Incumbent simd does `bit0 = element * bits` in uint32.
-                // bits=4 overflows at element >= 2^30. For K=5120 that is
-                // row >= 209715. geo addresses by group and does not overflow;
-                // CPU serial agrees with geo, not with simd, on the tail.
+                // Pre-fix: incumbent `bit0 = element * bits` wrapped at
+                // element >= 2^32/bits (row 209715 at bits=4, K=5120) and
+                // this block required first_bad == that row, last_bad == n-1,
+                // n_1e2 > 30_000. Source extract is now overflow-safe, so
+                // incumbent, geo, and the CPU serial oracle agree on the tail.
                 let overflow_el = (1u64 << 32) / u64::from(factor.bits);
                 let first_overflow_row = (overflow_el / u64::from(factor.cols)) as usize;
-                assert_eq!(first_bad, Some(first_overflow_row), "lm_head first-bad row");
-                assert!(last_bad + 1 == n, "lm_head tail should run to the last row");
-                assert!(n_1e2 > 30_000, "lm_head incumbent overflow should be a fat tail");
+                assert_eq!(first_overflow_row, 209715, "lm_head wrap row (bits=4)");
+                assert_eq!(
+                    first_bad, None,
+                    "lm_head incumbent must match geo after source extract fix"
+                );
+                assert_eq!(n_1e2, 0, "lm_head must have no |d|>1e-2 rows");
+                assert_eq!(max_abs, 0.0, "lm_head must be bit-identical to geo");
+                let _ = last_bad;
             } else {
                 assert_eq!(
                     max_abs, 0.0,
@@ -4790,6 +4796,262 @@ mod mixed_catalog_contract_tests {
         }
         eprintln!(
             "PARITY_WORST tensor={worst_name} max_abs={worst_abs:.8e} max_rel={worst_rel:.8e}"
+        );
+    }
+
+    fn overflowing_incumbent_kernel(bits: u32) -> &'static str {
+        // Always the extract_wide / extract simd family. Never geo_tpr64
+        // (bits 3/4) and never q80_uniform8 (bits 8) — those paths hide the
+        // wrap that the source extract still performs.
+        if bits == 3 {
+            "q80_hgravs01_factor_matvec_simd3"
+        } else {
+            "q80_hgravs01_factor_matvec_simd"
+        }
+    }
+
+    fn uint32_first_overflow_row(bits: u32, cols: u32) -> usize {
+        let wrap_el = (1u64 << 32) / u64::from(bits);
+        (wrap_el / u64::from(cols)) as usize
+    }
+
+    fn packed_from_uniform_payload(
+        factor: &crate::model::qwen_complete_binary::MixedFactorLayout,
+        payload: &[u8],
+    ) -> UniformFactorPacked {
+        let scales = &payload[factor.scale_off..factor.scale_off + factor.scale_bytes];
+        let mut scales_f16 = Vec::with_capacity(factor.scale_bytes / 2);
+        for chunk in scales.chunks_exact(2) {
+            scales_f16.push(u16::from_le_bytes([chunk[0], chunk[1]]));
+        }
+        UniformFactorPacked {
+            rows: factor.rows as usize,
+            cols: factor.cols as usize,
+            bits: u8::try_from(factor.bits).unwrap(),
+            group_size: factor.group_size as usize,
+            groups: (factor.rows as usize * factor.cols as usize)
+                .div_ceil(factor.group_size as usize),
+            bound: u16::try_from(factor.bound).unwrap(),
+            scales_f16,
+            codes: payload[factor.code_off..factor.code_off + factor.code_bytes].to_vec(),
+        }
+    }
+
+    #[test]
+    fn g0_uniform_q4_geo_tpr64_source_is_unchanged() {
+        let src = crate::metal::SHADER_QWEN_UNIFORM_Q4;
+        assert!(src.contains("kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128("));
+        assert!(
+            !src.contains("element * bits"),
+            "G0 Q4 kernel must not use the overflowing element*bits extract"
+        );
+        assert!(src.contains("int(nibble) - 8"));
+        assert_eq!(
+            QWEN38_Q4_MATVEC_KERNEL,
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+        );
+        assert!(
+            !crate::metal::SHADER_GK_FAMILY.contains("const uint bit0 = element * bits"),
+            "source extract must not form element*bits in uint32"
+        );
+        assert!(crate::metal::SHADER_GK_FAMILY.contains("gk_packed_lsb_byte"));
+        assert_eq!(
+            qwen38_hgravu01_geo_tpr64_launch(4, 64, 248320, 5120)
+                .map(|(name, _, _)| name),
+            Some(QWEN38_HGRAVU01_Q4_GEO_TPR64),
+            "HGRAVU bits=4 still binds geo; G0 HQ30UQ4 bind is a different kernel"
+        );
+    }
+
+    #[test]
+    fn uint32_element_times_bits_wraps_on_lm_head_for_on_disk_widths() {
+        const ROWS: u64 = 248320;
+        const COLS: u64 = 5120;
+        let elements = ROWS * COLS;
+        eprintln!(
+            "WRAP_TABLE header: bits wrap_el first_row lm_head_elements reaches"
+        );
+        for bits in [3u32, 4, 5, 6, 7, 8] {
+            let wrap_el = (1u64 << 32) / u64::from(bits);
+            let first_row = wrap_el / COLS;
+            let reaches = elements >= wrap_el;
+            eprintln!("WRAP bits={bits} wrap_el={wrap_el} first_row={first_row} elements={elements} reaches={reaches}");
+            if bits == 3 {
+                assert!(!reaches, "bits=3 must not wrap on this lm_head");
+            } else {
+                assert!(reaches, "bits={bits} must wrap on this lm_head");
+            }
+        }
+        assert_eq!(uint32_first_overflow_row(4, 5120), 209715);
+        assert_eq!(uint32_first_overflow_row(7, 5120), 119837);
+        assert_eq!(uint32_first_overflow_row(8, 5120), 104857);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn incumbent_extract_matches_cpu_oracle_above_uint32_overflow() {
+        // The production geo_tpr64 bind only covers bits 3/4. bits 5–8
+        // still dispatch the incumbent, which used `uint bit0 = element * bits`.
+        // Existing parity compared incumbent vs incumbent on tensors below
+        // the wrap, so both sides were identically correct. This test
+        // compares the overflowing incumbent against the CPU usize oracle
+        // on embed and lm_head at their real 248320×5120 size, at every
+        // HGRAVU01 bit width those tensors actually use on disk (4, 7, 8).
+        let cases = [
+            ("mixed-q3mlp-v1", 4u32),
+            ("mixed-floor-q7-v1", 7u32),
+            ("mixed-floor-q8-v1", 8u32),
+        ];
+        let tensors = [
+            "language_model.model.embed_tokens.weight",
+            "language_model.lm_head.weight",
+        ];
+        let context = match crate::metal::MetalContext::new() {
+            Ok(ctx) => ctx,
+            Err(err) => {
+                eprintln!("skip: MetalContext::new failed: {err}");
+                return;
+            }
+        };
+        let mut saw = 0usize;
+        let mut failures: Vec<String> = Vec::new();
+        eprintln!(
+            "ABOVE_OVERFLOW header: artifact tensor bits kernel rows cols first_ov row cpu gpu abs_d"
+        );
+        for (artifact, expect_bits) in cases {
+            let root = campaign_qwen38(artifact);
+            if !root.join(QWEN38_MIXED_CATALOG_NAME).is_file() {
+                eprintln!("skip artifact: {artifact} catalog missing");
+                continue;
+            }
+            let rows = parse_qwen38_mixed_catalog(&root).unwrap();
+            for name in tensors {
+                let row = rows
+                    .iter()
+                    .find(|r| r.name == name)
+                    .unwrap_or_else(|| panic!("{artifact} missing {name}"));
+                let payload = read_catalog_payload(row).unwrap();
+                let layout = mixed_gpu_layout(row.codec, &payload)
+                    .unwrap_or_else(|e| panic!("{artifact} {name}: {e}"));
+                let MixedGpuKind::Uniform(factor) = layout.kind else {
+                    panic!("{artifact} {name} is not HGRAVU01 Uniform");
+                };
+                assert_eq!(
+                    factor.bits, expect_bits,
+                    "{artifact} {name} bits"
+                );
+                assert_eq!(factor.rows, 248320, "{artifact} {name} rows");
+                assert_eq!(factor.cols, 5120, "{artifact} {name} cols");
+                let kernel = overflowing_incumbent_kernel(factor.bits);
+                assert!(
+                    !kernel.contains("geo_tpr64") && !kernel.contains("uniform8"),
+                    "must exercise the overflowing extract, got {kernel}"
+                );
+                let first_ov = uint32_first_overflow_row(factor.bits, factor.cols);
+                assert!(
+                    first_ov < factor.rows as usize,
+                    "{artifact} {name} bits={} does not reach wrap",
+                    factor.bits
+                );
+                let codes = context
+                    .new_buffer_with_bytes_checked(
+                        &payload[factor.code_off..factor.code_off + factor.code_bytes],
+                    )
+                    .unwrap();
+                let scales = context
+                    .new_buffer_with_bytes_checked(
+                        &payload[factor.scale_off..factor.scale_off + factor.scale_bytes],
+                    )
+                    .unwrap();
+                let mut x = vec![0.0f32; factor.cols as usize];
+                for (i, slot) in x.iter_mut().enumerate() {
+                    *slot = (i % 17) as f32 * 0.125 - 1.0;
+                }
+                let input = context
+                    .new_buffer_with_bytes_checked(bytemuck::cast_slice(&x))
+                    .unwrap();
+                let out = context
+                    .new_buffer_checked(factor.rows as usize * 4)
+                    .unwrap();
+                let inc_grid = (
+                    factor.rows.div_ceil(8).saturating_mul(256).max(256),
+                    1,
+                    1,
+                );
+                let mut tcb = crate::metal::TokenCommandBuffer::new(&context);
+                tcb.dispatch_threads(kernel, inc_grid, (256, 1, 1), |enc| {
+                    enc.set_buffer(0, Some(&codes), 0);
+                    enc.set_buffer(1, Some(&scales), 0);
+                    enc.set_buffer(2, Some(&input), 0);
+                    enc.set_buffer(3, Some(&out), 0);
+                    for (index, value) in [
+                        (4u64, factor.rows),
+                        (5, factor.cols),
+                        (6, factor.group_size),
+                        (7, factor.bits),
+                        (8, factor.bound),
+                    ] {
+                        enc.set_bytes(index, 4, &value as *const u32 as *const _);
+                    }
+                })
+                .unwrap();
+                tcb.commit_and_wait().unwrap();
+                let n = factor.rows as usize;
+                let gpu = unsafe { std::slice::from_raw_parts(out.contents() as *const f32, n) };
+                let packed = packed_from_uniform_payload(&factor, &payload);
+                drop(payload);
+                let mut probe = vec![
+                    first_ov.saturating_sub(1),
+                    first_ov,
+                    first_ov + 1,
+                    n - 2,
+                    n - 1,
+                ];
+                for r in 248044..=248076 {
+                    if r < n {
+                        probe.push(r);
+                    }
+                }
+                probe.sort_unstable();
+                probe.dedup();
+                probe.retain(|&r| r < n);
+                for r in probe {
+                    let mut cpu = 0.0f32;
+                    for c in 0..packed.cols {
+                        cpu += uniform_factor_value(&packed, r, c) * x[c];
+                    }
+                    let g = gpu[r];
+                    let d = (g - cpu).abs();
+                    eprintln!(
+                        "ABOVE_OVERFLOW {artifact} {name} bits={} {kernel} {}x{} first_ov={first_ov} row={r} cpu={cpu:.8e} gpu={g:.8e} abs_d={d:.3e}",
+                        factor.bits, factor.rows, factor.cols
+                    );
+                    if r < first_ov {
+                        if d > 1.0e-4 {
+                            failures.push(format!(
+                                "{artifact} {name} bits={} row={r} BELOW wrap should match: cpu={cpu} gpu={g} d={d}",
+                                factor.bits
+                            ));
+                        }
+                    } else if d > 1.0e-4 {
+                        failures.push(format!(
+                            "{artifact} {name} bits={} row={r} ABOVE wrap: cpu={cpu:.8e} gpu={g:.8e} d={d:.3e}",
+                            factor.bits
+                        ));
+                    }
+                }
+                saw += 1;
+            }
+        }
+        assert!(
+            saw == 6,
+            "expected 3 artifacts × 2 tensors, saw {saw} (missing on-disk HGRAVU01 embed/lm_head)"
+        );
+        assert!(
+            failures.is_empty(),
+            "incumbent extract != CPU usize oracle above uint32 wrap ({}):\n{}",
+            failures.len(),
+            failures.join("\n")
         );
     }
 }

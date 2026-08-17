@@ -1,0 +1,20 @@
+qwen38 prompt tokens=15 text="<|im_start|>user\nWhat is the capital of France?<|im_end|>\n<|im_start|>assistant\n"
+qwen38-decode opening Metal + 755 catalog tensors
+qwen38-decode upload 0/755
+qwen38-decode upload 50/755
+qwen38-decode upload 100/755
+qwen38-decode upload 150/755
+qwen38-decode upload 200/755
+qwen38-decode upload 250/755
+qwen38-decode upload 300/755
+qwen38-decode upload 350/755
+qwen38-decode upload 400/755
+qwen38-decode upload 450/755
+qwen38-decode upload 500/755
+qwen38-decode upload 550/755
+qwen38-decode upload 600/755
+qwen38-decode upload 650/755
+qwen38-decode upload 700/755
+qwen38-decode upload 750/755
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+wrote workspace/superwave/g1/overflow-generate/g0_france128.json

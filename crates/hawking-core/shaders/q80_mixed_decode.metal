@@ -867,7 +867,7 @@ kernel void q80_hgravs01_factor_matvec_simd3(
     // 2048x160: the 256-tile path did zero 8-wide work and fell through
     // to the 1-wide remainder.
     for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
-        const uint byte0 = ((row_base + col) * 3u) >> 3u;
+        const uint byte0 = gk_packed_lsb_byte(row_base + col, 3u);
         const uint b0 = uint(codes[byte0]);
         const uint b1 = uint(codes[byte0 + 1u]);
         const uint b2 = uint(codes[byte0 + 2u]);
@@ -1744,7 +1744,7 @@ kernel void q80_hgravs01_factor_matvec_simd3_addr_probe(
     if (row < rows && group_size != 0u) {
         const uint row_base = row * cols;
         for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
-            const uint byte0 = ((row_base + col) * 3u) >> 3u;
+            const uint byte0 = gk_packed_lsb_byte(row_base + col, 3u);
             const uint b0 = uint(codes[byte0]);
             const uint b2 = uint(codes[byte0 + 2u]);
             const float s0 = float(scales[(row_base + col) / group_size]);
@@ -1780,7 +1780,7 @@ kernel void q80_hgravs01_factor_matvec_simd3_decode_probe(
     if (row < rows && bits == 3u && group_size != 0u) {
         const uint row_base = row * cols;
         for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
-            const uint byte0 = ((row_base + col) * 3u) >> 3u;
+            const uint byte0 = gk_packed_lsb_byte(row_base + col, 3u);
             const uint b0 = uint(codes[byte0]);
             const uint b1 = uint(codes[byte0 + 1u]);
             const uint b2 = uint(codes[byte0 + 2u]);

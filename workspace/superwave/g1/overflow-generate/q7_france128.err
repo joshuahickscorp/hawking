@@ -1,0 +1,24 @@
+qwen38 prompt tokens=15 text="<|im_start|>user\nWhat is the capital of France?<|im_end|>\n<|im_start|>assistant\n"
+qwen38-decode opening mixed HQ38M20 + 851 catalog tensors (no reconstruct-to-Q4)
+qwen38-decode mixed upload 0/851
+qwen38-decode mixed upload 50/851
+qwen38-decode mixed upload 100/851
+qwen38-decode mixed upload 150/851
+qwen38-decode mixed upload 200/851
+qwen38-decode mixed upload 250/851
+qwen38-decode mixed upload 300/851
+qwen38-decode mixed upload 350/851
+qwen38-decode mixed upload 400/851
+qwen38-decode mixed upload 450/851
+qwen38-decode mixed upload 500/851
+qwen38-decode mixed upload 550/851
+qwen38-decode mixed upload 600/851
+qwen38-decode mixed upload 650/851
+qwen38-decode mixed upload 700/851
+qwen38-decode mixed upload 750/851
+qwen38-decode mixed upload 800/851
+qwen38-decode mixed upload 850/851
+qwen38-decode mixed census: tensors=851 binary=64 residual=64 hgravs=64 uniform=306 q4=0 f32=353 refused=0 expanded_to_q4=0 expanded_to_float_gemv=0
+qwen38-decode mixed bind: K-complete; recon_fuse=ON uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes when cols>2048 (256-col tiles; this model K in {5120,6144}); cols<=2048 stay on tg256; recon_fuse=0 walks every column via gk_matvec_binary
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+wrote workspace/superwave/g1/overflow-generate/q7_france128.json

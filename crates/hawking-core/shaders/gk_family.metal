@@ -176,14 +176,29 @@ static inline float gk_binary_lane_term(
     return (positive ? scale : -scale) * input[col];
 }
 
+// Byte/shift of bit 0 of `element` packed LSB-first at `bits` bits.
+// Equivalent to (element * bits) >> 3 and (element * bits) & 7, but the
+// factors stay in uint32 for bits in 1..=8 and any uint element (every
+// tensor that fits this kernel signature). Cost vs the wrapping mul:
+// +1 32-bit mul, +1 add, +1 and, +1 shr. No 64-bit regs.
+static inline uint gk_packed_lsb_byte(uint element, uint bits)
+{
+    const uint r = element & 7u;
+    return (element >> 3u) * bits + ((r * bits) >> 3u);
+}
+
+static inline uint gk_packed_lsb_shift(uint element, uint bits)
+{
+    return ((element & 7u) * bits) & 7u;
+}
+
 static inline uint gk_uniform_extract_wide(
     device const uchar* codes,
     uint element,
     uint bits)
 {
-    const uint bit0 = element * bits;
-    const uint byte0 = bit0 >> 3u;
-    const uint shift = bit0 & 7u;
+    const uint byte0 = gk_packed_lsb_byte(element, bits);
+    const uint shift = gk_packed_lsb_shift(element, bits);
     uint packed = uint(codes[byte0]);
     if (shift + bits > 8u) {
         packed |= uint(codes[byte0 + 1u]) << 8u;
@@ -210,13 +225,17 @@ static inline uint gk_uniform_extract(
     uint element,
     uint bits)
 {
-    const uint bit0 = element * bits;
+    uint byte_i = gk_packed_lsb_byte(element, bits);
+    uint sh = gk_packed_lsb_shift(element, bits);
     uint value = 0u;
     for (uint b = 0u; b < bits; ++b) {
-        const uint bit_index = bit0 + b;
-        const uchar byte = codes[bit_index >> 3u];
-        const uint bit = (byte >> (bit_index & 7u)) & 1u;
-        value |= (bit << b);
+        const uchar byte = codes[byte_i];
+        value |= ((uint(byte) >> sh) & 1u) << b;
+        sh += 1u;
+        if (sh == 8u) {
+            sh = 0u;
+            byte_i += 1u;
+        }
     }
     return value;
 }
