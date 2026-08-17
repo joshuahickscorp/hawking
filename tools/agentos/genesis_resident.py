@@ -73,8 +73,70 @@ def default_lineage(repo: Path | None = None) -> Path:
     return (repo or default_repo()) / "receipts" / "ascent-2026-08-16" / "GENESIS_LINEAGE_CURRENT.json"
 
 
+def _lineage_current(repo: Path) -> dict[str, Any] | None:
+    """Return the seated CURRENT identity, failing closed on malformed state.
+
+    A successor may carry a new artifact or resident executable.  Starting the
+    static G0 paths after such a state has become authoritative is worse than a
+    failed start: it would make the process look live while executing the wrong
+    generation.  ``None`` means no lineage file exists yet; an empty mapping
+    means a lineage file exists but cannot safely select a body.
+    """
+    path = default_lineage(repo)
+    if not path.is_file():
+        return None
+    try:
+        raw = json.loads(path.read_text())
+        slots = raw.get("slots")
+        current = slots.get("CURRENT") if isinstance(slots, dict) else None
+        if not isinstance(current, dict) or not isinstance(current.get("identity"), dict):
+            return {}
+        return current
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def _resolve_repo_path(value: object, repo: Path) -> Path | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    candidate = Path(value).expanduser()
+    if not candidate.is_absolute():
+        candidate = repo / candidate
+    try:
+        return candidate.resolve(strict=True)
+    except OSError:
+        return None
+
+
+def _sha256_file(path: Path) -> str | None:
+    try:
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for block in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(block)
+        return digest.hexdigest()
+    except OSError:
+        return None
+
+
 def discover_artifact(repo: Path | None = None) -> Path | None:
     root = repo or default_repo()
+    current = _lineage_current(root)
+    if current is not None:
+        identity = current.get("identity") if isinstance(current, dict) else None
+        path = _resolve_repo_path(identity.get("artifact") if isinstance(identity, dict) else None, root)
+        claimed = current.get("artifact_sha") if isinstance(current, dict) else None
+        manifest = path / "manifest.json" if path is not None else None
+        if (
+            path is None
+            or not path.is_dir()
+            or manifest is None
+            or not manifest.is_file()
+            or not isinstance(claimed, str)
+            or _sha256_file(manifest) != claimed
+        ):
+            return None
+        return path
     for cand in (
         root / "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
         PARENT_HAWKING / "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
@@ -86,6 +148,17 @@ def discover_artifact(repo: Path | None = None) -> Path | None:
 
 def discover_tokenizer(repo: Path | None = None) -> Path | None:
     root = repo or default_repo()
+    current = _lineage_current(root)
+    if isinstance(current, dict):
+        identity = current.get("identity")
+        selected = _resolve_repo_path(
+            identity.get("tokenizer") if isinstance(identity, dict) else None,
+            root,
+        )
+        if selected is not None:
+            if selected.is_file():
+                return selected
+            return None
     for cand in (
         root / "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json",
         PARENT_HAWKING / "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json",
@@ -95,16 +168,34 @@ def discover_tokenizer(repo: Path | None = None) -> Path | None:
     return None
 
 
-def discover_body_bin() -> Path | None:
+def discover_body_bin(repo: Path | None = None) -> Path | None:
     env = os.environ.get("GENESIS_BODY_BIN")
     if env:
         p = Path(env)
         if os.access(p, os.X_OK):
             return p
         return None
+    root = repo or default_repo()
+    current = _lineage_current(root)
+    if current is not None:
+        identity = current.get("identity") if isinstance(current, dict) else None
+        selected = _resolve_repo_path(
+            identity.get("resident_executable") if isinstance(identity, dict) else None,
+            root,
+        )
+        claimed = current.get("runtime_sha") if isinstance(current, dict) else None
+        if (
+            selected is None
+            or not selected.is_file()
+            or not os.access(selected, os.X_OK)
+            or not isinstance(claimed, str)
+            or _sha256_file(selected) != claimed
+        ):
+            return None
+        return selected
     here = Path(__file__).resolve().parent
     candidates = [
-        default_repo() / "workspace/ops/build/rust/release/genesis-resident",
+        root / "workspace/ops/build/rust/release/genesis-resident",
         PARENT_HAWKING / "workspace/ops/build/rust/release/genesis-resident",
         here / "genesis_body" / "target" / "release" / "genesis-resident",
         Path("/tmp/genesis-resident-target/release/genesis-resident"),
@@ -470,7 +561,8 @@ def _exec_body(ns: argparse.Namespace) -> int:
     # Production resident startup is not allowed without the canonical Genesis
     # authority. Per-request injection verifies it again to catch later drift.
     binding = contract_provenance()
-    binary = discover_body_bin()
+    repo = Path(ns.repo) if ns.repo else default_repo()
+    binary = discover_body_bin(repo)
     if binary is None:
         print("genesis-resident: body binary not built", file=sys.stderr)
         print(
@@ -479,7 +571,6 @@ def _exec_body(ns: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 2
-    repo = Path(ns.repo) if ns.repo else default_repo()
     artifact = Path(ns.artifact_root) if ns.artifact_root else discover_artifact(repo)
     tokenizer = Path(ns.tokenizer) if ns.tokenizer else discover_tokenizer(repo)
     if artifact is None or tokenizer is None:
@@ -509,6 +600,8 @@ def _exec_body(ns: argparse.Namespace) -> int:
     ]
     if lineage.is_file():
         argv.extend(["--lineage", str(lineage)])
+    if ns.follow_lineage:
+        argv.append("--follow-lineage")
     os.execv(str(binary), argv)
     return 2
 
@@ -566,6 +659,11 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--artifact-root")
     serve.add_argument("--tokenizer")
     serve.add_argument("--lineage")
+    serve.add_argument(
+        "--follow-lineage",
+        action="store_true",
+        help="legacy/manual polling mode; normal promotion is controller-driven",
+    )
     serve.add_argument("--repo", default=str(repo))
     serve.add_argument("--max-seq-len", type=int, default=4096)
     serve.add_argument("--max-new-tokens", type=int, default=900)

@@ -24,7 +24,10 @@ import genesis_resident as gr  # noqa: E402
 
 PARENT = Path("/Users/scammermike/Downloads/hawking")
 BODY = Path("/tmp/genesis-resident-target/release/genesis-resident")
-GREEDY = PARENT / "workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy"
+GREEDY = (
+    PARENT
+    / "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy"
+)
 ARTIFACT = PARENT / "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1"
 TOKENIZER = PARENT / "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json"
 

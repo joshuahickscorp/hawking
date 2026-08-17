@@ -41,6 +41,15 @@ GROK = Path.home() / ".claude-grok" / "bin" / "grok-run"
 # Durable, in-repo. The session scratchpad does NOT survive the session, and a
 # daemon meant to run unattended cannot depend on a path that disappears.
 LANES = REPO / "workspace" / "ops" / "ascent-lanes"
+# The resident and every protected benchmark use the same exclusive GPU lane.
+# A resident proposal is a real decode, not CPU-only planning, so it must never
+# be started merely to wait behind a protected measurement.  Besides wasting
+# the serial body, that makes health and the other logical sessions unavailable
+# for the full proposal duration.
+GPU_LANE_LOCK = Path("/tmp/hawking-gpu-lane.lock")
+GPU_RESOURCE_CLASSES = frozenset(
+    {"GPU_DIRTY", "GPU-LAB", "GPU_PROTECTED", "GPU_EXCLUSIVE", "MIXED"}
+)
 
 DISK_FLOOR_GIB = 15.0
 DISK_WARN_GIB = 90.0   # raised after a 0-byte stall: lanes cost 1-19 GiB each
@@ -50,7 +59,24 @@ MAX_ATTEMPTS_PER_BOTTLENECK = 12   # a dominant cost deserves many mechanisms,
 MAX_CONCURRENT = 10    # raised again per user steer: the 0-byte stall is now guarded
                        # by the governor reaping the grok worktree pool, which is the
                        # real protection - the cap was only ever a blunt proxy for it
-POLL_SECONDS = 300
+# A completion or failed launcher should be visible promptly enough to keep the
+# organism advancing, without turning the campaign ledger into a polling storm.
+POLL_SECONDS = 60
+DELEGATE_LOG = REPO / "workspace" / "ops" / "ascent-delegates.log"
+# Candidate requests are produced by durable AgentOS work but never promote from
+# inside a model session. The daemon may *dispatch* this separate external
+# controller when an inbox item is ready; all protected evidence and lineage
+# mutation remain in tools/genesis_lifecycle.py.
+GENESIS_CANDIDATE_ROOT = REPO / "workspace" / "ops" / "genesis-candidates"
+GENESIS_LIFECYCLE = REPO / "tools" / "genesis_lifecycle.py"
+GENESIS_LIFECYCLE_LOG = REPO / "workspace" / "ops" / "genesis-lifecycle.log"
+GENESIS_LIFECYCLE_STATE = REPO / "workspace" / "ops" / "genesis-lifecycle-controller.json"
+# One bounded HCLI turn gives each logical worker a real implementation surface
+# between protected experiments.  It is a separate process because the daemon
+# remains only a scheduler: the worker cannot gain lifecycle authority from it.
+GENESIS_AGENTOS = REPO / "tools" / "genesis_agentos.py"
+GENESIS_AGENTOS_LOG = REPO / "workspace" / "ops" / "genesis-agentos.log"
+GENESIS_AGENTOS_STATE = REPO / "workspace" / "ops" / "genesis-agentos-controller.json"
 
 # Real Tier-1 gates. Reject-only: passing here is NOT promotion.
 TIER1 = {
@@ -78,6 +104,89 @@ def sh(cmd: str, timeout: int = 1800) -> tuple[int, str]:
     p = subprocess.run(cmd, shell=True, cwd=REPO, capture_output=True,
                        text=True, timeout=timeout)
     return p.returncode, p.stdout + p.stderr
+
+
+def process_alive(pid: object) -> bool:
+    """Return real process liveness, never a stale task-state assertion.
+
+    A Grok task's ``status`` file is written before the executor starts.  It is
+    therefore useful telemetry but not proof that an optimizer still exists.
+    A detached launcher PID is the authoritative liveness signal for new lanes;
+    legacy lanes retain the conservative pgrep fallback in ``one_pass`` below.
+    """
+    try:
+        value = int(pid)
+    except (TypeError, ValueError):
+        return False
+    if value <= 0:
+        return False
+    try:
+        os.kill(value, 0)
+    except OSError:
+        return False
+    # ``kill(pid, 0)`` still succeeds for an unreaped zombie.  The original
+    # background-launch failure left exactly that shape: a dead runner held a
+    # PID forever and suppressed retries.  Treat Z* process states as dead;
+    # an uncertain ``ps`` result remains conservatively live.
+    try:
+        proc = subprocess.run(
+            ["ps", "-o", "stat=", "-p", str(value)],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return True
+    state = proc.stdout.strip()
+    return bool(state) and not state.startswith("Z")
+
+
+def launch_target(target: dict, resource_class: str, profile: str) -> int | None:
+    """Start one lane under a durable, independently observable launcher.
+
+    ``grok-run --background`` forks a child that can disappear after only its
+    optimistic ``running`` marker is written.  Calling the runner in the
+    foreground from a detached process preserves its normal task receipts while
+    giving the Genesis supervisor a PID it can actually verify and reap.
+    """
+    contract = Path(str(target.get("contract") or ""))
+    task = str(target.get("id") or "").strip()
+    if not task or not contract.is_file():
+        return None
+    DELEGATE_LOG.parent.mkdir(parents=True, exist_ok=True)
+    cmd = [
+        str(GROK),
+        "delegate",
+        "--task",
+        task,
+        "--contract",
+        str(contract),
+        "--repo",
+        str(REPO),
+        "--profile",
+        profile,
+    ]
+    try:
+        with DELEGATE_LOG.open("a", encoding="utf-8") as log:
+            proc = subprocess.Popen(
+                cmd,
+                cwd=REPO,
+                stdin=subprocess.DEVNULL,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+                close_fds=True,
+            )
+    except OSError:
+        return None
+    target.update(
+        status="running",
+        launcher_pid=proc.pid,
+        admitted_resource_class=resource_class,
+        admitted_profile=profile,
+        launch_backend="detached_foreground_grok_run",
+    )
+    return proc.pid
 
 
 def load(path: Path, default):
@@ -195,8 +304,19 @@ def _candidate_pending() -> bool:
     nowhere to launch, which is the one failure the lineage cannot recover from.
     """
     try:
-        return bool(json.loads(LINEAGE_STATE.read_text())["slots"].get("CANDIDATE"))
+        if bool(json.loads(LINEAGE_STATE.read_text())["slots"].get("CANDIDATE")):
+            return True
     except (OSError, ValueError, KeyError):
+        return True
+    # A valid-looking request has not yet been nominated, but it can become a
+    # real test subject next. Reserve room now rather than launching enough
+    # unrelated lanes to make a protected child impossible to start.
+    try:
+        return any(
+            any((GENESIS_CANDIDATE_ROOT / name).glob("*.json"))
+            for name in ("inbox", "active")
+        )
+    except OSError:
         return True
 
 
@@ -295,9 +415,24 @@ def harvest() -> list[dict]:
 
 
 def model_of(lane: str) -> str:
+    """Name the model a lane belongs to.
+
+    The q80 default is load-bearing in the wrong direction: q80 is sealed and not in
+    ACTIVE_MODELS, so anything falling through here has its bottleneck dropped
+    silently AND is then caught by the `-q80-` deauthorisation pattern. The `q38-*`
+    lanes are Qwen3.8 work that was being banned as sealed-model work for exactly
+    that reason - the 4.253 BPW attention roof and the 964-dispatch GPU body among
+    them. Match the abbreviation too.
+    """
     if lane.startswith("dsv"):
         return "dsv4f"
-    if lane.startswith("qwen38") or "qwen38" in lane or lane.startswith("genesis"):
+    if (
+        lane.startswith("qwen38")
+        or "qwen38" in lane
+        or lane.startswith("q38")
+        or "q38-" in lane
+        or lane.startswith("genesis")
+    ):
         return "qwen38"
     return "q80"
 
@@ -380,6 +515,30 @@ def slug(text: str) -> str:
     return "-".join(keep) or "unnamed"
 
 
+def next_target_id(model: str, bottleneck: str, existing: set[object]) -> str:
+    """Allocate a fresh retry id without treating historical holes as a stop.
+
+    The old counter was derived from every historical row.  Once an empty proposal
+    had created ``try2`` through ``try12``, a later real proposal calculated an
+    already-used id and the scheduler silently skipped it.  The attempt budget is
+    now based on named mechanisms; the id is only an immutable record name, so it
+    must be selected independently and may legitimately be ``try13`` after a run
+    of invalid historical placeholders.
+    """
+    base = f"auto-{model}-{slug(bottleneck)}"
+    if base not in existing:
+        return base
+    retry = 2
+    while f"{base}-try{retry}" in existing:
+        retry += 1
+    return f"{base}-try{retry}"
+
+
+def has_named_mechanism(target: dict) -> bool:
+    """Whether this row represents a real research attempt, not a placeholder."""
+    return bool(str(target.get("mechanism") or "").strip())
+
+
 MAX_GENERATED = 96   # widened 2026-08-16: Qwen-first pivot needs a deeper pool
 
 
@@ -408,6 +567,12 @@ GENESIS_RESIDENT_PROPOSE_TIMEOUT_S = 1800
 # A reasoning model spends most of its budget inside <think>. At 900 the body ran
 # out mid-reasoning and never emitted an answer, so every proposal came back empty
 # and the named-mechanism gate refused every target.
+#
+# prompt + max_new MUST fit the body's context window or the body refuses the whole
+# request, and that refusal is discarded by both the client and this module - it is
+# indistinguishable from a body that had nothing to say. The wire prompt measures
+# ~1789 tokens (the contract capsule is most of it), so 2600 overflowed a 4096
+# window and silently refused EVERY propose. The body is now served at 8192.
 GENESIS_PROPOSE_MAX_NEW_TOKENS = 2600
 GENESIS_SYSTEM_CONTRACT = (
     REPO / "contracts" / "genesis" / "QWEN38_GENESIS_SYSTEM_DIRECTIVE.md"
@@ -429,6 +594,14 @@ def _genesis_prompt(bottleneck: str) -> str:
         "it mixed the wrong bytes, whole-token GPU time, and a sequential control that "
         "was not the Q4 grouped-GEMV roof. Do not infer that density is the only lever.\n\n"
         f"MEASURED BOTTLENECK NOW: {bottleneck}\n\n"
+        "MISSION PRIORITY (non-negotiable): make this Genesis materially smaller and "
+        "faster. Until >=100 VALID TPS, attack physical BPW, unique-once weight bytes, "
+        "or complete-token wall before any convenience feature. Be resourceful in the "
+        "actual checkout: inspect current receipts, code, and negative science; choose "
+        "one high-leverage mechanism that changes a measured cost; and give its cheapest "
+        "falsifier. AgentOS/HCLI work may improve tool-wait utilization only when it is "
+        "CPU-safe and cannot delay protected Gravity/kernel work. Do not ask for a plan, "
+        "repeat dead theories, or substitute aspiration for a measurable mechanism.\n\n"
         "Already REFUTED by measurement - do not propose these again: fusing tiny kernels "
         "into the following GEMV (+10.68 ms REGRESSION); cross-token cache reuse (hot/cold "
         "gap only 2.5%); amortizing DRAM by issuing N INDEPENDENT dispatches against one "
@@ -524,12 +697,283 @@ def mechanism_admission(target: dict, state: dict) -> tuple[bool, dict]:
         }
 
 
-def _try_resident_propose(prompt: str) -> str:
-    """Run one resident inference under the same GPU mutex as measurements.
+def _resident_process_alive() -> bool:
+    """Is a resident body process alive, regardless of whether it can answer now?
 
-    Health is checked before entering the potentially long lock queue, so a dead
-    body remains a fast no-op. The client is passed the prompt as one argv item;
-    no prompt text is ever interpreted by a shell.
+    The body serves decodes serially, so its health socket goes quiet for the whole
+    length of another session's generation. Health alone cannot tell BUSY from DEAD.
+    """
+    try:
+        p = subprocess.run(["pgrep", "-f", "genesis-resident"],
+                           capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return bool(p.stdout.strip())
+
+
+def gpu_lane_busy() -> bool:
+    """Whether protected GPU work currently owns the shared lane.
+
+    Presence is intentionally sufficient.  The lock implementation itself
+    owns stale-lock recovery, and an uncertain lock must fail closed here: a
+    delayed proposal is harmless, but stealing the lane can corrupt a paired
+    measurement or strand the serial resident behind it.
+    """
+    return GPU_LANE_LOCK.exists()
+
+
+def protected_gpu_target_active() -> bool:
+    """Whether the durable queue says a protected GPU experiment is in flight.
+
+    There is a short interval before an executor creates the on-disk GPU lock.
+    Treat that interval as occupied too.  Otherwise a parent proposal can win the
+    race, block the one resident body, and force the real benchmark to wait.  A
+    stale ``running`` target only delays new resident speculation until the next
+    reconciliation pass; it is safer than contaminating an active measurement.
+    """
+    try:
+        state = load(STATE, {"targets": []})
+        targets = state.get("targets", [])
+    except (OSError, ValueError, AttributeError):
+        return True
+    if not isinstance(targets, list):
+        return True
+    for target in targets:
+        # A durable pending protected target reserves the lane too.  A parent
+        # proposal may otherwise start in the interval before the dispatcher
+        # launches the worker, seize the serial resident, and make the worker
+        # wait behind speculative text generation.
+        if not isinstance(target, dict) or target.get("status") not in {"pending", "running"}:
+            continue
+        raw = str(target.get("resource_class") or "").strip().upper()
+        if raw in GPU_RESOURCE_CLASSES:
+            return True
+    return False
+
+
+def protected_gpu_target_running(state: dict | None = None) -> bool:
+    """Whether an already-launched protected target occupies the GPU now.
+
+    Pending targets still reserve the lane from speculative parent proposals,
+    but a short AgentOS tool turn may run between them. This distinction keeps
+    both loops alive while never overlapping a resident decode with an actual
+    protected capture.
+    """
+    try:
+        source = state if state is not None else load(STATE, {"targets": []})
+        targets = source.get("targets", [])
+    except (OSError, ValueError, AttributeError):
+        return True
+    if not isinstance(targets, list):
+        return True
+    for target in targets:
+        if not isinstance(target, dict) or target.get("status") != "running":
+            continue
+        raw = str(target.get("resource_class") or target.get("admitted_resource_class") or "").strip().upper()
+        if raw in GPU_RESOURCE_CLASSES:
+            return True
+    return False
+
+
+def _candidate_inbox_entries(name: str) -> list[Path]:
+    """Return only durable candidate request files, never inferred success."""
+    directory = GENESIS_CANDIDATE_ROOT / name
+    try:
+        if not directory.is_dir():
+            return []
+        return sorted(path for path in directory.glob("*.json") if path.is_file() and not path.is_symlink())
+    except OSError:
+        return []
+
+
+def candidate_lifecycle_status() -> dict:
+    """Observe the external controller without gaining promotion authority."""
+    inbox = _candidate_inbox_entries("inbox")
+    active = _candidate_inbox_entries("active")
+    saved = load(GENESIS_LIFECYCLE_STATE, {})
+    if not isinstance(saved, dict):
+        saved = {}
+    pid = saved.get("pid")
+    if process_alive(pid):
+        return {
+            "status": "running",
+            "pid": int(pid),
+            "inbox": [path.name for path in inbox],
+            "active": [path.name for path in active],
+        }
+    if active:
+        # A controller process that vanished while owning a request is not
+        # retried blindly. It may have changed lineage after its last durable
+        # write, so this is an explicit recovery state for the next controller.
+        return {
+            "status": "recovery_required",
+            "inbox": [path.name for path in inbox],
+            "active": [path.name for path in active],
+        }
+    if inbox:
+        return {"status": "pending", "inbox": [path.name for path in inbox], "active": []}
+    return {"status": "idle", "inbox": [], "active": []}
+
+
+def dispatch_candidate_lifecycle() -> dict:
+    """Start one external one-shot lifecycle controller if a request awaits it.
+
+    This function deliberately knows neither candidate contents nor lineage
+    mutation APIs. It is a durable process dispatcher in the same sense as
+    ``launch_target``; the separately executable controller owns promotion.
+    """
+    status = candidate_lifecycle_status()
+    if status["status"] != "pending":
+        return status
+    if not GENESIS_LIFECYCLE.is_file():
+        return {**status, "status": "unavailable", "reason": "genesis lifecycle CLI missing"}
+    GENESIS_LIFECYCLE_LOG.parent.mkdir(parents=True, exist_ok=True)
+    command = [
+        sys.executable,
+        str(GENESIS_LIFECYCLE),
+        "process-inbox",
+        "--repo",
+        str(REPO),
+    ]
+    try:
+        with GENESIS_LIFECYCLE_LOG.open("a", encoding="utf-8") as log:
+            proc = subprocess.Popen(
+                command,
+                cwd=REPO,
+                stdin=subprocess.DEVNULL,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+                close_fds=True,
+            )
+    except OSError as exc:
+        return {**status, "status": "launch_failed", "reason": str(exc)}
+    save(
+        GENESIS_LIFECYCLE_STATE,
+        {
+            "schema": "hawking.genesis.lifecycle_dispatch.v1",
+            "status": "running",
+            "pid": proc.pid,
+            "started_at": time.time(),
+            "command": command,
+            "inbox_before_launch": status["inbox"],
+        },
+    )
+    return {**status, "status": "started", "pid": proc.pid}
+
+
+def _agentos_interval_s() -> int:
+    """Bound retry pressure if the resident emits malformed/no tool calls."""
+    try:
+        requested = int(os.environ.get("GENESIS_AGENTOS_MIN_INTERVAL_S", "180"))
+    except ValueError:
+        requested = 180
+    return min(max(requested, 30), 3_600)
+
+
+def agentos_turn_status() -> dict:
+    """Observe one bounded HCLI turn without treating a worker as a child.
+
+    A live AgentOS process owns a serial resident decode even though it does
+    not hold the protected GPU benchmark lock.  The scheduler uses this state
+    to avoid launching a protected target into that decode.
+    """
+    try:
+        saved = load(GENESIS_AGENTOS_STATE, {})
+    except (OSError, ValueError):
+        saved = {}
+    if not isinstance(saved, dict):
+        saved = {}
+    pid = saved.get("pid")
+    worker_id = saved.get("worker_id")
+    if process_alive(pid):
+        return {
+            "status": "running",
+            "pid": int(pid),
+            "worker_id": worker_id,
+            "started_at": saved.get("started_at"),
+        }
+    try:
+        started_at = float(saved.get("started_at", 0.0))
+    except (TypeError, ValueError):
+        started_at = 0.0
+    remaining = max(0, int(_agentos_interval_s() - (time.time() - started_at))) if started_at else 0
+    if remaining:
+        return {
+            "status": "cooldown",
+            "worker_id": worker_id,
+            "next_turn_in_s": remaining,
+        }
+    return {"status": "idle", "worker_id": worker_id}
+
+
+def _next_agentos_worker() -> str:
+    """Round-robin separate durable fronts instead of starving kernel work."""
+    try:
+        saved = load(GENESIS_AGENTOS_STATE, {})
+    except (OSError, ValueError):
+        saved = {}
+    previous = saved.get("worker_id") if isinstance(saved, dict) else None
+    return "kernel" if previous == "gravity" else "gravity"
+
+
+def dispatch_agentos_turn() -> dict:
+    """Launch one bounded non-authoritative AgentOS/HCLI implementation turn."""
+    status = agentos_turn_status()
+    if status["status"] != "idle":
+        return status
+    if not GENESIS_AGENTOS.is_file():
+        return {**status, "status": "unavailable", "reason": "genesis AgentOS CLI missing"}
+    worker_id = _next_agentos_worker()
+    GENESIS_AGENTOS_LOG.parent.mkdir(parents=True, exist_ok=True)
+    command = [
+        sys.executable,
+        str(GENESIS_AGENTOS),
+        "tick",
+        "--repo",
+        str(REPO),
+        "--worker",
+        worker_id,
+        "--max-rounds",
+        "2",
+    ]
+    try:
+        with GENESIS_AGENTOS_LOG.open("a", encoding="utf-8") as log:
+            proc = subprocess.Popen(
+                command,
+                cwd=REPO,
+                stdin=subprocess.DEVNULL,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+                close_fds=True,
+            )
+    except OSError as exc:
+        return {**status, "status": "launch_failed", "worker_id": worker_id, "reason": str(exc)}
+    save(
+        GENESIS_AGENTOS_STATE,
+        {
+            "schema": "hawking.genesis.agentos_dispatch.v1",
+            "status": "running",
+            "pid": proc.pid,
+            "worker_id": worker_id,
+            "started_at": time.time(),
+            "command": command,
+        },
+    )
+    return {**status, "status": "started", "pid": proc.pid, "worker_id": worker_id}
+
+
+def _try_resident_propose(prompt: str) -> str:
+    """Run one resident inference against the resident body.
+
+    A body that cannot answer is only a fast no-op when it is genuinely gone. A BUSY
+    body fails health too - it is mid-decode for another session - and treating that
+    as dead returned an empty proposal, which the caller recorded as a target with no
+    mechanism, spending one of the bounded attempts on a timing coincidence.
+
+    The client is passed the prompt as one argv item; no prompt text is ever
+    interpreted by a shell.
     """
     try:
         resident = _resident_mod()
@@ -539,17 +983,19 @@ def _try_resident_propose(prompt: str) -> str:
         return ""
     try:
         sock = resident.default_socket(REPO)
-        if not resident.body_is_up(sock):
+        if not resident.body_is_up(sock) and not _resident_process_alive():
             return ""
     except Exception:
         return ""
 
-    lock = REPO / "tools" / "gpu_lane_lock.sh"
-    if not lock.is_file() or not GENESIS_RESIDENT_CLIENT.is_file():
+    if not GENESIS_RESIDENT_CLIENT.is_file():
         return ""
+    # Deliberately NOT under gpu_lane_lock.sh. The body re-acquires that same
+    # /tmp/hawking-gpu-lane.lock per generate, so wrapping the client in it made the
+    # body spin against our own wrapper's live pid until the 1500 s deadline, on
+    # every call, machine-wide. Generation does not take the lane lock; the body
+    # already serializes its own decode.
     cmd = [
-        str(lock),
-        "genesis-propose",
         sys.executable,
         str(GENESIS_RESIDENT_CLIENT),
         "propose",
@@ -601,7 +1047,7 @@ def _try_shell_propose(prompt: str) -> str:
     lock = REPO / "tools" / "gpu_lane_lock.sh"
     cmd = [str(bin_p),
            "--artifact-root", str(artifact), "--tokenizer", str(tokenizer),
-           "--prompt", prompt, "--max-new-tokens", str(GENESIS_PROPOSE_MAX_NEW_TOKENS), "--max-seq-len", "4096"]
+           "--prompt", prompt, "--max-new-tokens", str(GENESIS_PROPOSE_MAX_NEW_TOKENS), "--max-seq-len", "8192"]
     # Env-overridden binaries are test/operator stubs; do not wait 90 min on
     # the GPU lock for a script that does not load the body.
     if lock.is_file() and bin_p == _DEFAULT_GENESIS_BIN:
@@ -647,6 +1093,12 @@ def genesis_proposes(bottleneck: str) -> str:
     # Verify even when the resident is down and cold fallback is disabled. The
     # organism must not silently continue with conversation memory as authority.
     _genesis_contract_mod().contract_provenance(GENESIS_SYSTEM_CONTRACT)
+    # A proposal is GPU work.  Do not queue a multi-minute parent decode behind
+    # another protected GPU task: the four logical sessions share one serial
+    # body, so doing so starves the very worker topology this daemon is meant to
+    # keep alive.  Catalog synthesis and CPU-only work can continue meanwhile.
+    if gpu_lane_busy() or protected_gpu_target_active():
+        return ""
     prompt = _genesis_prompt(bottleneck)
     text = emitted_mechanism(_try_resident_propose(prompt))
     if text:
@@ -656,11 +1108,43 @@ def genesis_proposes(bottleneck: str) -> str:
     return ""
 
 
+def dry_synthesis_source(state: dict) -> tuple[dict, str] | None:
+    """Return the next catalog mechanism when the measured Qwen queue is dry.
+
+    This is deliberately a replay of the semantic gate's checked catalog, not an
+    invented fallback.  It is safe to prefer over a multi-minute resident thought
+    pass when the state already has Qwen history but no live Qwen experiment.
+    """
+    try:
+        gate = _mechanism_mod()
+        decision = gate.synthesize(
+            measured=REPO / "receipts" / "ascent-2026-08-16" / "TOKEN_NS_QWEN38.json",
+            attempts=state["targets"],
+            include_campaign_exhausted=True,
+            model="qwen38",
+        )
+    except Exception:
+        return None
+    if getattr(getattr(decision, "verdict", None), "value", None) != "SYNTHESIZE":
+        return None
+    synthesized = getattr(decision, "synthesized", None)
+    if synthesized is None:
+        return None
+    return ({
+        "lane": f"qwen38-synthesis-{synthesized.mechanism_id}",
+        "status": "SYNTHESIZED",
+        "next_bottleneck": synthesized.target["from_bottleneck"],
+        "synthesized": True,
+        "synthesis_gate": decision.to_dict(),
+    }, synthesized.mechanism)
+
+
 def generate_targets(
     state: dict,
     harvested: list[dict],
     *,
     proposer: Callable[[str], str] = genesis_proposes,
+    allow_synthesis: bool = True,
 ) -> int:
     """Turn each unseen NEXT_BOTTLENECK into a pending target with a real contract.
 
@@ -690,10 +1174,13 @@ def generate_targets(
     ACTIVE_ = {"pending", "running"}
     seen_bn = {t.get("from_bottleneck") for t in state["targets"]
                if t.get("status") in ACTIVE_}
+    # Only named mechanisms are attempts.  A body timeout, an unclosed think
+    # block, or a rejected bottleneck-only response contains no hypothesis to
+    # test and must not consume the finite research budget.
     attempts: dict[str, int] = {}
     for t in state["targets"]:
         b = t.get("from_bottleneck")
-        if b:
+        if b and has_named_mechanism(t):
             attempts[b] = attempts.get(b, 0) + 1
     # Count only targets still in play. This was a LIFETIME cap: it counted every
     # target ever auto-generated, including retained and stale ones, so once 96 had
@@ -704,6 +1191,38 @@ def generate_targets(
     generated = sum(1 for t in state["targets"]
                     if t.get("auto_generated") and t.get("status") in ACTIVE)
     made = 0
+
+    # CPU-only Hawking work is deliberately allowed to overlap a protected
+    # Gravity/kernel lane.  Treating every Qwen-labelled task as an active
+    # experiment made an HCLI backfill suppress the next catalog kernel trial
+    # after the current GPU lane completed—the inverse of the continuity
+    # directive's "A + B dominate until >=100 TPS" rule.  Unknown admission
+    # classes fail closed as GPU-consuming; only classes explicitly mapped to
+    # CPU_ONLY may coexist without holding this part of the scheduler back.
+    def is_active_qwen_gpu_target(target: dict) -> bool:
+        if target.get("model") != "qwen38" or target.get("status") not in ACTIVE_:
+            return False
+        resolved = RESOURCE_PROFILE_ALIASES.get(
+            str(target.get("resource_class") or "").strip().upper()
+        )
+        return resolved is None or resolved[0] != "CPU_ONLY"
+
+    has_active_qwen_gpu = any(is_active_qwen_gpu_target(t) for t in state["targets"])
+    has_qwen_history = any(t.get("model") == "qwen38" for t in state["targets"])
+    # A full resident proposal can occupy the serial body for many minutes.  Once
+    # a campaign already has history, dispatch the next evidence-gated catalog item
+    # before asking the body for a novel one.  That keeps real measurement moving;
+    # when the catalog is exhausted, normal resident proposal remains the path.
+    if allow_synthesis and has_qwen_history and not has_active_qwen_gpu:
+        dry = dry_synthesis_source(state)
+        if dry is not None:
+            source, mechanism = dry
+            return generate_targets(
+                state,
+                [source],
+                proposer=lambda _b: mechanism,
+                allow_synthesis=False,
+            )
 
     # Qwen3.8 is the sole active vehicle. Sorting keeps its reports ahead of
     # retained science from sealed models, which is filtered below.
@@ -722,18 +1241,46 @@ def generate_targets(
         model = model_of(h["lane"])
         if model not in ACTIVE_MODELS:
             continue                      # sealed model, weights deleted - unbuildable
-        # The attempt number is part of the id, so retry N+1 is a NEW target rather
-        # than colliding with the terminal record of attempt N.
-        tid = f"auto-{model}-{slug(bn)}" if n_try == 0 else f"auto-{model}-{slug(bn)}-try{n_try + 1}"
-        if tid in existing:
+        proposal = str(proposer(bn) or "").strip()
+        if not proposal:
+            # Do not write a bottleneck-only lane.  It will be refused later and,
+            # worse, used to exhaust the retry budget without a real experiment.
             continue
 
-        proposal = proposer(bn)
+        tid = next_target_id(model, bn, existing)
+        target = {
+            "id": tid, "model": model, "hypothesis": bn[:200],
+            "mechanism": proposal,
+            "target_stage": "auto", "resource_class": "GPU_PROTECTED",
+            "probability_of_success": 0.5,
+            "representation": "uniform-q4-group64",
+            "implementation": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "launch_geometry": "tpr64_tg128",
+            "command_topology": "one_command_buffer_production_catalog",
+            "artifact": "uniform-q4-v1",
+            "bytes_per_token": 13_611_663_360,
+            "recoverable_ns_per_token": 50_000_000, "density_frontier_gain_ns_equiv": 0,
+            "information_gain": 150_000_000, "transfer_value": 50_000_000,
+            "experiment_cost": 1.5, "status": "pending",
+            "auto_generated": True, "from_bottleneck": bn, "from_lane": h["lane"],
+            "genesis_system_contract": genesis_contract_binding,
+        }
+        if h.get("synthesized"):
+            target["synthesized"] = True
+            target["synthesis_gate"] = h.get("synthesis_gate")
+
+        # Admit at creation time too.  Deferring this check allowed the same
+        # rejected wording to fill the target ledger before the launch loop got
+        # a chance to reject it, making a dry queue look like real progress.
+        admitted, mechanism_decision = mechanism_admission(target, state)
+        if not admitted:
+            continue
+        target["mechanism_admission"] = mechanism_decision
         genesis_block = (
             f"\n## GENESIS PROPOSED THIS MECHANISM\nThe resident model read this bottleneck "
             f"and proposed the following. Treat it as a HYPOTHESIS to test, never as a "
             f"result, and reject it if the evidence does not support it.\n\n{proposal}\n"
-        ) if proposal else ""
+        )
 
         body = f"""{genesis_contract_block}
 
@@ -834,26 +1381,31 @@ finished ahead=0, and nearly lost their work.
         except Exception:
             continue
 
-        state["targets"].append({
-            "id": tid, "model": model, "hypothesis": bn[:200],
-            "mechanism": proposal.strip(),
-            "target_stage": "auto", "contract": str(path),
-            "resource_class": "GPU_PROTECTED", "probability_of_success": 0.5,
-            "representation": "uniform-q4-group64",
-            "implementation": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
-            "launch_geometry": "tpr64_tg128",
-            "command_topology": "one_command_buffer_production_catalog",
-            "artifact": "uniform-q4-v1",
-            "bytes_per_token": 13_611_663_360,
-            "recoverable_ns_per_token": 50_000_000, "density_frontier_gain_ns_equiv": 0,
-            "information_gain": 150_000_000, "transfer_value": 50_000_000,
-            "experiment_cost": 1.5, "status": "pending",
-            "auto_generated": True, "from_bottleneck": bn, "from_lane": h["lane"],
-            "genesis_system_contract": genesis_contract_binding,
-        })
+        target["contract"] = str(path)
+        state["targets"].append(target)
+        existing.add(tid)
+        attempts[bn] = n_try + 1
         seen_bn.add(bn)
         made += 1
-    return made
+
+    # The mechanism gate already has a bounded, evidence-backed synthesis catalog
+    # for this exact situation.  It was written for a dry queue but never wired into
+    # the resident daemon, so Genesis could finish a valid negative and then idle.
+    # Use it only when there is no active Qwen lane and normal resident generation
+    # supplied no admissible target.  The recursive call reuses the standard lane
+    # contract writer while disabling another synthesis attempt.
+    if made or not allow_synthesis or has_active_qwen_gpu:
+        return made
+    dry = dry_synthesis_source(state)
+    if dry is None:
+        return made
+    source, mechanism = dry
+    return made + generate_targets(
+        state,
+        [source],
+        proposer=lambda _b: mechanism,
+        allow_synthesis=False,
+    )
 
 
 # ---------------------------------------------------------------- tier 1
@@ -926,12 +1478,7 @@ def one_pass() -> dict:
     report["needs_composition"] = sum(1 for e in queue["entries"]
                                       if e["disposition"] == "NEEDS_COMPOSITION")
 
-    # 2. refill the queue from what those lanes said the next wall is
-    report["generated"] = generate_targets(state, harvested)
-    save(STATE, state)
-    report["pending"] = sum(1 for t in state["targets"] if t.get("status") == "pending")
-
-    # 2a. reconcile targets whose lane is gone. ASCENT_STATE marks a target
+    # 2. reconcile targets whose lane is gone. ASCENT_STATE marks a target
     # "running" when it launches and relies on a later tick to close it, but a
     # lane that dies without reporting leaves the target stuck forever. On
     # 2026-08-16 there were 106 such phantoms against 0 live processes, which
@@ -943,6 +1490,11 @@ def one_pass() -> dict:
     for tgt in state.get("targets", []):
         if tgt.get("status") != "running":
             continue
+        # New lanes carry their own detached foreground runner PID.  This is
+        # more precise than an id search and avoids counting a stale task file
+        # as a live optimizer.
+        if process_alive(tgt.get("launcher_pid")):
+            continue
         lane_id = tgt.get("lane_id") or tgt.get("id") or ""
         if not lane_id:
             continue
@@ -952,6 +1504,69 @@ def one_pass() -> dict:
         tgt["status"] = "stale_no_process"
         phantom += 1
     report["phantom_targets_reconciled"] = phantom
+
+    # A candidate already built by the Gravity/kernel fronts has priority over
+    # another speculative lane: it is the only work that can prove a better
+    # parent exists. The daemon dispatches a separate external controller; it
+    # does not parse the request, run a gate, or write a lineage slot itself.
+    lifecycle = candidate_lifecycle_status()
+    agentos = agentos_turn_status()
+    report["candidate_lifecycle"] = lifecycle
+    report["agentos_turn"] = agentos
+    if lifecycle["status"] != "idle":
+        save(STATE, state)
+        # A worker turn owns a serial resident decode but does not acquire the
+        # protected benchmark lock. Never launch the protected lifecycle
+        # controller into that decode; the candidate stays durably pending.
+        if agentos["status"] == "running":
+            report["launched"] = None
+            report["hold"] = "candidate lifecycle waiting for active AgentOS turn"
+            return report
+        if lifecycle["status"] == "pending":
+            priority_hold = govern(snap)
+            report["our_live_lanes"] = len(snap.get("our_live_lanes") or [])
+            if priority_hold:
+                report["launched"] = None
+                report["hold"] = f"candidate lifecycle pending: {priority_hold}"
+                return report
+            lifecycle = dispatch_candidate_lifecycle()
+            report["candidate_lifecycle"] = lifecycle
+        report["launched"] = None
+        report["hold"] = f"candidate lifecycle {lifecycle['status']}"
+        return report
+
+    # One worker at a time may use child_a/child_b to implement a bounded
+    # source/test step. It is intentionally interleaved with protected work:
+    # an already-running capture wins, but a merely pending queue item cannot
+    # starve the AgentOS/HCLI front forever. While the turn is live, hold this
+    # scheduler so no new protected target can contend for the serial body.
+    if agentos["status"] == "running":
+        save(STATE, state)
+        report["launched"] = None
+        report["hold"] = f"AgentOS {agentos.get('worker_id', 'worker')} turn running"
+        return report
+    if (
+        agentos["status"] == "idle"
+        and not _candidate_pending()
+        and not gpu_lane_busy()
+        and not protected_gpu_target_running(state)
+        and _resident_process_alive()
+        and float(snap.get("disk_free_gib") or 0.0) >= DISK_FLOOR_GIB
+    ):
+        launched_agentos = dispatch_agentos_turn()
+        report["agentos_turn"] = launched_agentos
+        if launched_agentos["status"] in {"started", "running"}:
+            save(STATE, state)
+            report["launched"] = None
+            report["hold"] = f"AgentOS {launched_agentos.get('worker_id', 'worker')} turn {launched_agentos['status']}"
+            return report
+
+    # 2a. Refill only after liveness reconciliation.  Otherwise a dead target
+    # can suppress a retry for five minutes while the parent body wastes time
+    # proposing behind work that no longer exists.
+    report["generated"] = generate_targets(state, harvested)
+    save(STATE, state)
+    report["pending"] = sum(1 for t in state["targets"] if t.get("status") == "pending")
 
     # 2b. reap lanes that died without saying so, preserving their work first.
     # grok-run status reports `running` for processes that are gone - two DSV4F
@@ -1031,17 +1646,9 @@ def one_pass() -> dict:
         report["launched"] = None
         report["hold"] = str(exc)
         return report
-    code, out = sh(f"{GROK} delegate --task {target['id']} --contract {contract} "
-                   f"--repo {REPO} --profile {profile} --background", timeout=600)
-    m = re.search(rf"{re.escape(target['id'])}-\d{{8}}-\d{{6}}", out)
-    if m:
-        target.update(
-            status="running",
-            task_id=m.group(0),
-            admitted_resource_class=resource_class,
-            admitted_profile=profile,
-        )
-        report["launched"] = m.group(0)
+    launcher_pid = launch_target(target, resource_class, profile)
+    if launcher_pid is not None:
+        report["launched"] = f"{target['id']}@{launcher_pid}"
     else:
         target["status"] = "launch_failed"
         report["launched"] = None
@@ -1070,6 +1677,11 @@ def status() -> int:
     q = load(QUEUE, {"entries": []})
     print(f"disk {snap.get('disk_free_gib')} GiB | live lanes "
           f"{len(snap.get('active_grok_lanes') or [])} | queued {len(q['entries'])}")
+    lifecycle = candidate_lifecycle_status()
+    print(
+        f"candidate lifecycle {lifecycle['status']} | "
+        f"inbox {len(lifecycle.get('inbox') or [])} | active {len(lifecycle.get('active') or [])}"
+    )
     for e in q["entries"]:
         if not e["promoted"]:
             print(f"  [{e['disposition']:<28}] {e['lane']:<42} skew={e['skew']}")
@@ -1145,6 +1757,42 @@ def _selfcheck() -> None:
                 "must dedupe on repeat passes"
             assert {t["model"] for t in st["targets"]} == {"qwen38"}
             assert all(t["status"] == "pending" and t["auto_generated"] for t in st["targets"])
+            # A missing resident answer is not a research attempt.  It must leave
+            # the state untouched so a later healthy body can answer the same wall.
+            empty = {"targets": []}
+            assert generate_targets(
+                empty, h[:1], proposer=lambda _b: "", allow_synthesis=False
+            ) == 0
+            assert not empty["targets"], "empty proposals must not create placeholders"
+            # Historical placeholder rows may have occupied every visible retry id,
+            # but they do not exhaust the named-mechanism budget.  A real retry gets
+            # a fresh immutable id rather than colliding with an old blank row.
+            wall = "weight_addressing 1 ns/token"
+            historical = {
+                "targets": [
+                    {
+                        "id": "auto-qwen38-weight-addressing"
+                        if i == 1 else f"auto-qwen38-weight-addressing-try{i}",
+                        "from_bottleneck": wall,
+                        "mechanism": "",
+                        "status": "mechanism_refused",
+                    }
+                    for i in range(1, MAX_ATTEMPTS_PER_BOTTLENECK + 1)
+                ]
+            }
+            assert generate_targets(
+                historical,
+                [{"lane": "qwen38-retry", "status": "SHIPPED", "next_bottleneck": wall}],
+                proposer=lambda _b: "test mechanism for a new weight representation",
+                allow_synthesis=False,
+            ) == 1
+            assert historical["targets"][-1]["id"] == "auto-qwen38-weight-addressing-try13"
+            # If normal generation is dry, the existing semantic catalog must
+            # supply its next unused evidence-backed mechanism instead of idling.
+            dry = {"targets": []}
+            assert generate_targets(dry, [], proposer=lambda _b: "") == 1
+            assert dry["targets"][0].get("synthesized") is True
+            assert "per layer and per head" in dry["targets"][0]["mechanism"].lower()
             # MAX_GENERATED bounds the ACTIVE pool, so the cap test must fill it with
             # ACTIVE targets. A pool of finished ones must NOT block new work.
             st["targets"] = [

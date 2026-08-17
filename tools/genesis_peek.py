@@ -24,6 +24,10 @@ DAEMON_LOG = REPO / "workspace" / "ops" / "ascent-daemon.log"
 RESIDENT_CLIENT = REPO / "tools" / "agentos" / "genesis_resident.py"
 GPU_LOCK = Path("/tmp/hawking-gpu-lane.lock")
 TASKS = Path.home() / ".claude-grok" / "tasks"
+WORKER_REGISTRY = REPO / "workspace" / "ops" / "genesis-workers.json"
+CANDIDATE_ROOT = REPO / "workspace" / "ops" / "genesis-candidates"
+LIFECYCLE_CONTROLLER = REPO / "workspace" / "ops" / "genesis-lifecycle-controller.json"
+AGENTOS_CONTROLLER = REPO / "workspace" / "ops" / "genesis-agentos-controller.json"
 
 
 def sh(cmd: str) -> str:
@@ -213,6 +217,65 @@ def _gib(value: Any) -> str | None:
         return None
 
 
+def agentos_status() -> dict[str, Any]:
+    """Read worker state and cross-check any dispatched turn with the kernel."""
+    workers: list[dict[str, Any]] = []
+    if WORKER_REGISTRY.is_file():
+        try:
+            raw = json.loads(WORKER_REGISTRY.read_text())
+            rows = raw.get("workers") if isinstance(raw, dict) else None
+            workers = [dict(row) for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
+        except (OSError, ValueError, TypeError):
+            return {
+                "state": "UNREADABLE",
+                "workers": [],
+                "inbox": [],
+                "active": [],
+                "controller": None,
+                "dispatch": None,
+            }
+    inbox: list[str] = []
+    active: list[str] = []
+    try:
+        inbox = sorted(path.name for path in (CANDIDATE_ROOT / "inbox").glob("*.json"))
+        active = sorted(path.name for path in (CANDIDATE_ROOT / "active").glob("*.json"))
+    except OSError:
+        pass
+    controller: dict[str, Any] | None = None
+    if LIFECYCLE_CONTROLLER.is_file():
+        try:
+            value = json.loads(LIFECYCLE_CONTROLLER.read_text())
+            controller = dict(value) if isinstance(value, dict) else None
+        except (OSError, ValueError, TypeError):
+            controller = {"status": "UNREADABLE"}
+    dispatch: dict[str, Any] | None = None
+    if AGENTOS_CONTROLLER.is_file():
+        try:
+            value = json.loads(AGENTOS_CONTROLLER.read_text())
+            if isinstance(value, dict):
+                dispatch = dict(value)
+                pid = _safe_int(dispatch.get("pid"))
+                # A controller file says what was launched, not what remains
+                # live.  Expose both facts so a dead detached turn cannot look
+                # like autonomous work is still progressing.
+                if str(dispatch.get("status", "")).lower() == "running":
+                    dispatch["runtime_state"] = (
+                        "RUNNING" if pid is not None and pid_alive(pid) else "EXITED"
+                    )
+                else:
+                    dispatch["runtime_state"] = "NOT_RUNNING"
+        except (OSError, ValueError, TypeError):
+            dispatch = {"status": "UNREADABLE", "runtime_state": "UNKNOWN"}
+    return {
+        "state": "READY" if workers else "UNBOOTSTRAPPED",
+        "workers": workers,
+        "inbox": inbox,
+        "active": active,
+        "controller": controller,
+        "dispatch": dispatch,
+    }
+
+
 def main() -> int:
     print("=" * 66)
     print("HAWKING GENESIS")
@@ -304,6 +367,38 @@ def main() -> int:
 
     proposing = bool(rows and any("genesis-propose" in str(r.get("command")) for r in rows))
     print(f"  genesis proposing {'yes' if proposing else 'no'}")
+
+    agentos = agentos_status()
+    workers = agentos["workers"]
+    if workers:
+        bindings = []
+        for worker in workers:
+            bound = worker.get("bound_generation")
+            generation = bound.get("generation") if isinstance(bound, dict) else "?"
+            bindings.append(
+                f"{worker.get('worker_id', '?')}:{worker.get('state', '?')}@G{generation}"
+            )
+        print(f"  AgentOS workers    {', '.join(bindings)}")
+    else:
+        print(f"  AgentOS workers    {agentos['state']}")
+    print(
+        f"  candidate inbox    {len(agentos['inbox'])} queued, {len(agentos['active'])} active"
+    )
+    controller = agentos.get("controller")
+    if isinstance(controller, dict):
+        print(
+            f"  lifecycle control  {controller.get('status', 'unknown')} "
+            f"pid {controller.get('pid', 'unknown')}"
+        )
+    dispatch = agentos.get("dispatch")
+    if isinstance(dispatch, dict):
+        print(
+            f"  AgentOS turn       {dispatch.get('runtime_state', 'UNKNOWN')} "
+            f"worker {dispatch.get('worker_id', 'unknown')} "
+            f"pid {dispatch.get('pid', 'unknown')}"
+        )
+    else:
+        print("  AgentOS turn       no dispatch record")
 
     if DAEMON_LOG.is_file():
         age = time.time() - DAEMON_LOG.stat().st_mtime

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 
@@ -91,3 +92,27 @@ def test_lineage_flags_are_compared_to_each_other_and_resident_reality() -> None
     assert "CURRENT.launched does not match resident body" in issues
 
     assert peek.lineage_reality({"live": True, "launched": True}, True) == ("MATCH", [])
+
+
+def test_agentos_dispatch_record_is_cross_checked_with_process_liveness(
+    tmp_path: Path, monkeypatch
+) -> None:
+    registry = tmp_path / "workers.json"
+    registry.write_text(json.dumps({"workers": []}))
+    controller = tmp_path / "agentos-controller.json"
+    controller.write_text(
+        json.dumps({"status": "running", "pid": 4242, "worker_id": "gravity"})
+    )
+    monkeypatch.setattr(peek, "WORKER_REGISTRY", registry)
+    monkeypatch.setattr(peek, "CANDIDATE_ROOT", tmp_path / "candidates")
+    monkeypatch.setattr(peek, "LIFECYCLE_CONTROLLER", tmp_path / "lifecycle.json")
+    monkeypatch.setattr(peek, "AGENTOS_CONTROLLER", controller)
+    monkeypatch.setattr(peek, "pid_alive", lambda _pid: False)
+
+    status = peek.agentos_status()
+    assert status["dispatch"] == {
+        "status": "running",
+        "pid": 4242,
+        "worker_id": "gravity",
+        "runtime_state": "EXITED",
+    }

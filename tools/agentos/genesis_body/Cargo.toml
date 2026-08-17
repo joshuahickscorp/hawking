@@ -14,3 +14,4 @@ path = "src/main.rs"
 [dependencies]
 hawking-core = { path = "../../../crates/hawking-core" }
 serde_json = { version = "1", features = ["float_roundtrip"] }
+sha2 = "0.10"

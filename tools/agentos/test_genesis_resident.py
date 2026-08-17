@@ -42,6 +42,26 @@ resident = _load(RESIDENT, "genesis_resident")
 daemon = _load(DAEMON, "ascent_daemon")
 
 
+@pytest.fixture(autouse=True)
+def _isolate_daemon_gpu_lock(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A host benchmark must not make an in-process stub test look BUSY."""
+    monkeypatch.setattr(daemon, "GPU_LANE_LOCK", tmp_path / "hawking-gpu-lane.lock")
+    monkeypatch.setattr(daemon, "STATE", tmp_path / "ASCENT_STATE.json")
+    monkeypatch.setattr(daemon, "GENESIS_CANDIDATE_ROOT", tmp_path / "genesis-candidates")
+    monkeypatch.setattr(daemon, "GENESIS_LIFECYCLE_LOG", tmp_path / "genesis-lifecycle.log")
+    monkeypatch.setattr(
+        daemon,
+        "GENESIS_LIFECYCLE_STATE",
+        tmp_path / "genesis-lifecycle-controller.json",
+    )
+    monkeypatch.setattr(daemon, "GENESIS_AGENTOS_LOG", tmp_path / "genesis-agentos.log")
+    monkeypatch.setattr(
+        daemon,
+        "GENESIS_AGENTOS_STATE",
+        tmp_path / "genesis-agentos-controller.json",
+    )
+
+
 def _stub_greedy(path: Path, text: str) -> Path:
     path.write_text(
         "#!/usr/bin/env python3\n"
@@ -240,6 +260,133 @@ def test_daemon_returns_empty_when_nothing_is_up(tmp_path: Path, monkeypatch: py
     assert elapsed < 1.0, "a down service must not stall the loop"
 
 
+def test_pending_protected_target_blocks_parent_speculation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A queued GPU lane owns the serial body before its lock appears."""
+    daemon.STATE.write_text(
+        json.dumps(
+            {
+                "targets": [
+                    {
+                        "id": "kernel-lane",
+                        "status": "pending",
+                        "resource_class": "GPU_PROTECTED",
+                    }
+                ]
+            }
+        )
+    )
+    monkeypatch.setattr(
+        daemon,
+        "_try_resident_propose",
+        lambda _prompt: (_ for _ in ()).throw(AssertionError("must not speculate")),
+    )
+    assert daemon.genesis_proposes("weight_addressing 1 ns") == ""
+
+
+def test_daemon_launches_a_detached_foreground_worker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    contract_path = tmp_path / "kernel.md"
+    contract_path.write_text("# bounded task\n")
+    monkeypatch.setattr(daemon, "DELEGATE_LOG", tmp_path / "delegates.log")
+    seen: dict[str, object] = {}
+
+    class FakeProcess:
+        pid = 4242
+
+    def fake_popen(cmd, **kwargs):
+        seen["cmd"] = list(cmd)
+        seen["kwargs"] = kwargs
+        return FakeProcess()
+
+    monkeypatch.setattr(daemon.subprocess, "Popen", fake_popen)
+    target = {"id": "kernel-lane", "contract": str(contract_path)}
+    assert daemon.launch_target(target, "GPU_PROTECTED", "gate") == 4242
+    assert "--background" not in seen["cmd"]
+    assert seen["kwargs"]["start_new_session"] is True
+    assert target["status"] == "running"
+    assert target["launcher_pid"] == 4242
+    assert target["launch_backend"] == "detached_foreground_grok_run"
+
+
+def test_daemon_dispatches_candidate_to_external_lifecycle_controller(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    inbox = daemon.GENESIS_CANDIDATE_ROOT / "inbox"
+    inbox.mkdir(parents=True)
+    (inbox / "candidate.json").write_text("{}\n")
+    lifecycle = tmp_path / "genesis_lifecycle.py"
+    lifecycle.write_text("#!/usr/bin/env python3\n")
+    monkeypatch.setattr(daemon, "GENESIS_LIFECYCLE", lifecycle)
+    seen: dict[str, object] = {}
+
+    class FakeProcess:
+        pid = 8484
+
+    def fake_popen(cmd, **kwargs):
+        seen["cmd"] = list(cmd)
+        seen["kwargs"] = kwargs
+        return FakeProcess()
+
+    monkeypatch.setattr(daemon.subprocess, "Popen", fake_popen)
+    result = daemon.dispatch_candidate_lifecycle()
+    assert result["status"] == "started"
+    assert result["pid"] == 8484
+    assert seen["cmd"][-1] == str(daemon.REPO)
+    assert "process-inbox" in seen["cmd"]
+    assert "promote" not in seen["cmd"], "daemon dispatches; external controller owns promotion"
+    assert seen["kwargs"]["start_new_session"] is True
+    persisted = json.loads(daemon.GENESIS_LIFECYCLE_STATE.read_text())
+    assert persisted["pid"] == 8484
+
+
+def test_daemon_does_not_retry_an_unfinished_active_candidate(tmp_path: Path) -> None:
+    active = daemon.GENESIS_CANDIDATE_ROOT / "active"
+    active.mkdir(parents=True)
+    (active / "candidate.json").write_text("{}\n")
+    status = daemon.candidate_lifecycle_status()
+    assert status["status"] == "recovery_required"
+    assert status["active"] == ["candidate.json"]
+
+
+def test_daemon_dispatches_one_non_authoritative_agentos_turn(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    agentos_cli = tmp_path / "genesis_agentos.py"
+    agentos_cli.write_text("#!/usr/bin/env python3\n")
+    monkeypatch.setattr(daemon, "GENESIS_AGENTOS", agentos_cli)
+    seen: dict[str, object] = {}
+
+    class FakeProcess:
+        pid = 9191
+
+    def fake_popen(cmd, **kwargs):
+        seen["cmd"] = list(cmd)
+        seen["kwargs"] = kwargs
+        return FakeProcess()
+
+    monkeypatch.setattr(daemon.subprocess, "Popen", fake_popen)
+    result = daemon.dispatch_agentos_turn()
+    assert result["status"] == "started"
+    assert result["worker_id"] == "gravity"
+    assert "tick" in seen["cmd"]
+    assert "--worker" in seen["cmd"]
+    assert "promote" not in seen["cmd"]
+    assert seen["kwargs"]["start_new_session"] is True
+    persisted = json.loads(daemon.GENESIS_AGENTOS_STATE.read_text())
+    assert persisted["pid"] == 9191
+    assert persisted["worker_id"] == "gravity"
+
+    # The next idle dispatch alternates the independent logical front rather
+    # than repeatedly letting alphabetic ordering starve kernel work.
+    persisted["pid"] = 0
+    persisted["started_at"] = 0
+    daemon.GENESIS_AGENTOS_STATE.write_text(json.dumps(persisted))
+    assert daemon._next_agentos_worker() == "kernel"
+
+
 def test_reload_bumps_generation_on_stub(tmp_path: Path) -> None:
     proc, sock, _stop = _start_stub(tmp_path)
     try:
@@ -277,7 +424,7 @@ def test_serve_passes_one_provenance_json_argument(
         raise OSError("execv mocked")
 
     monkeypatch.setattr(resident.os, "execv", fake_execv)
-    monkeypatch.setattr(resident, "discover_body_bin", lambda: fake_bin)
+    monkeypatch.setattr(resident, "discover_body_bin", lambda *_args: fake_bin)
     with pytest.raises(OSError, match="execv mocked"):
         resident.main(
             [

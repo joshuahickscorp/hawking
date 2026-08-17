@@ -107,7 +107,7 @@ impl Drop for GpuLaneGuard {
 fn usage() -> &'static str {
     "usage: genesis-resident --artifact-root DIR --tokenizer PATH \
         --genesis-contract-provenance JSON \
-        [--socket PATH] [--stopfile PATH] [--lineage PATH] [--repo DIR] \
+        [--socket PATH] [--stopfile PATH] [--lineage PATH] [--follow-lineage] [--repo DIR] \
         [--max-seq-len N] [--max-new-tokens N]"
 }
 
@@ -302,6 +302,7 @@ struct Args {
     socket: PathBuf,
     stopfile: PathBuf,
     lineage: Option<PathBuf>,
+    follow_lineage: bool,
     repo: PathBuf,
     genesis_contract_provenance: String,
     max_seq_len: usize,
@@ -314,6 +315,7 @@ fn parse_args() -> Args {
     let mut socket = None;
     let mut stopfile = None;
     let mut lineage = None;
+    let mut follow_lineage = false;
     let mut repo = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let mut genesis_contract_provenance = None;
     let mut max_seq_len = 4096usize;
@@ -336,6 +338,7 @@ fn parse_args() -> Args {
             "--lineage" => {
                 lineage = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
             }
+            "--follow-lineage" => follow_lineage = true,
             "--repo" => repo = PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))),
             "--genesis-contract-provenance" => {
                 genesis_contract_provenance =
@@ -370,6 +373,7 @@ fn parse_args() -> Args {
         socket,
         stopfile,
         lineage,
+        follow_lineage,
         repo,
         genesis_contract_provenance,
         max_seq_len,
@@ -883,7 +887,14 @@ fn main() {
             eprintln!("genesis-resident: GENESIS_STOP present, exiting");
             break;
         }
-        body.maybe_reload_lineage(args.lineage.as_deref(), &args.repo);
+        // A lineage state write is authority, not an instruction to drop the
+        // live parent body.  The external lifecycle controller explicitly
+        // reloads only after it has checkpointed and rebound every worker.
+        // Legacy/manual callers may request the old polling behavior, but the
+        // resident supervisor deliberately does not enable it by default.
+        if args.follow_lineage {
+            body.maybe_reload_lineage(args.lineage.as_deref(), &args.repo);
+        }
         match listener.accept() {
             Ok((mut stream, _)) => {
                 let _ = stream.set_nonblocking(false);

@@ -230,6 +230,38 @@ def test_normal_research_prompt_is_injected_for_every_resident_role(
         assert response["genesis_system_contract"]["integrity_verified"] is True
 
 
+def test_raw_hcli_user_turn_with_assistant_prefill_is_injected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A tool-call prefill remains one chat turn after contract injection."""
+    seen: dict = {}
+    prompt = (
+        "<|im_start|>user\ninspect the kernel<|im_end|>\n"
+        "<|im_start|>assistant\n<think>\nUse a tool.\n</think>\n"
+    )
+    monkeypatch.setattr(resident, "body_is_up", lambda _path: True)
+
+    def fake_rpc(_path: Path, request: dict, _timeout: float | None = None, **_kw):
+        seen.update(request)
+        return _conforming_body_reply(request, "<tool_call>{\"name\":\"grep\",\"arguments\":{}}</tool_call>")
+
+    monkeypatch.setattr(resident, "rpc", fake_rpc)
+    response = resident.propose(prompt, raw=True, session="child_a")
+    assert response is not None
+    assert seen["prompt"].startswith("<|im_start|>system\n" + contract.CAPSULE_BEGIN)
+    assert seen["prompt"].endswith(prompt)
+    assert seen["raw"] is True
+
+
+def test_raw_prompt_rejects_more_than_one_chat_turn() -> None:
+    prompt = (
+        "<|im_start|>user\na<|im_end|>\n<|im_start|>assistant\n"
+        "<|im_start|>user\nb<|im_end|>\n<|im_start|>assistant\n"
+    )
+    with pytest.raises(contract.GenesisContractError, match="exactly one canonical"):
+        contract.inject_runtime_contract(prompt, role="child_a", raw_prompt=True)
+
+
 @pytest.mark.parametrize(
     ("prompt", "raw"),
     [
@@ -425,3 +457,54 @@ def test_ascent_lane_generation_fails_closed_on_tampered_contract(
             proposer=lambda _bottleneck: "must not run",
         )
     assert not (tmp_path / "lanes").exists()
+
+
+def test_cpu_only_hcli_backfill_does_not_block_next_qwen_gpu_synthesis(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The <100-TPS kernel path stays live while HCLI uses only CPU resources."""
+    monkeypatch.setattr(daemon, "LANES", tmp_path / "lanes")
+    source = {
+        "lane": "qwen38-synthesis-next-kernel",
+        "status": "SYNTHESIZED",
+        "next_bottleneck": "next measured kernel wall",
+        "synthesized": True,
+        "synthesis_gate": {"verdict": "SYNTHESIZE"},
+    }
+    monkeypatch.setattr(
+        daemon,
+        "dry_synthesis_source",
+        lambda _state: (source, "a distinct kernel mechanism"),
+    )
+    monkeypatch.setattr(
+        daemon,
+        "mechanism_admission",
+        lambda _target, _state: (True, {"verdict": "ALLOW"}),
+    )
+    state = {
+        "targets": [
+            {
+                "id": "hcli-backfill",
+                "model": "qwen38",
+                "resource_class": "CPU_ONLY",
+                "status": "running",
+                "mechanism": "CPU-only HCLI work",
+            }
+        ]
+    }
+
+    assert daemon.generate_targets(state, []) == 1
+    generated = state["targets"][-1]
+    assert generated["resource_class"] == "GPU_PROTECTED"
+    assert generated["from_bottleneck"] == "next measured kernel wall"
+
+
+def test_resident_research_prompt_keeps_self_optimization_above_cpu_backfill() -> None:
+    prompt = daemon._genesis_prompt("weight addressing 19 ms")
+    assert "MISSION PRIORITY (non-negotiable)" in prompt
+    assert ">=100 VALID TPS" in prompt
+    assert "physical BPW, unique-once weight bytes, or complete-token wall" in prompt
+    assert "CPU-safe and cannot delay protected Gravity/kernel work" in prompt
+    assert prompt.index("MISSION PRIORITY") < prompt.index("Already REFUTED")
+    assert prompt.endswith("ASSUMPTION:\nMECHANISM:\nDISCRIMINATOR:\nREJECT_IF:")

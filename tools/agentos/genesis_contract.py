@@ -240,13 +240,25 @@ def inject_runtime_contract(
     if CAPSULE_BEGIN in prompt or CAPSULE_END in prompt:
         raise GenesisContractError("session task contains a reserved Genesis capsule sentinel")
     if raw_prompt:
+        # The resident owns the one and only system turn.  A raw HCLI turn is
+        # consequently one user message followed by one assistant message.  An
+        # assistant *prefill* (for example the closed ``<think>`` prefix used
+        # to make a tool call the next generated token) is legitimate model
+        # input, not an injected extra chat role.  The previous endswith check
+        # rejected that valid form and made every real AgentOS tool turn fail
+        # before decoding.
+        user_prefix = "<|im_start|>user\n"
+        assistant_marker = "<|im_end|>\n<|im_start|>assistant\n"
         if "<|im_start|>system" in prompt:
             raise GenesisContractError("raw session task may not inject another system role")
-        if not prompt.startswith("<|im_start|>user\n") or not prompt.endswith(
-            "<|im_start|>assistant\n"
+        if (
+            not prompt.startswith(user_prefix)
+            or prompt.count("<|im_start|>") != 2
+            or prompt.count("<|im_end|>") != 1
+            or prompt.count(assistant_marker) != 1
         ):
             raise GenesisContractError(
-                "raw session task must be one canonical Qwen user-to-assistant chat"
+                "raw session task must be exactly one canonical Qwen user-to-assistant chat"
             )
         return system_prefix + prompt
     if "<|im_start|>" in prompt or "<|im_end|>" in prompt:
