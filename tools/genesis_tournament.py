@@ -131,9 +131,13 @@ T2_CLAIMS = [
 ]
 
 T2 = (
-    "You protect a research campaign from convincing but false results.\n"
-    "For EACH claim below, answer on its own line in exactly this format:\n"
-    "  <ID>: ACCEPT or REJECT - <one sentence of evidence>\n"
+    "You protect a research campaign from convincing but false results.\n\n"
+    "OUTPUT FORMAT - obey this exactly. Write the nine verdict lines FIRST,\n"
+    "before any explanation or reasoning. One line per claim:\n"
+    "  C1: REJECT - <one sentence of evidence>\n"
+    "  C2: ACCEPT - <one sentence of evidence>\n"
+    "  ... through C9\n"
+    "Only after all nine lines may you add further reasoning.\n"
     "Some claims are genuine. Rejecting everything is itself a failure.\n\n"
     + "\n\n".join(f"{cid}. {text}" for cid, text, _, _ in T2_CLAIMS)
 )
@@ -221,11 +225,11 @@ Answer:
 # not, so a tight cap would truncate one contender's reasoning and score my cap
 # rather than the model. The first run did exactly that on T1 and was discarded.
 TASKS = {
-    1: {"name": "DIAGNOSE", "weight": 0.15, "prompt": T1, "max_new": 1100},
-    2: {"name": "FALSE_WIN_REJECTION", "weight": 0.25, "prompt": T2, "max_new": 1600},
-    3: {"name": "ENGINEER", "weight": 0.30, "prompt": T3, "max_new": 1400},
-    4: {"name": "RECOVER", "weight": 0.15, "prompt": T4, "max_new": 1200},
-    5: {"name": "AUTONOMY_HANDOFF", "weight": 0.15, "prompt": T5, "max_new": 1400},
+    1: {"name": "DIAGNOSE", "weight": 0.15, "prompt": T1, "max_new": 2000},
+    2: {"name": "FALSE_WIN_REJECTION", "weight": 0.25, "prompt": T2, "max_new": 3000},
+    3: {"name": "ENGINEER", "weight": 0.30, "prompt": T3, "max_new": 2500},
+    4: {"name": "RECOVER", "weight": 0.15, "prompt": T4, "max_new": 2000},
+    5: {"name": "AUTONOMY_HANDOFF", "weight": 0.15, "prompt": T5, "max_new": 2500},
 }
 
 # ------------------------------------------------------------------- execution
@@ -241,11 +245,17 @@ def extract_text(stdout: str, marker: str) -> str:
     return m.group(1) if m else ""
 
 
-def run_one(contender: str, task_id: int, out_dir: Path, seq_len: int) -> dict:
+def run_one(contender: str, task_id: int, out_dir: Path, seq_len: int,
+            lock: bool = True) -> dict:
     c = CONTENDERS[contender]
     t = TASKS[task_id]
+    # The lock serializes GPU work so a TIMING is clean. These runs are graded on
+    # what the contender SAYS; clean per-token timings already exist from the
+    # paired smokes. So --no-lock is allowed here, and wall_secs from an unlocked
+    # run is marked contended and must not be quoted as a latency measurement.
+    prefix = [str(LOCK), f"genesis-{contender}-t{task_id}"] if lock else []
     cmd = [
-        str(LOCK), f"genesis-{contender}-t{task_id}",
+        *prefix,
         str(c["binary"]),
         "--artifact-root", str(c["artifact"]),
         "--tokenizer", str(c["tokenizer"]),
@@ -267,6 +277,7 @@ def run_one(contender: str, task_id: int, out_dir: Path, seq_len: int) -> dict:
         "task_name": t["name"],
         "exit_code": rc,
         "wall_secs": round(wall, 3),
+        "timing_label": "CLEAN_CANDIDATE" if lock else "CONTENDED_NOT_A_LATENCY_MEASUREMENT",
         "generated_text": extract_text(stdout, c["text_marker"]),
         "stdout_tail": stdout[-4000:],
         "stderr_tail": stderr[-1500:],
@@ -283,17 +294,24 @@ def run_one(contender: str, task_id: int, out_dir: Path, seq_len: int) -> dict:
 
 def grade_task2(text: str) -> dict:
     """Fully mechanical. Six REJECT, three ACCEPT - answering uniformly loses."""
+    # Q80 prints the generated text with literal backslash-n escapes, so a
+    # line-anchored match silently found only the first verdict and scored 1/9.
+    # Normalize the escapes before matching, and take the window after the id
+    # rather than "the rest of the line".
+    text = text.replace("\\n", "\n")
     per = {}
     for cid, _, correct, _ in T2_CLAIMS:
-        # find the line naming this claim id
-        m = re.search(rf"^\s*{cid}\b[^\n]*", text, re.M | re.I)
-        line = m.group(0).upper() if m else ""
-        if "REJECT" in line:
-            got = "REJECT"
-        elif "ACCEPT" in line:
-            got = "ACCEPT"
-        else:
-            got = "NO_VERDICT"
+        # Take the LAST verdict stated for a claim. Contenders reconsider mid
+        # answer ("Let me double-check C5..."), and the settled verdict is the
+        # one they end on. Cut each candidate at its newline so a fixed window
+        # cannot read the NEXT claim's verdict - that mis-scored C2 at 160 chars.
+        got = "NO_VERDICT"
+        for m in re.finditer(rf"\b{cid}\s*[:.\)]", text, re.I):
+            line = text[m.end():].split("\n", 1)[0].upper()
+            ri, ai = line.find("REJECT"), line.find("ACCEPT")
+            if ri < 0 and ai < 0:
+                continue
+            got = "REJECT" if (ai < 0 or (0 <= ri < ai)) else "ACCEPT"
         per[cid] = {"expected": correct, "got": got, "correct": got == correct}
     n = sum(1 for v in per.values() if v["correct"])
     return {"per_claim": per, "correct": n, "total": len(T2_CLAIMS),
@@ -307,6 +325,8 @@ def main() -> int:
     ap.add_argument("--task", type=int)
     ap.add_argument("--out", default="receipts/ascent-2026-08-16/genesis-tournament")
     ap.add_argument("--seq-len", type=int, default=4096)
+    ap.add_argument("--no-lock", action="store_true",
+                    help="run without the GPU lane lock so tasks can go in parallel")
     a = ap.parse_args()
     out = REPO / a.out
 
@@ -316,7 +336,7 @@ def main() -> int:
             return 2
         ids = [a.task] if a.task else sorted(TASKS)
         for tid in ids:
-            run_one(a.contender, tid, out, a.seq_len)
+            run_one(a.contender, tid, out, a.seq_len, lock=not a.no_lock)
         return 0
 
     # grade: mechanical part only; judgement tasks are printed for review

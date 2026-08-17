@@ -317,11 +317,28 @@ pub enum MixedProbeMode {
     GkHgravsSimd,
 }
 
+/// The streamed cap exists to catch an accidental resident load of the 148 GiB
+/// source, not to bound a legitimate long prompt. A 104-char prompt peaks at
+/// 9.85 GiB; a 1.1 KB one crosses 16 GiB on KV and state alone. Raising the
+/// default would blind the guard, so the override is explicit and per-run:
+/// HAWKING_STREAMED_RSS_CAP_GIB. Unset, the compiled-in cap still applies.
+fn streamed_peak_rss_cap_bytes() -> u64 {
+    match std::env::var("HAWKING_STREAMED_RSS_CAP_GIB") {
+        Ok(v) => match v.trim().parse::<u64>() {
+            // Still refuse anything that could hide a resident load of the source.
+            Ok(gib) if gib > 0 && gib < 120 => gib * 1024 * 1024 * 1024,
+            _ => STREAMED_PEAK_RSS_HARD_CAP_BYTES,
+        },
+        Err(_) => STREAMED_PEAK_RSS_HARD_CAP_BYTES,
+    }
+}
+
 fn require_rss_cap(label: &str) -> Result<()> {
     let peak = peak_rss_bytes();
-    if peak > STREAMED_PEAK_RSS_HARD_CAP_BYTES {
+    let cap = streamed_peak_rss_cap_bytes();
+    if peak > cap {
         return Err(mixed_error(format!(
-            "{label}: peak RSS {peak} exceeds streamed cap {STREAMED_PEAK_RSS_HARD_CAP_BYTES}"
+            "{label}: peak RSS {peak} exceeds streamed cap {cap}"
         )));
     }
     Ok(())
