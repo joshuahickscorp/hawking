@@ -1,90 +1,145 @@
 {
-  "schema": "hawking.lineage.state.v1",
   "armed": true,
-  "slots": {
-    "CURRENT": {
-      "schema": "hawking.lineage.genesis_instance.v1",
-      "instance_id": "genesis-qwen38-g0",
-      "generation": 0,
-      "artifact_sha": "56dd65d465f31741f8d40a86d84de779a939fdd9b9b90ecd3d1cb4f82aa4287a",
-      "runtime_sha": "ecfc1cac8742d51dac35bca3c702520a7409089914b9dd637d7927baae0cfe72",
-      "kernel_genome_sha": "688d8b87bddc6baa7bd083229f1b1c7c96ea01adb893c42a98ad534c3341cd7e",
-      "representation_bpw": 4.2527,
-      "complete_token_ns": 35227918,
-      "tps": 28.386576805362157,
-      "capability": {
-        "coherence": 1.0,
-        "complete_token_discipline": 1.0,
-        "engineering": 1.0
-      },
-      "silent_fallback_ids": [],
-      "benchmark_fingerprint": "aa6990ca04bcb26dd53a0ccc13b27b2275a2b2e3b4965ba0c6a8274a3e2e38dd",
-      "identity": {
-        "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
-        "base_rev": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
-        "artifact": "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
-        "binary": "ascension_qwen38_hybrid_greedy"
-      },
-      "lane": "integrator",
-      "valid": true,
-      "live": true,
-      "terminated": false,
-      "launched": false,
-      "role": "current",
-      "research_state": null,
-      "created_at": "2026-08-17T02:39:17.010732Z"
-    },
-    "CANDIDATE": null,
-    "LAST_KNOWN_GOOD": {
-      "schema": "hawking.lineage.genesis_instance.v1",
-      "instance_id": "genesis-qwen38-g0",
-      "generation": 0,
-      "artifact_sha": "56dd65d465f31741f8d40a86d84de779a939fdd9b9b90ecd3d1cb4f82aa4287a",
-      "runtime_sha": "ecfc1cac8742d51dac35bca3c702520a7409089914b9dd637d7927baae0cfe72",
-      "kernel_genome_sha": "688d8b87bddc6baa7bd083229f1b1c7c96ea01adb893c42a98ad534c3341cd7e",
-      "representation_bpw": 4.2527,
-      "complete_token_ns": 35227918,
-      "tps": 28.386576805362157,
-      "capability": {
-        "coherence": 1.0,
-        "complete_token_discipline": 1.0,
-        "engineering": 1.0
-      },
-      "silent_fallback_ids": [],
-      "benchmark_fingerprint": "aa6990ca04bcb26dd53a0ccc13b27b2275a2b2e3b4965ba0c6a8274a3e2e38dd",
-      "identity": {
-        "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
-        "base_rev": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
-        "artifact": "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
-        "binary": "ascension_qwen38_hybrid_greedy"
-      },
-      "lane": "integrator",
-      "valid": true,
-      "live": false,
-      "terminated": false,
-      "launched": false,
-      "role": "last_known_good",
-      "research_state": null,
-      "created_at": "2026-08-17T02:39:17.010732Z"
-    }
-  },
-  "valid_count": 2,
-  "zero_valid_genesis": false,
   "events": [
     {
-      "ts": "2026-08-17T02:39:17.011312Z",
       "kind": "install",
       "payload": {
-        "instance_id": "genesis-qwen38-g0",
-        "generation": 0
-      }
+        "generation": 0,
+        "instance_id": "genesis-qwen38-g0"
+      },
+      "ts": "2026-08-17T13:10:59.039420Z"
     },
     {
-      "ts": "2026-08-17T02:39:17.011362Z",
       "kind": "snapshot_lkg",
       "payload": {
         "instance_id": "genesis-qwen38-g0"
-      }
+      },
+      "ts": "2026-08-17T13:10:59.039442Z"
+    },
+    {
+      "kind": "bind_live_observed",
+      "payload": {
+        "artifact_manifest_sha256": "d650a757c4cffed463ce8c24dfd5052c2cb47c0f6b1eb10349947854fc47b9df",
+        "body_resident": true,
+        "capture_origin_attested": false,
+        "capture_sha256": "02f82536473a792453d90e31fb7ffa2212b5c54361da196dc81b4d298ea86afd",
+        "complete_physical_bpw": 4.252735126866492,
+        "complete_token_ns": 37879375,
+        "kernel_source_sha256": "51abdf7be388d62ba080d13a1f97a18ab8b1114c0a6968e9d0f04d109d3efcd1",
+        "lineage_children": 0,
+        "load_count": 1,
+        "measurement_runtime_sha256": "f9e03b7e5114dc2cc3f49b1833f728412aa27fca9092bd2feb83cdb9101a34c3",
+        "observation_sha256": "b6aab9e6eb35259fff2db7a3616109bf537d8f7b36807f22d11896d3f319ce42",
+        "observed_at": "2026-08-17T13:15:23.929576Z",
+        "pid": 40316,
+        "resident_executable_sha256": "ae0bc8defd84a8a1a5cd1c4598224f370c0cfce83a0904e275cbb33df84d32c2",
+        "schema": "hawking.lineage.live_binding.v1",
+        "session_kinds": {
+          "child_a": "worker_session",
+          "child_b": "worker_session",
+          "parent": "lineage_parent",
+          "protected_test": "protected_test_slot"
+        },
+        "session_roles": [
+          "parent",
+          "child_a",
+          "child_b",
+          "protected_test"
+        ],
+        "socket": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-resident.sock",
+        "timing_label": "DIRTY_ENGINEERING",
+        "tps": 26.399590806342502,
+        "verification_path": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/QWEN38_CURRENT_MAIN_COMPLETE_TOKEN_WALL.verification.json",
+        "verification_sha256": "6bdc4c1e41c491585de3db3163bf7e5b5669cf0e422f9712abde0d2e7d8dbd55"
+      },
+      "ts": "2026-08-17T13:15:23.929576Z"
     }
-  ]
+  ],
+  "schema": "hawking.lineage.state.v1",
+  "slots": {
+    "CANDIDATE": null,
+    "CURRENT": {
+      "artifact_sha": "d650a757c4cffed463ce8c24dfd5052c2cb47c0f6b1eb10349947854fc47b9df",
+      "benchmark_fingerprint": "aa6990ca04bcb26dd53a0ccc13b27b2275a2b2e3b4965ba0c6a8274a3e2e38dd",
+      "capability": {
+        "coherence": 1.0,
+        "complete_token_discipline": 1.0,
+        "engineering": 1.0
+      },
+      "complete_token_ns": 37879375,
+      "created_at": "2026-08-17T13:10:59.039199Z",
+      "generation": 0,
+      "identity": {
+        "artifact": "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+        "artifact_manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1/manifest.json",
+        "artifact_sha_authority": "sha256(manifest.json bytes)",
+        "base_rev": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+        "binary": "ascension_qwen38_hybrid_greedy",
+        "complete_physical_bpw": "4.252735126866492",
+        "complete_token_receipt": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/QWEN38_CURRENT_MAIN_COMPLETE_TOKEN_WALL.json",
+        "kernel_source": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "kernel_source_sha256": "51abdf7be388d62ba080d13a1f97a18ab8b1114c0a6968e9d0f04d109d3efcd1",
+        "measurement_runtime_sha256": "f9e03b7e5114dc2cc3f49b1833f728412aa27fca9092bd2feb83cdb9101a34c3",
+        "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+        "protected_verification": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/QWEN38_CURRENT_MAIN_COMPLETE_TOKEN_WALL.verification.json",
+        "protected_verification_sha256": "6bdc4c1e41c491585de3db3163bf7e5b5669cf0e422f9712abde0d2e7d8dbd55",
+        "resident_executable": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/genesis-resident",
+        "resident_executable_sha256": "ae0bc8defd84a8a1a5cd1c4598224f370c0cfce83a0904e275cbb33df84d32c2",
+        "resident_pid": "40316",
+        "resident_socket": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-resident.sock"
+      },
+      "instance_id": "genesis-qwen38-g0",
+      "kernel_genome_sha": "51abdf7be388d62ba080d13a1f97a18ab8b1114c0a6968e9d0f04d109d3efcd1",
+      "lane": "integrator",
+      "launched": true,
+      "live": true,
+      "physical_bpw": 4.252735126866492,
+      "representation_bpw": 4.2527,
+      "research_state": null,
+      "role": "current",
+      "runtime_sha": "ae0bc8defd84a8a1a5cd1c4598224f370c0cfce83a0904e275cbb33df84d32c2",
+      "schema": "hawking.lineage.genesis_instance.v1",
+      "silent_fallback_ids": [],
+      "terminated": false,
+      "tps": 26.399590806342502,
+      "valid": true
+    },
+    "LAST_KNOWN_GOOD": {
+      "artifact_sha": "d650a757c4cffed463ce8c24dfd5052c2cb47c0f6b1eb10349947854fc47b9df",
+      "benchmark_fingerprint": "aa6990ca04bcb26dd53a0ccc13b27b2275a2b2e3b4965ba0c6a8274a3e2e38dd",
+      "capability": {
+        "coherence": 1.0,
+        "complete_token_discipline": 1.0,
+        "engineering": 1.0
+      },
+      "complete_token_ns": 35227918,
+      "created_at": "2026-08-17T13:10:59.039199Z",
+      "generation": 0,
+      "identity": {
+        "artifact": "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+        "artifact_manifest": "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1/manifest.json",
+        "artifact_sha_authority": "sha256(manifest.json bytes)",
+        "base_rev": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+        "binary": "ascension_qwen38_hybrid_greedy",
+        "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX"
+      },
+      "instance_id": "genesis-qwen38-g0",
+      "kernel_genome_sha": "688d8b87bddc6baa7bd083229f1b1c7c96ea01adb893c42a98ad534c3341cd7e",
+      "lane": "integrator",
+      "launched": false,
+      "live": false,
+      "physical_bpw": null,
+      "representation_bpw": 4.2527,
+      "research_state": null,
+      "role": "last_known_good",
+      "runtime_sha": "ecfc1cac8742d51dac35bca3c702520a7409089914b9dd637d7927baae0cfe72",
+      "schema": "hawking.lineage.genesis_instance.v1",
+      "silent_fallback_ids": [],
+      "terminated": false,
+      "tps": 28.386576805362157,
+      "valid": true
+    }
+  },
+  "valid_count": 2,
+  "zero_valid_genesis": false
 }

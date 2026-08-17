@@ -301,7 +301,6 @@ def genesis_promoted_event(
 ) -> dict[str, Any]:
     old = normalize_generation(old_generation, "old_generation")
     new = normalize_generation(new_generation, "new_generation")
-    directive_bindings = [dict(item) for item in directives]
     if new["generation"] <= old["generation"]:
         raise ContinuityError("promoted generation must increase")
     return seal(
@@ -346,6 +345,10 @@ def migrate_workers(
     """Checkpoint, invalidate/rebase, compile fresh contexts, and resume workers."""
     old = normalize_generation(old_generation, "old_generation")
     new = normalize_generation(new_generation, "new_generation")
+    # A caller may supply a generator.  Context compilation runs once per
+    # worker, so bind the verified directive records once rather than letting
+    # the first rebind silently consume the authority for every later worker.
+    directive_bindings = [dict(item) for item in directives]
     event = genesis_promoted_event(old, new)
     scheduler = WorkerScheduler.from_workers(workers)
     if len(scheduler.workers) < 2:

@@ -92,6 +92,28 @@ def test_lineage_flags_are_compared_to_each_other_and_resident_reality() -> None
     assert "CURRENT.launched does not match resident body" in issues
 
     assert peek.lineage_reality({"live": True, "launched": True}, True) == ("MATCH", [])
+    assert peek.lineage_reality({"live": True, "launched": True}, None) == (
+        "UNCONFIRMED",
+        ["resident health waits for the active serialized decode"],
+    )
+
+
+def test_resident_runtime_state_keeps_active_serial_decode_distinct_from_unhealthy() -> None:
+    assert peek.resident_runtime_state(
+        None,
+        [42],
+        {"state": "HELD", "owner": "genesis-resident:parent", "pid": 42},
+    ) == "BUSY"
+    assert peek.resident_runtime_state(
+        None,
+        [42],
+        {"state": "HELD", "owner": "someone-else", "pid": 42},
+    ) == "UNHEALTHY"
+    assert peek.resident_runtime_state(
+        {"ok": True, "body_resident": True},
+        [42],
+        {"state": "FREE", "owner": None, "pid": None},
+    ) == "HEALTHY"
 
 
 def test_agentos_dispatch_record_is_cross_checked_with_process_liveness(

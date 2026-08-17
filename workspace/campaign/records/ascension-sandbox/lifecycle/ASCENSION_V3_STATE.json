@@ -141,9 +141,9 @@
     "status": "BLOCKED"
   },
   "next_command": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python /Users/scammermike/Downloads/hawking/tools/condense/ascension_lifecycle.py work --root /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle --stage V3_SEED_ARCHIVE",
-  "recorded_at": "2026-08-09T17:44:43.493045Z",
+  "recorded_at": "2026-08-10T17:23:59.236485Z",
   "schema": "hawking.ascension.v3_state.v1",
-  "seal_sha256": "f2431b10e38c38ba49a0d95237f43b87085fb47ebc4115eb4b766a3308a3b418",
+  "seal_sha256": "b19bfaa3b7c14f5a6ba90b0071bf5fe889773d7af0162afcd28d465972c71624",
   "states": [
     {
       "blockers": [],

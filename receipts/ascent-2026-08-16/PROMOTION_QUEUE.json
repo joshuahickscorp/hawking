@@ -2480,6 +2480,1176 @@
       "skew": "NO_BRANCH",
       "disposition": "NO_REPORT_MANUAL_REVIEW",
       "promoted": false
+    },
+    {
+      "lane": "evidence-binding-20260816-224544",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "stripe-connect-fin-20260816-224541",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-q80-weight-addressing-20260816-224058",
+      "model": "q80",
+      "status": "PARTIAL",
+      "next_bottleneck": "weight_addressing, 19539216 ns (DIRTY; same DRAM-addressing class as G024 21293103)",
+      "branch": "grok/auto-q80-weight-addressing-20260816-224058",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "stamp-binding-20260816-230911",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "citations-20260816-232020",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "selfsufficient-20260816-223557",
+      "model": "q80",
+      "status": "complete",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "ci-green-full-20260816-224528",
+      "model": "q80",
+      "status": "TRUTHFUL",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-preemption-20260816-231818",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-preemption-20260816-231818",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-qwen38-weight-addressing-try2-20260816-231307",
+      "model": "qwen38",
+      "status": "PARTIAL",
+      "next_bottleneck": "weight_addressing, 21346665 ns (this-run addr_probe sum; G024 21293103). Static skip and activation skip are closed. Remaining byte lever is a codec as cheap to unpack as Q4 with fewer bits, or an attention-family representation \u2014 not another skip on this vehicle.",
+      "branch": "grok/auto-qwen38-weight-addressing-try2-20260816-231307",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-resident-body-20260816-231446",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-resident-body-20260816-231446",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "finish-cells-20260816-232149",
+      "model": "q80",
+      "status": "done",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-outproj-floor-20260816-231356",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-outproj-floor-20260816-231356",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-exec-kv-20260816-233623",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-exec-kv-20260816-233623",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-exec-terminal-20260816-233634",
+      "model": "qwen38",
+      "status": "BLOCKED",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-exec-terminal-20260816-233634",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-miner-negative-20260816-233639",
+      "model": "qwen38",
+      "status": "done",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-miner-negative-20260816-233639",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-review-adversarial-20260816-233659",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-review-adversarial-20260816-233659",
+      "skew": "CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-sys-mechanism-dedup-20260816-233703",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-sys-mechanism-dedup-20260816-233703",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "test-infra-20260816-232150",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-rep-rvq-20260816-233655",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-rep-rvq-20260816-233655",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-exec-geometry-20260816-233614",
+      "model": "qwen38",
+      "status": "HARNESS_READY_GPU_BLOCKED_BY_SANDBOX",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-exec-geometry-20260816-233614",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-exec-persistent-20260816-233628",
+      "model": "qwen38",
+      "status": "blocked",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-exec-persistent-20260816-233628",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-rep-codebooks-20260816-233644",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-rep-codebooks-20260816-233644",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "real-defects-20260816-235144",
+      "model": "q80",
+      "status": "done",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-rep-rotation-20260816-233652",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-rep-rotation-20260816-233652",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-gate-fix-20260817-000326",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-gate-fix-20260817-000326",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-rep-lmhead-20260816-233648",
+      "model": "qwen38",
+      "status": "CANDIDATE_PACKED_BYTES_MEASURED_GPU_AND_COMPLETE_TOKEN_UNMEASURED",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-rep-lmhead-20260816-233648",
+      "skew": "STALE_CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-honest-roof-20260817-000333",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-honest-roof-20260817-000333",
+      "skew": "STALE_CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "searcher-terminal2-20260817-002547",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-gate-geometry-20260817-001910",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-gate-geometry-20260817-001910",
+      "skew": "STALE_CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-gate-lmhead-20260817-001915",
+      "model": "qwen38",
+      "status": "MEASURED_NEGATIVE_CANDIDATE_NOT_SHIPPING",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-gate-lmhead-20260817-001915",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "searcher-partevidence-20260817-002724",
+      "model": "q80",
+      "status": "done",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "currency-scope-20260817-003333",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-gate-terminal-20260817-001920",
+      "model": "qwen38",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/genesis-gate-terminal-20260817-001920",
+      "skew": "STALE_CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "searcher-regrade4-20260817-002726",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-resident-contract-binding-20260817-013154",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/01-resident-contract-binding-20260817-013154",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "02-truthful-ledger-20260817-014337",
+      "model": "q80",
+      "status": "CLOSED",
+      "next_bottleneck": "",
+      "branch": "grok/02-truthful-ledger-20260817-014337",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "02-authenticity-floor-20260817-020725",
+      "model": "q80",
+      "status": "0",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "03-batched-gemv-20260817-014339",
+      "model": "q80",
+      "status": "MEASURED",
+      "next_bottleneck": "N=1 is still weight_addressing (W streamed once per token).",
+      "branch": "grok/03-batched-gemv-20260817-014339",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "01-multiview-pairing-20260817-020723",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "exec-loop-20260817-020906",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "suite-nine-20260817-020930",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-qwen38-weight-addressing-this-run-try12-20260817-030101",
+      "model": "qwen38",
+      "status": "SHIPPED",
+      "next_bottleneck": "weight_addressing 19952248 ns (mlp 12934375)",
+      "branch": "grok/auto-qwen38-weight-addressing-this-run-try12-20260817-030101",
+      "skew": "CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "auto-qwen38-deltanet-20260817-092519",
+      "model": "qwen38",
+      "status": "SHIPPED",
+      "next_bottleneck": "gated_rmsnorm_48 still 1330791 ns GPU (48\u00d716-wide); weight_addressing remains ~21e6 ns existential",
+      "branch": "grok/auto-qwen38-deltanet-20260817-092519",
+      "skew": "CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "genesis-agentos-hcli-backfill-20260817-093419",
+      "model": "qwen38",
+      "status": "SHIPPED",
+      "next_bottleneck": "live act() through genesis_resident.propose still fail-closes because the resident protocol injects the system capsule and rejects a second system role; say()/plain prompts are the legal live path. 100-TPS remains the protected DeltaNet kernel lane.",
+      "branch": "grok/genesis-agentos-hcli-backfill-20260817-093419",
+      "skew": "UNKNOWN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "auto-qwen38-weight-addressing-try13-20260817-094548",
+      "model": "qwen38",
+      "status": "SHIPPED",
+      "next_bottleneck": "weight_addressing unique-once Q4 DRAM 19486582 ns (mlp class 12651708 ns)",
+      "branch": "grok/auto-qwen38-weight-addressing-try13-20260817-094548",
+      "skew": "CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "auto-qwen38-weight-addressing-try14-20260817-100158",
+      "model": "qwen38",
+      "status": "SHIPPED",
+      "next_bottleneck": "weight_addressing 19818414 ns (DIRTY_ENGINEERING); unique-once Q4 DRAM, mlp 12733416 ns",
+      "branch": "grok/auto-qwen38-weight-addressing-try14-20260817-100158",
+      "skew": "CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "auto-qwen38-normalization-20260817-102009",
+      "model": "qwen38",
+      "status": "PARTIAL",
+      "next_bottleneck": "normalization 1-TG launch tax 2270249 ns isolated",
+      "branch": "grok/auto-qwen38-normalization-20260817-102009",
+      "skew": "CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "01-artifact-inventory-20260817-105112",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/01-artifact-inventory-20260817-105112",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "02-token-anatomy-20260817-105115",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/02-token-anatomy-20260817-105115",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "03-baseline-audit-20260817-105119",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/03-baseline-audit-20260817-105119",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "06-bit-budget-accounting-20260817-105130",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/06-bit-budget-accounting-20260817-105130",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "13-heterogeneous-allocation-20260817-105156",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/13-heterogeneous-allocation-20260817-105156",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "14-kernel-inventory-20260817-105201",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/14-kernel-inventory-20260817-105201",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "15-direct-gemv-geometry-20260817-105206",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/15-direct-gemv-geometry-20260817-105206",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "16-fusion-persistent-20260817-105210",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/16-fusion-persistent-20260817-105210",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "17-lm-head-and-tails-20260817-105214",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/17-lm-head-and-tails-20260817-105214",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "18-traffic-anatomy-20260817-105218",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/18-traffic-anatomy-20260817-105218",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "19-residency-reuse-20260817-105223",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/19-residency-reuse-20260817-105223",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "20-roof-falsification-20260817-105227",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/20-roof-falsification-20260817-105227",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "21-arch-q80-20260817-105232",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/21-arch-q80-20260817-105232",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "22-arch-dsv4f-20260817-105236",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/22-arch-dsv4f-20260817-105236",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "23-arch-negative-20260817-105242",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/23-arch-negative-20260817-105242",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "24-arch-gravity-runs-20260817-105248",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/24-arch-gravity-runs-20260817-105248",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "25-resident-harvest-20260817-105253",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/25-resident-harvest-20260817-105253",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "02-document-real-scope-20260817-105940",
+      "model": "q80",
+      "status": "DONE",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "05-out-proj-forensics-20260817-105126",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/05-out-proj-forensics-20260817-105126",
+      "skew": "CLEAN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "00-baseline-remeasure-20260817-105104",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/00-baseline-remeasure-20260817-105104",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "04-doctor-tensor-map-20260817-105122",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/04-doctor-tensor-map-20260817-105122",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "07-sparse-exact-islands-20260817-105134",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/07-sparse-exact-islands-20260817-105134",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "10-generator-residual-20260817-105145",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/10-generator-residual-20260817-105145",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "12-entropy-coding-20260817-105152",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/12-entropy-coding-20260817-105152",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-multiview-negatives-20260817-105937",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "09-vector-quantization-20260817-105141",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/09-vector-quantization-20260817-105141",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "30-sub15-native-gap-20260817-111709",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/30-sub15-native-gap-20260817-111709",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "39-doctor-recovery-20260817-111817",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/39-doctor-recovery-20260817-111817",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "35-gqa-and-attention-geometry-20260817-111744",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/35-gqa-and-attention-geometry-20260817-111744",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "36-addressing-topology-20260817-111752",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/36-addressing-topology-20260817-111752",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "34-deltanet-geometry-20260817-111738",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/34-deltanet-geometry-20260817-111738",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "32-scale-contradiction-20260817-111724",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/32-scale-contradiction-20260817-111724",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "37-byte-deletions-20260817-111800",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/37-byte-deletions-20260817-111800",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-qwen38-live-act-through-genesis-20260817-110826",
+      "model": "qwen38",
+      "status": "PARTIAL",
+      "next_bottleneck": "genesis capsule prefill every propose; act prefill_wall 79.00\u201379.76 s (1558 prompt tokens; 95% of complete wall; DIRTY_ENGINEERING)",
+      "branch": "grok/auto-qwen38-live-act-through-genesis-20260817-110826",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "38-capability-gate-20260817-111809",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/38-capability-gate-20260817-111809",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "42-bracket-bisection-20260817-111838",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/42-bracket-bisection-20260817-111838",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "F-alert-delivery-20260817-112925",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "I-agent-20260817-112940",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "auto-qwen38-weight-addressing-g024-this-20260817-111640",
+      "model": "qwen38",
+      "status": "SHIPPED",
+      "next_bottleneck": "weight_addressing this-run mlp addr_probe 16651041 ns (98.7% of mlp GEMV 16871875 ns); G024 ledger 21293103 ns. Next lever: persistent-kernel L2 residency.",
+      "branch": "grok/auto-qwen38-weight-addressing-g024-this-20260817-111640",
+      "skew": "STALE_CLEAN",
+      "disposition": "MERGE_READY",
+      "promoted": false
+    },
+    {
+      "lane": "40-repack-recipe-20260817-111824",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/40-repack-recipe-20260817-111824",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "41-channel-3994-island-20260817-111832",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/41-channel-3994-island-20260817-111832",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "61-sub15-repair-plan-20260817-113443",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/61-sub15-repair-plan-20260817-113443",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "65-addressing-derivation-20260817-113501",
+      "model": "q80",
+      "status": "SUPPORTED",
+      "next_bottleneck": "",
+      "branch": "grok/65-addressing-derivation-20260817-113501",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "66-kv-and-host-gaps-20260817-113505",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/66-kv-and-host-gaps-20260817-113505",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "69-tabula-genome-20260817-113521",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/69-tabula-genome-20260817-113521",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "B-redeploy-20260817-112906",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "D-ci-remainder-20260817-112915",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "E-license-register-20260817-112919",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "G-soak24-20260817-112929",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "H-live-transition-20260817-112935",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "J-docs-truth-20260817-112943",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "K-audit-20260817-112947",
+      "model": "q80",
+      "status": "complete",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "62-capability-suite-20260817-113448",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/62-capability-suite-20260817-113448",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "63-sub15-kernel-specialization-20260817-113452",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/63-sub15-kernel-specialization-20260817-113452",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "67-resident-headroom-20260817-113511",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/67-resident-headroom-20260817-113511",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "73-icb-recovery-20260817-113756",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/73-icb-recovery-20260817-113756",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-contradiction-across-pairs-20260817-112253",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "33-group-partition-geometry-20260817-111731",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/33-group-partition-geometry-20260817-111731",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "51-capture-harness-20260817-113126",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/51-capture-harness-20260817-113126",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "60-sub15-composition-20260817-113439",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/60-sub15-composition-20260817-113439",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "64-adversarial-sub15-20260817-113456",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/64-adversarial-sub15-20260817-113456",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "68-tabula-baseline-20260817-113516",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/68-tabula-baseline-20260817-113516",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "70-bpw-ladder-20260817-113526",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/70-bpw-ladder-20260817-113526",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "71-bracket-generate-20260817-113742",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/71-bracket-generate-20260817-113742",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "72-gqa-geometry-redo-20260817-113751",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/72-gqa-geometry-redo-20260817-113751",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "R1-gates-20260817-114534",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "R3-closeout-20260817-114616",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "R4-livemoney-20260817-114619",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "31-mixed2p0-organ-bisect-20260817-111716",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/31-mixed2p0-organ-bisect-20260817-111716",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "50-sub15-native-impl-20260817-113010",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/50-sub15-native-impl-20260817-113010",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
     }
   ]
 }

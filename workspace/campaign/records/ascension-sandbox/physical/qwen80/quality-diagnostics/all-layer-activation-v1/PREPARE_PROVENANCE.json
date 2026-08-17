@@ -91,10 +91,10 @@
     "probe_count": 32,
     "total_tokens": 3929
   },
-  "input_path": "/Users/scammermike/.claude-grok/worktrees/q80-gravity-coherence-20260809-170134/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/all-layer-activation-v1/requests/QWEN80_BROAD_ACTIVATION_ALL_LAYER_ROUTE_CAPTURE_INPUT_84acbf66b6b8da35.json",
-  "input_sha256": "148e1c99b5535a1ee340b0ff6b666cf27948366d362e584c4c267cb26baa4dcd",
+  "input_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/all-layer-activation-v1/requests/QWEN80_BROAD_ACTIVATION_ALL_LAYER_ROUTE_CAPTURE_INPUT_574261a9e4409432.json",
+  "input_sha256": "6fc809636dbc7d8ec46b9adfeab81f14ddf12e00020eb512c52c18fda13c1ac4",
   "note": "Input only. Capture binary cannot run until GQA full-layer same-runtime encode is ready. Do not disturb live servers.",
-  "prepared_at": "2026-08-09T21:10:46.210972Z",
+  "prepared_at": "2026-08-09T22:05:49.616429Z",
   "provenance": {
     "q30_input_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-diagnostics/broad-activation-v1/requests/QWEN30_BROAD_ACTIVATION_L0_ROUTE_CAPTURE_INPUT_901a24bdcfc6c1d2.json",
     "q30_input_schema": "hawking.ascension.qwen30_broad_activation_layer0_route_capture_input.v1",

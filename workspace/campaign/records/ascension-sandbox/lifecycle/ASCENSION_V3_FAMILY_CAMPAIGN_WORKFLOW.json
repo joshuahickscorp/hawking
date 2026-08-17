@@ -646,13 +646,13 @@
       "ASCENSION_V3_RECOVERY_TEST"
     ]
   },
-  "recorded_at": "2026-08-09T17:44:43.548520Z",
+  "recorded_at": "2026-08-10T17:24:14.039469Z",
   "sandbox_dependency": {
     "only_sealed_manager_may_be_active": true,
     "state": "SANDBOX_ACTIVATION",
     "status": "PENDING_PREREQUISITES"
   },
   "schema": "hawking.ascension.family_campaign_workflow.v1",
-  "seal_sha256": "4fffe4b3d955b66abf9ceaaf7a6360a1c7a51e216fd0293eda30673b4fe643a7",
+  "seal_sha256": "9c0f93b86b21920aefd110d3ddc6dcfea3382a1326a0088224dcba170fdd4e31",
   "status": "CONTROLLER_WORKFLOW_ONLY"
 }

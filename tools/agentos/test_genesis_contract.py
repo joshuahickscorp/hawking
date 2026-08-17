@@ -436,6 +436,38 @@ def test_ascent_generated_lane_requires_full_contract_set_first(
     )
 
 
+def test_ascent_yields_after_one_expensive_resident_proposal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A batch of reports cannot monopolize the single resident body."""
+    monkeypatch.setattr(daemon, "LANES", tmp_path / "lanes")
+    calls: list[str] = []
+    state = {"targets": []}
+    harvested = [
+        {
+            "lane": "qwen38-first",
+            "status": "SHIPPED",
+            "next_bottleneck": "metal.first 1 ns/token",
+        },
+        {
+            "lane": "qwen38-second",
+            "status": "SHIPPED",
+            "next_bottleneck": "metal.second 2 ns/token",
+        },
+    ]
+
+    assert daemon.generate_targets(
+        state,
+        harvested,
+        proposer=lambda bottleneck: calls.append(bottleneck) or "named mechanism",
+        allow_synthesis=False,
+        resident_proposal_budget=1,
+    ) == 1
+    assert calls == ["metal.first 1 ns/token"]
+    assert state["targets"][0]["from_bottleneck"] == "metal.first 1 ns/token"
+
+
 def test_ascent_lane_generation_fails_closed_on_tampered_contract(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

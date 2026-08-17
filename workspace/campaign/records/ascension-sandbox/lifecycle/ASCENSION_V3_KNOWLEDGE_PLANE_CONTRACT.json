@@ -97,8 +97,8 @@
       "format": "json"
     }
   },
-  "recorded_at": "2026-08-09T17:44:43.540659Z",
+  "recorded_at": "2026-08-10T17:24:13.826729Z",
   "schema": "hawking.ascension.knowledge_plane_contract.v1",
-  "seal_sha256": "3fc488307d7e95c38878c9c6ccdfb2aac5216f5dcf5e0b0e7dfd5220dbd81f13",
+  "seal_sha256": "087873e5d083904dc9f4105b075b808aaa07f2053020ed1f9638268c2b90a07a",
   "status": "CONTROLLER_CONFIGURATION_ONLY"
 }

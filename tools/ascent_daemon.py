@@ -568,12 +568,16 @@ GENESIS_RESIDENT_PROPOSE_TIMEOUT_S = 1800
 # out mid-reasoning and never emitted an answer, so every proposal came back empty
 # and the named-mechanism gate refused every target.
 #
-# prompt + max_new MUST fit the body's context window or the body refuses the whole
-# request, and that refusal is discarded by both the client and this module - it is
-# indistinguishable from a body that had nothing to say. The wire prompt measures
-# ~1789 tokens (the contract capsule is most of it), so 2600 overflowed a 4096
-# window and silently refused EVERY propose. The body is now served at 8192.
-GENESIS_PROPOSE_MAX_NEW_TOKENS = 2600
+# The parent proposal asks for four machine-minimal fields, not an essay.  A 2,600
+# token cap let a speculative parent decode monopolize the one resident for minutes,
+# starving the child_a/child_b HCLI action plane.  512 is ample for a concrete
+# mechanism/discriminator while preserving frequent closed-loop scheduling.  The
+# 8,192-token resident still leaves generous room for the integrity capsule and task.
+GENESIS_PROPOSE_MAX_NEW_TOKENS = 512
+# A resident proposal is serial GPU work.  Keep the generic generator capable of
+# batch construction for CPU/test callers, but production one_pass admits at most
+# this many model decodes before yielding to AgentOS and protected work.
+MAX_RESIDENT_PROPOSALS_PER_PASS = 1
 GENESIS_SYSTEM_CONTRACT = (
     REPO / "contracts" / "genesis" / "QWEN38_GENESIS_SYSTEM_DIRECTIVE.md"
 )
@@ -712,14 +716,21 @@ def _resident_process_alive() -> bool:
 
 
 def gpu_lane_busy() -> bool:
-    """Whether protected GPU work currently owns the shared lane.
+    """Whether a *live* owner currently holds the shared GPU lane.
 
-    Presence is intentionally sufficient.  The lock implementation itself
-    owns stale-lock recovery, and an uncertain lock must fail closed here: a
-    delayed proposal is harmless, but stealing the lane can corrupt a paired
-    measurement or strand the serial resident behind it.
+    An incomplete lock still fails closed.  A numeric PID that is definitely
+    dead is different: a fresh resident acquisition will atomically reclaim it
+    in ``gpu_lane_lock.sh``/``GpuLaneGuard``.  Treating that stale directory as
+    permanently busy stranded the post-restart AgentOS loop before it could
+    make the very acquisition that repairs the lock.
     """
-    return GPU_LANE_LOCK.exists()
+    if not GPU_LANE_LOCK.exists():
+        return False
+    try:
+        pid = int((GPU_LANE_LOCK / "pid").read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return True
+    return process_alive(pid)
 
 
 def protected_gpu_target_active() -> bool:
@@ -1145,6 +1156,7 @@ def generate_targets(
     *,
     proposer: Callable[[str], str] = genesis_proposes,
     allow_synthesis: bool = True,
+    resident_proposal_budget: int | None = None,
 ) -> int:
     """Turn each unseen NEXT_BOTTLENECK into a pending target with a real contract.
 
@@ -1224,11 +1236,23 @@ def generate_targets(
                 allow_synthesis=False,
             )
 
+    if resident_proposal_budget is not None and resident_proposal_budget < 0:
+        raise ValueError("resident_proposal_budget must be non-negative or None")
+    resident_proposals = 0
+
     # Qwen3.8 is the sole active vehicle. Sorting keeps its reports ahead of
     # retained science from sealed models, which is filtered below.
     harvested = sorted(harvested, key=lambda h: 0 if model_of(h["lane"]) == "qwen38" else 1)
     for h in harvested:
         if generated + made >= MAX_GENERATED:
+            break
+        # A failed/empty resident response still consumed a real decode, so it
+        # consumes budget too.  Otherwise a batch of empty answers could hold
+        # the serial body for an entire unattended pass and starve AgentOS.
+        if (
+            resident_proposal_budget is not None
+            and resident_proposals >= resident_proposal_budget
+        ):
             break
         if h.get("needs_manual_review"):
             continue          # no bottleneck text to build a contract from
@@ -1241,6 +1265,7 @@ def generate_targets(
         model = model_of(h["lane"])
         if model not in ACTIVE_MODELS:
             continue                      # sealed model, weights deleted - unbuildable
+        resident_proposals += 1
         proposal = str(proposer(bn) or "").strip()
         if not proposal:
             # Do not write a bottleneck-only lane.  It will be refused later and,
@@ -1564,7 +1589,11 @@ def one_pass() -> dict:
     # 2a. Refill only after liveness reconciliation.  Otherwise a dead target
     # can suppress a retry for five minutes while the parent body wastes time
     # proposing behind work that no longer exists.
-    report["generated"] = generate_targets(state, harvested)
+    report["generated"] = generate_targets(
+        state,
+        harvested,
+        resident_proposal_budget=MAX_RESIDENT_PROPOSALS_PER_PASS,
+    )
     save(STATE, state)
     report["pending"] = sum(1 for t in state["targets"] if t.get("status") == "pending")
 

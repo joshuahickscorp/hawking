@@ -2,8 +2,12 @@
 
 CPU-side tools, planning, and verification. ``say()`` is answered by the
 already-verified native Qwen3.8 decode when a ``NativeQwen38Backend`` is
-attached (CLI default). ``act()`` is the tool plane: the model emits a
-strict ``<tool_call>`` JSON block; the harness parses it and executes.
+attached (CLI default). ``GenesisResidentBackend`` is an opt-in adapter
+over the already-resident Genesis body: it uses only the existing
+``tools/agentos/genesis_resident`` client protocol on an explicit worker
+session (``child_a`` or ``child_b``). A worker is not a child. ``act()``
+is the tool plane: the model emits a strict ``<tool_call>`` JSON block;
+the harness parses it and executes.
 Malformed calls are REFUSED and never repaired. Generate inspects
 ``/tmp/hawking-gpu-lane.lock`` and REFUSES if a protected owner holds it;
 otherwise it runs under ``tools/gpu_lane_lock.sh``. The harness never
@@ -58,6 +62,11 @@ GROK_RUN = Path.home() / ".claude-grok" / "bin" / "grok-run"
 GROK_TASKS = Path.home() / ".claude-grok" / "tasks"
 GPU_LOCK = Path("/tmp/hawking-gpu-lane.lock")
 NATIVE_DECODE_LANE = "qwen38-special-unit"
+# Continuity worker homes (lab.lineage.continuity.WORKER_SESSION_ROLES).
+# parent and protected_test are lineage / held-out slots, not worker homes.
+WORKER_SESSION_ROLES = frozenset({"child_a", "child_b"})
+GENESIS_CONTRACT_SET_SCHEMA = "hawking.genesis.system_contract_set.v1"
+RESIDENT_PROTOCOL = "hawking.genesis.resident.v1"
 QWEN38_PACK_RELATIVE = Path("workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1")
 QWEN38_TOKENIZER_RELATIVE = Path(
     "workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json"
@@ -86,6 +95,8 @@ DEFAULT_TOOL_NAMES: tuple[str, ...] = (
     "bash",
     "pytest",
     "cargo_test",
+    "prepare_candidate",
+    "submit_candidate",
 )
 TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
     "read": {
@@ -112,6 +123,23 @@ TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
         "name": "cargo_test",
         "arguments": {"package": "string"},
     },
+    "prepare_candidate": {
+        "name": "prepare_candidate",
+        "arguments": {
+            "output": "candidate request JSON in the owned worktree",
+            "instance_id": "string",
+            "artifact_root": "candidate artifact directory",
+            "next_bottleneck": "string",
+            "tokenizer": "optional path",
+            "resident_executable": "optional path",
+            "benchmark_runtime": "optional path",
+            "kernel_source": "optional path",
+        },
+    },
+    "submit_candidate": {
+        "name": "submit_candidate",
+        "arguments": {"request": "candidate request JSON in the owned worktree"},
+    },
 }
 
 PROTECTED_OWNER_PREFIXES: tuple[str, ...] = (
@@ -127,6 +155,20 @@ _GPU_CMD = re.compile(
     r"gpu_lane_lock|ascension_qwen|ascension_dsv|hybrid_greedy|"
     r"BASE_TRUE_TPS|qwen80_hybrid|dsv4f_native|MTLCommandBuffer|"
     r"--example\s+ascension_",
+    re.I,
+)
+
+# A sandbox worker may request qualification through submit_candidate, but it
+# may not invoke the external controller or write around that handoff.
+_MODEL_AUTHORITY_CMD = re.compile(
+    r"(?:"
+    r"genesis_lifecycle\.py\s+(?:promote|process-inbox)|"
+    r"genesis_seat\.py|"
+    r"GENESIS_LINEAGE_CURRENT\.json|"
+    r"genesis-workers\.json|"
+    r"genesis-candidates/(?:inbox|active)|"
+    r"genesis-lifecycle-controller\.json"
+    r")",
     re.I,
 )
 
@@ -442,6 +484,11 @@ def looks_gpu_command(command: str) -> bool:
     return bool(_GPU_CMD.search(command))
 
 
+def looks_lifecycle_authority_command(command: str) -> bool:
+    """Whether a model shell request attempts to bypass external authority."""
+    return bool(_MODEL_AUTHORITY_CMD.search(command))
+
+
 class ToolExecutor:
     """Bounded tools. Writes stay inside the owned worktree. GPU cmds refuse."""
 
@@ -450,10 +497,14 @@ class ToolExecutor:
         repo: Path,
         policy: ExecutionSandboxPolicy,
         gate: ResourceGate,
+        candidate_root: Path | None = None,
     ) -> None:
         self.repo = Path(repo)
         self.policy = policy
         self.gate = gate
+        self.candidate_root = Path(
+            candidate_root or (REPO_ROOT / "workspace" / "ops" / "genesis-candidates")
+        )
         self._proc: subprocess.Popen[str] | None = None
         self._interrupted = False
 
@@ -483,6 +534,8 @@ class ToolExecutor:
             "bash": self._bash,
             "pytest": self._pytest,
             "cargo_test": self._cargo_test,
+            "prepare_candidate": self._prepare_candidate,
+            "submit_candidate": self._submit_candidate,
         }
         handler = handlers.get(name)
         if handler is None:
@@ -573,6 +626,13 @@ class ToolExecutor:
 
     def _run_cmd(self, argv: Sequence[str], *, timeout: float, cwd: Path | None = None) -> ToolResult:
         joined = " ".join(argv)
+        if looks_lifecycle_authority_command(joined):
+            return ToolResult(
+                "bash",
+                False,
+                "refused: sandbox model cannot invoke lineage/promotion authority; use submit_candidate",
+                {"argv": list(argv), "authority_boundary": True},
+            )
         if looks_gpu_command(joined):
             return ToolResult(
                 "bash",
@@ -677,6 +737,106 @@ class ToolExecutor:
         result.name = "cargo_test"
         return result
 
+    def _prepare_candidate(self, args: Mapping[str, Any]) -> ToolResult:
+        """Stage a concrete child request without testing or promoting it."""
+        output = self._resolve(str(args.get("output") or ""))
+        try:
+            self._require(SandboxAction.EDIT_OWNED_WORKTREE, output)
+        except SandboxPolicyError as exc:
+            return ToolResult(
+                "prepare_candidate",
+                False,
+                str(exc),
+                {"denied": True, "action": exc.decision.action.value},
+            )
+        if output.exists():
+            return ToolResult(
+                "prepare_candidate",
+                False,
+                f"refused to overwrite existing candidate request {output}",
+                {"output": str(output)},
+            )
+        from lab.lineage.lifecycle import LifecycleError, build_candidate_request
+
+        try:
+            request = build_candidate_request(
+                authority_repo=REPO_ROOT,
+                state_path=REPO_ROOT / "receipts" / "ascent-2026-08-16" / "GENESIS_LINEAGE_CURRENT.json",
+                origin_repo=self.repo,
+                instance_id=str(args.get("instance_id") or ""),
+                artifact_root=str(args.get("artifact_root") or ""),
+                next_bottleneck=str(args.get("next_bottleneck") or ""),
+                tokenizer=(str(args["tokenizer"]) if args.get("tokenizer") else None),
+                resident_executable=(
+                    str(args["resident_executable"]) if args.get("resident_executable") else None
+                ),
+                benchmark_runtime=(
+                    str(args["benchmark_runtime"]) if args.get("benchmark_runtime") else None
+                ),
+                kernel_source=(str(args["kernel_source"]) if args.get("kernel_source") else None),
+                world_state={"hcli_worktree": str(self.repo)},
+            )
+        except (LifecycleError, OSError, ValueError) as exc:
+            return ToolResult(
+                "prepare_candidate",
+                False,
+                f"candidate staging refused: {exc}",
+                {"output": str(output)},
+            )
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(request, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        candidate = request.get("candidate") if isinstance(request, Mapping) else {}
+        return ToolResult(
+            "prepare_candidate",
+            True,
+            f"staged unqualified candidate request {output}",
+            {
+                "output": str(output),
+                "instance_id": candidate.get("instance_id") if isinstance(candidate, Mapping) else None,
+                "generation": candidate.get("generation") if isinstance(candidate, Mapping) else None,
+                "qualified": False,
+            },
+        )
+
+    def _submit_candidate(self, args: Mapping[str, Any]) -> ToolResult:
+        """Validate and hand a child request to the external lifecycle inbox."""
+        request = self._resolve(str(args.get("request") or ""))
+        try:
+            # Although submission reads the request, enforce owned-worktree
+            # membership so a worker cannot re-submit parent-owned evidence.
+            self._require(SandboxAction.EDIT_OWNED_WORKTREE, request)
+        except SandboxPolicyError as exc:
+            return ToolResult(
+                "submit_candidate",
+                False,
+                str(exc),
+                {"denied": True, "action": exc.decision.action.value},
+            )
+        if not request.is_file():
+            return ToolResult(
+                "submit_candidate",
+                False,
+                f"candidate request is missing: {request}",
+                {"request": str(request)},
+            )
+        try:
+            from lab.lineage.lifecycle import CandidateInbox, LifecycleError
+
+            stored = CandidateInbox(self.candidate_root).submit(request, repo=self.repo)
+        except (LifecycleError, OSError, ValueError) as exc:
+            return ToolResult(
+                "submit_candidate",
+                False,
+                f"candidate submission refused: {exc}",
+                {"request": str(request)},
+            )
+        return ToolResult(
+            "submit_candidate",
+            True,
+            f"submitted candidate request {stored}",
+            {"request": str(request), "submitted": str(stored)},
+        )
+
 
 # ---------------------------------------------------------------------------
 # Tool-call contract — parse only, never repair
@@ -748,16 +908,32 @@ def render_tools_preamble(names: Sequence[str] | None = None) -> str:
     return "\n".join(lines)
 
 
-def render_tool_prompt(user_text: str, names: Sequence[str] | None = None) -> str:
+def render_tool_prompt(
+    user_text: str,
+    names: Sequence[str] | None = None,
+    *,
+    user_only: bool = False,
+) -> str:
     """Raw Qwen chat that closes <think> so new tokens can be a tool call.
 
     The native example wraps ``--prompt`` with ``render_qwen38_user_chat``
     unless ``--raw-prompt`` is set. This string is the full prompt; the
-    backend must pass ``--raw-prompt``. Closing think is a prompt prefix,
-    not output repair: the model still chooses the tool name and arguments.
+    backend must pass ``--raw-prompt``. ``user_only`` is for the resident
+    body, whose sealed Genesis system role is injected separately by the
+    socket protocol; it prevents a tool preamble from smuggling a second
+    system turn. Closing think is a prompt prefix, not output repair: the
+    model still chooses the tool name and arguments.
     """
 
     preamble = render_tools_preamble(names)
+    if user_only:
+        return (
+            f"<|im_start|>user\n{preamble}\n\n{user_text}<|im_end|>\n"
+            "<|im_start|>assistant\n"
+            "<think>\n"
+            "The user asked for a concrete action. I will emit a well-formed tool call next.\n"
+            "</think>\n"
+        )
     return (
         f"<|im_start|>system\n{preamble}<|im_end|>\n"
         f"<|im_start|>user\n{user_text}<|im_end|>\n"
@@ -1211,6 +1387,14 @@ class NativeDecodeError(SpecialUnitError):
     """Generate was invoked and failed. Bench FAIL, not a skip."""
 
 
+class ResidentRefused(NativeDecodeRefused):
+    """Will not call the resident body. Not a synthetic model result."""
+
+
+class ResidentReplyRejected(NativeDecodeError):
+    """Resident returned a payload that failed the existing protocol checks."""
+
+
 def checkout_search_roots(repo: Path) -> list[Path]:
     """This worktree plus every git worktree, so a sparse checkout can see packs."""
 
@@ -1475,6 +1659,267 @@ class NativeQwen38Backend:
             return text
 
 
+class ResidentClient(Protocol):
+    """Subset of ``tools/agentos/genesis_resident.propose`` this adapter calls."""
+
+    def propose(
+        self,
+        prompt: str,
+        *,
+        session: str,
+        max_new_tokens: int = SAY_MAX_NEW_TOKENS,
+        raw: bool = False,
+    ) -> dict[str, Any] | None: ...
+
+
+def _sha256_hex(value: Any) -> bool:
+    return isinstance(value, str) and bool(re.fullmatch(r"[0-9a-f]{64}", value))
+
+
+def verified_resident_contract(payload: Any) -> bool:
+    """True when ``payload`` is the existing system-contract-set provenance."""
+
+    if not isinstance(payload, Mapping):
+        return False
+    if payload.get("schema") != GENESIS_CONTRACT_SET_SCHEMA:
+        return False
+    if payload.get("integrity_verified") is not True:
+        return False
+    if not _sha256_hex(payload.get("binding_sha256")):
+        return False
+    contracts = payload.get("contracts")
+    if not isinstance(contracts, list) or not contracts:
+        return False
+    for item in contracts:
+        if not isinstance(item, Mapping):
+            return False
+        if item.get("integrity_verified") is not True:
+            return False
+        if not _sha256_hex(item.get("sha256")):
+            return False
+    return True
+
+
+def validate_resident_reply(
+    reply: Any,
+    *,
+    session_role: str,
+    expected_contract: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Accept only a live, zero-fallback resident reply with verified provenance.
+
+    A missing reply is a refusal. A present but invalid payload is a rejected
+    generate. Neither case is converted into synthetic model text.
+    """
+
+    if reply is None:
+        raise ResidentRefused("resident client returned no result")
+    if not isinstance(reply, Mapping):
+        raise ResidentReplyRejected("resident reply is not an object")
+    if reply.get("ok") is not True:
+        raise ResidentReplyRejected("resident reply is not ok")
+    if session_role not in WORKER_SESSION_ROLES:
+        raise ResidentRefused(
+            f"logical workers must use one of {sorted(WORKER_SESSION_ROLES)}; "
+            "parent and protected_test are not worker homes"
+        )
+    reported_session = reply.get("session")
+    if reported_session is not None and reported_session != session_role:
+        raise ResidentReplyRejected(
+            f"resident reply session {reported_session!r} != {session_role!r}"
+        )
+    if reported_session in {"parent", "protected_test"}:
+        raise ResidentReplyRejected("resident reply reused a non-worker session")
+    mode = reply.get("genesis_contract_mode")
+    if mode == "protected_capability_prompt_preserved":
+        raise ResidentReplyRejected(
+            "protected capability mode is not legal on a worker session"
+        )
+    contract = reply.get("genesis_system_contract")
+    if not verified_resident_contract(contract):
+        raise ResidentReplyRejected(
+            "resident reply lacks verified Genesis contract provenance"
+        )
+    if expected_contract is not None and dict(contract) != dict(expected_contract):
+        raise ResidentReplyRejected(
+            "resident reply contract provenance does not match the expected binding"
+        )
+    if reply.get("body_resident") is not True:
+        raise ResidentReplyRejected("resident reply lacks a live body indication")
+    pid = reply.get("pid")
+    if pid is not None:
+        try:
+            pid_i = int(pid)
+        except (TypeError, ValueError) as exc:
+            raise ResidentReplyRejected("resident reply pid is not an integer") from exc
+        try:
+            os.kill(pid_i, 0)
+        except ProcessLookupError as exc:
+            raise ResidentReplyRejected("resident reply pid is not live") from exc
+        except PermissionError:
+            pass
+        except OSError as exc:
+            raise ResidentReplyRejected(f"resident reply pid is not live: {exc}") from exc
+    fallbacks = reply.get("fallbacks")
+    if type(fallbacks) is not int or fallbacks != 0:
+        raise ResidentReplyRejected(
+            f"resident reply fallbacks={fallbacks!r} (must be int 0)"
+        )
+    text = reply.get("text")
+    if not isinstance(text, str) or not text.strip():
+        raise ResidentReplyRejected("resident reply has no usable text")
+    return dict(reply)
+
+
+def _load_resident_propose() -> Any:
+    """Load the existing resident client. Never a cold Qwen binary."""
+
+    path = REPO_ROOT / "tools" / "agentos" / "genesis_resident.py"
+    if not path.is_file():
+        raise ResidentRefused(
+            "resident client module is not present; inject a client "
+            "(cold Qwen binary is not a fallback)"
+        )
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("genesis_resident", path)
+    if spec is None or spec.loader is None:
+        raise ResidentRefused("resident client module could not be loaded")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    propose = getattr(mod, "propose", None)
+    if not callable(propose):
+        raise ResidentRefused("resident client has no propose()")
+    return propose
+
+
+class GenesisResidentBackend:
+    """Opt-in adapter over the already-resident Genesis body.
+
+    Uses only the existing ``genesis_resident.propose`` protocol. Tests inject
+    a stub client and never touch a Qwen binary. Caller must name ``child_a``
+    or ``child_b``. Does not acquire ``gpu_lane_lock.sh``, load weights, or
+    alter lineage slots.
+    """
+
+    produced_by = "model"
+    # The resident protocol owns the sole system role. SpecialUnit.act uses
+    # this capability marker to render tool instructions inside the user turn.
+    requires_user_tool_prompt = True
+
+    def __init__(
+        self,
+        *,
+        session_role: str,
+        gate: ResourceGate,
+        client: ResidentClient | Callable[..., dict[str, Any] | None] | None = None,
+        expected_contract: Mapping[str, Any] | None = None,
+        max_new_tokens: int = SAY_MAX_NEW_TOKENS,
+        timeout: float = 1800.0,
+        sock_path: Path | None = None,
+    ) -> None:
+        if session_role not in WORKER_SESSION_ROLES:
+            raise ResidentRefused(
+                f"logical workers must use one of {sorted(WORKER_SESSION_ROLES)}; "
+                "parent and protected_test are not worker homes"
+            )
+        self.session_role = session_role
+        self.gate = gate
+        self.client = client
+        self.expected_contract = (
+            dict(expected_contract) if expected_contract is not None else None
+        )
+        self.max_new_tokens = int(max_new_tokens)
+        self.timeout = float(timeout)
+        self.sock_path = Path(sock_path) if sock_path is not None else None
+        self.last_receipt: dict[str, Any] | None = None
+        self.propose_calls = 0
+
+    def _refuse_if_protected(self) -> None:
+        live, why = self.gate.protected_bench_live()
+        if live:
+            raise ResidentRefused(why)
+
+    def _call_client(
+        self,
+        prompt: str,
+        *,
+        raw: bool,
+        max_new_tokens: int,
+    ) -> dict[str, Any] | None:
+        client = self.client
+        if client is None:
+            live_propose = _load_resident_propose()
+
+            def client(
+                text: str,
+                *,
+                session: str,
+                max_new_tokens: int = SAY_MAX_NEW_TOKENS,
+                raw: bool = False,
+            ) -> dict[str, Any] | None:
+                kwargs: dict[str, Any] = {
+                    "session": session,
+                    "max_new_tokens": max_new_tokens,
+                    "raw": raw,
+                    "protected_capability": False,
+                    "timeout": self.timeout,
+                }
+                if self.sock_path is not None:
+                    kwargs["sock_path"] = self.sock_path
+                return live_propose(text, **kwargs)
+
+        self.propose_calls += 1
+        kwargs = {
+            "session": self.session_role,
+            "max_new_tokens": max_new_tokens,
+            "raw": raw,
+        }
+        propose = getattr(client, "propose", None)
+        if callable(propose):
+            return propose(prompt, **kwargs)
+        return client(prompt, **kwargs)
+
+    def complete(self, prompt: str, context: Mapping[str, Any]) -> str:
+        raw_prompt = bool(context.get("raw_prompt", False))
+        max_new_tokens = int(context.get("max_new_tokens", self.max_new_tokens))
+        self._refuse_if_protected()
+        try:
+            reply = self._call_client(
+                prompt, raw=raw_prompt, max_new_tokens=max_new_tokens
+            )
+        except (ResidentRefused, ResidentReplyRejected):
+            raise
+        except Exception as exc:
+            raise ResidentReplyRejected(f"resident client failed: {exc}") from exc
+        accepted = validate_resident_reply(
+            reply,
+            session_role=self.session_role,
+            expected_contract=self.expected_contract,
+        )
+        text = str(accepted["text"])
+        self.last_receipt = {
+            "produced_by": "model",
+            "transport": "genesis_resident",
+            "protocol": accepted.get("protocol") or RESIDENT_PROTOCOL,
+            "generated_text": text,
+            "text": text,
+            "fallbacks": 0,
+            "session_role": self.session_role,
+            "body_resident": True,
+            "used_gpu_lane_lock": False,
+            "binary": None,
+            "genesis_system_contract": accepted.get("genesis_system_contract"),
+            "genesis_contract_mode": accepted.get("genesis_contract_mode"),
+            "pid": accepted.get("pid"),
+            "wall_ns": accepted.get("wall_ns"),
+            "new_tokens": accepted.get("new_tokens"),
+            "max_new_tokens": max_new_tokens,
+            "raw_prompt": raw_prompt,
+        }
+        return text
+
+
 class SpecialUnit:
     def __init__(
         self,
@@ -1569,6 +2014,9 @@ class SpecialUnit:
                     "max_new_tokens",
                     "max_seq_len",
                     "raw_prompt",
+                    "transport",
+                    "session_role",
+                    "body_resident",
                 )
                 if key in receipt
             }
@@ -1622,7 +2070,11 @@ class SpecialUnit:
         follow = user_text
 
         for rnd in range(rounds):
-            prompt = render_tool_prompt(follow, names)
+            prompt = render_tool_prompt(
+                follow,
+                names,
+                user_only=bool(getattr(self.backend, "requires_user_tool_prompt", False)),
+            )
             try:
                 reply_text = self.backend.complete(prompt, ctx)
             except NativeDecodeRefused as exc:
@@ -1650,6 +2102,9 @@ class SpecialUnit:
                         "max_new_tokens",
                         "max_seq_len",
                         "raw_prompt",
+                        "transport",
+                        "session_role",
+                        "body_resident",
                     )
                     if key in receipt
                 } or native
@@ -1907,15 +2362,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     p_say = sub.add_parser("say")
     _add_common(p_say)
     p_say.add_argument("text")
-    p_say.add_argument("--backend", choices=("native", "scripted"), default="native")
+    p_say.add_argument("--backend", choices=("native", "scripted", "resident"), default="native")
+    p_say.add_argument("--worker-session", choices=("child_a", "child_b"), default=None)
     p_say.add_argument("--max-new-tokens", type=int, default=SAY_MAX_NEW_TOKENS)
 
     p_act = sub.add_parser("act")
     _add_common(p_act)
     p_act.add_argument("text")
-    p_act.add_argument("--backend", choices=("native", "scripted"), default="native")
+    p_act.add_argument("--backend", choices=("native", "scripted", "resident"), default="native")
+    p_act.add_argument("--worker-session", choices=("child_a", "child_b"), default=None)
     p_act.add_argument("--max-new-tokens", type=int, default=TOOL_MAX_NEW_TOKENS)
     p_act.add_argument("--max-seq-len", type=int, default=TOOL_MAX_SEQ_LEN)
+    p_act.add_argument(
+        "--max-rounds",
+        type=int,
+        default=1,
+        help="bounded model-chosen tool rounds; prior tool results feed the next round",
+    )
 
     p_tool = sub.add_parser("tool")
     _add_common(p_tool)
@@ -1994,6 +2457,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         if unit.backend is None:
             if args.backend == "scripted":
                 unit.backend = ScriptedBackend(["acknowledged"])
+            elif args.backend == "resident":
+                role = getattr(args, "worker_session", None)
+                if not role:
+                    raise SystemExit(
+                        "resident backend requires --worker-session child_a|child_b"
+                    )
+                unit.backend = GenesisResidentBackend(
+                    gate=unit.gate,
+                    session_role=role,
+                    max_new_tokens=args.max_new_tokens,
+                )
             else:
                 unit.backend = NativeQwen38Backend(
                     repo=unit.repo,
@@ -2008,6 +2482,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     args.text,
                     max_new_tokens=args.max_new_tokens,
                     max_seq_len=args.max_seq_len,
+                    max_rounds=args.max_rounds,
                 )
                 print(json.dumps(result.to_dict(), indent=2))
                 return 0 if result.ok else 1

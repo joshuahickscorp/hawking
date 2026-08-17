@@ -181,6 +181,34 @@ def test_handover_moves_science_and_retires_parent() -> None:
     assert state.valid_count() >= 1
 
 
+def test_runtime_handover_marks_activation_pending_until_observed() -> None:
+    state, parent, child, ev, inv = armed_lineage()
+    verdict = evaluate_promotion(parent=parent, child=child, evidence=ev, invoker=inv, lineage=state)
+    assert verdict["verdict"] == "ACCEPT"
+    package = pack_state(parent, science_payload(), to=child)
+    receipt = state.handover(
+        package=package,
+        invoker=inv,
+        verdict=verdict,
+        retire_parent=False,
+        successor_live=False,
+    )
+    verify(receipt, label="runtime-handover")
+    assert receipt["successor_activation_pending"] is True
+    assert state.current is not None and state.current.live is False
+    assert state.current.launched is False
+    assert state.last_known_good is not None
+    assert state.last_known_good.terminated is False
+    with pytest.raises(LineageError, match="observed live"):
+        state.finalize_parent_retirement()
+    observed = state.mark_current_live(instance_id=child.instance_id)
+    verify(observed, label="runtime-child-live")
+    assert state.current is not None and state.current.live is True
+    retired = state.finalize_parent_retirement()
+    verify(retired, label="runtime-parent-retired")
+    assert state.last_known_good is not None and state.last_known_good.terminated is True
+
+
 def test_handover_refuses_non_accept() -> None:
     state, parent, child, ev, inv = armed_lineage()
     ev = dict(ev)

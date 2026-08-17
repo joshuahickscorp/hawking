@@ -1,7 +1,9 @@
 """CPU-side tests for the Qwen3.8 special-unit harness (G005 / G015 legs)."""
 from __future__ import annotations
 
+import inspect
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -12,10 +14,14 @@ from lab.hcli.special_unit import (
     TOOL_CALL_OPEN,
     TOOL_MAX_NEW_TOKENS,
     TOOL_MAX_SEQ_LEN,
+    WORKER_SESSION_ROLES,
+    GenesisResidentBackend,
     MalformedToolCall,
     NativeDecodeError,
     NativeDecodeRefused,
     NativeQwen38Backend,
+    ResidentRefused,
+    ResidentReplyRejected,
     ResourceClass,
     ResourceGate,
     ScriptedBackend,
@@ -25,10 +31,12 @@ from lab.hcli.special_unit import (
     StepStatus,
     consume_grok_task,
     looks_gpu_command,
+    looks_lifecycle_authority_command,
     main,
     parse_tool_calls,
     project_context,
     render_tool_prompt,
+    validate_resident_reply,
 )
 from lab.layout import REPO_ROOT
 from lab.verification_authority import AuthorityPrincipal, SelfPromotionError
@@ -111,6 +119,15 @@ def test_gpu_commands_refused(unit: SpecialUnit) -> None:
     assert "refused" in result.output
 
 
+def test_worker_cannot_bypass_external_promotion_authority(unit: SpecialUnit) -> None:
+    command = "python3 tools/genesis_lifecycle.py promote --request child.json"
+    assert looks_lifecycle_authority_command(command)
+    result = unit.tool("bash", {"command": command})
+    assert not result.ok
+    assert result.detail.get("authority_boundary") is True
+    assert "submit_candidate" in result.output
+
+
 def test_pytest_tool_runs_real_lab_test(unit: SpecialUnit) -> None:
     result = unit.tool("pytest", {"target": "lab/tests/test_option_c.py", "timeout": 90})
     assert result.ok, result.output
@@ -134,6 +151,45 @@ def test_cargo_test_accepts_string_extra(unit: SpecialUnit) -> None:
     assert "hide-protocol" in argv
     assert "ids_serialize_transparently_as_bare_strings" in argv
     assert argv.count("i") == 0
+
+
+def test_prepare_candidate_stages_only_an_owned_unqualified_request(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import lab.lineage.lifecycle as lifecycle
+
+    worktree = tmp_path / "worker-home"
+    worktree.mkdir()
+    unit = SpecialUnit(
+        repo=worktree,
+        session_root=tmp_path / "sessions",
+        owned_worktree=worktree,
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    seen: dict[str, object] = {}
+
+    def fake_builder(**kwargs):
+        seen.update(kwargs)
+        return {
+            "schema": "hawking.genesis.candidate_request.v1",
+            "candidate": {"instance_id": "genesis-g1", "generation": 1},
+        }
+
+    monkeypatch.setattr(lifecycle, "build_candidate_request", fake_builder)
+    result = unit.tool(
+        "prepare_candidate",
+        {
+            "output": "candidate.json",
+            "instance_id": "genesis-g1",
+            "artifact_root": "artifact",
+            "next_bottleneck": "representation bytes",
+        },
+    )
+    assert result.ok
+    assert result.detail["qualified"] is False
+    assert (worktree / "candidate.json").is_file()
+    assert seen["origin_repo"] == worktree
+    assert seen["authority_repo"] == REPO_ROOT
 
 
 def test_grok_delegate_does_not_consume(unit: SpecialUnit, tmp_path: Path) -> None:
@@ -669,6 +725,14 @@ def test_render_tool_prompt_is_raw_chat() -> None:
     assert "<|im_start|>assistant\n" in prompt
 
 
+def test_render_tool_prompt_for_resident_leaves_system_role_to_socket_contract() -> None:
+    prompt = render_tool_prompt("Search lab/hcli.", ["grep"], user_only=True)
+    assert prompt.startswith("<|im_start|>user\n")
+    assert "<|im_start|>system" not in prompt
+    assert "<tools>" in prompt
+    assert prompt.rstrip().endswith("</think>")
+
+
 def test_native_backend_tool_budget_uses_raw_prompt(tmp_path: Path) -> None:
     import subprocess
 
@@ -779,3 +843,306 @@ def test_bench_unpack_preserves_measured_producer() -> None:
     assert produced == "scripted"
     ok, detail, produced = _unpack_run((True, "hits=3"))
     assert produced is None
+
+
+# ---------------------------------------------------------------------------
+# Opt-in Genesis resident worker adapter (CPU-only, injected client)
+# ---------------------------------------------------------------------------
+
+_RESIDENT_CONTRACT = {
+    "schema": "hawking.genesis.system_contract_set.v1",
+    "model": "qwen3.8",
+    "binding_sha256": "3ef47426958200ff830ea2ec5adce53d3b3347098d459bd7fcddc9a5dc9a179f",
+    "integrity_verified": True,
+    "contracts": [
+        {
+            "canonical_path": "contracts/genesis/QWEN38_GENESIS_SYSTEM_DIRECTIVE.md",
+            "sha256": "881ae469e0287cf386467002d3fc7951524b47054ac6d7f753b94a8e4e3ceff7",
+            "size_bytes": 16414,
+            "source_provenance": "injected-test",
+            "integrity_verified": True,
+        },
+        {
+            "canonical_path": "contracts/genesis/GENESIS_CONTINUITY_DIRECTIVE.md",
+            "sha256": "c4a58bc06575effb8f759dbb22c49abfc65e1957910b18917d45d02592d1fdbc",
+            "size_bytes": 11912,
+            "source_provenance": "injected-test",
+            "integrity_verified": True,
+        },
+        {
+            "canonical_path": "contracts/genesis/GENESIS_OUTPUT_LAW.md",
+            "sha256": "9679490e8ae623a6fdb408fd906a15d676bc55926580f6d7ed60e9ea610c9ada",
+            "size_bytes": 4871,
+            "source_provenance": "injected-test",
+            "integrity_verified": True,
+        },
+    ],
+}
+
+
+def _resident_reply(**overrides: object) -> dict:
+    body = {
+        "ok": True,
+        "protocol": "hawking.genesis.resident.v1",
+        "text": "resident worker reply",
+        "fallbacks": 0,
+        "wall_ns": 1,
+        "new_tokens": [1],
+        "session": "child_a",
+        "body_resident": True,
+        "pid": os.getpid(),
+        "genesis_system_contract": dict(_RESIDENT_CONTRACT),
+        "genesis_contract_mode": "runtime_capsule_injected",
+        "stub": True,
+    }
+    body.update(overrides)
+    return body
+
+
+class _StubResident:
+    def __init__(self, reply: object) -> None:
+        self.reply = reply
+        self.calls: list[tuple[str, dict]] = []
+
+    def propose(self, prompt: str, **kwargs: object) -> object:
+        self.calls.append((prompt, dict(kwargs)))
+        if callable(self.reply):
+            return self.reply(prompt, **kwargs)
+        return self.reply
+
+
+_REPLY_UNSET = object()
+
+
+def _resident_backend(
+    tmp_path: Path,
+    *,
+    session_role: str = "child_a",
+    reply: object = _REPLY_UNSET,
+    client: _StubResident | None = None,
+    lock_owner: str | None = None,
+) -> tuple[GenesisResidentBackend, _StubResident]:
+    lock = tmp_path / "gpu-lock"
+    if lock_owner is not None:
+        lock.mkdir()
+        (lock / "owner").write_text(lock_owner + "\n", encoding="utf-8")
+    stub = client or _StubResident(_resident_reply() if reply is _REPLY_UNSET else reply)
+    backend = GenesisResidentBackend(
+        session_role=session_role,
+        gate=ResourceGate(lock_path=lock if lock_owner is not None else tmp_path / "no-lock"),
+        client=stub,
+        expected_contract=_RESIDENT_CONTRACT,
+    )
+    return backend, stub
+
+
+def test_resident_injected_child_a_succeeds_without_native_binary(tmp_path: Path) -> None:
+    NativeQwen38Backend.reset_counters()
+    before_lock = Path("/tmp/hawking-gpu-lane.lock").exists()
+    backend, stub = _resident_backend(tmp_path, session_role="child_a")
+    text = backend.complete("summarize the open worker task", {})
+    assert text == "resident worker reply"
+    assert stub.calls
+    assert stub.calls[0][0] == "summarize the open worker task"
+    assert stub.calls[0][1]["session"] == "child_a"
+    assert backend.last_receipt is not None
+    assert backend.last_receipt["transport"] == "genesis_resident"
+    assert backend.last_receipt["fallbacks"] == 0
+    assert backend.last_receipt["used_gpu_lane_lock"] is False
+    assert backend.last_receipt["binary"] is None
+    assert backend.last_receipt["session_role"] == "child_a"
+    assert backend.last_receipt["body_resident"] is True
+    assert NativeQwen38Backend.lock_acquisitions == 0
+    assert NativeQwen38Backend.generates_completed == 0
+    assert Path("/tmp/hawking-gpu-lane.lock").exists() == before_lock
+    src = inspect.getsource(GenesisResidentBackend.complete)
+    assert "gpu_lane_lock.sh" not in src
+    assert "lock_script" not in src
+    assert "hybrid_greedy" not in src
+    assert backend.last_receipt["used_gpu_lane_lock"] is False
+
+
+def test_resident_injected_child_b_is_an_explicit_worker_home(tmp_path: Path) -> None:
+    backend, stub = _resident_backend(
+        tmp_path,
+        session_role="child_b",
+        reply=_resident_reply(session="child_b", text="from child_b"),
+    )
+    assert backend.complete("continue the kernel front", {}) == "from child_b"
+    assert stub.calls[0][1]["session"] == "child_b"
+    assert backend.last_receipt is not None
+    assert backend.last_receipt["session_role"] == "child_b"
+
+
+def test_resident_backend_refuses_parent_and_protected_test() -> None:
+    gate = ResourceGate(lock_path=Path("/tmp/no-such-special-unit-lock"))
+    for role in ("parent", "protected_test", "worker_c", ""):
+        with pytest.raises(ResidentRefused, match="not worker homes"):
+            GenesisResidentBackend(session_role=role, gate=gate, client=_StubResident(_resident_reply()))
+
+
+def test_resident_backend_refuses_protected_lock_without_client_call(tmp_path: Path) -> None:
+    NativeQwen38Backend.reset_counters()
+    backend, stub = _resident_backend(tmp_path, lock_owner="q80-mixed-bench")
+    with pytest.raises(ResidentRefused, match="protected"):
+        backend.complete("Say hi.", {})
+    assert stub.calls == []
+    assert backend.propose_calls == 0
+    assert NativeQwen38Backend.lock_acquisitions == 0
+
+
+def test_resident_backend_does_not_contend_for_nonprotected_lock(tmp_path: Path) -> None:
+    backend, stub = _resident_backend(tmp_path, lock_owner="some-other-lane")
+    assert backend.complete("Say hi.", {}) == "resident worker reply"
+    assert stub.calls and stub.calls[0][1]["session"] == "child_a"
+    assert backend.last_receipt is not None
+    assert backend.last_receipt["used_gpu_lane_lock"] is False
+
+
+def test_resident_none_reply_is_refusal_not_synthetic_text(tmp_path: Path) -> None:
+    backend, _stub = _resident_backend(tmp_path, reply=None)
+    with pytest.raises(ResidentRefused, match="no result"):
+        backend.complete("Say hi.", {})
+    assert backend.last_receipt is None
+
+
+def test_resident_ok_false_is_not_converted_to_model_text(tmp_path: Path) -> None:
+    backend, _stub = _resident_backend(
+        tmp_path,
+        reply=_resident_reply(ok=False, text="I refuse but here is text anyway"),
+    )
+    with pytest.raises(ResidentReplyRejected, match="not ok"):
+        backend.complete("Say hi.", {})
+    assert backend.last_receipt is None
+
+
+@pytest.mark.parametrize(
+    "overrides, match",
+    [
+        ({"genesis_system_contract": None}, "provenance"),
+        (
+            {
+                "genesis_system_contract": {
+                    **_RESIDENT_CONTRACT,
+                    "integrity_verified": False,
+                }
+            },
+            "provenance",
+        ),
+        (
+            {
+                "genesis_system_contract": {
+                    **_RESIDENT_CONTRACT,
+                    "schema": "not-the-contract-set",
+                }
+            },
+            "provenance",
+        ),
+        ({"body_resident": False}, "live body"),
+        ({"body_resident": None}, "live body"),
+        ({"text": ""}, "usable text"),
+        ({"text": "   "}, "usable text"),
+        ({"text": None}, "usable text"),
+        ({"fallbacks": 1}, "fallbacks"),
+        ({"fallbacks": "0"}, "fallbacks"),
+        ({"fallbacks": None}, "fallbacks"),
+        ({"session": "parent"}, "session"),
+        (
+            {"genesis_contract_mode": "protected_capability_prompt_preserved"},
+            "protected capability",
+        ),
+    ],
+)
+def test_resident_invalid_reply_is_rejected(
+    tmp_path: Path, overrides: dict, match: str
+) -> None:
+    backend, _stub = _resident_backend(tmp_path, reply=_resident_reply(**overrides))
+    with pytest.raises((ResidentRefused, ResidentReplyRejected), match=match):
+        backend.complete("Say hi.", {})
+    assert backend.last_receipt is None
+
+
+def test_resident_expected_contract_mismatch_is_rejected(tmp_path: Path) -> None:
+    other = dict(_RESIDENT_CONTRACT)
+    other["binding_sha256"] = "0" * 64
+    backend, _stub = _resident_backend(tmp_path, reply=_resident_reply(genesis_system_contract=other))
+    with pytest.raises(ResidentReplyRejected, match="expected binding"):
+        backend.complete("Say hi.", {})
+
+
+def test_resident_say_records_transport_and_worker_session(tmp_path: Path) -> None:
+    backend, _stub = _resident_backend(tmp_path, session_role="child_a")
+    unit = SpecialUnit(
+        repo=REPO_ROOT,
+        session_root=tmp_path / "sessions",
+        owned_worktree=tmp_path / "wt",
+        backend=backend,
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    turn = unit.say("what is the next worker action?")
+    assert turn.meta.get("produced_by") == "model"
+    assert turn.meta.get("native", {}).get("transport") == "genesis_resident"
+    assert turn.meta.get("native", {}).get("session_role") == "child_a"
+    assert turn.meta.get("native", {}).get("used_gpu_lane_lock") is False
+    assert turn.text == "resident worker reply"
+
+
+def test_resident_act_uses_injected_client_not_native_runner(tmp_path: Path) -> None:
+    NativeQwen38Backend.reset_counters()
+    call = (
+        f"{TOOL_CALL_OPEN}\n"
+        + json.dumps({"name": "grep", "arguments": {"pattern": "proposed_complete", "path": "lab/hcli"}}, separators=(",", ":"))
+        + f"\n{TOOL_CALL_CLOSE}\n"
+    )
+    backend, stub = _resident_backend(tmp_path, reply=_resident_reply(text=call))
+    unit = SpecialUnit(
+        repo=REPO_ROOT,
+        session_root=tmp_path / "sessions",
+        owned_worktree=tmp_path / "wt",
+        backend=backend,
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+    )
+    result = unit.act("Search lab/hcli for proposed_complete.", known_tools=["grep"])
+    assert result.ok
+    assert result.produced_by == "model"
+    assert result.native and result.native.get("transport") == "genesis_resident"
+    assert stub.calls[0][1]["session"] == "child_a"
+    assert stub.calls[0][1]["raw"] is True
+    assert stub.calls[0][0].startswith("<|im_start|>user\n")
+    assert "<|im_start|>system" not in stub.calls[0][0]
+    assert NativeQwen38Backend.lock_acquisitions == 0
+
+
+def test_resident_missing_client_does_not_fall_back_to_native(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import lab.hcli.special_unit as su
+
+    NativeQwen38Backend.reset_counters()
+    monkeypatch.setattr(su, "REPO_ROOT", tmp_path)
+    backend = GenesisResidentBackend(
+        session_role="child_a",
+        gate=ResourceGate(lock_path=tmp_path / "no-lock"),
+        client=None,
+        expected_contract=_RESIDENT_CONTRACT,
+    )
+    with pytest.raises(ResidentRefused, match="inject a client"):
+        backend.complete("Say hi.", {})
+    assert backend.last_receipt is None
+    assert NativeQwen38Backend.lock_acquisitions == 0
+    assert NativeQwen38Backend.generates_completed == 0
+    loader_src = inspect.getsource(su._load_resident_propose)
+    assert "hybrid_greedy" not in loader_src
+    assert "gpu_lane_lock" not in loader_src
+    assert "NativeQwen38Backend" not in loader_src
+
+
+def test_validate_resident_reply_rejects_none_without_inventing_text() -> None:
+    with pytest.raises(ResidentRefused):
+        validate_resident_reply(None, session_role="child_a")
+
+
+def test_worker_session_roles_are_exactly_continuity_homes() -> None:
+    assert WORKER_SESSION_ROLES == frozenset({"child_a", "child_b"})
+    assert "parent" not in WORKER_SESSION_ROLES
+    assert "protected_test" not in WORKER_SESSION_ROLES

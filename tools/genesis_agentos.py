@@ -87,6 +87,23 @@ def _process_alive(pid: object) -> bool:
     return True
 
 
+def _gpu_lane_busy(lock_path: Path = GPU_LOCK) -> bool:
+    """Fail closed on an incomplete lock, but not on a proven-dead owner.
+
+    The resident's own GPU guard reclaims a stale numeric-PID lock atomically
+    when the next decode starts.  AgentOS must be allowed to reach that decode;
+    treating the directory's mere presence as busy made a clean restart leave
+    both workers deferred forever.
+    """
+    if not lock_path.exists():
+        return False
+    try:
+        pid = int((lock_path / "pid").read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return True
+    return _process_alive(pid)
+
+
 def _load_lineage(path: Path) -> LineageState:
     try:
         raw = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -298,7 +315,7 @@ def run_once(
     """Run one guarded model/tool turn and persist its actual outcome."""
     if DEFAULT_STOPFILE.exists():
         return seal({"schema": SCHEMA, "outcome": "STOPPED", "recorded_at": _utc()})
-    if GPU_LOCK.exists():
+    if _gpu_lane_busy(GPU_LOCK):
         return seal(
             {
                 "schema": SCHEMA,
@@ -427,7 +444,7 @@ def _status(registry_path: Path) -> dict[str, Any]:
             }
             for row in workers
         ],
-        "gpu_lane_busy": GPU_LOCK.exists(),
+        "gpu_lane_busy": _gpu_lane_busy(GPU_LOCK),
     }
 
 

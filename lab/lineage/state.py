@@ -61,6 +61,59 @@ class LineageState:
         self._armed = False
         self._events: list[dict[str, Any]] = []
 
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "LineageState":
+        """Rehydrate an already-seated lineage without manufacturing authority.
+
+        The live controller must continue from the atomically persisted three
+        slots; rebuilding G0 with :meth:`install` would silently discard a
+        candidate, last-known-good, and the event history.  Treat every field
+        in the snapshot as evidence and fail closed if it is inconsistent with
+        the slot invariant.
+        """
+        if not isinstance(raw, Mapping):
+            raise LineageError("lineage snapshot must be an object")
+        if raw.get("schema") != SCHEMA:
+            raise LineageError(f"unexpected lineage schema {raw.get('schema')!r}")
+        armed = raw.get("armed")
+        if type(armed) is not bool:
+            raise LineageError("lineage snapshot.armed must be a boolean")
+        slots = raw.get("slots")
+        if not isinstance(slots, Mapping) or set(slots) != set(SLOT_NAMES):
+            raise LineageError(
+                f"lineage snapshot must contain exactly {list(SLOT_NAMES)}"
+            )
+        events = raw.get("events")
+        if not isinstance(events, list) or not all(isinstance(row, Mapping) for row in events):
+            raise LineageError("lineage snapshot.events must be an object list")
+
+        state = cls()
+        state._armed = armed
+        for name in SLOT_NAMES:
+            occupant = slots.get(name)
+            if occupant is None:
+                state._put(name, None)
+                continue
+            try:
+                state._put(name, GenesisInstance.from_mapping(occupant))
+            except (KeyError, TypeError, ValueError) as exc:
+                raise LineageError(f"invalid {name} occupant in lineage snapshot: {exc}") from exc
+        state._events = [dict(row) for row in events]
+
+        declared_count = raw.get("valid_count")
+        if type(declared_count) is not int or declared_count != state.valid_count():
+            raise LineageError(
+                "lineage snapshot.valid_count does not match independently parsed slots"
+            )
+        declared_zero = raw.get("zero_valid_genesis")
+        expected_zero = False if not state._armed else state.valid_count() == 0
+        if type(declared_zero) is not bool or declared_zero != expected_zero:
+            raise LineageError(
+                "lineage snapshot.zero_valid_genesis does not match independently parsed slots"
+            )
+        state._assert_invariant()
+        return state
+
     @property
     def armed(self) -> bool:
         return self._armed
@@ -101,9 +154,7 @@ class LineageState:
             return
         copy = occupant.copy()
         copy.role = name.lower()
-        if name == CURRENT:
-            copy.live = True
-        elif name == LAST_KNOWN_GOOD:
+        if name == LAST_KNOWN_GOOD:
             copy.live = False
         self._slots[name] = copy
 
@@ -127,20 +178,25 @@ class LineageState:
         instance = as_instance(genesis, "genesis")
         if not instance.valid:
             raise LineageError("refusing to install an invalid Genesis")
-        live = instance.copy()
-        live.live = True
-        live.terminated = False
-        live.role = "current"
+        seated = instance.copy()
+        # Installing artifact authority does not launch or observe a process.
+        seated.live = False
+        seated.launched = False
+        seated.terminated = False
+        seated.role = "current"
         reserve = instance.copy()
         reserve.live = False
+        reserve.launched = False
         reserve.terminated = False
         reserve.role = "last_known_good"
-        self._put(CURRENT, live)
+        self._put(CURRENT, seated)
         self._put(LAST_KNOWN_GOOD, reserve)
         self._put(CANDIDATE, None)
         self._armed = True
         self._assert_invariant()
-        self._record("install", {"instance_id": live.instance_id, "generation": live.generation})
+        self._record(
+            "install", {"instance_id": seated.instance_id, "generation": seated.generation}
+        )
         return self.snapshot()
 
     def nominate(self, child: GenesisInstance | Mapping[str, Any]) -> GenesisInstance:
@@ -234,7 +290,9 @@ class LineageState:
                 "rollback requested but LAST_KNOWN_GOOD is not a valid Genesis"
             )
         restored = lkg.copy()
-        restored.live = True
+        # Restoring slot authority is not evidence that a process was restarted.
+        restored.live = False
+        restored.launched = False
         restored.terminated = False
         restored.valid = True
         restored.role = "current"
@@ -273,8 +331,21 @@ class LineageState:
         package: Mapping[str, Any],
         invoker: Invoker | Mapping[str, Any],
         verdict: Mapping[str, Any],
+        retire_parent: bool = True,
+        successor_live: bool = True,
     ) -> dict[str, Any]:
-        """Move authority only after an external ACCEPT and a verified checksum."""
+        """Move authority only after an external ACCEPT and a verified checksum.
+
+        ``retire_parent=False`` exists for the live controller's two-phase
+        handoff: workers are already rebound, but the old body remains loaded
+        until the newly authoritative resident has answered health.
+        ``successor_live=False`` is for an executable-image replacement: the
+        durable authority names the child so the supervisor can select its
+        binary, but the state deliberately does *not* claim the child process
+        is running until a separate observed-health transition records it.
+        The defaults retain the original fully-complete in-memory handoff used
+        by the reproduction-cycle API and its callers.
+        """
         from lab.lineage.promotion import (
             PROMOTION_SCHEMA,
             SelfCertificationRefused,
@@ -310,14 +381,14 @@ class LineageState:
 
         retired = parent.copy()
         retired.live = False
-        retired.terminated = True
+        retired.terminated = bool(retire_parent)
         retired.valid = True
         retired.role = "last_known_good"
         successor = child.copy()
-        successor.live = True
+        successor.live = bool(successor_live)
         successor.valid = True
         successor.terminated = False
-        successor.launched = True
+        successor.launched = bool(successor_live)
         successor.role = "current"
         successor.research_state = dict(accepted["payload"])
         self._put(LAST_KNOWN_GOOD, retired)
@@ -330,15 +401,107 @@ class LineageState:
             "to_instance": successor.instance_id,
             "checksum_sha256": accepted["checksum_sha256"],
             "checksum_verified": True,
-            "parent_terminated": True,
+            "parent_terminated": bool(retire_parent),
+            "parent_retirement_pending": not bool(retire_parent),
+            "successor_live": bool(successor_live),
+            "successor_activation_pending": not bool(successor_live),
             "valid_count": self.valid_count(),
             "invoker": inv.to_dict(),
             "promotion_seal": verdict.get("seal_sha256"),
             "recorded_at": utc_now(),
         }
         sealed = seal(document)
-        self._record("handover", {"to": successor.instance_id, "from": retired.instance_id})
+        self._record(
+            "handover",
+            {
+                "to": successor.instance_id,
+                "from": retired.instance_id,
+                "parent_terminated": bool(retire_parent),
+                "successor_live": bool(successor_live),
+            },
+        )
         return sealed
+
+    def mark_current_live(self, *, instance_id: str) -> dict[str, Any]:
+        """Record an observed successful start of the authoritative child.
+
+        This is intentionally not folded into :meth:`handover`.  A runtime
+        successor needs CURRENT to name its executable before the supervisor
+        can launch it.  Keeping the flags false between those events makes a
+        crash/restart window explicit rather than fabricating a live process.
+        """
+        if not self._armed:
+            raise LineageError("lineage is not armed")
+        current = self.current
+        if current is None or not current.valid:
+            raise LineageError("CURRENT must be valid before marking it live")
+        if current.instance_id != instance_id:
+            raise LineageError(
+                f"observed child {instance_id!r} does not match CURRENT {current.instance_id!r}"
+            )
+        live = current.copy()
+        live.live = True
+        live.launched = True
+        live.terminated = False
+        live.role = "current"
+        self._put(CURRENT, live)
+        self._assert_invariant()
+        receipt = seal(
+            {
+                "schema": HANDOVER_SCHEMA,
+                "event": "successor_observed_live",
+                "current_id": live.instance_id,
+                "successor_live": True,
+                "valid_count": self.valid_count(),
+                "recorded_at": utc_now(),
+            }
+        )
+        self._record("successor_observed_live", {"current": live.instance_id})
+        return receipt
+
+    def finalize_parent_retirement(self) -> dict[str, Any]:
+        """Mark the previous parent retired after the successor is truly live.
+
+        This is deliberately a separate state transition.  It prevents a
+        controller from claiming the old resident body is gone while a new
+        artifact is still loading or its post-reload health has not returned.
+        """
+        if not self._armed:
+            raise LineageError("lineage is not armed")
+        current = self.current
+        previous = self.last_known_good
+        if current is None or not current.valid:
+            raise LineageError("CURRENT must remain valid before parent retirement")
+        if not current.live or not current.launched:
+            raise LineageError("CURRENT must be observed live before parent retirement")
+        if previous is None or not previous.valid:
+            raise LineageError("LAST_KNOWN_GOOD must remain valid before parent retirement")
+        if previous.instance_id == current.instance_id:
+            raise LineageError("cannot retire CURRENT as its own previous parent")
+        retired = previous.copy()
+        retired.live = False
+        retired.launched = False
+        retired.terminated = True
+        retired.valid = True
+        retired.role = "last_known_good"
+        self._put(LAST_KNOWN_GOOD, retired)
+        self._assert_invariant()
+        receipt = seal(
+            {
+                "schema": HANDOVER_SCHEMA,
+                "event": "parent_retired_after_successor_live",
+                "current_id": current.instance_id,
+                "retired_parent_id": retired.instance_id,
+                "parent_terminated": True,
+                "valid_count": self.valid_count(),
+                "recorded_at": utc_now(),
+            }
+        )
+        self._record(
+            "parent_retired_after_successor_live",
+            {"current": current.instance_id, "retired": retired.instance_id},
+        )
+        return receipt
 
     def snapshot(self) -> dict[str, Any]:
         self._assert_invariant()

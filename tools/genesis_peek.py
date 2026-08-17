@@ -16,7 +16,7 @@ import os
 import subprocess
 import time
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 REPO = Path(__file__).resolve().parent.parent
 LINEAGE = REPO / "receipts" / "ascent-2026-08-16" / "GENESIS_LINEAGE_CURRENT.json"
@@ -181,10 +181,14 @@ def gpu_lock_state(
     }
 
 
-def lineage_reality(current: dict[str, Any] | None, body_live: bool) -> tuple[str, list[str]]:
+def lineage_reality(
+    current: dict[str, Any] | None, body_live: bool | None
+) -> tuple[str, list[str]]:
     """Compare lineage's runtime flags with each other and with the live body."""
     if not current:
         return "UNKNOWN", ["CURRENT is empty"]
+    if body_live is None:
+        return "UNCONFIRMED", ["resident health waits for the active serialized decode"]
     live = current.get("live") if isinstance(current.get("live"), bool) else None
     launched = current.get("launched") if isinstance(current.get("launched"), bool) else None
     issues: list[str] = []
@@ -197,6 +201,29 @@ def lineage_reality(current: dict[str, Any] | None, body_live: bool) -> tuple[st
     if launched is not None and launched != body_live:
         issues.append("CURRENT.launched does not match resident body")
     return ("MISMATCH" if issues else "MATCH"), issues
+
+
+def resident_runtime_state(
+    health: dict[str, Any] | None,
+    body_processes: list[int],
+    lock: Mapping[str, Any],
+) -> str:
+    """Classify the resident without mistaking a serialized decode for death."""
+    if health and health.get("ok") and health.get("body_resident"):
+        return "HEALTHY"
+    owner = str(lock.get("owner") or "")
+    lock_pid = _safe_int(lock.get("pid"))
+    if (
+        body_processes
+        and lock.get("state") == "HELD"
+        and owner.startswith("genesis-resident:")
+        and lock_pid in body_processes
+    ):
+        # The body is single-threaded by design.  It cannot answer the health
+        # socket while decoding, so this is live-but-unconfirmed rather than a
+        # claim of health or a false "unhealthy" alert.
+        return "BUSY"
+    return "UNHEALTHY" if body_processes else "DOWN"
 
 
 def _flag(value: Any) -> str:
@@ -309,11 +336,18 @@ def main() -> int:
     else:
         print(f"\n  loop              RUNNING pids {','.join(map(str, daemons))} (DUPLICATE)")
 
-    health = resident_health()
-    body_live = bool(health and health.get("ok") and health.get("body_resident"))
     body_processes = resident_pids(rows or [])
+    lock = gpu_lock_state()
+    health = resident_health()
+    resident_state = resident_runtime_state(health, body_processes, lock)
+    # A serialized decode is a live process but cannot serve a concurrent
+    # health request.  Preserve that uncertainty instead of comparing lineage
+    # flags to a fabricated `false` and declaring a false mismatch.
+    body_live: bool | None = (
+        True if resident_state == "HEALTHY" else None if resident_state == "BUSY" else False
+    )
     health_pid = _safe_int(health.get("pid")) if health else None
-    if body_live:
+    if resident_state == "HEALTHY":
         print(f"  resident body     HEALTHY pid {health_pid if health_pid is not None else 'unknown'}")
         load_bits = []
         if health.get("load_count") is not None:
@@ -338,7 +372,11 @@ def main() -> int:
             print(f"  resident reload   ERROR {health['reload_error']}")
         if rows is not None and health_pid not in body_processes:
             print("  WARNING           healthy PID not recognized as a resident command")
-    elif body_processes:
+    elif resident_state == "BUSY":
+        print(f"  resident body     BUSY pid(s) {','.join(map(str, body_processes))}")
+        print("  resident load     health RPC waits for the active serialized decode")
+        print("  resident sessions temporarily unavailable")
+    elif resident_state == "UNHEALTHY":
         print(f"  resident body     UNHEALTHY pid(s) {','.join(map(str, body_processes))}")
         print("  resident load     health socket unavailable (loading or wedged)")
         print("  resident sessions unavailable")
@@ -347,7 +385,6 @@ def main() -> int:
         print("  resident load     not loaded")
         print("  resident sessions unavailable")
 
-    lock = gpu_lock_state()
     if lock["state"] == "FREE":
         print("  GPU lock          FREE")
     elif lock["pid"] is None:
@@ -363,7 +400,8 @@ def main() -> int:
             f"launched={_flag(current.get('launched'))} resident={_flag(body_live)}"
         )
         if issues:
-            print(f"  WARNING           {'; '.join(issues)}")
+            label = "WARNING" if reality == "MISMATCH" else "NOTE"
+            print(f"  {label:17} {'; '.join(issues)}")
 
     proposing = bool(rows and any("genesis-propose" in str(r.get("command")) for r in rows))
     print(f"  genesis proposing {'yes' if proposing else 'no'}")

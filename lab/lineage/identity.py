@@ -1,7 +1,10 @@
 """Genesis instance identity: artifact, representation, runtime/kernel genome."""
 from __future__ import annotations
 
+import hashlib
+import math
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Mapping
 
 from lab.lineage.canon import (
@@ -19,6 +22,11 @@ SCHEMA = "hawking.lineage.genesis_instance.v1"
 GENESIS_MODEL = "PocketAiHub/Qwen3.8-27B-Abliterated-MLX"
 GENESIS_BASE_REV = "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0"
 GENESIS_ARTIFACT_PATH = "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1"
+GENESIS_ARTIFACT_MANIFEST_PATH = f"{GENESIS_ARTIFACT_PATH}/manifest.json"
+# SHA-256 of the sealed manifest bytes, not a synthetic lineage label.
+GENESIS_ARTIFACT_MANIFEST_SHA = (
+    "d650a757c4cffed463ce8c24dfd5052c2cb47c0f6b1eb10349947854fc47b9df"
+)
 GENESIS_BINARY = "ascension_qwen38_hybrid_greedy"
 GENESIS_COMPLETE_TOKEN_NS = 35_227_918
 GENESIS_BPW = 4.2527
@@ -38,6 +46,21 @@ DEFAULT_BENCHMARK_FINGERPRINT = labeled_sha(
 
 class IdentityError(ValueError):
     """Instance identity is incomplete or inconsistent."""
+
+
+def file_sha256(path: str | Path) -> str:
+    """Return the SHA-256 of file bytes, refusing absent/non-file artifacts."""
+    artifact = Path(path)
+    if not artifact.is_file():
+        raise IdentityError(f"artifact identity source is not a file: {artifact}")
+    digest = hashlib.sha256()
+    try:
+        with artifact.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    except OSError as exc:
+        raise IdentityError(f"cannot hash artifact identity source {artifact}: {exc}") from exc
+    return digest.hexdigest()
 
 
 @dataclass
@@ -104,6 +127,7 @@ class GenesisInstance:
     representation_bpw: float
     complete_token_ns: int
     capability: dict[str, float]
+    physical_bpw: float | None = None
     silent_fallback_ids: tuple[str, ...] = ()
     benchmark_fingerprint: str = DEFAULT_BENCHMARK_FINGERPRINT
     identity: dict[str, str] = field(default_factory=dict)
@@ -124,6 +148,15 @@ class GenesisInstance:
         self.runtime_sha = require_sha256(self.runtime_sha, "runtime_sha")
         self.kernel_genome_sha = require_sha256(self.kernel_genome_sha, "kernel_genome_sha")
         self.representation_bpw = float(bpw_key(self.representation_bpw))
+        if self.physical_bpw is not None:
+            if (
+                isinstance(self.physical_bpw, bool)
+                or not isinstance(self.physical_bpw, (int, float))
+                or not math.isfinite(float(self.physical_bpw))
+                or float(self.physical_bpw) <= 0.0
+            ):
+                raise IdentityError("physical_bpw must be a positive number when present")
+            self.physical_bpw = float(self.physical_bpw)
         if not isinstance(self.complete_token_ns, int) or isinstance(self.complete_token_ns, bool):
             raise IdentityError("complete_token_ns must be an int")
         if self.complete_token_ns <= 0:
@@ -162,6 +195,7 @@ class GenesisInstance:
             representation_bpw=self.representation_bpw,
             complete_token_ns=self.complete_token_ns,
             capability=dict(self.capability),
+            physical_bpw=self.physical_bpw,
             silent_fallback_ids=tuple(self.silent_fallback_ids),
             benchmark_fingerprint=self.benchmark_fingerprint,
             identity=dict(self.identity),
@@ -193,6 +227,7 @@ class GenesisInstance:
             "runtime_sha": self.runtime_sha,
             "kernel_genome_sha": self.kernel_genome_sha,
             "representation_bpw": self.representation_bpw,
+            "physical_bpw": self.physical_bpw,
             "complete_token_ns": self.complete_token_ns,
             "tps": self.tps,
             "capability": dict(self.capability),
@@ -221,6 +256,7 @@ class GenesisInstance:
             representation_bpw=float(data["representation_bpw"]),
             complete_token_ns=int(data["complete_token_ns"]),
             capability=dict(data.get("capability") or {}),
+            physical_bpw=data.get("physical_bpw"),
             silent_fallback_ids=tuple(data.get("silent_fallback_ids") or ()),
             benchmark_fingerprint=str(
                 data.get("benchmark_fingerprint") or DEFAULT_BENCHMARK_FINGERPRINT
@@ -237,12 +273,16 @@ class GenesisInstance:
         )
 
 
-def make_qwen38_genesis(*, instance_id: str = "genesis-qwen38-g0") -> GenesisInstance:
+def make_qwen38_genesis(
+    *,
+    instance_id: str = "genesis-qwen38-g0",
+    artifact_sha: str = GENESIS_ARTIFACT_MANIFEST_SHA,
+) -> GenesisInstance:
     """The seated Hawking Genesis parent as of 2026-08-16."""
     return GenesisInstance(
         instance_id=instance_id,
         generation=0,
-        artifact_sha=labeled_sha("artifact/qwen38-27b/uniform-q4-v1"),
+        artifact_sha=artifact_sha,
         runtime_sha=labeled_sha("runtime/ascension_qwen38_hybrid_greedy"),
         kernel_genome_sha=labeled_sha(
             "genome/Qwen38HybridDecodeSession+qwen_uniform_q4_group64"
@@ -256,11 +296,14 @@ def make_qwen38_genesis(*, instance_id: str = "genesis-qwen38-g0") -> GenesisIns
             "model": GENESIS_MODEL,
             "base_rev": GENESIS_BASE_REV,
             "artifact": GENESIS_ARTIFACT_PATH,
+            "artifact_manifest": GENESIS_ARTIFACT_MANIFEST_PATH,
+            "artifact_sha_authority": "sha256(manifest.json bytes)",
             "binary": GENESIS_BINARY,
         },
         lane="integrator",
         valid=True,
-        live=True,
+        live=False,
+        launched=False,
         role="current",
     )
 

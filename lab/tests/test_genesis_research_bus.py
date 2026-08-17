@@ -188,3 +188,61 @@ def test_unknown_type_refused() -> None:
 def test_corrupt_artifact_sha_refused() -> None:
     with pytest.raises(ValueError, match="artifact_sha"):
         validate_message(_base(artifact_sha="not-a-sha"))
+
+
+def test_generation_aware_message_requires_complete_provenance() -> None:
+    bus = ResearchBus()
+    strict = _base(
+        generation=7,
+        repo_head="a" * 40,
+        facet="representation",
+        invalidation_condition="artifact or runtime identity changes",
+        generation_scope="GENERATION_BOUND",
+    )
+    row = bus.publish_generation_aware(strict)
+    assert row["generation"] == 7
+    assert row["repo_head"] == "a" * 40
+    assert row["facet"] == "representation"
+    for missing in (
+        "generation",
+        "repo_head",
+        "facet",
+        "invalidation_condition",
+        "generation_scope",
+    ):
+        broken = dict(strict)
+        broken.pop(missing)
+        with pytest.raises(BusRefusal):
+            ResearchBus().publish_generation_aware(broken)
+
+
+def test_generation_view_marks_bound_science_stale_without_mutating_log() -> None:
+    bus = ResearchBus()
+    common = {
+        "generation": 7,
+        "repo_head": "b" * 40,
+        "facet": "kernel",
+        "invalidation_condition": "runtime changes",
+    }
+    bound = bus.publish_generation_aware(
+        _base(**common, generation_scope="GENERATION_BOUND")
+    )
+    structural = bus.publish_generation_aware(
+        _base(
+            **common,
+            type="NEGATIVE_SCIENCE",
+            epistemic_class="NEGATIVE",
+            generation_scope="STRUCTURALLY_TRANSFERABLE",
+        )
+    )
+    view = bus.generation_view(
+        generation=8,
+        artifact_sha="c" * 64,
+        runtime_sha="d" * 64,
+    )
+    assert [row["continuity_state"] for row in view] == [
+        "STALE_PENDING_REVALIDATION",
+        "TRANSFERRED_STRUCTURAL",
+    ]
+    assert "continuity_state" not in bound
+    assert "continuity_state" not in structural

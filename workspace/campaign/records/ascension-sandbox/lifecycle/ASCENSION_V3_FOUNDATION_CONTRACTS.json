@@ -175,7 +175,7 @@
       "controller_independently_reviews_and_integrates"
     ]
   },
-  "recorded_at": "2026-08-09T17:44:43.539121Z",
+  "recorded_at": "2026-08-10T17:24:13.817434Z",
   "resource_governor": {
     "energy_evidence_outputs": [
       "ASCENSION_V3_RESOURCE_ATLAS",
@@ -220,6 +220,6 @@
     ]
   },
   "schema": "hawking.ascension.v3_foundation_contracts.v1",
-  "seal_sha256": "744da5ba081f6d1dc2e4d715af1ecc66af9c23b6231d31d872176dcbf4b24574",
+  "seal_sha256": "1c0937eb1628f1afd905a0562caff134f92c94c18831671855752221087cd355",
   "status": "CONTROLLER_CONFIGURATION_ONLY"
 }

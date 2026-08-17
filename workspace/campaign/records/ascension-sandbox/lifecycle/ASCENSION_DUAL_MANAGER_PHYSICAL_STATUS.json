@@ -4,13 +4,13 @@
     "cpu_jobs": [
       {
         "lane": "gravity_evolution",
-        "phase": "NEGATIVE_SCIENCE_SKIP_ADVANCED_TO_NEXT_GENOME",
+        "phase": "SPACE_GUARD_BLOCKED_NO_EVIDENCE_EVICTED",
         "pid": 72358,
         "worker": "qwen30"
       },
       {
         "lane": "gravity_evolution",
-        "phase": "NEGATIVE_SCIENCE_SKIP_ADVANCED_TO_NEXT_GENOME",
+        "phase": "SPACE_GUARD_BLOCKED_NO_EVIDENCE_EVICTED",
         "pid": 72359,
         "worker": "qwen80"
       },
@@ -28,7 +28,7 @@
       },
       {
         "lane": "native_runtime_watchdog",
-        "phase": "QWEN30_PAIRED_SCALAR_ORDER_PRODUCTION_RUNTIME_REQUALIFIED_HTTP_TRANSPORT_SERVING_HCLI_UNQUALIFIED",
+        "phase": "QWEN30_PAIRED_SCALAR_ORDER_PRODUCTION_DEPLOYMENT_INVALID_HCLI_CLOSED",
         "pid": 95861,
         "worker": "qwen30"
       },
@@ -39,12 +39,12 @@
         "worker": "qwen80"
       }
     ],
-    "free_disk_bytes": 343949721600,
+    "free_disk_bytes": 65891172352,
     "gpu_owner": {
-      "acquired_at": "2026-08-09T17:44:16.499988Z",
+      "acquired_at": "2026-08-10T12:07:11.550719Z",
       "pid": 72359,
       "ppid": 1,
-      "released_at": "2026-08-09T17:44:16.554113Z",
+      "released_at": "2026-08-10T12:07:11.594409Z",
       "schema": "hawking.ascension.gpu_lease.v1",
       "stage": "mps_component_smoke",
       "status": "RELEASED",
@@ -52,13 +52,13 @@
     },
     "host": {
       "load_average": [
-        6.159,
-        5.972,
-        6.05
+        32.007,
+        24.222,
+        20.347
       ],
-      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 83%",
+      "memory_pressure": "The system has 103079215104 (6291456 pages with a page size of 16384).\nSystem-wide memory free percentage: 43%",
       "physical_memory_bytes": 103079215104,
-      "swap": "total = 0.00M  used = 0.00M  free = 0.00M  (encrypted)",
+      "swap": "total = 62464.00M  used = 61886.00M  free = 578.00M  (encrypted)",
       "thermal": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded"
     },
     "minimum_reserved_free_bytes": 171798691840,
@@ -70,18 +70,18 @@
   },
   "knowledge_plane": {
     "kernel_ledger": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_KERNEL_GENOME.jsonl",
-    "kernel_record_count": 1749,
+    "kernel_record_count": 2299,
     "mechanism_index": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_MECHANISM_INDEX.sqlite",
-    "negative_record_count": 254,
+    "negative_record_count": 256,
     "negative_science_ledger": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
     "representation_ledger": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_REPRESENTATION_GENOME.jsonl",
-    "representation_record_count": 1732,
+    "representation_record_count": 2282,
     "scheduler_ledger": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_SCHEDULER_GENOME.jsonl",
-    "scheduler_record_count": 1712,
+    "scheduler_record_count": 2262,
     "transfer_matrix": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_TRANSFER_MATRIX.json"
   },
   "protected_authority": "non-V3 physical gatekeeper and protected final review; workers may not promote, launch, or select",
-  "recorded_at": "2026-08-09T17:44:47.343759Z",
+  "recorded_at": "2026-08-10T17:23:36.124594Z",
   "schema": "hawking.ascension.dual_manager_physical_status.v1",
   "status": "DUAL_PHYSICAL_EVOLUTION_AWAITING_WORKER",
   "tournament": {
@@ -110,7 +110,7 @@
         "status": "CANDIDATE_COMPLETE_BINARY_ARTIFACT_LOW_FIDELITY_UNQUALIFIED",
         "value": 1.1303663832684598
       },
-      "candidate_number": 951,
+      "candidate_number": 1274,
       "champions": {
         "current_capable": {
           "candidate": null,
@@ -157,7 +157,7 @@
           "tensor_name": "model.layers.0.self_attn.q_proj.weight"
         },
         "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/evolution/CHAMPIONS.json",
-        "seal_sha256": "f118b75a9496523f1fdc54614b96b1e8e351b6edf6154c15718c8db0abae9471"
+        "seal_sha256": "2b3c2620aef6efa7f2777c66724c417218b389bad61d87c8bc762ea202a7b756"
       },
       "complete_pack": {
         "claim_boundary": "fixed full-pack baseline is separate from this component population until a complete all-tensor genome is compiled",
@@ -184,24 +184,24 @@
       },
       "current_base_true_tps": null,
       "current_experiment": {
-        "candidate_id": "qwen30-1b2a8c6ed71acc3f7f1df0949e5e1fa6",
+        "candidate_id": "qwen30-8b294d7b11be63465509e3c8a88b6b34",
         "configuration": {
-          "group_size": 64,
-          "threshold_multiplier": 0.8
+          "bits": 3,
+          "group_size": 32
         },
-        "generation": 31,
-        "organ": "routed_expert_up",
-        "representation": "ternary_threshold_group128",
+        "generation": 44,
+        "organ": "moe_router",
+        "representation": "uniform_q3_group64",
         "schedule_boundary_sequence": 196,
         "schedule_phase": "expanded_ten_family_after_complete_legacy_generation",
         "schedule_start_generation": 2,
         "schedule_version": "v2_expanded_ten_family",
-        "sequence": 4349,
-        "tensor": "model.layers.24.mlp.experts.63.up_proj.weight"
+        "sequence": 6108,
+        "tensor": "model.layers.36.mlp.gate.weight"
       },
       "current_kernel_bottleneck": "EXACT_COMPLETE_NATIVE_DECODER_AND_FULL_TOKEN_GRAPH_NOT_YET_IMPLEMENTED",
-      "current_representation": "ternary_threshold_group128",
-      "heartbeat": 5377,
+      "current_representation": "uniform_q3_group64",
+      "heartbeat": 7842,
       "kernel_and_runtime": {
         "available_component_evidence": [
           {
@@ -249,45 +249,45 @@
         }
       },
       "last_completed_experiment": {
-        "candidate_id": "qwen30-1b2a8c6ed71acc3f7f1df0949e5e1fa6",
+        "candidate_id": "qwen30-8b294d7b11be63465509e3c8a88b6b34",
         "configuration": {
-          "group_size": 64,
-          "threshold_multiplier": 0.8
+          "bits": 3,
+          "group_size": 32
         },
-        "generation": 31,
-        "organ": "routed_expert_up",
-        "representation": "ternary_threshold_group128",
+        "generation": 44,
+        "organ": "moe_router",
+        "representation": "uniform_q3_group64",
         "schedule_boundary_sequence": 196,
         "schedule_phase": "expanded_ten_family_after_complete_legacy_generation",
         "schedule_start_generation": 2,
         "schedule_version": "v2_expanded_ten_family",
-        "sequence": 4349,
-        "tensor": "model.layers.24.mlp.experts.63.up_proj.weight"
+        "sequence": 6108,
+        "tensor": "model.layers.36.mlp.gate.weight"
       },
-      "last_material_progress_at": "2026-08-09T17:42:32.461570Z",
+      "last_material_progress_at": "2026-08-10T11:58:53.638788Z",
       "next_experiment": {
-        "candidate_id": "qwen30-52b7371a57a7e4ffc660d74e61907744",
+        "candidate_id": "qwen30-8b294d7b11be63465509e3c8a88b6b34",
         "configuration": {
-          "group_size": 64,
-          "outlier_ratio": 0.005
+          "bits": 3,
+          "group_size": 32
         },
-        "generation": 31,
-        "organ": "routed_expert_up",
-        "representation": "binary_outlier_residual",
+        "generation": 44,
+        "organ": "moe_router",
+        "representation": "uniform_q3_group64",
         "schedule_boundary_sequence": 196,
         "schedule_phase": "expanded_ten_family_after_complete_legacy_generation",
         "schedule_start_generation": 2,
         "schedule_version": "v2_expanded_ten_family",
-        "sequence": 4350,
-        "tensor": "model.layers.24.mlp.experts.63.up_proj.weight"
+        "sequence": 6108,
+        "tensor": "model.layers.36.mlp.gate.weight"
       },
-      "phase": "NEGATIVE_SCIENCE_SKIP_ADVANCED_TO_NEXT_GENOME",
+      "phase": "SPACE_GUARD_BLOCKED_NO_EVIDENCE_EVICTED",
       "pid": 72358,
       "population": {
-        "artifact_bytes": 764034741,
-        "candidate_count": 951,
-        "completed_candidate_count": 951,
-        "current_free_bytes": 343952453632,
+        "artifact_bytes": 1043192852,
+        "candidate_count": 1274,
+        "completed_candidate_count": 1274,
+        "current_free_bytes": 65931898880,
         "failed_candidate_count": 0,
         "minimum_free_bytes_guard": 171798691840,
         "no_automatic_artifact_eviction": true
@@ -295,7 +295,7 @@
       "ppid": 1,
       "runtime": {
         "claim_boundary": "missing/blocked runtime receipts mean no TPS, HCLI, or TG qualification is inferred",
-        "complete_runtime_phase": "QWEN30_PAIRED_SCALAR_ORDER_PRODUCTION_RUNTIME_REQUALIFIED_HTTP_TRANSPORT_SERVING_HCLI_UNQUALIFIED",
+        "complete_runtime_phase": "QWEN30_PAIRED_SCALAR_ORDER_PRODUCTION_DEPLOYMENT_INVALID_HCLI_CLOSED",
         "complete_runtime_status_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_COMPLETE_RUNTIME_STATUS.json",
         "current_base_true_tps": null,
         "current_kernel_bottleneck": "EXACT_COMPLETE_NATIVE_DECODER_AND_FULL_TOKEN_GRAPH_NOT_YET_IMPLEMENTED",
@@ -442,7 +442,7 @@
         "status": "CANDIDATE_COMPLETE_BINARY_ARTIFACT_LOW_FIDELITY_UNQUALIFIED",
         "value": 1.1331148544404688
       },
-      "candidate_number": 775,
+      "candidate_number": 1002,
       "champions": {
         "current_capable": {
           "candidate": null,
@@ -488,7 +488,7 @@
           "tensor_name": "model.layers.3.self_attn.q_proj.weight"
         },
         "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/CHAMPIONS.json",
-        "seal_sha256": "21c9ff4ccf620c5f39c17a266129d77295b5242e660674f321b0e0cc6220685e"
+        "seal_sha256": "264717a6ed995296d4a5fb51274e4c7422a5f5c7542806e9f7d06a19099d7fd2"
       },
       "complete_pack": {
         "claim_boundary": "fixed full-pack baseline is separate from this component population until a complete all-tensor genome is compiled",
@@ -515,25 +515,25 @@
       },
       "current_base_true_tps": null,
       "current_experiment": {
-        "candidate_id": "qwen80-19b5a11484112928d2c21d60f6ba3f19",
+        "candidate_id": "qwen80-89f76c4e15a343f96b66d7ad51ac553e",
         "configuration": {
           "bits": 3,
-          "group_size": 256,
-          "transform": "normalized_walsh_hadamard_self_inverse"
+          "rank": 24,
+          "train_steps": 4
         },
-        "generation": 23,
-        "organ": "shared_expert",
-        "representation": "hadamard_lattice_q3_group128",
+        "generation": 33,
+        "organ": "moe_router",
+        "representation": "teacher_low_rank_q3",
         "schedule_boundary_sequence": 252,
         "schedule_phase": "expanded_ten_family_after_complete_legacy_generation",
         "schedule_start_generation": 2,
         "schedule_version": "v2_expanded_ten_family",
-        "sequence": 4169,
-        "tensor": "model.layers.47.mlp.shared_expert.gate_proj.weight"
+        "sequence": 5847,
+        "tensor": "model.layers.12.mlp.gate.weight"
       },
       "current_kernel_bottleneck": "EXACT_COMPLETE_NATIVE_DECODER_AND_FULL_TOKEN_GRAPH_NOT_YET_IMPLEMENTED",
-      "current_representation": "hadamard_lattice_q3_group128",
-      "heartbeat": 5149,
+      "current_representation": "teacher_low_rank_q3",
+      "heartbeat": 7511,
       "kernel_and_runtime": {
         "available_component_evidence": [
           {
@@ -581,47 +581,47 @@
         }
       },
       "last_completed_experiment": {
-        "candidate_id": "qwen80-19b5a11484112928d2c21d60f6ba3f19",
+        "candidate_id": "qwen80-89f76c4e15a343f96b66d7ad51ac553e",
         "configuration": {
           "bits": 3,
-          "group_size": 256,
-          "transform": "normalized_walsh_hadamard_self_inverse"
+          "rank": 24,
+          "train_steps": 4
         },
-        "generation": 23,
-        "organ": "shared_expert",
-        "representation": "hadamard_lattice_q3_group128",
+        "generation": 33,
+        "organ": "moe_router",
+        "representation": "teacher_low_rank_q3",
         "schedule_boundary_sequence": 252,
         "schedule_phase": "expanded_ten_family_after_complete_legacy_generation",
         "schedule_start_generation": 2,
         "schedule_version": "v2_expanded_ten_family",
-        "sequence": 4169,
-        "tensor": "model.layers.47.mlp.shared_expert.gate_proj.weight"
+        "sequence": 5847,
+        "tensor": "model.layers.12.mlp.gate.weight"
       },
-      "last_material_progress_at": "2026-08-09T17:44:19.114825Z",
+      "last_material_progress_at": "2026-08-10T12:07:13.505132Z",
       "next_experiment": {
-        "candidate_id": "qwen80-503dbe473ea7cb916b2c279bc5cf91e3",
+        "candidate_id": "qwen80-89f76c4e15a343f96b66d7ad51ac553e",
         "configuration": {
-          "bits_per_stage": 2,
-          "group_size": 32,
-          "stages": 2
+          "bits": 3,
+          "rank": 24,
+          "train_steps": 4
         },
-        "generation": 23,
-        "organ": "shared_expert",
-        "representation": "additive_residual_codebook_q2x2",
+        "generation": 33,
+        "organ": "moe_router",
+        "representation": "teacher_low_rank_q3",
         "schedule_boundary_sequence": 252,
         "schedule_phase": "expanded_ten_family_after_complete_legacy_generation",
         "schedule_start_generation": 2,
         "schedule_version": "v2_expanded_ten_family",
-        "sequence": 4170,
-        "tensor": "model.layers.47.mlp.shared_expert.gate_proj.weight"
+        "sequence": 5847,
+        "tensor": "model.layers.12.mlp.gate.weight"
       },
-      "phase": "NEGATIVE_SCIENCE_SKIP_ADVANCED_TO_NEXT_GENOME",
+      "phase": "SPACE_GUARD_BLOCKED_NO_EVIDENCE_EVICTED",
       "pid": 72359,
       "population": {
-        "artifact_bytes": 440524567,
-        "candidate_count": 775,
-        "completed_candidate_count": 775,
-        "current_free_bytes": 343949869056,
+        "artifact_bytes": 608935761,
+        "candidate_count": 1002,
+        "completed_candidate_count": 1002,
+        "current_free_bytes": 69217132544,
         "failed_candidate_count": 0,
         "minimum_free_bytes_guard": 171798691840,
         "no_automatic_artifact_eviction": true

@@ -8,7 +8,7 @@
     "no_token_material_recorded": true,
     "records_are_candidate_metadata_not_qualification": true
   },
-  "recorded_at": "2026-08-09T06:16:04.580869Z",
+  "recorded_at": "2026-08-10T06:16:51.877229Z",
   "records": [
     {
       "artifact_id": "QWEN30_SOURCE_METADATA_CANDIDATE",
@@ -16,7 +16,7 @@
       "record_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_SOURCE_METADATA_CANDIDATE.json",
       "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
       "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
-      "seal_sha256": "6312846a38e868f4f8cb6af5c9ada2f15aacb926183908c1f96ade202665d5e7",
+      "seal_sha256": "e8207c464f514a415f436686026f471b6efc4ea6cd55b974eedaf7504da11102",
       "status": "CANDIDATE_METADATA_CAPTURED"
     },
     {
@@ -25,11 +25,11 @@
       "record_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN80_SOURCE_METADATA_CANDIDATE.json",
       "repository": "Qwen/Qwen3-Coder-Next",
       "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
-      "seal_sha256": "2d1c9cdd0db5e5bdb7fd8b59cf2e0c674ba77077df5d0bf415640858f8aff4a5",
+      "seal_sha256": "4bf01f6e7d6d58afea99f67464a7f515f2bb2ddc69b1a0e96f028c8ad7dfa548",
       "status": "CANDIDATE_METADATA_CAPTURED"
     }
   ],
   "schema": "hawking.ascension.source_admission_summary.v1",
-  "seal_sha256": "07bc14d708313e54bf5fbfc1b80f248b9b1c6be921c12cf53c0dcb1d8b273e92",
+  "seal_sha256": "04614c779b050de97e1554cb9e8e084b5bf9963b018852aad43062df4a9f904f",
   "status": "ALL_METADATA_CAPTURED"
 }
