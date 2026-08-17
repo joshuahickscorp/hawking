@@ -2,9 +2,9 @@
 //! kernels + Q38-forked rearrange/GQA. Dense SwiGLU suffix. Zero fallbacks.
 //!
 //! Mixed catalogs (`catalog.hq38m20`) bind HGRAVB01 / HGRAVR02 / HGRAVS01
-//! (and HGRAVU01 non-MLP) through the existing Q80 occupancy tiles. Packed
-//! bytes stay packed. A missing codec fails the run; there is no
-//! reconstruct-to-Q4 path.
+//! and pack-declared HGRAVU01 (including MLP) through the existing Q80
+//! occupancy tiles. Packed bytes stay packed. A missing codec fails the
+//! run; there is no reconstruct-to-Q4 path.
 
 use super::qwen38_64_layer_execution_schedule::qwen38_assert_schedule_intact;
 use super::qwen38_geometry::{
@@ -198,6 +198,126 @@ pub fn classify_qwen38_mixed_payload(
             "{name} unknown mixed codec {other}; refusing silent fallback"
         ))),
     }
+}
+
+/// Packed MLP kinds `load_mixed` may bind. Uniform is HGRAVU01 when the
+/// pack declares it. HQ30UQ4 / f32 / missing stay outside this set so the
+/// lock can still refuse a reconstruct or an unsupported role.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum MixedMlpNativeKind {
+    Binary,
+    Residual,
+    Hgravs,
+    Uniform,
+}
+
+pub fn mixed_mlp_native_kind_from_lane(lane: MixedCatalogLane) -> Option<MixedMlpNativeKind> {
+    match lane {
+        MixedCatalogLane::Packed(0) => Some(MixedMlpNativeKind::Binary),
+        MixedCatalogLane::Packed(1) => Some(MixedMlpNativeKind::Residual),
+        MixedCatalogLane::Packed(2) => Some(MixedMlpNativeKind::Hgravs),
+        MixedCatalogLane::Packed(3) => Some(MixedMlpNativeKind::Uniform),
+        MixedCatalogLane::Packed(_)
+        | MixedCatalogLane::Hq30Uq4
+        | MixedCatalogLane::F32v2
+        | MixedCatalogLane::HgravuVector => None,
+    }
+}
+
+fn mixed_mlp_role_allowed(suffix: &str, kind: MixedMlpNativeKind) -> bool {
+    match suffix {
+        "mlp.gate_proj.weight" => matches!(
+            kind,
+            MixedMlpNativeKind::Binary | MixedMlpNativeKind::Uniform
+        ),
+        "mlp.up_proj.weight" => matches!(
+            kind,
+            MixedMlpNativeKind::Residual | MixedMlpNativeKind::Uniform
+        ),
+        "mlp.down_proj.weight" => matches!(
+            kind,
+            MixedMlpNativeKind::Hgravs | MixedMlpNativeKind::Uniform
+        ),
+        _ => false,
+    }
+}
+
+/// CPU-side MLP role lock. Mixed-2p0 assignment (gate Binary / up Residual /
+/// down Hgravs) still passes. Pack-declared Uniform passes on any of those
+/// three roles. Anything else — missing, HQ30UQ4, f32, Residual-on-gate —
+/// refuses.
+pub fn assert_mixed_mlp_native_kinds(
+    lookup: impl Fn(&str) -> Option<MixedMlpNativeKind>,
+) -> Result<()> {
+    const ROLES: [(&str, &str); 3] = [
+        ("mlp.gate_proj.weight", "HGRAVB01"),
+        ("mlp.up_proj.weight", "HGRAVR02"),
+        ("mlp.down_proj.weight", "HGRAVS01"),
+    ];
+    for layer in 0..QWEN38_LAYERS {
+        for (suffix, label) in ROLES {
+            let name = qwen38_layer_name(layer, suffix);
+            match lookup(&name) {
+                Some(kind) if mixed_mlp_role_allowed(suffix, kind) => {}
+                Some(_) => {
+                    return Err(mixed_error(format!(
+                        "{name} is not {label} or HGRAVU01; refusing reconstructed MLP"
+                    )))
+                }
+                None => {
+                    return Err(mixed_error(format!(
+                        "missing {name}; refusing silent dense/Q4 fallback"
+                    )))
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn read_catalog_prefix(row: &Qwen38MixedCatalogRow, n: usize) -> Result<Vec<u8>> {
+    use std::io::{Read, Seek, SeekFrom};
+    let mut file = fs::File::open(&row.segment_path).map_err(|error| {
+        mixed_error(format!(
+            "cannot open {}: {error}",
+            row.segment_path.display()
+        ))
+    })?;
+    file.seek(SeekFrom::Start(row.offset))
+        .map_err(|error| mixed_error(format!("seek {}: {error}", row.name)))?;
+    let take = n.min(usize::try_from(row.nbytes).unwrap_or(0));
+    let mut prefix = vec![0u8; take];
+    file.read_exact(&mut prefix)
+        .map_err(|error| mixed_error(format!("read {}: {error}", row.name)))?;
+    Ok(prefix)
+}
+
+fn is_mixed_mlp_gemv_name(name: &str) -> bool {
+    name.ends_with("mlp.gate_proj.weight")
+        || name.ends_with("mlp.up_proj.weight")
+        || name.ends_with("mlp.down_proj.weight")
+}
+
+/// Walk only MLP GEMV rows of an HQ38M20 catalog. Does not open Metal and
+/// does not read full payloads — 64-byte prefixes are enough to classify
+/// codecs 0–3. Used to prove a pack admits before a GPU lane loads it.
+pub fn assert_mixed_mlp_native_catalog(root: impl AsRef<Path>) -> Result<()> {
+    let rows = parse_qwen38_mixed_catalog(root.as_ref())?;
+    let mut kinds = HashMap::new();
+    for row in &rows {
+        if !is_mixed_mlp_gemv_name(&row.name) {
+            continue;
+        }
+        if row.codec > 3 {
+            continue;
+        }
+        let prefix = read_catalog_prefix(row, 64)?;
+        let lane = classify_qwen38_mixed_payload(row.codec, &prefix, &row.name, &row.shape)?;
+        if let Some(kind) = mixed_mlp_native_kind_from_lane(lane) {
+            kinds.insert(row.name.clone(), kind);
+        }
+    }
+    assert_mixed_mlp_native_kinds(|name| kinds.get(name).copied())
 }
 
 /// Walk `catalog.hq38m20` without opening Metal. Rice stays packed.
@@ -1150,51 +1270,14 @@ mod device {
 
 
         fn assert_mixed_mlp_native(mixed: &HashMap<String, MixedGpuWeight>) -> Result<()> {
-            for layer in 0..QWEN38_LAYERS {
-                let gate = qwen38_layer_name(layer, "mlp.gate_proj.weight");
-                let up = qwen38_layer_name(layer, "mlp.up_proj.weight");
-                let down = qwen38_layer_name(layer, "mlp.down_proj.weight");
-                match mixed.get(&gate) {
-                    Some(MixedGpuWeight::Binary(_)) => {}
-                    Some(_) => {
-                        return Err(mixed_error(format!(
-                            "{gate} is not HGRAVB01; refusing reconstructed MLP"
-                        )))
-                    }
-                    None => {
-                        return Err(mixed_error(format!(
-                            "missing {gate}; refusing silent dense/Q4 fallback"
-                        )))
-                    }
-                }
-                match mixed.get(&up) {
-                    Some(MixedGpuWeight::Residual(_)) => {}
-                    Some(_) => {
-                        return Err(mixed_error(format!(
-                            "{up} is not HGRAVR02; refusing reconstructed MLP"
-                        )))
-                    }
-                    None => {
-                        return Err(mixed_error(format!(
-                            "missing {up}; refusing silent dense/Q4 fallback"
-                        )))
-                    }
-                }
-                match mixed.get(&down) {
-                    Some(MixedGpuWeight::Hgravs(_)) => {}
-                    Some(_) => {
-                        return Err(mixed_error(format!(
-                            "{down} is not HGRAVS01; refusing reconstructed MLP"
-                        )))
-                    }
-                    None => {
-                        return Err(mixed_error(format!(
-                            "missing {down}; refusing silent dense/Q4 fallback"
-                        )))
-                    }
-                }
-            }
-            Ok(())
+            assert_mixed_mlp_native_kinds(|name| {
+                mixed.get(name).map(|weight| match weight {
+                    MixedGpuWeight::Binary(_) => MixedMlpNativeKind::Binary,
+                    MixedGpuWeight::Residual(_) => MixedMlpNativeKind::Residual,
+                    MixedGpuWeight::Hgravs(_) => MixedMlpNativeKind::Hgravs,
+                    MixedGpuWeight::Uniform(_) => MixedMlpNativeKind::Uniform,
+                })
+            })
         }
 
         fn upload_mixed(
@@ -4044,6 +4127,137 @@ mod mixed_catalog_contract_tests {
             msg.contains("unknown mixed codec 5"),
             "refuse message was {msg}"
         );
+    }
+
+    fn filled_mlp_kinds(kind: MixedMlpNativeKind) -> HashMap<String, MixedMlpNativeKind> {
+        let mut kinds = HashMap::new();
+        for layer in 0..QWEN38_LAYERS {
+            kinds.insert(qwen38_layer_name(layer, "mlp.gate_proj.weight"), kind);
+            kinds.insert(qwen38_layer_name(layer, "mlp.up_proj.weight"), kind);
+            kinds.insert(qwen38_layer_name(layer, "mlp.down_proj.weight"), kind);
+        }
+        kinds
+    }
+
+    #[test]
+    fn mixed_mlp_uniform_is_admitted_on_every_role() {
+        let kinds = filled_mlp_kinds(MixedMlpNativeKind::Uniform);
+        assert_mixed_mlp_native_kinds(|name| kinds.get(name).copied()).unwrap();
+    }
+
+    #[test]
+    fn mixed_mlp_legacy_binary_residual_hgravs_still_admits() {
+        let mut kinds = HashMap::new();
+        for layer in 0..QWEN38_LAYERS {
+            kinds.insert(
+                qwen38_layer_name(layer, "mlp.gate_proj.weight"),
+                MixedMlpNativeKind::Binary,
+            );
+            kinds.insert(
+                qwen38_layer_name(layer, "mlp.up_proj.weight"),
+                MixedMlpNativeKind::Residual,
+            );
+            kinds.insert(
+                qwen38_layer_name(layer, "mlp.down_proj.weight"),
+                MixedMlpNativeKind::Hgravs,
+            );
+        }
+        assert_mixed_mlp_native_kinds(|name| kinds.get(name).copied()).unwrap();
+    }
+
+    #[test]
+    fn mixed_mlp_unsupported_role_still_refuses() {
+        let mut kinds = HashMap::new();
+        for layer in 0..QWEN38_LAYERS {
+            kinds.insert(
+                qwen38_layer_name(layer, "mlp.gate_proj.weight"),
+                MixedMlpNativeKind::Residual,
+            );
+            kinds.insert(
+                qwen38_layer_name(layer, "mlp.up_proj.weight"),
+                MixedMlpNativeKind::Residual,
+            );
+            kinds.insert(
+                qwen38_layer_name(layer, "mlp.down_proj.weight"),
+                MixedMlpNativeKind::Hgravs,
+            );
+        }
+        let err = assert_mixed_mlp_native_kinds(|name| kinds.get(name).copied())
+            .expect_err("Residual on gate must refuse");
+        let msg = format!("{err}");
+        assert!(msg.contains("is not HGRAVB01"), "refuse message was {msg}");
+        assert!(
+            msg.contains("mlp.gate_proj.weight"),
+            "refuse message was {msg}"
+        );
+    }
+
+    #[test]
+    fn hq30uq4_on_mlp_is_not_uniform_and_still_refuses() {
+        let mut payload = b"HQ30UQ4\0".to_vec();
+        payload.extend_from_slice(&[0u8; 16]);
+        let name = "language_model.model.layers.0.mlp.down_proj.weight";
+        let lane = classify_qwen38_mixed_payload(3, &payload, name, &[5120, 17408]).unwrap();
+        assert_eq!(lane, MixedCatalogLane::Hq30Uq4);
+        assert_eq!(mixed_mlp_native_kind_from_lane(lane), None);
+
+        let mut kinds = HashMap::new();
+        for layer in 0..QWEN38_LAYERS {
+            kinds.insert(
+                qwen38_layer_name(layer, "mlp.gate_proj.weight"),
+                MixedMlpNativeKind::Binary,
+            );
+            kinds.insert(
+                qwen38_layer_name(layer, "mlp.up_proj.weight"),
+                MixedMlpNativeKind::Residual,
+            );
+        }
+        let err = assert_mixed_mlp_native_kinds(|n| kinds.get(n).copied())
+            .expect_err("HQ30UQ4 down must refuse as missing mixed native");
+        let msg = format!("{err}");
+        assert!(msg.contains("missing"), "refuse message was {msg}");
+        assert!(
+            msg.contains("mlp.down_proj.weight"),
+            "refuse message was {msg}"
+        );
+        assert!(
+            msg.contains("silent dense/Q4 fallback"),
+            "refuse message was {msg}"
+        );
+    }
+
+    fn campaign_qwen38(name: &str) -> PathBuf {
+        PathBuf::from(
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b",
+        )
+        .join(name)
+    }
+
+    #[test]
+    fn mixed_q3mlp_and_q4down_pass_mlp_admission() {
+        let q3 = campaign_qwen38("mixed-q3mlp-v1");
+        let q4down = campaign_qwen38("mixed-q4down-v1");
+        if !q3.join(QWEN38_MIXED_CATALOG_NAME).is_file()
+            || !q4down.join(QWEN38_MIXED_CATALOG_NAME).is_file()
+        {
+            eprintln!("skip: mixed-q3mlp / mixed-q4down artifacts not on this host");
+            return;
+        }
+        assert_mixed_mlp_native_catalog(&q3)
+            .unwrap_or_else(|e| panic!("mixed-q3mlp-v1 must admit: {e}"));
+        assert_mixed_mlp_native_catalog(&q4down)
+            .unwrap_or_else(|e| panic!("mixed-q4down-v1 must admit: {e}"));
+    }
+
+    #[test]
+    fn mixed_2p0_legacy_mlp_assignment_still_admits() {
+        let mixed = campaign_qwen38("mixed-2p0-v1");
+        if !mixed.join(QWEN38_MIXED_CATALOG_NAME).is_file() {
+            eprintln!("skip: mixed-2p0-v1 artifact not on this host");
+            return;
+        }
+        assert_mixed_mlp_native_catalog(&mixed)
+            .unwrap_or_else(|e| panic!("mixed-2p0-v1 must still admit: {e}"));
     }
 
     #[test]
