@@ -9,13 +9,22 @@ codec is impossible" requires evidence that establishes impossibility.
 from __future__ import annotations
 
 from enum import Enum
+import re
 from typing import Any, Mapping
 
-from lab.lineage.canon import require_mapping, require_nonempty_str, require_sha256, utc_now
+from lab.lineage.canon import (
+    LineageValueError,
+    require_mapping,
+    require_nonempty_str,
+    require_sha256,
+    utc_now,
+)
 from lab.receipts import seal
 
 SCHEMA = "hawking.lineage.research_bus.v1"
 MESSAGE_SCHEMA = "hawking.lineage.research_message.v1"
+GENERATION_SCOPES = frozenset({"GENERATION_BOUND", "STRUCTURALLY_TRANSFERABLE"})
+_HEAD_RE = re.compile(r"^[0-9a-f]{40}(?:[0-9a-f]{24})?$")
 
 
 class BusRefusal(ValueError):
@@ -176,6 +185,39 @@ def validate_message(raw: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def validate_generation_envelope(raw: Mapping[str, Any]) -> dict[str, Any]:
+    """Require the provenance needed to carry science across generations."""
+    data = require_mapping(raw, "generation_envelope")
+    generation = data.get("generation")
+    if type(generation) is not int or generation < 0:
+        raise BusRefusal("generation must be a non-negative integer")
+    repo_head = str(data.get("repo_head") or "").strip().lower()
+    if not _HEAD_RE.fullmatch(repo_head):
+        raise BusRefusal("repo_head must be a 40- or 64-character lowercase hex digest")
+    # A missing envelope field is a refusal, not an internal error. canon raises
+    # LineageValueError, which is a sibling of BusRefusal rather than a subclass,
+    # so a publisher catching refusals would crash instead of being turned away.
+    try:
+        facet = require_nonempty_str(data.get("facet"), "facet")
+        invalidation = require_nonempty_str(
+            data.get("invalidation_condition"), "invalidation_condition"
+        )
+    except LineageValueError as exc:
+        raise BusRefusal(str(exc)) from exc
+    scope = str(data.get("generation_scope") or "").strip().upper()
+    if scope not in GENERATION_SCOPES:
+        raise BusRefusal(
+            f"generation_scope must be one of {sorted(GENERATION_SCOPES)}"
+        )
+    return {
+        "generation": generation,
+        "repo_head": repo_head,
+        "facet": facet,
+        "invalidation_condition": invalidation,
+        "generation_scope": scope,
+    }
+
+
 class ResearchBus:
     """Append-only typed log. Invalid messages never enter."""
 
@@ -187,6 +229,45 @@ class ResearchBus:
         sealed = seal(validated)
         self._log.append(sealed)
         return sealed
+
+    def publish_generation_aware(self, message: Mapping[str, Any]) -> dict[str, Any]:
+        """Publish with the full cross-generation provenance envelope."""
+        validated = validate_message(message)
+        validated.update(validate_generation_envelope(message))
+        sealed = seal(validated)
+        self._log.append(sealed)
+        return sealed
+
+    def generation_view(
+        self,
+        *,
+        generation: int,
+        artifact_sha: str,
+        runtime_sha: str,
+    ) -> list[dict[str, Any]]:
+        """Project immutable messages into a new generation without rewriting history."""
+        require_sha256(artifact_sha, "artifact_sha")
+        require_sha256(runtime_sha, "runtime_sha")
+        rows: list[dict[str, Any]] = []
+        for original in self._log:
+            row = dict(original)
+            structurally_transferable = (
+                row.get("generation_scope") == "STRUCTURALLY_TRANSFERABLE"
+            )
+            same_identity = (
+                row.get("generation") == generation
+                and row.get("artifact_sha") == artifact_sha
+                and row.get("runtime_sha") == runtime_sha
+            )
+            if same_identity:
+                continuity_state = "CURRENT"
+            elif structurally_transferable:
+                continuity_state = "TRANSFERRED_STRUCTURAL"
+            else:
+                continuity_state = "STALE_PENDING_REVALIDATION"
+            row["continuity_state"] = continuity_state
+            rows.append(row)
+        return rows
 
     def messages(
         self,
