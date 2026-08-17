@@ -101,7 +101,11 @@ DEFAULT_TOOL_NAMES: tuple[str, ...] = (
 TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
     "read": {
         "name": "read",
-        "arguments": {"path": "string", "offset": "int", "limit": "int"},
+        "arguments": {
+            "path": "string (file or directory; directories return a bounded listing)",
+            "offset": "int",
+            "limit": "int",
+        },
     },
     "write": {
         "name": "write",
@@ -557,21 +561,60 @@ class ToolExecutor:
     def _read(self, args: Mapping[str, Any]) -> ToolResult:
         path = self._resolve(str(args.get("path") or ""))
         self._require(SandboxAction.READ_SOURCE, path)
-        if not path.is_file():
-            return ToolResult("read", False, f"missing file {path}", {"path": str(path)})
         offset = int(args.get("offset") or 1)
         limit = int(args.get("limit") or 200)
-        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         start = max(offset, 1) - 1
-        chunk = lines[start : start + max(limit, 1)]
+        maximum = max(limit, 1)
+        if path.is_dir():
+            # A model's first useful action is often to orient inside its owned
+            # worktree.  Treating that ordinary directory read as a missing file
+            # wastes a resident decode; return only a bounded, non-recursive
+            # source listing, never a shell or unrestricted traversal.
+            try:
+                entries = sorted(
+                    (
+                        entry
+                        for entry in path.iterdir()
+                        if entry.name not in _SKIP_DIR_NAMES
+                    ),
+                    key=lambda entry: (not entry.is_dir(), entry.name.lower()),
+                )
+            except OSError as exc:
+                return ToolResult(
+                    "read", False, f"cannot list directory {path}: {exc}", {"path": str(path)}
+                )
+            chunk = entries[start : start + maximum]
+            rendered = [
+                f"{'dir' if entry.is_dir() else 'file'} {entry.name}" for entry in chunk
+            ]
+            return ToolResult(
+                "read",
+                True,
+                "\n".join(rendered) if rendered else "[empty directory]",
+                {
+                    "path": str(path),
+                    "kind": "directory",
+                    "offset": offset,
+                    "limit": limit,
+                    "total_entries": len(entries),
+                },
+            )
+        if not path.is_file():
+            return ToolResult("read", False, f"missing path {path}", {"path": str(path)})
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        chunk = lines[start : start + maximum]
         numbered = [f"{start + i + 1}:{line}" for i, line in enumerate(chunk)]
-        if str(path) not in []:
-            pass
         return ToolResult(
             "read",
             True,
             "\n".join(numbered),
-            {"path": str(path), "offset": offset, "limit": limit, "total_lines": len(lines)},
+            {
+                "path": str(path),
+                "kind": "file",
+                "offset": offset,
+                "limit": limit,
+                "total_lines": len(lines),
+            },
         )
 
     def _write(self, args: Mapping[str, Any]) -> ToolResult:
@@ -1913,7 +1956,16 @@ class GenesisResidentBackend:
             "genesis_contract_mode": accepted.get("genesis_contract_mode"),
             "pid": accepted.get("pid"),
             "wall_ns": accepted.get("wall_ns"),
+            # Keep the resident's own timing decomposition intact.  A model
+            # action can be slow because of prompt prefill, serial decode, or
+            # transport; collapsing those into wall_ns makes the kernel front
+            # optimize blind and invites false TPS claims.
+            "prefill_wall_ns": accepted.get("prefill_wall_ns"),
+            "decode_wall_ns": accepted.get("decode_wall_ns"),
             "new_tokens": accepted.get("new_tokens"),
+            "prompt_len": accepted.get("prompt_len"),
+            "serve_index": accepted.get("serve_index"),
+            "session_serve_index": accepted.get("session_serve_index"),
             "max_new_tokens": max_new_tokens,
             "raw_prompt": raw_prompt,
         }
@@ -2008,10 +2060,16 @@ class SpecialUnit:
                     "new_token_ids",
                     "median_gpu_ns_per_token",
                     "wall_ns",
+                    "prefill_wall_ns",
+                    "decode_wall_ns",
                     "used_gpu_lane_lock",
                     "binary",
                     "lane",
                     "max_new_tokens",
+                    "new_tokens",
+                    "prompt_len",
+                    "serve_index",
+                    "session_serve_index",
                     "max_seq_len",
                     "raw_prompt",
                     "transport",
@@ -2096,10 +2154,16 @@ class SpecialUnit:
                         "new_token_ids",
                         "median_gpu_ns_per_token",
                         "wall_ns",
+                        "prefill_wall_ns",
+                        "decode_wall_ns",
                         "used_gpu_lane_lock",
                         "binary",
                         "lane",
                         "max_new_tokens",
+                        "new_tokens",
+                        "prompt_len",
+                        "serve_index",
+                        "session_serve_index",
                         "max_seq_len",
                         "raw_prompt",
                         "transport",

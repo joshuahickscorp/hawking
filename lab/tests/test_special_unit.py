@@ -102,6 +102,14 @@ def test_read_and_grep_tools(unit: SpecialUnit) -> None:
     assert grep.detail["hits"] >= 1
 
 
+def test_read_directory_returns_bounded_nonrecursive_listing(unit: SpecialUnit) -> None:
+    listing = unit.tool("read", {"path": "lab/hcli", "limit": 8})
+    assert listing.ok
+    assert listing.detail["kind"] == "directory"
+    assert "special_unit.py" in listing.output
+    assert listing.detail["total_entries"] >= 1
+
+
 def test_write_stays_in_owned_worktree(unit: SpecialUnit, tmp_path: Path) -> None:
     target = tmp_path / "wt" / "note.txt"
     result = unit.tool("write", {"path": str(target), "content": "hi"})
@@ -887,7 +895,12 @@ def _resident_reply(**overrides: object) -> dict:
         "text": "resident worker reply",
         "fallbacks": 0,
         "wall_ns": 1,
+        "prefill_wall_ns": 2,
+        "decode_wall_ns": 3,
         "new_tokens": [1],
+        "prompt_len": 4,
+        "serve_index": 5,
+        "session_serve_index": 6,
         "session": "child_a",
         "body_resident": True,
         "pid": os.getpid(),
@@ -952,6 +965,10 @@ def test_resident_injected_child_a_succeeds_without_native_binary(tmp_path: Path
     assert backend.last_receipt["binary"] is None
     assert backend.last_receipt["session_role"] == "child_a"
     assert backend.last_receipt["body_resident"] is True
+    assert backend.last_receipt["prefill_wall_ns"] == 2
+    assert backend.last_receipt["decode_wall_ns"] == 3
+    assert backend.last_receipt["prompt_len"] == 4
+    assert backend.last_receipt["session_serve_index"] == 6
     assert NativeQwen38Backend.lock_acquisitions == 0
     assert NativeQwen38Backend.generates_completed == 0
     assert Path("/tmp/hawking-gpu-lane.lock").exists() == before_lock

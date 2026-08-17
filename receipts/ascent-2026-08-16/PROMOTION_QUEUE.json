@@ -3650,6 +3650,316 @@
       "skew": "UNKNOWN",
       "disposition": "NO_REPORT_MANUAL_REVIEW",
       "promoted": false
+    },
+    {
+      "lane": "A-staging-admission-20260817-112902",
+      "model": "q80",
+      "status": "BLOCKED",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "90-sub15-native-generate-20260817-120128",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/90-sub15-native-generate-20260817-120128",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "91-mlp-rolelock-unlock-20260817-120135",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/91-mlp-rolelock-unlock-20260817-120135",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "R5-rehearsal-20260817-115520",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "11-shared-basis-20260817-105149",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/11-shared-basis-20260817-105149",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-broker-silent-drops-20260817-121140",
+      "model": "q80",
+      "status": "BLOCKED",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "81-mlp-floor-locate-20260817-115439",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/81-mlp-floor-locate-20260817-115439",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "08-nonuniform-levels-20260817-105138",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/08-nonuniform-levels-20260817-105138",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "74-mse-scale-rule-20260817-113802",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/74-mse-scale-rule-20260817-113802",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-construction-contradiction-20260817-115628",
+      "model": "q80",
+      "status": "done",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "92-mlp-family-generate-20260817-121917",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/92-mlp-family-generate-20260817-121917",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "C-embed-cell-20260817-112910",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "80-attention-2bpw-stack-20260817-115433",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/80-attention-2bpw-stack-20260817-115433",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "R2-l2-20260817-114538",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-keyhole-coverage-20260817-122442",
+      "model": "q80",
+      "status": "DONE",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "100-q3-uniform-kernel-20260817-124544",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/100-q3-uniform-kernel-20260817-124544",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "101-g1-recipe-v2-20260817-124548",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/101-g1-recipe-v2-20260817-124548",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-mutation-suite-20260817-130747",
+      "model": "q80",
+      "status": "complete",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-round5-regrade-20260817-130455",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "112-scale-fetch-amortization-20260817-132618",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/112-scale-fetch-amortization-20260817-132618",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "115-promotion-packet-20260817-132634",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/115-promotion-packet-20260817-132634",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "111-unpack-inner-loop-20260817-132612",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/111-unpack-inner-loop-20260817-132612",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "113-row-tg-geometry-20260817-132623",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/113-row-tg-geometry-20260817-132623",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "118-worker-concurrency-20260817-133041",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/118-worker-concurrency-20260817-133041",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "116-prefill-amortization-20260817-133029",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/116-prefill-amortization-20260817-133029",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "117-turn-anatomy-20260817-133035",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/117-turn-anatomy-20260817-133035",
+      "skew": "SKEWED",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "110-hgravu01-geo-tpr64-20260817-132150",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/110-hgravu01-geo-tpr64-20260817-132150",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "119-protected-yield-20260817-134723",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/119-protected-yield-20260817-134723",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "114-parity-perf-protocol-20260817-132628",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/114-parity-perf-protocol-20260817-132628",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "121-overflow-blast-radius-20260817-135330",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/121-overflow-blast-radius-20260817-135330",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "120-correct-math-verdict-20260817-135319",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/120-correct-math-verdict-20260817-135319",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
     }
   ]
 }

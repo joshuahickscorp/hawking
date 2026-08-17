@@ -104,6 +104,16 @@ def _gpu_lane_busy(lock_path: Path = GPU_LOCK) -> bool:
     return _process_alive(pid)
 
 
+def _resident_is_ready(repo: Path) -> bool:
+    """Ask the already-running body for readiness; never start a cold fallback."""
+    try:
+        from tools.agentos import genesis_resident
+
+        return genesis_resident.body_is_up(genesis_resident.default_socket(repo))
+    except Exception:
+        return False
+
+
 def _load_lineage(path: Path) -> LineageState:
     try:
         raw = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -270,13 +280,44 @@ def _worker_prompt(
     candidate_root: Path,
 ) -> str:
     durable = worker["durable_task_state"]
+    prior_turns = durable.get("tool_results")
+    previous: dict[str, Any] | None = None
+    if isinstance(prior_turns, list) and prior_turns and isinstance(prior_turns[-1], Mapping):
+        prior = prior_turns[-1]
+        previous = {
+            "outcome": prior.get("outcome"),
+            "ok": prior.get("ok"),
+            "summary": str(prior.get("summary") or "")[:700],
+        }
+        act = prior.get("act")
+        if isinstance(act, Mapping):
+            results = act.get("results")
+            if isinstance(results, list):
+                previous["tool_results"] = [
+                    {
+                        "name": row.get("name"),
+                        "ok": row.get("ok"),
+                        "output": str(row.get("output") or "")[:500],
+                    }
+                    for row in results[-2:]
+                    if isinstance(row, Mapping)
+                ]
     compact = {
         "generation": context.get("generation"),
         "worker": context.get("worker"),
         "negative_science": context.get("relevant_negative_science"),
         "receipts": context.get("relevant_receipts"),
     }
-    excerpt = json.dumps(compact, sort_keys=True, separators=(",", ":"))[:7_500]
+    # The canonical resident capsule is already substantial.  Send the durable
+    # discriminator, not an ever-growing context dump: the worker can read the
+    # exact source/receipt it needs with tools, while shorter prefills leave
+    # more of the serial resident budget for actual implementation.
+    excerpt = json.dumps(compact, sort_keys=True, separators=(",", ":"))[:2_400]
+    previous_excerpt = (
+        json.dumps(previous, sort_keys=True, separators=(",", ":"))[:1_600]
+        if previous is not None
+        else "none"
+    )
     return (
         "You are a durable logical Genesis worker, not a new lineage child. "
         "Take one concrete implementation step in your OWNED WORKTREE. Use HCLI tools to "
@@ -293,6 +334,7 @@ def _worker_prompt(
         f"WORKER: {worker['worker_id']} / {worker['session_role']}\n"
         f"GOAL: {durable['goal']}\nSUBGOAL: {durable['subgoal']}\n"
         f"NEXT_ACTION: {durable['NEXT_ACTION']}\n"
+        f"LAST_OBSERVED_TURN: {previous_excerpt}\n"
         f"DURABLE CONTEXT: {excerpt}\n\n"
         "Emit a well-formed tool_call now. Work in bounded steps and leave durable evidence for "
         "the next turn."
@@ -308,7 +350,7 @@ def run_once(
     candidate_root: Path = REPO / "workspace" / "ops" / "genesis-candidates",
     session_root: Path = DEFAULT_SESSION_ROOT,
     worker_id: str | None = None,
-    max_rounds: int = 2,
+    max_rounds: int = 1,
     max_new_tokens: int = TOOL_MAX_NEW_TOKENS,
     unit_factory: UnitFactory | None = None,
 ) -> dict[str, Any]:
@@ -325,6 +367,18 @@ def run_once(
             }
         )
     repo = Path(repo).resolve()
+    # A launchd restart leaves a short interval where the process exists but its
+    # socket/body is not ready.  Do not claim a logical worker merely to record
+    # that transient as a failed HCLI turn; the daemon will retry it safely.
+    if unit_factory is None and not _resident_is_ready(repo):
+        return seal(
+            {
+                "schema": SCHEMA,
+                "outcome": "DEFERRED_RESIDENT_NOT_READY",
+                "authority_moved": False,
+                "recorded_at": _utc(),
+            }
+        )
     registry = WorkerRegistry(Path(worker_registry_path))
     claimed = _claim_worker(registry, requested_worker=worker_id)
     if claimed is None:
@@ -461,7 +515,7 @@ def main(argv: list[str] | None = None) -> int:
         item.add_argument("--sessions", type=Path, default=DEFAULT_SESSION_ROOT)
     tick = sub.choices["tick"]
     tick.add_argument("--worker", choices=("gravity", "kernel"), default=None)
-    tick.add_argument("--max-rounds", type=int, default=2)
+    tick.add_argument("--max-rounds", type=int, default=1)
     tick.add_argument("--max-new-tokens", type=int, default=TOOL_MAX_NEW_TOKENS)
     args = parser.parse_args(argv)
     if args.command == "status":

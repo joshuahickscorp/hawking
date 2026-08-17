@@ -946,7 +946,7 @@ def dispatch_agentos_turn() -> dict:
         "--worker",
         worker_id,
         "--max-rounds",
-        "2",
+        "1",
     ]
     try:
         with GENESIS_AGENTOS_LOG.open("a", encoding="utf-8") as log:
