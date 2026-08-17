@@ -178,6 +178,22 @@ NO_SWAP_FLOOR_GIB = 4.0
 TARGET_FILL = 0.90
 
 
+LINEAGE_STATE = REPO / "receipts" / "ascent-2026-08-16" / "GENESIS_LINEAGE_CURRENT.json"
+
+
+def _candidate_pending() -> bool:
+    """True when a successor is nominated and could be launched this tick.
+
+    Fail SAFE: if the lineage file is missing or unreadable, assume a candidate is
+    pending and keep the reserve. Under-reserving risks a promoted successor having
+    nowhere to launch, which is the one failure the lineage cannot recover from.
+    """
+    try:
+        return bool(json.loads(LINEAGE_STATE.read_text())["slots"].get("CANDIDATE"))
+    except (OSError, ValueError, KeyError):
+        return True
+
+
 def memory_lane_cap() -> int:
     """How many concurrent lanes fit under TARGET_FILL, reserving a generation slot."""
     try:
@@ -200,8 +216,13 @@ def memory_lane_cap() -> int:
     available = (vals.get("Pages free", 0) + vals.get("Pages inactive", 0)
                  + vals.get("Pages purgeable", 0)) / gib
     used = total / gib - available
+    # Reserve a successor body only when a promotion can actually happen this tick,
+    # i.e. when CANDIDATE is occupied. Reserving unconditionally cost 14.08 GiB of
+    # permanent idle headroom and pinned the cap at 1 lane on a box that was 34%
+    # free - starving the loop to protect an event that could not occur.
+    reserve = GENERATION_RESERVE_GIB if _candidate_pending() else 0.0
     budget = min(TARGET_FILL * total / gib - used,
-                 available - NO_SWAP_FLOOR_GIB) - GENERATION_RESERVE_GIB
+                 available - NO_SWAP_FLOOR_GIB) - reserve
     if budget <= 0:
         return 1                       # never zero: the loop must still make progress
     return max(1, min(40, int(budget // LANE_WORKING_SET_GIB)))
@@ -663,7 +684,13 @@ def one_pass() -> dict:
 
 
 def loop() -> int:
+    stopfile = REPO / "workspace" / "ops" / "GENESIS_STOP"
     while True:
+        # Checked every tick, not only at startup: an unattended loop that can only be
+        # halted by killing it leaves lanes mid-flight and their work uncommitted.
+        if stopfile.exists():
+            print(json.dumps({"stopped": True, "reason": "GENESIS_STOP present"}), flush=True)
+            return 0
         try:
             r = one_pass()
             print(json.dumps(r), flush=True)
