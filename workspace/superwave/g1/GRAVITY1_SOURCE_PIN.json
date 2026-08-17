@@ -1,0 +1,157 @@
+{
+  "architecture": {
+    "full_attention_interval": 4,
+    "head_dim": 256,
+    "hidden_size": 5120,
+    "intermediate_size": 17408,
+    "mixer_dim_derived": 6144,
+    "model_type": "qwen3_5_text",
+    "num_attention_heads": 24,
+    "num_hidden_layers": 64,
+    "num_key_value_heads": 4,
+    "vocab_size": 248320
+  },
+  "metadata_files": {
+    "abliteration-manifest.json": {
+      "bytes": 1367,
+      "sha256": "a6e35878e969a319d49570ec266d93762870fefb2737fc2dc4815a2e3380875e"
+    },
+    "artifact-manifest.json": {
+      "bytes": 5313,
+      "sha256": "6cffcd519971f3226f41f048fafe80a5e122a29ebb14c455e5c8de6b40255649"
+    },
+    "chat_template.jinja": {
+      "bytes": 8952,
+      "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041"
+    },
+    "config.json": {
+      "bytes": 4727,
+      "sha256": "4de5e964cc7262209925609db8e62b3238be9625bac8d7d9840d4e71450651fe"
+    },
+    "generation_config.json": {
+      "bytes": 202,
+      "sha256": "e70c136c1b78ddc1fb0905bac8e733a4dc448d4f852a5dd75143fffc70be550e"
+    },
+    "model.safetensors.index.json": {
+      "bytes": 115835,
+      "sha256": "1db862301da01efa0a977a8f6944195d79bcab9683863c7e5f2e9aa33f8d1ce3"
+    },
+    "tokenizer.json": {
+      "bytes": 19989325,
+      "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+    },
+    "tokenizer_config.json": {
+      "bytes": 1165,
+      "sha256": "792fa3f0cb88b111e54ef3134c873531008c4df471d108da17903426e308aa7b"
+    }
+  },
+  "parameter_census": {
+    "actual_shard_bytes": 54713606485,
+    "bpw_denominator": 26895998464,
+    "declared_total_size": 54713457120,
+    "index_tensors": 1184,
+    "language_elems": 26895998464,
+    "language_tensors": 851,
+    "note": "bpw_denominator is the ORIGINAL language parameter count and never a candidate's own degrees of freedom",
+    "other_elems": 460730096,
+    "other_tensors": 333
+  },
+  "pinned_at_utc": "2026-08-17T21:34:24Z",
+  "role": "RAW SOURCE AUTHORITY \u2014 teacher and reconstruction authority for GRAVITY-1",
+  "schema": "hawking.gravity1.source_pin.v1",
+  "shards": {
+    "model-00001-of-00011.safetensors": {
+      "bytes": 5229165261,
+      "sha256": "a6f0e4bf8f896217148e9ee4a7f5a54e7be18445b958925f2c7b34be818d0444"
+    },
+    "model-00002-of-00011.safetensors": {
+      "bytes": 5321764754,
+      "sha256": "589aea813a355531381b8c415fe5449221060a30390782428833afc93ea73fff"
+    },
+    "model-00003-of-00011.safetensors": {
+      "bytes": 5321764861,
+      "sha256": "d474e16a9f05a677ca8c8f16520684aeed1da05da46d8e6a12f98e0610d6d078"
+    },
+    "model-00004-of-00011.safetensors": {
+      "bytes": 5321764870,
+      "sha256": "3b62d9853a947eaa1571679ce09d56167b8b21f03fd732b479d008c3729a7675"
+    },
+    "model-00005-of-00011.safetensors": {
+      "bytes": 5343801131,
+      "sha256": "ff6e7d1b89bb3b703a5d8c64a5c9a1059d2d3f715c8b37f1c09f36bb33e87a27"
+    },
+    "model-00006-of-00011.safetensors": {
+      "bytes": 5321764862,
+      "sha256": "d2d83e2611013718c80a79a9ee5f29607c4e99c89dcd0c4a5e7b6ff52ae98c99"
+    },
+    "model-00007-of-00011.safetensors": {
+      "bytes": 5321764852,
+      "sha256": "63beb9ab65dc69123d28e56c89c8d443fe42ebf3d37c7ebfab4440fb99365706"
+    },
+    "model-00008-of-00011.safetensors": {
+      "bytes": 5321764844,
+      "sha256": "d5af20ad09037ee355d2fb27323592cd22e6d5958cf668e5418d22f6df5cfbc9"
+    },
+    "model-00009-of-00011.safetensors": {
+      "bytes": 5343801175,
+      "sha256": "a93b2a0de7ce3e987f68ce04cf67106333b1896bf0c972c8220c64819c74f4da"
+    },
+    "model-00010-of-00011.safetensors": {
+      "bytes": 4323452933,
+      "sha256": "3de991892781ea5cb82a9da64918c192f4ed9789ec1dfb694254ab8b3e950107"
+    },
+    "model-00011-of-00011.safetensors": {
+      "bytes": 2542796942,
+      "sha256": "1219c9ea7951f2bb93c0ccafa2e6e65ac9111fda00961e3fbe614e30050c95e9"
+    }
+  },
+  "source_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+  "upstream": {
+    "abliteration_destination_layers": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "abliteration_method": "refusal-direction orthogonal weight projection",
+    "base_model": "Qwen/Qwen3.8-27B",
+    "base_revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "variant": "abliterated"
+  }
+}
