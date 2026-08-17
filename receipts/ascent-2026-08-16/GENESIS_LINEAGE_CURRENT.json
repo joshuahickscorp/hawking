@@ -1,0 +1,90 @@
+{
+  "schema": "hawking.lineage.state.v1",
+  "armed": true,
+  "slots": {
+    "CURRENT": {
+      "schema": "hawking.lineage.genesis_instance.v1",
+      "instance_id": "genesis-qwen38-g0",
+      "generation": 0,
+      "artifact_sha": "56dd65d465f31741f8d40a86d84de779a939fdd9b9b90ecd3d1cb4f82aa4287a",
+      "runtime_sha": "ecfc1cac8742d51dac35bca3c702520a7409089914b9dd637d7927baae0cfe72",
+      "kernel_genome_sha": "688d8b87bddc6baa7bd083229f1b1c7c96ea01adb893c42a98ad534c3341cd7e",
+      "representation_bpw": 4.2527,
+      "complete_token_ns": 35227918,
+      "tps": 28.386576805362157,
+      "capability": {
+        "coherence": 1.0,
+        "complete_token_discipline": 1.0,
+        "engineering": 1.0
+      },
+      "silent_fallback_ids": [],
+      "benchmark_fingerprint": "aa6990ca04bcb26dd53a0ccc13b27b2275a2b2e3b4965ba0c6a8274a3e2e38dd",
+      "identity": {
+        "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+        "base_rev": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+        "artifact": "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+        "binary": "ascension_qwen38_hybrid_greedy"
+      },
+      "lane": "integrator",
+      "valid": true,
+      "live": true,
+      "terminated": false,
+      "launched": false,
+      "role": "current",
+      "research_state": null,
+      "created_at": "2026-08-17T02:39:17.010732Z"
+    },
+    "CANDIDATE": null,
+    "LAST_KNOWN_GOOD": {
+      "schema": "hawking.lineage.genesis_instance.v1",
+      "instance_id": "genesis-qwen38-g0",
+      "generation": 0,
+      "artifact_sha": "56dd65d465f31741f8d40a86d84de779a939fdd9b9b90ecd3d1cb4f82aa4287a",
+      "runtime_sha": "ecfc1cac8742d51dac35bca3c702520a7409089914b9dd637d7927baae0cfe72",
+      "kernel_genome_sha": "688d8b87bddc6baa7bd083229f1b1c7c96ea01adb893c42a98ad534c3341cd7e",
+      "representation_bpw": 4.2527,
+      "complete_token_ns": 35227918,
+      "tps": 28.386576805362157,
+      "capability": {
+        "coherence": 1.0,
+        "complete_token_discipline": 1.0,
+        "engineering": 1.0
+      },
+      "silent_fallback_ids": [],
+      "benchmark_fingerprint": "aa6990ca04bcb26dd53a0ccc13b27b2275a2b2e3b4965ba0c6a8274a3e2e38dd",
+      "identity": {
+        "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+        "base_rev": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+        "artifact": "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+        "binary": "ascension_qwen38_hybrid_greedy"
+      },
+      "lane": "integrator",
+      "valid": true,
+      "live": false,
+      "terminated": false,
+      "launched": false,
+      "role": "last_known_good",
+      "research_state": null,
+      "created_at": "2026-08-17T02:39:17.010732Z"
+    }
+  },
+  "valid_count": 2,
+  "zero_valid_genesis": false,
+  "events": [
+    {
+      "ts": "2026-08-17T02:39:17.011312Z",
+      "kind": "install",
+      "payload": {
+        "instance_id": "genesis-qwen38-g0",
+        "generation": 0
+      }
+    },
+    {
+      "ts": "2026-08-17T02:39:17.011362Z",
+      "kind": "snapshot_lkg",
+      "payload": {
+        "instance_id": "genesis-qwen38-g0"
+      }
+    }
+  ]
+}
