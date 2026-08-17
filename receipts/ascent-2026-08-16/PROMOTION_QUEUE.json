@@ -4050,6 +4050,276 @@
       "skew": "NO_BRANCH",
       "disposition": "NO_REPORT_MANUAL_REVIEW",
       "promoted": false
+    },
+    {
+      "lane": "128-pack-q4-mse-g128-20260817-152641",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/128-pack-q4-mse-g128-20260817-152641",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "S1-canary-20260817-160127",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "S3-deploy-20260817-160209",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "S2-catalogue-20260817-160206",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "14-real-semantics-20260817-162218",
+      "model": "q80",
+      "status": "COMPLETE",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "140-adversarial-density-20260817-161634",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/140-adversarial-density-20260817-161634",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "10-benchmark-integrity-20260817-162211",
+      "model": "q80",
+      "status": "complete",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "04-public-claim-audit-20260817-162334",
+      "model": "q80",
+      "status": "COMPLETE",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "12-cost-and-speed-20260817-162344",
+      "model": "q80",
+      "status": "done",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "08-hard-negative-attack-20260817-162448",
+      "model": "q80",
+      "status": "complete",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "01-public-alpha-criteria-20260817-162328",
+      "model": "q80",
+      "status": "COMPLETE",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "05-prompt-injection-20260817-162337",
+      "model": "q80",
+      "status": "DONE",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "07-live-campaign-evidence-20260817-162340",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "09-reliability-attack-20260817-162207",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "138-endpoints-sensitivity-20260817-161621",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/138-endpoints-sensitivity-20260817-161621",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "S4-deploy-close-20260817-162005",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "11-doc-truth-audit-20260817-162451",
+      "model": "q80",
+      "status": "complete",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "02a-source-budget-a-20260817-162151",
+      "model": "q80",
+      "status": "implementation",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "139-allocator-descent-20260817-161627",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/139-allocator-descent-20260817-161627",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "03-adversarial-replica-20260817-162331",
+      "model": "q80",
+      "status": "COMPLETE",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "131-error-canceling-20260817-161544",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/131-error-canceling-20260817-161544",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "02c-source-budget-c-20260817-162158",
+      "model": "q80",
+      "status": "blocked",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "13-security-live-20260817-162215",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": null,
+      "skew": "NO_BRANCH",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "132-block-joint-fit-20260817-161549",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/132-block-joint-fit-20260817-161549",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "157-gravity-ir-20260817-163017",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/157-gravity-ir-20260817-163017",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "158-cost-model-20260817-163026",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/158-cost-model-20260817-163026",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "160-adversarial-paradigm-20260817-163046",
+      "model": "q80",
+      "status": "UNKNOWN",
+      "next_bottleneck": "",
+      "branch": "grok/160-adversarial-paradigm-20260817-163046",
+      "skew": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
     }
   ]
 }
