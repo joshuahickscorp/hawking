@@ -31,6 +31,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Callable
 
 REPO = Path(__file__).resolve().parent.parent
 STATE = REPO / "receipts" / "ascent-2026-08-16" / "ASCENT_STATE.json"
@@ -308,6 +309,67 @@ def model_of(lane: str) -> str:
 # first retry this fix generated was for Q80.
 ACTIVE_MODELS = {"qwen38"}
 
+RESOURCE_PROFILE_ALIASES: dict[str, tuple[str, str]] = {
+    "CPU_ONLY": ("CPU_ONLY", "maximum"),
+    "LIGHT": ("CPU_ONLY", "maximum"),
+    "LIGHT-READONLY": ("CPU_ONLY", "maximum"),
+    "GPU_DIRTY": ("GPU_DIRTY", "gate"),
+    "GPU-LAB": ("GPU_DIRTY", "gate"),
+    "GPU_PROTECTED": ("GPU_PROTECTED", "gate"),
+    "GPU_EXCLUSIVE": ("GPU_PROTECTED", "gate"),
+    "MIXED": ("MIXED", "gate"),
+}
+
+DEAUTHORISED_PATTERNS = (
+    "determined-teacher-x",
+    "teacher_x_capture",
+    "auto-q80-",
+    "-q80-",
+    "auto-dsv4f-",
+    "dsv4f",
+)
+
+
+def resource_profile(target: dict) -> tuple[str, str]:
+    """Return canonical resource class and compatible Grok profile.
+
+    Metal work is admitted only to the unsandboxed gate profile. Unknown and
+    missing classes fail before delegation instead of discovering the mismatch
+    after a model load or benchmark setup.
+    """
+    raw = str(target.get("resource_class") or "").strip().upper()
+    if not raw:
+        raise ValueError(f"resource admission refused for {target.get('id')!r}: class missing")
+    resolved = RESOURCE_PROFILE_ALIASES.get(raw)
+    if resolved is None:
+        raise ValueError(
+            f"resource admission refused for {target.get('id')!r}: unknown class {raw!r}"
+        )
+    canonical, profile = resolved
+    if canonical in {"GPU_DIRTY", "GPU_PROTECTED", "MIXED"} and profile != "gate":
+        raise ValueError(
+            f"resource admission refused for {target.get('id')!r}: "
+            f"{canonical} requires Metal-capable gate profile"
+        )
+    return canonical, profile
+
+
+def target_deauthorised(target: dict) -> str | None:
+    """Apply sealed-model exclusion at launch, including stale queue entries."""
+    model = str(target.get("model") or "").lower()
+    if model and model not in ACTIVE_MODELS:
+        return f"sealed model {model}"
+    blob = (
+        f"{target.get('id', '')} {target.get('contract', '')} "
+        f"{target.get('title', '')}"
+    ).lower()
+    for pattern in DEAUTHORISED_PATTERNS:
+        if pattern in blob:
+            return pattern
+    if str(target.get("obligation_status", "")).upper() == "BLOCKED":
+        return "obligation BLOCKED"
+    return None
+
 
 def slug(text: str) -> str:
     """Stable short id from a bottleneck description, for dedupe and lane naming."""
@@ -322,7 +384,14 @@ MAX_GENERATED = 96   # widened 2026-08-16: Qwen-first pivot needs a deeper pool
 
 
 _DEFAULT_GENESIS_BIN = (
-    REPO / "workspace" / "ops" / "build" / "rust" / "release" / "examples" / "ascension_qwen38_hybrid_greedy"
+    REPO
+    / "workspace"
+    / "ops"
+    / "build"
+    / "rust"
+    / "release-fast"
+    / "examples"
+    / "ascension_qwen38_hybrid_greedy"
 )
 _DEFAULT_GENESIS_ARTIFACT = (
     REPO / "workspace" / "campaign" / "records" / "runs" / "qwen38-27b" / "uniform-q4-v1"
@@ -334,6 +403,15 @@ _DEFAULT_GENESIS_TOKENIZER = (
 GENESIS_BIN = _DEFAULT_GENESIS_BIN
 GENESIS_ARTIFACT = _DEFAULT_GENESIS_ARTIFACT
 GENESIS_TOKENIZER = _DEFAULT_GENESIS_TOKENIZER
+GENESIS_RESIDENT_CLIENT = REPO / "tools" / "agentos" / "genesis_resident.py"
+GENESIS_RESIDENT_PROPOSE_TIMEOUT_S = 1800
+# A reasoning model spends most of its budget inside <think>. At 900 the body ran
+# out mid-reasoning and never emitted an answer, so every proposal came back empty
+# and the named-mechanism gate refused every target.
+GENESIS_PROPOSE_MAX_NEW_TOKENS = 2600
+GENESIS_SYSTEM_CONTRACT = (
+    REPO / "contracts" / "genesis" / "QWEN38_GENESIS_SYSTEM_DIRECTIVE.md"
+)
 
 
 def _genesis_paths() -> tuple[Path, Path, Path]:
@@ -345,18 +423,26 @@ def _genesis_paths() -> tuple[Path, Path, Path]:
 
 def _genesis_prompt(bottleneck: str) -> str:
     return (
-        "You are HAWKING GENESIS, optimizing your own execution. Your complete token is "
-        "35,227,918 ns; weight_addressing is 21,293,103 ns (60.44%) and moves 13.618 GB "
-        "at 97.6% of the 411.51 GB/s unique-once decode ceiling.\n\n"
+        "You are HAWKING GENESIS, optimizing your own execution. Treat every inherited "
+        "performance number as historical until a current-main protected measurement "
+        "revalidates it. The old 411.51 GB/s / 97.6% weight-addressing story is REFUTED: "
+        "it mixed the wrong bytes, whole-token GPU time, and a sequential control that "
+        "was not the Q4 grouped-GEMV roof. Do not infer that density is the only lever.\n\n"
         f"MEASURED BOTTLENECK NOW: {bottleneck}\n\n"
         "Already REFUTED by measurement - do not propose these again: fusing tiny kernels "
         "into the following GEMV (+10.68 ms REGRESSION); cross-token cache reuse (hot/cold "
-        "gap only 2.5%); N sessions sharing one weight body to amortize DRAM (4 GEMVs on one "
-        "lm_head still cost 4x).\n\n"
+        "gap only 2.5%); amortizing DRAM by issuing N INDEPENDENT dispatches against one "
+        "weight body (4 separate GEMVs on one lm_head still cost 4x - they re-read W four "
+        "times by construction, so that control could only ever return 4x).\n\n"
+        "STILL OPEN, do not treat as refuted: a SINGLE dispatch computing W @ [x1..xN] that "
+        "reads W once and reuses it across N columns. Same bottleneck, different mechanism.\n\n"
         "A roof is conditioned on the current genome, never physics. Name the ASSUMPTION "
         "that generates this cost, then ONE mechanism that removes the cost rather than "
-        "shrinking it, then the cheapest experiment that would prove it does NOT work. "
-        "Be specific and brief."
+        "shrinking it, then the cheapest experiment that would prove it does NOT work.\n\n"
+        "Keep reasoning SHORT and reach the answer. Output is read by a scheduler, not a "
+        "human, and an answer you never reach is worth nothing. Emit exactly these fields "
+        "and no prose around them:\n"
+        "ASSUMPTION:\nMECHANISM:\nDISCRIMINATOR:\nREJECT_IF:"
     )
 
 
@@ -370,33 +456,152 @@ def _resident_mod():
     return mod
 
 
+def _genesis_contract_mod():
+    """Load the fail-closed canonical contract compiler in this checkout."""
+    path = REPO / "tools" / "agentos" / "genesis_contract.py"
+    spec = importlib.util.spec_from_file_location("genesis_system_contract", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load Genesis system contract helper at {path}")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _mechanism_mod():
+    """Load the semantic mechanism gate without making tools/ a package."""
+    path = Path(__file__).resolve().parent / "ascent" / "mechanism_dedup.py"
+    ascent_dir = str(path.parent)
+    if ascent_dir not in sys.path:
+        sys.path.insert(0, ascent_dir)
+    spec = importlib.util.spec_from_file_location("genesis_mechanism_dedup", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load mechanism gate at {path}")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def mechanism_admission(target: dict, state: dict) -> tuple[bool, dict]:
+    """Require a named, non-duplicate mechanism before a target can launch."""
+    mechanism = str(target.get("mechanism") or "").strip()
+    if not mechanism:
+        return False, {
+            "verdict": "ERROR",
+            "gate": "named_mechanism_required",
+            "reason": "target has no named mechanism; bottleneck-only retries are refused",
+        }
+    try:
+        gate = _mechanism_mod()
+        attempts = [
+            row
+            for row in state.get("targets", [])
+            if row is not target
+            and row.get("mechanism")
+            and row.get("status") not in {"pending", "running"}
+        ]
+        running = [
+            row
+            for row in state.get("targets", [])
+            if row is not target
+            and row.get("mechanism")
+            and row.get("status") in {"pending", "running"}
+        ]
+        decision = gate.admit(
+            target,
+            attempts=attempts,
+            running=running,
+            include_campaign_exhausted=True,
+        )
+        payload = decision.to_dict()
+        return decision.verdict.value == "ALLOW", payload
+    except Exception as exc:
+        return False, {
+            "verdict": "ERROR",
+            "gate": "mechanism_gate_unavailable",
+            "reason": str(exc),
+        }
+
+
 def _try_resident_propose(prompt: str) -> str:
-    """Fast no-op when the body is not live. Never waits for a cold load."""
+    """Run one resident inference under the same GPU mutex as measurements.
+
+    Health is checked before entering the potentially long lock queue, so a dead
+    body remains a fast no-op. The client is passed the prompt as one argv item;
+    no prompt text is ever interpreted by a shell.
+    """
     try:
         resident = _resident_mod()
     except Exception:
         return ""
     if resident is None:
         return ""
-    sock = resident.default_socket(REPO)
     try:
-        resp = resident.propose(prompt, sock_path=sock, max_new_tokens=900, raw=False)
+        sock = resident.default_socket(REPO)
+        if not resident.body_is_up(sock):
+            return ""
     except Exception:
         return ""
-    if not resp:
+
+    lock = REPO / "tools" / "gpu_lane_lock.sh"
+    if not lock.is_file() or not GENESIS_RESIDENT_CLIENT.is_file():
         return ""
-    text = resp.get("text")
-    return text.strip() if isinstance(text, str) else ""
+    cmd = [
+        str(lock),
+        "genesis-propose",
+        sys.executable,
+        str(GENESIS_RESIDENT_CLIENT),
+        "propose",
+        "--repo",
+        str(REPO),
+        "--socket",
+        str(sock),
+        "--max-new-tokens",
+        str(GENESIS_PROPOSE_MAX_NEW_TOKENS),
+        "--session",
+        "parent",
+        "--prompt",
+        prompt,
+    ]
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=GENESIS_RESIDENT_PROPOSE_TIMEOUT_S,
+            shell=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    if proc.returncode != 0:
+        return ""
+    text, marker, suffix = proc.stdout.rpartition("\nFALLBACKS:")
+    fallback_lines = suffix.strip().splitlines()
+    if (
+        not marker
+        or not fallback_lines
+        or not fallback_lines[0].strip().isdigit()
+        or int(fallback_lines[0].strip()) != 0
+    ):
+        return ""
+    return text.strip()
 
 
 def _try_shell_propose(prompt: str) -> str:
+    prompt = _genesis_contract_mod().inject_runtime_contract(
+        prompt,
+        role="parent",
+        path=GENESIS_SYSTEM_CONTRACT,
+    )
     bin_p, artifact, tokenizer = _genesis_paths()
     if not bin_p.is_file() or not artifact.is_dir():
         return ""
     lock = REPO / "tools" / "gpu_lane_lock.sh"
     cmd = [str(bin_p),
            "--artifact-root", str(artifact), "--tokenizer", str(tokenizer),
-           "--prompt", prompt, "--max-new-tokens", "900", "--max-seq-len", "4096"]
+           "--prompt", prompt, "--max-new-tokens", str(GENESIS_PROPOSE_MAX_NEW_TOKENS), "--max-seq-len", "4096"]
     # Env-overridden binaries are test/operator stubs; do not wait 90 min on
     # the GPU lock for a script that does not load the body.
     if lock.is_file() and bin_p == _DEFAULT_GENESIS_BIN:
@@ -409,29 +614,67 @@ def _try_shell_propose(prompt: str) -> str:
     return m.group(1).strip() if m else ""
 
 
+_THINK_BLOCK = re.compile(r"<think>.*?</think>", re.S | re.I)
+
+
+def emitted_mechanism(raw: str) -> str:
+    """Keep what Genesis emitted; discard what it was merely thinking.
+
+    The recorded mechanism becomes a permanent row in the dedup corpus, so a
+    truncated thought recorded as a mechanism is worse than no proposal: it
+    burns one of the bounded attempts against a bottleneck AND teaches the
+    semantic gate to refuse the real mechanism later as a duplicate of it.
+
+    Under the Genesis Output Law internal work may be deep but only the emitted
+    fields are output, so a closed <think> block is stripped. An UNCLOSED one
+    means generation hit the token budget mid-reasoning and never reached an
+    answer - there is nothing to record, so refuse rather than invent.
+    """
+    text = _THINK_BLOCK.sub(" ", raw or "").strip()
+    if "<think>" in text.lower():
+        return ""
+    return text
+
+
 def genesis_proposes(bottleneck: str) -> str:
     """Ask GENESIS itself for the mechanism before a lane is written.
 
-    Prefers the resident body (one load, many serves). If that process is not
-    live, falls back to the historical per-proposal shell-out. Best-effort by
-    design - a slow or absent Genesis must NEVER stall the unattended loop, so
-    any failure returns "" and the lane goes out without a proposal rather
-    than not going out at all.
+    Production is resident-only: if that body is unavailable, the lane still
+    goes out without a proposal instead of cold-loading a second 15 GB body.
+    The historical shell path is retained only behind the explicit
+    GENESIS_ALLOW_COLD_FALLBACK=1 escape hatch for tests/manual recovery.
     """
+    # Verify even when the resident is down and cold fallback is disabled. The
+    # organism must not silently continue with conversation memory as authority.
+    _genesis_contract_mod().contract_provenance(GENESIS_SYSTEM_CONTRACT)
     prompt = _genesis_prompt(bottleneck)
-    text = _try_resident_propose(prompt)
+    text = emitted_mechanism(_try_resident_propose(prompt))
     if text:
         return text
-    return _try_shell_propose(prompt)
+    if os.environ.get("GENESIS_ALLOW_COLD_FALLBACK") == "1":
+        return emitted_mechanism(_try_shell_propose(prompt))
+    return ""
 
 
-def generate_targets(state: dict, harvested: list[dict]) -> int:
+def generate_targets(
+    state: dict,
+    harvested: list[dict],
+    *,
+    proposer: Callable[[str], str] = genesis_proposes,
+) -> int:
     """Turn each unseen NEXT_BOTTLENECK into a pending target with a real contract.
 
     Without this the queue drains and the daemon idles: harvest only FILES finished
     lanes, it does not decide what to try next. This is what keeps work flowing
     while nobody is watching.
     """
+    contract_mod = _genesis_contract_mod()
+    genesis_contract_block = contract_mod.lane_contract_reference(
+        GENESIS_SYSTEM_CONTRACT
+    )
+    genesis_contract_binding = contract_mod.contract_provenance(
+        GENESIS_SYSTEM_CONTRACT
+    )
     common = LANES / "_COMMON.md"
     preamble = common.read_text() if common.is_file() else ""
     # .get() throughout: ASCENT_STATE is written by several tools and a target
@@ -462,8 +705,9 @@ def generate_targets(state: dict, harvested: list[dict]) -> int:
                     if t.get("auto_generated") and t.get("status") in ACTIVE)
     made = 0
 
-    # Qwen-family first (q80, qwen38) per the 2026-08-16 amendment; dsv4f is theory.
-    harvested = sorted(harvested, key=lambda h: {"q80": 0, "qwen38": 1}.get(model_of(h["lane"]), 2))
+    # Qwen3.8 is the sole active vehicle. Sorting keeps its reports ahead of
+    # retained science from sealed models, which is filtered below.
+    harvested = sorted(harvested, key=lambda h: 0 if model_of(h["lane"]) == "qwen38" else 1)
     for h in harvested:
         if generated + made >= MAX_GENERATED:
             break
@@ -484,19 +728,21 @@ def generate_targets(state: dict, harvested: list[dict]) -> int:
         if tid in existing:
             continue
 
-        proposal = genesis_proposes(bn)
+        proposal = proposer(bn)
         genesis_block = (
             f"\n## GENESIS PROPOSED THIS MECHANISM\nThe resident model read this bottleneck "
             f"and proposed the following. Treat it as a HYPOTHESIS to test, never as a "
             f"result, and reject it if the evidence does not support it.\n\n{proposal}\n"
         ) if proposal else ""
 
-        body = f"""{preamble}
+        body = f"""{genesis_contract_block}
+
+{preamble}
 {genesis_block}
 ---
 # LANE: {tid}
 ## AUTO-GENERATED by ascent_daemon from a finished lane's NEXT_BOTTLENECK.
-## Class: GPU_EXCLUSIVE for benchmarks. Use ./tools/gpu_lane_lock.sh.
+## Class: GPU_PROTECTED for benchmarks. Use ./tools/gpu_lane_lock.sh.
 
 ## The target, as the previous lane reported it
 Source lane: `{h['lane']}` (status {h['status']})
@@ -518,38 +764,39 @@ Model: {model}
 ## Standing rules
 - NEVER materialize a dense weight tensor: packed -> registers/simdgroup -> decode
   -> multiply -> accumulate.
-- Correctness gate is mandatory. Q80: generated ids exactly
-  [8420, 594, 264, 4285, 729, 304, 13027, 429, 17431, 288, 264, 914].
-  DSV4F: hc_sha c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597.
-  Both: 0 fallbacks. Grade against the ARTIFACT oracle, never the BF16 parent.
+- Correctness gate is mandatory for Qwen3.8. For `Say hi.` the greedy 16 ids are
+  [248068, 198, 760, 1156, 4777, 6587, 728, 310, 1910, 328, 5834, 1149,
+  1061, 369, 264, 1546], with 0 fallbacks. Also run the protected prompt set in
+  `receipts/ascent-2026-08-16/QWEN38_COHERENCE_SEAL.json`. Grade against the
+  Qwen3.8 ARTIFACT oracle, never the BF16 parent.
 - Never weaken a gate, seal, assertion or expected constant to make something pass.
 - Label every timing DIRTY_ENGINEERING; other lanes are running.
 
 ## Negative science - do NOT re-pay for these
-- Topology/encoder/dispatch collapse: REFUTED on BOTH models. Q80 fuse regressed
-  (516 vs 307 ms); DSV4F 731 -> 43 encoders moved attention GPU by nothing.
-- DRAM row interleaving: Q4 and binary both LOST; only FP4 gained; live wall unchanged.
-- Expert routing co-occurrence layout: WEAK, 1.037x.
-- Switching-activity permutation: alpha is already ~0.5 (random); not the wall.
-- DSV4F path_resolve/verify identity tax: NOT on the critical path (2.9x cut, zero
-  token effect). A parallel sum is not token latency.
-- Q80 down_proj low-rank ALREADY executes L @ (R @ x); it never reconstructs W.
-- Q80 decoded-weight caching: refuted by arithmetic (288 GiB dense vs 11 GiB packed).
-- CORRECTED 2026-08-16: the 560-647 GB/s figure is CACHE-RESIDENT REUSE (64 MiB x 4096)
-  and is NOT a decode ceiling. Decode reads each weight ONCE per token, so the honest
-  control is unique-bytes-once: 411.51 GB/s (Q80_DECODE_SHAPE_BANDWIDTH.json). What
-  governs decode is reuse-vs-no-reuse, NOT gather-vs-sequential.
-- Q80 mixed matvec runs 2.57 GB/s = 0.62% of that 411.51 ceiling, 160x off, and Q4 runs
-  15.2 GB/s - so mixed is 5.9x SLOWER PER BYTE. Reconstruction cost, not bytes moved, is
-  Q80's dominant term.
-- DEAD NUMBERS, do not cite: "0.135% efficiency" (a category error dividing a mixed-artifact
-  floor by a Q4 runtime), "sub-100 fs needs BPW < 0.448-0.518" (assumed unity bandwidth),
-  and storage BPW used as if it were active BPW (at batch=1 only 10 of 512 experts are read).
-- Qwen3.8 is at 406.2 of 411.51 GB/s = 98.7% of ceiling: it has NO kernel headroom and BPW
-  is its only lever. Its token is a CLOSED 12-component ledger; weight_addressing is 60.44%
-  and is DRAM traffic (G024_QWEN38_TOKEN_NS.json).
-- Q4 vehicles are DE-AUTHORISED. The ~20 h DSV4F determined teacher-X capture is
-  DE-AUTHORISED; do not propose or restart it.
+- The old `411.51 GB/s / 97.6%` Qwen3.8 roof is REFUTED. It mixed the wrong
+  byte count, whole-token GPU time, and a sequential control with the grouped-Q4
+  addressing roof. Do not quote it.
+- The landed, provisional honest-roof run defended 13,611,663,360 bytes and
+  measured 639.25 GB/s sealed addressing against a 699.57 GB/s single-GEMV
+  addressing roof (91.4%). The 401-production-shape catalog measured 530.65 GB/s
+  addressing and 505.81 GB/s full-kernel. The box was CPU-contended, so rerun
+  cleanly before treating the absolute roof as physical authority.
+- Therefore Qwen3.8's current geometry is bandwidth-saturated enough that lower
+  active bytes remains a lever, while the catalog/single-GEMV gap proves dispatch
+  and kernel topology still have headroom. Pursue BOTH representation and execution.
+- The historical 12-component TOKEN_NS ledger force-closed its residual. Complete
+  token wall is authority; report any unclosed residual rather than assigning it.
+- The generator-residual `shared_r64` net-byte headline is REFUTED: its stated
+  3,781,882,584 bytes came from `binary_meanabs_g128`, while the receipt's own
+  `shared_r64.residual.coder.q4.bytes` sum is 14,287,109,840 bytes. The measured
+  4.049% explained fraction is negative science, not a 1.125-BPW win.
+- Fusing tiny kernels into the following GEMV regressed complete-token wall by
+  10.68 ms. Cross-token cache reuse showed only a 2.5% hot/cold gap. Four logical
+  sessions sharing weights still execute four GEMVs; residency saves model loads,
+  not per-session token work.
+- Q80 and DeepSeek V4 are sealed models with deleted heavyweight weights. Never
+  target, reconstruct, launch, or use their model-specific receipts as Qwen3.8
+  performance authority. Qwen3.8's current uniform-Q4 artifact is ACTIVE.
 
 ## ACCEPTANCE
 Done when the named bottleneck is measured before and after, with >=3 alternating
@@ -559,11 +806,11 @@ the mechanism does not help, with the numbers showing it - is an acceptable
 completion. Report the real figure, not a favourable one.
 
 ## VERIFY
-Build with `cargo build --release -p hawking-core` and confirm it exits 0.
-Run every GPU-exclusive measurement under ./tools/gpu_lane_lock.sh <lane> <cmd>;
+Build with `cargo build --profile release-fast -p hawking-core` and confirm it exits 0.
+Run every GPU-protected measurement under ./tools/gpu_lane_lock.sh <lane> <cmd>;
 other lanes share this GPU and an unlocked run corrupts both.
-Check no shared-kernel regression with `cargo test --release -p hawking-core --test gk_family_parity`
-(7/8 is expected today - the failing DSV source-string assert is pre-existing).
+Check no shared-kernel regression with
+`cargo test --profile release-fast -p hawking-core --test gk_family_parity`.
 
 ## EDIT crates/hawking-core
 ## EDIT receipts/ascent-2026-08-16
@@ -589,12 +836,20 @@ finished ahead=0, and nearly lost their work.
 
         state["targets"].append({
             "id": tid, "model": model, "hypothesis": bn[:200],
+            "mechanism": proposal.strip(),
             "target_stage": "auto", "contract": str(path),
-            "resource_class": "GPU_EXCLUSIVE", "probability_of_success": 0.5,
+            "resource_class": "GPU_PROTECTED", "probability_of_success": 0.5,
+            "representation": "uniform-q4-group64",
+            "implementation": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "launch_geometry": "tpr64_tg128",
+            "command_topology": "one_command_buffer_production_catalog",
+            "artifact": "uniform-q4-v1",
+            "bytes_per_token": 13_611_663_360,
             "recoverable_ns_per_token": 50_000_000, "density_frontier_gain_ns_equiv": 0,
             "information_gain": 150_000_000, "transfer_value": 50_000_000,
             "experiment_cost": 1.5, "status": "pending",
             "auto_generated": True, "from_bottleneck": bn, "from_lane": h["lane"],
+            "genesis_system_contract": genesis_contract_binding,
         })
         seen_bn.add(bn)
         made += 1
@@ -721,26 +976,23 @@ def one_pass() -> dict:
     # targeting either cannot build, measure or promote. They stayed in the pending
     # queue from before the tournament, and the first two passes after the starvation
     # fix both launched a q80 retry - unattended, that is a whole night on a dead model.
-    DEAUTHORISED = ("determined-teacher-x", "teacher_x_capture", "uniform-q4", "uniform_q4",
-                    "auto-q80-", "-q80-", "auto-dsv4f-", "dsv4f")
-
-    def deauthorised(t: dict) -> str | None:
-        blob = f"{t.get('id','')} {t.get('contract','')} {t.get('title','')}".lower()
-        for pat in DEAUTHORISED:
-            if pat in blob:
-                return pat
-        if str(t.get("obligation_status", "")).upper() == "BLOCKED":
-            return "obligation BLOCKED"
-        return None
-
     pending = []
     for t in state["targets"]:
         if t.get("status") != "pending":
             continue
-        why = deauthorised(t)
+        why = target_deauthorised(t)
         if why:
             t["status"] = "deauthorised"
             t["tier1"] = f"excluded: {why}"
+            continue
+        admitted, mechanism_decision = mechanism_admission(t, state)
+        t["mechanism_admission"] = mechanism_decision
+        if not admitted:
+            t["status"] = "mechanism_refused"
+            t["tier1"] = (
+                f"mechanism gate {mechanism_decision.get('verdict')}: "
+                f"{mechanism_decision.get('reason')}"
+            )
             continue
         pending.append(t)
     save(STATE, state)
@@ -770,11 +1022,25 @@ def one_pass() -> dict:
         report["hold"] = f"contract missing for {target['id']}"
         return report
 
+    try:
+        resource_class, profile = resource_profile(target)
+    except ValueError as exc:
+        target["status"] = "admission_refused"
+        target["tier1"] = str(exc)
+        save(STATE, state)
+        report["launched"] = None
+        report["hold"] = str(exc)
+        return report
     code, out = sh(f"{GROK} delegate --task {target['id']} --contract {contract} "
-                   f"--repo {REPO} --profile gate --background", timeout=600)
+                   f"--repo {REPO} --profile {profile} --background", timeout=600)
     m = re.search(rf"{re.escape(target['id'])}-\d{{8}}-\d{{6}}", out)
     if m:
-        target.update(status="running", task_id=m.group(0))
+        target.update(
+            status="running",
+            task_id=m.group(0),
+            admitted_resource_class=resource_class,
+            admitted_profile=profile,
+        )
         report["launched"] = m.group(0)
     else:
         target["status"] = "launch_failed"
@@ -813,6 +1079,15 @@ def status() -> int:
 
 def _selfcheck() -> None:
     """Pin the behaviours that make this safe to leave running."""
+    # A truncated thought must never be recorded as a mechanism. It would burn one
+    # of the bounded attempts against a bottleneck AND teach the semantic dedup gate
+    # to later refuse the real mechanism as a duplicate of a half-finished sentence.
+    assert emitted_mechanism("<think>reasoning</think>\nMECHANISM: batch") == "MECHANISM: batch"
+    assert emitted_mechanism("<think>ran out of budget mid-thought") == ""
+    assert emitted_mechanism("<think>a</think> MECHANISM: x <think>b") == ""
+    assert emitted_mechanism("MECHANISM: persistent kernel") == "MECHANISM: persistent kernel"
+    assert emitted_mechanism("") == ""
+
     assert model_of("dsv-expert-cache-1") == "dsv4f"
     assert model_of("q80-pack-1") == "q80"
     assert model_of("qwen38-bringup-1") == "qwen38"
@@ -835,7 +1110,7 @@ def _selfcheck() -> None:
         (base / "no-wall-lane" / "grok-report.md").write_text("STATUS: SHIPPED\nno wall named\n")
         (base / "good-lane").mkdir()
         (base / "good-lane" / "grok-report.md").write_text("STATUS: SHIPPED\nNEXT_BOTTLENECK: x 1 ns\n")
-        global TASKS
+        global TASKS, LANES
         saved = TASKS; TASKS = base
         try:
             got = {h["lane"]: h for h in harvest()}
@@ -851,28 +1126,90 @@ def _selfcheck() -> None:
     assert STATUS_RE.search(txt).group(1) == "SHIPPED"
 
     # The generator is what stops the daemon idling. It must produce work, dedupe,
-    # and refuse to run away.
+    # and refuse to run away. Use a temporary contract directory and a pure proposer:
+    # selfcheck must never load a 15 GB model or touch the live queue.
     assert slug("host.expert_slab_io 415126416 ns/token") == "host-expert-slab-io"
-    st = {"targets": []}
-    h = [{"lane": "qwen38-x-1", "status": "SHIPPED", "next_bottleneck": "host.foo 1 ns/token"},
-         {"lane": "qwen38-y-1", "status": "SHIPPED", "next_bottleneck": "metal.bar 2 ns/token"}]
-    assert generate_targets(st, h) == 2, "must create a target per new bottleneck"
-    assert generate_targets(st, h) == 0, "must dedupe on repeat passes"
-    assert {t["model"] for t in st["targets"]} == {"qwen38"}
-    assert all(t["status"] == "pending" and t["auto_generated"] for t in st["targets"])
-    # MAX_GENERATED bounds the ACTIVE pool, so the cap test must fill it with
-    # ACTIVE targets. A pool of finished ones must NOT block new work - that was
-    # the 2026-08-16 bug, where 96 lifetime generations wedged the loop shut.
-    st["targets"] = [{"auto_generated": True, "from_bottleneck": f"b{i}",
-                      "status": "pending"} for i in range(MAX_GENERATED)]
-    assert generate_targets(st, [{"lane": "qwen38-z-1", "status": "SHIPPED",
-                                  "next_bottleneck": "brand new wall"}]) == 0, \
-        "must stop at MAX_GENERATED when the ACTIVE pool is full"
-    st["targets"] = [{"auto_generated": True, "from_bottleneck": f"c{i}",
-                      "status": "stale_no_process"} for i in range(MAX_GENERATED)]
-    assert generate_targets(st, [{"lane": "qwen38-z-2", "status": "SHIPPED",
-                                  "next_bottleneck": "another new wall"}]) == 1, \
-        "a pool of FINISHED targets must not block new generation"
+    with tempfile.TemporaryDirectory() as td:
+        saved_lanes = LANES
+        LANES = Path(td) / "lanes"
+        try:
+            propose = lambda bottleneck: f"test mechanism for {bottleneck}"
+            st = {"targets": []}
+            h = [
+                {"lane": "qwen38-x-1", "status": "SHIPPED", "next_bottleneck": "host.foo 1 ns/token"},
+                {"lane": "qwen38-y-1", "status": "SHIPPED", "next_bottleneck": "metal.bar 2 ns/token"},
+            ]
+            assert generate_targets(st, h, proposer=propose) == 2, \
+                "must create a target per new bottleneck"
+            assert generate_targets(st, h, proposer=propose) == 0, \
+                "must dedupe on repeat passes"
+            assert {t["model"] for t in st["targets"]} == {"qwen38"}
+            assert all(t["status"] == "pending" and t["auto_generated"] for t in st["targets"])
+            # MAX_GENERATED bounds the ACTIVE pool, so the cap test must fill it with
+            # ACTIVE targets. A pool of finished ones must NOT block new work.
+            st["targets"] = [
+                {"auto_generated": True, "from_bottleneck": f"b{i}", "status": "pending"}
+                for i in range(MAX_GENERATED)
+            ]
+            assert generate_targets(
+                st,
+                [{"lane": "qwen38-z-1", "status": "SHIPPED", "next_bottleneck": "brand new wall"}],
+                proposer=propose,
+            ) == 0, "must stop at MAX_GENERATED when the ACTIVE pool is full"
+            st["targets"] = [
+                {"auto_generated": True, "from_bottleneck": f"c{i}", "status": "stale_no_process"}
+                for i in range(MAX_GENERATED)
+            ]
+            assert generate_targets(
+                st,
+                [{"lane": "qwen38-z-2", "status": "SHIPPED", "next_bottleneck": "another new wall"}],
+                proposer=propose,
+            ) == 1, "a pool of FINISHED targets must not block new generation"
+        finally:
+            LANES = saved_lanes
+
+    assert resource_profile({"id": "cpu", "resource_class": "CPU_ONLY"}) == (
+        "CPU_ONLY", "maximum"
+    )
+    assert resource_profile({"id": "gpu", "resource_class": "GPU_PROTECTED"}) == (
+        "GPU_PROTECTED", "gate"
+    )
+    assert resource_profile({"id": "legacy", "resource_class": "GPU_EXCLUSIVE"}) == (
+        "GPU_PROTECTED", "gate"
+    )
+    try:
+        resource_profile({"id": "missing"})
+        raise AssertionError("missing resource class must fail at admission")
+    except ValueError:
+        pass
+    assert target_deauthorised({"id": "innocent", "model": "q80"}) == "sealed model q80"
+    assert target_deauthorised({"id": "innocent", "model": "dsv4f"}) == "sealed model dsv4f"
+    assert target_deauthorised({"id": "qwen38-work", "model": "qwen38"}) is None
+    allowed, decision = mechanism_admission(
+        {
+            "id": "new-mechanism",
+            "model": "qwen38",
+            "mechanism": "batch production-shaped GEMV dispatch metadata into an indirect command table",
+            "from_bottleneck": "weight_addressing 1 ns",
+        },
+        {"targets": []},
+    )
+    assert allowed and decision["verdict"] == "ALLOW", decision
+    allowed, decision = mechanism_admission(
+        {
+            "id": "duplicate-mechanism",
+            "model": "qwen38",
+            "mechanism": "fuse small Metal kernels into the next GEMV",
+            "from_bottleneck": "weight_addressing 1 ns",
+        },
+        {"targets": []},
+    )
+    assert not allowed and decision["verdict"] == "REFUSE", decision
+    allowed, decision = mechanism_admission(
+        {"id": "bottleneck-only", "model": "qwen38", "from_bottleneck": "weight_addressing"},
+        {"targets": []},
+    )
+    assert not allowed and decision["gate"] == "named_mechanism_required", decision
 
     # The daemon must never promote or merge on its own authority. Check the
     # executable surface (sh() call sites), not the file text - an earlier version
