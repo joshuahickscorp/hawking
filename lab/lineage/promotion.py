@@ -3,10 +3,16 @@
 A child is promoted only if every clause holds. Parent and child are
 refused if they invoke the gate on themselves. Missing evidence is
 PENDING (never a fabricated ACCEPT). Present-but-wrong evidence is
-REJECT. Corrupt the input of any clause and it goes red.
+REJECT. A missing required field on present evidence is FAIL, never a
+skip. Corrupt the input of any clause and it goes red.
+
+The gate hashes artifact preimages and state-transfer payloads. It never
+trusts an asserted checksum, an asserted child_tps, a lowered parent
+contract, or a paperwork-only PASS string.
 """
 from __future__ import annotations
 
+import hashlib
 from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
 from lab.lineage.canon import bpw_key, require_mapping, utc_now
@@ -18,6 +24,7 @@ from lab.lineage.identity import (
     as_instance,
     as_invoker,
 )
+from lab.lineage.transfer import TransferError, payload_checksum
 from lab.receipts import seal
 
 if TYPE_CHECKING:
@@ -28,6 +35,8 @@ PROMOTION_SCHEMA = "hawking.lineage.promotion_gate.v1"
 # 1% of the parent complete-token wall. A 1 ns "win" is not material.
 MATERIAL_COMPLETE_TOKEN_FRACTION = 0.01
 MIN_PAIRED_REPS = 3
+MIN_GREEDY_PROMPTS = 3
+NS_PER_SECOND = 1_000_000_000.0
 
 CLAUSE_CAPABILITY = "capability_ge_parent_contract"
 CLAUSE_NO_NEW_SILENT_FALLBACK = "no_new_silent_fallback"
@@ -41,6 +50,9 @@ CLAUSE_ROLLBACK_ARTIFACT = "rollback_artifact_exists"
 CLAUSE_TPS_UP_CAP_DOWN = "reject_tps_up_capability_down"
 CLAUSE_BPW_UP_TOKEN_DOWN = "reject_bpw_improved_token_worse"
 CLAUSE_BENCHMARK_UNCHANGED = "reject_benchmark_changed"
+CLAUSE_GENERATION = "generation_strictly_increases"
+CLAUSE_MODEL_IDENTITY = "identity_model_matches_parent"
+CLAUSE_GREEDY_TOKEN_IDS = "greedy_token_ids_agree"
 
 ALL_CLAUSES: tuple[str, ...] = (
     CLAUSE_CAPABILITY,
@@ -55,6 +67,9 @@ ALL_CLAUSES: tuple[str, ...] = (
     CLAUSE_TPS_UP_CAP_DOWN,
     CLAUSE_BPW_UP_TOKEN_DOWN,
     CLAUSE_BENCHMARK_UNCHANGED,
+    CLAUSE_GENERATION,
+    CLAUSE_MODEL_IDENTITY,
+    CLAUSE_GREEDY_TOKEN_IDS,
 )
 
 REQUIRED_PROTECTED_TESTS: tuple[str, ...] = (
@@ -141,6 +156,90 @@ def _capability_losses(
     return missing, below_contract, below_parent
 
 
+def _lowered_contract_axes(
+    parent_cap: Mapping[str, float],
+    evidence_contract: Mapping[str, Any] | None,
+) -> list[str]:
+    """Axes whose evidence floor was dropped or set below the parent's measured value."""
+    if not isinstance(evidence_contract, Mapping):
+        return []
+    lowered: list[str] = []
+    for axis, parent_v in parent_cap.items():
+        if axis not in evidence_contract:
+            lowered.append(axis)
+            continue
+        try:
+            floor = float(evidence_contract[axis])
+        except (TypeError, ValueError):
+            lowered.append(axis)
+            continue
+        if floor < float(parent_v):
+            lowered.append(axis)
+    return lowered
+
+
+def _preimage_bytes(value: object) -> bytes | None:
+    if isinstance(value, (bytes, bytearray)):
+        return bytes(value)
+    if isinstance(value, str) and value:
+        return value.encode("utf-8")
+    return None
+
+
+def _sha256_hex(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def _computed_artifact_sha(receipt: Mapping[str, Any]) -> str | None:
+    preimage = receipt.get("preimage")
+    if preimage is None:
+        preimage = receipt.get("bytes")
+    data = _preimage_bytes(preimage)
+    if data is None:
+        return None
+    return _sha256_hex(data)
+
+
+def _tps_from_wall_ns(wall_ns: float) -> float:
+    return NS_PER_SECOND / float(wall_ns)
+
+
+def _authority_text(value: object) -> str:
+    return str(value or "").strip()
+
+
+def _is_cpu_wait_proxy(text: str) -> bool:
+    low = text.lower()
+    return "cpu" in low and "proxy" in low
+
+
+def _int_token_ids(value: object, name: str) -> list[int] | str:
+    if not isinstance(value, (list, tuple)) or not value:
+        return f"{name} must be a non-empty sequence of token ids"
+    out: list[int] = []
+    for item in value:
+        if isinstance(item, bool) or not isinstance(item, int):
+            return f"{name} must be integer token ids, got {item!r}"
+        out.append(item)
+    return out
+
+
+def _greedy_rows(evidence: Mapping[str, Any], tests: object) -> list[Any] | None:
+    raw = evidence.get("greedy_token_ids")
+    if isinstance(raw, (list, tuple)):
+        return list(raw)
+    if isinstance(tests, (list, tuple)):
+        for row in tests:
+            if not isinstance(row, Mapping):
+                continue
+            if str(row.get("name")) != "coherence_greedy_ids":
+                continue
+            for key in ("prompts", "pairs", "token_ids", "greedy_token_ids"):
+                if isinstance(row.get(key), (list, tuple)):
+                    return list(row[key])
+    return None
+
+
 def evaluate_promotion(
     *,
     parent: GenesisInstance | Mapping[str, Any],
@@ -155,24 +254,40 @@ def evaluate_promotion(
     inv = refuse_self_certification(invoker, parent_i, child_i)
     ev = dict(evidence or {})
     contract_block = ev.get("parent_contract") if isinstance(ev.get("parent_contract"), Mapping) else {}
-    contract = dict(contract_block.get("capability") or parent_i.capability)
-    checks: list[dict[str, str]] = []
-
+    evidence_cap = (
+        contract_block.get("capability")
+        if isinstance(contract_block.get("capability"), Mapping)
+        else None
+    )
+    # Child is compared against the PARENT. Evidence may not lower that floor.
     missing, below_contract, below_parent = _capability_losses(
-        contract=contract,
+        contract=parent_i.capability,
         parent_cap=parent_i.capability,
         child_cap=child_i.capability,
     )
-    if missing or below_contract:
+    lowered_floor = _lowered_contract_axes(parent_i.capability, evidence_cap)
+    checks: list[dict[str, str]] = []
+
+    if lowered_floor:
         checks.append(
             _check(
                 CLAUSE_CAPABILITY,
                 "FAIL",
-                f"capability below parent contract: missing={missing} below={below_contract}",
+                f"parent contract floor lowered below parent measured capability: {lowered_floor}",
+            )
+        )
+    elif missing or below_parent:
+        checks.append(
+            _check(
+                CLAUSE_CAPABILITY,
+                "FAIL",
+                f"capability below parent: missing={missing} below={below_parent}",
             )
         )
     else:
-        checks.append(_check(CLAUSE_CAPABILITY, "PASS", "capability >= parent contract on every required axis"))
+        checks.append(
+            _check(CLAUSE_CAPABILITY, "PASS", "capability >= parent on every required axis")
+        )
 
     parent_fb = set(parent_i.silent_fallback_ids)
     child_fb = set(child_i.silent_fallback_ids)
@@ -206,7 +321,14 @@ def evaluate_promotion(
         reps_c = meas.get("complete_token_ns_reps")
         reps_p = meas.get("parent_complete_token_ns_reps")
         regime = meas.get("regime")
-        timing = str(meas.get("timing_authority") or "")
+        parent_auth = _authority_text(meas.get("parent_timing_authority"))
+        child_auth = _authority_text(
+            meas.get("child_timing_authority") or meas.get("timing_authority")
+        )
+        offered_auths = [
+            _authority_text(meas.get(key))
+            for key in ("timing_authority", "child_timing_authority", "parent_timing_authority")
+        ]
         if not isinstance(reps_c, (list, tuple)) or len(reps_c) < MIN_PAIRED_REPS:
             checks.append(
                 _check(
@@ -231,13 +353,29 @@ def evaluate_promotion(
                     "measurement.regime (warm/cold) must be stated",
                 )
             )
-        elif "cpu" in timing.lower() and "proxy" in timing.lower():
+        elif any(_is_cpu_wait_proxy(text) for text in offered_auths if text):
             checks.append(
                 _check(
                     CLAUSE_COMPLETE_TOKEN_MATERIAL,
                     "FAIL",
                     "GPU timing authority must be MTLCommandBuffer GPUStartTime/GPUEndTime "
                     "after wait; CPU-wait proxy refused",
+                )
+            )
+        elif not parent_auth or not child_auth:
+            checks.append(
+                _check(
+                    CLAUSE_COMPLETE_TOKEN_MATERIAL,
+                    "FAIL",
+                    "timing_authority required on both sides; missing is FAIL, never skip",
+                )
+            )
+        elif parent_auth != child_auth:
+            checks.append(
+                _check(
+                    CLAUSE_COMPLETE_TOKEN_MATERIAL,
+                    "FAIL",
+                    f"cross-authority comparison refused: parent={parent_auth!r} child={child_auth!r}",
                 )
             )
         else:
@@ -259,6 +397,7 @@ def evaluate_promotion(
                     "delta_ns": delta,
                     "material_ns": need,
                     "regime": regime,
+                    "timing_authority": child_auth,
                 }
                 if child_wall >= parent_wall:
                     checks.append(
@@ -287,30 +426,51 @@ def evaluate_promotion(
                         )
                     )
 
-    art = None
-    if isinstance(ev.get("artifact_receipt"), Mapping):
-        art = ev["artifact_receipt"].get("sha")
+    receipt = ev.get("artifact_receipt") if isinstance(ev.get("artifact_receipt"), Mapping) else None
+    art = receipt.get("sha") if receipt else None
     meas_art = meas.get("artifact_sha") if meas else None
-    if not art or not meas_art:
+    computed_art = _computed_artifact_sha(receipt) if receipt else None
+    if meas is None and receipt is None:
         checks.append(
             _check(
                 CLAUSE_ARTIFACT_IDENTITY,
-                "PENDING" if meas is None else "FAIL",
+                "PENDING",
                 "artifact identity requires child.artifact_sha == measurement.artifact_sha "
                 "== artifact_receipt.sha",
             )
         )
-    elif art != child_i.artifact_sha or meas_art != child_i.artifact_sha:
+    elif not art or not meas_art:
+        checks.append(
+            _check(
+                CLAUSE_ARTIFACT_IDENTITY,
+                "FAIL",
+                "artifact identity requires child.artifact_sha == measurement.artifact_sha "
+                "== artifact_receipt.sha",
+            )
+        )
+    elif computed_art is None:
+        checks.append(
+            _check(
+                CLAUSE_ARTIFACT_IDENTITY,
+                "FAIL",
+                "artifact hash must be computed from a preimage, not asserted",
+            )
+        )
+    elif (
+        computed_art != art
+        or computed_art != child_i.artifact_sha
+        or meas_art != child_i.artifact_sha
+    ):
         checks.append(
             _check(
                 CLAUSE_ARTIFACT_IDENTITY,
                 "FAIL",
                 f"artifact identity mismatch: child={child_i.artifact_sha} "
-                f"measurement={meas_art} receipt={art}",
+                f"measurement={meas_art} receipt={art} computed={computed_art}",
             )
         )
     else:
-        checks.append(_check(CLAUSE_ARTIFACT_IDENTITY, "PASS", "artifact identity exact"))
+        checks.append(_check(CLAUSE_ARTIFACT_IDENTITY, "PASS", "artifact identity exact (sha256 computed)"))
 
     rep = ev.get("representation") if isinstance(ev.get("representation"), Mapping) else None
     if rep is None or rep.get("bpw") is None:
@@ -394,16 +554,47 @@ def evaluate_promotion(
     st = ev.get("state_transfer") if isinstance(ev.get("state_transfer"), Mapping) else None
     if st is None:
         checks.append(_check(CLAUSE_STATE_TRANSFER, "PENDING", "state-transfer test not submitted"))
-    elif st.get("checksum_verified") is True and st.get("checksum_sha256"):
-        checks.append(_check(CLAUSE_STATE_TRANSFER, "PASS", "state-transfer checksum verified on the far side"))
     else:
-        checks.append(
-            _check(
-                CLAUSE_STATE_TRANSFER,
-                "FAIL",
-                f"state-transfer test did not verify a checksum: {dict(st)}",
+        payload = st.get("payload")
+        claimed = st.get("checksum_sha256")
+        if not isinstance(payload, Mapping) or not claimed:
+            checks.append(
+                _check(
+                    CLAUSE_STATE_TRANSFER,
+                    "FAIL",
+                    "state-transfer checksum must be computed from a payload; "
+                    "checksum_verified assertions are untrusted",
+                )
             )
-        )
+        else:
+            try:
+                computed_xfer = payload_checksum(payload)
+            except (TransferError, ValueError, TypeError) as exc:
+                checks.append(
+                    _check(
+                        CLAUSE_STATE_TRANSFER,
+                        "FAIL",
+                        f"state-transfer payload refused: {exc}",
+                    )
+                )
+            else:
+                if computed_xfer != claimed:
+                    checks.append(
+                        _check(
+                            CLAUSE_STATE_TRANSFER,
+                            "FAIL",
+                            f"state-transfer checksum mismatch: claimed={claimed!r} "
+                            f"computed={computed_xfer}",
+                        )
+                    )
+                else:
+                    checks.append(
+                        _check(
+                            CLAUSE_STATE_TRANSFER,
+                            "PASS",
+                            "state-transfer checksum recomputed and matched the payload",
+                        )
+                    )
 
     rollback_ok = False
     rollback_detail = "no rollback artifact"
@@ -428,9 +619,11 @@ def evaluate_promotion(
         )
     )
 
-    parent_tps = float(contract_block.get("tps") or parent_i.tps)
-    child_tps = float(ev.get("child_tps") or child_i.tps)
-    cap_lost = bool(missing or below_contract or below_parent)
+    # child_tps is derived from the wall reps (or the instance complete-token
+    # wall). Evidence child_tps and parent_contract.tps are never trusted.
+    parent_tps = _tps_from_wall_ns(parent_wall) if parent_wall is not None else parent_i.tps
+    child_tps = _tps_from_wall_ns(child_wall) if child_wall is not None else child_i.tps
+    cap_lost = bool(missing or below_parent)
     if child_tps > parent_tps and cap_lost:
         checks.append(
             _check(
@@ -485,6 +678,121 @@ def evaluate_promotion(
         )
     else:
         checks.append(_check(CLAUSE_BENCHMARK_UNCHANGED, "PASS", "benchmark fingerprint unchanged"))
+
+    if child_i.generation <= parent_i.generation:
+        checks.append(
+            _check(
+                CLAUSE_GENERATION,
+                "FAIL",
+                f"generation must strictly increase: parent={parent_i.generation} "
+                f"child={child_i.generation}",
+            )
+        )
+    else:
+        checks.append(
+            _check(
+                CLAUSE_GENERATION,
+                "PASS",
+                f"generation increased {parent_i.generation} -> {child_i.generation}",
+            )
+        )
+
+    parent_model = str((parent_i.identity or {}).get("model") or "").strip()
+    child_model = str((child_i.identity or {}).get("model") or "").strip()
+    if not parent_model or not child_model:
+        checks.append(
+            _check(
+                CLAUSE_MODEL_IDENTITY,
+                "FAIL",
+                "identity.model required on parent and child; missing is FAIL",
+            )
+        )
+    elif child_model != parent_model:
+        checks.append(
+            _check(
+                CLAUSE_MODEL_IDENTITY,
+                "FAIL",
+                f"identity.model mismatch: parent={parent_model!r} child={child_model!r}",
+            )
+        )
+    else:
+        checks.append(
+            _check(CLAUSE_MODEL_IDENTITY, "PASS", f"identity.model matches parent ({parent_model})")
+        )
+
+    tests_block = ev.get("protected_tests")
+    greedy = _greedy_rows(ev, tests_block)
+    protected_present = isinstance(tests_block, (list, tuple)) and bool(tests_block)
+    if greedy is None:
+        if protected_present:
+            checks.append(
+                _check(
+                    CLAUSE_GREEDY_TOKEN_IDS,
+                    "FAIL",
+                    f"greedy token id agreement on >= {MIN_GREEDY_PROMPTS} prompts "
+                    "is required evidence, not optional",
+                )
+            )
+        else:
+            checks.append(
+                _check(
+                    CLAUSE_GREEDY_TOKEN_IDS,
+                    "PENDING",
+                    "greedy token id pairs not submitted",
+                )
+            )
+    else:
+        if len(greedy) < MIN_GREEDY_PROMPTS:
+            checks.append(
+                _check(
+                    CLAUSE_GREEDY_TOKEN_IDS,
+                    "FAIL",
+                    f"greedy token id agreement requires >= {MIN_GREEDY_PROMPTS} prompts; "
+                    f"got {len(greedy)}",
+                )
+            )
+        else:
+            prompts: list[str] = []
+            mismatch = None
+            invalid = None
+            for idx, row in enumerate(greedy):
+                if not isinstance(row, Mapping):
+                    invalid = f"greedy row {idx} is not a mapping"
+                    break
+                prompt = str(row.get("prompt") or "").strip()
+                if not prompt:
+                    invalid = f"greedy row {idx} missing prompt"
+                    break
+                if prompt in prompts:
+                    invalid = f"greedy prompts must be distinct; repeated {prompt!r}"
+                    break
+                parent_ids = _int_token_ids(row.get("parent_ids"), f"greedy[{idx}].parent_ids")
+                child_ids = _int_token_ids(row.get("child_ids"), f"greedy[{idx}].child_ids")
+                if isinstance(parent_ids, str):
+                    invalid = parent_ids
+                    break
+                if isinstance(child_ids, str):
+                    invalid = child_ids
+                    break
+                if parent_ids != child_ids:
+                    mismatch = (
+                        f"greedy token ids disagree on prompt {prompt!r}: "
+                        f"parent={parent_ids} child={child_ids}"
+                    )
+                    break
+                prompts.append(prompt)
+            if invalid:
+                checks.append(_check(CLAUSE_GREEDY_TOKEN_IDS, "FAIL", invalid))
+            elif mismatch:
+                checks.append(_check(CLAUSE_GREEDY_TOKEN_IDS, "FAIL", mismatch))
+            else:
+                checks.append(
+                    _check(
+                        CLAUSE_GREEDY_TOKEN_IDS,
+                        "PASS",
+                        f"greedy token ids agree on {len(prompts)} prompts",
+                    )
+                )
 
     present = {c["name"] for c in checks}
     for name in ALL_CLAUSES:
