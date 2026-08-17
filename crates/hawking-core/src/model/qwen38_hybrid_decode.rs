@@ -26,6 +26,7 @@ use crate::{Error, Result};
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 pub const QWEN38_MIXED_CATALOG_MAGIC: [u8; 8] = *b"HQ38M20\0";
 pub const QWEN38_MIXED_CATALOG_VERSION: u32 = 1;
@@ -316,6 +317,88 @@ pub fn render_qwen38_user_chat(user_text: &str) -> String {
     format!("<|im_start|>user\n{user_text}<|im_end|>\n<|im_start|>assistant\n")
 }
 
+/// Per-session Metal workspace size. Independent of the weight set.
+/// KV grows with `max_seq_len`; DeltaNet state does not.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize)]
+pub struct Qwen38WorkspaceBytes {
+    pub max_seq_len: usize,
+    pub activation_bytes: usize,
+    pub deltanet_state_bytes: usize,
+    pub gqa_kv_bytes: usize,
+    pub total_bytes: usize,
+}
+
+pub fn qwen38_workspace_bytes(max_seq_len: usize) -> Result<Qwen38WorkspaceBytes> {
+    if max_seq_len == 0 {
+        return Err(Error::Model("qwen38 max_seq_len must be positive".into()));
+    }
+    let layout = Qwen38DeltaNetLayout::source_exact();
+    let f32b = |n: usize| {
+        n.checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Model("qwen38 workspace overflow".into()))
+    };
+    let hidden = f32b(QWEN38_HIDDEN)?;
+    let qkvz = f32b(layout.qkvz_rows())?;
+    let ba = f32b(layout.ba_rows())?;
+    let value = f32b(layout.value_elements())?;
+    let q_proj = f32b(QWEN38_GQA_HEADS * QWEN38_GQA_HEAD_DIM * 2)?;
+    let kv = f32b(QWEN38_GQA_KV_HEADS * QWEN38_GQA_HEAD_DIM)?;
+    let query = f32b(QWEN38_GQA_HEADS * QWEN38_GQA_HEAD_DIM)?;
+    let mid = f32b(QWEN38_INTERMEDIATE)?;
+    let logits = f32b(QWEN38_VOCAB)?;
+    let conv = f32b(48 * layout.conv_state_elements())?;
+    let rec = f32b(48 * layout.recurrent_state_elements())?;
+    let kv_cache = f32b(
+        QWEN38_GQA_LAYERS
+            .checked_mul(max_seq_len)
+            .and_then(|n| n.checked_mul(QWEN38_GQA_KV_HEADS))
+            .and_then(|n| n.checked_mul(QWEN38_GQA_HEAD_DIM))
+            .ok_or_else(|| Error::Model("qwen38 KV cache overflow".into()))?,
+    )?;
+    let hgravs = f32b(QWEN38_MIXED_HGRAVS_RANK)?;
+    let split_qkv = f32b(crate::model::qwen38_geometry::QWEN38_IN_PROJ_QKV_ROWS)?;
+    let split_b = f32b(crate::model::qwen38_geometry::QWEN38_IN_PROJ_B_ROWS)?;
+    let split_a = f32b(crate::model::qwen38_geometry::QWEN38_IN_PROJ_A_ROWS)?;
+    let sampled = std::mem::size_of::<u32>();
+    let heads_f32 = f32b(layout.value_heads)?;
+    let activation = hidden
+        .checked_mul(2)
+        .and_then(|n| n.checked_add(qkvz))
+        .and_then(|n| n.checked_add(ba))
+        .and_then(|n| n.checked_add(value.checked_mul(6)?))
+        .and_then(|n| n.checked_add(heads_f32.checked_mul(2)?))
+        .and_then(|n| n.checked_add(hidden.checked_mul(2)?))
+        .and_then(|n| n.checked_add(q_proj))
+        .and_then(|n| n.checked_add(kv.checked_mul(2)?))
+        .and_then(|n| n.checked_add(query.checked_mul(3)?))
+        .and_then(|n| n.checked_add(mid.checked_mul(3)?))
+        .and_then(|n| n.checked_add(hidden))
+        .and_then(|n| n.checked_add(logits))
+        .and_then(|n| n.checked_add(sampled))
+        .and_then(|n| n.checked_add(hgravs))
+        .and_then(|n| n.checked_add(split_qkv))
+        .and_then(|n| n.checked_add(split_b))
+        .and_then(|n| n.checked_add(split_a))
+        .ok_or_else(|| Error::Model("qwen38 workspace overflow".into()))?;
+    let deltanet = conv
+        .checked_add(rec)
+        .ok_or_else(|| Error::Model("qwen38 workspace overflow".into()))?;
+    let gqa = kv_cache
+        .checked_mul(2)
+        .ok_or_else(|| Error::Model("qwen38 workspace overflow".into()))?;
+    let total = activation
+        .checked_add(deltanet)
+        .and_then(|n| n.checked_add(gqa))
+        .ok_or_else(|| Error::Model("qwen38 workspace overflow".into()))?;
+    Ok(Qwen38WorkspaceBytes {
+        max_seq_len,
+        activation_bytes: activation,
+        deltanet_state_bytes: deltanet,
+        gqa_kv_bytes: gqa,
+        total_bytes: total,
+    })
+}
+
 pub fn load_qwen38_tokenizer(path: impl AsRef<Path>) -> Result<Tokenizer> {
     Tokenizer::from_file(path)
 }
@@ -325,6 +408,7 @@ mod device {
     use super::*;
     use crate::kernels::{mha_decode_f32_tcb, qwen_next_add_residual_tcb, sample_argmax_f32_tcb};
     use crate::metal::{CommandBufferTiming, MetalContext, PinnedBuffer, TokenCommandBuffer};
+    use std::thread;
     use std::time::Instant;
 
     fn zero_buffer(buffer: &PinnedBuffer) {
@@ -387,6 +471,230 @@ mod device {
         Residual(GpuResidual),
         Hgravs(GpuHgravs),
         Uniform(GpuUniform),
+    }
+
+    impl MixedGpuWeight {
+        fn resident_bytes(&self) -> u64 {
+            match self {
+                Self::Binary(body) => body.signs.length() + body.scales.length(),
+                Self::Residual(body) => {
+                    body.binary.signs.length()
+                        + body.binary.scales.length()
+                        + body.indices.length()
+                        + body.row_ptr.length()
+                        + body.residual_signs.length()
+                }
+                Self::Hgravs(body) => {
+                    body.left_codes.length()
+                        + body.left_scales.length()
+                        + body.right_codes.length()
+                        + body.right_scales.length()
+                }
+                Self::Uniform(body) => body.codes.length() + body.scales.length(),
+            }
+        }
+    }
+
+    /// One resident Metal copy of the Qwen3.8 catalog. Sessions clone the
+    /// `Arc` and allocate only workspace / KV.
+    pub struct Qwen38HybridWeights {
+        context: MetalContext,
+        q4: HashMap<String, Q4Weight>,
+        f32s: HashMap<String, PinnedBuffer>,
+        mixed: HashMap<String, MixedGpuWeight>,
+    }
+
+    impl Qwen38HybridWeights {
+        pub fn load(root: impl AsRef<Path>) -> Result<Self> {
+            qwen38_assert_schedule_intact()?;
+            let root = root.as_ref();
+            if root.join(QWEN38_MIXED_CATALOG_NAME).is_file() {
+                return Self::load_mixed(root);
+            }
+            let (_manifest, rows) = load_qwen38_manifest(root)?;
+            if rows.len() != QWEN38_EXPECTED_CATALOG_TENSORS {
+                return Err(Error::Model(format!(
+                    "qwen38 catalog has {} tensors, expected {QWEN38_EXPECTED_CATALOG_TENSORS}",
+                    rows.len()
+                )));
+            }
+            eprintln!(
+                "qwen38-decode opening Metal + {} catalog tensors",
+                rows.len()
+            );
+            let context = MetalContext::new()?;
+            let mut q4 = HashMap::new();
+            let mut f32s = HashMap::new();
+            let tensors_dir = root.join("tensors");
+            for (i, row) in rows.iter().enumerate() {
+                if i % 50 == 0 {
+                    eprintln!("qwen38-decode upload {i}/{}", rows.len());
+                }
+                let path = tensors_dir.join(&row.artifact);
+                let payload = fs::read(&path).map_err(|error| {
+                    Error::Model(format!("cannot read {}: {error}", path.display()))
+                })?;
+                match row.kind.as_str() {
+                    "q4" => {
+                        let header = parse_uniform_q4_header(&payload)?;
+                        let scales = &payload[header.scale_offset..header.sign_offset];
+                        let codes = &payload[header.sign_offset..header.payload_bytes];
+                        let (rows_n, cols) = match header.shape.as_slice() {
+                            [r, c] => (*r, *c),
+                            other => {
+                                return Err(Error::Model(format!(
+                                    "{} Q4 rank {:?} is not a matrix",
+                                    row.name, other
+                                )))
+                            }
+                        };
+                        q4.insert(
+                            row.name.clone(),
+                            Q4Weight {
+                                rows: rows_n,
+                                cols,
+                                codes: context.new_buffer_with_bytes_checked(codes)?,
+                                scales: context.new_buffer_with_bytes_checked(scales)?,
+                            },
+                        );
+                    }
+                    "f32" => {
+                        let values = read_qwen38_f32_payload(&payload)?;
+                        f32s.insert(
+                            row.name.clone(),
+                            context.new_buffer_with_bytes_checked(bytemuck::cast_slice(&values))?,
+                        );
+                    }
+                    other => {
+                        return Err(Error::Model(format!(
+                            "qwen38 catalog kind {other:?} is not q4/f32"
+                        )))
+                    }
+                }
+            }
+            Ok(Self {
+                context,
+                q4,
+                f32s,
+                mixed: HashMap::new(),
+            })
+        }
+
+        fn load_mixed(root: &Path) -> Result<Self> {
+            let rows = parse_qwen38_mixed_catalog(root)?;
+            if rows.is_empty() {
+                return Err(mixed_error("HQ38M20 catalog has no tensors"));
+            }
+            eprintln!(
+                "qwen38-decode opening mixed HQ38M20 + {} catalog tensors (no reconstruct-to-Q4)",
+                rows.len()
+            );
+            let context = MetalContext::new()?;
+            let mut q4 = HashMap::new();
+            let mut f32s = HashMap::new();
+            let mut mixed = HashMap::new();
+            for (i, row) in rows.iter().enumerate() {
+                if i % 50 == 0 {
+                    eprintln!("qwen38-decode mixed upload {i}/{}", rows.len());
+                }
+                let payload = read_catalog_payload(row)?;
+                match row.codec {
+                    0 | 1 | 2 => {
+                        mixed.insert(
+                            row.name.clone(),
+                            Qwen38HybridDecodeSession::upload_mixed(
+                                &context, row.codec, &payload, &row.name,
+                            )?,
+                        );
+                    }
+                    3 => {
+                        if payload.len() >= 8 && payload[..8] == MAGIC_UNIFORM {
+                            if Qwen38HybridDecodeSession::hgravu_is_vector(&row.name, &row.shape)
+                            {
+                                let values = dequant_hgravu_vector(&payload, &row.name)?;
+                                f32s.insert(
+                                    row.name.clone(),
+                                    context.new_buffer_with_bytes_checked(bytemuck::cast_slice(
+                                        &values,
+                                    ))?,
+                                );
+                            } else {
+                                mixed.insert(
+                                    row.name.clone(),
+                                    Qwen38HybridDecodeSession::upload_mixed(
+                                        &context, 3, &payload, &row.name,
+                                    )?,
+                                );
+                            }
+                        } else if payload.len() >= 8 && payload[..8] == *b"HQ30UQ4\0" {
+                            let header = parse_uniform_q4_header(&payload)?;
+                            let scales = &payload[header.scale_offset..header.sign_offset];
+                            let codes = &payload[header.sign_offset..header.payload_bytes];
+                            let (rows_n, cols) = match header.shape.as_slice() {
+                                [r, c] => (*r, *c),
+                                other => {
+                                    return Err(mixed_error(format!(
+                                        "{} HQ30UQ4 rank {:?} is not a matrix",
+                                        row.name, other
+                                    )))
+                                }
+                            };
+                            q4.insert(
+                                row.name.clone(),
+                                Q4Weight {
+                                    rows: rows_n,
+                                    cols,
+                                    codes: context.new_buffer_with_bytes_checked(codes)?,
+                                    scales: context.new_buffer_with_bytes_checked(scales)?,
+                                },
+                            );
+                        } else {
+                            return Err(mixed_error(format!(
+                                "{} codec 3 magic {:?} is not HGRAVU01/HQ30UQ4; refusing silent fallback",
+                                row.name,
+                                payload.get(..8)
+                            )));
+                        }
+                    }
+                    other => {
+                        return Err(mixed_error(format!(
+                            "{} unknown mixed codec {other}; refusing silent fallback",
+                            row.name
+                        )))
+                    }
+                }
+            }
+            Qwen38HybridDecodeSession::assert_mixed_mlp_native(&mixed)?;
+            Ok(Self {
+                context,
+                q4,
+                f32s,
+                mixed,
+            })
+        }
+
+        pub fn resident_bytes(&self) -> u64 {
+            let q4: u64 = self
+                .q4
+                .values()
+                .map(|w| w.codes.length() + w.scales.length())
+                .sum();
+            let f32s: u64 = self.f32s.values().map(|b| b.length()).sum();
+            let mixed: u64 = self.mixed.values().map(MixedGpuWeight::resident_bytes).sum();
+            q4 + f32s + mixed
+        }
+
+        pub fn q4_tensor_count(&self) -> usize {
+            self.q4.len()
+        }
+
+        pub fn mixed_tensor_count(&self) -> usize {
+            self.mixed.len()
+        }
+
+        pub fn f32_tensor_count(&self) -> usize {
+            self.f32s.len()
+        }
     }
 
     fn set_u32(encoder: &metal::ComputeCommandEncoderRef, index: u64, value: u32) {
@@ -501,15 +809,55 @@ mod device {
                 )?)?,
             })
         }
+
+        fn resident_bytes(&self) -> u64 {
+            [
+                &self.hidden,
+                &self.normalized,
+                &self.qkvz,
+                &self.ba,
+                &self.repeated_q,
+                &self.repeated_k,
+                &self.conv_v,
+                &self.z,
+                &self.decay,
+                &self.beta,
+                &self.rec_out,
+                &self.gated,
+                &self.mixer,
+                &self.first_residual,
+                &self.q_proj,
+                &self.k_proj,
+                &self.v_proj,
+                &self.query,
+                &self.attn,
+                &self.gated_attn,
+                &self.gate,
+                &self.up,
+                &self.act,
+                &self.down,
+                &self.logits,
+                &self.sampled,
+                &self.conv_state,
+                &self.rec_state,
+                &self.gqa_key,
+                &self.gqa_value,
+                &self.hgravs_mid,
+                &self.split_qkv,
+                &self.split_b,
+                &self.split_a,
+            ]
+            .iter()
+            .map(|b| b.length())
+            .sum()
+        }
     }
 
     pub struct Qwen38HybridDecodeSession {
         #[allow(dead_code)]
         context: MetalContext,
+        weights: Arc<Qwen38HybridWeights>,
         workspace: Qwen38HybridWorkspace,
-        q4: HashMap<String, Q4Weight>,
-        f32s: HashMap<String, PinnedBuffer>,
-        mixed: HashMap<String, MixedGpuWeight>,
         max_seq_len: usize,
         position: usize,
         pub fallbacks: u32,
@@ -529,86 +877,33 @@ mod device {
 
     impl Qwen38HybridDecodeSession {
         pub fn open(root: impl AsRef<Path>, max_seq_len: usize) -> Result<Self> {
+            Self::attach(Arc::new(Qwen38HybridWeights::load(root)?), max_seq_len)
+        }
+
+        /// New decode session against an already-resident weight set.
+        /// Allocates only workspace / KV / DeltaNet state.
+        pub fn attach(weights: Arc<Qwen38HybridWeights>, max_seq_len: usize) -> Result<Self> {
             qwen38_assert_schedule_intact()?;
             if max_seq_len == 0 {
                 return Err(Error::Model("qwen38 max_seq_len must be positive".into()));
             }
-            let root = root.as_ref();
-            if root.join(QWEN38_MIXED_CATALOG_NAME).is_file() {
-                return Self::open_mixed(root, max_seq_len);
-            }
-            let (_manifest, rows) = load_qwen38_manifest(root)?;
-            if rows.len() != QWEN38_EXPECTED_CATALOG_TENSORS {
+            let workspace = Qwen38HybridWorkspace::allocate(&weights.context, max_seq_len)?;
+            let expected = qwen38_workspace_bytes(max_seq_len)?;
+            let got = workspace.resident_bytes();
+            if got != expected.total_bytes as u64 {
                 return Err(Error::Model(format!(
-                    "qwen38 catalog has {} tensors, expected {QWEN38_EXPECTED_CATALOG_TENSORS}",
-                    rows.len()
+                    "qwen38 workspace bytes {got} != formula {}",
+                    expected.total_bytes
                 )));
-            }
-            eprintln!(
-                "qwen38-decode opening Metal + {} catalog tensors",
-                rows.len()
-            );
-            let context = MetalContext::new()?;
-            let workspace = Qwen38HybridWorkspace::allocate(&context, max_seq_len)?;
-            let mut q4 = HashMap::new();
-            let mut f32s = HashMap::new();
-            let tensors_dir = root.join("tensors");
-            for (i, row) in rows.iter().enumerate() {
-                if i % 50 == 0 {
-                    eprintln!("qwen38-decode upload {i}/{}", rows.len());
-                }
-                let path = tensors_dir.join(&row.artifact);
-                let payload = fs::read(&path).map_err(|error| {
-                    Error::Model(format!("cannot read {}: {error}", path.display()))
-                })?;
-                match row.kind.as_str() {
-                    "q4" => {
-                        let header = parse_uniform_q4_header(&payload)?;
-                        let scales = &payload[header.scale_offset..header.sign_offset];
-                        let codes = &payload[header.sign_offset..header.payload_bytes];
-                        let (rows_n, cols) = match header.shape.as_slice() {
-                            [r, c] => (*r, *c),
-                            other => {
-                                return Err(Error::Model(format!(
-                                    "{} Q4 rank {:?} is not a matrix",
-                                    row.name, other
-                                )))
-                            }
-                        };
-                        q4.insert(
-                            row.name.clone(),
-                            Q4Weight {
-                                rows: rows_n,
-                                cols,
-                                codes: context.new_buffer_with_bytes_checked(codes)?,
-                                scales: context.new_buffer_with_bytes_checked(scales)?,
-                            },
-                        );
-                    }
-                    "f32" => {
-                        let values = read_qwen38_f32_payload(&payload)?;
-                        f32s.insert(
-                            row.name.clone(),
-                            context.new_buffer_with_bytes_checked(bytemuck::cast_slice(&values))?,
-                        );
-                    }
-                    other => {
-                        return Err(Error::Model(format!(
-                            "qwen38 catalog kind {other:?} is not q4/f32"
-                        )))
-                    }
-                }
             }
             zero_buffer(&workspace.conv_state);
             zero_buffer(&workspace.rec_state);
             zero_buffer(&workspace.gqa_key);
             zero_buffer(&workspace.gqa_value);
             Ok(Self {
-                context,
+                context: weights.context.clone(),
+                weights,
                 workspace,
-                q4,
-                f32s,
-                mixed: HashMap::new(),
                 max_seq_len,
                 position: 0,
                 fallbacks: 0,
@@ -618,105 +913,27 @@ mod device {
             })
         }
 
-        fn open_mixed(root: &Path, max_seq_len: usize) -> Result<Self> {
-            let rows = parse_qwen38_mixed_catalog(root)?;
-            if rows.is_empty() {
-                return Err(mixed_error("HQ38M20 catalog has no tensors"));
-            }
-            eprintln!(
-                "qwen38-decode opening mixed HQ38M20 + {} catalog tensors (no reconstruct-to-Q4)",
-                rows.len()
-            );
-            let context = MetalContext::new()?;
-            let workspace = Qwen38HybridWorkspace::allocate(&context, max_seq_len)?;
-            let mut q4 = HashMap::new();
-            let mut f32s = HashMap::new();
-            let mut mixed = HashMap::new();
-            for (i, row) in rows.iter().enumerate() {
-                if i % 50 == 0 {
-                    eprintln!("qwen38-decode mixed upload {i}/{}", rows.len());
-                }
-                let payload = read_catalog_payload(row)?;
-                match row.codec {
-                    0 | 1 | 2 => {
-                        mixed.insert(
-                            row.name.clone(),
-                            Self::upload_mixed(&context, row.codec, &payload, &row.name)?,
-                        );
-                    }
-                    3 => {
-                        if payload.len() >= 8 && payload[..8] == MAGIC_UNIFORM {
-                            if Self::hgravu_is_vector(&row.name, &row.shape) {
-                                let values = dequant_hgravu_vector(&payload, &row.name)?;
-                                f32s.insert(
-                                    row.name.clone(),
-                                    context.new_buffer_with_bytes_checked(bytemuck::cast_slice(
-                                        &values,
-                                    ))?,
-                                );
-                            } else {
-                                mixed.insert(
-                                    row.name.clone(),
-                                    Self::upload_mixed(&context, 3, &payload, &row.name)?,
-                                );
-                            }
-                        } else if payload.len() >= 8 && payload[..8] == *b"HQ30UQ4\0" {
-                            let header = parse_uniform_q4_header(&payload)?;
-                            let scales = &payload[header.scale_offset..header.sign_offset];
-                            let codes = &payload[header.sign_offset..header.payload_bytes];
-                            let (rows_n, cols) = match header.shape.as_slice() {
-                                [r, c] => (*r, *c),
-                                other => {
-                                    return Err(mixed_error(format!(
-                                        "{} HQ30UQ4 rank {:?} is not a matrix",
-                                        row.name, other
-                                    )))
-                                }
-                            };
-                            q4.insert(
-                                row.name.clone(),
-                                Q4Weight {
-                                    rows: rows_n,
-                                    cols,
-                                    codes: context.new_buffer_with_bytes_checked(codes)?,
-                                    scales: context.new_buffer_with_bytes_checked(scales)?,
-                                },
-                            );
-                        } else {
-                            return Err(mixed_error(format!(
-                                "{} codec 3 magic {:?} is not HGRAVU01/HQ30UQ4; refusing silent fallback",
-                                row.name,
-                                payload.get(..8)
-                            )));
-                        }
-                    }
-                    other => {
-                        return Err(mixed_error(format!(
-                            "{} unknown mixed codec {other}; refusing silent fallback",
-                            row.name
-                        )))
-                    }
-                }
-            }
-            Self::assert_mixed_mlp_native(&mixed)?;
-            zero_buffer(&workspace.conv_state);
-            zero_buffer(&workspace.rec_state);
-            zero_buffer(&workspace.gqa_key);
-            zero_buffer(&workspace.gqa_value);
-            Ok(Self {
-                context,
-                workspace,
-                q4,
-                f32s,
-                mixed,
-                max_seq_len,
-                position: 0,
-                fallbacks: 0,
-                matvec_kernel: Qwen38MatvecKernel::GeoTpr64Tg128,
-                concurrent_independent: false,
-                deltanet_vi_parallel: true,
-            })
+        pub fn share_weights(&self) -> Arc<Qwen38HybridWeights> {
+            Arc::clone(&self.weights)
         }
+
+        pub fn weights(&self) -> &Qwen38HybridWeights {
+            &self.weights
+        }
+
+        pub fn max_seq_len(&self) -> usize {
+            self.max_seq_len
+        }
+
+        pub fn workspace_resident_bytes(&self) -> u64 {
+            self.workspace.resident_bytes()
+        }
+
+        pub fn shares_weights_with(&self, other: &Self) -> bool {
+            Arc::ptr_eq(&self.weights, &other.weights)
+        }
+
+
 
         fn hgravu_is_vector(name: &str, shape: &[usize]) -> bool {
             if name.ends_with("embed_tokens.weight") || name.ends_with("lm_head.weight") {
@@ -963,13 +1180,15 @@ mod device {
         }
 
         fn q4(&self, name: &str) -> Result<&Q4Weight> {
-            self.q4
+            self.weights
+                .q4
                 .get(name)
                 .ok_or_else(|| Error::Model(format!("qwen38 missing Q4 {name}")))
         }
 
         fn f32(&self, name: &str) -> Result<&PinnedBuffer> {
-            self.f32s
+            self.weights
+                .f32s
                 .get(name)
                 .ok_or_else(|| Error::Model(format!("qwen38 missing f32 {name}")))
         }
@@ -991,10 +1210,10 @@ mod device {
             input: &PinnedBuffer,
             output: &PinnedBuffer,
         ) -> Result<()> {
-            if self.q4.contains_key(name) {
+            if self.weights.q4.contains_key(name) {
                 return self.encode_q4_matvec(tcb, name, input, output);
             }
-            if self.mixed.contains_key(name) {
+            if self.weights.mixed.contains_key(name) {
                 return self.encode_mixed_matvec(tcb, name, input, output);
             }
             Err(mixed_error(format!(
@@ -1010,6 +1229,7 @@ mod device {
             output: &PinnedBuffer,
         ) -> Result<()> {
             let weight = self
+                .weights
                 .mixed
                 .get(name)
                 .ok_or_else(|| mixed_error(format!("missing mixed {name}")))?;
@@ -1343,7 +1563,7 @@ mod device {
         }
 
         fn has_weight(&self, name: &str) -> bool {
-            self.q4.contains_key(name) || self.mixed.contains_key(name)
+            self.weights.q4.contains_key(name) || self.weights.mixed.contains_key(name)
         }
 
         fn encode_q4_matvec_kernel(
@@ -1447,7 +1667,7 @@ mod device {
             tcb: &mut TokenCommandBuffer<'_>,
             layer: usize,
         ) -> Result<()> {
-            if !self.mixed.is_empty() {
+            if !self.weights.mixed.is_empty() {
                 return self.encode_mixer_gemvs_only_mixed(tcb, layer);
             }
             match qwen38_mixer_kind(layer)? {
@@ -1508,7 +1728,7 @@ mod device {
             tcb: &mut TokenCommandBuffer<'_>,
             layer: usize,
         ) -> Result<()> {
-            if !self.mixed.is_empty() {
+            if !self.weights.mixed.is_empty() {
                 return self.encode_mlp_matvecs_only_mixed(tcb, layer);
             }
             self.encode_independent_q4_pair(
@@ -2300,7 +2520,7 @@ mod device {
         }
 
         fn encode_embed(&self, tcb: &mut TokenCommandBuffer<'_>, token: u32) -> Result<()> {
-            if !self.mixed.is_empty() {
+            if !self.weights.mixed.is_empty() {
                 return self.encode_embed_mixed(tcb, token);
             }
             let weight = self.q4("language_model.model.embed_tokens.weight")?;
@@ -2332,7 +2552,7 @@ mod device {
             layer: usize,
             input: &PinnedBuffer,
         ) -> Result<()> {
-            if !self.mixed.is_empty() {
+            if !self.weights.mixed.is_empty() {
                 return self.encode_dense_mlp_mixed(tcb, layer, input);
             }
             let n = QWEN38_INTERMEDIATE as u32;
@@ -2383,7 +2603,7 @@ mod device {
             tcb: &mut TokenCommandBuffer<'_>,
             layer: usize,
         ) -> Result<()> {
-            if !self.mixed.is_empty() {
+            if !self.weights.mixed.is_empty() {
                 return self.encode_deltanet_mixed(tcb, layer);
             }
             let layout = Qwen38DeltaNetLayout::source_exact();
@@ -2485,7 +2705,7 @@ mod device {
         }
 
         fn encode_gqa(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
-            if !self.mixed.is_empty() {
+            if !self.weights.mixed.is_empty() {
                 return self.encode_gqa_mixed(tcb, layer);
             }
             if self.position >= self.max_seq_len {
@@ -2611,7 +2831,7 @@ mod device {
         }
 
         fn encode_terminal(&self, tcb: &mut TokenCommandBuffer<'_>) -> Result<()> {
-            if !self.mixed.is_empty() {
+            if !self.weights.mixed.is_empty() {
                 return self.encode_terminal_mixed(tcb);
             }
             self.encode_rmsnorm(
@@ -2637,7 +2857,7 @@ mod device {
 
         fn encode_embed_mixed(&self, tcb: &mut TokenCommandBuffer<'_>, token: u32) -> Result<()> {
             const EMBED: &str = "language_model.model.embed_tokens.weight";
-            if let Some(MixedGpuWeight::Uniform(weight)) = self.mixed.get(EMBED) {
+            if let Some(MixedGpuWeight::Uniform(weight)) = self.weights.mixed.get(EMBED) {
                 if weight.rows != QWEN38_VOCAB as u32 || weight.cols != QWEN38_HIDDEN as u32 {
                     return Err(mixed_error("embed HGRAVU01 shape drifted"));
                 }
@@ -2660,7 +2880,7 @@ mod device {
                     },
                 );
             }
-            if self.q4.contains_key(EMBED) {
+            if self.weights.q4.contains_key(EMBED) {
                 let weight = self.q4(EMBED)?;
                 if weight.rows != QWEN38_VOCAB || weight.cols != QWEN38_HIDDEN {
                     return Err(Error::Model("qwen38 embed shape drifted".into()));
@@ -3307,6 +3527,96 @@ mod device {
         let bookkeeping_ns = bookkeeping_started.elapsed().as_nanos() as u64;
         Ok((tokenizer_decode_ns, bookkeeping_ns))
     }
+
+    #[derive(Clone, Debug, serde::Serialize)]
+    pub struct Qwen38WeightFanout {
+        pub weight_name: String,
+        pub sessions: usize,
+        pub concurrent: bool,
+        pub gpu_ns: Option<u64>,
+        pub wait_ns: u64,
+        pub dispatches: u64,
+    }
+
+    /// N independent GEMVs against one resident weight tensor.
+    /// `concurrent` opens one Metal concurrent encoder so the GPU may reuse
+    /// the weight stream; serial is N dispatches in the default encoder.
+    pub fn measure_shared_weight_fanout(
+        sessions: &[&Qwen38HybridDecodeSession],
+        weight_name: &str,
+        concurrent: bool,
+    ) -> Result<Qwen38WeightFanout> {
+        if sessions.is_empty() {
+            return Err(Error::Model("fanout needs at least one session".into()));
+        }
+        for session in sessions.iter().skip(1) {
+            if !sessions[0].shares_weights_with(session) {
+                return Err(Error::Model(
+                    "fanout sessions do not share one resident weight set".into(),
+                ));
+            }
+        }
+        let mut tcb = TokenCommandBuffer::new(&sessions[0].context);
+        if concurrent && sessions.len() > 1 {
+            tcb.begin_concurrent_group()?;
+            if let Ok(weight) = sessions[0].q4(weight_name) {
+                tcb.use_resources_read_on_group(&[weight.codes.clone(), weight.scales.clone()])?;
+            }
+        }
+        for session in sessions {
+            session.encode_named_matvec(
+                &mut tcb,
+                weight_name,
+                &session.workspace.normalized,
+                &session.workspace.logits,
+            )?;
+        }
+        if concurrent && sessions.len() > 1 {
+            tcb.end_concurrent_group()?;
+        }
+        let timing = tcb.commit_and_wait_timed()?;
+        Ok(Qwen38WeightFanout {
+            weight_name: weight_name.to_owned(),
+            sessions: sessions.len(),
+            concurrent,
+            gpu_ns: timing.gpu_ns,
+            wait_ns: timing.wait_ns,
+            dispatches: timing.dispatches,
+        })
+    }
+
+    pub fn generate_greedy_parallel(
+        sessions: &mut [Qwen38HybridDecodeSession],
+        prompts: &[Vec<u32>],
+        max_new_tokens: usize,
+    ) -> Result<Vec<Qwen38GenerateResult>> {
+        if sessions.len() != prompts.len() {
+            return Err(Error::Model(
+                "generate_greedy_parallel session/prompt count mismatch".into(),
+            ));
+        }
+        if sessions.len() <= 1 {
+            return sessions
+                .iter_mut()
+                .zip(prompts.iter())
+                .map(|(session, prompt)| generate_greedy(session, prompt, max_new_tokens))
+                .collect();
+        }
+        thread::scope(|scope| {
+            let mut joins = Vec::with_capacity(sessions.len());
+            for (session, prompt) in sessions.iter_mut().zip(prompts.iter()) {
+                joins.push(scope.spawn(move || generate_greedy(session, prompt, max_new_tokens)));
+            }
+            joins
+                .into_iter()
+                .map(|join| {
+                    join.join().unwrap_or_else(|_| {
+                        Err(Error::Model("session thread panicked".into()))
+                    })
+                })
+                .collect()
+        })
+    }
 }
 
 #[derive(Clone, Debug, Default, serde::Serialize)]
@@ -3456,7 +3766,11 @@ impl Qwen38GenerateResult {
 }
 
 #[cfg(target_os = "macos")]
-pub use device::{generate_greedy, generate_greedy_complete_wall, Qwen38HybridDecodeSession};
+pub use device::{
+    generate_greedy, generate_greedy_complete_wall, generate_greedy_parallel,
+    measure_shared_weight_fanout, Qwen38HybridDecodeSession, Qwen38HybridWeights,
+    Qwen38WeightFanout,
+};
 
 #[cfg(not(target_os = "macos"))]
 pub fn generate_greedy(
@@ -3548,5 +3862,44 @@ mod complete_wall_identity_tests {
             token.complete_wall_ns as i64
         );
         assert_eq!(token.wall_minus_gpu_ns(), Some(870_000));
+    }
+}
+
+#[cfg(test)]
+mod workspace_bytes_tests {
+    use super::qwen38_workspace_bytes;
+
+    #[test]
+    fn rejects_zero_seq() {
+        assert!(qwen38_workspace_bytes(0).is_err());
+    }
+
+    #[test]
+    fn kv_is_the_seq_len_term() {
+        let a = qwen38_workspace_bytes(2048).unwrap();
+        let b = qwen38_workspace_bytes(4096).unwrap();
+        assert_eq!(a.activation_bytes, b.activation_bytes);
+        assert_eq!(a.deltanet_state_bytes, b.deltanet_state_bytes);
+        assert_eq!(b.gqa_kv_bytes, a.gqa_kv_bytes * 2);
+        assert_eq!(
+            b.total_bytes - a.total_bytes,
+            b.gqa_kv_bytes - a.gqa_kv_bytes
+        );
+    }
+
+    #[test]
+    fn seq2048_is_hundreds_of_mb_not_weight_sized() {
+        let bytes = qwen38_workspace_bytes(2048).unwrap();
+        assert!(
+            bytes.total_bytes > 200 * 1024 * 1024,
+            "workspace {}",
+            bytes.total_bytes
+        );
+        assert!(
+            bytes.total_bytes < 2 * 1024 * 1024 * 1024,
+            "workspace {} must stay far below the 8.5 GB artifact",
+            bytes.total_bytes
+        );
+        assert!(bytes.deltanet_state_bytes > bytes.gqa_kv_bytes / 4);
     }
 }

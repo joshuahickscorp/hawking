@@ -1,0 +1,267 @@
+{
+  "artifact_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+  "attach_admissions": [
+    {
+      "free_after_if_admitted_bytes": 25414414588,
+      "free_before_bytes": 25656885248,
+      "reason": "free 25656885248 B - cost 242470660 B leaves 25414414588 B (>= reserve 4294967296 B)",
+      "request": {
+        "cost_bytes": 242470660,
+        "kind": "shared_session",
+        "label": "shared-probe-session-0"
+      },
+      "reserve_bytes": 4294967296,
+      "schema": "hawking.qwen38.host_admission.v1",
+      "verdict": "admit",
+      "would_breach_reserve": false
+    },
+    {
+      "free_after_if_admitted_bytes": 25232666876,
+      "free_before_bytes": 25475137536,
+      "reason": "free 25475137536 B - cost 242470660 B leaves 25232666876 B (>= reserve 4294967296 B)",
+      "request": {
+        "cost_bytes": 242470660,
+        "kind": "shared_session",
+        "label": "shared-probe-session-1"
+      },
+      "reserve_bytes": 4294967296,
+      "schema": "hawking.qwen38.host_admission.v1",
+      "verdict": "admit",
+      "would_breach_reserve": false
+    },
+    {
+      "free_after_if_admitted_bytes": 25050001660,
+      "free_before_bytes": 25292472320,
+      "reason": "free 25292472320 B - cost 242470660 B leaves 25050001660 B (>= reserve 4294967296 B)",
+      "request": {
+        "cost_bytes": 242470660,
+        "kind": "shared_session",
+        "label": "shared-probe-session-2"
+      },
+      "reserve_bytes": 4294967296,
+      "schema": "hawking.qwen38.host_admission.v1",
+      "verdict": "admit",
+      "would_breach_reserve": false
+    },
+    {
+      "free_after_if_admitted_bytes": 24868008188,
+      "free_before_bytes": 25110478848,
+      "reason": "free 25110478848 B - cost 242470660 B leaves 24868008188 B (>= reserve 4294967296 B)",
+      "request": {
+        "cost_bytes": 242470660,
+        "kind": "shared_session",
+        "label": "shared-probe-session-3"
+      },
+      "reserve_bytes": 4294967296,
+      "schema": "hawking.qwen38.host_admission.v1",
+      "verdict": "admit",
+      "would_breach_reserve": false
+    }
+  ],
+  "attached_sessions": 4,
+  "baseline_1_session": {
+    "decode_steps": 7,
+    "decode_wall_ns": 262632375,
+    "elapsed_ns": 1100249584,
+    "median_gpu_ns_per_token": 36099333,
+    "new_token_ids": [
+      248068,
+      198,
+      760,
+      1156,
+      369,
+      9859,
+      728,
+      310
+    ],
+    "sessions": 1,
+    "steady_decode_wall_ns_per_token": 37518910,
+    "tokens_per_s": 26.653226333067778,
+    "wall_ns": 1097433584
+  },
+  "child_id": "shared-probe",
+  "fanout_1": {
+    "concurrent": false,
+    "dispatches": 1,
+    "gpu_ns": 1013791,
+    "sessions": 1,
+    "wait_ns": 1401792,
+    "weight_name": "language_model.lm_head.weight"
+  },
+  "fanout_n_concurrent": {
+    "concurrent": true,
+    "dispatches": 4,
+    "gpu_ns": 4022124,
+    "sessions": 4,
+    "wait_ns": 4276333,
+    "weight_name": "language_model.lm_head.weight"
+  },
+  "fanout_n_serial": {
+    "concurrent": false,
+    "dispatches": 4,
+    "gpu_ns": 4144541,
+    "sessions": 4,
+    "wait_ns": 4360583,
+    "weight_name": "language_model.lm_head.weight"
+  },
+  "host_after": {
+    "free_bytes": 23669899264,
+    "memsize_bytes": 103079215104,
+    "page_size_bytes": 16384,
+    "pages_free": 1444696,
+    "pages_purgeable": 23236,
+    "pages_speculative": 28867
+  },
+  "host_before": {
+    "free_bytes": 41365782528,
+    "memsize_bytes": 103079215104,
+    "page_size_bytes": 16384,
+    "pages_free": 2524767,
+    "pages_purgeable": 10189,
+    "pages_speculative": 27754
+  },
+  "load_admission": {
+    "free_after_if_admitted_bytes": 31198282528,
+    "free_before_bytes": 41365782528,
+    "reason": "free 41365782528 B - cost 10167500000 B leaves 31198282528 B (>= reserve 4294967296 B)",
+    "request": {
+      "cost_bytes": 10167500000,
+      "kind": "shared_process_load",
+      "label": "shared-probe-load"
+    },
+    "reserve_bytes": 4294967296,
+    "schema": "hawking.qwen38.host_admission.v1",
+    "verdict": "admit",
+    "would_breach_reserve": false
+  },
+  "load_ns": 4659096875,
+  "lock_bound": [
+    "kernel-floor GPU timestamps are only honest with --lock-held",
+    "Metal command-queue work still contends for the same GPU"
+  ],
+  "lock_held": true,
+  "marginal_rss_per_session_bytes": [
+    {
+      "delta": 173703168,
+      "from": 15294136320,
+      "to": 15467839488
+    },
+    {
+      "delta": 173703168,
+      "from": 15467839488,
+      "to": 15641542656
+    },
+    {
+      "delta": 173703168,
+      "from": 15641542656,
+      "to": 15815245824
+    }
+  ],
+  "max_seq_len": 128,
+  "mode": "probe",
+  "parallel_n_session": {
+    "aggregate_tokens_per_s": 9.42718104951944,
+    "decode_steps_sum": 28,
+    "per_session": [
+      {
+        "decode_steps": 7,
+        "decode_wall_ns": 778734083,
+        "median_gpu_ns_per_token": 81347500,
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          369,
+          9859,
+          728,
+          310
+        ],
+        "steady_decode_wall_ns_per_token": 111247726
+      },
+      {
+        "decode_steps": 7,
+        "decode_wall_ns": 768186375,
+        "median_gpu_ns_per_token": 81684124,
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          369,
+          9859,
+          728,
+          310
+        ],
+        "steady_decode_wall_ns_per_token": 109740910
+      },
+      {
+        "decode_steps": 7,
+        "decode_wall_ns": 748860583,
+        "median_gpu_ns_per_token": 79198958,
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          369,
+          9859,
+          728,
+          310
+        ],
+        "steady_decode_wall_ns_per_token": 106980083
+      },
+      {
+        "decode_steps": 7,
+        "decode_wall_ns": 760122791,
+        "median_gpu_ns_per_token": 79225249,
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          369,
+          9859,
+          728,
+          310
+        ],
+        "steady_decode_wall_ns_per_token": 108588970
+      }
+    ],
+    "sessions": 4,
+    "wall_ns": 2970134959
+  },
+  "parallelizes": [
+    "text generate across N sessions sharing one weight Arc",
+    "concurrent GEMV fanout against one resident weight"
+  ],
+  "pid": 61491,
+  "refused_attach": null,
+  "requested_sessions": 4,
+  "resident_weight_bytes": 14297675776,
+  "rss_after_each_attach_bytes": [
+    15294136320,
+    15467839488,
+    15641542656,
+    15815245824
+  ],
+  "rss_after_load_bytes": 15120416768,
+  "rss_before_bytes": 7192576,
+  "rss_final_bytes": 15276965888,
+  "schema": "hawking.qwen38.shared_sessions.v1",
+  "status": "MEASURED",
+  "weight_tensors": {
+    "f32": 353,
+    "mixed": 0,
+    "q4": 402
+  },
+  "weights_ptr_shared": true,
+  "workspace": {
+    "activation_bytes": 1691396,
+    "deltanet_state_bytes": 156893184,
+    "gqa_kv_bytes": 16777216,
+    "max_seq_len": 128,
+    "total_bytes": 175361796
+  },
+  "workspace_resident_bytes": 175361796
+}

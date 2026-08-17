@@ -1,0 +1,169 @@
+{
+  "schema": "hawking.ascent.genesis_pool_e2e.v1",
+  "label": "MEASURED",
+  "date": "2026-08-16",
+  "e2e": {
+    "n": 4,
+    "seq_len": 128,
+    "max_new_tokens": 8,
+    "hold_gpu_lock": false,
+    "workload": "TEXT",
+    "aggregate_wall_ns": 42817319875,
+    "completions": 4,
+    "per_child": [
+      {
+        "state": "done",
+        "text": "<think>\nThe user asks me to name",
+        "wall_ns": 42754526917,
+        "reason": null,
+        "exit_code": 0,
+        "child_wall_ns": 26622446917,
+        "complete_token_ns": 56207125,
+        "output_dir": "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-e2e/e2e/347fae1a6c6a",
+        "pid": 38845,
+        "hold_gpu_lock": false
+      },
+      {
+        "state": "done",
+        "text": "<think>\nThe user asks me to name",
+        "wall_ns": 42728441917,
+        "reason": null,
+        "exit_code": 0,
+        "child_wall_ns": 17992679708,
+        "complete_token_ns": 62591160,
+        "output_dir": "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-e2e/e2e/d6b108202ad3",
+        "pid": 38848,
+        "hold_gpu_lock": false
+      },
+      {
+        "state": "done",
+        "text": "<think>\nThe user asks me to name",
+        "wall_ns": 42765083625,
+        "reason": null,
+        "exit_code": 0,
+        "child_wall_ns": 26428293042,
+        "complete_token_ns": 47402529,
+        "output_dir": "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-e2e/e2e/d9f32c850320",
+        "pid": 38852,
+        "hold_gpu_lock": false
+      },
+      {
+        "state": "done",
+        "text": "<think>\nThe user asks me to name",
+        "wall_ns": 42723322916,
+        "reason": null,
+        "exit_code": 0,
+        "child_wall_ns": 17522680292,
+        "complete_token_ns": 58659226,
+        "output_dir": "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-e2e/e2e/ce4278afdc30",
+        "pid": 38867,
+        "hold_gpu_lock": false
+      }
+    ],
+    "throughput_completions_per_s": 0.09342013959952461,
+    "output_dirs": [
+      "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-e2e/e2e/347fae1a6c6a",
+      "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-e2e/e2e/d6b108202ad3",
+      "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-e2e/e2e/d9f32c850320",
+      "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-e2e/e2e/ce4278afdc30"
+    ]
+  },
+  "kill_reclaim": {
+    "pid": 40388,
+    "liveness_after_kill": "dead",
+    "kill_state": "failed",
+    "kill_reason": "killed",
+    "rss_bytes_before_kill": 15515320320,
+    "footprint_before_kill": {
+      "pid": 40388,
+      "phys_footprint_bytes": 15653629520,
+      "ioaccelerator_dirty_bytes": 14476099584,
+      "mapped_file_bytes": 4653056,
+      "malloc_large_bytes": 861405184,
+      "rss_bytes": 15515320320
+    },
+    "machine_before_spawn": {
+      "page_size": 16384,
+      "free_bytes": 73840312320,
+      "active_bytes": 7219314688,
+      "inactive_bytes": 10806214656,
+      "wired_bytes": 6660669440,
+      "speculative_bytes": 44777472,
+      "purgeable_bytes": 365314048,
+      "file_backed_bytes": 7364067328,
+      "anonymous_bytes": 10706239488,
+      "compressor_occupied_bytes": 3631857664,
+      "swap_used_bytes": 3465145221,
+      "used_including_purgeable_bytes": 28362833920,
+      "trusted_pressure_bytes": 20998766592,
+      "free_gb": 73.84031232,
+      "wired_gb": 6.66066944,
+      "anonymous_gb": 10.706239488,
+      "file_backed_gb": 7.364067328,
+      "trusted_pressure_gb": 20.998766592,
+      "swap_used_gb": 3.465145221,
+      "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+    },
+    "machine_while_live": {
+      "page_size": 16384,
+      "free_bytes": 43630886912,
+      "active_bytes": 10509320192,
+      "inactive_bytes": 23016423424,
+      "wired_bytes": 21435875328,
+      "speculative_bytes": 44924928,
+      "purgeable_bytes": 344260608,
+      "file_backed_bytes": 20169277440,
+      "anonymous_bytes": 13401391104,
+      "compressor_occupied_bytes": 3565715456,
+      "swap_used_bytes": 3465145221,
+      "used_including_purgeable_bytes": 58572259328,
+      "trusted_pressure_bytes": 38402981888,
+      "free_gb": 43.630886912,
+      "wired_gb": 21.435875328,
+      "anonymous_gb": 13.401391104,
+      "file_backed_gb": 20.16927744,
+      "trusted_pressure_gb": 38.402981888,
+      "swap_used_gb": 3.465145221,
+      "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+    },
+    "machine_after_kill": {
+      "page_size": 16384,
+      "free_bytes": 58690830336,
+      "active_bytes": 9925804032,
+      "inactive_bytes": 23010787328,
+      "wired_bytes": 6986891264,
+      "speculative_bytes": 45580288,
+      "purgeable_bytes": 288407552,
+      "file_backed_bytes": 20171997184,
+      "anonymous_bytes": 12810174464,
+      "compressor_occupied_bytes": 3543236608,
+      "swap_used_bytes": 3465145221,
+      "used_including_purgeable_bytes": 43512299520,
+      "trusted_pressure_bytes": 23340302336,
+      "free_gb": 58.690830336,
+      "wired_gb": 6.986891264,
+      "anonymous_gb": 12.810174464,
+      "file_backed_gb": 20.171997184,
+      "trusted_pressure_gb": 23.340302336,
+      "swap_used_gb": 3.465145221,
+      "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+    },
+    "wired_delta_bytes": -14448984064,
+    "trusted_pressure_delta_bytes": -15062679552,
+    "pid_rss_after": null,
+    "reclaimed": true
+  },
+  "admission_refuse": {
+    "first_child": "5564002bb639",
+    "running_after_refused_spawn": [
+      "5564002bb639"
+    ],
+    "refusal": {
+      "raised": true,
+      "safe_n": 1,
+      "alive": 1,
+      "message": "admission refused: 1 live children at safe_n=1"
+    },
+    "second_process_not_created": true
+  }
+}

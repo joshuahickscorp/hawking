@@ -1,0 +1,378 @@
+{
+  "schema": "hawking.ascent.genesis_children_footprint.v1",
+  "label": "MEASURED",
+  "points": [
+    {
+      "n": 1,
+      "seq_len": 128,
+      "max_new_tokens": 64,
+      "aggregate_wall_ns": 7254523625,
+      "completions": 1,
+      "per_child_wall_ns": [
+        7252660667
+      ],
+      "per_child_complete_token_ns": [
+        37855081
+      ],
+      "per_child_reported_wall_ns": [
+        3371740625
+      ],
+      "results": [
+        {
+          "state": "done",
+          "text": "<think>\nThe user asks for three ways to cut bytes moved per token, with a reference [0] suggesting this is from a specific source. This is about reducing memory bandwidth/traffic per token in LLM inference or similar compute-heavy workloads. Let me think about the key techniques:\n\n1. **Quantization",
+          "wall_ns": 7252660667,
+          "reason": null,
+          "exit_code": 0,
+          "child_wall_ns": 3371740625,
+          "complete_token_ns": 37855081,
+          "output_dir": "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-footprint/n1_seq128_1786928706/3e619c25bdee",
+          "pid": 35760,
+          "hold_gpu_lock": false
+        }
+      ],
+      "peak_sample": {
+        "n": 1,
+        "per_process": [
+          {
+            "pid": 35760,
+            "rss_bytes": 15516041216,
+            "liveness": "running",
+            "phys_footprint_bytes": 15658626568,
+            "ioaccelerator_dirty_bytes": 14476197888,
+            "mapped_file_bytes": 4571136,
+            "malloc_large_bytes": 861405184
+          }
+        ],
+        "sum_phys_footprint_bytes": 15658626568,
+        "sum_rss_bytes": 15516041216,
+        "sum_ioaccelerator_bytes": 14476197888,
+        "sum_mapped_file_bytes": 4571136,
+        "machine": {
+          "page_size": 16384,
+          "free_bytes": 24034754560,
+          "active_bytes": 22522609664,
+          "inactive_bytes": 32037830656,
+          "wired_bytes": 21248983040,
+          "speculative_bytes": 295911424,
+          "purgeable_bytes": 569573376,
+          "file_backed_bytes": 30431789056,
+          "anonymous_bytes": 24424562688,
+          "compressor_occupied_bytes": 2063056896,
+          "swap_used_bytes": 788267008,
+          "used_including_purgeable_bytes": 78168391680,
+          "trusted_pressure_bytes": 47736602624,
+          "free_gb": 24.03475456,
+          "wired_gb": 21.24898304,
+          "anonymous_gb": 24.424562688,
+          "file_backed_gb": 30.431789056,
+          "trusted_pressure_gb": 47.736602624,
+          "swap_used_gb": 0.788267008,
+          "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+        },
+        "trust": "Trust per-pid phys_footprint and machine wired+anonymous+compressor. RSS both undercounts Metal wired (seen 5.9-12.9 GB vs 15.97 GB phys) and would overcount shared file pages if the artifact were mapped. On this genome the artifact is copied into private IOAccelerator buffers (~14.73 GB each); mapped-file clean is ~4.5 MB."
+      },
+      "machine_before": {
+        "page_size": 16384,
+        "free_bytes": 40577564672,
+        "active_bytes": 20499185664,
+        "inactive_bytes": 31980847104,
+        "wired_bytes": 6786842624,
+        "speculative_bytes": 295649280,
+        "purgeable_bytes": 485851136,
+        "file_backed_bytes": 30427136000,
+        "anonymous_bytes": 22348546048,
+        "compressor_occupied_bytes": 2063056896,
+        "swap_used_bytes": 788267008,
+        "used_including_purgeable_bytes": 61625581568,
+        "trusted_pressure_bytes": 31198445568,
+        "free_gb": 40.577564672,
+        "wired_gb": 6.786842624,
+        "anonymous_gb": 22.348546048,
+        "file_backed_gb": 30.427136,
+        "trusted_pressure_gb": 31.198445568,
+        "swap_used_gb": 0.788267008,
+        "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+      },
+      "machine_after": {
+        "page_size": 16384,
+        "free_bytes": 39866302464,
+        "active_bytes": 21487026176,
+        "inactive_bytes": 32037126144,
+        "wired_bytes": 6453723136,
+        "speculative_bytes": 295911424,
+        "purgeable_bytes": 502579200,
+        "file_backed_bytes": 30431821824,
+        "anonymous_bytes": 23388241920,
+        "compressor_occupied_bytes": 2063056896,
+        "swap_used_bytes": 788267008,
+        "used_including_purgeable_bytes": 62336843776,
+        "trusted_pressure_bytes": 31905021952,
+        "free_gb": 39.866302464,
+        "wired_gb": 6.453723136,
+        "anonymous_gb": 23.38824192,
+        "file_backed_gb": 30.431821824,
+        "trusted_pressure_gb": 31.905021952,
+        "swap_used_gb": 0.788267008,
+        "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+      },
+      "throughput_completions_per_s": 0.13784502631625242
+    },
+    {
+      "n": 1,
+      "seq_len": 8192,
+      "max_new_tokens": 64,
+      "aggregate_wall_ns": 8601582667,
+      "completions": 1,
+      "per_child_wall_ns": [
+        8596739833
+      ],
+      "per_child_complete_token_ns": [
+        40996195
+      ],
+      "per_child_reported_wall_ns": [
+        3683765084
+      ],
+      "results": [
+        {
+          "state": "done",
+          "text": "<think>\nThe user asks for three ways to cut bytes moved per token, with a reference [0] suggesting this is from a specific source. This is about reducing memory bandwidth/traffic per token in LLM inference or similar compute-heavy workloads. Let me think about the key techniques:\n\n1. **Quantization",
+          "wall_ns": 8596739833,
+          "reason": null,
+          "exit_code": 0,
+          "child_wall_ns": 3683765084,
+          "complete_token_ns": 40996195,
+          "output_dir": "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-footprint/n1_seq8192_1786928716/eb6818565b99",
+          "pid": 35956,
+          "hold_gpu_lock": false
+        }
+      ],
+      "peak_sample": {
+        "n": 1,
+        "per_process": [
+          {
+            "pid": 35956,
+            "rss_bytes": 16578134016,
+            "liveness": "running",
+            "phys_footprint_bytes": 16721080608,
+            "ioaccelerator_dirty_bytes": 15533162496,
+            "mapped_file_bytes": 4571136,
+            "malloc_large_bytes": 861405184
+          }
+        ],
+        "sum_phys_footprint_bytes": 16721080608,
+        "sum_rss_bytes": 16578134016,
+        "sum_ioaccelerator_bytes": 15533162496,
+        "sum_mapped_file_bytes": 4571136,
+        "machine": {
+          "page_size": 16384,
+          "free_bytes": 9903095808,
+          "active_bytes": 32805421056,
+          "inactive_bytes": 34822373376,
+          "wired_bytes": 22313304064,
+          "speculative_bytes": 295927808,
+          "purgeable_bytes": 627965952,
+          "file_backed_bytes": 30515576832,
+          "anonymous_bytes": 37408145408,
+          "compressor_occupied_bytes": 2063024128,
+          "swap_used_bytes": 788267008,
+          "used_including_purgeable_bytes": 92300050432,
+          "trusted_pressure_bytes": 61784473600,
+          "free_gb": 9.903095808,
+          "wired_gb": 22.313304064,
+          "anonymous_gb": 37.408145408,
+          "file_backed_gb": 30.515576832,
+          "trusted_pressure_gb": 61.7844736,
+          "swap_used_gb": 0.788267008,
+          "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+        },
+        "trust": "Trust per-pid phys_footprint and machine wired+anonymous+compressor. RSS both undercounts Metal wired (seen 5.9-12.9 GB vs 15.97 GB phys) and would overcount shared file pages if the artifact were mapped. On this genome the artifact is copied into private IOAccelerator buffers (~14.73 GB each); mapped-file clean is ~4.5 MB."
+      },
+      "machine_before": {
+        "page_size": 16384,
+        "free_bytes": 37099683840,
+        "active_bytes": 24704286720,
+        "inactive_bytes": 31996067840,
+        "wired_bytes": 6044155904,
+        "speculative_bytes": 295911424,
+        "purgeable_bytes": 1006977024,
+        "file_backed_bytes": 30488936448,
+        "anonymous_bytes": 26507329536,
+        "compressor_occupied_bytes": 2063040512,
+        "swap_used_bytes": 788267008,
+        "used_including_purgeable_bytes": 65103462400,
+        "trusted_pressure_bytes": 34614525952,
+        "free_gb": 37.09968384,
+        "wired_gb": 6.044155904,
+        "anonymous_gb": 26.507329536,
+        "file_backed_gb": 30.488936448,
+        "trusted_pressure_gb": 34.614525952,
+        "swap_used_gb": 0.788267008,
+        "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+      },
+      "machine_after": {
+        "page_size": 16384,
+        "free_bytes": 26391937024,
+        "active_bytes": 32169820160,
+        "inactive_bytes": 34822586368,
+        "wired_bytes": 6459850752,
+        "speculative_bytes": 295927808,
+        "purgeable_bytes": 627654656,
+        "file_backed_bytes": 30515789824,
+        "anonymous_bytes": 36772544512,
+        "compressor_occupied_bytes": 2063024128,
+        "swap_used_bytes": 788267008,
+        "used_including_purgeable_bytes": 75811209216,
+        "trusted_pressure_bytes": 45295419392,
+        "free_gb": 26.391937024,
+        "wired_gb": 6.459850752,
+        "anonymous_gb": 36.772544512,
+        "file_backed_gb": 30.515789824,
+        "trusted_pressure_gb": 45.295419392,
+        "swap_used_gb": 0.788267008,
+        "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+      },
+      "throughput_completions_per_s": 0.11625767474589335
+    },
+    {
+      "n": 2,
+      "seq_len": 128,
+      "max_new_tokens": 64,
+      "aggregate_wall_ns": 10123331750,
+      "completions": 2,
+      "per_child_wall_ns": [
+        10084175916,
+        10116734791
+      ],
+      "per_child_complete_token_ns": [
+        54992414,
+        55695022
+      ],
+      "per_child_reported_wall_ns": [
+        4942292541,
+        4937155917
+      ],
+      "results": [
+        {
+          "state": "done",
+          "text": "<think>\nThe user is asking about three ways to cut bytes moved per token, with a reference [1] suggesting this is from a specific source. This is likely referring to LLM inference optimization, specifically about reducing memory bandwidth (bytes moved) per token during inference.\n\nThe three common ways to reduce bytes moved per",
+          "wall_ns": 10084175916,
+          "reason": null,
+          "exit_code": 0,
+          "child_wall_ns": 4942292541,
+          "complete_token_ns": 54992414,
+          "output_dir": "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-footprint/n2_seq128_1786928728/a9dc25376c83",
+          "pid": 36617,
+          "hold_gpu_lock": false
+        },
+        {
+          "state": "done",
+          "text": "<think>\nThe user asks for three ways to cut bytes moved per token, with a reference [0] suggesting this is from a specific source. This is about reducing memory bandwidth/traffic per token in LLM inference or similar compute-heavy workloads. Let me think about the key techniques:\n\n1. **Quantization",
+          "wall_ns": 10116734791,
+          "reason": null,
+          "exit_code": 0,
+          "child_wall_ns": 4937155917,
+          "complete_token_ns": 55695022,
+          "output_dir": "/Users/scammermike/.claude-grok/worktrees/genesis-children-20260816-204942/workspace/ops/local/genesis-footprint/n2_seq128_1786928728/c6d6de686d43",
+          "pid": 36615,
+          "hold_gpu_lock": false
+        }
+      ],
+      "peak_sample": {
+        "n": 2,
+        "per_process": [
+          {
+            "pid": 36615,
+            "rss_bytes": 15519055872,
+            "liveness": "running",
+            "phys_footprint_bytes": 15663656528,
+            "ioaccelerator_dirty_bytes": 14476197888,
+            "mapped_file_bytes": 4653056,
+            "malloc_large_bytes": 861405184
+          },
+          {
+            "pid": 36617,
+            "rss_bytes": 15519252480,
+            "liveness": "running",
+            "phys_footprint_bytes": 15661755864,
+            "ioaccelerator_dirty_bytes": 14476197888,
+            "mapped_file_bytes": 4587520,
+            "malloc_large_bytes": 861405184
+          }
+        ],
+        "sum_phys_footprint_bytes": 31325412392,
+        "sum_rss_bytes": 31038308352,
+        "sum_ioaccelerator_bytes": 28952395776,
+        "sum_mapped_file_bytes": 9240576,
+        "machine": {
+          "page_size": 16384,
+          "free_bytes": 131104768,
+          "active_bytes": 32236224512,
+          "inactive_bytes": 32180502528,
+          "wired_bytes": 35589390336,
+          "speculative_bytes": 2916352,
+          "purgeable_bytes": 975749120,
+          "file_backed_bytes": 22006874112,
+          "anonymous_bytes": 42412769280,
+          "compressor_occupied_bytes": 2063007744,
+          "swap_used_bytes": 788267008,
+          "used_including_purgeable_bytes": 102072041472,
+          "trusted_pressure_bytes": 80065167360,
+          "free_gb": 0.131104768,
+          "wired_gb": 35.589390336,
+          "anonymous_gb": 42.41276928,
+          "file_backed_gb": 22.006874112,
+          "trusted_pressure_gb": 80.06516736,
+          "swap_used_gb": 0.788267008,
+          "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+        },
+        "trust": "Trust per-pid phys_footprint and machine wired+anonymous+compressor. RSS both undercounts Metal wired (seen 5.9-12.9 GB vs 15.97 GB phys) and would overcount shared file pages if the artifact were mapped. On this genome the artifact is copied into private IOAccelerator buffers (~14.73 GB each); mapped-file clean is ~4.5 MB."
+      },
+      "machine_before": {
+        "page_size": 16384,
+        "free_bytes": 30678581248,
+        "active_bytes": 28578054144,
+        "inactive_bytes": 33692991488,
+        "wired_bytes": 6894551040,
+        "speculative_bytes": 295944192,
+        "purgeable_bytes": 785285120,
+        "file_backed_bytes": 30542512128,
+        "anonymous_bytes": 32024477696,
+        "compressor_occupied_bytes": 2063024128,
+        "swap_used_bytes": 788267008,
+        "used_including_purgeable_bytes": 71524564992,
+        "trusted_pressure_bytes": 40982052864,
+        "free_gb": 30.678581248,
+        "wired_gb": 6.89455104,
+        "anonymous_gb": 32.024477696,
+        "file_backed_gb": 30.542512128,
+        "trusted_pressure_gb": 40.982052864,
+        "swap_used_gb": 0.788267008,
+        "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+      },
+      "machine_after": {
+        "page_size": 16384,
+        "free_bytes": 31799459840,
+        "active_bytes": 30216650752,
+        "inactive_bytes": 32123043840,
+        "wired_bytes": 5998002176,
+        "speculative_bytes": 2981888,
+        "purgeable_bytes": 824852480,
+        "file_backed_bytes": 22010003456,
+        "anonymous_bytes": 40332673024,
+        "compressor_occupied_bytes": 2063007744,
+        "swap_used_bytes": 788267008,
+        "used_including_purgeable_bytes": 70403686400,
+        "trusted_pressure_bytes": 48393682944,
+        "free_gb": 31.79945984,
+        "wired_gb": 5.998002176,
+        "anonymous_gb": 40.332673024,
+        "file_backed_gb": 22.010003456,
+        "trusted_pressure_gb": 48.393682944,
+        "swap_used_gb": 0.788267008,
+        "trusted_figure": "wired + anonymous + compressor; plus per-pid phys_footprint"
+      },
+      "throughput_completions_per_s": 0.1975634158191052
+    }
+  ]
+}
