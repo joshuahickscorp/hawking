@@ -810,15 +810,27 @@ def _eq_opt(a: Any, b: Any) -> bool:
 
 
 def changed_axes(proposal: Proposal, prior: Attempt) -> list[str]:
-    """Named deltas that legally reopen a mechanism."""
+    """Named, explicitly supplied deltas that legally reopen a mechanism.
+
+    Omission is not change. Treating ``None`` as different from the prior value
+    lets a duplicate retry erase its metadata and talk its way past the gate.
+    """
     changed: list[str] = []
-    if not _eq_opt(proposal.representation, prior.representation):
+    if proposal.representation is not None and not _eq_opt(
+        proposal.representation, prior.representation
+    ):
         changed.append("representation")
-    if not _eq_opt(proposal.implementation, prior.implementation):
+    if proposal.implementation is not None and not _eq_opt(
+        proposal.implementation, prior.implementation
+    ):
         changed.append("implementation")
-    if not _eq_opt(proposal.evidence_digest, prior.evidence_digest):
+    if proposal.evidence_digest is not None and not _eq_opt(
+        proposal.evidence_digest, prior.evidence_digest
+    ):
         changed.append("evidence")
-    if not _close_float(proposal.bytes_per_token, prior.bytes_per_token):
+    if proposal.bytes_per_token is not None and not _close_float(
+        proposal.bytes_per_token, prior.bytes_per_token
+    ):
         if "representation" not in changed:
             changed.append("precondition")
         # bytes moved with representation still counts as representation-primary;
@@ -837,7 +849,8 @@ def changed_axes(proposal: Proposal, prior: Attempt) -> list[str]:
         "artifact",
     )
     for name in pre_fields:
-        if not _eq_opt(getattr(proposal, name), getattr(prior, name)):
+        proposed = getattr(proposal, name)
+        if proposed is not None and not _eq_opt(proposed, getattr(prior, name)):
             if "precondition" not in changed:
                 changed.append("precondition")
             break

@@ -104,6 +104,23 @@ def test_semantic_duplicate_is_refused_naming_the_prior() -> None:
     ).same
 
 
+def test_omitting_prior_metadata_does_not_forge_a_retry_delta() -> None:
+    prior = CAMPAIGN_EXHAUSTED[0]
+    incomplete = Proposal(
+        mechanism="fuse small Metal kernels into the next GEMV",
+        bottleneck="weight_addressing",
+        model="qwen38",
+    )
+    decision = admit(
+        incomplete,
+        attempts=[prior],
+        include_campaign_exhausted=False,
+    )
+    assert decision.verdict == Verdict.REFUSE
+    assert decision.gate == "semantic_duplicate"
+    assert decision.changed == []
+
+
 def test_legitimate_retry_is_allowed_naming_the_changed_precondition() -> None:
     decision = demonstration_legitimate_retry()
     assert decision.verdict == Verdict.ALLOW
