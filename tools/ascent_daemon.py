@@ -41,6 +41,9 @@ LANES = REPO / "workspace" / "ops" / "ascent-lanes"
 
 DISK_FLOOR_GIB = 15.0
 DISK_WARN_GIB = 90.0   # raised after a 0-byte stall: lanes cost 1-19 GiB each
+MAX_ATTEMPTS_PER_BOTTLENECK = 12   # a dominant cost deserves many mechanisms,
+                       # but not an unbounded grind; 9 have already failed on
+                       # weight_addressing and it is still the right target
 MAX_CONCURRENT = 10    # raised again per user steer: the 0-byte stall is now guarded
                        # by the governor reaping the grok worktree pool, which is the
                        # real protection - the cap was only ever a blunt proxy for it
@@ -291,9 +294,17 @@ def harvest() -> list[dict]:
 def model_of(lane: str) -> str:
     if lane.startswith("dsv"):
         return "dsv4f"
-    if lane.startswith("qwen38") or "qwen38" in lane:
+    if lane.startswith("qwen38") or "qwen38" in lane or lane.startswith("genesis"):
         return "qwen38"
     return "q80"
+
+
+# Q80 lost the tournament and DSV4F was sealed out; both have had their weights
+# DELETED, so a lane targeting either cannot build, cannot measure, and cannot
+# promote. The harvest still surfaces their old NEXT_BOTTLENECK lines from finished
+# lanes, and unattended that is how a whole night gets spent on a dead model - the
+# first retry this fix generated was for Q80.
+ACTIVE_MODELS = {"qwen38"}
 
 
 def slug(text: str) -> str:
@@ -363,7 +374,21 @@ def generate_targets(state: dict, harvested: list[dict]) -> int:
     # .get() throughout: ASCENT_STATE is written by several tools and a target
     # missing a key must not crash the unattended loop.
     existing = {t.get("id") for t in state["targets"]}
-    seen_bn = {t.get("from_bottleneck") for t in state["targets"]}
+    # Dedup against ACTIVE work only, not against history. Keying on every target ever
+    # created meant a bottleneck could be attacked exactly once, forever: on 2026-08-16
+    # all 105 auto-targets were terminal, weight_addressing had been attacked nine times
+    # and never solved, and the loop logged "queue dry" on every tick while the dominant
+    # 21.293 ms cost sat untouched. A FAILED attempt is a reason to try a different
+    # mechanism, not a reason to stop. Bounded so a permanently-stuck bottleneck cannot
+    # spin forever.
+    ACTIVE_ = {"pending", "running"}
+    seen_bn = {t.get("from_bottleneck") for t in state["targets"]
+               if t.get("status") in ACTIVE_}
+    attempts: dict[str, int] = {}
+    for t in state["targets"]:
+        b = t.get("from_bottleneck")
+        if b:
+            attempts[b] = attempts.get(b, 0) + 1
     # Count only targets still in play. This was a LIFETIME cap: it counted every
     # target ever auto-generated, including retained and stale ones, so once 96 had
     # been created the daemon never generated again. On 2026-08-16 it sat at 96/96
@@ -383,9 +408,16 @@ def generate_targets(state: dict, harvested: list[dict]) -> int:
             continue          # no bottleneck text to build a contract from
         bn = h["next_bottleneck"]
         if not bn or bn in seen_bn:
-            continue
+            continue                      # already being worked RIGHT NOW
+        n_try = attempts.get(bn, 0)
+        if n_try >= MAX_ATTEMPTS_PER_BOTTLENECK:
+            continue                      # bounded: stop grinding a stuck target
         model = model_of(h["lane"])
-        tid = f"auto-{model}-{slug(bn)}"
+        if model not in ACTIVE_MODELS:
+            continue                      # sealed model, weights deleted - unbuildable
+        # The attempt number is part of the id, so retry N+1 is a NEW target rather
+        # than colliding with the terminal record of attempt N.
+        tid = f"auto-{model}-{slug(bn)}" if n_try == 0 else f"auto-{model}-{slug(bn)}-try{n_try + 1}"
         if tid in existing:
             continue
 
@@ -622,7 +654,12 @@ def one_pass() -> dict:
     # A relative weight cannot stop a launch when the whole queue is one model:
     # max() still returns something, which is how the ~20 h G007 teacher-X capture
     # relaunched itself after the Qwen-first amendment de-authorised it.
-    DEAUTHORISED = ("determined-teacher-x", "teacher_x_capture", "uniform-q4", "uniform_q4")
+    # q80/dsv4f: both lost the active fleet and their WEIGHTS ARE DELETED, so a lane
+    # targeting either cannot build, measure or promote. They stayed in the pending
+    # queue from before the tournament, and the first two passes after the starvation
+    # fix both launched a q80 retry - unattended, that is a whole night on a dead model.
+    DEAUTHORISED = ("determined-teacher-x", "teacher_x_capture", "uniform-q4", "uniform_q4",
+                    "auto-q80-", "-q80-", "auto-dsv4f-", "dsv4f")
 
     def deauthorised(t: dict) -> str | None:
         blob = f"{t.get('id','')} {t.get('contract','')} {t.get('title','')}".lower()
