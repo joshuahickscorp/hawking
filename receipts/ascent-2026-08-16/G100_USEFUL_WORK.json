@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.nos.useful_work.v1",
+  "obligation": "G100 -- useful work, not only TPS",
+  "metrics": {
+    "TPS": "tokens per wall second, the physical metric",
+    "TOKENS_REQUIRED_PER_TASK": "tokens actually emitted, counted from returned token ids rather than estimated from text",
+    "WALL_TIME_PER_VERIFIED_TASK": "seconds of wall clock per task answered CORRECTLY. Wrong answers cost their tokens and deliver nothing, so they are charged rather than dropped -- that is what makes this an ordering TPS cannot produce"
+  },
+  "two_sources_declared": "TPS is from the dedicated timing run recorded in G041_COST_VECTOR; tokens and correctness are from the battery run here. The harness refuses --prompts-file with --complete-wall, so one run cannot produce both. Same machine, same session, and said plainly because silently mixing sources is how a composite metric goes wrong.",
+  "n_per_dimension": 6,
+  "seed": 20260818,
+  "results": [
+    {
+      "artifact": "uniform-q4-v1",
+      "tps": 32.73,
+      "tasks": 30,
+      "tokens_total": 2304,
+      "tokens_per_task": 76.8,
+      "correct": 28,
+      "accuracy": 0.9333333333333333,
+      "truncated": 0,
+      "wall_s_total": 70.39413382218149,
+      "wall_s_per_task": 2.3464711274060495,
+      "wall_s_per_VERIFIED_task": 2.514076207935053,
+      "tokens_per_VERIFIED_task": 82.28571428571429
+    },
+    {
+      "artifact": "g032-chanscale-a025-compact",
+      "tps": 29.77,
+      "tasks": 30,
+      "tokens_total": 3667,
+      "tokens_per_task": 122.23333333333333,
+      "correct": 25,
+      "accuracy": 0.8333333333333334,
+      "truncated": 3,
+      "wall_s_total": 123.17769566677863,
+      "wall_s_per_task": 4.105923188892621,
+      "wall_s_per_VERIFIED_task": 4.927107826671145,
+      "tokens_per_VERIFIED_task": 146.68
+    }
+  ],
+  "commit": "5a0dd36d12d35eea81d3d6e9652876277c0e3417",
+  "verdict": {
+    "the_failure_this_obligation_exists_to_catch_is_present": "g032-chanscale-a025-compact runs at 0.910x the TPS of uniform-q4-v1 -- a 9% gap that looks minor -- while emitting 1.592x the tokens per task. Wall time per VERIFIED task is 1.960x: 4.927 s against 2.514 s. THE TPS GAP UNDERSTATES THE REAL GAP BY ROUGHLY TENFOLD, which is precisely what the verify says TPS cannot see.",
+    "the_robust_half_and_the_noisy_half": "TOKENS PER TASK is the strong signal: 76.8 against 122.2, a 1.59x difference that matches G076's independent finding that this artifact truncates twice as often at the same token budget. ACCURACY is the weak half -- 0.933 against 0.833 is 28 of 30 against 25 of 30, a three-task difference at n=30 that is within sampling noise, and G076 at a different item count found this artifact EQUAL OR BETTER on every scored dimension. No accuracy claim is made here.",
+    "the_conclusion_survives_without_the_accuracy_term": "Charging both artifacts the SAME accuracy, wall time per task is still tokens/TPS = 1.592/0.910 = 1.750x. The verbosity alone costs 75% more wall clock per task, with no help from the noisy accuracy difference.",
+    "what_it_means_for_the_campaign": "Every artifact comparison in this ledger has been scored on TPS and BPW. On the utility metric the density leader is 1.75x WORSE than the artifact it was meant to improve on, and the reason is not speed but verbosity -- it needs more tokens to commit to an answer. That cost is invisible to TPS, to BPW, to description length and to a pass/fail capability gate."
+  },
+  "equal_accuracy_wall_ratio": 1.7498289840163475
+}
