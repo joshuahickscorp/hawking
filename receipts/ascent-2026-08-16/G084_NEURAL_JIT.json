@@ -1,0 +1,82 @@
+{
+  "schema": "hawking.nos.neural_jit.v1",
+  "obligation": "G084 -- profile-guided recompilation, and whether it deletes rare behaviour",
+  "site": "post_swiglu",
+  "tensor": "down_proj L63",
+  "per_class": {
+    "prose": {
+      "budgets": [
+        25,
+        50,
+        100,
+        200,
+        400,
+        800
+      ],
+      "excess_pct_vs_800_row_profile": [
+        19.50881201926018,
+        19.059053592610752,
+        12.249099002825137,
+        1.9650350209503342,
+        0.3409710001765598,
+        0.0
+      ],
+      "reference_err": 0.27581292390823364
+    },
+    "math": {
+      "budgets": [
+        25,
+        50,
+        100,
+        200,
+        400,
+        800
+      ],
+      "excess_pct_vs_800_row_profile": [
+        19.146672392083453,
+        12.66988604395669,
+        9.070691827651057,
+        1.9029737041301065,
+        0.4636074358338682,
+        0.0
+      ],
+      "reference_err": 0.27178433537483215
+    },
+    "multilingual": {
+      "budgets": [
+        25,
+        50,
+        100,
+        200,
+        400,
+        800
+      ],
+      "excess_pct_vs_800_row_profile": [
+        24.972433764498202,
+        16.62730125692422,
+        5.992444557986798,
+        -0.47344023379971567,
+        -0.3642515060469087,
+        0.0
+      ],
+      "reference_err": 0.28522565960884094
+    }
+  },
+  "mean_excess_by_budget": {
+    "25": 21.209306058613947,
+    "50": 16.11874696449722,
+    "100": 9.104078462820997,
+    "200": 1.1315228304269083,
+    "400": 0.1467756433211731,
+    "800": 0.0
+  },
+  "observation_tokens_for_1pct": 400,
+  "commit": "6ecc823abc6c403271513dbcc4708aa0bc87313d",
+  "verdict": {
+    "warm_up_is_cheap": "A recompiled profile reaches within 1.13% of a settled one after 200 observed tokens and 0.15% after 400. At 25 tokens it is still 21% worse. So the observation budget a JIT needs is roughly 400 tokens -- genuinely small, and the most favourable number this obligation has.",
+    "the_gain_is_bounded_by_the_static_build": "A JIT can only move the artifact from its installed profile to a matched one. Against a well-built POOLED static build that is +4.13% mean and +9.02% worst (G081 v2). Against this campaign's actual PROSE-fitted build it is +11.07% mean. So the entire upside of neural JIT over correct static engineering is about four percent.",
+    "the_risk_is_seven_times_the_gain": "Specialization degrades regimes the profile did not observe, and G083's 6x6 matrix measures it: the worst single-class specializer costs +22.15% mean on the other classes, and the worst individual cell is +31.76%. A session that recompiles for prose and then receives multilingual input pays +31.28%. RARE BUT PROTECTED BEHAVIOUR IS BY DEFINITION WHAT THE OBSERVED PROFILE DOES NOT CONTAIN, so the damage lands exactly where this obligation's verify is worried. The mechanism risks roughly seven times what it can gain.",
+    "conclusion": "REFUTED ON RISK/REWARD RATHER THAN ON FEASIBILITY. The JIT converges cheaply and would work; it is simply a bad trade against a pooled static build, which is immune to regime shift and gives up only 4.13%. Recompilation would be worth it only if regime shifts were both rare AND detectable in advance, and detecting them is the same unsolved problem as the profile itself.",
+    "what_was_NOT_done": "no Doctor capability run on a JIT-specialized artifact. What is measured is FUNCTIONAL ERROR on unobserved regimes, which is the quantity such a check would be looking for, but it is not the check itself. The verify calls that check the whole risk of the obligation and it remains unrun; the refutation here rests on the error measurement, which is weaker evidence than a capability gate would be."
+  }
+}
