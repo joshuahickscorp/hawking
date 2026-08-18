@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.nos.capability_locality.v2",
+  "site": "post_swiglu",
+  "tensor": "down_proj L63",
+  "rows_per_class": 1000,
+  "control_prose_vs_prose": 0.9086414397163651,
+  "contrasts": [
+    {
+      "contrast": "prose|code",
+      "overlap": 0.775825959474318,
+      "ratio_to_control": 0.8538307032491211
+    },
+    {
+      "contrast": "prose|math",
+      "overlap": 0.7985496622859836,
+      "ratio_to_control": 0.8788391409214761
+    },
+    {
+      "contrast": "prose|instruction",
+      "overlap": 0.8388808688562602,
+      "ratio_to_control": 0.9232254134459453
+    },
+    {
+      "contrast": "prose|multilingual",
+      "overlap": 0.6657341820439365,
+      "ratio_to_control": 0.7326698441705974
+    },
+    {
+      "contrast": "prose|adversarial",
+      "overlap": 0.562953931769053,
+      "ratio_to_control": 0.6195556433622271
+    }
+  ],
+  "weakest_ratio": 0.6195556433622271,
+  "note": "F10 said the capture had no math/instruction rows. That was true of post_input_norm, post_attn_norm and final_norm (6827 rows each) but FALSE of post_swiglu, which stores all 23216 tokens and therefore every class. The strong contrast was available all along.",
+  "commit": "86804e00ac5e046ba7d9f026ee070ab65beb6c72"
+}
