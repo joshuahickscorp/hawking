@@ -1,0 +1,311 @@
+{
+  "schema": "hawking.nos.gxform_members.v1",
+  "obligation": "G032 -- the G-XFORM members Hadamard's refutation did not cover",
+  "fixed": {
+    "bits": 3,
+    "group": 64,
+    "quantizer": "symmetric absmax group"
+  },
+  "error_space": "FUNCTION space on the thick v2 capture. All transforms are exactly function-preserving, so any change is a change in what the codec must represent, not in what the layer computes.",
+  "sign_is_a_control": "Sign flips cannot move an absmax magnitude statistic, so sign is predicted null. A gain there would indict the harness, not the member.",
+  "description_cost": {
+    "sign": "n bits, and foldable into any adjacent diagonal at zero runtime cost.",
+    "channel_scale": "n floats per tensor (5120 or 17408). Foldable into the preceding RMSNorm ONLY where the consumers of that norm share one scale; gate and up share post_input_norm, down_proj consumes post-SwiGLU and has no norm to fold into. That is a runtime claim this file does not get to make.",
+    "permutation": "n*log2(n) bits explicitly, or free if it can be folded into the surrounding layout. Also a runtime claim."
+  },
+  "table": [
+    {
+      "member": "baseline",
+      "mean_out_rel_fro": 0.19879444605560162,
+      "ratio_vs_baseline": 1.0,
+      "mean_code_entropy_bits": 2.2964111576596786,
+      "delta_entropy_bits": 0.0,
+      "wins": false
+    },
+    {
+      "member": "sign",
+      "mean_out_rel_fro": 0.19879444605560162,
+      "ratio_vs_baseline": 1.0,
+      "mean_code_entropy_bits": 2.296410423583214,
+      "delta_entropy_bits": -7.340764645036302e-07,
+      "wins": false
+    },
+    {
+      "member": "permutation_magnitude_sorted",
+      "mean_out_rel_fro": 0.19384705905467214,
+      "ratio_vs_baseline": 0.9751130522049609,
+      "mean_code_entropy_bits": 2.308838165800685,
+      "delta_entropy_bits": 0.01242700814100628,
+      "wins": true
+    },
+    {
+      "member": "channel_scale_a0.25",
+      "mean_out_rel_fro": 0.15350268845592066,
+      "ratio_vs_baseline": 0.7721678925224444,
+      "mean_code_entropy_bits": 2.271255749083143,
+      "delta_entropy_bits": -0.025155408576535532,
+      "wins": true
+    },
+    {
+      "member": "channel_scale_a0.5",
+      "mean_out_rel_fro": 0.15909385703163584,
+      "ratio_vs_baseline": 0.8002932686919142,
+      "mean_code_entropy_bits": 2.163934977597504,
+      "delta_entropy_bits": -0.13247618006217454,
+      "wins": true
+    },
+    {
+      "member": "channel_scale_a0.5_then_permutation",
+      "mean_out_rel_fro": 0.16768703787512199,
+      "ratio_vs_baseline": 0.8435197320765235,
+      "mean_code_entropy_bits": 2.279213252046892,
+      "delta_entropy_bits": -0.017197905612786446,
+      "wins": true
+    }
+  ],
+  "best_non_baseline": {
+    "member": "channel_scale_a0.25",
+    "mean_out_rel_fro": 0.15350268845592066,
+    "ratio_vs_baseline": 0.7721678925224444,
+    "mean_code_entropy_bits": 2.271255749083143,
+    "delta_entropy_bits": -0.025155408576535532,
+    "wins": true
+  },
+  "per_tensor": [
+    {
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "members": {
+        "baseline": {
+          "out_rel_fro": 0.23649897594037775,
+          "out_cosine": 0.9731085814845265,
+          "code_entropy_bits": 2.3206961304506954
+        },
+        "sign": {
+          "out_rel_fro": 0.23649897594037775,
+          "out_cosine": 0.9731085814845265,
+          "code_entropy_bits": 2.320695243614484
+        },
+        "permutation_magnitude_sorted": {
+          "out_rel_fro": 0.2356423312479904,
+          "out_cosine": 0.973333812363973,
+          "code_entropy_bits": 2.3253812597920573
+        },
+        "channel_scale_a0.25": {
+          "out_rel_fro": 0.19705014962520645,
+          "out_cosine": 0.9802580238098626,
+          "code_entropy_bits": 2.3079258216610765
+        },
+        "channel_scale_a0.5": {
+          "out_rel_fro": 0.19923513042273008,
+          "out_cosine": 0.9793694938148086,
+          "code_entropy_bits": 2.254029436622952
+        },
+        "channel_scale_a0.5_then_permutation": {
+          "out_rel_fro": 0.2088053283589034,
+          "out_cosine": 0.9781003520727714,
+          "code_entropy_bits": 2.300069299112957
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "members": {
+        "baseline": {
+          "out_rel_fro": 0.14790852908202548,
+          "out_cosine": 0.9900336233827332,
+          "code_entropy_bits": 2.313080677151045
+        },
+        "sign": {
+          "out_rel_fro": 0.14790852908202548,
+          "out_cosine": 0.9900336233827332,
+          "code_entropy_bits": 2.313080724606439
+        },
+        "permutation_magnitude_sorted": {
+          "out_rel_fro": 0.14282862962478385,
+          "out_cosine": 0.9904013685058144,
+          "code_entropy_bits": 2.314575432921753
+        },
+        "channel_scale_a0.25": {
+          "out_rel_fro": 0.11082555713384881,
+          "out_cosine": 0.9936160764877744,
+          "code_entropy_bits": 2.282750284677522
+        },
+        "channel_scale_a0.5": {
+          "out_rel_fro": 0.11252833149915974,
+          "out_cosine": 0.9931534030667482,
+          "code_entropy_bits": 2.1928129823025513
+        },
+        "channel_scale_a0.5_then_permutation": {
+          "out_rel_fro": 0.11713430344035564,
+          "out_cosine": 0.9928260314335022,
+          "code_entropy_bits": 2.239906408813991
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "members": {
+        "baseline": {
+          "out_rel_fro": 0.21859885533319953,
+          "out_cosine": 0.9773299244016549,
+          "code_entropy_bits": 2.3017731710652116
+        },
+        "sign": {
+          "out_rel_fro": 0.21859885533319953,
+          "out_cosine": 0.9773299244016549,
+          "code_entropy_bits": 2.301773065099817
+        },
+        "permutation_magnitude_sorted": {
+          "out_rel_fro": 0.21400755245450043,
+          "out_cosine": 0.9782051698324312,
+          "code_entropy_bits": 2.3075512188469
+        },
+        "channel_scale_a0.25": {
+          "out_rel_fro": 0.12600479667580924,
+          "out_cosine": 0.9922459476220731,
+          "code_entropy_bits": 2.2846730268077744
+        },
+        "channel_scale_a0.5": {
+          "out_rel_fro": 0.12834182811023453,
+          "out_cosine": 0.9919805603292067,
+          "code_entropy_bits": 2.2299210511528402
+        },
+        "channel_scale_a0.5_then_permutation": {
+          "out_rel_fro": 0.15372801628726004,
+          "out_cosine": 0.9883674773400891,
+          "code_entropy_bits": 2.2902843730751683
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "members": {
+        "baseline": {
+          "out_rel_fro": 0.21803725476232977,
+          "out_cosine": 0.977338536413731,
+          "code_entropy_bits": 2.2984061902336945
+        },
+        "sign": {
+          "out_rel_fro": 0.21803725476232977,
+          "out_cosine": 0.977338536413731,
+          "code_entropy_bits": 2.2984062054013426
+        },
+        "permutation_magnitude_sorted": {
+          "out_rel_fro": 0.21894337923223797,
+          "out_cosine": 0.9772491201802762,
+          "code_entropy_bits": 2.301069839900915
+        },
+        "channel_scale_a0.25": {
+          "out_rel_fro": 0.20736641709013895,
+          "out_cosine": 0.979250567664473,
+          "code_entropy_bits": 2.2757804257610226
+        },
+        "channel_scale_a0.5": {
+          "out_rel_fro": 0.21494899075267734,
+          "out_cosine": 0.9775943337960709,
+          "code_entropy_bits": 2.2173588426314925
+        },
+        "channel_scale_a0.5_then_permutation": {
+          "out_rel_fro": 0.2173402769370437,
+          "out_cosine": 0.9773119138434325,
+          "code_entropy_bits": 2.283285667222817
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "members": {
+        "baseline": {
+          "out_rel_fro": 0.12809063571921156,
+          "out_cosine": 0.991644853169336,
+          "code_entropy_bits": 2.2987781498181454
+        },
+        "sign": {
+          "out_rel_fro": 0.12809063571921156,
+          "out_cosine": 0.991644853169336,
+          "code_entropy_bits": 2.2987746773513376
+        },
+        "permutation_magnitude_sorted": {
+          "out_rel_fro": 0.12903708155809054,
+          "out_cosine": 0.9914962632103494,
+          "code_entropy_bits": 2.3112000388399934
+        },
+        "channel_scale_a0.25": {
+          "out_rel_fro": 0.11770784009751702,
+          "out_cosine": 0.9929987244478264,
+          "code_entropy_bits": 2.2752534102648903
+        },
+        "channel_scale_a0.5": {
+          "out_rel_fro": 0.12380753563243053,
+          "out_cosine": 0.9922467546580803,
+          "code_entropy_bits": 2.2220796413840787
+        },
+        "channel_scale_a0.5_then_permutation": {
+          "out_rel_fro": 0.12337860331094505,
+          "out_cosine": 0.9922488321764136,
+          "code_entropy_bits": 2.298246949303381
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "members": {
+        "baseline": {
+          "out_rel_fro": 0.24363242549646577,
+          "out_cosine": 0.9692329323560704,
+          "code_entropy_bits": 2.245732627239281
+        },
+        "sign": {
+          "out_rel_fro": 0.24363242549646577,
+          "out_cosine": 0.9692329323560704,
+          "code_entropy_bits": 2.2457326254258634
+        },
+        "permutation_magnitude_sorted": {
+          "out_rel_fro": 0.22262338021042963,
+          "out_cosine": 0.9753929063375539,
+          "code_entropy_bits": 2.2932512045024915
+        },
+        "channel_scale_a0.25": {
+          "out_rel_fro": 0.16206137011300345,
+          "out_cosine": 0.9858576608894927,
+          "code_entropy_bits": 2.201151525326573
+        },
+        "channel_scale_a0.5": {
+          "out_rel_fro": 0.17570132577258288,
+          "out_cosine": 0.983519739577734,
+          "code_entropy_bits": 1.867407911491109
+        },
+        "channel_scale_a0.5_then_permutation": {
+          "out_rel_fro": 0.1857356989162242,
+          "out_cosine": 0.9829793627713858,
+          "code_entropy_bits": 2.2634868147530387
+        }
+      }
+    }
+  ],
+  "commit": "d00dd3430b261eab534f60452fa24f438d868092"
+}

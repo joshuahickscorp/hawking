@@ -1,0 +1,149 @@
+{
+  "schema": "hawking.nos.gfunc_paired_fit.v1",
+  "obligation": "G036 -- fit against teacher function, not weight cosine; and G032 channel-scale member",
+  "method": "Channel scale s is EXACTLY function-preserving: y = Wx = (W diag(s))(diag(1/s) x). The same family is fitted two ways -- s from weight column magnitude, and s from CAPTURED ACTIVATION magnitude -- then both are scored at IDENTICAL bit width on a DISJOINT held-out activation slice. Fit rows are the head of each capture file, holdout rows the tail, so no activation used to choose s is used to score it.",
+  "per_tensor": [
+    {
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "held_out_out_rel_fro": {
+        "baseline": 0.2190026735763407,
+        "weight_space_scale_a0.25": 0.21407269248838512,
+        "function_space_scale_a0.25": 0.1780153232238402,
+        "function_space_scale_a0.5": 0.17412897414625353
+      },
+      "code_entropy_bits": {
+        "baseline": 2.3206961304506954,
+        "weight_space_scale_a0.25": 2.3105697911227505,
+        "function_space_scale_a0.25": 2.3079258216610765,
+        "function_space_scale_a0.5": 2.254029436622952
+      },
+      "fit_rows": 512,
+      "holdout_rows": 512,
+      "rows_available": 6827
+    },
+    {
+      "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+      "held_out_out_rel_fro": {
+        "baseline": 0.12100210251349515,
+        "weight_space_scale_a0.25": 0.12489293668440055,
+        "function_space_scale_a0.25": 0.11362405544391124,
+        "function_space_scale_a0.5": 0.13576578945906012
+      },
+      "code_entropy_bits": {
+        "baseline": 2.313080677151045,
+        "weight_space_scale_a0.25": 2.2745781319359186,
+        "function_space_scale_a0.25": 2.282750284677522,
+        "function_space_scale_a0.5": 2.1928129823025513
+      },
+      "fit_rows": 512,
+      "holdout_rows": 512,
+      "rows_available": 23216
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "held_out_out_rel_fro": {
+        "baseline": 0.22010901791843993,
+        "weight_space_scale_a0.25": 0.2206918600884174,
+        "function_space_scale_a0.25": 0.13002018366280937,
+        "function_space_scale_a0.5": 0.13429451152033386
+      },
+      "code_entropy_bits": {
+        "baseline": 2.3017731710652116,
+        "weight_space_scale_a0.25": 2.2962498410098626,
+        "function_space_scale_a0.25": 2.2846730268077744,
+        "function_space_scale_a0.5": 2.2299210511528402
+      },
+      "fit_rows": 512,
+      "holdout_rows": 512,
+      "rows_available": 6827
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
+      "held_out_out_rel_fro": {
+        "baseline": 0.22862115799704338,
+        "weight_space_scale_a0.25": 0.2304953072843615,
+        "function_space_scale_a0.25": 0.22373884610447659,
+        "function_space_scale_a0.5": 0.2364842157675731
+      },
+      "code_entropy_bits": {
+        "baseline": 2.2984061902336945,
+        "weight_space_scale_a0.25": 2.286528322071087,
+        "function_space_scale_a0.25": 2.2757804257610226,
+        "function_space_scale_a0.5": 2.2173588426314925
+      },
+      "fit_rows": 512,
+      "holdout_rows": 512,
+      "rows_available": 23216
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
+      "held_out_out_rel_fro": {
+        "baseline": 0.13222126031903847,
+        "weight_space_scale_a0.25": 0.13306256445534168,
+        "function_space_scale_a0.25": 0.12074004913880619,
+        "function_space_scale_a0.5": 0.12673521659496376
+      },
+      "code_entropy_bits": {
+        "baseline": 2.2987781498181454,
+        "weight_space_scale_a0.25": 2.2822951315874977,
+        "function_space_scale_a0.25": 2.2752534102648903,
+        "function_space_scale_a0.5": 2.2220796413840787
+      },
+      "fit_rows": 512,
+      "holdout_rows": 512,
+      "rows_available": 6827
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "held_out_out_rel_fro": {
+        "baseline": 0.1884713232502327,
+        "weight_space_scale_a0.25": 0.1788376542997722,
+        "function_space_scale_a0.25": 0.12659501630726322,
+        "function_space_scale_a0.5": 0.1472855221073091
+      },
+      "code_entropy_bits": {
+        "baseline": 2.245732627239281,
+        "weight_space_scale_a0.25": 2.220976257037224,
+        "function_space_scale_a0.25": 2.201151525326573,
+        "function_space_scale_a0.5": 1.867407911491109
+      },
+      "fit_rows": 512,
+      "holdout_rows": 512,
+      "rows_available": 23216
+    }
+  ],
+  "table": [
+    {
+      "fit": "baseline",
+      "held_out_mean": 0.18490458926243172,
+      "ratio": 1.0,
+      "entropy": 2.2964111576596786,
+      "d_entropy": 0.0
+    },
+    {
+      "fit": "weight_space_scale_a0.25",
+      "held_out_mean": 0.18367550255011308,
+      "ratio": 0.9933528598872459,
+      "entropy": 2.2785329124607236,
+      "d_entropy": -0.01787824519895498
+    },
+    {
+      "fit": "function_space_scale_a0.25",
+      "held_out_mean": 0.1487889123135178,
+      "ratio": 0.8046793911769512,
+      "entropy": 2.271255749083143,
+      "d_entropy": -0.025155408576535532
+    },
+    {
+      "fit": "function_space_scale_a0.5",
+      "held_out_mean": 0.15911570493258223,
+      "ratio": 0.86052869518967,
+      "entropy": 2.163934977597504,
+      "d_entropy": -0.13247618006217454
+    }
+  ],
+  "weight_space_ratio": 0.9933528598872459,
+  "function_space_ratio": 0.8046793911769512,
+  "gain_from_function_space_fit_pct": 18.993599991418026,
+  "commit": "d00dd3430b261eab534f60452fa24f438d868092"
+}
