@@ -1,0 +1,16 @@
+mixed-q3mlp-q3attn-v1, 8 segments, tile 512 groups, 5,488 tiles, 179,732,480 elements
+incumbent packed bytes 73,018,476 = 3.2501 bits/element
+
+form                                         bytes    ratio   b/elem  parallel decode?
+C_rans_shared_L8                        57,493,870   0.7874   2.5591  YES, 8 symbols per serial step
+B_rans_pertile_L8                       57,564,714   0.7884   2.5622  YES, 8 symbols per serial step
+C_rans_shared_L16                       57,669,486   0.7898   2.5669  YES, 16 symbols per serial step
+B_rans_pertile_L16                      57,740,330   0.7908   2.5701  YES, 16 symbols per serial step
+C_rans_shared_L32                       58,020,718   0.7946   2.5825  YES, 32 symbols per serial step
+B_rans_pertile_L32                      58,091,562   0.7956   2.5857  YES, 32 symbols per serial step
+C_rans_shared_L64                       58,723,182   0.8042   2.6138  YES, 64 symbols per serial step
+B_rans_pertile_L64                      58,794,026   0.8052   2.6170  YES, 64 symbols per serial step
+A_fixed                                 73,040,428   1.0003   3.2511  YES, 1 shift per lane
+
+best parallel-decodable form: C_rans_shared_L8 at ratio 0.7874
+compare against the SERIAL Huffman recode measured at ratio 0.8020
