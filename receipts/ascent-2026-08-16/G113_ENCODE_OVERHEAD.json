@@ -1,0 +1,37 @@
+{
+  "schema": "hawking.nos.encode_overhead.v1",
+  "obligation": "G113 -- encode ns/token separated from GPU ns/token; if encode is not the wall, record the negative and close the lane",
+  "instrumented_run": {
+    "tokens": 24,
+    "pairs": 3,
+    "artifact": "uniform-q4-v1"
+  },
+  "decomposition_ns": {
+    "wait": 29653885.86956522,
+    "gpu": 29281387.13043478,
+    "encode_host_prepare": 728034.4782608695,
+    "wait_minus_gpu": 372498.73913043475,
+    "submit": 4579.608695652174,
+    "tokenizer_decode_new_token": 3400.478260869565,
+    "commit_epilogue_gpu_timestamp_and_status": 641.3913043478261,
+    "sample_readback": 639.3478260869565,
+    "bookkeeping": 128.6086956521739,
+    "state_update": 56.21739130434783
+  },
+  "residual_ns": 643.1739130392671,
+  "max_residual_ns": 833,
+  "total_wall_ns": 30392009.173913043,
+  "shares_pct": {
+    "gpu": 96.34567745382374,
+    "encode_host_prepare": 2.3954799239985007,
+    "wait_minus_gpu": 1.225646968579388,
+    "everything_else": 0.03107939366516351,
+    "unaccounted_residual": 0.0021162599331910406
+  },
+  "the_decomposition_closes": "The named components sum to within 643 ns of the 30.392 ms token, max 833 ns across steps -- 0.002% unaccounted. This is a closed accounting, not an estimate.",
+  "ENCODE_IS_NOT_THE_WALL": "Encode is 728 us = 2.40% of the token. The GPU is 29.281 ms = 96.35%. The acceptance says that if encode is not the wall it is recorded as a NEGATIVE and the lane closes. It is not the wall, and the lane closes.",
+  "the_whole_host_side_is_3.65_pct": "encode 728 us + wait-beyond-gpu 372 us + everything else 9.4 us = 1.110 ms = 3.65% of the token. Submit is 4.6 us, tokenizer decode 3.4 us, sample readback 0.6 us, state update 56 ns -- none of them is a lane.",
+  "the_one_attack_that_remains_and_its_ceiling": "encode_host_prepare is measured as a SEPARATE PHASE, so the host encodes while the GPU is idle rather than overlapping. Pipelining encode against the previous command buffer would recover at most 728 us = 2.40% of the token. That is the entire remaining prize on this axis and it is named with its ceiling rather than left as an aspiration.",
+  "run_to_run_note": "G093 measured encode at 676 us on an earlier run; this run measures 728 us. The share is 2.2-2.4% either way and the conclusion does not turn on the difference, but the spread is recorded rather than presented as a single figure.",
+  "commit": "75a7367b4d3725cbfc1c0cb9c8396fe088c083a7"
+}
