@@ -1,0 +1,5 @@
+The capital of France is
+17 x 19 =
+def fibonacci(n):
+Write a JSON object with keys "name" and "age".
+List three prime numbers greater than 20.

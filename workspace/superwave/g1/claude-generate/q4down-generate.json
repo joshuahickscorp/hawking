@@ -1,0 +1,171 @@
+{
+  "artifact_root": "workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1",
+  "dense_w_materialized_total": 0,
+  "fallbacks_total": 0,
+  "lane": "qwen38-coherence-generate",
+  "max_new_tokens": 24,
+  "prompts": [
+    {
+      "decode_wall_ns": 41,
+      "dense_w_materialized": 0,
+      "fallbacks": 0,
+      "generated_text": "",
+      "new_token_ids": [
+        248046
+      ],
+      "prefill_wall_ns": 807586625,
+      "prompt": "The capital of France is",
+      "prompt_ids": [
+        248045,
+        846,
+        198,
+        760,
+        6511,
+        314,
+        9338,
+        369,
+        248046,
+        198,
+        248045,
+        74455,
+        198
+      ],
+      "prompt_len": 13,
+      "rendered": "<|im_start|>user\nThe capital of France is<|im_end|>\n<|im_start|>assistant\n",
+      "wall_ns": 807588000
+    },
+    {
+      "decode_wall_ns": 54396792,
+      "dense_w_materialized": 0,
+      "fallbacks": 0,
+      "generated_text": "1",
+      "new_token_ids": [
+        16,
+        248046
+      ],
+      "prefill_wall_ns": 811341875,
+      "prompt": "17 x 19 =",
+      "prompt_ids": [
+        248045,
+        846,
+        198,
+        16,
+        22,
+        830,
+        220,
+        16,
+        24,
+        283,
+        248046,
+        198,
+        248045,
+        74455,
+        198
+      ],
+      "prompt_len": 15,
+      "rendered": "<|im_start|>user\n17 x 19 =<|im_end|>\n<|im_start|>assistant\n",
+      "wall_ns": 865740584
+    },
+    {
+      "decode_wall_ns": 54010375,
+      "dense_w_materialized": 0,
+      "fallbacks": 0,
+      "generated_text": "\n",
+      "new_token_ids": [
+        198,
+        248046
+      ],
+      "prefill_wall_ns": 649762625,
+      "prompt": "def fibonacci(n):",
+      "prompt_ids": [
+        248045,
+        846,
+        198,
+        727,
+        73111,
+        1393,
+        1590,
+        248046,
+        198,
+        248045,
+        74455,
+        198
+      ],
+      "prompt_len": 12,
+      "rendered": "<|im_start|>user\ndef fibonacci(n):<|im_end|>\n<|im_start|>assistant\n",
+      "wall_ns": 703774792
+    },
+    {
+      "decode_wall_ns": 42,
+      "dense_w_materialized": 0,
+      "fallbacks": 0,
+      "generated_text": "",
+      "new_token_ids": [
+        248046
+      ],
+      "prefill_wall_ns": 1136727000,
+      "prompt": "Write a JSON object with keys \"name\" and \"age\".",
+      "prompt_ids": [
+        248045,
+        846,
+        198,
+        7734,
+        264,
+        4566,
+        1576,
+        440,
+        6679,
+        328,
+        591,
+        1,
+        321,
+        328,
+        416,
+        3158,
+        248046,
+        198,
+        248045,
+        74455,
+        198
+      ],
+      "prompt_len": 21,
+      "rendered": "<|im_start|>user\nWrite a JSON object with keys \"name\" and \"age\".<|im_end|>\n<|im_start|>assistant\n",
+      "wall_ns": 1136728917
+    },
+    {
+      "decode_wall_ns": 54074958,
+      "dense_w_materialized": 0,
+      "fallbacks": 0,
+      "generated_text": "\n\n",
+      "new_token_ids": [
+        271,
+        248046
+      ],
+      "prefill_wall_ns": 974027417,
+      "prompt": "List three prime numbers greater than 20.",
+      "prompt_ids": [
+        248045,
+        846,
+        198,
+        826,
+        2250,
+        9944,
+        4947,
+        6826,
+        1056,
+        220,
+        17,
+        15,
+        13,
+        248046,
+        198,
+        248045,
+        74455,
+        198
+      ],
+      "prompt_len": 18,
+      "rendered": "<|im_start|>user\nList three prime numbers greater than 20.<|im_end|>\n<|im_start|>assistant\n",
+      "wall_ns": 1028103667
+    }
+  ]
+}
