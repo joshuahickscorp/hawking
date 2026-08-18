@@ -45,7 +45,7 @@ def main():
                         "--artifact-root", str(RUNS / a.artifact),
                         "--tokenizer", str(RUNS / "bf16/tokenizer.json"),
                         "--prompts-file", str(pf), "--max-new-tokens", str(a.max_new_tokens),
-                        "--max-seq-len", "1024", "--out", str(out)],
+                        "--max-seq-len", "2048", "--out", str(out)],
                        capture_output=True, text=True, cwd=ROOT)
     if r.returncode != 0:
         raise SystemExit(f"{a.artifact} failed\n{r.stderr[-2000:]}")

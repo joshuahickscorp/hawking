@@ -1,0 +1,512 @@
+{
+  "schema": "hawking.nos.wide_battery.v1",
+  "obligation": "G126 -- >= 60 deterministic items, per-category scoring",
+  "artifact": "corrupted-l40down-v1",
+  "items": 60,
+  "categories": [
+    "adversarial",
+    "arithmetic",
+    "calibration",
+    "code",
+    "instruction",
+    "longcontext",
+    "longform",
+    "reasoning",
+    "repo",
+    "tool"
+  ],
+  "max_new_tokens": 288,
+  "per_category": {
+    "arithmetic": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "code": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "reasoning": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "instruction": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "longform": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "tool": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "repo": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "adversarial": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "calibration": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    },
+    "longcontext": {
+      "n": 6,
+      "ok": 0,
+      "trunc": 6,
+      "lure": 0
+    }
+  },
+  "total": {
+    "n": 60,
+    "correct": 0,
+    "truncated": 60,
+    "score_on_scored": 0.0
+  },
+  "detail": [
+    {
+      "category": "arithmetic",
+      "answer": "115",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "arithmetic",
+      "answer": "210",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "arithmetic",
+      "answer": "42",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "arithmetic",
+      "answer": "384",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "arithmetic",
+      "answer": "323",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "arithmetic",
+      "answer": "623",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "code",
+      "answer": "3",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "code",
+      "answer": "3",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "code",
+      "answer": "def",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "code",
+      "answer": "ABC",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "code",
+      "answer": "False",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "code",
+      "answer": "list",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "reasoning",
+      "answer": "yes",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "reasoning",
+      "answer": "5",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "reasoning",
+      "answer": "5",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "reasoning",
+      "answer": "Joe",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "reasoning",
+      "answer": "Thursday",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "reasoning",
+      "answer": "1",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "instruction",
+      "answer": "BANANA",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "instruction",
+      "answer": "brown",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "instruction",
+      "answer": "5",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "instruction",
+      "answer": "c-a-t",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "instruction",
+      "answer": "42",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "instruction",
+      "answer": "pots",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longform",
+      "answer": "5",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longform",
+      "answer": "1",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longform",
+      "answer": "8",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longform",
+      "answer": "5",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longform",
+      "answer": "10",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longform",
+      "answer": "200",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "tool",
+      "answer": "\"n\"",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "tool",
+      "answer": "[1, 2, 3]",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "tool",
+      "answer": "ls",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "tool",
+      "answer": "git status",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "tool",
+      "answer": "\"ok\"",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "tool",
+      "answer": "POST",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "repo",
+      "answer": "+",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "repo",
+      "answer": "requirements.txt",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "repo",
+      "answer": "checkout",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "repo",
+      "answer": "4",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "repo",
+      "answer": ".gitignore",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "repo",
+      "answer": "Cargo.toml",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "adversarial",
+      "answer": "Canberra",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "adversarial",
+      "answer": "Fleming",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "adversarial",
+      "answer": "Jupiter",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "adversarial",
+      "answer": "Austria",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "adversarial",
+      "answer": "K",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "adversarial",
+      "answer": "7",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "calibration",
+      "answer": "UNKNOWN",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "calibration",
+      "answer": "UNKNOWN",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "calibration",
+      "answer": "UNKNOWN",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "calibration",
+      "answer": "UNKNOWN",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "calibration",
+      "answer": "UNKNOWN",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "calibration",
+      "answer": "UNKNOWN",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longcontext",
+      "answer": "raven",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longcontext",
+      "answer": "cobalt",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longcontext",
+      "answer": "lantern",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longcontext",
+      "answer": "harbor",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longcontext",
+      "answer": "quartz",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    },
+    {
+      "category": "longcontext",
+      "answer": "meadow",
+      "correct": false,
+      "truncated": true,
+      "lure_emitted": false
+    }
+  ],
+  "scoring": "deterministic, post-</think> only. A response that never closes its think block is TRUNCATED rather than wrong -- G076 found a 48-token budget scoring every artifact 0.00 on a dimension its reference passes.",
+  "two_categories_need_their_design_stated": "ADVERSARIAL items carry a PLAUSIBLE WRONG answer (Sydney, Einstein, Saturn) and the run records whether the LURE was emitted, so a model falling into a specific trap is distinguishable from one merely getting items wrong. CALIBRATION items have NO answer and reward declining -- the only category where refusing is correct, included because every other category rewards producing something.",
+  "commit": "1940d4f63c20ba086796e7282f2a12379d6c384d"
+}
