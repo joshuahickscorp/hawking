@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.nos.r_ladder_adjudication.v1",
+  "obligation": "G128 -- r adjudicated on the wide battery, not on 9/10",
+  "results": [
+    {
+      "artifact": "uniform-q4-v1 (G0)",
+      "score": 0.9827586206896551,
+      "truncated": 2,
+      "trunc_pct": 3.3333333333333335,
+      "lures": 0,
+      "correct": 57
+    },
+    {
+      "artifact": "c-q3r1p22",
+      "score": 0.9696969696969697,
+      "truncated": 27,
+      "trunc_pct": 45.0,
+      "lures": 0,
+      "correct": 32
+    },
+    {
+      "artifact": "c-q3r1p25",
+      "score": 0.9772727272727273,
+      "truncated": 16,
+      "trunc_pct": 26.666666666666668,
+      "lures": 1,
+      "correct": 43
+    },
+    {
+      "artifact": "mixed-q4down-v1 (dead)",
+      "score": 0.0,
+      "truncated": 60,
+      "trunc_pct": 100.0,
+      "lures": 0,
+      "correct": 0
+    }
+  ],
+  "r_1p20_does_not_exist": "the ladder on disk is 1.15 / 1.22 / 1.25 / 1.3 / 1.35 / 1.5. There is no r=1.20 artifact, so r=1.22 is used as the nearest and that substitution is stated rather than labelled 1.20.",
+  "the_artifacts_are_genuinely_distinct": "checked rather than assumed: all four r artifacts report IDENTICAL tensor_payload_bytes and complete_physical_bpw to the last digit, which looked like four copies of one artifact. Hashing the ENCODED segments settles it -- replace_..._mlp_down_proj_weight.hq38seg differs across all four at identical byte length, which is exactly what over-scaling should do: change values, not sizes. The copied tensors (lm_head, layernorms) are byte-identical, as they should be.",
+  "SCORE_CANNOT_ADJUDICATE": "G0 0.98, r=1.22 0.97, r=1.25 0.98. On the score axis the three are indistinguishable, and a 60-item battery adjudicates r no better than the 10-item gate did. The obligation's premise -- that a wider battery would settle what 9/10 could not -- is refuted on the axis it assumed.",
+  "TRUNCATION_ADJUDICATES_DECISIVELY": "G0 truncates on 3% of items, r=1.25 on 27%, r=1.22 on 45%, the dead artifact on 100%. Both r candidates sit 9x to 15x G0's rate. That is the same axis G076, G100 and G127 each found independently: compression costs DECISIVENESS, not accuracy, and a score-only reading calls both candidates healthy.",
+  "the_ladder_is_NOT_MONOTONE_in_r": "r=1.25 truncates LESS than r=1.22 (27% against 45%), so more over-scale is not uniformly worse on this axis. With 60 items that could be sampling, and it is reported rather than smoothed into a trend.",
+  "r_1p25_IS_THE_ONLY_ARTIFACT_TO_EMIT_A_LURE": "one adversarial item answered with its planted false-win. G0, r=1.22 and the dead artifact emitted none. That is the sharpest single signal the battery carries -- a specific trap, caught BY NAME rather than by score -- and it fires on r=1.25 alone.",
+  "VERDICT": "REFUSED, both. Neither r candidate is promotable. On score they are indistinguishable from G0; on decisiveness they are 9-15x worse; r=1.25 additionally emits a false-win lure. And G125's rule refuses both independently: each improves B by 0.911 bits while worsening T from 28.63x to 67.55x, and T does not discriminate BETWEEN them because both carry a q3 body.",
+  "commit": "f5ba6a85b03d496f8a60bfdd882b29185600a34b"
+}
