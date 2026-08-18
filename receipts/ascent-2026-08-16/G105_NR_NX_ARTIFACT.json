@@ -1,0 +1,163 @@
+{
+  "schema": "hawking.nos.nr_nx_artifact.v1",
+  "artifact": "uniform-q4-v1",
+  "NR": {
+    "nr_version": "1.0.0",
+    "nr_kind": "hawking.nos.noetic_representation",
+    "semantic_provenance": {
+      "parent_model": "Qwen3.8-27B (Genesis patient)",
+      "parent_revision": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+      "parameter_count": 26895998464,
+      "patient_note": "abliterated parent; Tabula drift is a Doctor axis and is NOT recorded here because NR states what the representation IS, not how it scored"
+    },
+    "representation": {
+      "tensors": {
+        "count": 755,
+        "payload_bytes": 14297694680,
+        "codec_families": [
+          {
+            "family": "grouped_absmax",
+            "bits": 4,
+            "group": 64,
+            "applies_to": "q4_tensors",
+            "count": 402
+          },
+          {
+            "family": "raw_f32",
+            "applies_to": "f32_tensors",
+            "count": 353
+          }
+        ],
+        "complete_bits_per_weight": 4.252735126866492
+      },
+      "entropy_streams": [],
+      "shared_structures": [],
+      "generated_structures": [],
+      "latent_codes": [],
+      "correction_planes": [],
+      "exact_islands": [],
+      "route_graph": null,
+      "absent_sections_are_measured_not_unfilled": "entropy_streams, shared_structures, generated_structures, latent_codes, correction_planes, exact_islands and route_graph are EMPTY because this campaign measured them absent or refuted: G035/G062 refuted sharing, G042 records GENERATED_BPW_EQUIVALENT and CORRECTION_BPW at 0, G043 records ROUTING_FLOPS at 0 for this dense model, and no packer emits an entropy stream yet."
+    },
+    "kernel_requirements": [
+      {
+        "requires": "grouped_absmax_decoder",
+        "bits": 4,
+        "group": 64,
+        "note": "a REQUIREMENT on the decoder family and its parameters. Naming a specific kernel, threadgroup geometry or device here would make this NX, not NR."
+      },
+      {
+        "requires": "gated_delta_recurrence",
+        "note": "the mixer family the representation assumes; no implementation named"
+      }
+    ]
+  },
+  "NX": {
+    "nx_version": "1.0.0",
+    "nx_kind": "hawking.nos.noetic_executable_genome",
+    "compiled_for_machine_genome": {
+      "chipset": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "unified_memory_bytes": 103079215104,
+      "metal_family": "Metal 4",
+      "measured_roof_gb_s": 595.9,
+      "roof_provenance": "roofline sweep in the G072 run, low arithmetic intensity peak",
+      "genome_digest": "c61afb5cce7ba294cd4bc3b6c19aeba4f726041fff1fd30bece0a5758a506ddb"
+    },
+    "kernel_binding": {
+      "dispatched": [
+        "q80_binary_group_csr_matvec_bytes",
+        "q80_binary_group_csr_matvec_tg256",
+        "q80_binary_group_matvec_simd_bytes",
+        "q80_binary_group_matvec_tg256",
+        "q80_hgravs01_factor_matvec_simd",
+        "q80_hgravs01_factor_matvec_simd3",
+        "q80_sparse_q1_apply_csr",
+        "q80_uniform8_matvec_simd_bytes",
+        "q80_uniform8_matvec_tg256",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_f32_stream_probe",
+        "qwen38_fuse_split_ba_f32",
+        "qwen38_fuse_split_qkvz_f32",
+        "qwen38_gated_delta_decode_vi",
+        "qwen38_gated_delta_decode_vi_simd",
+        "qwen38_gqa_qk_norm_rope_cache_f32",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_hgravu_embedding_lookup",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_ba_to_decay_beta_f32",
+        "qwen80_deltanet_gated_rmsnorm_f32",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_gated_delta_decode_tg",
+        "qwen80_residual_rmsnorm_f32",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+        "qwen_uniform_q4_group64_matvec_vecgroup",
+        "qwen_uniform_q4_group64_matvec_vecgroup_r4",
+        "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+        "sample_argmax_f32_pass1",
+        "sample_argmax_f32_pass2"
+      ],
+      "count": 38,
+      "declared_in_tree": 554,
+      "extraction": "string literals in qwen38_hybrid_decode.rs intersected with declared `kernel void` names, so this lists kernels ACTUALLY dispatched. G071 measured 38 bound against 554 declared; a seal listing all 554 would be a lie about what runs."
+    },
+    "threadgroup_geometry": {
+      "gemv": {
+        "threadgroup": 128,
+        "rows_per_threadgroup": 2,
+        "note": "geo_tpr64 tiling, measured 0.8046 ps/element (G072)"
+      },
+      "mha_decode": {
+        "threadgroup": 512,
+        "note": "swept 256/512/1024 at long context; 512 is the plateau and 1024 buys 0.16% (G060)"
+      }
+    },
+    "residency_plan": {
+      "all_weights": "unified_memory",
+      "basis": "G085 measured the artifact at 13.9% of 103.1 GB RAM and RAM pressure beginning at 677,508 KV positions against a 131,072 maximum context, so no tier below unified memory is reachable on this machine"
+    },
+    "cache_plan": {
+      "cache_resident_token_fraction": 0.004930172,
+      "basis": "G094 measured a 5.8x traffic swing producing zero rank correlation with time, so cache residency is recorded but is NOT an optimisation target here"
+    },
+    "scheduling": {
+      "dispatches_per_token": 964,
+      "host_encode_ns_per_dispatch": 702,
+      "host_ceremony_ms_per_token": 1.07,
+      "gpu_fraction_of_wall": 0.965,
+      "basis": "G093"
+    }
+  },
+  "content_addressing_defect_found_and_fixed_forward": {
+    "found": "The tensor store uses 64-hex filenames that LOOK like content addresses and are not. Across 12 randomly sampled tensors, ZERO have a filename equal to the sha256 of their contents, and none match the sha256 of the payload after the header, of the scales, of the codes, of the bf16 source as f32, or of the bf16 source raw. The manifest records no sha256, hash or digest field for any tensor.",
+    "why_it_matters": "G105's verify says 'rebuild from recipe, compare digests'. There were no digests to compare. G096's verify assumes content-addressed inputs. A substituted or corrupted tensor would not have been detected by name.",
+    "fixed_forward": "This seal now records a real sha256 for all 755 tensor files and a rolling digest over them, so a future rebuild has an anchor to compare against. That does NOT make the existing artifact reproducible -- it makes it VERIFIABLE from here on.",
+    "tensor_digests_recorded": 755,
+    "artifact_rolling_digest": "89e780555634f28aaf86d03108407f29da254af61404a92d2ca750e00b3fa812",
+    "bytes_hashed": 14297694680
+  },
+  "load_and_generate": {
+    "measured_this_session": true,
+    "tps": 32.73,
+    "token_ms": 30.606,
+    "battery_accuracy": "28/30 on the G100 task set",
+    "note": "the artifact loads and generates; that half of the acceptance is met and was measured repeatedly this session"
+  },
+  "byte_reproducibility_NOT_met": {
+    "why": "Reproducing the NR half from the raw parent needs the ENCODER's exact rounding rule and its fusion recipe, and neither is recorded in the artifact. The manifest declares fused_in_proj_layers, so some tensors (in_proj_ba) do not exist in the parent at all and are derived -- the recipe for that derivation is not written down anywhere in the artifact.",
+    "missing_input": [
+      "the encoder's scale rule and rounding mode as a recorded parameter, not inferred",
+      "the in_proj fusion recipe",
+      "a re-pack run to compare against the digests now recorded"
+    ]
+  },
+  "commit": "d10a12578a7829ad40fa96f727c34410505ecd43"
+}
