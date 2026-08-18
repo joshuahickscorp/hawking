@@ -14,7 +14,7 @@
         "weight_ms_per_token": 8.380890991345398,
         "non_gemv_ms_budget_for_100_tps": 1.6191090086546027,
         "reachable": true,
-        "non_gemv_cut_needed_x": 7.79393507944591
+        "non_gemv_cut_needed_x": 3.6245712726139967
       },
       {
         "candidate": "mixed-q3mlp-q3attn-v1",
@@ -22,7 +22,7 @@
         "weight_ms_per_token": 6.506768856543404,
         "non_gemv_ms_budget_for_100_tps": 3.493231143456596,
         "reachable": true,
-        "non_gemv_cut_needed_x": 3.6124808184073136
+        "non_gemv_cut_needed_x": 1.679985022174333
       },
       {
         "candidate": "rANS-L32 over q3 body",
@@ -30,7 +30,7 @@
         "weight_ms_per_token": 5.724322865263571,
         "non_gemv_ms_budget_for_100_tps": 4.275677134736429,
         "reachable": true,
-        "non_gemv_cut_needed_x": 2.951399299418314
+        "non_gemv_cut_needed_x": 1.3725489121530137
       },
       {
         "candidate": "rANS-L8 over q3 body",
@@ -38,7 +38,7 @@
         "weight_ms_per_token": 5.680468407309205,
         "non_gemv_ms_budget_for_100_tps": 4.319531592690795,
         "reachable": true,
-        "non_gemv_cut_needed_x": 2.9214349355271225
+        "non_gemv_cut_needed_x": 1.3586139779439022
       },
       {
         "candidate": "uniform-q2 (DEAD)",
@@ -46,7 +46,7 @@
         "weight_ms_per_token": 4.436942289535798,
         "non_gemv_ms_budget_for_100_tps": 5.563057710464202,
         "reachable": true,
-        "non_gemv_cut_needed_x": 2.2683982724577927
+        "non_gemv_cut_needed_x": 1.0549191299887315
       }
     ]
   },
@@ -67,21 +67,21 @@
           "weight_ms_per_token": 9.728542,
           "non_gemv_ms_budget_for_100_tps": 0.271458,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 46.48686168762755
+          "non_gemv_reduction_needed_x": 21.618725548703665
         },
         {
           "k": 4,
           "weight_ms_per_token": 4.864271,
           "non_gemv_ms_budget_for_100_tps": 5.135729,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 2.4571449350228565
+          "non_gemv_reduction_needed_x": 1.1426958081316207
         },
         {
           "k": 8,
           "weight_ms_per_token": 2.4321355,
           "non_gemv_ms_budget_for_100_tps": 7.5678645,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 1.6674757456347165
+          "non_gemv_reduction_needed_x": 0.7754599728893138
         }
       ]
     },
@@ -101,21 +101,21 @@
           "weight_ms_per_token": 7.553060190204504,
           "non_gemv_ms_budget_for_100_tps": 2.446939809795496,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 5.157147899381577
+          "non_gemv_reduction_needed_x": 2.3983327977693363
         },
         {
           "k": 4,
           "weight_ms_per_token": 3.776530095102252,
           "non_gemv_ms_budget_for_100_tps": 6.2234699048977475,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 2.027684023999042
+          "non_gemv_reduction_needed_x": 0.942974914264717
         },
         {
           "k": 8,
           "weight_ms_per_token": 1.888265047551126,
           "non_gemv_ms_budget_for_100_tps": 8.111734952448874,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 1.5556758910361521
+          "non_gemv_reduction_needed_x": 0.7234674252057902
         }
       ]
     },
@@ -135,21 +135,21 @@
           "weight_ms_per_token": 6.644796534614884,
           "non_gemv_ms_budget_for_100_tps": 3.3552034653851157,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 3.7610924732850872
+          "non_gemv_reduction_needed_x": 1.7490969059089223
         },
         {
           "k": 4,
           "weight_ms_per_token": 3.322398267307442,
           "non_gemv_ms_budget_for_100_tps": 6.677601732692558,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 1.8897848367053847
+          "non_gemv_reduction_needed_x": 0.8788448660045587
         },
         {
           "k": 8,
           "weight_ms_per_token": 1.661199133653721,
           "non_gemv_ms_budget_for_100_tps": 8.33880086634628,
           "reachable": true,
-          "non_gemv_reduction_needed_x": 1.5133147681855161
+          "non_gemv_reduction_needed_x": 0.7037673754369637
         }
       ]
     }
@@ -162,12 +162,14 @@
     "achieved_production_gb_s": 639.2522348492898,
     "published_peak_gb_s": 819.0,
     "g0_weight_addressing_ns": 21293102.5,
-    "g0_production_gpu_ns": 33912333,
-    "g0_non_gemv_ns": 12619230.5,
+    "g0_production_gpu_ns": 28749500,
+    "g0_non_gemv_ns": 5868576,
     "n_params": 26895998464,
     "g0_complete_bpw": 4.255954555664,
     "roof_source_commit": "8772941fcd839e111971601bfcf036e240116f26",
-    "ledger_source_commit": "57ee82ccef7aba803416ec3562c8981277120fd4",
+    "ledger_source_commit": "461fa9e632e72e6f1e81ec85efdce6f27701cde9",
+    "ledger_receipt": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_DN_VI_SIMD.json",
+    "g0_census_gemv_ns": 23276165,
     "roof_contamination_note": "GPU lane lock was held and timings are completed-command-buffer GPU timestamps, but concurrent CPU builds and a repeatedly respawned sealed-model supervisor were present. Unified-memory contention was not excluded; absolute roof values require a clean paired rerun."
   },
   "candidates": [
@@ -187,21 +189,21 @@
         "gb_s": 699.5736545106142,
         "weight_ms": 19.457084,
         "tps_if_non_gemv_were_free": 51.395162810624655,
-        "tps_with_todays_non_gemv": 31.17565142965536,
+        "tps_with_todays_non_gemv": 39.48564420433663,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_measured_production_rate": {
         "gb_s": 639.2522348492898,
         "weight_ms": 21.2931025,
         "tps_if_non_gemv_were_free": 46.96356484453123,
-        "tps_with_todays_non_gemv": 29.487797256532012,
+        "tps_with_todays_non_gemv": 36.8165759711794,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_published_peak": {
         "gb_s": 819.0,
         "weight_ms": 16.619857582417584,
         "tps_if_non_gemv_were_free": 60.16898731177554,
-        "tps_with_todays_non_gemv": 34.200793033669626,
+        "tps_with_todays_non_gemv": 44.467303440015606,
         "clears_100_tps_even_with_free_non_gemv": false
       }
     },
@@ -221,21 +223,21 @@
         "gb_s": 699.5736545106142,
         "weight_ms": 15.106120380409008,
         "tps_if_non_gemv_were_free": 66.19833384201618,
-        "tps_with_todays_non_gemv": 36.068073739207726,
+        "tps_with_todays_non_gemv": 47.67649466115895,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_measured_production_rate": {
         "gb_s": 639.2522348492898,
         "weight_ms": 16.53157120755546,
         "tps_if_non_gemv_were_free": 60.490318037221286,
-        "tps_with_todays_non_gemv": 34.30437385675107,
+        "tps_with_todays_non_gemv": 44.64256376238032,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_published_peak": {
         "gb_s": 819.0,
         "weight_ms": 12.903350231990231,
         "tps_if_non_gemv_were_free": 77.4992526763151,
-        "tps_with_todays_non_gemv": 39.18099076660343,
+        "tps_with_todays_non_gemv": 53.27103823239232,
         "clears_100_tps_even_with_free_non_gemv": false
       }
     },
@@ -255,21 +257,21 @@
         "gb_s": 699.5736545106142,
         "weight_ms": 13.289593069229769,
         "tps_if_non_gemv_were_free": 75.24684877788793,
-        "tps_with_todays_non_gemv": 38.59688948546607,
+        "tps_with_todays_non_gemv": 52.19705475958637,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_measured_production_rate": {
         "gb_s": 639.2522348492898,
         "weight_ms": 14.543631892959864,
         "tps_if_non_gemv_were_free": 68.75861596057516,
-        "tps_with_todays_non_gemv": 36.81497132125451,
+        "tps_with_todays_non_gemv": 48.990290773243515,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_published_peak": {
         "gb_s": 819.0,
         "weight_ms": 11.351708413186813,
         "tps_if_non_gemv_were_free": 88.09246710727182,
-        "tps_with_todays_non_gemv": 41.71718110924238,
+        "tps_with_todays_non_gemv": 58.07105016420217,
         "clears_100_tps_even_with_free_non_gemv": false
       }
     },
@@ -289,21 +291,21 @@
         "gb_s": 699.5736545106142,
         "weight_ms": 13.187780520531339,
         "tps_if_non_gemv_were_free": 75.82777090073301,
-        "tps_with_todays_non_gemv": 38.749160032691414,
+        "tps_with_todays_non_gemv": 52.475928382353615,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_measured_production_rate": {
         "gb_s": 639.2522348492898,
         "weight_ms": 14.43221206071666,
         "tps_if_non_gemv_were_free": 69.28944750762919,
-        "tps_with_todays_non_gemv": 36.96660530230546,
+        "tps_with_todays_non_gemv": 49.25917146709515,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_published_peak": {
         "gb_s": 819.0,
         "weight_ms": 11.264742141186813,
         "tps_if_non_gemv_were_free": 88.77256021189702,
-        "tps_with_todays_non_gemv": 41.86908162319471,
+        "tps_with_todays_non_gemv": 58.36581050789563,
         "clears_100_tps_even_with_free_non_gemv": false
       }
     },
@@ -323,21 +325,21 @@
         "gb_s": 699.5736545106142,
         "weight_ms": 10.300809176470588,
         "tps_if_non_gemv_were_free": 97.07975197562435,
-        "tps_with_todays_non_gemv": 43.62994192486442,
+        "tps_with_todays_non_gemv": 61.84527049644304,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_measured_production_rate": {
         "gb_s": 639.2522348492898,
         "weight_ms": 11.272818970588235,
         "tps_if_non_gemv_were_free": 88.70895581744787,
-        "tps_with_todays_non_gemv": 41.85492756621935,
+        "tps_with_todays_non_gemv": 58.33830920504618,
         "clears_100_tps_even_with_free_non_gemv": false
       },
       "at_published_peak": {
         "gb_s": 819.0,
         "weight_ms": 8.798748131868132,
         "tps_if_non_gemv_were_free": 113.65253158890935,
-        "tps_with_todays_non_gemv": 46.68974683316216,
+        "tps_with_todays_non_gemv": 68.17876192067442,
         "clears_100_tps_even_with_free_non_gemv": true
       }
     }
@@ -359,8 +361,10 @@
     },
     {
       "roof": "at_measured_kernel_roof",
-      "non_gemv_ms_allowed": 12.6192305,
-      "verdict": "IMPOSSIBLE: non-GEMV alone exceeds the 10 ms token"
+      "gb_s": 699.5736545106142,
+      "non_gemv_ms_allowed": 5.868576,
+      "max_active_gemv_gb": 2.89023538601286,
+      "max_complete_bpw": 1.0669514068609827
     },
     {
       "roof": "at_published_peak",
@@ -378,9 +382,11 @@
     },
     {
       "roof": "at_published_peak",
-      "non_gemv_ms_allowed": 12.6192305,
-      "verdict": "IMPOSSIBLE: non-GEMV alone exceeds the 10 ms token"
+      "gb_s": 819.0,
+      "non_gemv_ms_allowed": 5.868576,
+      "max_active_gemv_gb": 3.383636256,
+      "max_complete_bpw": 1.2137095562258562
     }
   ],
-  "commit": "aa2175611705ba8673f962d04259db2597abc779"
+  "commit": "143620298df358fb05e36dad36c994f4f1181be5"
 }

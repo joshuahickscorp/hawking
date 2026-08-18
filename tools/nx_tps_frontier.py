@@ -15,7 +15,14 @@ import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ROOF = ROOT / "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
-LEDGER = ROOT / "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+# Authority is the newest census actually taken at the current kernel genome.
+# A stale non-GEMV figure silently inflates every "cut needed" number below.
+LEDGER_CANDIDATES = [
+    ROOT / "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_DN_VI_SIMD.json",
+    ROOT / "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER_HEAD.json",
+    ROOT / "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+]
+LEDGER = next(p for p in LEDGER_CANDIDATES if p.exists())
 AMORT = ROOT / "receipts/ascent-2026-08-16/NX_MATMUL_K_AMORTIZATION.json"
 
 # Language parameter count. BPW denominator, always (ledger ASSUMPTIONS).
@@ -73,7 +80,18 @@ def main():
     elems = {k: v / q4_bpe for k, v in organs.items()}
 
     production_gpu_ns = ledger["median_gpu_ns"]
-    non_gemv_ns = production_gpu_ns - g0_weight_ns
+    # GEMV classes vs everything else, both from the SAME census, so the split
+    # cannot straddle two commits.
+    gemv_families = {"mlp_matvecs_64", "dn_gemvs", "gqa_gemvs", "lm_head"}
+    prod_families = {
+        "mlp_full_64", "dn_gemvs", "gated_delta_48", "gqa_gemvs", "rope_cache_16",
+        "gated_rmsnorm_48", "post_norms", "input_norms", "lm_head", "mha_16",
+        "rearrange_48", "argmax", "ba_to_decay_48", "mixer_residual_64",
+        "sigmoid_16", "final_norm", "embed", "silu_64", "mlp_residual_64",
+    }
+    fam = {f["name"]: f["median_gpu_ns"] for f in ledger["isolated"]}
+    census_gemv_ns = sum(v for k, v in fam.items() if k in gemv_families)
+    non_gemv_ns = sum(v for k, v in fam.items() if k in prod_families) - census_gemv_ns
 
     def candidate(name, per_organ, note=""):
         """per_organ maps organ -> bytes-per-element for that organ."""
@@ -266,6 +284,8 @@ def main():
             "g0_complete_bpw": G0_COMPLETE_BPW,
             "roof_source_commit": roof.get("source_head_at_measurement"),
             "ledger_source_commit": ledger.get("commit"),
+            "ledger_receipt": str(LEDGER.relative_to(ROOT)),
+            "g0_census_gemv_ns": census_gemv_ns,
             "roof_contamination_note": roof.get("contamination_note"),
         },
         "candidates": cands,
