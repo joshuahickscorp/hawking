@@ -1357,6 +1357,14 @@ kernel void qwen_uniform_q4_group64_matmul_r##RVAL##k##KVAL##_geo_tpr64_tg128(\
         red, group_id, simd_lane, simd_id);                                   \
 }
 
+// R-only baselines. Without these the RxK table cannot separate a KERNEL TILING win
+// (more rows per activation load, available at K=1 and needing no multi-token machinery)
+// from a genuine MULTI-TOKEN win. Every amortization_x in that table is measured against
+// serial r1k1, which credits R and K together.
+QWEN_UNIFORM_Q4_MATMUL_RK(2, 1)
+QWEN_UNIFORM_Q4_MATMUL_RK(4, 1)
+QWEN_UNIFORM_Q4_MATMUL_RK(8, 1)
+QWEN_UNIFORM_Q4_MATMUL_RK(16, 1)
 QWEN_UNIFORM_Q4_MATMUL_RK(2, 2)
 QWEN_UNIFORM_Q4_MATMUL_RK(4, 4)
 QWEN_UNIFORM_Q4_MATMUL_RK(8, 4)

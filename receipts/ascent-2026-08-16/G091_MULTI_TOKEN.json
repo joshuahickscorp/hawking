@@ -1,0 +1,95 @@
+{
+  "schema": "hawking.nos.multi_token_execution.v1",
+  "obligation": "G091 -- multi-token internal execution, and what it can actually reach",
+  "confound_checked_by_building_the_baseline": {
+    "why": "Every amortization_x in NX_MATMUL_K_AMORTIZATION is measured against serial r1k1, which credits the ROW TILING and the MULTI-TOKEN batching together. R tiling needs no multi-token machinery at all -- it is available at K=1 -- so the table could not say how much of r4k4's 2.567x was actually multi-token. Four (R,1) kernels were added to the shader macro and the harness and measured.",
+    "best_R_only_at_K1": 1.119,
+    "r4k4_vs_serial": 2.567,
+    "r4k4_vs_best_R_only": 2.293,
+    "verdict": "The confound was real but SMALL. Kernel tiling alone buys 1.119x; the genuine multi-token component is 2.293x. The measurement CONFIRMS the lever rather than deflating it.",
+    "also_found": "r16k1 is 0.812x -- a REGRESSION -- and r4k8, r8k4 and r16k4 all fall back from r4k4. The sweet spot is r4k4 and the surface is not monotone in either axis."
+  },
+  "acceptance_is_the_binding_term": [
+    {
+      "acceptance": 1.0,
+      "accepted_per_step": 4.0,
+      "token_ms_nongemv_serial": 17.42842734709778,
+      "tps_nongemv_serial": 57.37752351858197,
+      "token_ms_nongemv_amortized": 10.664177347097779,
+      "tps_nongemv_amortized": 93.77188389239858
+    },
+    {
+      "acceptance": 0.9,
+      "accepted_per_step": 3.439,
+      "token_ms_nongemv_serial": 20.27150607397241,
+      "tps_nongemv_serial": 49.330325845100845,
+      "token_ms_nongemv_amortized": 12.403811976851152,
+      "tps_nongemv_amortized": 80.62037717648968
+    },
+    {
+      "acceptance": 0.8,
+      "accepted_per_step": 2.9520000000000004,
+      "token_ms_nongemv_serial": 23.61575521286962,
+      "tps_nongemv_serial": 42.3446123567135,
+      "token_ms_nongemv_amortized": 14.450104806365552,
+      "tps_nongemv_amortized": 69.20365031259016
+    },
+    {
+      "acceptance": 0.7,
+      "accepted_per_step": 2.533,
+      "token_ms_nongemv_serial": 27.522190836317066,
+      "tps_nongemv_serial": 36.334316768142024,
+      "token_ms_nongemv_amortized": 16.84039059944379,
+      "tps_nongemv_amortized": 59.381045474861395
+    },
+    {
+      "acceptance": 0.6,
+      "accepted_per_step": 2.176,
+      "token_ms_nongemv_serial": 32.03755027040033,
+      "tps_nongemv_serial": 31.21337279410859,
+      "token_ms_nongemv_amortized": 19.603267182165034,
+      "tps_nongemv_amortized": 51.011904837464826
+    },
+    {
+      "acceptance": 0.5,
+      "accepted_per_step": 1.875,
+      "token_ms_nongemv_serial": 37.18064500714193,
+      "tps_nongemv_serial": 26.895714149335294,
+      "token_ms_nongemv_amortized": 22.750245007141928,
+      "tps_nongemv_amortized": 43.95557057456183
+    },
+    {
+      "acceptance": 0.4,
+      "accepted_per_step": 1.624,
+      "token_ms_nongemv_serial": 42.92716095344281,
+      "tps_nongemv_serial": 23.295274548544278,
+      "token_ms_nongemv_amortized": 26.266446667728516,
+      "tps_nongemv_amortized": 38.07138486031383
+    },
+    {
+      "acceptance": 0.37,
+      "accepted_per_step": 1.557553,
+      "token_ms_nongemv_serial": 44.758482946256805,
+      "tps_nongemv_serial": 22.342133472234472,
+      "token_ms_nongemv_amortized": 27.38700345246108,
+      "tps_nongemv_amortized": 36.513669768064275
+    },
+    {
+      "acceptance": 0.3,
+      "accepted_per_step": 1.417,
+      "token_ms_nongemv_serial": 49.19810119152514,
+      "tps_nongemv_serial": 20.32598770645766,
+      "token_ms_nongemv_amortized": 30.103535207050893,
+      "tps_nongemv_amortized": 33.218689868882194
+    }
+  ],
+  "breakeven_acceptance": 0.6302411121263896,
+  "ceiling": {
+    "perfect_acceptance_nongemv_serial_tps": 57.37752351858197,
+    "perfect_acceptance_nongemv_amortized_tps": 93.77188389239858,
+    "statement": "At PERFECT acceptance the ceiling is 57.4 TPS if the 9.019 ms non-GEMV remainder does not amortize with K, and 93.8 TPS if it fully does. Neither reaches 100 -- the amortized case comes within 6%. Whether that remainder amortizes is UNMEASURED because the runtime has no batched path, and it is the single number that decides between 57 and 94 TPS."
+  },
+  "token_unit_is_unchanged": "The verify forbids inflating TPS by changing the token unit. Speculative verification does NOT change it: the external tokenizer is untouched and only ACCEPTED tokens are counted, so TPS here means the same thing it means at K=1 and useful text per wall second moves with it. No internal alphabet or macro unit is proposed.",
+  "commit": "187879ea14fae80bacdf79e6435e8e0dca2bdcd9",
+  "model_correction": "A first pass computed the 'amortized' column as NONGEMV*K/kept, which equals the serial case at perfect acceptance and is simply the same number twice. Corrected: a K=4 step costs 33.638 ms of GEMV plus either 36.076 ms (non-GEMV per position) or 9.019 ms (non-GEMV amortized), divided by the accepted count."
+}

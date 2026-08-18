@@ -44,8 +44,13 @@ mod macos {
     const CODE_BYTES_PER_GROUP: usize = 32;
     const REPS: usize = 5;
     const KS: [usize; 4] = [1, 2, 4, 8];
-    const RK: [(usize, usize); 8] =
-        [(2, 2), (2, 4), (4, 2), (4, 4), (4, 8), (8, 4), (8, 8), (16, 4)];
+    // (R, 1) rows first: they are the baselines that separate a kernel-tiling win from a
+    // multi-token one. amortization_x is measured against serial r1k1, so without them the
+    // table credits R and K together and a pure tiling gain reads as multi-token amortization.
+    const RK: [(usize, usize); 12] = [
+        (2, 1), (4, 1), (8, 1), (16, 1),
+        (2, 2), (2, 4), (4, 2), (4, 4), (4, 8), (8, 4), (8, 8), (16, 4),
+    ];
 
     fn row_bytes() -> usize {
         (COLS / GROUP) * CODE_BYTES_PER_GROUP
