@@ -10540,15 +10540,28 @@ mod metal_dispatch {
         ab.set_u32(3, group_size);
         ab.set_f32(4, scale);
 
-        // TG=128 matches Qwen-3B head_dim (128), so Phase 4 (per-output-element
-        // accumulation) achieves full TG occupancy.
-        const TG_SIZE: u32 = 128;
-        let shmem_bytes = ((seq_len + TG_SIZE as usize) * std::mem::size_of::<f32>()) as u64;
+        // TG=128 was chosen so Phase 4 matches Qwen-3B's head_dim of 128. Qwen3.8's head_dim
+        // is 256, so on this model Phase 4 runs two iterations per thread and the dispatch is
+        // only n_heads * 128 = 3072 threads -- about 4% occupancy on an M3 Ultra, which is
+        // the leading suspect for the measured 76x gap between the KV bandwidth bound and the
+        // 15.6 us per context token (ledger G101). Tunable so the hypothesis can be measured
+        // rather than argued. MEASURED on Qwen3.8, G0, prefill amortised over 128 tokens,
+        // slope in us per context token: TG=128 15.98, TG=256 7.18, TG=512 6.19, TG=1024 6.41.
+        // 512 is the optimum and cuts the context slope 2.58x, so it is now the default. The
+        // reduction order changes with tg_size, so this was re-gated: 10/10 with both controls
+        // behaving. Still tunable, because the real fix is split-K over the sequence and this
+        // constant only buys occupancy within one threadgroup per head.
+        let tg_size: u32 = std::env::var("HAWKING_MHA_TG")
+            .ok()
+            .and_then(|v| v.parse::<u32>().ok())
+            .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+            .unwrap_or(512);
+        let shmem_bytes = ((seq_len + tg_size as usize) * std::mem::size_of::<f32>()) as u64;
 
         tcb.dispatch_threads(
             "mha_decode_f32",
-            (n_heads as u32 * TG_SIZE, 1, 1),
-            (TG_SIZE, 1, 1),
+            (n_heads as u32 * tg_size, 1, 1),
+            (tg_size, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(ab.handle()), 0);
                 enc.set_buffer(1, Some(q), 0);
