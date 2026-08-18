@@ -1,0 +1,26 @@
+{
+  "compact-q3attn-r1p2-v1": {
+    "token_agreement": 0.0693359375,
+    "sequences_exact": 0,
+    "sequences": 32,
+    "median_first_divergence": 2,
+    "never_rejoin": 11,
+    "fallbacks": 0
+  },
+  "c-q3r1p25": {
+    "token_agreement": 0.0546875,
+    "sequences_exact": 0,
+    "sequences": 32,
+    "median_first_divergence": 1,
+    "never_rejoin": 11,
+    "fallbacks": 0
+  },
+  "mixed-q4down-v1": {
+    "token_agreement": 0.03173828125,
+    "sequences_exact": 0,
+    "sequences": 32,
+    "median_first_divergence": 0,
+    "never_rejoin": 10,
+    "fallbacks": 0
+  }
+}
