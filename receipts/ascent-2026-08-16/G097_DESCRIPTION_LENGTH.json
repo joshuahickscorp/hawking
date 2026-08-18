@@ -1,0 +1,73 @@
+{
+  "schema": "hawking.nos.description_length_proxy.v1",
+  "obligation": "G097 -- PROGRAM + OBJECT + REQUIRED_RUNTIME as the description-length currency",
+  "THIS_IS_A_PROXY_NOT_KOLMOGOROV": "True Kolmogorov complexity is UNCOMPUTABLE and is not claimed anywhere here. This is an IR-RELATIVE proxy: it measures the bytes THIS compiler emits for THIS runtime on THIS machine. A different IR would give different numbers for the same function, and that is a property of the proxy rather than of the model.",
+  "classes": {
+    "OBJECT_BYTES": "tensor payload on disk",
+    "PROGRAM_BYTES": "the recipe and metadata describing how to execute it (manifests, pack reports, receipts inside the artifact root)",
+    "REQUIRED_RUNTIME_BYTES": "the decode binary plus the shader source that compiles into its metallib -- shared across all artifacts, counted anyway because the acceptance says it is part of the description"
+  },
+  "programs": [
+    {
+      "program": "uniform-q4-v1",
+      "OBJECT_BYTES": 14308279520,
+      "PROGRAM_BYTES": 238879,
+      "REQUIRED_RUNTIME_BYTES": 7770096,
+      "total_description_bytes": 14316288495,
+      "object_bpw": 4.255883503012978,
+      "total_description_bpw": 4.258265708681445,
+      "token_ns": 30549917,
+      "tps": 32.73,
+      "doctor": {
+        "FACTUAL": 1.0,
+        "REASONING": 1.0,
+        "PROCEDURAL": 0.8,
+        "LANGUAGE": 0.75,
+        "TOOL": 1.0
+      }
+    },
+    {
+      "program": "g032-chanscale-a025-compact",
+      "OBJECT_BYTES": 11245158827,
+      "PROGRAM_BYTES": 145749,
+      "REQUIRED_RUNTIME_BYTES": 7770096,
+      "total_description_bytes": 11253074672,
+      "object_bpw": 3.344782709458144,
+      "total_description_bpw": 3.347137214351679,
+      "token_ns": 33593042,
+      "tps": 29.77,
+      "doctor": {
+        "FACTUAL": 1.0,
+        "REASONING": 1.0,
+        "PROCEDURAL": 0.9,
+        "LANGUAGE": 0.83,
+        "TOOL": 1.0
+      }
+    }
+  ],
+  "commit": "fdde2e16391ffce26f57c6c5d00e5290dad8eb67",
+  "the_comparison_the_acceptance_asks_for": {
+    "doctor_equivalent": "G076 scored both on six separated dimensions: identical at 1.00 on FACTUAL, REASONING and TOOL, and g032 is BETTER on PROCEDURAL (0.90 vs 0.80) and LANGUAGE (0.83 vs 0.75). Within that battery's resolution they are Doctor-equivalent, with g032 if anything favoured.",
+    "description_length_prefers_g032": {
+      "bpw": [
+        4.258265708681445,
+        3.347137214351679
+      ],
+      "shorter_by_pct": 21.39670365031996
+    },
+    "machine_conditioned_cost_prefers_q4": {
+      "token_ns": [
+        30549917,
+        33593042
+      ],
+      "tps": [
+        32.73,
+        29.77
+      ],
+      "q4_faster_by_pct": 9.942895532415164
+    },
+    "verdict": "The two currencies DISAGREE. g032 is 21.4% shorter to describe and equal-or-better on every scored Doctor dimension, yet costs 10.0% more TIME per token. The acceptance says to compare on a machine-conditioned cost rather than on aesthetics, and on that basis uniform-q4-v1 is the better program despite being the longer description."
+  },
+  "the_currency_is_BPW_wearing_a_different_name": "PROGRAM_BYTES plus REQUIRED_RUNTIME_BYTES is 0.070% of the total description on this system -- the object payload is 99.93% of it. So minimum executable description length reduces to minimum BPW to within a tenth of a percent, and it therefore INHERITS BPW's measured failure to predict machine cost: G094 scored BPW at Spearman +0.700 against time with a clear inversion (q4 at 4.25 bits beats q3 at 3.25). A description-length objective is not a new currency here; it is the old one with a runtime constant added.",
+  "when_it_would_stop_being_BPW": "The PROGRAM and RUNTIME terms only matter when the object shrinks toward them. At 6.27 MB of runtime, they reach 1% of the description only below about 0.03 BPW, which is two orders of magnitude past anything this campaign has produced. On this machine the distinction is currently bookkeeping, and saying so is more useful than tracking three numbers that move as one."
+}
