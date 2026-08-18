@@ -1,0 +1,98 @@
+{
+  "schema": "hawking.nos.proof_carrying_coverage.v1",
+  "obligation": "G049 -- every IR node declares its equivalence mode; DOCTOR_COVERAGE reported",
+  "artifact": "g032-chanscale-a025-compact",
+  "artifact_bytes": 11245304576,
+  "ir_nodes": [
+    {
+      "node": "channel_scale_fold (gate/up/down + post_attention_layernorm)",
+      "equivalence_mode": "algebraic",
+      "class": "paired scaling",
+      "EQUIVALENCE_CHECK": "unquantized folded block reproduces the reference block output",
+      "check_actually_run": true,
+      "check_result": "max 2.05e-06 relative, i.e. f32 rounding",
+      "receipt": "G032_CHANNEL_SCALE_BLOCK_FOLD.json"
+    },
+    {
+      "node": "compaction (records addressed == bytes on disk)",
+      "equivalence_mode": "algebraic",
+      "class": "byte identity",
+      "EQUIVALENCE_CHECK": "independent find+stat walk vs the accounting tool vs addressed bytes",
+      "check_actually_run": true,
+      "check_result": "3.344826061335 from both, addressed 11,245,131,631",
+      "receipt": "G029_PROTECTED_VERIFICATION.json"
+    },
+    {
+      "node": "R x K weight-sweep amortization kernel",
+      "equivalence_mode": "algebraic",
+      "class": "reassociation-free restructuring",
+      "EQUIVALENCE_CHECK": "uniform-position and per-position controls against the K=1 kernel",
+      "check_actually_run": true,
+      "check_result": "both exactly 0.0 error at every tile",
+      "receipt": "NX_MATMUL_K_AMORTIZATION.json"
+    },
+    {
+      "node": "deltanet vi simd reduction retile",
+      "equivalence_mode": "behavioural",
+      "class": "tree vs serial reduction, NOT bit-identical",
+      "EQUIVALENCE_CHECK": "greedy token ids vs the oracle",
+      "check_actually_run": true,
+      "check_result": "identical on all 16 tokens, fallbacks 0",
+      "receipt": "QWEN38_TOKEN_NS_DN_VI_SIMD.json"
+    },
+    {
+      "node": "q3 grouped quantization of MLP and attention",
+      "equivalence_mode": "behavioural",
+      "class": "NOT an equivalence -- lossy by construction",
+      "EQUIVALENCE_CHECK": "capability gate with watched controls, plus adversarial distinguisher",
+      "check_actually_run": true,
+      "check_result": "10/10 with negative control at 0/10; distinguishability 0.022 at k=48",
+      "receipt": "G032_CHANSCALE_CAPABILITY.json + G048_DISTINGUISHER_K48.json"
+    }
+  ],
+  "doctor_coverage": [
+    {
+      "class": "MLP GEMV (gate/up/down)",
+      "bytes": 6952112640,
+      "tier": "adversarial test",
+      "why": "executed on EVERY token of every gate and distinguisher run; covered by the k=48 adversarial score and the watched-control capability gate",
+      "fraction": 0.6182235966144809
+    },
+    {
+      "class": "attention GEMV + lm_head + norms",
+      "bytes": 3617364773,
+      "tier": "adversarial test",
+      "why": "same: dense, executed every token, inside both instruments",
+      "fraction": 0.3216777943676392
+    },
+    {
+      "class": "embedding rows ever gathered",
+      "bytes": 867681,
+      "tier": "functional test",
+      "why": "319 distinct token ids appear across EVERY receipt on disk",
+      "fraction": 7.7159404099363e-05
+    },
+    {
+      "class": "embedding rows NEVER gathered",
+      "bytes": 674562759,
+      "tier": "ASSUMPTION ONLY",
+      "why": "248,001 of 248,320 vocabulary rows have never been read by any test in this campaign -- not mis-tested, never executed at all",
+      "fraction": 0.05998617062268532
+    }
+  ],
+  "coverage_by_tier": {
+    "proof": 0,
+    "adversarial test": 0.9399013909821201,
+    "functional test": 7.7159404099363e-05,
+    "ASSUMPTION ONLY": 0.05998617062268532
+  },
+  "assumption_only_fraction": 0.05998617062268532,
+  "vocabulary_coverage": {
+    "vocab_rows": 248320,
+    "distinct_ids_ever_touched": 319,
+    "fraction": 0.0012846327319587629,
+    "note": "319 distinct token ids across EVERY receipt on disk. The thick v2 capture alone contributes 260 of them: its 23,216 tokens use only 260 distinct ids because the prompts are heavily templated. Verified complete -- sum of per-prompt id lists equals the declared n_tokens exactly."
+  },
+  "honest_note": "No byte class is at the PROOF tier for equivalence to the parent, because quantization is not an equivalence. The algebraic checks above prove the TRANSFORMS (the fold, the compaction, the K-tile) exact; they do not make the quantized weights provably the parent's. Calling that 'proof coverage' would be the exact conflation this obligation exists to prevent.",
+  "commit": "c95507b785d849dcc9442134a291de80cf35985c"
+}
