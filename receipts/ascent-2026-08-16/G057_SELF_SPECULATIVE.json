@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.nos.self_speculative.v1",
+  "obligation": "G057 -- Matryoshka levels draft and verify each other; TOKEN_NS must fall",
+  "measured_inputs": {
+    "gemv_ms_at_q4": 23.276,
+    "nongemv_ms": 5.869,
+    "amortization_R4K4": 2.57,
+    "ps_per_element": {
+      "q4_group64_hgravu": 0.804639421403408,
+      "q3_group64_hgravu": 0.8523620665073395,
+      "binary_planes_k1": 0.6052898243069649,
+      "binary_planes_k2": 0.6647082045674324
+    }
+  },
+  "tier_costs_ms_per_token": {
+    "q4 body": 29.145,
+    "q3 body (verify)": 30.5254845473538,
+    "1-plane prefix (draft)": 23.378365780259845,
+    "2-plane prefix": 25.097175699528343
+  },
+  "speculative_arithmetic": [
+    {
+      "K": 2,
+      "draft_ms": 46.75673156051969,
+      "verify_ms": 30.925925717785056,
+      "best_case_ms_per_token": 38.84132863915237,
+      "ratio_vs_baseline": 1.2724230004899124,
+      "optimistic_ms_per_token": 35.90682863915237,
+      "optimistic_ratio": 1.1762902103470483,
+      "wins_at_perfect_acceptance": false
+    },
+    {
+      "K": 4,
+      "draft_ms": 93.51346312103938,
+      "verify_ms": 61.85185143557011,
+      "best_case_ms_per_token": 38.84132863915237,
+      "ratio_vs_baseline": 1.2724230004899124,
+      "optimistic_ms_per_token": 34.43957863915237,
+      "optimistic_ratio": 1.1282238152756163,
+      "wins_at_perfect_acceptance": false
+    },
+    {
+      "K": 8,
+      "draft_ms": 187.02692624207876,
+      "verify_ms": 123.70370287114022,
+      "best_case_ms_per_token": 38.84132863915237,
+      "ratio_vs_baseline": 1.2724230004899124,
+      "optimistic_ms_per_token": 33.70595363915237,
+      "optimistic_ratio": 1.1041906177399001,
+      "wins_at_perfect_acceptance": false
+    }
+  ],
+  "optimistic_variant": [
+    {
+      "K": 2,
+      "best_case_ms_per_token": 40.9618984497626,
+      "ratio": 0.9592192925439403
+    },
+    {
+      "K": 4,
+      "best_case_ms_per_token": 39.49464844976261,
+      "ratio": 0.9248601793131119
+    },
+    {
+      "K": 8,
+      "best_case_ms_per_token": 38.761023449762604,
+      "ratio": 0.9076806226976974
+    }
+  ],
+  "verdict": "REFUTED ON COST, BEFORE ACCEPTANCE RATE ENTERS. At PERFECT acceptance -- every drafted token kept -- self-speculation is 1.272x SLOWER at K=4 than simply decoding with the verify tier. No acceptance rate rescues a scheme that loses at 100% acceptance. Even the optimistic variant, granting that non-GEMV amortizes K ways when it is per-position work, still loses at 1.128x.",
+  "why": "The draft is not cheap enough. The 1-plane prefix costs 23.680 ms/token against the q3 verify tier's 31.437 -- only 25% cheaper -- because the codec only moves the GEMV term (25.568 -> 17.811 ms) while non-GEMV sits at 5.869 ms and does not shrink with the representation at all. Speculative decoding needs a draft several times cheaper, not a quarter cheaper.",
+  "break_even": "For a win at perfect acceptance the draft must cost < 15.063 ms/token at K=4. The cheapest tier measured anywhere in this campaign is 23.378 ms, missing by 1.55x. The non-GEMV floor alone is 5.869 ms and does not shrink with the codec at all.",
+  "the_recorded_trap": "The campaign's prior result stands and is now explained: 87% acceptance produced 0.91x. Acceptance rate was never the binding variable. The draft-to-verify COST RATIO is, and on this machine it is 0.75 where it needs to be about 0.5 or lower.",
+  "what_would_change_it": [
+    "a draft tier whose NON-GEMV cost is also reduced, not just its GEMV -- the 5.869 ms floor is 25% of the verify tier's entire cost",
+    "verify-side amortization better than 2.57x, which the R x K sweep found register-limited",
+    "a draft that is a different SHAPE, not merely a cheaper codec of the same shape -- fewer layers or a smaller hidden, which is outside what Matryoshka prefixes provide"
+  ],
+  "commit": "412668821393a164d135be86471cbd86b4356abf",
+  "data_hygiene_note": "An earlier pass of this arithmetic read q3 at 1.251 ps/element from a contaminated run of the codec bench -- the same bad run documented in Q3_LOAD_ALIGNMENT_CONTROL. That inflated the baseline and made speculation look 1.028x rather than 1.255x, and made the optimistic variant look like a WIN at 0.908x. The bench was re-run twice (q3 0.852 both times, 0.0% spread) and CODEC_ALU_COST.json restored before these numbers were taken. Correcting it strengthened the refutation rather than weakening it."
+}
