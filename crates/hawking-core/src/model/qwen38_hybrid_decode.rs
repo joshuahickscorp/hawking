@@ -2007,8 +2007,19 @@ mod device {
             let kd = layout.key_head_dim as u32;
             let vd = layout.value_head_dim as u32;
             let (kernel, grid) = if self.deltanet_vi_parallel {
+                // Both 128-element reductions in the vi kernel run on thread 0
+                // while 127 lanes wait. HAWKING_DN_VI_SIMD=0 restores it; the
+                // simd sibling is not bit-identical (tree vs serial
+                // association) and is gated on greedy token identity.
+                let simd = std::env::var("HAWKING_DN_VI_SIMD")
+                    .map(|v| v != "0")
+                    .unwrap_or(true);
                 (
-                    "qwen38_gated_delta_decode_vi",
+                    if simd {
+                        "qwen38_gated_delta_decode_vi_simd"
+                    } else {
+                        "qwen38_gated_delta_decode_vi"
+                    },
                     (kd, heads, vd),
                 )
             } else {

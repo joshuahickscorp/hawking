@@ -362,6 +362,69 @@ kernel void qwen38_gated_delta_decode_vi(
     }
 }
 
+// simd-reduced sibling of `qwen38_gated_delta_decode_vi`. Same launch
+// geometry, same state arithmetic, same memory traffic. The vi kernel spends
+// both of its 128-element reductions on thread 0 alone while the other 127
+// lanes wait at a barrier; this replaces each with a simdgroup tree plus a
+// 4-partial combine.
+//
+// NOT bit-identical: a tree reduction does not associate the same way a
+// left-to-right serial loop does. Greedy token identity against the oracle is
+// the gate this has to clear, not intermediate bitwise equality.
+kernel void qwen38_gated_delta_decode_vi_simd(
+    device float* state            [[buffer(0)]],
+    device const float* query      [[buffer(1)]],
+    device const float* key        [[buffer(2)]],
+    device const float* value      [[buffer(3)]],
+    device const float* decay      [[buffer(4)]],
+    device const float* beta       [[buffer(5)]],
+    device float* output           [[buffer(6)]],
+    constant uint& heads           [[buffer(7)]],
+    constant uint& key_dim         [[buffer(8)]],
+    constant uint& value_dim       [[buffer(9)]],
+    threadgroup float* scratch     [[threadgroup(0)]],
+    uint tid                        [[thread_index_in_threadgroup]],
+    uint simd_lane                  [[thread_index_in_simdgroup]],
+    uint simd_id                    [[simdgroup_index_in_threadgroup]],
+    uint3 group                     [[threadgroup_position_in_grid]])
+{
+    const uint head = group.y;
+    const uint vi = group.z;
+    if (head >= heads || vi >= value_dim || key_dim != 128u || value_dim != 128u) {
+        return;
+    }
+    const uint state_base = head * key_dim * value_dim;
+    const uint key_base = head * key_dim;
+    const uint value_base = head * value_dim;
+    const float d = decay[head];
+    const float b = beta[head];
+    const uint ki = tid;
+    const uint index = state_base + ki * value_dim + vi;
+
+    const float decayed = state[index] * d;
+    state[index] = decayed;
+
+    float part = simd_sum(decayed * key[key_base + ki]);
+    if (simd_lane == 0u) {
+        scratch[simd_id] = part;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const float kv_mem = scratch[0] + scratch[1] + scratch[2] + scratch[3];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const float delta = (value[value_base + vi] - kv_mem) * b;
+    state[index] += key[key_base + ki] * delta;
+
+    float out = simd_sum(state[index] * query[key_base + ki]);
+    if (simd_lane == 0u) {
+        scratch[simd_id] = out;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0u) {
+        output[value_base + vi] = scratch[0] + scratch[1] + scratch[2] + scratch[3];
+    }
+}
+
 kernel void qwen38_attention_apply_sigmoid_gate(
     device const float* attention_output    [[buffer(0)]],
     device const float* q_proj              [[buffer(1)]],

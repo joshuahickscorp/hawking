@@ -1354,6 +1354,7 @@ mod imp {
             "qwen38_qkvz_rearrange_conv_l2_f32" => "qwen38_qkvz_rearrange_conv_l2_f32",
             "qwen38_gqa_qk_norm_rope_cache_f32" => "qwen38_gqa_qk_norm_rope_cache_f32",
             "qwen38_gated_delta_decode_vi" => "qwen38_gated_delta_decode_vi",
+            "qwen38_gated_delta_decode_vi_simd" => "qwen38_gated_delta_decode_vi_simd",
             "qwen38_attention_apply_sigmoid_gate" => "qwen38_attention_apply_sigmoid_gate",
             "qwen38_f32_stream_probe" => "qwen38_f32_stream_probe",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
