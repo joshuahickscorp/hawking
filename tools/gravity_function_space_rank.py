@@ -34,9 +34,13 @@ from gravity_planes_ladder import binary_planes, flat_bits, SCALE_BITS  # noqa: 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CAP = ROOT / "workspace/campaign/records/runs/qwen38-27b/activation-capture-v2/parent_bf16"
 
-# Which capture site feeds which organ. gate and up consume the post-input-norm
-# hidden; down consumes the post-SwiGLU intermediate.
-SITE = {"gate_proj": "post_input_norm", "up_proj": "post_input_norm",
+# Which capture site feeds which organ. VERIFIED against the capture rather than
+# assumed from site names: silu(gate(x))*up(x) reproduces the captured post_swiglu
+# to cosine 0.999986 and rel_err 0.004 when x is post_attn_norm, and to cosine
+# 0.48 / rel_err 76.3 when x is post_input_norm. post_input_norm feeds the MIXER;
+# post_attn_norm is the MLP input. An earlier revision of this file had it wrong
+# and every gate/up number it produced was measured at the wrong operating point.
+SITE = {"gate_proj": "post_attn_norm", "up_proj": "post_attn_norm",
         "down_proj": "post_swiglu"}
 
 

@@ -12,53 +12,53 @@
     {
       "scheme": "1 binary plane",
       "bits_per_elem": 1.25,
-      "mean_output_rel_fro": 0.5254966020584106,
+      "mean_output_rel_fro": 0.5122095545132955,
       "worst_output_rel_fro": 0.6702990531921387,
-      "mean_output_row_cosine": 0.8587915201981863,
+      "mean_output_row_cosine": 0.8686656256516775,
       "worst_output_row_cosine": 0.7616229057312012
     },
     {
       "scheme": "flat q2",
       "bits_per_elem": 2.25,
-      "mean_output_rel_fro": 0.5783472321822679,
-      "worst_output_rel_fro": 0.6583788507221076,
-      "mean_output_row_cosine": 0.8201242271365267,
+      "mean_output_rel_fro": 0.5409543559219552,
+      "worst_output_rel_fro": 0.6557442684889315,
+      "mean_output_row_cosine": 0.8400932853825717,
       "worst_output_row_cosine": 0.7524790517044913
     },
     {
       "scheme": "2 binary planes",
       "bits_per_elem": 2.5,
-      "mean_output_rel_fro": 0.3338953008254369,
+      "mean_output_rel_fro": 0.3228553732236226,
       "worst_output_rel_fro": 0.4714159369468689,
-      "mean_output_row_cosine": 0.9474233388900757,
+      "mean_output_row_cosine": 0.9517615139484406,
       "worst_output_row_cosine": 0.8903812170028687
     },
     {
       "scheme": "flat q3",
       "bits_per_elem": 3.25,
-      "mean_output_rel_fro": 0.19790743933156518,
+      "mean_output_rel_fro": 0.1830720835862064,
       "worst_output_rel_fro": 0.24284599661890788,
-      "mean_output_row_cosine": 0.9798161781518641,
+      "mean_output_row_cosine": 0.9821883367328552,
       "worst_output_row_cosine": 0.969401183692115
     },
     {
       "scheme": "3 binary planes",
       "bits_per_elem": 3.75,
-      "mean_output_rel_fro": 0.24128487457831702,
+      "mean_output_rel_fro": 0.23439073810974756,
       "worst_output_rel_fro": 0.3916018009185791,
-      "mean_output_row_cosine": 0.9726857642332712,
+      "mean_output_row_cosine": 0.9743721882502238,
       "worst_output_row_cosine": 0.9262725114822388
     },
     {
       "scheme": "flat q4",
       "bits_per_elem": 4.25,
-      "mean_output_rel_fro": 0.08396084016678917,
-      "worst_output_rel_fro": 0.10142764458182876,
-      "mean_output_row_cosine": 0.9962445477697273,
+      "mean_output_rel_fro": 0.07759643784275713,
+      "worst_output_rel_fro": 0.1008254633444757,
+      "mean_output_row_cosine": 0.9967115285873454,
       "worst_output_row_cosine": 0.9946434769144489
     }
   ],
-  "two_plane_position_between_q3_and_q2": 0.357449099829675,
+  "two_plane_position_between_q3_and_q2": 0.3905845593443587,
   "per_tensor": [
     {
       "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
@@ -66,45 +66,45 @@
         17408,
         5120
       ],
-      "site": "post_input_norm",
+      "site": "post_attn_norm",
       "rows_used": 1024,
       "rows_available": 6827,
       "schemes": [
         {
           "scheme": "flat q2",
           "bits_per_elem": 2.25,
-          "output_rel_fro": 0.6583788507221076,
-          "output_mean_row_cosine": 0.7967873324871152
+          "output_rel_fro": 0.545626751572877,
+          "output_mean_row_cosine": 0.8472737358581908
         },
         {
           "scheme": "flat q3",
           "bits_per_elem": 3.25,
-          "output_rel_fro": 0.23622192303897183,
-          "output_mean_row_cosine": 0.973155555409172
+          "output_rel_fro": 0.19254270121230757,
+          "output_mean_row_cosine": 0.9810114719818175
         },
         {
           "scheme": "flat q4",
           "bits_per_elem": 4.25,
-          "output_rel_fro": 0.10142764458182876,
-          "output_mean_row_cosine": 0.9948625342630445
+          "output_rel_fro": 0.08233566823111571,
+          "output_mean_row_cosine": 0.9964273910983283
         },
         {
           "scheme": "1 binary plane",
           "bits_per_elem": 1.25,
-          "output_rel_fro": 0.568848192691803,
-          "output_mean_row_cosine": 0.8216624855995178
+          "output_rel_fro": 0.5197864174842834,
+          "output_mean_row_cosine": 0.8567279577255249
         },
         {
           "scheme": "2 binary planes",
           "bits_per_elem": 2.5,
-          "output_rel_fro": 0.3348636329174042,
-          "output_mean_row_cosine": 0.9448075890541077
+          "output_rel_fro": 0.3094903230667114,
+          "output_mean_row_cosine": 0.956649661064148
         },
         {
           "scheme": "3 binary planes",
           "bits_per_elem": 3.75,
-          "output_rel_fro": 0.22393403947353363,
-          "output_mean_row_cosine": 0.9766945838928223
+          "output_rel_fro": 0.21303234994411469,
+          "output_mean_row_cosine": 0.9806410074234009
         }
       ]
     },
@@ -162,45 +162,45 @@
         17408,
         5120
       ],
-      "site": "post_input_norm",
+      "site": "post_attn_norm",
       "rows_used": 1024,
       "rows_available": 6827,
       "schemes": [
         {
           "scheme": "flat q2",
           "bits_per_elem": 2.25,
-          "output_rel_fro": 0.6462130424193828,
-          "output_mean_row_cosine": 0.7725476656729169
+          "output_rel_fro": 0.5868767314405,
+          "output_mean_row_cosine": 0.8174125498211231
         },
         {
           "scheme": "flat q3",
           "bits_per_elem": 3.25,
-          "output_rel_fro": 0.21840955821152128,
-          "output_mean_row_cosine": 0.9773358648670983
+          "output_rel_fro": 0.199407166939282,
+          "output_mean_row_cosine": 0.9806927106230932
         },
         {
           "scheme": "flat q4",
           "bits_per_elem": 4.25,
-          "output_rel_fro": 0.09265750496931974,
-          "output_mean_row_cosine": 0.995674337344369
+          "output_rel_fro": 0.08482946455729913,
+          "output_mean_row_cosine": 0.9963466772568067
         },
         {
           "scheme": "1 binary plane",
           "bits_per_elem": 1.25,
-          "output_rel_fro": 0.4832437336444855,
-          "output_mean_row_cosine": 0.8778141140937805
+          "output_rel_fro": 0.4899655878543854,
+          "output_mean_row_cosine": 0.8781667947769165
         },
         {
           "scheme": "2 binary planes",
           "bits_per_elem": 2.5,
-          "output_rel_fro": 0.3191823959350586,
-          "output_mean_row_cosine": 0.9505742192268372
+          "output_rel_fro": 0.3069075047969818,
+          "output_mean_row_cosine": 0.9569287300109863
         },
         {
           "scheme": "3 binary planes",
           "bits_per_elem": 3.75,
-          "output_rel_fro": 0.20894575119018555,
-          "output_mean_row_cosine": 0.9801849722862244
+          "output_rel_fro": 0.20240050554275513,
+          "output_mean_row_cosine": 0.982599139213562
         }
       ]
     },
@@ -258,45 +258,45 @@
         17408,
         5120
       ],
-      "site": "post_input_norm",
+      "site": "post_attn_norm",
       "rows_used": 1024,
       "rows_available": 6827,
       "schemes": [
         {
           "scheme": "flat q2",
           "bits_per_elem": 2.25,
-          "output_rel_fro": 0.389087955173673,
-          "output_mean_row_cosine": 0.9195582198081649
+          "output_rel_fro": 0.33681910773990975,
+          "output_mean_row_cosine": 0.9440212817651532
         },
         {
           "scheme": "flat q3",
           "bits_per_elem": 3.25,
-          "output_rel_fro": 0.12853173692470923,
-          "output_mean_row_cosine": 0.9915778078244935
+          "output_rel_fro": 0.10220121555146013,
+          "output_mean_row_cosine": 0.9945979969817994
         },
         {
           "scheme": "flat q4",
           "bits_per_elem": 4.25,
-          "output_rel_fro": 0.05496835457461623,
-          "output_mean_row_cosine": 0.998435064308271
+          "output_rel_fro": 0.043701957393157624,
+          "output_mean_row_cosine": 0.9989997524662579
         },
         {
           "scheme": "1 binary plane",
           "bits_per_elem": 1.25,
-          "output_rel_fro": 0.42059382796287537,
-          "output_mean_row_cosine": 0.9357870817184448
+          "output_rel_fro": 0.3832114636898041,
+          "output_mean_row_cosine": 0.959613561630249
         },
         {
           "scheme": "2 binary planes",
           "bits_per_elem": 2.5,
-          "output_rel_fro": 0.25469014048576355,
-          "output_mean_row_cosine": 0.9794180393218994
+          "output_rel_fro": 0.22609877586364746,
+          "output_mean_row_cosine": 0.9872505068778992
         },
         {
           "scheme": "3 binary planes",
           "bits_per_elem": 3.75,
-          "output_rel_fro": 0.17421376705169678,
-          "output_mean_row_cosine": 0.9906593561172485
+          "output_rel_fro": 0.15029588341712952,
+          "output_mean_row_cosine": 0.9944173097610474
         }
       ]
     },
@@ -349,5 +349,5 @@
       ]
     }
   ],
-  "commit": "32a50a41815ed25b7b8562b7634c68dede7a7c87"
+  "commit": "16470e4b651bce911a92266dfff8308b65784286"
 }

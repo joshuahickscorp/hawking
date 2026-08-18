@@ -1,35 +1,50 @@
 {
-  "schema": "hawking.nos.channel_scale_block_fold.v1",
-  "obligation": "G032 -- does the channel-scale win survive a CONSISTENT fold across the whole MLP block?",
-  "why": "The per-tensor measurement scaled one tensor at a time. A deployable fold changes three tensors at once: s on the hidden axis folds into input_layernorm, t on the intermediate axis folds into up_proj's OUTPUT rows, so up_proj is scaled on BOTH axes and its own quantization error changes. Only the block-level number is the real one.",
-  "fold_algebra": "gate' = Wg diag(s); up' = diag(1/t) Wu diag(s); down' = Wd diag(t); x' = x/s. Then gate'x' = gate, up'x' = up/t, h' = h/t, down'h' = down h. EXACT, zero runtime change and zero extra storage -- diag(1/s) folds into the RMSNorm weight and diag(1/t) into up_proj rows.",
-  "scales_fitted_on": "head slice of the capture; block scored on the disjoint tail slice",
+  "schema": "hawking.nos.channel_scale_block_fold.v2",
+  "obligation": "G032 -- block fold, RE-RUN at the verified MLP activation site",
+  "correction": "v1 of this measurement used post_input_norm as the MLP input. Verified against the capture: silu(gate(x))*up(x) reproduces the captured post_swiglu to cosine 0.999986 with x = post_attn_norm and only 0.48 with x = post_input_norm. post_input_norm feeds the MIXER. All numbers here are at the corrected site.",
+  "site": "post_attn_norm",
   "per_layer": [
     {
       "layer": 0,
-      "baseline_block_err": 0.19884085074632063,
-      "channel_scaled_block_err": 0.1790961225097865,
-      "fold_exactness_control": 1.3499768556357594e-06,
-      "ratio": 0.9007008461167555
+      "baseline": 0.13405773347173996,
+      "exact_norm_fold": 0.12740479364754345,
+      "fold_q4_norm": 0.1292292379899294,
+      "fold_f16_norm": 0.127404508290655,
+      "f16_norm_no_fold_control": 0.13405773347173996,
+      "fold_exactness_control": 1.0395771141702426e-06
     },
     {
       "layer": 31,
-      "baseline_block_err": 0.3805550697860118,
-      "channel_scaled_block_err": 0.27086096502280144,
-      "fold_exactness_control": 1.8128122292182525e-06,
-      "ratio": 0.711752349469705
+      "baseline": 0.3647661185296195,
+      "exact_norm_fold": 0.32571493293878423,
+      "fold_q4_norm": 0.36258455748918267,
+      "fold_f16_norm": 0.3257167863720058,
+      "f16_norm_no_fold_control": 0.3647661185296195,
+      "fold_exactness_control": 2.0462964585021837e-06
     },
     {
       "layer": 63,
-      "baseline_block_err": 0.28839353690740577,
-      "channel_scaled_block_err": 0.22330178685788918,
-      "fold_exactness_control": 1.4686401073049637e-06,
-      "ratio": 0.7742953925128512
+      "baseline": 0.306482638685943,
+      "exact_norm_fold": 0.22686601089617947,
+      "fold_q4_norm": 0.22772020712776067,
+      "fold_f16_norm": 0.22684963450994,
+      "f16_norm_no_fold_control": 0.306482638685943,
+      "fold_exactness_control": 1.5087163092175615e-06
     }
   ],
-  "baseline_mean": 0.28926315247991274,
-  "channel_scaled_mean": 0.22441962479682567,
-  "ratio": 0.775832050756655,
-  "fold_exactness_control_max": 1.8128122292182525e-06,
-  "commit": "45843a99bdd871432b722bfabc2d9755e8e2a668"
+  "means": {
+    "baseline": 0.26843549689576746,
+    "exact_norm_fold": 0.22666191249416903,
+    "fold_q4_norm": 0.23984466753562425,
+    "fold_f16_norm": 0.22665697639086693,
+    "f16_norm_no_fold_control": 0.26843549689576746,
+    "fold_exactness_control": 1.531529960629996e-06
+  },
+  "ratios": {
+    "f16_norm_no_fold_control": 1.0,
+    "fold_q4_norm": 0.8934908769861949,
+    "fold_f16_norm": 0.8443629065900962,
+    "exact_norm_fold": 0.8443812950050382
+  },
+  "commit": "16470e4b651bce911a92266dfff8308b65784286"
 }

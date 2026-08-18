@@ -16,7 +16,7 @@
   "table": [
     {
       "member": "baseline",
-      "mean_out_rel_fro": 0.19879444605560162,
+      "mean_out_rel_fro": 0.1839276241211841,
       "ratio_vs_baseline": 1.0,
       "mean_code_entropy_bits": 2.2964111576596786,
       "delta_entropy_bits": 0.0,
@@ -24,7 +24,7 @@
     },
     {
       "member": "sign",
-      "mean_out_rel_fro": 0.19879444605560162,
+      "mean_out_rel_fro": 0.1839276241211841,
       "ratio_vs_baseline": 1.0,
       "mean_code_entropy_bits": 2.296410423583214,
       "delta_entropy_bits": -7.340764645036302e-07,
@@ -32,43 +32,43 @@
     },
     {
       "member": "permutation_magnitude_sorted",
-      "mean_out_rel_fro": 0.19384705905467214,
-      "ratio_vs_baseline": 0.9751130522049609,
+      "mean_out_rel_fro": 0.1790310724367712,
+      "ratio_vs_baseline": 0.9733778343095069,
       "mean_code_entropy_bits": 2.308838165800685,
       "delta_entropy_bits": 0.01242700814100628,
       "wins": true
     },
     {
       "member": "channel_scale_a0.25",
-      "mean_out_rel_fro": 0.15350268845592066,
-      "ratio_vs_baseline": 0.7721678925224444,
-      "mean_code_entropy_bits": 2.271255749083143,
-      "delta_entropy_bits": -0.025155408576535532,
+      "mean_out_rel_fro": 0.1515534053135652,
+      "ratio_vs_baseline": 0.8239839232290167,
+      "mean_code_entropy_bits": 2.272576526043338,
+      "delta_entropy_bits": -0.023834631616340474,
       "wins": true
     },
     {
       "member": "channel_scale_a0.5",
-      "mean_out_rel_fro": 0.15909385703163584,
-      "ratio_vs_baseline": 0.8002932686919142,
-      "mean_code_entropy_bits": 2.163934977597504,
-      "delta_entropy_bits": -0.13247618006217454,
+      "mean_out_rel_fro": 0.15794748078630846,
+      "ratio_vs_baseline": 0.8587480077611499,
+      "mean_code_entropy_bits": 2.1711521776688456,
+      "delta_entropy_bits": -0.12525897999083302,
       "wins": true
     },
     {
       "member": "channel_scale_a0.5_then_permutation",
-      "mean_out_rel_fro": 0.16768703787512199,
-      "ratio_vs_baseline": 0.8435197320765235,
-      "mean_code_entropy_bits": 2.279213252046892,
-      "delta_entropy_bits": -0.017197905612786446,
+      "mean_out_rel_fro": 0.16154842892491844,
+      "ratio_vs_baseline": 0.8783260790585719,
+      "mean_code_entropy_bits": 2.280808614141771,
+      "delta_entropy_bits": -0.015602543517907463,
       "wins": true
     }
   ],
   "best_non_baseline": {
     "member": "channel_scale_a0.25",
-    "mean_out_rel_fro": 0.15350268845592066,
-    "ratio_vs_baseline": 0.7721678925224444,
-    "mean_code_entropy_bits": 2.271255749083143,
-    "delta_entropy_bits": -0.025155408576535532,
+    "mean_out_rel_fro": 0.1515534053135652,
+    "ratio_vs_baseline": 0.8239839232290167,
+    "mean_code_entropy_bits": 2.272576526043338,
+    "delta_entropy_bits": -0.023834631616340474,
     "wins": true
   },
   "per_tensor": [
@@ -80,34 +80,34 @@
       ],
       "members": {
         "baseline": {
-          "out_rel_fro": 0.23649897594037775,
-          "out_cosine": 0.9731085814845265,
+          "out_rel_fro": 0.19296820096250752,
+          "out_cosine": 0.9809641094016948,
           "code_entropy_bits": 2.3206961304506954
         },
         "sign": {
-          "out_rel_fro": 0.23649897594037775,
-          "out_cosine": 0.9731085814845265,
+          "out_rel_fro": 0.19296820096250752,
+          "out_cosine": 0.9809641094016948,
           "code_entropy_bits": 2.320695243614484
         },
         "permutation_magnitude_sorted": {
-          "out_rel_fro": 0.2356423312479904,
-          "out_cosine": 0.973333812363973,
+          "out_rel_fro": 0.1923797093139062,
+          "out_cosine": 0.9810496716049257,
           "code_entropy_bits": 2.3253812597920573
         },
         "channel_scale_a0.25": {
-          "out_rel_fro": 0.19705014962520645,
-          "out_cosine": 0.9802580238098626,
-          "code_entropy_bits": 2.3079258216610765
+          "out_rel_fro": 0.1784196705340728,
+          "out_cosine": 0.984459008965362,
+          "code_entropy_bits": 2.3055919879542515
         },
         "channel_scale_a0.5": {
-          "out_rel_fro": 0.19923513042273008,
-          "out_cosine": 0.9793694938148086,
-          "code_entropy_bits": 2.254029436622952
+          "out_rel_fro": 0.18611615766102788,
+          "out_cosine": 0.9836281379059106,
+          "code_entropy_bits": 2.250669790107024
         },
         "channel_scale_a0.5_then_permutation": {
-          "out_rel_fro": 0.2088053283589034,
-          "out_cosine": 0.9781003520727714,
-          "code_entropy_bits": 2.300069299112957
+          "out_rel_fro": 0.1882335209853904,
+          "out_cosine": 0.9825987199073614,
+          "code_entropy_bits": 2.3146641381435473
         }
       }
     },
@@ -158,34 +158,34 @@
       ],
       "members": {
         "baseline": {
-          "out_rel_fro": 0.21859885533319953,
-          "out_cosine": 0.9773299244016549,
+          "out_rel_fro": 0.19892681157854075,
+          "out_cosine": 0.9808216080945978,
           "code_entropy_bits": 2.3017731710652116
         },
         "sign": {
-          "out_rel_fro": 0.21859885533319953,
-          "out_cosine": 0.9773299244016549,
+          "out_rel_fro": 0.19892681157854075,
+          "out_cosine": 0.9808216080945978,
           "code_entropy_bits": 2.301773065099817
         },
         "permutation_magnitude_sorted": {
-          "out_rel_fro": 0.21400755245450043,
-          "out_cosine": 0.9782051698324312,
+          "out_rel_fro": 0.1958141420483689,
+          "out_cosine": 0.9813901978255484,
           "code_entropy_bits": 2.3075512188469
         },
         "channel_scale_a0.25": {
-          "out_rel_fro": 0.12600479667580924,
-          "out_cosine": 0.9922459476220731,
-          "code_entropy_bits": 2.2846730268077744
+          "out_rel_fro": 0.15732639674840293,
+          "out_cosine": 0.9878930393561367,
+          "code_entropy_bits": 2.287981067513469
         },
         "channel_scale_a0.5": {
-          "out_rel_fro": 0.12834182811023453,
-          "out_cosine": 0.9919805603292067,
-          "code_entropy_bits": 2.2299210511528402
+          "out_rel_fro": 0.16164356425458215,
+          "out_cosine": 0.9872187639100707,
+          "code_entropy_bits": 2.2559721701443625
         },
         "channel_scale_a0.5_then_permutation": {
-          "out_rel_fro": 0.15372801628726004,
-          "out_cosine": 0.9883674773400891,
-          "code_entropy_bits": 2.2902843730751683
+          "out_rel_fro": 0.16548270446583566,
+          "out_cosine": 0.9862894970166406,
+          "code_entropy_bits": 2.2892245749009907
         }
       }
     },
@@ -236,34 +236,34 @@
       ],
       "members": {
         "baseline": {
-          "out_rel_fro": 0.12809063571921156,
-          "out_cosine": 0.991644853169336,
+          "out_rel_fro": 0.10209252284523526,
+          "out_cosine": 0.9946230475234645,
           "code_entropy_bits": 2.2987781498181454
         },
         "sign": {
-          "out_rel_fro": 0.12809063571921156,
-          "out_cosine": 0.991644853169336,
+          "out_rel_fro": 0.10209252284523526,
+          "out_cosine": 0.9946230475234645,
           "code_entropy_bits": 2.2987746773513376
         },
         "permutation_magnitude_sorted": {
-          "out_rel_fro": 0.12903708155809054,
-          "out_cosine": 0.9914962632103494,
+          "out_rel_fro": 0.10159719419090064,
+          "out_cosine": 0.9946438676060173,
           "code_entropy_bits": 2.3112000388399934
         },
         "channel_scale_a0.25": {
-          "out_rel_fro": 0.11770784009751702,
-          "out_cosine": 0.9929987244478264,
-          "code_entropy_bits": 2.2752534102648903
+          "out_rel_fro": 0.09332102026192435,
+          "out_cosine": 0.9955899143670166,
+          "code_entropy_bits": 2.2822038650271907
         },
         "channel_scale_a0.5": {
-          "out_rel_fro": 0.12380753563243053,
-          "out_cosine": 0.9922467546580803,
-          "code_entropy_bits": 2.2220796413840787
+          "out_rel_fro": 0.09674651477782077,
+          "out_cosine": 0.995264823997263,
+          "code_entropy_bits": 2.2426913693365345
         },
         "channel_scale_a0.5_then_permutation": {
-          "out_rel_fro": 0.12337860331094505,
-          "out_cosine": 0.9922488321764136,
-          "code_entropy_bits": 2.298246949303381
+          "out_rel_fro": 0.09536406880466103,
+          "out_cosine": 0.995351864441224,
+          "code_entropy_bits": 2.294284081016242
         }
       }
     },
@@ -307,5 +307,5 @@
       }
     }
   ],
-  "commit": "d00dd3430b261eab534f60452fa24f438d868092"
+  "commit": "16470e4b651bce911a92266dfff8308b65784286"
 }

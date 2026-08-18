@@ -5,99 +5,58 @@
   "per_tensor": [
     {
       "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
-      "shape": [
-        17408,
-        5120
-      ],
-      "bits_per_elem": 3.25,
-      "flat_q3_out_rel_fro": 0.23649897594037775,
+      "site": "post_attn_norm",
+      "flat_q3": 0.19296820096250752,
       "lowrank_rank": 803,
-      "lowrank_out_rel_fro": 0.6944595575332642,
-      "dense_macs": 89128960,
-      "lowrank_macs": 18089984,
-      "mac_ratio": 0.2029641544117647,
-      "lowrank_wins": false
+      "lowrank": 0.6038066744804382,
+      "mac_ratio": 0.2029641544117647
     },
     {
       "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
-      "shape": [
-        5120,
-        17408
-      ],
-      "bits_per_elem": 3.25,
-      "flat_q3_out_rel_fro": 0.14790852908202548,
+      "site": "post_swiglu",
+      "flat_q3": 0.14790852908202548,
       "lowrank_rank": 803,
-      "lowrank_out_rel_fro": 0.545408308506012,
-      "dense_macs": 89128960,
-      "lowrank_macs": 18089984,
-      "mac_ratio": 0.2029641544117647,
-      "lowrank_wins": false
+      "lowrank": 0.545408308506012,
+      "mac_ratio": 0.2029641544117647
     },
     {
       "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
-      "shape": [
-        17408,
-        5120
-      ],
-      "bits_per_elem": 3.25,
-      "flat_q3_out_rel_fro": 0.21859885533319953,
+      "site": "post_attn_norm",
+      "flat_q3": 0.19892681157854075,
       "lowrank_rank": 803,
-      "lowrank_out_rel_fro": 0.42060425877571106,
-      "dense_macs": 89128960,
-      "lowrank_macs": 18089984,
-      "mac_ratio": 0.2029641544117647,
-      "lowrank_wins": false
+      "lowrank": 0.48853373527526855,
+      "mac_ratio": 0.2029641544117647
     },
     {
       "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
-      "shape": [
-        5120,
-        17408
-      ],
-      "bits_per_elem": 3.25,
-      "flat_q3_out_rel_fro": 0.21803725476232977,
+      "site": "post_swiglu",
+      "flat_q3": 0.21803725476232977,
       "lowrank_rank": 803,
-      "lowrank_out_rel_fro": 0.7296385169029236,
-      "dense_macs": 89128960,
-      "lowrank_macs": 18089984,
-      "mac_ratio": 0.2029641544117647,
-      "lowrank_wins": false
+      "lowrank": 0.7296385169029236,
+      "mac_ratio": 0.2029641544117647
     },
     {
       "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
-      "shape": [
-        17408,
-        5120
-      ],
-      "bits_per_elem": 3.25,
-      "flat_q3_out_rel_fro": 0.12809063571921156,
+      "site": "post_attn_norm",
+      "flat_q3": 0.10209252284523526,
       "lowrank_rank": 803,
-      "lowrank_out_rel_fro": 0.34974247217178345,
-      "dense_macs": 89128960,
-      "lowrank_macs": 18089984,
-      "mac_ratio": 0.2029641544117647,
-      "lowrank_wins": false
+      "lowrank": 0.2679990231990814,
+      "mac_ratio": 0.2029641544117647
     },
     {
       "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
-      "shape": [
-        5120,
-        17408
-      ],
-      "bits_per_elem": 3.25,
-      "flat_q3_out_rel_fro": 0.24363242549646577,
+      "site": "post_swiglu",
+      "flat_q3": 0.24363242549646577,
       "lowrank_rank": 803,
-      "lowrank_out_rel_fro": 0.6005870699882507,
-      "dense_macs": 89128960,
-      "lowrank_macs": 18089984,
-      "mac_ratio": 0.2029641544117647,
-      "lowrank_wins": false
+      "lowrank": 0.6005870699882507,
+      "mac_ratio": 0.2029641544117647
     }
   ],
-  "mean_flat_q3": 0.19879444605560162,
-  "mean_lowrank": 0.5567400306463242,
+  "mean_flat_q3": 0.1839276241211841,
+  "mean_lowrank": 0.5393288880586624,
   "mean_mac_ratio": 0.2029641544117647,
-  "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.80x the output error of flat q3 on every tensor tested. It does reduce operations (0.203x the dense MACs), but the acceptance requires reducing bytes AND operations while preserving function, and function is not preserved.",
+  "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.93x the output error of flat q3 on every tensor tested. It reduces operations to 0.203x dense, but the acceptance requires bytes AND operations WITH function preserved.",
   "note": "A side observation worth keeping: at a much LOWER budget (~1.04 b/elem, rank 256) gate_proj low-rank gives 0.514 output error, which beats flat q2's 0.578 at 2.25 b/elem -- so low-rank is competitive in the DEAD zone, the same place binary planes survive. down_proj is far worse (0.863), matching the campaign's recorded finding that down_proj inverts the ranking.",
-  "commit": "f4a8a3ec2eb0953c3c4703afbbe677aa30303290"
+  "commit": "f4a8a3ec2eb0953c3c4703afbbe677aa30303290",
+  "correction": "RE-RUN at the verified MLP activation site. v1 used post_input_norm for gate/up; verified against the capture, silu(gate(x))*up(x) reproduces captured post_swiglu to cosine 0.999986 with post_attn_norm and 0.48 with post_input_norm."
 }

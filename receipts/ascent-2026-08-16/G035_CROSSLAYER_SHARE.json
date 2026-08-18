@@ -24,15 +24,15 @@
       "bits_per_elem_independent": 1.035294117647059,
       "bits_per_elem_shared": 1.0348345588235295,
       "independent_out_rel_fro": [
-        0.5129355192184448,
-        0.5150356888771057
+        0.6044772267341614,
+        0.6105296015739441
       ],
       "shared_out_rel_fro": [
-        0.5378942489624023,
-        0.5414770841598511
+        0.62986820936203,
+        0.6327175498008728
       ],
-      "independent_mean": 0.5139856040477753,
-      "shared_mean": 0.5396856665611267,
+      "independent_mean": 0.6075034141540527,
+      "shared_mean": 0.6312928795814514,
       "shared_beats_independent": false
     },
     {
@@ -82,19 +82,19 @@
       "bits_per_elem_independent": 1.035294117647059,
       "bits_per_elem_shared": 1.0348345588235295,
       "independent_out_rel_fro": [
-        0.5634581446647644,
-        0.5641568303108215
+        0.7779518961906433,
+        0.6155017018318176
       ],
       "shared_out_rel_fro": [
-        0.5542383193969727,
-        0.5833343267440796
+        0.7870737314224243,
+        0.6323171257972717
       ],
-      "independent_mean": 0.563807487487793,
-      "shared_mean": 0.5687863230705261,
+      "independent_mean": 0.6967267990112305,
+      "shared_mean": 0.709695428609848,
       "shared_beats_independent": false
     }
   ],
-  "adjacent_mean_error_reduction": -0.015225887298583984,
-  "far_control_mean_error_reduction": -0.004978835582733154,
-  "commit": "f4a8a3ec2eb0953c3c4703afbbe677aa30303290"
+  "adjacent_mean_error_reduction": -0.014270588755607605,
+  "far_control_mean_error_reduction": -0.012968629598617554,
+  "commit": "16470e4b651bce911a92266dfff8308b65784286"
 }
