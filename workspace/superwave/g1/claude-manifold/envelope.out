@@ -1,0 +1,62 @@
+=== INVENTORY ===
+class                      sites       m       n        elements      %N
+mlp.down_proj                 64    5120   17408   5,704,253,440  21.209
+mlp.gate_proj                 64   17408    5120   5,704,253,440  21.209
+mlp.up_proj                   64   17408    5120   5,704,253,440  21.209
+linear_attn.in_proj_qkv       48   10240    5120   2,516,582,400   9.357
+linear_attn.in_proj_z         48    6144    5120   1,509,949,440   5.614
+linear_attn.out_proj          48    5120    6144   1,509,949,440   5.614
+model.embed_tokens             1  248320    5120   1,271,398,400   4.727
+lm_head                        1  248320    5120   1,271,398,400   4.727
+self_attn.q_proj              16   12288    5120   1,006,632,960   3.743
+self_attn.o_proj              16    5120    6144     503,316,480   1.871
+self_attn.k_proj              16    1024    5120      83,886,080   0.312
+self_attn.v_proj              16    1024    5120      83,886,080   0.312
+linear_attn.in_proj_a         48      48    5120      11,796,480   0.044
+linear_attn.in_proj_b         48      48    5120      11,796,480   0.044
+ENDPOINTS (1 site, untied)                         2,542,796,800   9.454
+BODY (>=16 sites)                                 24,350,556,160  90.536
+uncovered (1-D, norms)                                 2,645,504   0.010
+
+=== THE PER-WEIGHT WALL ===
+  1 binary plane, group    64, 2-byte scale -> 1.250000 bits/weight
+  1 binary plane, group   128, 2-byte scale -> 1.125000 bits/weight
+  1 binary plane, group   512, 2-byte scale -> 1.031250 bits/weight
+  1 binary plane, group  2048, 2-byte scale -> 1.007812 bits/weight
+  1 binary plane, group  8192, 2-byte scale -> 1.001953 bits/weight
+  a per-group scale is strictly positive at every group size, so one bit per
+  source weight is >= 1.0 BPW ALWAYS. sub-1.0 needs sublinear-in-elements storage.
+
+=== THE ENDPOINT TAX ===
+  endpoints held at 2.125 bits/weight -> 0.200901 BPW of the budget
+  1-D tensors held at 4.125             -> 0.000406 BPW
+  target 0.99 leaves 0.788693 BPW for 90.536% of N
+  => THE BODY MUST AVERAGE 0.871137 BITS PER SOURCE ELEMENT
+
+=== WHAT EACH FAMILY MUST DELIVER TO HIT THAT BODY AVERAGE ===
+  requirement: 0.871137 bits/element averaged over the body
+
+family                organ                                     parameter needed
+shared basis          mlp.gate_proj           rank <= 1062 of 5120 (20.7%) at 4-bit coeffs
+1-bit planes          mlp.gate_proj           planes <= 0.774  (IMPOSSIBLE, p>=1)
+generated block       mlp.gate_proj                        code <= 0.8653 b/elem
+sparse exact island   mlp.gate_proj                      density <= 2.125% alone
+
+shared basis          mlp.down_proj           rank <= 3048 of 17408 (17.5%) at 4-bit coeffs
+1-bit planes          mlp.down_proj           planes <= 0.774  (IMPOSSIBLE, p>=1)
+generated block       mlp.down_proj                        code <= 0.8653 b/elem
+sparse exact island   mlp.down_proj                      density <= 2.125% alone
+
+shared basis          linear_attn.in_proj_qkv rank <= 1039 of 5120 (20.3%) at 4-bit coeffs
+1-bit planes          linear_attn.in_proj_qkv planes <= 0.774  (IMPOSSIBLE, p>=1)
+generated block       linear_attn.in_proj_qkv              code <= 0.8578 b/elem
+sparse exact island   linear_attn.in_proj_qkv            density <= 2.125% alone
+
+=== REFERENCE POINTS ===
+  all per-weight q4 g128     complete BPW 4.124594
+  all per-weight q2 g128     complete BPW 2.124791
+  all per-weight q1 g128     complete BPW 1.124889
+  body shared-basis rank 64        complete BPW 0.242106   REACHES 0.99
+  body shared-basis rank 128       complete BPW 0.283311   REACHES 0.99
+  body shared-basis rank 256       complete BPW 0.365722   REACHES 0.99
+  body shared-basis rank 512       complete BPW 0.530542   REACHES 0.99

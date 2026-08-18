@@ -45,10 +45,25 @@ class SharedPool:
     def __init__(self):
         self.objects: Dict[str, dict] = {}
 
-    def put(self, kind: str, nbytes: int, content_id: Optional[str] = None, **meta) -> str:
-        cid = content_id or hashlib.sha256(
-            json.dumps({"kind": kind, "nbytes": nbytes, **meta}, sort_keys=True).encode()
-        ).hexdigest()[:16]
+    def put(self, kind: str, nbytes: int, content_id: Optional[str] = None,
+            digest: Optional[str] = None, **meta) -> str:
+        """Store a shared object once. Sharing must be DECLARED, never inferred.
+
+        Deriving the id from {kind, nbytes, meta} made two DIFFERENT 1 MB bases with
+        identical metadata collapse to one id, undercounting a megabyte and reporting
+        sharing that does not exist. Metadata is not content. So an object is pooled
+        with an object already present only when the caller supplies a matching
+        content_id or digest; otherwise it gets a distinct id and is counted again.
+        """
+        if content_id is None:
+            key = {"kind": kind, "nbytes": nbytes, **meta}
+            if digest is not None:
+                key["digest"] = digest
+            else:
+                key["_distinct"] = len(self.objects)   # unshared until proven identical
+            content_id = hashlib.sha256(
+                json.dumps(key, sort_keys=True).encode()).hexdigest()[:16]
+        cid = content_id
         if cid in self.objects:
             assert self.objects[cid]["nbytes"] == nbytes, f"content id {cid} collides on size"
         else:
@@ -79,7 +94,10 @@ class Node:
 # node constructors — each is a representation family, each names its kernel
 
 def quant_tensor(elements, bits, group, kernel, scale_bytes_per_group=2, header=40):
-    groups = max(1, elements // group)
+    # CEIL, not floor. A trailing partial group still needs its own scale, and floor
+    # silently drops it: 65 elements at g=64 is 2 groups, and floor reported 1. On a
+    # non-divisible shape that understates every candidate that uses it.
+    groups = max(1, -(-elements // group))
     code_bytes = (elements * bits + 7) // 8
     return Node("QuantTensor", kernel,
                 stored_bytes=code_bytes + groups * scale_bytes_per_group + header,
@@ -113,9 +131,10 @@ def exact_island(n_elements, value_bytes, kernel, index_bits=0, header=40):
                 elements=0, meta={"n": n_elements, "index_bits": index_bits})
 
 
-def generated_block(elements, code_bytes, generator_cid, kernel, decode_flops_per_elem=0.0):
+def generated_block(elements, code_bytes, generator_cid, kernel, decode_flops_per_elem=0.0,
+                    header=40):
     """A block computed from a tiny code plus a shared generator."""
-    return Node("GeneratedBlock", kernel, stored_bytes=code_bytes,
+    return Node("GeneratedBlock", kernel, stored_bytes=code_bytes + header,
                 shared_refs=[generator_cid], elements=elements,
                 active_bytes=code_bytes,
                 meta={"decode_flops_per_elem": decode_flops_per_elem})

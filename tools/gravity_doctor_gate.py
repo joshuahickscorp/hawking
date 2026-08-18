@@ -93,6 +93,30 @@ def _probe(d_in, n=256, seed=None):
     return P
 
 
+def _gain(A, B):
+    """Magnitude agreement per row, penalising shrink and blow-up alike.
+
+    Cosine is SCALE-INVARIANT, so it cannot see gain at all. Measured on the real
+    L0 gate_proj: Wh = 0.01*W scores observed/probed/worst_unit = 1.000000 with a
+    relative weight error of 0.9898, and 100*W does the same at 98.99. A candidate
+    that preserves every direction and destroys every magnitude was HEALTHY on all
+    three original axes. This axis exists because that construction was exhibited.
+
+    Scored as min(r, 1/r) on the per-row norm ratio, so 1.0 is exact and both
+    directions of error fall away symmetrically.
+    """
+    def ratio(axis):
+        na = np.linalg.norm(A, axis=axis)
+        nb = np.linalg.norm(B, axis=axis)
+        r = nb / (na + 1e-30)
+        return np.minimum(r, 1.0 / (r + 1e-30))
+    # per-row mean catches a global gain error; per-UNIT worst catches a few output
+    # units silenced while the rest are exact. Scaling 174 of 17408 rows by 1e-6 moves
+    # the row mean to 0.9949 and is invisible without the per-unit term, which is the
+    # same dilution defect _worst_unit exists for.
+    return float(min(np.mean(ratio(1)), ratio(0).min()))
+
+
 def _worst_unit(A, B):
     """Lowest across-token agreement of any single output unit.
 
@@ -126,12 +150,14 @@ def axes(W, Wh, X, seed=None, n_probe_sets=3):
     seeds = ss.spawn(n_probe_sets)
     obs = observed_score(W, Wh, X)
     uo = _worst_unit(X @ W.T, X @ Wh.T)
+    gn = _gain(X @ W.T, X @ Wh.T)
     pr, up = 1.0, 1.0
     for sd in seeds:
         P = _probe(W.shape[1], seed=sd)
         pr = min(pr, _rowcos(P @ W.T, P @ Wh.T))
         up = min(up, _worst_unit(P @ W.T, P @ Wh.T))
-    return {"observed": obs, "probed": pr, "worst_unit": min(uo, up)}
+        gn = min(gn, _gain(P @ W.T, P @ Wh.T))
+    return {"observed": obs, "probed": pr, "worst_unit": min(uo, up), "gain": gn}
 
 
 # How far below the honest-codec reference an axis may fall before the candidate
@@ -141,10 +167,10 @@ def axes(W, Wh, X, seed=None, n_probe_sets=3):
 # the scale moves with depth (honest Q4 worst_unit measured 0.9638 at L0 gate,
 # 0.9421 at L47 up, 0.9019 at L31 q). Judging against a same-tensor reference is
 # the calibration; a flat constant would just be a number chosen to fit.
-AXIS_MARGIN = {"observed": 0.02, "probed": 0.02, "worst_unit": 0.10}
+AXIS_MARGIN = {"observed": 0.02, "probed": 0.02, "worst_unit": 0.10, "gain": 0.02}
 
 
-def gate(W, Wh, X, ref=None, seed=0):
+def gate(W, Wh, X, ref=None, seed=None):
     """Score a candidate against a same-tensor honest-codec reference.
 
     `ref` is the axis dict of a faithful cheap codec on this tensor. Every axis
