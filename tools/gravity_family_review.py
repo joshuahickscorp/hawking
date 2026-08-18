@@ -127,32 +127,34 @@ FAMILIES = [
      [R+"G032_XFORM_HADAMARD_Q3.json", R+"G032_XFORM_HADAMARD_Q2.json",
       R+"G032_XFORM_HADAMARD_Q4.json"]),
 
- fam("G-PLANES progressive planes (W ~ s1*P1 + s2*P2 + ...)", "G033", "SURVIVES BELOW ~2.5 b/elem, LOSES ABOVE",
-     {"bytes_merely_moved": "NO, and this is the surprise. Measured at equal total bits with BOTH "
-                            "sides counting their scale streams: ONE binary plane at 1.2500 "
-                            "b/elem holds 0.796776, against flat q2 at 2.2500 b/elem holding "
-                            "0.772929 -- 44% fewer bits AND better hold. Two planes at 2.5000 "
-                            "reach 0.933975. The ladder DOMINATES the low-bit end.",
-      "goodhartable_metric": "The win reverses with width: 3 planes (3.7500) hold 0.971493 "
-                             "against flat q3's 0.968397 at 3.2500, so planes cost more bits for "
-                             "the same hold there, and 4 planes lose outright to flat q4. "
-                             "Quoting only the low end would be the Goodhart.",
-      "hidden_cost": "MEASURED, AND IT CLEARS. Against a q4 budget of 0.8092 ps/element: one "
-                     "plane 0.620 (0.766x), two planes 0.684 (0.846x), three planes 1.001 "
-                     "(1.237x, fails). q3 fails at 0.867. So TWO PLANES ARE BOTH SMALLER AND "
-                     "FASTER THAN q4 PER WEIGHT -- the first candidate in this campaign on the "
-                     "right side of both axes. Three planes are dominated by q3 and should be "
-                     "dropped from the ladder.",
-      "missing_sidecar": "Counted. Each plane carries one f16 per group and the table above "
-                         "charges it: k*(1+16/64) against flat b+16/64.",
-      "narrow_test_distribution": "Nine tensors, three depths, MLP only. No attention, no "
-                                  "assembled artifact, no behavioural evidence at all.",
-      "plausibility_masking": "N/A so far -- nothing has been generated from a plane artifact."},
-     "The ALU half is now settled and it PASSED, so the remaining question is purely "
-     "behavioural: 2 planes hold 0.933975, between q3's coherent 0.968 and q2's dead 0.773, and "
-     "only an assembled artifact plus the capability gate can place it. That means a packer -- "
-     "which the measurements now justify, where for rANS they do not.",
-     [R+"G033_PLANES_LADDER.json", R+"CODEC_ALU_COST.json"]),
+ fam("G-PLANES progressive planes (W ~ s1*P1 + s2*P2 + ...)", "G033",
+     "REFUTED AS A BODY CODEC, SURVIVES AS A DRAFT TIER",
+     {"goodhartable_metric": "DEMONSTRATED, AND IT CAUGHT US. Weight-space hold said 3 planes "
+                             "(0.971493) BEAT flat q3 (0.968397) and that 2 planes at 0.933975 "
+                             "sat close to q3. On REAL captured activations the ranking INVERTS: "
+                             "3 planes cause 0.24128 output error against flat q3's 0.19791, at "
+                             "MORE bits, and 2 planes are at 0.33390 -- 69% worse than q3 and "
+                             "0.357 of the way to dead q2. Weight cosine flattered this family "
+                             "and a promotion was drafted on it before the function-space check.",
+      "hidden_cost": "NOT the problem here -- this family PASSES the ALU budget where q3 fails: "
+                     "one plane 0.620 ps/element and two 0.684 against a 0.8092 budget and q3's "
+                     "0.867. It is fidelity, not speed, that kills it.",
+      "missing_sidecar": "Counted throughout: k planes cost k*(1+16/g), and a finer group helps "
+                         "planes far LESS than flat codes (g64->g32 improves flat q3 by 11.2% and "
+                         "2 planes by only 2.5%), because the plane residual is not scale-limited.",
+      "bytes_merely_moved": "NO. Bits genuinely fall. They just do not buy function.",
+      "narrow_test_distribution": "Six tensors, three depths, MLP only, 1024 captured rows each.",
+      "plausibility_masking": "N/A -- no artifact was ever assembled, which is now the correct "
+                              "outcome rather than a gap."},
+     "SETTLED as a body codec: flat grouped quantization dominates the ladder at every point "
+     "where coherence is plausible, in function space, at both group sizes tested. What SURVIVES "
+     "both metrics is the sub-q2 regime -- one plane at 1.2500 bits causes LESS output error "
+     "(0.52550) than flat q2 at 2.2500 (0.57835) while costing 0.620 ps/element. That regime is "
+     "dead for a body codec and is exactly a DRAFT TIER profile, so this family should be "
+     "re-aimed at G140/G141 (Matryoshka draft, self-speculative verify) rather than packed as a "
+     "body.",
+     [R+"G033_PLANES_LADDER.json", R+"G033_FUNCTION_SPACE_RANK.json",
+      R+"G033_FUNCTION_SPACE_RANK_G32.json", R+"CODEC_ALU_COST.json"]),
 
  fam("low-rank factor (HGRAVS01 r160 / r192)", "G033 adjacent, prior campaign", "WEAKENED",
      {"kernel_different_math": "The mixed pack's own claim_boundary records r160_b3_down_removed "
