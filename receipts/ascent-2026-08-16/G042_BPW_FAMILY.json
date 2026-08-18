@@ -9,7 +9,7 @@
     "GENERATED_BPW_EQUIVALENT": "structure computed rather than stored. ZERO for every live candidate: the one generated transform tested (Hadamard) was refuted, and the channel scale is folded into existing tensors rather than generated at runtime",
     "CORRECTION_BPW": "correction planes over a base. ZERO: no live candidate has tiers",
     "SHARED_BPW": "structure stored once and used by many tensors. ZERO: G035 refuted cross-layer sharing at matched bits",
-    "STATE_BPW_EQUIVALENT": "KV/state at a context length, same units. 16 GQA layers, 8 kv heads, head_dim 256, K and V, f32"
+    "STATE_BPW_EQUIVALENT": "KV/state at a context length, same units. 16 GQA layers, 4 kv heads (QWEN38_GQA_KV_HEADS, READ from geometry rather than assumed), head_dim 256, K and V, f32 = 131,072 bytes per position, confirmed by the token_ns receipt's gqa_kv_write_bytes."
   },
   "contexts": [
     128,
@@ -27,9 +27,9 @@
       "CORRECTION_BPW": 0.0,
       "SHARED_BPW": 0.0,
       "STATE_BPW_EQUIVALENT": {
-        "128": 0.009980497892996905,
-        "8192": 0.6387518651518019,
-        "131072": 10.220029842428831
+        "128": 0.004990248946498453,
+        "8192": 0.31937593257590097,
+        "131072": 5.1100149212144155
       },
       "_bytes": {
         "stored": 14308518399,
@@ -49,9 +49,9 @@
       "CORRECTION_BPW": 0.0,
       "SHARED_BPW": 0.0,
       "STATE_BPW_EQUIVALENT": {
-        "128": 0.009980497892996905,
-        "8192": 0.6387518651518019,
-        "131072": 10.220029842428831
+        "128": 0.004990248946498453,
+        "8192": 0.31937593257590097,
+        "131072": 5.1100149212144155
       },
       "_bytes": {
         "stored": 16904476304,
@@ -71,9 +71,9 @@
       "CORRECTION_BPW": 0.0,
       "SHARED_BPW": 0.0,
       "STATE_BPW_EQUIVALENT": {
-        "128": 0.009980497892996905,
-        "8192": 0.6387518651518019,
-        "131072": 10.220029842428831
+        "128": 0.004990248946498453,
+        "8192": 0.31937593257590097,
+        "131072": 5.1100149212144155
       },
       "_bytes": {
         "stored": 11245288072,
@@ -93,9 +93,9 @@
       "CORRECTION_BPW": 0.0,
       "SHARED_BPW": 0.0,
       "STATE_BPW_EQUIVALENT": {
-        "128": 0.009980497892996905,
-        "8192": 0.6387518651518019,
-        "131072": 10.220029842428831
+        "128": 0.004990248946498453,
+        "8192": 0.31937593257590097,
+        "131072": 5.1100149212144155
       },
       "_bytes": {
         "stored": 11245304576,
@@ -113,5 +113,6 @@
     "lowest_stored_over_active": "compact-q3attn-r1p2-v1",
     "note": "The high-stored/low-active case is not hypothetical. mixed-q3mlp-q3attn-v1 is what this campaign quoted as its density leader for weeks while its directory held 1.5x what its records address (F4)."
   },
-  "commit": "862eb6fb8115db8bf84719396cbdcb23d2f22957"
+  "commit": "862eb6fb8115db8bf84719396cbdcb23d2f22957",
+  "correction_2026_08_18": "STATE_BPW_EQUIVALENT was computed with 8 kv-heads and is halved here. At 131072 context it is 5.1100, not 10.2200. The qualitative claim is UNCHANGED and still large: state at full context is 1.53x the artifact's own 3.34 stored BPW, where the earlier figure said 3.06x. Every other axis in this receipt is unaffected."
 }

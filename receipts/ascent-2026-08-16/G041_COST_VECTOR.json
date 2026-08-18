@@ -25,8 +25,8 @@
       "L_tps": 32.733313154336884,
       "L_timing_label": "DIRTY_ENGINEERING",
       "L_fallbacks": 0,
-      "R_resident_bytes": 14331249112,
-      "R_kv_state_bytes_at_seq_len": 33554432,
+      "R_resident_bytes": 14314471896,
+      "R_kv_state_bytes_at_seq_len": 16777216,
       "T_tabula_drift": null,
       "T_reason": "NOT MEASURED. Directive section 35 makes T a first-class axis and no Tabula instrument has been run on any artifact this session. Reported as null-with-reason rather than omitted, because a quietly absent axis reads as an axis that is fine."
     },
@@ -44,8 +44,8 @@
       "L_tps": 29.76806923290841,
       "L_timing_label": "DIRTY_ENGINEERING",
       "L_fallbacks": 0,
-      "R_resident_bytes": 11278686063,
-      "R_kv_state_bytes_at_seq_len": 33554432,
+      "R_resident_bytes": 11261908847,
+      "R_kv_state_bytes_at_seq_len": 16777216,
       "T_tabula_drift": null,
       "T_reason": "NOT MEASURED. Directive section 35 makes T a first-class axis and no Tabula instrument has been run on any artifact this session. Reported as null-with-reason rather than omitted, because a quietly absent axis reads as an axis that is fine."
     },
@@ -63,8 +63,8 @@
       "L_tps": 29.77427349135096,
       "L_timing_label": "DIRTY_ENGINEERING",
       "L_fallbacks": 0,
-      "R_resident_bytes": 11278678265,
-      "R_kv_state_bytes_at_seq_len": 33554432,
+      "R_resident_bytes": 11261901049,
+      "R_kv_state_bytes_at_seq_len": 16777216,
       "T_tabula_drift": null,
       "T_reason": "NOT MEASURED. Directive section 35 makes T a first-class axis and no Tabula instrument has been run on any artifact this session. Reported as null-with-reason rather than omitted, because a quietly absent axis reads as an axis that is fine."
     }
@@ -87,5 +87,6 @@
     ],
     "latency_improvement_pct": 22.3164138616374
   },
-  "commit": "2ca48bac44dcf28f9ba188420de5d190bba1b128"
+  "commit": "2ca48bac44dcf28f9ba188420de5d190bba1b128",
+  "correction_2026_08_18": "KV geometry was ASSUMED as 8 kv-heads and is 4 (QWEN38_GQA_KV_HEADS). Bytes/position is 131,072 not 262,144, which the token_ns receipt's gqa_kv_write_bytes=131072 confirms directly. R_kv_state_bytes_at_seq_len and R_resident_bytes were 2x too high and are corrected here. B, M, F and L are unaffected."
 }
