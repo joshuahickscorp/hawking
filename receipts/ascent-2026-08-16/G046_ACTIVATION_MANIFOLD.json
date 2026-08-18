@@ -1,0 +1,185 @@
+{
+  "schema": "hawking.nos.activation_manifold.v1",
+  "obligation": "G046 -- activation manifold mapped as a first-class object",
+  "site": "post_swiglu, the down_proj input, width 17408. Chosen because it stores EVERY one of the 23216 tokens in prompt order, so prompt and position boundaries are EXACTLY reconstructible. The 5120-wide norm sites are subsampled to 6827 rows and their boundaries are not, which is why the earlier held-out-energy figures could not carry a cumulative-growth reading.",
+  "sampling": "256 rows per family for the family sweep, 768 rows per position-third for context",
+  "prompt_families": {
+    "order": [
+      "prose",
+      "code",
+      "math",
+      "instruction",
+      "multilingual",
+      "adversarial",
+      "long"
+    ],
+    "counts": {
+      "prose": 16,
+      "code": 12,
+      "math": 10,
+      "instruction": 10,
+      "multilingual": 10,
+      "adversarial": 8,
+      "long": 3
+    }
+  },
+  "cumulative_rank_growth": {
+    "0": {
+      "rank_99": [
+        66,
+        124,
+        193,
+        226,
+        261,
+        298,
+        301
+      ],
+      "heldout_energy_rank256": [
+        0.3956,
+        0.3942,
+        0.4099,
+        0.398,
+        0.4305,
+        0.3325,
+        null
+      ]
+    },
+    "31": {
+      "rank_99": [
+        237,
+        458,
+        678,
+        891,
+        1082,
+        1208,
+        1376
+      ],
+      "heldout_energy_rank256": [
+        0.291,
+        0.31,
+        0.3078,
+        0.3251,
+        0.2884,
+        0.2903,
+        null
+      ]
+    },
+    "63": {
+      "rank_99": [
+        205,
+        370,
+        530,
+        671,
+        792,
+        848,
+        945
+      ],
+      "heldout_energy_rank256": [
+        0.7366,
+        0.7614,
+        0.7734,
+        0.7736,
+        0.819,
+        0.8305,
+        null
+      ]
+    }
+  },
+  "context_dependence": [
+    {
+      "layer": 0,
+      "fit_on": "early",
+      "rank_99": 64,
+      "energy_early": 0.9999855160713196,
+      "energy_middle": 0.9994838833808899,
+      "energy_late": 0.9983817934989929
+    },
+    {
+      "layer": 0,
+      "fit_on": "middle",
+      "rank_99": 50,
+      "energy_early": 0.5058663487434387,
+      "energy_middle": 0.9999810457229614,
+      "energy_late": 0.9994791746139526
+    },
+    {
+      "layer": 0,
+      "fit_on": "late",
+      "rank_99": 49,
+      "energy_early": 0.49636784195899963,
+      "energy_middle": 0.998521625995636,
+      "energy_late": 0.9999819397926331
+    },
+    {
+      "layer": 31,
+      "fit_on": "early",
+      "rank_99": 230,
+      "energy_early": 0.9945166707038879,
+      "energy_middle": 0.784183144569397,
+      "energy_late": 0.4335825741291046
+    },
+    {
+      "layer": 31,
+      "fit_on": "middle",
+      "rank_99": 332,
+      "energy_early": 0.4939906597137451,
+      "energy_middle": 0.975114643573761,
+      "energy_late": 0.7614105343818665
+    },
+    {
+      "layer": 31,
+      "fit_on": "late",
+      "rank_99": 391,
+      "energy_early": 0.35808229446411133,
+      "energy_middle": 0.5684011578559875,
+      "energy_late": 0.9594147205352783
+    },
+    {
+      "layer": 63,
+      "fit_on": "early",
+      "rank_99": 171,
+      "energy_early": 0.9988589286804199,
+      "energy_middle": 0.8794321417808533,
+      "energy_late": 0.8083591461181641
+    },
+    {
+      "layer": 63,
+      "fit_on": "middle",
+      "rank_99": 325,
+      "energy_early": 0.7949792742729187,
+      "energy_middle": 0.9808614253997803,
+      "energy_late": 0.8850951194763184
+    },
+    {
+      "layer": 63,
+      "fit_on": "late",
+      "rank_99": 414,
+      "energy_early": 0.7466561794281006,
+      "energy_middle": 0.8739778399467468,
+      "energy_late": 0.9686073660850525
+    }
+  ],
+  "operator_exercised_fraction": {
+    "metric": "fraction of the 17408 down_proj input channels whose max |activation| over the whole sampled capture exceeds a threshold times the global max",
+    "by_layer": {
+      "0": {
+        "gt_1e-2": 0.5156,
+        "gt_1e-3": 1.0
+      },
+      "31": {
+        "gt_1e-2": 1.0,
+        "gt_1e-3": 1.0
+      },
+      "63": {
+        "gt_1e-2": 0.5126,
+        "gt_1e-3": 0.9985
+      }
+    }
+  },
+  "verdict": "THE SPAN IS NOT CLOSED AND DOES NOT APPROACH CLOSURE. Rank at 99% energy GROWS WITH EVERY FAMILY ADDED at every depth and shows no saturation: L0 66->301, L31 237->1376, L63 205->945. L31 is nearly LINEAR in family count, adding 126-221 dimensions per family, which is the signature of families spanning largely INDEPENDENT subspaces rather than a shared low-dimensional manifold. Held-out energy at rank 256 stays flat and low as families accumulate (L0 0.40, L31 0.29-0.33) instead of rising, so each new family brings genuinely new directions rather than filling in a span already implied.",
+  "context_finding": "Position dependence is real and STRONGLY layer-dependent. At L0 an early-token basis spans middle and late almost perfectly (0.9995, 0.9984) but the reverse fails (0.506, 0.496) -- early tokens carry directions later ones lack. At L31 the split is severe in both directions: early spans only 0.434 of late energy, late only 0.358 of early. Rank also grows with position at depth: L31 230 early to 391 late, L63 171 to 414.",
+  "operator_finding": "Essentially EVERY down_proj input channel is exercised somewhere: 100% at L0 and L31 and 99.85% at L63 above a 1e-3 threshold. There is no dead-operator fraction to exploit, which forecloses the obvious 'prune what is never used' route.",
+  "verify_line": "The obligation says a span that keeps growing is NOT closed and may not be treated as the manifold. It keeps growing, at all three depths, monotonically, with no inflection. This CONFIRMS and strengthens the standing NOT_CONVERGED verdict with the cumulative-growth evidence the verify line specifically demanded.",
+  "width": "Five axes were asked for. Rank, task/prompt-family, context and layer dependence are measured here; the operator-exercised fraction is measured. Sampling is 256 rows/family and 768 rows/third, and one site rather than all five.",
+  "commit": "3b510118533e05c33f79b98c19fb932fb54cd4ee"
+}
