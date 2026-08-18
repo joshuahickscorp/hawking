@@ -1,0 +1,868 @@
+{
+  "schema": "hawking.nos.correction_topology.v1",
+  "obligation": "G070 -- correction topology costed jointly with its index",
+  "method": "every topology gets the SAME total bits per element and is asked what it can do with them, so the index cost is inside the comparison rather than beside it. Selection is by d_j*resid^2, the output error each candidate actually contributes -- ranking by |w| would pick large weights instead of important ones, the weight-space mistake G069 corrected.",
+  "low_rank_optimality": "with D=diag(d), tr((R-L)D(R-L)^T) = ||R D^0.5 - L D^0.5||_F^2, so the truncated SVD of R D^0.5 rescaled by D^-0.5 is exactly optimal for this weighting, not an approximation",
+  "holdout": "d fitted on the first half of captured rows, error scored on the second",
+  "slice_note": "measured on a 1536-row slice of each tensor; index costs are computed for THAT shape so the accounting is self-consistent",
+  "sites": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "site": "post_attn_norm",
+      "provenance": "VERIFIED",
+      "slice_shape": [
+        1536,
+        5120
+      ],
+      "base": "flat q3 g64",
+      "base_output_rel_fro": 0.10825395941812849,
+      "eval_rows": 384,
+      "budgets": [
+        {
+          "budget_bits_per_elem": 0.25,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 50412,
+              "unit": "entries",
+              "index_bits_per_unit": 23,
+              "elements_corrected": 50412,
+              "err": 0.09281188119903203,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.589739990234375,
+              "error_reduction_pct": 14.264677525051791
+            },
+            {
+              "topology": "ROW",
+              "count": 23,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 117760,
+              "err": 0.10617575224608053,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.00012868245442708334,
+              "error_reduction_pct": 1.9197516499335876
+            },
+            {
+              "topology": "COLUMN",
+              "count": 79,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 121344,
+              "err": 0.09259390331948655,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.0005223592122395833,
+              "error_reduction_pct": 14.46603540675618
+            },
+            {
+              "topology": "BLOCK",
+              "count": 1888,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 17,
+              "elements_corrected": 120832,
+              "err": 0.09640242902138478,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.016324869791666665,
+              "error_reduction_pct": 10.947895541600873
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 18,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 7864320,
+              "err": 0.09446004053464553,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 12.742184172870994
+            }
+          ]
+        },
+        {
+          "budget_bits_per_elem": 0.5,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 100824,
+              "unit": "entries",
+              "index_bits_per_unit": 23,
+              "elements_corrected": 100824,
+              "err": 0.09017985831021315,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.589739990234375,
+              "error_reduction_pct": 16.696018515225415
+            },
+            {
+              "topology": "ROW",
+              "count": 47,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 240640,
+              "err": 0.1046125980716103,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.00013147989908854167,
+              "error_reduction_pct": 3.3637211664965605
+            },
+            {
+              "topology": "COLUMN",
+              "count": 159,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 244224,
+              "err": 0.09072746271913296,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.000525665283203125,
+              "error_reduction_pct": 16.190166893849888
+            },
+            {
+              "topology": "BLOCK",
+              "count": 3777,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 17,
+              "elements_corrected": 241728,
+              "err": 0.09399500118170596,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.016329193115234376,
+              "error_reduction_pct": 13.171766014901698
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 36,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 7864320,
+              "err": 0.09263451024907596,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 14.428524603633901
+            }
+          ]
+        },
+        {
+          "budget_bits_per_elem": 1.0,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 201649,
+              "unit": "entries",
+              "index_bits_per_unit": 23,
+              "elements_corrected": 201649,
+              "err": 0.0865808009778455,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.589742914835612,
+              "error_reduction_pct": 20.02066119038741
+            },
+            {
+              "topology": "ROW",
+              "count": 95,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 486400,
+              "err": 0.1017866684885163,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.00013287862141927084,
+              "error_reduction_pct": 5.974184190928692
+            },
+            {
+              "topology": "COLUMN",
+              "count": 319,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 489984,
+              "err": 0.08748424750865846,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.0005273183186848958,
+              "error_reduction_pct": 19.186099077676666
+            },
+            {
+              "topology": "BLOCK",
+              "count": 7554,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 17,
+              "elements_corrected": 483456,
+              "err": 0.09017024552077633,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.016329193115234376,
+              "error_reduction_pct": 16.704898365429955
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 73,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 7864320,
+              "err": 0.08884720096201203,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 17.92706572621357
+            }
+          ]
+        }
+      ],
+      "plane_at_natural_cost": {
+        "topology": "PLANE",
+        "budget_bits_per_elem": 1.25,
+        "err": 0.04994369169062357,
+        "error_reduction_pct": 53.86432795707991,
+        "note": "priced at its own natural cost; it cannot be sized to an arbitrary budget"
+      }
+    },
+    {
+      "organ": "mlp.down_proj",
+      "layer": 63,
+      "site": "post_swiglu",
+      "provenance": "VERIFIED",
+      "slice_shape": [
+        1536,
+        17408
+      ],
+      "base": "flat q3 g64",
+      "base_output_rel_fro": 0.26334763434741637,
+      "eval_rows": 384,
+      "budgets": [
+        {
+          "budget_bits_per_elem": 0.25,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 163040,
+              "unit": "entries",
+              "index_bits_per_unit": 25,
+              "elements_corrected": 163040,
+              "err": 0.19032958954259369,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.6097531786151961,
+              "error_reduction_pct": 27.726865663997202
+            },
+            {
+              "topology": "ROW",
+              "count": 23,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 400384,
+              "err": 0.2383790089209952,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 3.784778071384804e-05,
+              "error_reduction_pct": 9.481241587111349
+            },
+            {
+              "topology": "COLUMN",
+              "count": 271,
+              "unit": "columns",
+              "index_bits_per_unit": 15,
+              "elements_corrected": 416256,
+              "err": 0.18440103813444372,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.0006081076229319853,
+              "error_reduction_pct": 29.978092041192916
+            },
+            {
+              "topology": "BLOCK",
+              "count": 6409,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 19,
+              "elements_corrected": 410176,
+              "err": 0.23236525313041545,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.018216451009114582,
+              "error_reduction_pct": 11.76482230181267
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 22,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 26738688,
+              "err": 0.22987440283108554,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 12.710663454136789
+            }
+          ]
+        },
+        {
+          "budget_bits_per_elem": 0.5,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 326081,
+              "unit": "entries",
+              "index_bits_per_unit": 25,
+              "elements_corrected": 326081,
+              "err": 0.17067325774480674,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.6097550485648361,
+              "error_reduction_pct": 35.190890107009935
+            },
+            {
+              "topology": "ROW",
+              "count": 47,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 818176,
+              "err": 0.2335491616125734,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 3.867055855545343e-05,
+              "error_reduction_pct": 11.315261216864354
+            },
+            {
+              "topology": "COLUMN",
+              "count": 543,
+              "unit": "columns",
+              "index_bits_per_unit": 15,
+              "elements_corrected": 834048,
+              "err": 0.1684574362804403,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.0006092295927159927,
+              "error_reduction_pct": 36.03229560125609
+            },
+            {
+              "topology": "BLOCK",
+              "count": 12818,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 19,
+              "elements_corrected": 820352,
+              "err": 0.21868206681695299,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.018216451009114582,
+              "error_reduction_pct": 16.960686827943622
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 44,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 26738688,
+              "err": 0.21352706788456796,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 18.918175052646788
+            }
+          ]
+        },
+        {
+          "budget_bits_per_elem": 1.0,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 652163,
+              "unit": "entries",
+              "index_bits_per_unit": 25,
+              "elements_corrected": 652163,
+              "err": 0.1454785871251664,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.6097559835396561,
+              "error_reduction_pct": 44.75796697940088
+            },
+            {
+              "topology": "ROW",
+              "count": 95,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 1653760,
+              "err": 0.22831236065775798,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 3.9081947476256124e-05,
+              "error_reduction_pct": 13.30381181379392
+            },
+            {
+              "topology": "COLUMN",
+              "count": 1087,
+              "unit": "columns",
+              "index_bits_per_unit": 15,
+              "elements_corrected": 1669632,
+              "err": 0.1493469681079057,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.0006097905776079963,
+              "error_reduction_pct": 43.289041316816025
+            },
+            {
+              "topology": "BLOCK",
+              "count": 25636,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 19,
+              "elements_corrected": 1640704,
+              "err": 0.20013241066659165,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.018216451009114582,
+              "error_reduction_pct": 24.004477517891516
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 88,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 26738688,
+              "err": 0.18972000729827485,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 27.958340021391525
+            }
+          ]
+        }
+      ],
+      "plane_at_natural_cost": {
+        "topology": "PLANE",
+        "budget_bits_per_elem": 1.25,
+        "err": 0.10140864273036981,
+        "error_reduction_pct": 61.49248008942112,
+        "note": "priced at its own natural cost; it cannot be sized to an arbitrary budget"
+      }
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "layer": 62,
+      "site": "mixer_x",
+      "provenance": "NAMED",
+      "slice_shape": [
+        1536,
+        6144
+      ],
+      "base": "flat q3 g64",
+      "base_output_rel_fro": 0.27787772886647233,
+      "eval_rows": 384,
+      "budgets": [
+        {
+          "budget_bits_per_elem": 0.25,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 58982,
+              "unit": "entries",
+              "index_bits_per_unit": 24,
+              "elements_corrected": 58982,
+              "err": 0.15210995936144267,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.5999959309895834,
+              "error_reduction_pct": 45.26011135115633
+            },
+            {
+              "topology": "ROW",
+              "count": 23,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 141312,
+              "err": 0.27018258532019274,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.00010723537868923611,
+              "error_reduction_pct": 2.7692552323893915
+            },
+            {
+              "topology": "COLUMN",
+              "count": 95,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 145920,
+              "err": 0.1423371594098979,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.0005234612358940972,
+              "error_reduction_pct": 48.77705385367723
+            },
+            {
+              "topology": "BLOCK",
+              "count": 2264,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 18,
+              "elements_corrected": 144896,
+              "err": 0.225620022568036,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.01727294921875,
+              "error_reduction_pct": 18.806007416142208
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 19,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 9437184,
+              "err": 0.18195265367675956,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 34.52060572864669
+            }
+          ]
+        },
+        {
+          "budget_bits_per_elem": 0.5,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 117964,
+              "unit": "entries",
+              "index_bits_per_unit": 24,
+              "elements_corrected": 117964,
+              "err": 0.13539069772234083,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.5999959309895834,
+              "error_reduction_pct": 51.276880563753394
+            },
+            {
+              "topology": "ROW",
+              "count": 47,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 288768,
+              "err": 0.2656010479007542,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.00010956658257378472,
+              "error_reduction_pct": 4.418015440027376
+            },
+            {
+              "topology": "COLUMN",
+              "count": 191,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 293376,
+              "err": 0.12666537711940945,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.000526216295030382,
+              "error_reduction_pct": 54.416866138892495
+            },
+            {
+              "topology": "BLOCK",
+              "count": 4528,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 18,
+              "elements_corrected": 289792,
+              "err": 0.20718418974214048,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.01727294921875,
+              "error_reduction_pct": 25.44051997715225
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 38,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 9437184,
+              "err": 0.1626895488754019,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 41.45282907736065
+            }
+          ]
+        },
+        {
+          "budget_bits_per_elem": 1.0,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 235929,
+              "unit": "entries",
+              "index_bits_per_unit": 24,
+              "elements_corrected": 235929,
+              "err": 0.11835033730381223,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.5999984741210938,
+              "error_reduction_pct": 57.409203757857576
+            },
+            {
+              "topology": "ROW",
+              "count": 95,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 583680,
+              "err": 0.25861332457988767,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.00011073218451605903,
+              "error_reduction_pct": 6.932690995125313
+            },
+            {
+              "topology": "COLUMN",
+              "count": 383,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 588288,
+              "err": 0.10960622912556515,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.0005275938245985243,
+              "error_reduction_pct": 60.55595042730686
+            },
+            {
+              "topology": "BLOCK",
+              "count": 9056,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 18,
+              "elements_corrected": 579584,
+              "err": 0.18379904672754835,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.01727294921875,
+              "error_reduction_pct": 33.85614331983089
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 76,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 9437184,
+              "err": 0.14196192551126963,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 48.91208946813938
+            }
+          ]
+        }
+      ],
+      "plane_at_natural_cost": {
+        "topology": "PLANE",
+        "budget_bits_per_elem": 1.25,
+        "err": 0.09765510052501158,
+        "error_reduction_pct": 64.85680917165641,
+        "note": "priced at its own natural cost; it cannot be sized to an arbitrary budget"
+      }
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "site": "post_input_norm",
+      "provenance": "INFERRED",
+      "slice_shape": [
+        1536,
+        5120
+      ],
+      "base": "flat q3 g64",
+      "base_output_rel_fro": 0.14345403209382265,
+      "eval_rows": 384,
+      "budgets": [
+        {
+          "budget_bits_per_elem": 0.25,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 50412,
+              "unit": "entries",
+              "index_bits_per_unit": 23,
+              "elements_corrected": 50412,
+              "err": 0.12359929295592245,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.589739990234375,
+              "error_reduction_pct": 13.8404887252766
+            },
+            {
+              "topology": "ROW",
+              "count": 23,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 117760,
+              "err": 0.13833153082964494,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.00012868245442708334,
+              "error_reduction_pct": 3.570831150167644
+            },
+            {
+              "topology": "COLUMN",
+              "count": 79,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 121344,
+              "err": 0.1253610010542044,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.0005223592122395833,
+              "error_reduction_pct": 12.612424186017268
+            },
+            {
+              "topology": "BLOCK",
+              "count": 1888,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 17,
+              "elements_corrected": 120832,
+              "err": 0.1301647428621063,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.016324869791666665,
+              "error_reduction_pct": 9.26379624033489
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 18,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 7864320,
+              "err": 0.1283105981611876,
+              "budget_bits_per_elem": 0.25,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 10.556297171717603
+            }
+          ]
+        },
+        {
+          "budget_bits_per_elem": 0.5,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 100824,
+              "unit": "entries",
+              "index_bits_per_unit": 23,
+              "elements_corrected": 100824,
+              "err": 0.1194337321501149,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.589739990234375,
+              "error_reduction_pct": 16.744248727702445
+            },
+            {
+              "topology": "ROW",
+              "count": 47,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 240640,
+              "err": 0.135555956027597,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.00013147989908854167,
+              "error_reduction_pct": 5.505649406257255
+            },
+            {
+              "topology": "COLUMN",
+              "count": 159,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 244224,
+              "err": 0.12127724631328965,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.000525665283203125,
+              "error_reduction_pct": 15.45915821036582
+            },
+            {
+              "topology": "BLOCK",
+              "count": 3777,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 17,
+              "elements_corrected": 241728,
+              "err": 0.12562904090013657,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.016329193115234376,
+              "error_reduction_pct": 12.425576983453539
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 36,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 7864320,
+              "err": 0.12456474395213002,
+              "budget_bits_per_elem": 0.5,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 13.167484988737401
+            }
+          ]
+        },
+        {
+          "budget_bits_per_elem": 1.0,
+          "topologies": [
+            {
+              "topology": "SCATTERED",
+              "count": 201649,
+              "unit": "entries",
+              "index_bits_per_unit": 23,
+              "elements_corrected": 201649,
+              "err": 0.11304487638378691,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.589742914835612,
+              "error_reduction_pct": 21.197839660684732
+            },
+            {
+              "topology": "ROW",
+              "count": 95,
+              "unit": "rows",
+              "index_bits_per_unit": 11,
+              "elements_corrected": 486400,
+              "err": 0.13104088801179117,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.00013287862141927084,
+              "error_reduction_pct": 8.653046485241322
+            },
+            {
+              "topology": "COLUMN",
+              "count": 319,
+              "unit": "columns",
+              "index_bits_per_unit": 13,
+              "elements_corrected": 489984,
+              "err": 0.11479740371367961,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.0005273183186848958,
+              "error_reduction_pct": 19.976174919503737
+            },
+            {
+              "topology": "BLOCK",
+              "count": 7554,
+              "unit": "groups of 64",
+              "index_bits_per_unit": 17,
+              "elements_corrected": 483456,
+              "err": 0.11900255057633223,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.016329193115234376,
+              "error_reduction_pct": 17.0448199751531
+            },
+            {
+              "topology": "LOW-RANK",
+              "count": 73,
+              "unit": "rank",
+              "index_bits_per_unit": 0,
+              "elements_corrected": 7864320,
+              "err": 0.11887960158931683,
+              "budget_bits_per_elem": 1.0,
+              "index_overhead_frac": 0.0,
+              "error_reduction_pct": 17.130526166342612
+            }
+          ]
+        }
+      ],
+      "plane_at_natural_cost": {
+        "topology": "PLANE",
+        "budget_bits_per_elem": 1.25,
+        "err": 0.07002652093674283,
+        "error_reduction_pct": 51.18539373578314,
+        "note": "priced at its own natural cost; it cannot be sized to an arbitrary budget"
+      }
+    }
+  ],
+  "winner_tally_by_budget": {
+    "0.25": {
+      "COLUMN": 3,
+      "SCATTERED": 1
+    },
+    "0.5": {
+      "SCATTERED": 2,
+      "COLUMN": 2
+    },
+    "1.0": {
+      "SCATTERED": 3,
+      "COLUMN": 1
+    }
+  },
+  "kernel_cost_status": "NOT MEASURED HERE. This closes the mathematical half. The verify also requires the winning topology to be shown against its KERNEL cost, and the only scattered-correction kernel in the tree, strand_outlier_correct, does one atomic_fetch_add per outlier into the output row -- serialising every entry that shares a row. It has ZERO references from qwen38_hybrid_decode.rs (verified by name search, 38 of 554 declared kernels are bound there), so no correction topology executes on this model today.",
+  "commit": "012cece6d8f241eec4515fc41d7f6eeb5fc6335d",
+  "verdict": {
+    "mathematical_winner_by_budget": {
+      "0.25": {
+        "COLUMN": 3,
+        "SCATTERED": 1
+      },
+      "0.5": {
+        "SCATTERED": 2,
+        "COLUMN": 2
+      },
+      "1.0": {
+        "SCATTERED": 3,
+        "COLUMN": 1
+      }
+    },
+    "index_share": {
+      "SCATTERED": 0.5973083614523894,
+      "ROW": 0.00010243469853286911,
+      "COLUMN": 0.0005462570647528489,
+      "BLOCK": 0.01703622606065538,
+      "LOW-RANK": 0.0
+    },
+    "mean_error_reduction": {
+      "SCATTERED": 30.365487730625308,
+      "ROW": 6.433955027861397,
+      "COLUMN": 30.91161317277594,
+      "BLOCK": 17.53261754013727,
+      "LOW-RANK": 22.53539880265316
+    },
+    "plane_mean_error_reduction": 57.84975273848514,
+    "headline": "SCATTERED spends 59-60% of every budget on COORDINATES rather than values, and still only wins at the largest budget. COLUMN spends 0.1% on index and wins at the smallest. ROW is nearly worthless (+2.8% to +8.7%), which is a structural fact rather than a tuning failure: quantization error hurts in proportion to per-INPUT-CHANNEL activation energy, so corrections aligned with columns match the weighting and corrections aligned with output rows do not.",
+    "the_actual_answer": "The best correction topology is the one that carries NO index at all. A single function-fitted binary PLANE at 1.25 b/elem beats every index-carrying topology at 1.0 b/elem on every site (57.8% mean reduction against COLUMN's 30.9% and SCATTERED's 30.4% across all budgets), and unlike them it already has a kernel measured UNDER the decode budget (binary_planes_k2, 0.6647 ps/element, -17.9%).",
+    "kernel_cost_half": "The verify demands the winner be shown against its KERNEL cost, and this is where SCATTERED dies rather than merely loses. Its only kernel in the tree, strand_outlier_correct, performs one atomic_fetch_add per outlier into the output row, so every entry sharing a row serialises. At the 1.0 b/elem budget that is 235,929 atomics on a 1536-row SLICE -- of one tensor, of 401. A topology that wins on paper and thrashes on device is a NET-LOSS under G044, and this one is not even bound: 0 references from qwen38_hybrid_decode.rs."
+  }
+}
