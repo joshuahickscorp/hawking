@@ -1,0 +1,146 @@
+{
+  "schema": "hawking.nos.basin_walking.v1",
+  "obligation": "G053 -- move to a more compressible member of the same functional basin",
+  "method": "Boundary snapping toward frequent codes. After q3 group-64 quantization, a weight whose ideal value sits within eps of a cell boundary is reassigned to the neighbouring code WHEN that code is more frequent -- directly buying 'more repeated values' and lower entropy. eps sweeps the size of the near-flat ball the walk is allowed to move in.",
+  "objective_as_stated": "MINIMIZE DESCRIPTION LENGTH SUBJECT TO NEAR-ZERO FUNCTIONAL CHANGE",
+  "bit_conversion": "function cost converted to bits via the MEASURED q3->q4 function-space slope (error ratio 0.4224 per bit), so entropy gained and fidelity lost are in the same units and can be netted",
+  "sweep": [
+    {
+      "tensor": "0.mlp.gate_proj",
+      "eps": 0.1,
+      "moved_frac": 0.09567307864918428,
+      "entropy": 2.2195532889143026,
+      "d_entropy": -0.10114284153639286,
+      "out_err": 0.20838015417807762,
+      "d_out_err": 0.01534365623114381,
+      "function_cost_in_bits": -0.08874979148759057,
+      "net_bits": 0.012393050048802284
+    },
+    {
+      "tensor": "0.mlp.gate_proj",
+      "eps": 0.25,
+      "moved_frac": 0.2267667994779699,
+      "entropy": 2.0445071657772393,
+      "d_entropy": -0.2761889646734561,
+      "out_err": 0.2734792506118168,
+      "d_out_err": 0.08044275266488302,
+      "function_cost_in_bits": -0.4042068275000534,
+      "net_bits": -0.12801786282659727
+    },
+    {
+      "tensor": "0.mlp.gate_proj",
+      "eps": 0.4,
+      "moved_frac": 0.33984535441679115,
+      "entropy": 1.8565841063232815,
+      "d_entropy": -0.4641120241274139,
+      "out_err": 0.35537238050694786,
+      "d_out_err": 0.16233588256001405,
+      "function_cost_in_bits": -0.7081516778198768,
+      "net_bits": -0.24403965369246283
+    },
+    {
+      "tensor": "31.mlp.gate_proj",
+      "eps": 0.1,
+      "moved_frac": 0.09555380204144646,
+      "entropy": 2.1980110557590784,
+      "d_entropy": -0.10376211530613322,
+      "out_err": 0.2149353242554508,
+      "d_out_err": 0.0168171661581534,
+      "function_cost_in_bits": -0.09453854018705599,
+      "net_bits": 0.009223575119077232
+    },
+    {
+      "tensor": "31.mlp.gate_proj",
+      "eps": 0.25,
+      "moved_frac": 0.22607361288631664,
+      "entropy": 2.019030409312973,
+      "d_entropy": -0.28274276175223845,
+      "out_err": 0.2922471094423142,
+      "d_out_err": 0.09412895134501678,
+      "function_cost_in_bits": -0.45107327701326694,
+      "net_bits": -0.1683305152610285
+    },
+    {
+      "tensor": "31.mlp.gate_proj",
+      "eps": 0.4,
+      "moved_frac": 0.3380670098697438,
+      "entropy": 1.8281348527389614,
+      "d_entropy": -0.47363831832625025,
+      "out_err": 0.3842918524927803,
+      "d_out_err": 0.1861736943954829,
+      "function_cost_in_bits": -0.7687824644886702,
+      "net_bits": -0.2951441461624199
+    },
+    {
+      "tensor": "31.mlp.down_proj",
+      "eps": 0.1,
+      "moved_frac": 0.09555734746596392,
+      "entropy": 2.1941227148652813,
+      "d_entropy": -0.1042834753684132,
+      "out_err": 0.23571725056159068,
+      "d_out_err": 0.015943649602527754,
+      "function_cost_in_bits": -0.08126579139023266,
+      "net_bits": 0.023017683978180548
+    },
+    {
+      "tensor": "31.mlp.down_proj",
+      "eps": 0.25,
+      "moved_frac": 0.22597749373492074,
+      "entropy": 2.0145272277109703,
+      "d_entropy": -0.28387896252272427,
+      "out_err": 0.2979326374344715,
+      "d_out_err": 0.07815903647540859,
+      "function_cost_in_bits": -0.3530617115826294,
+      "net_bits": -0.06918274905990512
+    },
+    {
+      "tensor": "31.mlp.down_proj",
+      "eps": 0.4,
+      "moved_frac": 0.3377231597900391,
+      "entropy": 1.8232576145972093,
+      "d_entropy": -0.47514857563648527,
+      "out_err": 0.3768420779114212,
+      "d_out_err": 0.1570684769523583,
+      "function_cost_in_bits": -0.6256981722911726,
+      "net_bits": -0.15054959665468737
+    },
+    {
+      "tensor": "63.mlp.down_proj",
+      "eps": 0.1,
+      "moved_frac": 0.09479009964886834,
+      "entropy": 2.133328656142539,
+      "d_entropy": -0.11240397109674172,
+      "out_err": 0.27612255656494616,
+      "d_out_err": 0.036203854406539476,
+      "function_cost_in_bits": -0.16308223767696783,
+      "net_bits": -0.05067826658022612
+    },
+    {
+      "tensor": "63.mlp.down_proj",
+      "eps": 0.25,
+      "moved_frac": 0.22264983233283547,
+      "entropy": 1.9429625167333981,
+      "d_entropy": -0.30277011050588265,
+      "out_err": 0.3704957590879901,
+      "d_out_err": 0.1305770569295834,
+      "function_cost_in_bits": -0.5042244014991222,
+      "net_bits": -0.20145429099323953
+    },
+    {
+      "tensor": "63.mlp.down_proj",
+      "eps": 0.4,
+      "moved_frac": 0.33057898353127874,
+      "entropy": 1.7445544221638893,
+      "d_entropy": -0.5011782050753915,
+      "out_err": 0.464524870863633,
+      "d_out_err": 0.2246061687052263,
+      "function_cost_in_bits": -0.7666663063213215,
+      "net_bits": -0.26548810124593003
+    }
+  ],
+  "verdict": "REFUTED AS STATED. There is no near-zero-functional-change regime: the mildest step tested moves 9.5% of weights, buys 0.10-0.11 bits/elem of entropy and costs 7.3-15.1% of the function. Converting both to bits, the entropy gained is almost exactly cancelled by the fidelity lost -- the walk is BREAK-EVEN, not a compression win.",
+  "worse_under_the_deployed_route": "Even break-even overstates it. G039 refuted entropy coding for this kernel geometry, so under the fixed-width route actually deployed, lower entropy buys ZERO stored bytes while the function damage is real. The walk is a pure loss there.",
+  "family_context": "This is one basin-walking method. The obligation also names 'more shared structure, better factorization or lower-rank organization' -- G035 refuted cross-layer sharing at matched bits on 3/3 pairs and G034 refuted low-rank at identical bits by 2.93x. The family is consistently negative across three independent methods.",
+  "width": "four tensors, three depths, MLP only, one walk direction (boundary snapping). A gradient-guided walk along measured flat directions is not tested here.",
+  "commit": "5d06ad5f584268f2afd12c4d8aceac15fd0e7efe"
+}
