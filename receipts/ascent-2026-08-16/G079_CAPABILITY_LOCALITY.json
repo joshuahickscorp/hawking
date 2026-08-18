@@ -1,0 +1,83 @@
+{
+  "schema": "hawking.nos.capability_locality.v1",
+  "obligation": "G079 -- locality is the precondition for every capability-object claim",
+  "method": "top-p% of weights by d_j * w_ij^2 under one workload versus another; overlap read against a same-class control, never against 100%",
+  "control": "two DISJOINT halves of the prose class, equal size to the code sample, giving the overlap attributable to sampling alone",
+  "capture_coverage_defect": {
+    "rows_by_class": {
+      "prose": 5804,
+      "code": 1023
+    },
+    "classes_with_no_rows": [
+      "adversarial",
+      "instruction",
+      "long",
+      "math",
+      "multilingual"
+    ],
+    "store_n": 6827,
+    "why": "the v2 capture stores rows in prompt order and refuses to shuffle, so it stops partway through the prompt list",
+    "consequence": "every activation-weighted measurement in this campaign rests on prose-and-code statistics, and the first 5804 rows -- what most of them sampled -- are PROSE ONLY. Relative codec comparisons are unaffected since all codecs saw the same activations, but the ACTIVATION STATISTICS d_j are prose statistics and any claim that generalises them to math, tool use or multilingual work is unsupported."
+  },
+  "sites": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "site": "post_attn_norm",
+      "rows_per_sample": 1023,
+      "channel_energy_spearman_prose_vs_code": 0.7162634048407424,
+      "channel_energy_spearman_control": 0.9673324759061803,
+      "fracs": [
+        {
+          "top_frac": 0.001,
+          "control_prose_vs_prose": 0.931521220791607,
+          "cross_prose_vs_code": 0.7769194086790653,
+          "cross_over_control": 0.8340329681580833
+        },
+        {
+          "top_frac": 0.01,
+          "control_prose_vs_prose": 0.912270997644411,
+          "cross_prose_vs_code": 0.737671304729298,
+          "cross_over_control": 0.8086098392188839
+        },
+        {
+          "top_frac": 0.05,
+          "control_prose_vs_prose": 0.9355850219726562,
+          "cross_prose_vs_code": 0.8038730621337891,
+          "cross_over_control": 0.859219678868783
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "site": "post_input_norm",
+      "rows_per_sample": 1023,
+      "channel_energy_spearman_prose_vs_code": 0.7493521715751522,
+      "channel_energy_spearman_control": 0.9711172775337134,
+      "fracs": [
+        {
+          "top_frac": 0.001,
+          "control_prose_vs_prose": 0.9356223175965666,
+          "cross_prose_vs_code": 0.8370052455889366,
+          "cross_over_control": 0.8945973496432212
+        },
+        {
+          "top_frac": 0.01,
+          "control_prose_vs_prose": 0.9535748686306112,
+          "cross_prose_vs_code": 0.847859465748591,
+          "cross_over_control": 0.8891378051585674
+        },
+        {
+          "top_frac": 0.05,
+          "control_prose_vs_prose": 0.9510650634765625,
+          "cross_prose_vs_code": 0.8508262634277344,
+          "cross_over_control": 0.8946036355468562
+        }
+      ]
+    }
+  ],
+  "cross_over_control_mean": 0.8633668794323991,
+  "capability_is_local": false,
+  "commit": "efb1f03c5369ca2b3f616c8c9d1fc3b1165e3783"
+}
