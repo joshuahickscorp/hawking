@@ -1,0 +1,106 @@
+{
+  "schema": "hawking.nos.cache_residency_hypothesis.v1",
+  "obligation": "G094 -- does cache residency predict TPS better than BPW, on candidates already measured",
+  "why_it_is_testable_now": "The standing evidence said the predictive claim could not be tested until a cache-resident candidate existed. It exists: the (R,1) kernels built for G091 vary activation reuse by 8x at FIXED codec and fixed BPW, which is exactly a cache-residency sweep with everything else held constant.",
+  "codec_family": {
+    "rows": [
+      {
+        "cand": "binary_planes_k1",
+        "bpw": 1.25,
+        "code_B_per_elem": 0.15625,
+        "act_B_per_elem": 4.0,
+        "total_B_per_elem": 4.15625,
+        "ps": 0.6052898243069649
+      },
+      {
+        "cand": "binary_planes_k2",
+        "bpw": 2.5,
+        "code_B_per_elem": 0.3125,
+        "act_B_per_elem": 4.0,
+        "total_B_per_elem": 4.3125,
+        "ps": 0.6647082045674324
+      },
+      {
+        "cand": "q3_group64_hgravu",
+        "bpw": 3.25,
+        "code_B_per_elem": 0.40625,
+        "act_B_per_elem": 4.0,
+        "total_B_per_elem": 4.40625,
+        "ps": 0.8523620665073395
+      },
+      {
+        "cand": "binary_planes_k3",
+        "bpw": 3.75,
+        "code_B_per_elem": 0.46875,
+        "act_B_per_elem": 4.0,
+        "total_B_per_elem": 4.46875,
+        "ps": 0.9992625564336777
+      },
+      {
+        "cand": "q4_group64_hgravu",
+        "bpw": 4.25,
+        "code_B_per_elem": 0.53125,
+        "act_B_per_elem": 4.0,
+        "total_B_per_elem": 4.53125,
+        "ps": 0.804639421403408
+      }
+    ],
+    "spearman_bpw_vs_time": 0.7,
+    "spearman_traffic_vs_time": 0.7
+  },
+  "cache_family": {
+    "rows": [
+      {
+        "cand": "q4 r1",
+        "bpw": 4.25,
+        "code_B_per_elem": 0.53125,
+        "act_B_per_elem": 4.0,
+        "total_B_per_elem": 4.53125,
+        "ns_per_position": 6784459.0
+      },
+      {
+        "cand": "q4 r2",
+        "bpw": 4.25,
+        "code_B_per_elem": 0.53125,
+        "act_B_per_elem": 2.0,
+        "total_B_per_elem": 2.53125,
+        "ns_per_position": 6364500.0
+      },
+      {
+        "cand": "q4 r4",
+        "bpw": 4.25,
+        "code_B_per_elem": 0.53125,
+        "act_B_per_elem": 1.0,
+        "total_B_per_elem": 1.53125,
+        "ns_per_position": 6164375.0
+      },
+      {
+        "cand": "q4 r8",
+        "bpw": 4.25,
+        "code_B_per_elem": 0.53125,
+        "act_B_per_elem": 0.5,
+        "total_B_per_elem": 1.03125,
+        "ns_per_position": 6060916.0
+      },
+      {
+        "cand": "q4 r16",
+        "bpw": 4.25,
+        "code_B_per_elem": 0.53125,
+        "act_B_per_elem": 0.25,
+        "total_B_per_elem": 0.78125,
+        "ns_per_position": 8356625.0
+      }
+    ],
+    "spearman_traffic_vs_time": 0.0,
+    "traffic_span_x": 5.8,
+    "time_span_x": 1.3787726145684909
+  },
+  "commit": "4e2b8bfe3b9005601d2e1dafc06b489317cc2724",
+  "verdict": {
+    "hypothesis_refuted": "Cache residency does NOT predict TPS better than BPW. In the codec family the two score IDENTICALLY at Spearman +0.700, and the reason is that they are the same number in disguise: at fixed tiling the activation term is a constant 4 B/elem, so total traffic is a monotone transform of BPW and cannot rank differently. In the cache family, where traffic is varied in ISOLATION at fixed BPW, Spearman is +0.0000.",
+    "the_isolation_test_is_the_strong_one": "The verify proposed comparing a 0.6-BPW cache-resident candidate against a 0.4-BPW thrashing one. The (R,1) sweep is a cleaner version of that test because it holds codec, BPW and element count FIXED and moves only activation reuse: traffic spans 5.8x (4.531 -> 0.781 B/elem) while time spans 1.38x, with zero rank correlation.",
+    "and_past_a_point_it_inverts": "r16 has the LEAST traffic of any candidate (0.781 B/elem) and the WORST time (8,356,625 ns/pos against r8's 6,060,916). Optimising for cache residency past R=8 actively hurts, because the tiling that buys reuse costs registers and occupancy. A cache-residency objective pursued without a time measurement would have chosen r16.",
+    "what_does_predict": "ps/element, which this campaign already established as the binding currency. Neither BPW nor traffic explains why q4 at 4.25 bits (0.8046 ps) beats q3 at 3.25 (0.8524) and planes k3 at 3.75 (0.9993) -- that inversion is the single point breaking the +0.700 correlation, and it is an ALU-issue effect that neither byte metric can see.",
+    "standing_figure_unchanged": "CACHE_RESIDENT_TOKEN_FRACTION = 0.004930172 stands as measured."
+  }
+}
