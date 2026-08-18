@@ -1,0 +1,14 @@
+compact-q3attn-r1p2-v1: 851 segments
+compact-rebuild-r1p2-v1: 851 segments
+names only in first  : 0
+names only in second : 0
+common segments      : 851
+BYTE-IDENTICAL       : 851
+DIFFERING            : 0
+
+segment bytes: 11,244,907,853 vs 11,244,907,853  delta +0
+compact-q3attn-r1p2-v1 root files: ['FORMAT.md', 'PACK_REPORT.json', 'catalog.hq38m20']
+compact-rebuild-r1p2-v1 root files: ['FORMAT.md', 'PACK_REPORT.json', 'catalog.hq38m20']
+catalog identical: True  (181ac5c9e5ea5dd7 vs 181ac5c9e5ea5dd7)
+
+VERDICT: the weight payload rebuilds BYTE-IDENTICALLY from the recorded recipe.
