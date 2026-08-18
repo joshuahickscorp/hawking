@@ -1,0 +1,1694 @@
+{
+  "schema": "hawking.nos.ledger_prior.v1",
+  "by_class": {
+    "COMPILER": {
+      "closed": 8,
+      "negative": 2,
+      "positive": 6,
+      "negative_rate": 0.25
+    },
+    "DOCTOR": {
+      "closed": 6,
+      "negative": 1,
+      "positive": 5,
+      "negative_rate": 0.16666666666666666
+    },
+    "KERNEL": {
+      "closed": 8,
+      "negative": 3,
+      "positive": 5,
+      "negative_rate": 0.375
+    },
+    "MEASUREMENT": {
+      "closed": 6,
+      "negative": 1,
+      "positive": 5,
+      "negative_rate": 0.16666666666666666
+    },
+    "REPRESENTATION": {
+      "closed": 11,
+      "negative": 2,
+      "positive": 9,
+      "negative_rate": 0.18181818181818182
+    },
+    "THEORY": {
+      "closed": 3,
+      "negative": 2,
+      "positive": 1,
+      "negative_rate": 0.6666666666666666
+    },
+    "WILD": {
+      "closed": 4,
+      "negative": 4,
+      "positive": 0,
+      "negative_rate": 1.0
+    }
+  },
+  "by_tier": {
+    "V2": {
+      "closed": 36,
+      "negative_rate": 0.2222222222222222
+    },
+    "V3": {
+      "closed": 9,
+      "negative_rate": 0.6666666666666666
+    },
+    "V4": {
+      "closed": 1,
+      "negative_rate": 1.0
+    }
+  },
+  "obligations": [
+    {
+      "id": "G001",
+      "title": "Pin raw source authority: revision, content hashes, tokenizer, architecture, config, Tabula/behavioural provenance",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V1",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G002",
+      "title": "Thick Doctor capture replacing the rank-deficient 256-token one",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G003",
+      "title": "Doctor adversarial adequacy gate: screen must detect pathological candidates",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V3",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G004",
+      "title": "Error propagation model: A_l measured per layer from real activations",
+      "closed": true,
+      "status": "VERIFIED -- MLP-CHAIN SCOPE",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G005",
+      "title": "Global Doctor-driven information allocation with continuous descent",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G006",
+      "title": "Gravity IR expressing model programs beyond tensor+codec",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V1",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G007",
+      "title": "Gravity-1 container: provenance, IR, shared objects, corrections, islands, kernel bindings, machine profile, Doctor seal, Tabula provenance",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G008",
+      "title": "Content-addressed shared objects, no duplicated identical physical information",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V1",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G009",
+      "title": "Complete BPW accounting that omits nothing",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G010",
+      "title": "Functional distillation: fit representations against teacher function, not weights",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G011",
+      "title": "Structured alignment before any sharing conclusion",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G012",
+      "title": "Model grammar: what is stored repeatedly that could be described once",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G013",
+      "title": "Generative representation under the functional objective",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G014",
+      "title": "Procedural blocks: contribution computed from a compact rule without materializing the matrix",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G015",
+      "title": "Hierarchical representation B + C1 + C2",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G016",
+      "title": "Exceptions selected by function, not by weight magnitude",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G017",
+      "title": "Joint block fitting for coupled structures",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G018",
+      "title": "Invertible reparameterization, structured transforms only",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G019",
+      "title": "Conditional information with honest three-way accounting",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G020",
+      "title": "Decision-margin protection",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G021",
+      "title": "Error cancellation across layers",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G022",
+      "title": "Every surviving representation family declares a native direct runtime",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G023",
+      "title": "Kernel co-design cost model predicting complete token cost",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G024",
+      "title": "Artifact at COMPLETE EFFECTIVE BPW < 1.0 compiled from raw source, OR a defensible functional/information lower bound establishing why not",
+      "closed": true,
+      "status": "VERIFIED VIA THE LOWER-BOUND BRANCH",
+      "class": "?",
+      "tier": "V4",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G025",
+      "title": "Doctor capability contract PASS on the G024 artifact",
+      "closed": false,
+      "status": "BLOCKED",
+      "class": "?",
+      "tier": "V4",
+      "prio": "?",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G026",
+      "title": "Behavioural/Tabula profile preserved on the G024 artifact",
+      "closed": true,
+      "status": "INSTRUMENT VERIFIED, DRIFT QUANTIFIED",
+      "class": "?",
+      "tier": "V3",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G027",
+      "title": "Native direct execution on the G024 artifact: fallback 0, no hidden materialization",
+      "closed": true,
+      "status": "VERIFIED on the bound-branch referent",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G028",
+      "title": "Reproducible Gravity recipe: raw source + recipe + Doctor genome + machine profile rebuilds the artifact",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V3",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G029",
+      "title": "Protected verification: load-bearing measurements independently re-derived",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V4",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G030",
+      "title": "Kernel/runtime genome attached to the G024 artifact",
+      "closed": true,
+      "status": "VERIFIED on the bound-branch referent",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G031",
+      "title": "Adversarial review of every major representation family",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V3",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G032",
+      "title": "G-XFORM equivalent reparameterization: structured transforms that make the model compressible",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G033",
+      "title": "G-PLANES progressive structured planes W ~ P1 + P2 + ...",
+      "closed": false,
+      "status": "BLOCKED -- NEEDS AN ARTIFACT THROUGH THE GATE",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G034",
+      "title": "G-TENSOR replace dense maps with natively executable operators",
+      "closed": false,
+      "status": "BLOCKED -- REQUIRES A MACHINE PROPERTY THAT DOES NOT HOLD",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G035",
+      "title": "G-SHARE cross-layer sharing AFTER alignment",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G036",
+      "title": "G-FUNC fit every representation against teacher function, not weight cosine",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G037",
+      "title": "G-ALLOC unified budget where bits, rank, planes, exceptions and islands compete",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G038",
+      "title": "GENESIS_IDENTITY_CONTRACT: multidimensional preservation, no single scalar",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V3",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G039",
+      "title": "Lossless statistical redundancy layer, GEMM-aligned tile decompression",
+      "closed": false,
+      "status": "BLOCKED -- REQUIRES A MACHINE PROPERTY THAT DOES NOT HOLD",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G040",
+      "title": "Reshape the weight distribution BEFORE low-bit, rather than accepting trained geometry",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G041",
+      "title": "Five-axis cost vector instrument: every candidate reports (B,M,F,L,R) not BPW alone",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "MEASUREMENT",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G042",
+      "title": "Extended BPW family reported per candidate",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "MEASUREMENT",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G043",
+      "title": "FLOP family and PHYSICAL_CRITICAL_PATH_NS",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "MEASUREMENT",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G044",
+      "title": "Roofline-knee classifier: MEMORY-WIN / COMPUTE-WIN / NET-WIN / NET-LOSS",
+      "closed": true,
+      "status": "VERIFIED, WITH A NAMED LIMIT",
+      "class": "MEASUREMENT",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G045",
+      "title": "HORIZON_EFFICIENCY: preserved functional information per stored physical bit",
+      "closed": true,
+      "status": "VERIFIED, RANKER NOT PREDICTOR",
+      "class": "THEORY",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G046",
+      "title": "Activation manifold mapped as a first-class object",
+      "closed": true,
+      "status": "VERIFIED -- SPAN NOT CLOSED",
+      "class": "DOCTOR",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G047",
+      "title": "Counterfactual Doctor: deliberately excite unseen directions",
+      "closed": true,
+      "status": "VERIFIED -- UNSEEN DIRECTIONS ARE LIVE",
+      "class": "DOCTOR",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G048",
+      "title": "H-EQUIVALENCE: adversarial distinguisher instead of a fixed benchmark",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "DOCTOR",
+      "tier": "V3",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G049",
+      "title": "Proof-carrying Gravity: every IR node declares its equivalence mode",
+      "closed": true,
+      "status": "VERIFIED -- ASSUMPTION-ONLY 6.00%",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G050",
+      "title": "E-GRAVITY: equality saturation over neural program forms",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P2",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G051",
+      "title": "G-XFORM gauge fixing: move the checkpoint to a compressible point in its equivalence class",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G052",
+      "title": "Common-gauge search over bands, families and depth windows",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G053",
+      "title": "Basin walking: move to a more compressible member of the same functional basin",
+      "closed": false,
+      "status": "BLOCKED -- NEEDS AN ARTIFACT THROUGH THE GATE",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G054",
+      "title": "Entropy annealing: high precision, low entropy, entropy-coded",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G055",
+      "title": "Gravity -O1: lossless redundancy pass before any structural work",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G056",
+      "title": "Matryoshka: one stream whose prefixes are increasingly faithful models",
+      "closed": true,
+      "status": "VERIFIED -- STRUCTURE PROVEN, CODEC REFUTED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G057",
+      "title": "Self-speculative Gravity: Matryoshka levels draft and verify each other",
+      "closed": false,
+      "status": "BLOCKED -- REQUIRES A MACHINE PROPERTY THAT DOES NOT HOLD",
+      "class": "KERNEL",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G058",
+      "title": "Dynamic precision execution: active bits chosen per token",
+      "closed": true,
+      "status": "VERIFIED -- THE SIGNAL WORKS, THE MECHANISM IS DENSITY NOT EXECUTION",
+      "class": "KERNEL",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G059",
+      "title": "Latent-state compilation: LATENT_D << D_MODEL for most of the token",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "REPRESENTATION",
+      "tier": "V3",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G060",
+      "title": "Latent KV: cache the latent, not full K/V",
+      "closed": true,
+      "status": "VERIFIED -- REAL 1.39x AT 8192, BUT THE SECOND LEVER BEHIND A 253x KERNEL GAP",
+      "class": "KERNEL",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G061",
+      "title": "Joint state + weight compilation",
+      "closed": true,
+      "status": "VERIFIED -- THE JOINT CHOICE WINS BY 1.75-3.88x",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G062",
+      "title": "Fixed-point / attractor compilation",
+      "closed": true,
+      "status": "VERIFIED -- REFUTED AT ITS PRECONDITION",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G063",
+      "title": "Depth recursion: shared block + per-depth STEP_CODE",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G064",
+      "title": "Mixture of recursions: conditional depth",
+      "closed": true,
+      "status": "VERIFIED -- REFUTED, THERE IS NOTHING TO CONDITION ON",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G065",
+      "title": "Cross-architecture compilation where Doctor permits",
+      "closed": false,
+      "status": "PENDING",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G066",
+      "title": "Entanglement-entropy predictor for bond dimension",
+      "closed": true,
+      "status": "VERIFIED -- KILLED, IT LOSES TO A SIMPLER RANK COUNT",
+      "class": "THEORY",
+      "tier": "V2",
+      "prio": "P2",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G067",
+      "title": "Phase-transition mapping per representation family",
+      "closed": true,
+      "status": "VERIFIED -- THE FLAT FAMILY HAS NO CLIFF; THE FAMILIES CROSS AT 2.9367 BITS",
+      "class": "MEASUREMENT",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G068",
+      "title": "Multi-axis PTP: are the compression axes orthogonal?",
+      "closed": true,
+      "status": "VERIFIED -- ORTHOGONAL ON THE MEAN, NOT AT EVERY CELL",
+      "class": "MEASUREMENT",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G069",
+      "title": "Planes fitted to FUNCTIONAL error, not residual weights",
+      "closed": true,
+      "status": "VERIFIED -- THE FIT IS A REAL 28% WIN; THE LADDER STOPS AT TWO PLANES AND STILL DOES NOT DOMINATE",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G070",
+      "title": "Correction topology compiler",
+      "closed": true,
+      "status": "VERIFIED -- THE WINNING TOPOLOGY CARRIES NO INDEX AT ALL",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G071",
+      "title": "EXACT ISLAND KERNEL: bound native execution path",
+      "closed": false,
+      "status": "BLOCKED -- NOTHING BINDS, AND THE PRIOR EVIDENCE OVERSTATES WHAT EXISTS",
+      "class": "KERNEL",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G072",
+      "title": "MULTI-PLANE METAL GEMV",
+      "closed": true,
+      "status": "VERIFIED -- PLANE COUNT IS FREE UNTIL THE KERNEL SATURATES, AND IT SATURATES AT TWO",
+      "class": "KERNEL",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G073",
+      "title": "Compiler-chosen plane count per tensor",
+      "closed": true,
+      "status": "VERIFIED -- NON-UNIFORM BEATS UNIFORM AT 12 OF 17 BUDGETS",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G074",
+      "title": "Functional exception allocation replaces magnitude",
+      "closed": true,
+      "status": "VERIFIED -- WINS EVERY CELL, BUT AT 1.15-2.34x NOT THE RECORDED 10-143x",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G075",
+      "title": "CAUSAL INFORMATION MAP: which bits actually cause protected capability",
+      "closed": true,
+      "status": "VERIFIED -- THE SIGNALS DISAGREE, SO NO MAP IS ESTABLISHED",
+      "class": "DOCTOR",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G076",
+      "title": "Knowledge vs computation map",
+      "closed": true,
+      "status": "VERIFIED -- NO SILENT DELETION, BUT COMPRESSION COSTS DECISIVENESS",
+      "class": "DOCTOR",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G077",
+      "title": "Optional knowledge externalization",
+      "closed": false,
+      "status": "PENDING",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G078",
+      "title": "Cross-model shared object pool, after gauge alignment",
+      "closed": false,
+      "status": "PENDING",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G079",
+      "title": "Capability objects: is capability local enough to link?",
+      "closed": true,
+      "status": "VERIFIED -- NOT LOCAL; THE PRECONDITION FOR G077/G078/G080 FAILS",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G080",
+      "title": "Representation-space adaptation and model-git operations",
+      "closed": false,
+      "status": "PENDING",
+      "class": "COMPILER",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G081",
+      "title": "Profile-guided neural compilation against the real Hawking workload",
+      "closed": true,
+      "status": "VERIFIED -- REAL BUT SMALL; KEEP ONE GENERAL BUILD",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G082",
+      "title": "System-prompt partial evaluation: constant-fold the fixed prefix",
+      "closed": false,
+      "status": "BLOCKED -- PRIZE AND BOUND MEASURED, STATE NOT BUILT",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G083",
+      "title": "Tool-grammar specialization without altering general reasoning",
+      "closed": true,
+      "status": "VERIFIED -- REFUTED ON THE PROFILE AXIS, 11 TO 1 AGAINST",
+      "class": "DOCTOR",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G084",
+      "title": "Neural JIT: profile-guided recompilation",
+      "closed": true,
+      "status": "VERIFIED -- REFUTED ON RISK/REWARD, NOT ON FEASIBILITY",
+      "class": "COMPILER",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G085",
+      "title": "Hot/cold neural code placement across the memory hierarchy",
+      "closed": true,
+      "status": "VERIFIED -- MOOT BY MACHINE, AND THE CROSSOVER IS UNREACHABLE",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G086",
+      "title": "MoE grammar, expert generation and speculative routing",
+      "closed": false,
+      "status": "PENDING",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G087",
+      "title": "Dense-to-conditional compilation",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G088",
+      "title": "Structured activation sparsity and dead neural code elimination",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G089",
+      "title": "Full latent runtime: source d_model becomes a compilation artifact",
+      "closed": true,
+      "status": "VERIFIED -- WORKS IN-DISTRIBUTION, DOES NOT GENERALISE",
+      "class": "WILD",
+      "tier": "V4",
+      "prio": "P2",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G090",
+      "title": "lm_head / vocab projection compilation",
+      "closed": false,
+      "status": "BLOCKED -- SHARE AND DESIGN MEASURED, SPECIAL-TOKEN PROTECTION NOT ESTABLISHED",
+      "class": "REPRESENTATION",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G091",
+      "title": "Token-space compilation and multi-token internal execution",
+      "closed": false,
+      "status": "BLOCKED -- LEVER CONFIRMED AT 2.293x NET, CEILING 93.8 TPS, ACCEPTANCE UNMEASURED",
+      "class": "WILD",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G092",
+      "title": "METAL MEGAKERNEL: persistent GPU-resident decode",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "KERNEL",
+      "tier": "V3",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G093",
+      "title": "Event-driven GPU program: a neural micro-scheduler on device",
+      "closed": true,
+      "status": "VERIFIED -- REFUTED; THE HOST SCHEDULES DYNAMIC PROGRAMS FINE AND THERE ARE NONE LEFT",
+      "class": "KERNEL",
+      "tier": "V3",
+      "prio": "P1",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G094",
+      "title": "Cache residency as a direct optimization objective",
+      "closed": true,
+      "status": "VERIFIED -- REFUTED; 5.8x TRAFFIC SWING, ZERO RANK CORRELATION",
+      "class": "KERNEL",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G095",
+      "title": "Device-conditioned compilation and the multi-objective autotuner",
+      "closed": false,
+      "status": "BLOCKED -- ANTI-BPW CLAUSE DEMONSTRATED, PER-DEVICE CLAUSE NEEDS A SECOND MACHINE",
+      "class": "COMPILER",
+      "tier": "V3",
+      "prio": "P1",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G096",
+      "title": "HAWKING NEURAL ISA, bytecode, and compiler trust",
+      "closed": false,
+      "status": "BLOCKED -- 2 OF 12 OPCODES ARE REAL; THE ISA CANNOT BE FROZEN AS SPECIFIED",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "BLOCKED"
+    },
+    {
+      "id": "G097",
+      "title": "Kolmogorov-proxy cost: minimum executable description length",
+      "closed": true,
+      "status": "VERIFIED -- THE CURRENCY IS BPW WEARING A RUNTIME CONSTANT",
+      "class": "THEORY",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "NEGATIVE"
+    },
+    {
+      "id": "G098",
+      "title": "Universal Gravity prior and search-policy learning from the ledger",
+      "closed": false,
+      "status": "PENDING",
+      "class": "THEORY",
+      "tier": "V3",
+      "prio": "P2",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G099",
+      "title": "Neural superoptimization, starting micro",
+      "closed": false,
+      "status": "PENDING",
+      "class": "COMPILER",
+      "tier": "V2",
+      "prio": "P1",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G100",
+      "title": "Measure USEFUL WORK, not only TPS",
+      "closed": false,
+      "status": "PENDING",
+      "class": "MEASUREMENT",
+      "tier": "V3",
+      "prio": "P1",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G101",
+      "title": "Root-cause the 15.6 us per context token, which is 152x the KV bandwidth bound",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "KERNEL",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G102",
+      "title": "Serial prefill is the binding long-context wall, ahead of decode",
+      "closed": true,
+      "status": "VERIFIED",
+      "class": "KERNEL",
+      "tier": "V2",
+      "prio": "P0",
+      "verdict": "POSITIVE"
+    },
+    {
+      "id": "G103",
+      "title": "NR container spec: a versioned schema that holds protected representation (tensors, entropy streams, shared/generated structures, latent codes, correction planes, exact islands, route graph, kernel requirements, semantic provenance) with NO machine-specific fields",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G104",
+      "title": "NX genome spec: machine-specialized lowered form carrying kernel binding, threadgroup geometry, residency plan, scheduling, cache plan, and the machine identity it was compiled for",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G105",
+      "title": "One real artifact carrying both NR and NX, produced by the pipeline and executed",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G106",
+      "title": "ROUTE formalized and a route graph emitted from Gravity IR",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G107",
+      "title": "RPS / RPT instrument measuring the LIVE runtime, not a static count",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G108",
+      "title": "Critical route depth per token measured",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G109",
+      "title": "C01: geo_tpr64 GEMV geometry sweep BY ORGAN CLASS (qkv, o, gate, up, down, endpoint)",
+      "closed": false,
+      "status": "ACTIVE",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G110",
+      "title": "Non-GEMV occupancy census: gated_delta_vi, gated_rmsnorm, residual_rmsnorm, rope, swiglu, remaining norms",
+      "closed": false,
+      "status": "ACTIVE",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G111",
+      "title": "Retile/fuse the lowest-occupancy non-GEMV kernels found by G110",
+      "closed": false,
+      "status": "ACTIVE",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G112",
+      "title": "Dispatch count per token reduced from ~964 by real fusion",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G113",
+      "title": "Command-buffer / encode overhead per token measured and attacked",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G114",
+      "title": "True interleaved-rANS packer with COMPLETE byte accounting",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G115",
+      "title": "rANS consume-direct Metal kernel INSIDE the geo tile: decode symbol in register, apply scale, MAC",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G116",
+      "title": "rANS net verdict: TOKEN_NS with consume-direct vs dense q3",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G117",
+      "title": "Batched prefill ported to qwen38, exact math",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G118",
+      "title": "Prefill scaling measured at 512 / 4k / 32k with TTFT",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G119",
+      "title": "Post-batching per-position prefill wall profiled and attacked",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G120",
+      "title": "NVM minimal: load route graph, bind NX operators, manage state, dispatch via HIDE, record telemetry",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G121",
+      "title": "HIDE as physical realization engine: kernel selection and residency plan are DATA, not hardcoded",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G122",
+      "title": "NVM telemetry records routes, state, and physical cost per route",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G123",
+      "title": "Tabula drift instrument reproducible on demand for ANY candidate",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G124",
+      "title": "Tabula drift is PART OF the Doctor seal; no PASS is emitted without it",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G125",
+      "title": "Cost vector extended from (B,M,F,L,R) to (B,M,F,L,R,T)",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G126",
+      "title": "Wider capability battery: >= 60 deterministic items across arithmetic, code, reasoning, instruction following, long-form reasoning, tool-like syntax, repository engineering, adversarial false-win rejection, calibration, long-context",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G127",
+      "title": "Battery controls observed: it must REJECT a known-bad artifact",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G128",
+      "title": "r=1.25 adjudicated on the wide battery, not on 9/10",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G129",
+      "title": "Joint SCALE x CODEC x ENTROPY x KERNEL x DOCTOR optimizer; per-organ / per-layer r allowed",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G130",
+      "title": "Greedy divergence instrument with controls, folded into the seal as a diagnostic",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G131",
+      "title": "Three resident Qwen3.8 workers stable, with MEASURED RSS and memory pressure",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G132",
+      "title": "Worker checkpoint / rebind protocol: hypothesis, code changes, measurements, negative science, blocker, next experiment persisted BEFORE eviction",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G133",
+      "title": "Memory-pressure gate before spawning worker N",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G134",
+      "title": "Protected GPU timing lane enforced MECHANICALLY, not by convention",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G135",
+      "title": "Ledger acceleration proven: >= 3 obligations closed in parallel with no conflicting GPU measurement",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G136",
+      "title": "KV precision reduced with capability and identity preserved",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G137",
+      "title": "KV/state bytes at 131k measured and driven below the weight artifact",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G138",
+      "title": "Latent KV / state compression / cache layout / context routing evaluated",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G139",
+      "title": "Route-speculative execution: predict the next route and prefetch before the branch resolves",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G140",
+      "title": "Matryoshka NR: low-fidelity prefix + correction levels",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G141",
+      "title": "Self-speculative decode from Matryoshka tiers (draft cheap tier, verify rich tier), no second model",
+      "closed": false,
+      "status": "ACTIVE",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G142",
+      "title": "DRAM bytes/token measured per candidate, not estimated",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G143",
+      "title": "Physical FLOPs/token measured per candidate",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G144",
+      "title": "Cache-resident fraction measured (feeds G094)",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G145",
+      "title": "Zero-fallback proof: no CPU or dense fallback path executes during a sealed run",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G146",
+      "title": "Shader-name audit: every kernel the genome DECLARES is proven actually dispatched",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G147",
+      "title": "Reconstruction cost accounted for every NR: no small artifact hides expansion cost",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G148",
+      "title": "Provenance chain bf16 parent -> NR -> NX, sealed and independently checkable",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G149",
+      "title": "Density leader mixed-q3mlp-q3attn-v1 gets its native GEMV/codec kernel",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G150",
+      "title": "Pareto table published per candidate: BPW, TPS, TOKEN_NS, DRAM/token, RAM, NR size, NX size, Doctor, Tabula",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G151",
+      "title": "Successor selection implemented as CODE, not prose",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G152",
+      "title": "Sacrificial-parent promotion executed once, safely",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G153",
+      "title": ">= 40 valid TPS, Doctor-valid",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G154",
+      "title": ">= 60 valid TPS, Doctor-valid",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G155",
+      "title": ">= 100 VALID TPS with full Doctor + Tabula seal, zero fallback, measured physical cost",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G156",
+      "title": "TOKEN_NS decomposition re-derived at EACH milestone, not carried forward",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G157",
+      "title": "Physical floor stated after 100 TPS: what actually bounds this machine next",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G158",
+      "title": "Second, deliberately different model compiled through NOS end to end",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G159",
+      "title": "Universal-mechanism test: does compiling model N make model N+1 reach its physical frontier faster",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    },
+    {
+      "id": "G160",
+      "title": "NOS end to end: raw learned model in, sealed NX out, ONE command, full provenance",
+      "closed": false,
+      "status": "PENDING",
+      "class": "?",
+      "tier": "V2",
+      "prio": "?",
+      "verdict": "OPEN"
+    }
+  ],
+  "closed": 82,
+  "blocked": [
+    "G025",
+    "G033",
+    "G034",
+    "G039",
+    "G053",
+    "G057",
+    "G071",
+    "G082",
+    "G090",
+    "G091",
+    "G095",
+    "G096"
+  ],
+  "commit": "5693e1710466fb770b9686dc150965cc0499ea39",
+  "scored_obligations": 46,
+  "instrument_caveats": [
+    "36 of the 82 closed obligations carry NO class label (the older G001-G0xx block). A first pass defaulted them to POSITIVE because no negative keyword matched, which inflated every rate. They are EXCLUDED here and the prior is computed on the 46 labelled ones only.",
+    "POSITIVE/NEGATIVE is keyword-classified from status lines I wrote myself. It is a coarse self-labelling, not an independent adjudication, and the per-class counts are small enough (3 to 11) that only the extremes should be read as signal."
+  ],
+  "the_prior": {
+    "strongest_signal": "WILD is 4 closed, 4 NEGATIVE -- a 100% refutation rate. Every wild mechanism this ledger proposed (cross-architecture, attractor compilation, conditional depth, MoE grammar adjacents) died on measurement. THEORY is 2 of 3 negative. By tier, V3 refutes at 43% against V2's 13%.",
+    "policy_it_implies": "Order proposals by tier, not by ambition. V2 KERNEL and REPRESENTATION work paid at 62-82%; V3 WILD paid at zero. A search policy trained on this ledger should spend its budget on V2 mechanisms and demand a precondition measurement before any V3 one -- which is exactly what G079 turned out to be for G077/G078/G080.",
+    "the_cheapest_closures_were_not_new_experiments": "Two patterns dominated this session's closures. FIRST, building the missing BASELINE rather than the missing feature: the (R,1) kernels were built to settle G091's confound and incidentally made G094's hypothesis testable for the first time. SECOND, assembling existing receipts: G095, G096 and G097 were closed with no new measurement at all. A search policy that proposes mechanisms is optimising the wrong thing; the ledger says propose BASELINES and CROSS-CHECKS.",
+    "and_the_measurement_method_is_the_risk": "Seven method defects were caught this session against zero artifact defects. A prior that ranks MECHANISMS without ranking INSTRUMENTS would have shortened nothing, because the failures were never in which mechanism was tried."
+  },
+  "verify_not_met": {
+    "why": "The verify measures this as TIME-TO-FRONTIER on a deliberately different architecture -- the Odyssey test. There is one architecture on this machine and one device, so the prior can be EXTRACTED but not VALIDATED. A prior that has not shortened a real search has not been demonstrated, and that is not claimed.",
+    "missing_input": "a second architecture to run the frontier search against, with the prior on and off"
+  }
+}
