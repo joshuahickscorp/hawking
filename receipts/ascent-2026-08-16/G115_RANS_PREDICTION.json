@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.nos.rans_consume_direct_prediction.v1",
+  "obligation": "G115 -- rANS consume-direct kernel inside the geo tile",
+  "THIS_IS_A_PREDICTION_NOT_A_MEASUREMENT": "No kernel was built and none is claimed. This prices the decode from its ALGORITHM against a measured per-op rate, so that G116 has a falsifiable number to test rather than an opinion.",
+  "per_op_rate_basis": "NX_MATMUL_K_AMORTIZATION fitted q4 at 5 decode ops against 1 MAC, and G072 measured that kernel at 0.8046 ps/element. That gives 0.1341 ps per op on this machine.",
+  "rans_decode_step_counted_from_the_algorithm": [
+    {
+      "step": "renormalise: test state < lower bound, conditional 32-bit load and shift",
+      "ops": 2
+    },
+    {
+      "step": "state update: s = freq*(s>>prec) + (s & mask) - cumfreq",
+      "ops": 4
+    },
+    {
+      "step": "dequant: multiply by the group scale",
+      "ops": 1
+    }
+  ],
+  "variants": [
+    {
+      "symbol_search": "linear scan over 7 symbols",
+      "search_ops": 7,
+      "decode_ops": 14,
+      "total_ops_with_mac": 15.0,
+      "predicted_ps_per_element": 2.0115,
+      "vs_q4_x": 2.5
+    },
+    {
+      "symbol_search": "binary search over 7 symbols",
+      "search_ops": 3,
+      "decode_ops": 10,
+      "total_ops_with_mac": 11.0,
+      "predicted_ps_per_element": 1.4750999999999999,
+      "vs_q4_x": 1.8333333333333333
+    }
+  ],
+  "why_the_symbol_search_is_cheap_here": "G114 measured the real q3 alphabet at SEVEN symbols, not eight. A 4096-entry lookup table at 12-bit precision would be the textbook choice and would cost threadgroup memory; with seven symbols a binary search is 3 compares and needs no table in the tile at all. That is a genuine advantage of this particular stream and it is why the optimistic variant is the fair one.",
+  "prediction": {
+    "best_variant": "binary search over 7 symbols",
+    "predicted_ps_per_element": 1.4750999999999999,
+    "vs_q4_x": 1.8333333333333333,
+    "gemv_ms_q4": 20.6158027591368,
+    "gemv_ms_rans_predicted": 37.79563839175079,
+    "token_pct_added": 56.33841290947069,
+    "bytes_saved_vs_q4_pct": 40.3435294117647
+  },
+  "the_predicted_verdict": "Even on the optimistic variant, rANS decode is 1.83x q4's ALU per element. That adds 17.180 ms to the token -- 56% -- to save 40% of bytes on a machine G072 measured ALU-issue bound and G094 measured non-responsive to byte traffic. The predicted net is a LOSS, and G116's acceptance already states that a loss is a valid closure.",
+  "what_would_falsify_it": "If the renormalisation branch is predicated rather than divergent and the binary search folds into a few select instructions, the op count could fall toward 6-7 and the verdict would narrow. That is exactly what building the kernel would settle, and it is why this is recorded as a prediction with a stated op count rather than as a conclusion.",
+  "commit": "dca838a0039166c7d0403744a1f27b497ccb86e1"
+}
