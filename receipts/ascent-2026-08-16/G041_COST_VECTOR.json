@@ -1,0 +1,91 @@
+{
+  "schema": "hawking.nos.cost_vector.v1",
+  "obligation": "G041 -- five-axis cost vector, not BPW alone",
+  "axes": {
+    "B": "stored bits per weight, COMPLETE: every byte under the artifact root over the original language parameter count, measured by walking the tree",
+    "M": "DRAM bytes moved per token, the addressed GEMV payload",
+    "F": "physical FLOPs per token from the element census, 2 per multiply-accumulate",
+    "L": "complete wall ns per token, MEASURED ON DEVICE",
+    "R": "resident bytes: addressed artifact plus KV/state at the harness sequence length",
+    "T": "Tabula / patient-identity drift, directive section 35 -- null with reason here"
+  },
+  "why_a_vector": "BPW mispredicted twice this session: the q3 leader is 17.4% fewer bytes and 10.9% MORE time, and every BPW-linear TPS projection was mis-specified because this machine charges decode ALU, not bytes.",
+  "candidates": [
+    {
+      "candidate": "uniform-q4-v1",
+      "B_stored_bits_per_weight_complete": 4.255954555664269,
+      "B_bytes_on_disk": 14308518399,
+      "B_files": 1109,
+      "B_addressed_bytes": 14297694680,
+      "B_declared_vs_ondisk_gap_bytes": 10823719,
+      "M_dram_bytes_per_token": 14297694680,
+      "F_physical_flops_per_token": 51244849016,
+      "L_complete_wall_ns_per_token": 30549917,
+      "L_gpu_ns_per_token": 29451124,
+      "L_tps": 32.733313154336884,
+      "L_timing_label": "DIRTY_ENGINEERING",
+      "L_fallbacks": 0,
+      "R_resident_bytes": 14331249112,
+      "R_kv_state_bytes_at_seq_len": 33554432,
+      "T_tabula_drift": null,
+      "T_reason": "NOT MEASURED. Directive section 35 makes T a first-class axis and no Tabula instrument has been run on any artifact this session. Reported as null-with-reason rather than omitted, because a quietly absent axis reads as an axis that is fine."
+    },
+    {
+      "candidate": "g032-chanscale-a025-compact",
+      "B_stored_bits_per_weight_complete": 3.3448260613345044,
+      "B_bytes_on_disk": 11245304576,
+      "B_files": 854,
+      "B_addressed_bytes": 11245131631,
+      "B_declared_vs_ondisk_gap_bytes": 172945,
+      "M_dram_bytes_per_token": 11245131631,
+      "F_physical_flops_per_token": 51244849016,
+      "L_complete_wall_ns_per_token": 33593042,
+      "L_gpu_ns_per_token": 32278500,
+      "L_tps": 29.76806923290841,
+      "L_timing_label": "DIRTY_ENGINEERING",
+      "L_fallbacks": 0,
+      "R_resident_bytes": 11278686063,
+      "R_kv_state_bytes_at_seq_len": 33554432,
+      "T_tabula_drift": null,
+      "T_reason": "NOT MEASURED. Directive section 35 makes T a first-class axis and no Tabula instrument has been run on any artifact this session. Reported as null-with-reason rather than omitted, because a quietly absent axis reads as an axis that is fine."
+    },
+    {
+      "candidate": "compact-q3attn-r1p2-v1",
+      "B_stored_bits_per_weight_complete": 3.3448211523514755,
+      "B_bytes_on_disk": 11245288072,
+      "B_files": 854,
+      "B_addressed_bytes": 11245123833,
+      "B_declared_vs_ondisk_gap_bytes": 164239,
+      "M_dram_bytes_per_token": 11245123833,
+      "F_physical_flops_per_token": 51244849016,
+      "L_complete_wall_ns_per_token": 33586042,
+      "L_gpu_ns_per_token": 32306583,
+      "L_tps": 29.77427349135096,
+      "L_timing_label": "DIRTY_ENGINEERING",
+      "L_fallbacks": 0,
+      "R_resident_bytes": 11278678265,
+      "R_kv_state_bytes_at_seq_len": 33554432,
+      "T_tabula_drift": null,
+      "T_reason": "NOT MEASURED. Directive section 35 makes T a first-class axis and no Tabula instrument has been run on any artifact this session. Reported as null-with-reason rather than omitted, because a quietly absent axis reads as an axis that is fine."
+    }
+  ],
+  "g0_anchor": {
+    "standing_declared_bpw": 4.252735126866492,
+    "instrument_declared_bpw": 4.252735126866492,
+    "declared_bpw_matches": true,
+    "instrument_complete_bpw": 4.255954555664269,
+    "standing_latency_ns": 39326090,
+    "instrument_latency_ns": 30549917,
+    "latency_matches": false,
+    "latency_divergence_is_expected": "The acceptance anchors G0 at 39,326,090 ns. That predates five landed kernel commits and the machine is now faster, so reproducing it would mean measuring the past. The BPW anchor still reproduces exactly; the latency anchor is SUPERSEDED, and by how much is itself the evidence those commits worked.",
+    "superseding_commits": [
+      "26245979e attention threadgroup",
+      "c5b07295c deltanet gated_rmsnorm",
+      "39e0e16a9 rope retile",
+      "502b9885a residual rmsnorm",
+      "143620298 deltanet vi simd reduction"
+    ],
+    "latency_improvement_pct": 22.3164138616374
+  },
+  "commit": "2ca48bac44dcf28f9ba188420de5d190bba1b128"
+}
