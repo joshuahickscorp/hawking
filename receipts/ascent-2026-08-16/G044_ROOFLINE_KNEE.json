@@ -1,0 +1,151 @@
+{
+  "schema": "hawking.nos.roofline_knee_classifier.v1",
+  "obligation": "G044 -- roofline-knee classifier",
+  "roofline_sweep": [
+    {
+      "achieved_gb_s": 594.3492381201206,
+      "achieved_gflop_s": 297.1746190600603,
+      "bytes": 1073741824,
+      "flops_per_byte": 0.5,
+      "k_ops": 1,
+      "median_gpu_ns": 1806584
+    },
+    {
+      "achieved_gb_s": 586.9314710268195,
+      "achieved_gflop_s": 586.9314710268195,
+      "bytes": 1073741824,
+      "flops_per_byte": 1.0,
+      "k_ops": 2,
+      "median_gpu_ns": 1829416
+    },
+    {
+      "achieved_gb_s": 584.6146354318096,
+      "achieved_gflop_s": 1169.2292708636191,
+      "bytes": 1073741824,
+      "flops_per_byte": 2.0,
+      "k_ops": 4,
+      "median_gpu_ns": 1836666
+    },
+    {
+      "achieved_gb_s": 586.3567861451096,
+      "achieved_gflop_s": 2345.4271445804384,
+      "bytes": 1073741824,
+      "flops_per_byte": 4.0,
+      "k_ops": 8,
+      "median_gpu_ns": 1831209
+    },
+    {
+      "achieved_gb_s": 590.535858105321,
+      "achieved_gflop_s": 4724.286864842568,
+      "bytes": 1073741824,
+      "flops_per_byte": 8.0,
+      "k_ops": 16,
+      "median_gpu_ns": 1818250
+    },
+    {
+      "achieved_gb_s": 534.299595198109,
+      "achieved_gflop_s": 8548.793523169745,
+      "bytes": 1073741824,
+      "flops_per_byte": 16.0,
+      "k_ops": 32,
+      "median_gpu_ns": 2009625
+    },
+    {
+      "achieved_gb_s": 275.10390590311505,
+      "achieved_gflop_s": 8803.324988899682,
+      "bytes": 1073741824,
+      "flops_per_byte": 32.0,
+      "k_ops": 64,
+      "median_gpu_ns": 3903041
+    },
+    {
+      "achieved_gb_s": 139.51341300936264,
+      "achieved_gflop_s": 8928.858432599209,
+      "bytes": 1073741824,
+      "flops_per_byte": 64.0,
+      "k_ops": 128,
+      "median_gpu_ns": 7696334
+    },
+    {
+      "achieved_gb_s": 70.15169371488305,
+      "achieved_gflop_s": 8979.41679550503,
+      "bytes": 1073741824,
+      "flops_per_byte": 128.0,
+      "k_ops": 256,
+      "median_gpu_ns": 15306000
+    }
+  ],
+  "bandwidth_ceiling_gb_s": 594.3492381201206,
+  "compute_ceiling_gflop_s": 8979.41679550503,
+  "COMPUTE_PER_BYTE_AT_ROOFLINE_KNEE": 15.107980661178622,
+  "knee_method": "measured on this machine: hawking_roofline_sweep_f4 streams 1 GiB as float4 with K FMAs per vector on two independent chains, folded into an output so nothing is eliminated. Bandwidth plateaus near 590 GB/s to intensity 8 flop/B and bends by 16; compute plateaus near 8980 GFLOP/s. Knee = compute ceiling / bandwidth ceiling.",
+  "families": [
+    {
+      "family": "q3 grouped",
+      "codec": "q3_group64_hgravu",
+      "bytes_per_64_weights": 26,
+      "bytes_saved_per_64_weights": 8.0,
+      "decode_ops_per_weight_derived": 5.467259451183606,
+      "extra_decode_ops_per_64_weights": 29.904604875750806,
+      "reconstruction_ops_per_byte_saved": 3.7380756094688508,
+      "roofline_knee_classification": "NET-WIN",
+      "measured_ps_per_element": 0.8523697033524513,
+      "measured_classification": "NET-LOSS",
+      "knee_agrees_with_measurement": false
+    },
+    {
+      "family": "1 binary plane",
+      "codec": "binary_planes_k1",
+      "bytes_per_64_weights": 10,
+      "bytes_saved_per_64_weights": 24.0,
+      "decode_ops_per_weight_derived": 3.723295253798139,
+      "extra_decode_ops_per_64_weights": -81.70910375691909,
+      "reconstruction_ops_per_byte_saved": -3.404545989871629,
+      "roofline_knee_classification": "NET-WIN",
+      "measured_ps_per_element": 0.6225192919373512,
+      "measured_classification": "NET-WIN",
+      "knee_agrees_with_measurement": true
+    },
+    {
+      "family": "2 binary planes",
+      "codec": "binary_planes_k2",
+      "bytes_per_64_weights": 20,
+      "bytes_saved_per_64_weights": 14.0,
+      "decode_ops_per_weight_derived": 4.043986809563067,
+      "extra_decode_ops_per_64_weights": -61.18484418796373,
+      "reconstruction_ops_per_byte_saved": -4.370346013425981,
+      "roofline_knee_classification": "NET-WIN",
+      "measured_ps_per_element": 0.6647856906056404,
+      "measured_classification": "NET-WIN",
+      "knee_agrees_with_measurement": true
+    },
+    {
+      "family": "3 binary planes",
+      "codec": "binary_planes_k3",
+      "bytes_per_64_weights": 30,
+      "bytes_saved_per_64_weights": 4.0,
+      "decode_ops_per_weight_derived": 6.6090557060416915,
+      "extra_decode_ops_per_64_weights": 102.97956518666825,
+      "reconstruction_ops_per_byte_saved": 25.744891296667063,
+      "roofline_knee_classification": "NET-LOSS",
+      "measured_ps_per_element": 1.0028557851910591,
+      "measured_classification": "NET-LOSS",
+      "knee_agrees_with_measurement": true
+    }
+  ],
+  "verify": {
+    "net_win": [
+      "1 binary plane",
+      "2 binary planes"
+    ],
+    "net_loss": [
+      "q3 grouped",
+      "3 binary planes"
+    ],
+    "discriminating": true,
+    "knee_disagrees_with_measurement_on": [
+      "q3 grouped"
+    ]
+  },
+  "commit": "f72cd00ac99df7f8b6f6031a23e26c688763710e"
+}

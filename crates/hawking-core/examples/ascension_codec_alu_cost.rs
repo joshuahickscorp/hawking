@@ -202,8 +202,57 @@ mod macos {
                                 "by_codec": per_codec}));
         }
 
+        // G044: the roofline knee, MEASURED. Sweep arithmetic intensity and find
+        // where achieved bandwidth stops being flat.
+        let mut roofline: Vec<Value> = Vec::new();
+        {
+            let n_vec: usize = 64 * 1024 * 1024; // 1 GiB of float4
+            let bytes = n_vec * 16;
+            let inbuf = ctx.new_buffer_checked(bytes)?;
+            let outbuf = ctx.new_buffer_checked(n_vec * 4)?;
+            eprintln!("roofline sweep: {} MiB streamed per point", bytes / (1024 * 1024));
+            for k in [1u32, 2, 4, 8, 16, 32, 64, 128, 256] {
+                let mut gpu_ns = Vec::new();
+                for _ in 0..REPS {
+                    let t = ctx.dispatch_threads_timed(
+                        "hawking_roofline_sweep_f4",
+                        (n_vec as u32, 1, 1),
+                        (256, 1, 1),
+                        |enc| {
+                            enc.set_buffer(0, Some(&inbuf), 0);
+                            enc.set_buffer(1, Some(&outbuf), 0);
+                            let n = n_vec as u32;
+                            enc.set_bytes(2, 4, &n as *const u32 as *const _);
+                            enc.set_bytes(3, 4, &k as *const u32 as *const _);
+                        },
+                    )?;
+                    match (t.gpu_start_ns, t.gpu_end_ns) {
+                        (Some(a), Some(b)) if b > a => gpu_ns.push(b - a),
+                        _ => return Err("roofline: no GPU timestamp".into()),
+                    }
+                }
+                let med = median(gpu_ns.clone());
+                let gb_s = bytes as f64 / med as f64;
+                let flops = (n_vec as f64) * (k as f64) * 8.0;
+                let gflop_s = flops / med as f64;
+                let intensity = k as f64 / 2.0;
+                eprintln!(
+                    "  K={k:<4} intensity {intensity:6.1} flop/B   {gb_s:7.1} GB/s   {gflop_s:8.1} GFLOP/s"
+                );
+                roofline.push(json!({
+                    "k_ops": k, "flops_per_byte": intensity, "bytes": bytes,
+                    "median_gpu_ns": med, "achieved_gb_s": gb_s, "achieved_gflop_s": gflop_s,
+                }));
+            }
+        }
+
         let doc = json!({
             "schema": SCHEMA,
+            "roofline_sweep": roofline,
+            "roofline_method": "hawking_roofline_sweep_f4 streams 1 GiB as float4 and performs K \
+                                FMAs per vector on two independent chains before folding every \
+                                result into the output, so nothing is eliminated and the measurement \
+                                is throughput rather than dependency latency. flops/byte = K/2.",
             "question": "Per WEIGHT, not per byte, what does each codec cost on this GPU?",
             "why": "DENSITY_LEADER_SPEED.json: the q3 artifact runs 10.9% slower than G0 on 17.4% \
                     fewer bytes. NX_MATMUL_K_AMORTIZATION fitted geo_tpr64 to T(K) ~ (decode_ops + K), \

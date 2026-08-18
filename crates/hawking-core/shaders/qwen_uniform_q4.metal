@@ -1466,3 +1466,38 @@ QWEN_BINARY_PLANES(2)
 QWEN_BINARY_PLANES(3)
 
 #undef QWEN_BINARY_PLANES
+
+// ── roofline sweep: find this machine's knee, do not quote it ─────────────
+//
+// G044 requires COMPUTE_PER_BYTE_AT_ROOFLINE_KNEE measured here rather than read
+// off a spec sheet. The kernel streams a buffer as float4 and performs K fused
+// multiply-adds per loaded vector before folding the result into an output that
+// depends on every one of them, so nothing is eliminated. Sweeping K walks the
+// arithmetic intensity axis: at low K the kernel is memory-bound and achieved
+// GB/s is flat, at high K it is compute-bound and GB/s falls. The knee is where
+// it stops being flat.
+//
+// Intensity: one float4 is 16 bytes and K FMAs on it are K*4 FMA = K*8 flops,
+// so flops/byte = K/2.
+//
+// Grid: elements/4 threads, TG 256.
+kernel void hawking_roofline_sweep_f4(
+    device const float4* input      [[buffer(0)]],
+    device float* output            [[buffer(1)]],
+    constant uint& n_vec            [[buffer(2)]],
+    constant uint& k_ops            [[buffer(3)]],
+    uint gid                         [[thread_position_in_grid]])
+{
+    if (gid >= n_vec) return;
+    float4 v = input[gid];
+    // Two independent chains so the FMA pipeline is not latency-bound on one
+    // dependency, which would measure issue latency instead of throughput.
+    float4 a = v;
+    float4 b = v * 1.000001f + 0.5f;
+    for (uint i = 0u; i < k_ops; ++i) {
+        a = fma(a, 1.0000001f, 0.0000001f);
+        b = fma(b, 0.9999999f, 0.0000002f);
+    }
+    const float4 r = a + b;
+    output[gid] = r.x + r.y + r.z + r.w;
+}

@@ -1262,6 +1262,7 @@ mod imp {
             "qwen_binary_planes_k3_matvec_geo_tpr64_tg128" => {
                 "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
             }
+            "hawking_roofline_sweep_f4" => "hawking_roofline_sweep_f4",
             "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe" => {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe"
             }
