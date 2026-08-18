@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.nos.kernel_win_transfer.v1",
+  "question": "Does an isolated-family kernel win transfer to the production token?",
+  "change": "two-pass argmax: the incumbent launches grid(256) TG(256) -- ONE threadgroup of 256 threads to scan 248,320 logits, so each thread walks ~970 entries serially and 59 of 60 cores idle. The replacement fans pass 1 across 240 threadgroups and reduces the partials in pass 2, preserving the lower-index tie-break exactly at every level.",
+  "kernel_level": {
+    "serial_ms": 0.3395,
+    "two_pass_ms": 0.0131,
+    "speedup": 25.9,
+    "isolated_saving_ms": 0.3264,
+    "share_of_the_non_gemv_wall": 0.055614244334639636
+  },
+  "correctness": "greedy token ids IDENTICAL to the serial kernel on all 16 tokens, oracle True, fallbacks 0, in every run",
+  "end_to_end_paired": {
+    "arms": "HAWKING_ARGMAX_TWO_PASS 0 vs 1, alternating, same session conditions",
+    "n_per_arm": 4,
+    "serial_median_ms": 29.309562,
+    "two_pass_median_ms": 29.3543745,
+    "serial_spread_ms": 0.28116600000000247,
+    "two_pass_spread_ms": 0.060292000000000456,
+    "median_delta_ms": -0.044812499999999034
+  },
+  "verdict": "NO TRANSFER. A 26x kernel speedup worth 0.326 ms in isolation -- 5.6% of the entire non-GEMV wall -- produces a median end-to-end delta of -0.045 ms, which is nothing, and the two-pass arm is marginally SLOWER. Default left OFF: a second dispatch and two buffers for an unmeasurable win is not worth shipping.",
+  "why_it_matters": "G110 and G111 are census-driven: measure the isolated families, retile the worst, expect the token to fall. That worked for gated_delta -- 3.38 ms isolated became 3.34 ms end to end, nearly 1:1 -- and it did NOT work here. So isolated-family time is a RANKING signal, not a budget: a family's isolated cost is an upper bound on what removing it can buy, and for small families the realisable fraction can be zero. Every retile must be paired end-to-end, which is what G111's acceptance already demands and this is the case that shows why.",
+  "one_real_side_effect": "the two-pass arm is far more STABLE: spread 0.060 ms against 0.281. Not a speed win, but it makes the token wall easier to measure, which matters for every future A/B.",
+  "commit": "38923547cfc623291660aee852fe335bf4547cdd"
+}

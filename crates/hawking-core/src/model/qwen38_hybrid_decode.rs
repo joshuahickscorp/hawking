@@ -7,7 +7,7 @@
 //! run; there is no reconstruct-to-Q4 path.
 
 use super::qwen38_64_layer_execution_schedule::qwen38_assert_schedule_intact;
-use super::qwen38_geometry::{
+use super::qwen38_geometry::{ARGMAX_GROUPS, 
     qwen38_deltanet_state_slot, qwen38_gqa_state_slot, qwen38_layer_name, qwen38_mixer_kind,
     Qwen38DeltaNetLayout, Qwen38MixerKind, QWEN38_GQA_HEAD_DIM, QWEN38_GQA_HEADS,
     QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM, QWEN38_HIDDEN,
@@ -1123,6 +1123,8 @@ mod device {
         down: PinnedBuffer,
         logits: PinnedBuffer,
         sampled: PinnedBuffer,
+        argmax_part_v: PinnedBuffer,
+        argmax_part_i: PinnedBuffer,
         conv_state: PinnedBuffer,
         rec_state: PinnedBuffer,
         gqa_key: PinnedBuffer,
@@ -1180,6 +1182,9 @@ mod device {
                 down: ctx.new_buffer_checked(hidden)?,
                 logits: ctx.new_buffer_checked(logits)?,
                 sampled: ctx.new_buffer_checked(std::mem::size_of::<u32>())?,
+                // ARGMAX_GROUPS partials, one (value, index) pair per threadgroup
+                argmax_part_v: ctx.new_buffer_checked(ARGMAX_GROUPS * 4)?,
+                argmax_part_i: ctx.new_buffer_checked(ARGMAX_GROUPS * 4)?,
                 conv_state: ctx.new_buffer_checked(conv)?,
                 rec_state: ctx.new_buffer_checked(rec)?,
                 gqa_key: ctx.new_buffer_checked(kv_cache)?,
@@ -2506,11 +2511,53 @@ mod device {
         }
 
         fn encode_argmax(&self, tcb: &mut TokenCommandBuffer<'_>) -> Result<()> {
-            sample_argmax_f32_tcb(
-                tcb,
-                &self.workspace.logits,
-                &self.workspace.sampled,
-                QWEN38_VOCAB,
+            // The single-threadgroup argmax scans the whole vocabulary on one of
+            // 60 cores, and the two-pass form below is 26x faster in isolation
+            // (0.3395 -> 0.0131 ms) with token-identical output. It is DEFAULT
+            // OFF anyway, because none of that saving reaches the token: four
+            // paired runs put the end-to-end median at -0.045 ms, i.e. nothing,
+            // against a within-arm spread of 0.281 ms. Shipping a second
+            // dispatch and two buffers for an unmeasurable win is not worth it.
+            // HAWKING_ARGMAX_TWO_PASS=1 enables it; see
+            // receipts/ascent-2026-08-16/ARGMAX_TWO_PASS_NO_TRANSFER.json.
+            let two_pass = std::env::var("HAWKING_ARGMAX_TWO_PASS")
+                .map(|v| v != "0")
+                .unwrap_or(false);
+            if !two_pass {
+                return sample_argmax_f32_tcb(
+                    tcb,
+                    &self.workspace.logits,
+                    &self.workspace.sampled,
+                    QWEN38_VOCAB,
+                );
+            }
+            let vocab = QWEN38_VOCAB as u32;
+            let groups = ARGMAX_GROUPS as u32;
+            tcb.dispatch_threads(
+                "sample_argmax_f32_pass1",
+                (groups * 256, 1, 1),
+                (256, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&self.workspace.logits), 0);
+                    enc.set_buffer(1, Some(&self.workspace.argmax_part_v), 0);
+                    enc.set_buffer(2, Some(&self.workspace.argmax_part_i), 0);
+                    enc.set_bytes(3, 4, &vocab as *const u32 as *const _);
+                    enc.set_threadgroup_memory_length(0, 256 * 4);
+                    enc.set_threadgroup_memory_length(1, 256 * 4);
+                },
+            )?;
+            tcb.dispatch_threads(
+                "sample_argmax_f32_pass2",
+                (256, 1, 1),
+                (256, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&self.workspace.argmax_part_v), 0);
+                    enc.set_buffer(1, Some(&self.workspace.argmax_part_i), 0);
+                    enc.set_buffer(2, Some(&self.workspace.sampled), 0);
+                    enc.set_bytes(3, 4, &groups as *const u32 as *const _);
+                    enc.set_threadgroup_memory_length(0, 256 * 4);
+                    enc.set_threadgroup_memory_length(1, 256 * 4);
+                },
             )
         }
 

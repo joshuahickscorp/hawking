@@ -23,6 +23,9 @@ pub const QWEN38_GQA_LAYERS: usize = 16;
 pub const QWEN38_FULL_ATTENTION_INTERVAL: usize = 4;
 pub const QWEN38_HIDDEN: usize = 5_120;
 pub const QWEN38_INTERMEDIATE: usize = 17_408;
+/// Threadgroups for the two-pass argmax. 240 = four waves over 60 GPU cores.
+pub const ARGMAX_GROUPS: usize = 240;
+
 pub const QWEN38_VOCAB: usize = 248_320;
 pub const QWEN38_RMS_EPS: f32 = 1.0e-6;
 pub const QWEN38_ROPE_THETA: f32 = 10_000_000.0;
