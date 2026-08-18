@@ -1,0 +1,731 @@
+{
+  "schema": "hawking.nos.organ_geometry_result.v1",
+  "obligation": "G109 / C01 -- per-organ geometry table with paired timings",
+  "sweep": [
+    {
+      "R": 1,
+      "cols": 5120,
+      "elements": 62914560,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        105500,
+        100459,
+        99709,
+        104709,
+        99834
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 100459,
+      "organ": "attn.q_proj",
+      "ps_per_element": 1.5967528025309246,
+      "rows": 12288
+    },
+    {
+      "R": 2,
+      "cols": 5120,
+      "elements": 62914560,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        101125,
+        95875,
+        95834,
+        96041,
+        97250
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 96041,
+      "organ": "attn.q_proj",
+      "ps_per_element": 1.5265305836995442,
+      "rows": 12288
+    },
+    {
+      "R": 4,
+      "cols": 5120,
+      "elements": 62914560,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        104000,
+        102125,
+        100209,
+        101959,
+        103334
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 102125,
+      "organ": "attn.q_proj",
+      "ps_per_element": 1.623233159383138,
+      "rows": 12288
+    },
+    {
+      "R": 8,
+      "cols": 5120,
+      "elements": 62914560,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        112834,
+        109459,
+        104250,
+        109541,
+        109500
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 109500,
+      "organ": "attn.q_proj",
+      "ps_per_element": 1.7404556274414062,
+      "rows": 12288
+    },
+    {
+      "R": 1,
+      "cols": 5120,
+      "elements": 5242880,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        21125,
+        20250,
+        19959,
+        20666,
+        20084
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 20250,
+      "organ": "attn.k_proj",
+      "ps_per_element": 3.8623809814453125,
+      "rows": 1024
+    },
+    {
+      "R": 2,
+      "cols": 5120,
+      "elements": 5242880,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        22209,
+        20459,
+        20416,
+        20541,
+        21250
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 20541,
+      "organ": "attn.k_proj",
+      "ps_per_element": 3.9178848266601562,
+      "rows": 1024
+    },
+    {
+      "R": 4,
+      "cols": 5120,
+      "elements": 5242880,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        25666,
+        24584,
+        25375,
+        24625,
+        24250
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 24625,
+      "organ": "attn.k_proj",
+      "ps_per_element": 4.696846008300781,
+      "rows": 1024
+    },
+    {
+      "R": 8,
+      "cols": 5120,
+      "elements": 5242880,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        32209,
+        31250,
+        31584,
+        31500,
+        31000
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 31500,
+      "organ": "attn.k_proj",
+      "ps_per_element": 6.008148193359375,
+      "rows": 1024
+    },
+    {
+      "R": 1,
+      "cols": 5120,
+      "elements": 5242880,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        22500,
+        21125,
+        20959,
+        21041,
+        21625
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 21125,
+      "organ": "attn.v_proj",
+      "ps_per_element": 4.029273986816406,
+      "rows": 1024
+    },
+    {
+      "R": 2,
+      "cols": 5120,
+      "elements": 5242880,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        22041,
+        20791,
+        20834,
+        20750,
+        20334
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 20791,
+      "organ": "attn.v_proj",
+      "ps_per_element": 3.9655685424804688,
+      "rows": 1024
+    },
+    {
+      "R": 4,
+      "cols": 5120,
+      "elements": 5242880,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        25375,
+        24125,
+        24250,
+        23791,
+        25375
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 24250,
+      "organ": "attn.v_proj",
+      "ps_per_element": 4.6253204345703125,
+      "rows": 1024
+    },
+    {
+      "R": 8,
+      "cols": 5120,
+      "elements": 5242880,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        31666,
+        31166,
+        30875,
+        31500,
+        30584
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 31166,
+      "organ": "attn.v_proj",
+      "ps_per_element": 5.9444427490234375,
+      "rows": 1024
+    },
+    {
+      "R": 1,
+      "cols": 6144,
+      "elements": 31457280,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        58000,
+        58334,
+        58000,
+        57959,
+        58666
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 58000,
+      "organ": "attn.o_proj",
+      "ps_per_element": 1.8437703450520833,
+      "rows": 5120
+    },
+    {
+      "R": 2,
+      "cols": 6144,
+      "elements": 31457280,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        57875,
+        58250,
+        57834,
+        57041,
+        57000
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 57834,
+      "organ": "attn.o_proj",
+      "ps_per_element": 1.8384933471679688,
+      "rows": 5120
+    },
+    {
+      "R": 4,
+      "cols": 6144,
+      "elements": 31457280,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        70000,
+        62000,
+        57250,
+        58250,
+        60250
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 60250,
+      "organ": "attn.o_proj",
+      "ps_per_element": 1.915295918782552,
+      "rows": 5120
+    },
+    {
+      "R": 8,
+      "cols": 6144,
+      "elements": 31457280,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        60625,
+        64000,
+        63459,
+        92250,
+        61959
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 63459,
+      "organ": "attn.o_proj",
+      "ps_per_element": 2.0173072814941406,
+      "rows": 5120
+    },
+    {
+      "R": 1,
+      "cols": 5120,
+      "elements": 89128960,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        137334,
+        136291,
+        137250,
+        139291,
+        135709
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 137250,
+      "organ": "mlp.gate_proj",
+      "ps_per_element": 1.539903528550092,
+      "rows": 17408
+    },
+    {
+      "R": 2,
+      "cols": 5120,
+      "elements": 89128960,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        132125,
+        129416,
+        129834,
+        130959,
+        130375
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 130375,
+      "organ": "mlp.gate_proj",
+      "ps_per_element": 1.4627681058995865,
+      "rows": 17408
+    },
+    {
+      "R": 4,
+      "cols": 5120,
+      "elements": 89128960,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        131584,
+        134334,
+        130959,
+        133041,
+        131250
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 131584,
+      "organ": "mlp.gate_proj",
+      "ps_per_element": 1.4763327205882353,
+      "rows": 17408
+    },
+    {
+      "R": 8,
+      "cols": 5120,
+      "elements": 89128960,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        137584,
+        137291,
+        137250,
+        137541,
+        137459
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 137459,
+      "organ": "mlp.gate_proj",
+      "ps_per_element": 1.5422484453986673,
+      "rows": 17408
+    },
+    {
+      "R": 1,
+      "cols": 17408,
+      "elements": 89128960,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        148084,
+        144750,
+        143375,
+        143750,
+        143875
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 143875,
+      "organ": "mlp.down_proj",
+      "ps_per_element": 1.614234026740579,
+      "rows": 5120
+    },
+    {
+      "R": 2,
+      "cols": 17408,
+      "elements": 89128960,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        142584,
+        143625,
+        146250,
+        148416,
+        143375
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 143625,
+      "organ": "mlp.down_proj",
+      "ps_per_element": 1.6114291022805607,
+      "rows": 5120
+    },
+    {
+      "R": 4,
+      "cols": 17408,
+      "elements": 89128960,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        147916,
+        146375,
+        146875,
+        147291,
+        148000
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 147291,
+      "organ": "mlp.down_proj",
+      "ps_per_element": 1.6525605145622702,
+      "rows": 5120
+    },
+    {
+      "R": 8,
+      "cols": 17408,
+      "elements": 89128960,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        151666,
+        150459,
+        150500,
+        151625,
+        150750
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 150750,
+      "organ": "mlp.down_proj",
+      "ps_per_element": 1.6913694493910845,
+      "rows": 5120
+    },
+    {
+      "R": 1,
+      "cols": 5120,
+      "elements": 52428800,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        86000,
+        84959,
+        85875,
+        86250,
+        85334
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 85875,
+      "organ": "dn.in_proj_qkv",
+      "ps_per_element": 1.6379356384277344,
+      "rows": 10240
+    },
+    {
+      "R": 2,
+      "cols": 5120,
+      "elements": 52428800,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        83500,
+        83666,
+        83500,
+        84125,
+        83584
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 83584,
+      "organ": "dn.in_proj_qkv",
+      "ps_per_element": 1.59423828125,
+      "rows": 10240
+    },
+    {
+      "R": 4,
+      "cols": 5120,
+      "elements": 52428800,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        89250,
+        85500,
+        84625,
+        85041,
+        85459
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 85459,
+      "organ": "dn.in_proj_qkv",
+      "ps_per_element": 1.6300010681152344,
+      "rows": 10240
+    },
+    {
+      "R": 8,
+      "cols": 5120,
+      "elements": 52428800,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        91666,
+        91125,
+        97375,
+        92250,
+        91916
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 91916,
+      "organ": "dn.in_proj_qkv",
+      "ps_per_element": 1.7531585693359375,
+      "rows": 10240
+    },
+    {
+      "R": 1,
+      "cols": 5120,
+      "elements": 1271398400,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        1752000,
+        1748916,
+        1748125,
+        1748375,
+        1678291
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 1748375,
+      "organ": "endpoint.lm_head",
+      "ps_per_element": 1.3751590374818783,
+      "rows": 248320
+    },
+    {
+      "R": 2,
+      "cols": 5120,
+      "elements": 1271398400,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        953709,
+        951875,
+        951000,
+        952584,
+        951875
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 951875,
+      "organ": "endpoint.lm_head",
+      "ps_per_element": 0.7486834968488241,
+      "rows": 248320
+    },
+    {
+      "R": 4,
+      "cols": 5120,
+      "elements": 1271398400,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        925750,
+        925875,
+        924834,
+        1020125,
+        926791
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 925875,
+      "organ": "endpoint.lm_head",
+      "ps_per_element": 0.7282335733629993,
+      "rows": 248320
+    },
+    {
+      "R": 8,
+      "cols": 5120,
+      "elements": 1271398400,
+      "exact_vs_R1": true,
+      "gpu_ns_reps": [
+        921416,
+        915375,
+        916584,
+        915750,
+        918625
+      ],
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_abs_err_vs_R1": 0.0,
+      "median_gpu_ns": 916584,
+      "organ": "endpoint.lm_head",
+      "ps_per_element": 0.7209258718588918,
+      "rows": 248320
+    }
+  ],
+  "per_organ_token_projection": [
+    {
+      "organ": "attn.q_proj",
+      "geometry_from": "attn.q_proj",
+      "elements_per_token": 1006632960,
+      "ps_R1": 1.5967528025309246,
+      "best_R": 2,
+      "ps_best": 1.5265305836995442,
+      "gain_x": 1.0460011869930552,
+      "isolated_ms_R1": 1.607344,
+      "isolated_ms_best": 1.536656
+    },
+    {
+      "organ": "attn.k_proj",
+      "geometry_from": "attn.k_proj",
+      "elements_per_token": 83886080,
+      "ps_R1": 3.8623809814453125,
+      "best_R": 1,
+      "ps_best": 3.8623809814453125,
+      "gain_x": 1.0,
+      "isolated_ms_R1": 0.324,
+      "isolated_ms_best": 0.324
+    },
+    {
+      "organ": "attn.v_proj",
+      "geometry_from": "attn.v_proj",
+      "elements_per_token": 83886080,
+      "ps_R1": 4.029273986816406,
+      "best_R": 2,
+      "ps_best": 3.9655685424804688,
+      "gain_x": 1.016064643355298,
+      "isolated_ms_R1": 0.338,
+      "isolated_ms_best": 0.332656
+    },
+    {
+      "organ": "attn.o_proj",
+      "geometry_from": "attn.o_proj",
+      "elements_per_token": 503316480,
+      "ps_R1": 1.8437703450520833,
+      "best_R": 2,
+      "ps_best": 1.8384933471679688,
+      "gain_x": 1.0028702839160355,
+      "isolated_ms_R1": 0.928,
+      "isolated_ms_best": 0.925344
+    },
+    {
+      "organ": "mlp.gate_proj",
+      "geometry_from": "mlp.gate_proj",
+      "elements_per_token": 11408506880,
+      "ps_R1": 1.539903528550092,
+      "best_R": 2,
+      "ps_best": 1.4627681058995865,
+      "gain_x": 1.0527325023969318,
+      "isolated_ms_R1": 17.568,
+      "isolated_ms_best": 16.688000000000002
+    },
+    {
+      "organ": "mlp.down_proj",
+      "geometry_from": "mlp.down_proj",
+      "elements_per_token": 5704253440,
+      "ps_R1": 1.614234026740579,
+      "best_R": 2,
+      "ps_best": 1.6114291022805607,
+      "gain_x": 1.001740644038294,
+      "isolated_ms_R1": 9.208,
+      "isolated_ms_best": 9.192
+    },
+    {
+      "organ": "dn.in_proj_qkv",
+      "geometry_from": "dn.in_proj_qkv",
+      "elements_per_token": 4050596160,
+      "ps_R1": 1.6379356384277344,
+      "best_R": 2,
+      "ps_best": 1.59423828125,
+      "gain_x": 1.0274095520673814,
+      "isolated_ms_R1": 6.634615807342529,
+      "isolated_ms_best": 6.45761546015625
+    },
+    {
+      "organ": "endpoint.lm_head",
+      "geometry_from": "endpoint.lm_head",
+      "elements_per_token": 1271398400,
+      "ps_R1": 1.3751590374818783,
+      "best_R": 8,
+      "ps_best": 0.7209258718588918,
+      "gain_x": 1.90749020275283,
+      "isolated_ms_R1": 1.748375,
+      "isolated_ms_best": 0.916584
+    },
+    {
+      "organ": "dn.out_proj",
+      "geometry_from": "attn.o_proj",
+      "elements_per_token": 1509949440,
+      "ps_R1": 1.8437703450520833,
+      "best_R": 2,
+      "ps_best": 1.8384933471679688,
+      "gain_x": 1.0028702839160355,
+      "isolated_ms_R1": 2.784,
+      "isolated_ms_best": 2.776032
+    }
+  ],
+  "correctness": "max_abs_err vs R=1 is 0.0 for EVERY (organ, R) cell -- 32 of 32 exact",
+  "the_optimum_IS_organ_dependent": "R=2 for q_proj, v_proj, o_proj, gate_proj, down_proj and dn.in_proj_qkv; R=1 for k_proj; R=8 for lm_head. A single global tiling is leaving something on the table at every organ that is not its optimum, which is exactly what this obligation suspected.",
+  "lm_head_is_the_outlier": "1.3752 ps/element at R=1 against 0.7209 at R=8 -- a 1.91x gain, and by far the largest in the table. It is also the organ G090 measured as a RISING FLOOR (3.50% of the token now, 10.62% with a free body), so the one organ where geometry pays most is the one whose share grows.",
+  "small_organs_are_launch_bound": "k_proj and v_proj at 1024 rows cost 3.86-4.03 ps/element against 1.37-1.60 for the large organs -- 2.5x worse per element purely from being small. Increasing R makes them WORSE (up to 6.01 at R=8) because there are not enough rows to fill the tiles.",
+  "a_correction_to_a_standing_figure": "This campaign has quoted 0.8425 ps/element as the q4 GEMV rate. That figure comes from a 4 GiB SYNTHETIC payload with 1,677,720 rows. NO REAL ORGAN except lm_head reaches it: gate_proj is 1.4628 at its best R, q_proj 1.5265, down_proj 1.6114. The headline rate is a large-payload best case, and per-organ costs are 1.7-1.9x higher.",
+  "projection_not_measurement": "The acceptance asks for a measured end-to-end win with token-identical output OR a receipt proving the incumbent is already optimal per organ. This delivers neither yet: it proves the incumbent is NOT optimal per organ (the best R differs by organ and lm_head gains 1.91x), but the end-to-end win requires binding per-organ R in the decode path and measuring paired 3/3 with token identity.",
+  "commit": "116855c0f2e38632ea177d9c00b783f98500792a",
+  "units_correction": "A first pass divided picoseconds by 1e6 instead of 1e9 and printed a 41,140 ms token. Corrected below. The gain RATIOS were unaffected; only the absolute ms were.",
+  "isolated_totals": {
+    "ms_R1": 41.14033480734253,
+    "ms_best": 39.14888746015625,
+    "ratio": 1.0508685553124102,
+    "measured_production_gemv_ms": 21.587,
+    "overstatement_x": 1.9057921344949522
+  },
+  "the_sum_does_not_close_and_that_is_the_finding": "Summing the isolated per-organ timings gives 41.140 ms of GEMV against a measured 21.587 ms in production -- isolated timings OVERSTATE by 1.91x. Each kernel here is dispatched alone with its own timestamp and a cold command buffer, while production batches 964 dispatches into one. So this sweep is a RANKING instrument and not an additive budget, which is the same law the ledger already recorded when argmax transferred 0 of 0.326 ms. Scaling the isolated saving by the same factor gives 1.045 ms, 3.43% of the token -- and even that is a projection, not a measurement."
+}
