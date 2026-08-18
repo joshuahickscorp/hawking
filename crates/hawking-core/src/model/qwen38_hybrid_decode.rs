@@ -2920,17 +2920,34 @@ mod device {
             hidden: u32,
         ) -> Result<()> {
             let weight = self.f32(weight_name)?;
+            let rms_tg: u32 = std::env::var("HAWKING_RMSNORM_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                // MEASURED, interleaved A/B, 3 paired reps on G0: 256 gives
+                // 35.569/35.840/35.967 and 1024 gives 34.239/34.467/34.095 ms per token.
+                // Mean 35.792 -> 34.267, 4.26% faster, every pair favouring the retile,
+                // token-identical. HAWKING_RMSNORM_TG=0 restores the 256-pinned kernel.
+                .unwrap_or(1024);
+            let (rms_name, rms_n) = if rms_tg > 0 {
+                ("qwen80_residual_rmsnorm_tg", rms_tg)
+            } else {
+                ("qwen80_residual_rmsnorm_f32", 256)
+            };
             tcb.dispatch_threads(
-                "qwen80_residual_rmsnorm_f32",
-                (256, 1, 1),
-                (256, 1, 1),
+                rms_name,
+                (rms_n, 1, 1),
+                (rms_n, 1, 1),
                 |encoder| {
                     encoder.set_buffer(0, Some(input), 0);
                     encoder.set_buffer(1, Some(weight), 0);
                     encoder.set_buffer(2, Some(output), 0);
                     encoder.set_bytes(3, 4, &hidden as *const u32 as *const _);
                     encoder.set_bytes(4, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                    encoder.set_threadgroup_memory_length(0, 256 * 4);
+                    // sized to the ACTUAL threadgroup: the scratch is one float per thread and
+                    // a hardcoded 256 silently under-allocates for any larger tg, which showed
+                    // up immediately as diverged tokens rather than as a crash
+                    encoder.set_threadgroup_memory_length(0, (rms_n as u64) * 4);
                 },
             )
         }

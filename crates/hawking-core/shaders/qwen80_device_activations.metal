@@ -47,6 +47,39 @@ kernel void qwen80_residual_rmsnorm_f32(
     }
 }
 
+// Generic in threadgroup size. The kernel above hardcodes 256u as the stride and 128u as the
+// first reduction stride, so it is pinned to exactly 256 threads -- one threadgroup, run once
+// per layer, normalising a 5,120-wide residual. That is the fourth launch-geometry accident
+// found this session and the only one that is not one-thread-per-head. It stays a separate
+// kernel because the reduction tree depth changes with tg_size.
+kernel void qwen80_residual_rmsnorm_tg(
+    device const float* input  [[buffer(0)]],
+    device const float* weight [[buffer(1)]],
+    device float* output       [[buffer(2)]],
+    constant uint& hidden      [[buffer(3)]],
+    constant float& eps        [[buffer(4)]],
+    threadgroup float* scratch [[threadgroup(0)]],
+    uint tid                    [[thread_index_in_threadgroup]],
+    uint tg_size                [[threads_per_threadgroup]])
+{
+    float sum = 0.0f;
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const float value = input[index];
+        sum += value * value;
+    }
+    scratch[tid] = sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) scratch[tid] += scratch[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inverse_rms = 1.0f / sqrt(scratch[0] / float(hidden) + eps);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        output[index] = input[index] * inverse_rms * (1.0f + weight[index]);
+    }
+}
+
 kernel void qwen80_silu_mul_f32(
     device const float* gate [[buffer(0)]],
     device const float* up   [[buffer(1)]],
