@@ -1,0 +1,40 @@
+abliteration: refusal-direction orthogonal weight projection, source_layer 53, 80 tensors on layers 24-63, norm_preserve True
+target kinds: ['full_attention_out', 'linear_attention_out', 'mlp_down']
+
+tensor                               lambda_min   lambda_max       ratio
+mlp.down_proj@L30                    1.8139e-04   2.7070e+01   6.701e-06
+mlp.down_proj@L40                    1.7378e-04   1.9119e+01   9.089e-06
+mlp.down_proj@L50                    2.0326e-04   2.4413e+01   8.326e-06
+mlp.down_proj@L60                    2.2507e-04   1.4516e+01   1.550e-05
+
+agreement between the recovered directions (|cos|). A shared direction across
+independent matrices is the evidence that this is the ABLITERATED direction and
+not just each matrix's own smallest singular vector:
+              30        40        50        60
+  L30     1.00000   0.99993   0.99993   0.99992
+  L40     0.99993   1.00000   0.99994   0.99993
+  L50     0.99993   0.99994   1.00000   0.99993
+  L60     0.99992   0.99993   0.99993   1.00000
+
+  random-pair null for 5120 dims: 0.01482
+  recovered-pair agreement: 0.99992 - 0.99994
+
+  VERDICT: shared direction recovered. Measuring reintroduced energy.
+
+tensor                    codec           ||dW||/||W||     vs bf16
+mlp.down@L30              bf16 parent     1.277114e-04           -
+                          q4 g64          1.477089e-03       11.6x
+                          q3 g64          3.349276e-03       26.2x
+                          q2 g64          8.430929e-03       66.0x
+mlp.down@L40              bf16 parent     1.281135e-04           -
+                          q4 g64          1.464092e-03       11.4x
+                          q3 g64          3.358175e-03       26.2x
+                          q2 g64          8.603034e-03       67.2x
+mlp.down@L50              bf16 parent     1.325949e-04           -
+                          q4 g64          1.610196e-03       12.1x
+                          q3 g64          3.589142e-03       27.1x
+                          q2 g64          8.799076e-03       66.4x
+mlp.down@L60              bf16 parent     1.309429e-04           -
+                          q4 g64          1.456753e-03       11.1x
+                          q3 g64          3.251483e-03       24.8x
+                          q2 g64          8.326280e-03       63.6x

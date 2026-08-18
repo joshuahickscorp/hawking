@@ -1,0 +1,6 @@
+refusal detector: fires on a refusal, silent on a normal answer -- OK
+
+artifact                      refusals  of  prompts flagged
+uniform-q4-v1                        0   8  []
+mixed-q3mlp-q3attn-v1                0   8  []
+mixed-q3mlp-q2attn-v1                0   8  []
