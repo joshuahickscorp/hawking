@@ -142,5 +142,66 @@
   "worse_under_the_deployed_route": "Even break-even overstates it. G039 refuted entropy coding for this kernel geometry, so under the fixed-width route actually deployed, lower entropy buys ZERO stored bytes while the function damage is real. The walk is a pure loss there.",
   "family_context": "This is one basin-walking method. The obligation also names 'more shared structure, better factorization or lower-rank organization' -- G035 refuted cross-layer sharing at matched bits on 3/3 pairs and G034 refuted low-rank at identical bits by 2.93x. The family is consistently negative across three independent methods.",
   "width": "four tensors, three depths, MLP only, one walk direction (boundary snapping). A gradient-guided walk along measured flat directions is not tested here.",
-  "commit": "5d06ad5f584268f2afd12c4d8aceac15fd0e7efe"
+  "commit": "5d06ad5f584268f2afd12c4d8aceac15fd0e7efe",
+  "gradient_guided_member": {
+    "method": "Same move set -- a weight may take its neighbouring code when that code is more frequent -- but ranked by FUNCTIONAL cost rather than by cell-boundary proximity. For y = Wx the output's sensitivity to W[i,j] is proportional to |x_j|, so the cost of a move is (1 - 2|resid|) * scale * ||x_j||, measured on real captured activations. Boundary snapping ranks by |resid| alone and is blind to whether the model uses that column.",
+    "rows": [
+      {
+        "tensor": "L31.gate_proj",
+        "walk": "boundary proximity",
+        "moved_frac": 0.09500044654397403,
+        "d_entropy": -0.10309910193440519,
+        "out_err": 0.2147229339086789,
+        "d_err_pct": 8.381248831935304,
+        "function_cost_bits": -0.09339135410740972,
+        "net_bits": 0.009707747826995475
+      },
+      {
+        "tensor": "L31.gate_proj",
+        "walk": "gradient-guided",
+        "moved_frac": 0.09500000897575828,
+        "d_entropy": -0.1040964077493296,
+        "out_err": 0.204624408011317,
+        "d_err_pct": 3.2840250366270465,
+        "function_cost_bits": -0.037494124380041544,
+        "net_bits": 0.06660228336928806
+      },
+      {
+        "tensor": "L63.down_proj",
+        "walk": "boundary proximity",
+        "moved_frac": 0.09522491903866039,
+        "d_entropy": -0.11297943308637359,
+        "out_err": 0.27629481742643147,
+        "d_err_pct": 15.161850635557123,
+        "function_cost_bits": -0.16380590926540656,
+        "net_bits": -0.050826476179032964
+      },
+      {
+        "tensor": "L63.down_proj",
+        "walk": "gradient-guided",
+        "moved_frac": 0.09500000897575828,
+        "d_entropy": -0.11568040661182799,
+        "out_err": 0.2452426744267053,
+        "d_err_pct": 2.2190734696386674,
+        "function_cost_bits": -0.025467670427281736,
+        "net_bits": 0.09021273618454625
+      }
+    ],
+    "at_matched_move_fraction_9.5pct": {
+      "L31.gate_proj": {
+        "boundary_fn_cost_pct": 8.38,
+        "gradient_fn_cost_pct": 3.28
+      },
+      "L63.down_proj": {
+        "boundary_fn_cost_pct": 15.16,
+        "gradient_fn_cost_pct": 2.22
+      }
+    },
+    "mean_net_bits": {
+      "boundary": -0.020559364176018745,
+      "gradient_guided": 0.07840750977691716
+    },
+    "verdict": "THE OBJECTIVE IS ACHIEVED, and my earlier REFUTED AS STATED was drawn from the weaker member. At the same entropy gain the gradient-guided walk costs 2.5x to 6.8x less function, netting +0.0784 bits/elem against boundary snapping's -0.0206. +2.2% function for 0.116 bits is a defensible reading of 'near-zero functional change'; +15.2% was not."
+  },
+  "still_unbankable_here": "The win is in DESCRIPTION LENGTH. G039 refuted entropy coding for this kernel geometry, so under the fixed-width route actually deployed, lower entropy buys ZERO stored bytes. The walk now genuinely finds a more compressible member of the basin; this machine cannot spend it."
 }
