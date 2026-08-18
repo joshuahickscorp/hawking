@@ -1,0 +1,426 @@
+{
+  "schema": "hawking.nos.plane_allocation.v1",
+  "obligation": "G073 -- compiler-chosen plane count per tensor",
+  "inputs": {
+    "functional_gain": "receipts/ascent-2026-08-16/G069_PLANES_FUNCTIONAL.json, function-fitted planes on real held-out activations",
+    "kernel_cost": "receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json, measured 0.6059 / 0.6676 / 0.9867 ps/element at k=1/2/3",
+    "cost_model_above_k3": "ps(k) = ps(3)*k/3, because G072 measured the kernel SATURATED from k2 onward (374.5 -> 380.0 GB/s) so time scales with bytes there. Measured values used below k=3, where a bytes model would be wrong."
+  },
+  "objective": "element-weighted mean relative output error, each site weighted by its real tensor element count",
+  "objective_limitation": "a PROXY for whole-model error -- no assembled measurement exists at these settings, and relative errors from different tensors are not strictly commensurable. The allocation is only as meaningful as that assumption.",
+  "sites": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "shape": [
+        17408,
+        5120
+      ],
+      "elements": 89128960,
+      "err_by_k": {
+        "1": 0.3553507924079895,
+        "2": 0.19346870481967926,
+        "3": 0.1262587606906891,
+        "4": 0.0942201167345047,
+        "5": 0.07791797816753387
+      }
+    },
+    {
+      "organ": "mlp.down_proj",
+      "layer": 63,
+      "shape": [
+        5120,
+        17408
+      ],
+      "elements": 89128960,
+      "err_by_k": {
+        "1": 0.5200565457344055,
+        "2": 0.25735753774642944,
+        "3": 0.19544072449207306,
+        "4": 0.15165895223617554,
+        "5": 0.13332627713680267
+      }
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "layer": 62,
+      "shape": [
+        5120,
+        6144
+      ],
+      "elements": 31457280,
+      "err_by_k": {
+        "1": 0.4265541434288025,
+        "2": 0.26193827390670776,
+        "3": 0.19766762852668762,
+        "4": 0.16227306425571442,
+        "5": 0.14293374121189117
+      }
+    },
+    {
+      "organ": "self_attn.o_proj",
+      "layer": 63,
+      "shape": [
+        5120,
+        6144
+      ],
+      "elements": 31457280,
+      "err_by_k": {
+        "1": 0.44817814230918884,
+        "2": 0.28826814889907837,
+        "3": 0.2109699249267578,
+        "4": 0.1686888039112091,
+        "5": 0.14683032035827637
+      }
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "shape": [
+        12288,
+        5120
+      ],
+      "elements": 62914560,
+      "err_by_k": {
+        "1": 0.38687580823898315,
+        "2": 0.22252687811851501,
+        "3": 0.14982038736343384,
+        "4": 0.11327976733446121,
+        "5": 0.09348262846469879
+      }
+    }
+  ],
+  "uniform": {
+    "1": {
+      "err": 0.42711772692614586,
+      "cost": 0.6059
+    },
+    "2": {
+      "err": 0.23509667582553007,
+      "cost": 0.6676
+    },
+    "3": {
+      "err": 0.16756140029635921,
+      "cost": 0.9867
+    },
+    "4": {
+      "err": 0.12974263085373516,
+      "cost": 1.3155999999999999
+    },
+    "5": {
+      "err": 0.11123324570984676,
+      "cost": 1.6444999999999999
+    }
+  },
+  "budget_sweep_defect_fixed": "A first pass scored allocations only at the cost of a uniform k, which makes the answer uniform BY CONSTRUCTION: ps(k) is the same function at every site and the weights sum to one, so uniform-k cost is exactly the cost of upgrading every site to k and there is zero slack for a non-uniform choice. The instrument could not have found non-uniformity if it existed. Budgets now include the points between uniform levels, where uniform must round down and an allocator can spend the remainder.",
+  "allocations": [
+    {
+      "budget": 0.6059,
+      "best_uniform_k_that_fits": 1,
+      "uniform_err": 0.42711772692614586,
+      "uniform_cost": 0.6059,
+      "allocated_k": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "allocated_err": 0.42711772692614586,
+      "allocated_cost": 0.6059,
+      "is_non_uniform": false,
+      "beats_uniform": false,
+      "err_improvement_pct": 0.0
+    },
+    {
+      "budget": 0.621325,
+      "best_uniform_k_that_fits": 1,
+      "uniform_err": 0.42711772692614586,
+      "uniform_cost": 0.6059,
+      "allocated_k": [
+        1,
+        1,
+        2,
+        2,
+        1
+      ],
+      "allocated_err": 0.39354608593315915,
+      "allocated_cost": 0.6186655172413793,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 7.8600439355661935
+    },
+    {
+      "budget": 0.6367499999999999,
+      "best_uniform_k_that_fits": 1,
+      "uniform_err": 0.42711772692614586,
+      "uniform_cost": 0.6059,
+      "allocated_k": [
+        1,
+        2,
+        2,
+        1,
+        1
+      ],
+      "allocated_err": 0.3330905139446258,
+      "allocated_cost": 0.6303672413793103,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 22.01435507212712
+    },
+    {
+      "budget": 0.652175,
+      "best_uniform_k_that_fits": 1,
+      "uniform_err": 0.42711772692614586,
+      "uniform_cost": 0.6059,
+      "allocated_k": [
+        1,
+        2,
+        2,
+        2,
+        2
+      ],
+      "allocated_err": 0.2825448739117589,
+      "allocated_cost": 0.6495155172413793,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 33.848478744921174
+    },
+    {
+      "budget": 0.6676,
+      "best_uniform_k_that_fits": 2,
+      "uniform_err": 0.23509667582553007,
+      "uniform_cost": 0.6676,
+      "allocated_k": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "allocated_err": 0.23509667582553007,
+      "allocated_cost": 0.6676,
+      "is_non_uniform": false,
+      "beats_uniform": false,
+      "err_improvement_pct": 0.0
+    },
+    {
+      "budget": 0.747375,
+      "best_uniform_k_that_fits": 2,
+      "uniform_err": 0.23509667582553007,
+      "uniform_cost": 0.6676,
+      "allocated_k": [
+        2,
+        2,
+        3,
+        3,
+        2
+      ],
+      "allocated_err": 0.2204516203752879,
+      "allocated_cost": 0.7336206896551725,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 6.229375808405966
+    },
+    {
+      "budget": 0.82715,
+      "best_uniform_k_that_fits": 2,
+      "uniform_err": 0.23509667582553007,
+      "uniform_cost": 0.6676,
+      "allocated_k": [
+        2,
+        2,
+        3,
+        3,
+        3
+      ],
+      "allocated_err": 0.2054088981500987,
+      "allocated_cost": 0.7996413793103448,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 12.627901934888808
+    },
+    {
+      "budget": 0.906925,
+      "best_uniform_k_that_fits": 2,
+      "uniform_err": 0.23509667582553007,
+      "uniform_cost": 0.6676,
+      "allocated_k": [
+        3,
+        2,
+        3,
+        3,
+        3
+      ],
+      "allocated_err": 0.18570943176746366,
+      "allocated_cost": 0.8931706896551724,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 21.007206454385457
+    },
+    {
+      "budget": 0.9867,
+      "best_uniform_k_that_fits": 3,
+      "uniform_err": 0.16756140029635921,
+      "uniform_cost": 0.9867,
+      "allocated_k": [
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "allocated_err": 0.16756140029635921,
+      "allocated_cost": 0.9867,
+      "is_non_uniform": false,
+      "beats_uniform": false,
+      "err_improvement_pct": 0.0
+    },
+    {
+      "budget": 1.068925,
+      "best_uniform_k_that_fits": 3,
+      "uniform_err": 0.16756140029635921,
+      "uniform_cost": 0.9867,
+      "allocated_k": [
+        3,
+        3,
+        4,
+        4,
+        3
+      ],
+      "allocated_err": 0.15952598457706385,
+      "allocated_cost": 1.0547482758620688,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 4.795505232758524
+    },
+    {
+      "budget": 1.15115,
+      "best_uniform_k_that_fits": 3,
+      "uniform_err": 0.16756140029635921,
+      "uniform_cost": 0.9867,
+      "allocated_k": [
+        3,
+        4,
+        4,
+        4,
+        3
+      ],
+      "allocated_err": 0.14669339615723181,
+      "allocated_cost": 1.15115,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 12.453944704579328
+    },
+    {
+      "budget": 1.2333749999999999,
+      "best_uniform_k_that_fits": 3,
+      "uniform_err": 0.16756140029635921,
+      "uniform_cost": 0.9867,
+      "allocated_k": [
+        3,
+        4,
+        4,
+        4,
+        4
+      ],
+      "allocated_err": 0.13913326787537542,
+      "allocated_cost": 1.219198275862069,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 16.96580022051862
+    },
+    {
+      "budget": 1.3155999999999999,
+      "best_uniform_k_that_fits": 4,
+      "uniform_err": 0.12974263085373516,
+      "uniform_cost": 1.3155999999999999,
+      "allocated_k": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "allocated_err": 0.12974263085373516,
+      "allocated_cost": 1.3155999999999999,
+      "is_non_uniform": false,
+      "beats_uniform": false,
+      "err_improvement_pct": 0.0
+    },
+    {
+      "budget": 1.3978249999999999,
+      "best_uniform_k_that_fits": 4,
+      "uniform_err": 0.12974263085373516,
+      "uniform_cost": 1.3155999999999999,
+      "allocated_k": [
+        4,
+        4,
+        5,
+        5,
+        4
+      ],
+      "allocated_err": 0.12548078879200178,
+      "allocated_cost": 1.383648275862069,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 3.284843257524163
+    },
+    {
+      "budget": 1.4800499999999999,
+      "best_uniform_k_that_fits": 4,
+      "uniform_err": 0.12974263085373516,
+      "uniform_cost": 1.3155999999999999,
+      "allocated_k": [
+        4,
+        4,
+        5,
+        5,
+        5
+      ],
+      "allocated_err": 0.12138482902584403,
+      "allocated_cost": 1.451696551724138,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 6.441831626886973
+    },
+    {
+      "budget": 1.5622749999999999,
+      "best_uniform_k_that_fits": 4,
+      "uniform_err": 0.12974263085373516,
+      "uniform_cost": 1.3155999999999999,
+      "allocated_k": [
+        4,
+        5,
+        5,
+        5,
+        5
+      ],
+      "allocated_err": 0.11601145873809683,
+      "allocated_cost": 1.5480982758620687,
+      "is_non_uniform": true,
+      "beats_uniform": true,
+      "err_improvement_pct": 10.583392694663416
+    },
+    {
+      "budget": 1.6444999999999999,
+      "best_uniform_k_that_fits": 5,
+      "uniform_err": 0.11123324570984676,
+      "uniform_cost": 1.6444999999999999,
+      "allocated_k": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "allocated_err": 0.11123324570984676,
+      "allocated_cost": 1.6444999999999999,
+      "is_non_uniform": false,
+      "beats_uniform": false,
+      "err_improvement_pct": 0.0
+    }
+  ],
+  "verify_passes": true,
+  "commit": "6fff5302f834a9924874cd3998421174c762cf0c"
+}
