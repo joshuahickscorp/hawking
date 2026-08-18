@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.nos.nx_genome_spec.v1",
+  "obligation": "G104 -- NX genome carrying kernel binding, geometry, residency, scheduling, cache plan and machine identity",
+  "artifacts": {
+    "tool": "tools/nx_genome.py",
+    "seal": "receipts/ascent-2026-08-16/G104_NX_SEAL.json"
+  },
+  "exit_codes_the_verify_asks_for": {
+    "seal": 0,
+    "dump_on_this_machine": 0,
+    "cross_genome_refusal": 1
+  },
+  "the_seal": {
+    "machine": "Apple M3 Ultra, 60 GPU cores, 103.1 GB unified, Metal 4",
+    "genome_digest": "c61afb5cce7ba294cd4bc3b6c19aeba4",
+    "kernels_dispatched": 38,
+    "kernels_declared_in_tree": 554,
+    "gemv_threadgroup": 128,
+    "mha_threadgroup": 512,
+    "dispatches_per_token": 964,
+    "host_encode_ns_per_dispatch": 702
+  },
+  "refusal_test": {
+    "scenario": "an NX sealed for a 40-core GPU loaded on this 60-core machine -- a PLAUSIBLE neighbour rather than an absurd one, since a check that only catches nonsense is not a check",
+    "result": "REFUSED",
+    "field_named": "gpu_cores: NX has 40, machine has 60"
+  },
+  "the_seal_names_what_RUNS_not_what_EXISTS": "Kernel binding is extracted by intersecting the decode source's string literals with the declared `kernel void` names, giving 38 dispatched against 554 declared. G071 measured exactly that gap. A seal listing all 554 would be a lie about what runs, and this obligation's whole point is that the NX states the truth about one machine.",
+  "every_field_is_backed_by_a_measurement": "threadgroup geometry from G060's long-context sweep and G072's tiling measurement; residency from G085's 13.9%-of-RAM finding and the 677,508-position crossover; cache plan from G094, recorded but explicitly NOT an optimisation target because a 5.8x traffic swing produced zero rank correlation with time; scheduling from G093's 964 dispatches and 702 ns/dispatch. The NX genome is a summary of this campaign's execution measurements, not a wish list.",
+  "the_mirror_holds": "G103's deny-list is this file's allow-list. Every field NR rejects -- kernel, threadgroup, device, residency_plan, cache_plan, dispatches -- appears here and is REQUIRED. An NX that could load anywhere would have failed, because silently running an executable compiled for different hardware is the failure this obligation prevents.",
+  "commit": "f7a0b940c303c149bf8387ee670e7a83fb4e58fb"
+}
