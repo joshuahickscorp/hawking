@@ -1,0 +1,132 @@
+{
+  "schema": "hawking.nos.superoptimization_frontier.v1",
+  "obligation": "G099 -- one hot fragment, programs enumerated and benchmarked, Pareto frontier kept",
+  "fragment": "the grouped-codec GEMV as executed at one token (K=1), which is 70.5% of the token and the hottest fragment in the program",
+  "program_space": "codec x row-tiling. Enumerated by the rewrite rules the kernels already implement: a codec choice (grouped absmax at 3 or 4 bits, or 1-3 greedy binary planes) and a tiling choice (R rows sharing one activation load). Fidelity-constrained rather than strictly equivalent -- each program has a MEASURED output error, so the frontier is over (error, time).",
+  "measured_only": "Every point here is measured on device. The 20 codec x R combinations that would come from assuming R's speedup multiplies across codecs are NOT included: R tiling is measured only on q4, and projecting it onto the plane kernels would be an assumption wearing a measurement's clothes. G095 made that projection; this obligation asks for a MEASURED frontier.",
+  "programs": [
+    {
+      "program": "planes_k1 R1",
+      "codec": "planes_k1",
+      "R": 1,
+      "bits": 1.25,
+      "ps": 0.6059,
+      "err": 0.4274,
+      "src": "MEASURED",
+      "dominated_by": []
+    },
+    {
+      "program": "planes_k2 R1",
+      "codec": "planes_k2",
+      "R": 1,
+      "bits": 2.5,
+      "ps": 0.6676,
+      "err": 0.2447,
+      "src": "MEASURED",
+      "dominated_by": []
+    },
+    {
+      "program": "flat_q3 R1",
+      "codec": "flat_q3",
+      "R": 1,
+      "bits": 3.25,
+      "ps": 0.8521,
+      "err": 0.1952,
+      "src": "MEASURED",
+      "dominated_by": [
+        "flat_q4 R1",
+        "flat_q4 R2",
+        "flat_q4 R4",
+        "flat_q4 R8"
+      ]
+    },
+    {
+      "program": "planes_k3 R1",
+      "codec": "planes_k3",
+      "R": 1,
+      "bits": 3.75,
+      "ps": 0.9867,
+      "err": 0.176,
+      "src": "MEASURED",
+      "dominated_by": [
+        "flat_q4 R1",
+        "flat_q4 R2",
+        "flat_q4 R4",
+        "flat_q4 R8"
+      ]
+    },
+    {
+      "program": "flat_q4 R1",
+      "codec": "flat_q4",
+      "R": 1,
+      "bits": 4.25,
+      "ps": 0.8046,
+      "err": 0.0833,
+      "src": "MEASURED",
+      "dominated_by": [
+        "flat_q4 R2",
+        "flat_q4 R4",
+        "flat_q4 R8"
+      ]
+    },
+    {
+      "program": "flat_q4 R2",
+      "codec": "flat_q4",
+      "R": 2,
+      "bits": 4.25,
+      "ps": 0.7547842401500937,
+      "err": 0.0833,
+      "src": "MEASURED",
+      "dominated_by": [
+        "flat_q4 R4",
+        "flat_q4 R8"
+      ]
+    },
+    {
+      "program": "flat_q4 R4",
+      "codec": "flat_q4",
+      "R": 4,
+      "bits": 4.25,
+      "ps": 0.7307901907356948,
+      "err": 0.0833,
+      "src": "MEASURED",
+      "dominated_by": [
+        "flat_q4 R8"
+      ]
+    },
+    {
+      "program": "flat_q4 R8",
+      "codec": "flat_q4",
+      "R": 8,
+      "bits": 4.25,
+      "ps": 0.7190348525469169,
+      "err": 0.0833,
+      "src": "MEASURED",
+      "dominated_by": []
+    },
+    {
+      "program": "flat_q4 R16",
+      "codec": "flat_q4",
+      "R": 16,
+      "bits": 4.25,
+      "ps": 0.9908866995073891,
+      "err": 0.0833,
+      "src": "MEASURED",
+      "dominated_by": [
+        "flat_q4 R1",
+        "flat_q4 R2",
+        "flat_q4 R4",
+        "flat_q4 R8"
+      ]
+    }
+  ],
+  "frontier": [
+    "planes_k1 R1",
+    "planes_k2 R1",
+    "flat_q4 R8"
+  ],
+  "dominated_count": 6,
+  "the_finding": "SIX of nine measured programs are DOMINATED, and one of them is flat_q3 -- the codec every coherent artifact in this campaign actually uses. flat_q3 R1 sits at (err 0.1952, 0.8521 ps) and flat_q4 R8 sits at (err 0.0833, 0.7190 ps): LOWER ERROR AND LOWER TIME on both axes. Every q3 artifact is strictly worse than a q4 artifact with better tiling, on the two axes that matter. Only BPW favours q3, and G097 measured that BPW is not the currency.",
+  "the_frontier_is_three_programs": "planes_k1 R1 at the cheap end (0.6059 ps, err 0.4274), planes_k2 R1 in the middle (0.6676, 0.2447), and flat_q4 R8 at the accurate end (0.7190, 0.0833). Nothing else survives. That is the receipt this obligation asks for -- a frontier, not a search log.",
+  "commit": "9f2bfc3fada7511a86328302643326fcb283cde8"
+}
