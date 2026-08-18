@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.nos.draft_tier_closure.v1",
+  "obligation": "G033 -- the draft-tier re-aim, and whether a packer would settle it",
+  "question": "G057 priced the plane draft tier from ps/element and found it 1.55x from break-even. Building a packer would test whether that per-kernel number transfers to a real artifact's token time. This calibrates the prediction against three artifacts that ALREADY exist, so the margin can be compared to the actual prediction error.",
+  "calibration": [
+    {
+      "artifact": "uniform-q4-v1",
+      "codec": "q4_group64_hgravu",
+      "predicted_ms": 29.145,
+      "measured_gpu_ms": 29.451124,
+      "error_pct": 1.0503482587064694
+    },
+    {
+      "artifact": "compact-q3attn-r1p2-v1",
+      "codec": "q3_group64_hgravu",
+      "predicted_ms": 30.5254845473538,
+      "measured_gpu_ms": 32.306583,
+      "error_pct": 5.834791745510901
+    },
+    {
+      "artifact": "g032-chanscale-a025-compact",
+      "codec": "q3_group64_hgravu",
+      "predicted_ms": 30.5254845473538,
+      "measured_gpu_ms": 32.2785,
+      "error_pct": 5.742793205876133
+    }
+  ],
+  "worst_error_pct": 5.834791745510901,
+  "draft_tier": {
+    "predicted_ms_per_token": 23.378365780259845,
+    "worst_case_ms": 24.74244473704179,
+    "break_even_ms": 15.063,
+    "margin_x": 1.5520391542361975,
+    "margin_in_units_of_prediction_error": 9.461162939721344
+  },
+  "verdict": "The ps/element model predicts real artifact token time to within 5.83% across three artifacts spanning two body codecs. The draft tier is 1.55x from break-even, a margin 9x larger than the model's worst observed error. A packer would confirm a number, not discover one, and G057's refutation stands without it.",
+  "what_a_packer_WOULD_still_test": "whether a plane BODY is coherent at all -- G033 measured the ladder dominated by flat codes in function space, so a plane artifact is expected to fail the capability gate, and that is a separate question from the speed one settled here.",
+  "honest_caveat": "This is a decision NOT to run an experiment, justified by a measured margin. It is the same class of reasoning that was wrong twice this session (G035, G053), where a family was dismissed on its weaker member. The difference is that this dismissal rests on a quantified margin against a measured error bar rather than on the absence of a test.",
+  "commit": "2d856065ae9571abbdd2cfdd8e1323a66406ee74"
+}
