@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.nos.attention_occupancy_ceiling.v1",
+  "obligation": "G060 -- what the cheap lever can still buy on the 32x context gap",
+  "sweep_at_long_context": {
+    "prompt_len": 1532,
+    "rows": [
+      {
+        "tg": 256,
+        "ms": 41.663
+      },
+      {
+        "tg": 512,
+        "ms": 40.841
+      },
+      {
+        "tg": 1024,
+        "ms": 40.777
+      }
+    ],
+    "note": "tokens identical between 256 and 512; 512 and 1024 differ by 0.16%, inside noise"
+  },
+  "knob_is_exhausted": "The existing default of 512 is already optimal at long context. 1024 is 0.16% better and 256 is 2.0% worse, so the tunable this kernel exposes has nothing left. That confirms the kernel's own source comment: 'this constant only buys occupancy WITHIN one threadgroup per head'.",
+  "structural_ceiling": {
+    "heads": 24,
+    "gpu_cores": 60,
+    "threadgroups_launched": 24,
+    "occupancy_fraction": 0.4,
+    "statement": "mha_decode_f32 launches grid (n_heads * tg_size) with TG (tg_size), i.e. ONE threadgroup per head. A threadgroup runs on one core, so 24 heads occupy 24 of 60 cores = 40%, and no threadgroup size changes that. Raising TG adds threads inside a core, not cores."
+  },
+  "what_split_k_can_buy": {
+    "method": "split-K over the sequence: several threadgroups per head, each on a slice, merged with flash-attention style online-softmax rescaling",
+    "occupancy_gain_bound": 2.5,
+    "context_term_at_8192_ms": 57.106432,
+    "token_at_8192_ms": 87.136432,
+    "token_at_8192_if_perfect_occupancy_ms": 52.8725728,
+    "speedup_at_8192": 1.648045997867537,
+    "honest_bound": "Perfect occupancy is a 2.5x bound on the context term, not on the token. At 8192 context that takes the token from 87.1 ms to 52.8 ms, a 1.65x speedup. It does NOT close the 32x gap: even at full occupancy the path would sit around 8x off its bandwidth bound, and the remainder is the serial softmax scan and the access pattern, neither of which split-K addresses."
+  },
+  "verdict": "The cheap lever is exhausted and the named fix is bounded. Split-K is the only structural change available on this kernel and it is worth at most 2.5x on the context term, 1.65x on the token at 8192. Worth building, but it is not the 32x.",
+  "commit": "ea80f9bfc7d40acc30e57a7114a4ca824c7bbbc7"
+}
