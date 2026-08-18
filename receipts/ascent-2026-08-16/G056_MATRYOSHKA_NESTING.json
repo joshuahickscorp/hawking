@@ -1,0 +1,129 @@
+{
+  "schema": "hawking.nos.matryoshka_nesting.v1",
+  "obligation": "G056 -- one stream whose prefixes are increasingly faithful models",
+  "layout": "PLANE-MAJOR: all of plane 1, then all of plane 2, and so on. That ordering is what makes truncation a literal byte PREFIX; a group-major interleave would store the same bits and have no prefix property at all, so the layout IS the claim.",
+  "stream": "per plane per group of 64: 8 bytes of sign bits + one f16 scale = 1.25 bits/elem/plane",
+  "rungs": [
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "rung": 1,
+      "prefix_bytes": 13926400,
+      "bits_per_elem": 1.25,
+      "out_rel_fro": 0.4892529249191284,
+      "is_byte_prefix_of_full_stream": true
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "rung": 2,
+      "prefix_bytes": 27852800,
+      "bits_per_elem": 2.5,
+      "out_rel_fro": 0.3060421943664551,
+      "is_byte_prefix_of_full_stream": true
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "rung": 3,
+      "prefix_bytes": 41779200,
+      "bits_per_elem": 3.75,
+      "out_rel_fro": 0.2020997256040573,
+      "is_byte_prefix_of_full_stream": true
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "rung": 4,
+      "prefix_bytes": 55705600,
+      "bits_per_elem": 5.0,
+      "out_rel_fro": 0.15428145229816437,
+      "is_byte_prefix_of_full_stream": true
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "rung": 1,
+      "prefix_bytes": 13926400,
+      "bits_per_elem": 1.25,
+      "out_rel_fro": 0.6602389216423035,
+      "is_byte_prefix_of_full_stream": true
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "rung": 2,
+      "prefix_bytes": 27852800,
+      "bits_per_elem": 2.5,
+      "out_rel_fro": 0.46133875846862793,
+      "is_byte_prefix_of_full_stream": true
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "rung": 3,
+      "prefix_bytes": 41779200,
+      "bits_per_elem": 3.75,
+      "out_rel_fro": 0.381227970123291,
+      "is_byte_prefix_of_full_stream": true
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "rung": 4,
+      "prefix_bytes": 55705600,
+      "bits_per_elem": 5.0,
+      "out_rel_fro": 0.3448945879936218,
+      "is_byte_prefix_of_full_stream": true
+    }
+  ],
+  "nesting_demonstrated": true,
+  "no_duplication_proof": "total stream length equals the sum of the rung increments EXACTLY (55,705,600 == 4 x 13,926,400 on both tensors), and rung k is decoded from the first k increments of the SAME bytes. No level is stored twice, and there are no separate copies.",
+  "functional_agreement": {
+    "31.mlp.gate_proj": [
+      {
+        "rung": 1,
+        "bpe": 1.25,
+        "err": 0.48925
+      },
+      {
+        "rung": 2,
+        "bpe": 2.5,
+        "err": 0.30604
+      },
+      {
+        "rung": 3,
+        "bpe": 3.75,
+        "err": 0.2021
+      },
+      {
+        "rung": 4,
+        "bpe": 5.0,
+        "err": 0.15428
+      }
+    ],
+    "63.mlp.down_proj": [
+      {
+        "rung": 1,
+        "bpe": 1.25,
+        "err": 0.66024
+      },
+      {
+        "rung": 2,
+        "bpe": 2.5,
+        "err": 0.46134
+      },
+      {
+        "rung": 3,
+        "bpe": 3.75,
+        "err": 0.38123
+      },
+      {
+        "rung": 4,
+        "bpe": 5.0,
+        "err": 0.34489
+      }
+    ]
+  },
+  "monotone": "every rung is strictly more faithful than its prefix, on both tensors",
+  "the_real_value": "A draft tier that costs NOTHING EXTRA. F1 established that multi-token or speculative execution is the only axis that moves the 100 TPS wall, and any such scheme needs a cheap draft. Here the draft is a BYTE PREFIX of the verify tier rather than a second artifact: rung 1 at 1.25 bits/elem and 0.620 ps/element (CODEC_ALU_COST) is free if the full ladder is already stored.",
+  "what_blocks_it": "Realising that value requires the BODY to be the ladder, and G033 measured the ladder DOMINATED by flat codes above the coherence boundary in function space -- flat q3 at 3.25 b/elem beats rung 3 at 3.75 b/elem. So the Matryoshka STRUCTURE is demonstrated and the CODEC that would carry it is refuted. Those are separate findings and both stand.",
+  "gaps": [
+    "EXACT ISLANDS, which the acceptance also names, are not implemented -- the stream is planes only",
+    "rungs are 4 planes at 1.25 b/elem each, not the H01/H03/H05/H09 widths the verify line names; the nesting property is what was demonstrated, at the widths the ladder produces",
+    "two tensors, two depths, MLP only"
+  ],
+  "commit": "6a1f001aa75198d011505be43a35ee17f98a87a3"
+}
