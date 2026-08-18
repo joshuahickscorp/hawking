@@ -96,5 +96,165 @@
   ],
   "adjacent_mean_error_reduction": -0.014270588755607605,
   "far_control_mean_error_reduction": -0.012968629598617554,
-  "commit": "16470e4b651bce911a92266dfff8308b65784286"
+  "commit": "16470e4b651bce911a92266dfff8308b65784286",
+  "untested_members_now_tested": {
+    "delta_coding": {
+      "method": "store L_a at q4 and L_b as (L_b - dequant(L_a)) at q2, so the PAIR costs 6.5 bits/elem exactly as independent q3+q3 does",
+      "rows": [
+        {
+          "organ": "gate_proj",
+          "pair": [
+            30,
+            31
+          ],
+          "kind": "adjacent",
+          "scheme": "independent q3+q3",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.19887981030588187
+        },
+        {
+          "organ": "gate_proj",
+          "pair": [
+            30,
+            31
+          ],
+          "kind": "adjacent",
+          "scheme": "delta: L30@q4 + (L31-L30)@q2",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.3917025570925301
+        },
+        {
+          "organ": "gate_proj",
+          "pair": [
+            30,
+            31
+          ],
+          "kind": "adjacent",
+          "scheme": "delta: L31@q4 + (L30-L31)@q2",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.39051048104179203
+        },
+        {
+          "organ": "down_proj",
+          "pair": [
+            30,
+            31
+          ],
+          "kind": "adjacent",
+          "scheme": "independent q3+q3",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.21759038567533162
+        },
+        {
+          "organ": "down_proj",
+          "pair": [
+            30,
+            31
+          ],
+          "kind": "adjacent",
+          "scheme": "delta: L30@q4 + (L31-L30)@q2",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.48405435626341364
+        },
+        {
+          "organ": "down_proj",
+          "pair": [
+            30,
+            31
+          ],
+          "kind": "adjacent",
+          "scheme": "delta: L31@q4 + (L30-L31)@q2",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.4776820084777085
+        },
+        {
+          "organ": "gate_proj",
+          "pair": [
+            15,
+            47
+          ],
+          "kind": "far",
+          "scheme": "independent q3+q3",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.19460654923911258
+        },
+        {
+          "organ": "gate_proj",
+          "pair": [
+            15,
+            47
+          ],
+          "kind": "far",
+          "scheme": "delta: L15@q4 + (L47-L15)@q2",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.37603472109411995
+        },
+        {
+          "organ": "gate_proj",
+          "pair": [
+            15,
+            47
+          ],
+          "kind": "far",
+          "scheme": "delta: L47@q4 + (L15-L47)@q2",
+          "bits_per_elem_pair": 6.5,
+          "mean_out_err": 0.41249881191587845
+        }
+      ],
+      "verdict": "REFUTED, and not marginally: roughly 2x the error of independent q3+q3 at identical total bits on all three pairs and in BOTH directions. The delta carries L_a's quantization error on top of the genuine layer difference, so it has a WIDER spread than the tensor it replaces and quantizes worse at q2 than the tensor does at q3. The far pair behaves like the adjacent pair, so proximity does not help."
+    },
+    "shared_row_basis": {
+      "method": "stack the pair along the OUTPUT axis and share the row space, matched parameters with the shared rank raised to spend the saving",
+      "rows": [
+        {
+          "organ": "gate_proj",
+          "pair": [
+            30,
+            31
+          ],
+          "kind": "adjacent",
+          "scheme": "independent SVD r=256",
+          "bits_per_elem": 1.035294117647059,
+          "mean_out_err": 0.6146529316902161
+        },
+        {
+          "organ": "gate_proj",
+          "pair": [
+            30,
+            31
+          ],
+          "kind": "adjacent",
+          "scheme": "shared ROW basis r=288",
+          "bits_per_elem": 1.0323529411764707,
+          "mean_out_err": 0.5759161114692688
+        },
+        {
+          "organ": "gate_proj",
+          "pair": [
+            15,
+            47
+          ],
+          "kind": "far",
+          "scheme": "independent SVD r=256",
+          "bits_per_elem": 1.035294117647059,
+          "mean_out_err": 0.6977511644363403
+        },
+        {
+          "organ": "gate_proj",
+          "pair": [
+            15,
+            47
+          ],
+          "kind": "far",
+          "scheme": "shared ROW basis r=288",
+          "bits_per_elem": 1.0323529411764707,
+          "mean_out_err": 0.6927357614040375
+        }
+      ],
+      "verdict": "WINS, unlike the column basis. Adjacent gate_proj L30/L31: 0.57592 against independent 0.61465, a 6.3% error reduction at slightly FEWER bits. Far pair L15/L47: 0.69274 against 0.69775, only 0.7%. THE ADJACENCY SIGNATURE THE COLUMN BASIS FAILED TO SHOW IS PRESENT HERE -- adjacent benefits 9x more than distant, which is what the spectral observation that opened this obligation predicted."
+    }
+  },
+  "corrected_verdict": "AXIS-DEPENDENT, which the original refutation did not distinguish. Sharing the COLUMN space (the contraction axis) LOSES on 3/3 pairs. Sharing the ROW space (the output axis) WINS, and wins 9x more for adjacent layers than distant ones. The blanket 'REFUTED AT MATCHED BITS' was drawn from the column basis alone and is too broad.",
+  "what_still_limits_it": "The row-basis win is measured at ~1.03 bits/elem where the pair errors are 0.58-0.70, deep in the DEAD zone against the coherent anchor's 0.198. It is a 6.3% improvement to something unusable. G034 separately measured low-rank at a usable 3.25 bits/elem running 2.93x worse than flat q3, so the family's ceiling is low whichever axis is shared. Whether the row-basis advantage survives at usable fidelity is UNTESTED.",
+  "still_untested": "learned orthogonal alignment applied BEFORE sharing"
 }
