@@ -1,0 +1,22 @@
+64 layers: 16 full_attention (growing KV), 48 linear_attention (fixed recurrent state)
+KV per context token: 65,536 B   DeltaNet state, context-independent: 152,567,808 B
+
+artifact                      resident W B    W BPW  active W/token  avg==worst
+uniform-q4-v1               14,308,518,399   4.2560  14,308,518,399         yes
+compact-q3attn-r1p2-v1      11,245,288,072   3.3448  11,245,288,072         yes
+
+artifact                     context            KV B       state B  resident total state share
+uniform-q4-v1                  4,096     268,435,456   152,567,808  14,729,521,663       2.86%
+uniform-q4-v1                 32,768   2,147,483,648   152,567,808  16,608,569,855      13.85%
+uniform-q4-v1                131,072   8,589,934,592   152,567,808  23,051,020,799      37.93%
+compact-q3attn-r1p2-v1         4,096     268,435,456   152,567,808  11,666,291,336       3.61%
+compact-q3attn-r1p2-v1        32,768   2,147,483,648   152,567,808  13,545,339,528      16.98%
+compact-q3attn-r1p2-v1       131,072   8,589,934,592   152,567,808  19,987,790,472      43.74%
+
+what this says:
+  average and worst-case ACTIVE weight bytes are equal on this model, so the only
+  lever on information moved per token is total stored weight bytes. There is no
+  conditional path to exploit -- that is measured (G087, G088), not assumed.
+  at   4,096 context, state is 3.61% of resident on compact-q3attn-r1p2-v1; latent-KV would attack that share, weight compression cannot
+  at  32,768 context, state is 16.98% of resident on compact-q3attn-r1p2-v1; latent-KV would attack that share, weight compression cannot
+  at 131,072 context, state is 43.74% of resident on compact-q3attn-r1p2-v1; latent-KV would attack that share, weight compression cannot
