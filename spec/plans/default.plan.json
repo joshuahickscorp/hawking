@@ -1,0 +1,17 @@
+{
+  "plan_name": "default",
+  "schema": "hawking.nos.hide_plan.v1",
+  "note": "Kernel selection and residency, as DATA. The runtime exposes these as environment knobs; this file is the plan the NVM applies.",
+  "kernel_selection": {
+    "HAWKING_QWEN38_RECON_FUSE": "1",
+    "HAWKING_DN_VI_SIMD": "1",
+    "HAWKING_ARGMAX_TWO_PASS": "0",
+    "HAWKING_RMSNORM_TG": "256",
+    "HAWKING_DN_RMSNORM_TG": "256"
+  },
+  "residency_plan": {
+    "all_weights": "unified_memory",
+    "is_this_actually_data": false,
+    "why": "G085 measured the artifact at 13.9% of RAM with the pressure crossover 5.2x beyond the model's maximum context, so the runtime hardcodes unified memory and exposes no knob. Recorded here to be honest that this half of the plan is DECLARATIVE ONLY."
+  }
+}
