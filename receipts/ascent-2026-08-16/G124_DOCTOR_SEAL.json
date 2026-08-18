@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.nos.doctor_seal.v1",
+  "obligation": "G124 -- Tabula drift is part of the seal; no PASS without it",
+  "required_fields": [
+    "tabula_drift",
+    "observed_controls",
+    "stated_test_width",
+    "known_blind_spots"
+  ],
+  "self_test": [
+    {
+      "case": "without tabula_drift",
+      "verdict": "REFUSED",
+      "reasons": [
+        "missing or empty required field: tabula_drift"
+      ]
+    },
+    {
+      "case": "without observed_controls",
+      "verdict": "REFUSED",
+      "reasons": [
+        "missing or empty required field: observed_controls"
+      ]
+    },
+    {
+      "case": "without stated_test_width",
+      "verdict": "REFUSED",
+      "reasons": [
+        "missing or empty required field: stated_test_width"
+      ]
+    },
+    {
+      "case": "without known_blind_spots",
+      "verdict": "REFUSED",
+      "reasons": [
+        "missing or empty required field: known_blind_spots"
+      ]
+    },
+    {
+      "case": "complete",
+      "verdict": "PASS_WITH_WARNINGS",
+      "reasons": [
+        "tabula_drift present but its instrument is NOT validated -- G123 recovers the direction with a 200x null separation and its ladder misses the recorded 11-12/25-27/64-67 by a constant 2.5x. The drift number is PROVISIONAL."
+      ]
+    }
+  ],
+  "refusals": 4,
+  "the_real_candidate_does_not_get_a_clean_PASS": "uniform-q4-v1 with every field populated seals as PASS_WITH_WARNINGS, not PASS, because G123's Tabula instrument is not validated -- its ladder misses the recorded values by a constant 2.5x. The sealer says so instead of emitting a clean PASS on a provisional number.",
+  "commit": "b565edfd2bde23c78dc2b1c157753af1b6d5e91a"
+}
