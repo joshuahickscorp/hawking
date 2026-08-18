@@ -1,0 +1,43 @@
+language_model.lm_head.weight: 248320 x 5120 = 1,271,398,400 elements = 4.727091% of N
+final_norm capture: fit 5120 rows, HELD 1707 rows, prompt-level split
+
+rows that ever win top-1 on the fit half: 106 of 248320
+  scheme                              b/elem  observed    probed   worst_u      gain   winners     tail   argmax
+  uniform q4 g128 (reference)         4.1250  0.997513  0.992209  0.947868  0.884316  0.991475 0.964759   0.9842
+  uniform q3 g128                     3.1250  0.986840  0.959917  0.829913  0.764823  0.960689 0.892244   0.9654
+  uniform q2 g128                     2.1250  0.897337  0.720242 -0.029176  0.472461  0.574988 0.127215   0.7932
+  top 2% q4, rest q2                  2.1652  0.900340  0.727857 -0.029176  0.472461  0.574988 0.127215   0.8278
+  top 2% q4, rest q3                  3.1452  0.987158  0.960994  0.835976  0.764823  0.960689 0.892244   0.9719
+  top 2% q6, rest q2                  2.2052  0.900408  0.727997 -0.029176  0.472461  0.574988 0.127215   0.8284
+  top 5% q4, rest q2                  2.2252  0.904033  0.736405 -0.029176  0.472461  0.574988 0.127215   0.8330
+  top 5% q4, rest q3                  3.1752  0.987546  0.962097  0.838306  0.764823  0.960689 0.892244   0.9731
+  top 5% q6, rest q2                  2.3252  0.904181  0.737349 -0.029176  0.472461  0.574988 0.127215   0.8336
+  top 10% q4, rest q2                 2.3252  0.909926  0.749948 -0.029176  0.472461  0.574988 0.127215   0.8629
+  top 10% q4, rest q3                 3.2252  0.988157  0.963916  0.849699  0.764823  0.960689 0.892244   0.9742
+  top 10% q6, rest q2                 2.5252  0.910194  0.750624 -0.029176  0.472461  0.574988 0.127215   0.8635
+  top 25% q4, rest q2                 2.6252  0.926132  0.790171 -0.029176  0.472461  0.574988 0.127215   0.8822
+  top 25% q4, rest q3                 3.3752  0.989864  0.968943  0.874124  0.764823  0.960689 0.892244   0.9754
+  top 25% q6, rest q2                 3.1252  0.926738  0.791823 -0.029176  0.472461  0.574988 0.127215   0.8834
+
+  a scheme is adequate only if EVERY axis is within margin of the q4 reference
+  scheme                              b/elem  verdict
+  uniform q3 g128                     3.1250  reject: probed,worst_unit,gain,winners
+  uniform q2 g128                     2.1250  reject: observed,probed,worst_unit,gain,winners
+  top 2% q4, rest q2                  2.1652  reject: observed,probed,worst_unit,gain,winners
+  top 2% q4, rest q3                  3.1452  reject: probed,worst_unit,gain,winners
+  top 2% q6, rest q2                  2.2052  reject: observed,probed,worst_unit,gain,winners
+  top 5% q4, rest q2                  2.2252  reject: observed,probed,worst_unit,gain,winners
+  top 5% q4, rest q3                  3.1752  reject: probed,worst_unit,gain,winners
+  top 5% q6, rest q2                  2.3252  reject: observed,probed,worst_unit,gain,winners
+  top 10% q4, rest q2                 2.3252  reject: observed,probed,worst_unit,gain,winners
+  top 10% q4, rest q3                 3.2252  reject: probed,gain,winners
+  top 10% q6, rest q2                 2.5252  reject: observed,probed,worst_unit,gain,winners
+  top 25% q4, rest q2                 2.6252  reject: observed,probed,worst_unit,gain,winners
+  top 25% q4, rest q3                 3.3752  reject: probed,gain,winners
+  top 25% q6, rest q2                 3.1252  reject: observed,probed,worst_unit,gain,winners
+
+  both tables are 9.454183% of N
+  q4 g64  (G0)                 -> 0.401802759413 complete BPW  [measured floor 0.401802783208]
+  q4 g128                      -> 0.389985031195 complete BPW
+  NO per-row allocation cheaper than uniform q4 is adequate on this tensor.
+  => body must average 0.660657 bits/element for sub-1.0, tables at G0 q4 g64
