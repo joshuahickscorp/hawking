@@ -1,0 +1,4 @@
+c-q4r1p2 |   c-q4r1p2                  10/10 correct, 0 degenerate  -> COHERENT | COMPLETE_WALL_MS_PER_TOKEN: 39.779708 COMPLETE_WALL_TPS: 25.1384 
+c-mlpq3attnq4 |   c-mlpq3attnq4             10/10 correct, 0 degenerate  -> COHERENT | COMPLETE_WALL_MS_PER_TOKEN: 40.726958 COMPLETE_WALL_TPS: 24.5538 
+c-q3r1p35 |   c-q3r1p35                 6/10 correct, 4 degenerate  -> INADEQUATE | COMPLETE_WALL_MS_PER_TOKEN: 41.388458 COMPLETE_WALL_TPS: 24.1613 
+c-q3r1p5 |   c-q3r1p5                  3/10 correct, 2 degenerate  -> INADEQUATE | COMPLETE_WALL_MS_PER_TOKEN: 41.320833 COMPLETE_WALL_TPS: 24.2009 

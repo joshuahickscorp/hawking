@@ -1,0 +1,40 @@
+
+=== uniform-q4-v1 ===
+  FALLBACKS 0  DENSE_W_MATERIALIZED 0   (both must be 0 or the native path did not execute)
+  arithmetic    2/2 correct   0 degenerate
+  code          2/2 correct   0 degenerate
+  factual       2/2 correct   0 degenerate
+  instruction   1/1 correct   0 degenerate
+  multilingual  1/1 correct   0 degenerate
+  reasoning     1/1 correct   0 degenerate
+  tool          1/1 correct   0 degenerate
+  TOTAL 10/10 correct, 0 degenerate
+
+=== mixed-q4down-v1 ===
+  FALLBACKS 0  DENSE_W_MATERIALIZED 0   (both must be 0 or the native path did not execute)
+  arithmetic    0/2 correct   2 degenerate
+  code          0/2 correct   2 degenerate
+  factual       0/2 correct   2 degenerate
+  instruction   0/1 correct   1 degenerate
+  multilingual  0/1 correct   1 degenerate
+  reasoning     0/1 correct   1 degenerate
+  tool          0/1 correct   1 degenerate
+  TOTAL 0/10 correct, 10 degenerate
+
+=== c-q3r1p5 ===
+  FALLBACKS 0  DENSE_W_MATERIALIZED 0   (both must be 0 or the native path did not execute)
+  arithmetic    1/2 correct   0 degenerate
+  code          0/2 correct   0 degenerate
+  factual       1/2 correct   1 degenerate
+  instruction   1/1 correct   0 degenerate
+  multilingual  0/1 correct   0 degenerate
+  reasoning     0/1 correct   0 degenerate
+  tool          0/1 correct   1 degenerate
+  TOTAL 3/10 correct, 2 degenerate
+
+--- controls ---
+  positive control uniform-q4-v1        10/10  PASSES as required
+  negative control mixed-q4down-v1      0/10  FAILS as required
+
+--- verdicts (controls behaved, so these mean something) ---
+  c-q3r1p5                  3/10 correct, 2 degenerate  -> INADEQUATE
