@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.nos.pipeline.v1",
+  "obligation": "G27 (was G160) spine -- gates integrated into ONE process",
+  "gates_wired": [
+    "worker_gate.gate",
+    "gpu_lane_guard.guard",
+    "doctor_seal.seal",
+    "provenance_chain.check",
+    "successor_select.rank_against_parent",
+    "worker_checkpoint.checkpoint+rebind"
+  ],
+  "was_the_problem": "no tool imported another; every gate ran once and was never enforced again -- a check that measures nothing going forward",
+  "now": "one entry point runs the gates as ordered stages; a refusal halts the flow",
+  "selftest_all_gates_live": true,
+  "commit": "1790a420c58f43c7f925c86599b43cc66f8849cc"
+}
