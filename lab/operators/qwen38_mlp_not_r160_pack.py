@@ -293,6 +293,66 @@ ATTN_SUFFIXES = (
 )
 
 
+# Qwen3.8 geometry. Asserted against the real tensor shapes at fold time rather
+# than trusted, so a wrong constant fails loudly instead of silently mis-scaling.
+QWEN38_HIDDEN = 5120
+QWEN38_INTERMEDIATE = 17408
+
+_NORM_RE = re.compile(r"layers\.(\d+)\.post_attention_layernorm\.weight$")
+_CHANNEL_SCALE_CACHE: dict[int, tuple[np.ndarray, np.ndarray]] = {}
+
+
+def _unit_geomean(v: np.ndarray) -> np.ndarray:
+    return (v / float(np.exp(np.log(v).mean()))).astype(np.float32)
+
+
+def channel_scales(capture_root: Path, layer: int, alpha: float,
+                   rows: int) -> tuple[np.ndarray, np.ndarray]:
+    """(s, t) for one layer, fitted from the head of the capture.
+
+    s lives on the MLP input axis and is carried by the post_attention_layernorm
+    weight as g/s. t lives on the intermediate axis and is carried by up_proj's
+    output rows. Both are normalised to unit geometric mean so the fold does not
+    drift the overall scale of anything.
+    """
+    if layer in _CHANNEL_SCALE_CACHE:
+        return _CHANNEL_SCALE_CACHE[layer]
+
+    def head(site: str, width: int) -> np.ndarray:
+        path = capture_root / site / f"L{layer:02d}.f16"
+        avail = path.stat().st_size // (2 * width)
+        take = min(rows, avail)
+        raw = np.fromfile(path, dtype=np.float16, count=take * width)
+        return raw.reshape(take, width).astype(np.float32)
+
+    s = _unit_geomean((np.abs(head("post_attn_norm", QWEN38_HIDDEN)).mean(axis=0) + 1e-8) ** alpha)
+    t = _unit_geomean((np.abs(head("post_swiglu", QWEN38_INTERMEDIATE)).mean(axis=0) + 1e-8) ** alpha)
+    _CHANNEL_SCALE_CACHE[layer] = (s, t)
+    return s, t
+
+
+def apply_channel_fold(name: str, organ: int, values: np.ndarray,
+                       s: np.ndarray, t: np.ndarray) -> np.ndarray:
+    """Exactly function-preserving: y = Wx is unchanged, only the split moves."""
+    if organ == ORGAN_GATE:
+        if values.shape[1] != s.shape[0]:
+            raise PackError(f"{name}: gate cols {values.shape[1]} != |s| {s.shape[0]}")
+        return values * s[None, :]
+    if organ == ORGAN_UP:
+        if values.shape != (t.shape[0], s.shape[0]):
+            raise PackError(f"{name}: up {values.shape} != ({t.shape[0]}, {s.shape[0]})")
+        return (values * s[None, :]) / t[:, None]
+    if organ == ORGAN_DOWN:
+        if values.shape[1] != t.shape[0]:
+            raise PackError(f"{name}: down cols {values.shape[1]} != |t| {t.shape[0]}")
+        return values * t[None, :]
+    if _NORM_RE.search(name):
+        if values.shape[0] != s.shape[0]:
+            raise PackError(f"{name}: norm {values.shape[0]} != |s| {s.shape[0]}")
+        return values / s
+    raise PackError(f"channel fold asked for an organ it does not cover: {name}")
+
+
 def organ_of(name: str, fallback: int) -> int:
     if name.endswith("mlp.gate_proj.weight"):
         return ORGAN_GATE
@@ -355,6 +415,23 @@ def parse_args() -> argparse.Namespace:
                    help="bit width for layers below --early-layers. q_inject is 1.597e-04 at "
                         "L0 and 2.577e-03 at L63, a 16.1x spread, so the same relative error "
                         "costs the residual stream ~16x more late than early")
+    p.add_argument("--channel-scale-alpha", type=float, default=None,
+                   help="activation-aware channel scale, exactly function-preserving: "
+                        "gate'=Wg diag(s), up'=diag(1/t) Wu diag(s), down'=Wd diag(t), and the "
+                        "post_attention_layernorm weight carries diag(1/s) as g/s. s and t are "
+                        "fitted from the capture at alpha. Off by default; when off this file "
+                        "behaves exactly as before.")
+    p.add_argument("--capture-root", type=Path,
+                   default=Path("workspace/campaign/records/runs/qwen38-27b/"
+                                "activation-capture-v2/parent_bf16"),
+                   help="thick v2 capture. post_attn_norm feeds the MLP (VERIFIED: "
+                        "silu(gate(x))*up(x) reproduces captured post_swiglu at cosine 0.999986 "
+                        "from post_attn_norm and 0.48 from post_input_norm)")
+    p.add_argument("--channel-scale-rows", type=int, default=512,
+                   help="capture rows used to fit s and t, taken from the head of each file")
+    p.add_argument("--norm-bits", type=int, default=4,
+                   help="bit width for a post_attention_layernorm weight that channel scale "
+                        "rewrites. Only used when --channel-scale-alpha is set.")
     p.add_argument("--root", type=Path, default=None)
     p.add_argument("--mixed", type=Path, default=MIXED_2P0)
     p.add_argument("--model-dir", type=Path, default=MODEL_DIR)
@@ -424,15 +501,22 @@ def main() -> int:
     cosines: list[dict[str, Any]] = []
     t_all = time.perf_counter()
 
+    scale_alpha = args.channel_scale_alpha
+    if scale_alpha is not None and not (0.0 < scale_alpha <= 1.0):
+        raise PackError(f"--channel-scale-alpha {scale_alpha} not in (0, 1]")
+
     for rec in src_cat["records"]:
         organ = organ_of(rec["name"], int(rec["organ"]))
-        if organ not in replace_bits:
+        name = rec["name"]
+        # A norm the channel fold has to rewrite is no longer copyable: it is the
+        # tensor that carries diag(1/s), so it must be re-encoded from source.
+        fold_norm = scale_alpha is not None and _NORM_RE.search(name) is not None
+        if organ not in replace_bits and not fold_norm:
             out_records.append(dict(rec))
             used_src_segs.add(int(rec["segment_id"]))
             copied += 1
             continue
-        bits = replace_bits[organ]
-        name = rec["name"]
+        bits = int(args.norm_bits) if fold_norm else replace_bits[organ]
         if args.early_bits is not None:
             m = _LAYER_RE.search(name)
             if m and int(m.group(1)) < args.early_layers:
@@ -443,6 +527,15 @@ def main() -> int:
         )
         if list(values.shape) != list(rec["shape"]):
             raise PackError(f"{name} source {values.shape} != catalog {rec['shape']}")
+        if scale_alpha is not None and (fold_norm or organ in (ORGAN_GATE, ORGAN_UP, ORGAN_DOWN)):
+            m_layer = _LAYER_RE.search(name)
+            if m_layer is None:
+                raise PackError(f"channel fold needs a layer index and {name} has none")
+            s_vec, t_vec = channel_scales(
+                args.capture_root, int(m_layer.group(1)), scale_alpha,
+                int(args.channel_scale_rows))
+            values = np.ascontiguousarray(
+                apply_channel_fold(name, organ, values, s_vec, t_vec), dtype=np.float32)
         cosine = strided_weight_cosine(values, bits)
         payload = encode_uniform_payload(values, bits)
         del values
