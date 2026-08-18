@@ -90,7 +90,7 @@ FAMILIES = [
      [R+"NX_TPS_FRONTIER.json", R+"G032_XFORM_HADAMARD_Q2.json"]),
 
  fam("interleaved rANS entropy coding over a q3 body", "G114-G116, F1's density route",
-     "AT RISK -- UNREVIEWED ON ITS DECIDING AXIS",
+     "REFUTED FOR THIS KERNEL GEOMETRY",
      {"hidden_cost": "UNMEASURED AND LIKELY FATAL. The measured budget is 0.810 ps/element: any "
                      "codec spending more decode than that cannot convert its byte saving. rANS "
                      "decode is a state multiply, a renormalize and a table lookup per symbol "
@@ -103,10 +103,12 @@ FAMILIES = [
                             "staging buffer would move the bytes and keep the traffic.",
       "narrow_test_distribution": "The r-sweep grading (1.20 -> 10/10, 1.25 -> 9/10) is the same "
                                   "ten items; 9/10 there is not a measurement of anything."},
-     "A STUB KERNEL that does rANS decode and nothing else, timed in ps/element against the 0.810 "
-     "budget. This is the cheap half and it decides the expensive half. Building the packer first "
-     "inverts the order.",
-     [R+"CODEC_ALU_COST.json", R+"NX_TPS_FRONTIER.json"]),
+     "SETTLED for geo_tpr64 by G039_TILE_ENTROPY.json without needing the packer built. What would "
+     "reopen it: a kernel geometry whose threads consume CONTIGUOUS runs instead of strided "
+     "8-weight windows, which cuts amplification to ~1 -- but that means retiling the GEMV all 401 "
+     "GEMVs depend on, one already at 88% of the bandwidth roof. Or a codec genuinely cheaper per "
+     "symbol than a nibble unpack, which rANS is not.",
+     [R+"CODEC_ALU_COST.json", R+"NX_TPS_FRONTIER.json", R+"G039_TILE_ENTROPY.json"]),
 
  fam("over-scale (r = 1.20 .. 1.50)", "G129 joint optimizer", "WEAKENED",
      {"narrow_test_distribution": "The whole frontier -- 10/10, 9/10, 8/10, 6/10, 3/10 -- rests "

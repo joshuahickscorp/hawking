@@ -19,7 +19,8 @@
   "rank_deficient_capture": "N/A -- lossless recoding of an existing symbol stream, no activation fit involved.",
   "goodhartable_metric": "YES, structurally. Coded bits/elem is the metric this family optimizes and it is exactly the quantity that does NOT predict time on this machine (F5, F6). The L8/L32/L64 numbers are real and measure the wrong thing.",
   "plausibility_masking": "N/A -- no artifact exists to generate from.",
-  "kernel_different_math": "N/A -- no kernel exists. That absence IS the family's open axis."
+  "kernel_different_math": "N/A -- no kernel exists. That absence IS the family's open axis.",
+  "hidden_cost": "MEASURED AND FATAL FOR THIS KERNEL GEOMETRY (G039_TILE_ENTROPY.json). Entropy coding and tile-aligned random access pull opposite ways and there is no crossing point. At 8 weights per entry point -- the granularity geo_tpr64 actually reads -- the resumable-state index costs 1.75 bits/elem, so the total is 4.2964 against the incumbent q3's 3.2500: the index costs more than the entropy coding saves. Coarsening entry points wins the bits back but multiplies decode by amplification (2.50x at 32 weights, 4.50x at 64, 320x at row granularity), and q3's far simpler unpack ALREADY fails the 0.8092 ps/elem ALU budget at amplification 1.0. Zero of eight granularities beat q3 on bits AND clear the budget, and every row is charged optimistically by granting rANS the same per-symbol cost as a nibble unpack."
  },
  "over-scale (r = 1.20 .. 1.50)": {
   "rank_deficient_capture": "N/A for the fit; evaluation sampling-stable.",

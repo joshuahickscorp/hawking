@@ -1,0 +1,115 @@
+{
+  "schema": "hawking.nos.tile_entropy_feasibility.v1",
+  "obligation": "G039 -- lossless redundancy layer with a decode path aligned to tile access",
+  "kernel_geometry": {
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 and its q3 sibling",
+    "access": "each thread reads 8 contiguous weights at col = lane*8 + k*512, 64 lanes per row. Read from the kernel source, not assumed.",
+    "why_it_matters": "401 of the genome's GEMVs use this geometry and F6 measured it at 88% of the bandwidth roof, i.e. on the bandwidth/ALU balance point."
+  },
+  "measured_inputs": {
+    "coded_bits_per_elem": 2.2964,
+    "coded_bits_source": "order-0 entropy of the real q3 symbol stream; order-1 context models add at most 0.0013 (G024_BOUND_REVIEW.json)",
+    "incumbent_total_bits_per_elem": 3.25,
+    "alu_budget_ps_per_elem": 0.8092,
+    "q3_unpack_ps_per_elem": 0.867
+  },
+  "state_bits_per_entry_point": 14,
+  "sweep": [
+    {
+      "weights_per_entry_point": 8,
+      "entry_points_per_row": 640.0,
+      "index_bits_per_elem": 1.75,
+      "total_bits_per_elem": 4.2964,
+      "beats_q3_on_bits": false,
+      "mean_symbols_decoded_per_8_useful": 8.0,
+      "decode_amplification": 1.0,
+      "optimistic_ps_per_elem": 0.867,
+      "clears_alu_budget": false
+    },
+    {
+      "weights_per_entry_point": 16,
+      "entry_points_per_row": 320.0,
+      "index_bits_per_elem": 0.875,
+      "total_bits_per_elem": 3.4214,
+      "beats_q3_on_bits": false,
+      "mean_symbols_decoded_per_8_useful": 12.0,
+      "decode_amplification": 1.5,
+      "optimistic_ps_per_elem": 1.3005,
+      "clears_alu_budget": false
+    },
+    {
+      "weights_per_entry_point": 32,
+      "entry_points_per_row": 160.0,
+      "index_bits_per_elem": 0.4375,
+      "total_bits_per_elem": 2.9839,
+      "beats_q3_on_bits": true,
+      "mean_symbols_decoded_per_8_useful": 20.0,
+      "decode_amplification": 2.5,
+      "optimistic_ps_per_elem": 2.1675,
+      "clears_alu_budget": false
+    },
+    {
+      "weights_per_entry_point": 64,
+      "entry_points_per_row": 80.0,
+      "index_bits_per_elem": 0.21875,
+      "total_bits_per_elem": 2.76515,
+      "beats_q3_on_bits": true,
+      "mean_symbols_decoded_per_8_useful": 36.0,
+      "decode_amplification": 4.5,
+      "optimistic_ps_per_elem": 3.9015,
+      "clears_alu_budget": false
+    },
+    {
+      "weights_per_entry_point": 128,
+      "entry_points_per_row": 40.0,
+      "index_bits_per_elem": 0.109375,
+      "total_bits_per_elem": 2.655775,
+      "beats_q3_on_bits": true,
+      "mean_symbols_decoded_per_8_useful": 68.0,
+      "decode_amplification": 8.5,
+      "optimistic_ps_per_elem": 7.3695,
+      "clears_alu_budget": false
+    },
+    {
+      "weights_per_entry_point": 256,
+      "entry_points_per_row": 20.0,
+      "index_bits_per_elem": 0.0546875,
+      "total_bits_per_elem": 2.6010875,
+      "beats_q3_on_bits": true,
+      "mean_symbols_decoded_per_8_useful": 132.0,
+      "decode_amplification": 16.5,
+      "optimistic_ps_per_elem": 14.3055,
+      "clears_alu_budget": false
+    },
+    {
+      "weights_per_entry_point": 512,
+      "entry_points_per_row": 10.0,
+      "index_bits_per_elem": 0.02734375,
+      "total_bits_per_elem": 2.57374375,
+      "beats_q3_on_bits": true,
+      "mean_symbols_decoded_per_8_useful": 260.0,
+      "decode_amplification": 32.5,
+      "optimistic_ps_per_elem": 28.1775,
+      "clears_alu_budget": false
+    },
+    {
+      "weights_per_entry_point": 5120,
+      "entry_points_per_row": 1.0,
+      "index_bits_per_elem": 0.002734375,
+      "total_bits_per_elem": 2.5491343750000004,
+      "beats_q3_on_bits": true,
+      "mean_symbols_decoded_per_8_useful": 2564.0,
+      "decode_amplification": 320.5,
+      "optimistic_ps_per_elem": 277.8735,
+      "clears_alu_budget": false
+    }
+  ],
+  "configurations_winning_both": 0,
+  "verdict": "REFUTED FOR THIS KERNEL GEOMETRY. The two halves of the acceptance cannot be satisfied at once. Fine entry points keep decode cheap but the index costs more bits than the entropy coding saves; coarse entry points keep the bits but multiply decode by the amplification factor, and q3's far simpler unpack ALREADY fails the ALU budget at amplification 1.0. There is no crossing point, and the sweep is charged optimistically at every step.",
+  "what_would_change_it": [
+    "A kernel geometry whose threads consume CONTIGUOUS runs rather than strided 8-weight windows would cut amplification to ~1. That means retiling the GEMV all 401 GEMVs depend on, against a kernel already at 88% of the bandwidth roof.",
+    "A codec whose decode is genuinely cheaper per symbol than a q3 nibble unpack. rANS is not: a state multiply, a renormalize and a table lookup against a shift and a mask.",
+    "Bandwidth becoming the binding resource again -- which would require the ALU side to get faster, not the byte side to get smaller."
+  ],
+  "commit": "fd8a0fa3a15194a24b047d961451e08deb4486df"
+}

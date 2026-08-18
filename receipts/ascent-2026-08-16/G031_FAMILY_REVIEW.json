@@ -81,7 +81,7 @@
     {
       "family": "interleaved rANS entropy coding over a q3 body",
       "obligation": "G114-G116, F1's density route",
-      "verdict": "AT RISK -- UNREVIEWED ON ITS DECIDING AXIS",
+      "verdict": "REFUTED FOR THIS KERNEL GEOMETRY",
       "defects_found": {
         "rank_deficient_capture": "N/A -- lossless recoding of an existing symbol stream, no activation fit involved.",
         "goodhartable_metric": "YES, structurally. Coded bits/elem is the metric this family optimizes and it is exactly the quantity that does NOT predict time on this machine (F5, F6). The L8/L32/L64 numbers are real and measure the wrong thing.",
@@ -93,10 +93,11 @@
         "narrow_test_distribution": "The r-sweep grading (1.20 -> 10/10, 1.25 -> 9/10) is the same ten items; 9/10 there is not a measurement of anything."
       },
       "defects_not_assessed": [],
-      "settling_check": "A STUB KERNEL that does rANS decode and nothing else, timed in ps/element against the 0.810 budget. This is the cheap half and it decides the expensive half. Building the packer first inverts the order.",
+      "settling_check": "SETTLED for geo_tpr64 by G039_TILE_ENTROPY.json without needing the packer built. What would reopen it: a kernel geometry whose threads consume CONTIGUOUS runs instead of strided 8-weight windows, which cuts amplification to ~1 -- but that means retiling the GEMV all 401 GEMVs depend on, one already at 88% of the bandwidth roof. Or a codec genuinely cheaper per symbol than a nibble unpack, which rANS is not.",
       "cites": [
         "receipts/ascent-2026-08-16/CODEC_ALU_COST.json",
-        "receipts/ascent-2026-08-16/NX_TPS_FRONTIER.json"
+        "receipts/ascent-2026-08-16/NX_TPS_FRONTIER.json",
+        "receipts/ascent-2026-08-16/G039_TILE_ENTROPY.json"
       ]
     },
     {
@@ -208,5 +209,5 @@
   ],
   "broken_citations": [],
   "cross_cutting_finding": "Six of the nine families are limited by the SAME defect, and it is hidden_cost in the same currency: decode ALU per weight. CODEC_ALU_COST puts the budget at 0.810 ps/element, where q4 already sits at 88% of the bandwidth roof. Every family that buys bits by spending decode -- q3, rANS, planes, low-rank factors -- is spending the one resource that is already exhausted. The campaign has been selecting representations on bits while the machine charges in ops.",
-  "commit": "be7a3f856157d4872f9eb00b92b706bf514d0c40"
+  "commit": "fd8a0fa3a15194a24b047d961451e08deb4486df"
 }
