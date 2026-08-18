@@ -1579,3 +1579,63 @@ kernel void qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload(
         output[row] = red[team * kSplit] + red[team * kSplit + 1u];
     }
 }
+
+// ── contiguous-run geo: the geometry G039's escape clause requires ────────
+//
+// G039 refuted tile-aligned entropy coding because geo_tpr64's threads jump to
+// their own offsets (col = lane*8 + k*512), so an entropy stream needs either a
+// resumable-state index costing 1.75 bits/elem or a forward-decode amplification
+// of 2.5x to 320x. The receipt named the one geometry that would reopen it: a
+// kernel whose threads consume CONTIGUOUS runs, cutting amplification to ~1.
+//
+// This is that geometry, and it is measured rather than assumed. Same threadgroup
+// shape, same rows per TG, same 8-weight access unit, same total work. The ONLY
+// change is that thread t walks the contiguous span [t*80, t*80+80) instead of
+// striding by 512.
+//
+// The cost is coalescing: with a stride, the 64 threads of a row read adjacent
+// bytes at each instant; with contiguous runs they read bytes 40 apart. Whether
+// entropy coding is reachable at all depends on which of those the memory system
+// charges more for, which is an empirical question about this GPU.
+//
+// Grid: ceil(rows/2)*128, TG 128, cols must be 64*64 aligned.
+kernel void qwen_uniform_q4_group64_matvec_contig_tg128(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows) {
+        const uint rgb0 = row * groups_per_row;
+        const uint span = cols / 64u;                 // weights per thread
+        const uint start = lane_in_row * span;
+        for (uint c = start; c < start + span; c += 8u) {
+            const uint group = c / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = c - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes
+                + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            acc += qwen_uniform_q4_unpack8(packed, scale, input, c);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) { red[simd_id] = acc; }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}

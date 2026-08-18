@@ -75,6 +75,11 @@ mod macos {
                 hgravu_abi: true,
             },
             Codec {
+                name: "q4_group64_contiguous",
+                kernel: "qwen_uniform_q4_group64_matvec_contig_tg128",
+                code_bytes_per_group: 32, bits: 4, bound: 8, hgravu_abi: false,
+            },
+            Codec {
                 name: "q3_group64_hgravu",
                 kernel: "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
                 code_bytes_per_group: 24,

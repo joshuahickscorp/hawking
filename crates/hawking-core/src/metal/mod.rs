@@ -1265,6 +1265,9 @@ mod imp {
             "hawking_roofline_sweep_f4" => "hawking_roofline_sweep_f4",
             "sample_argmax_f32_pass1" => "sample_argmax_f32_pass1",
             "sample_argmax_f32_pass2" => "sample_argmax_f32_pass2",
+            "qwen_uniform_q4_group64_matvec_contig_tg128" => {
+                "qwen_uniform_q4_group64_matvec_contig_tg128"
+            }
             "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload" => {
                 "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload"
             }

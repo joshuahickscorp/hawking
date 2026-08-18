@@ -105,11 +105,24 @@
     }
   ],
   "configurations_winning_both": 0,
-  "verdict": "REFUTED FOR THIS KERNEL GEOMETRY. The two halves of the acceptance cannot be satisfied at once. Fine entry points keep decode cheap but the index costs more bits than the entropy coding saves; coarse entry points keep the bits but multiply decode by the amplification factor, and q3's far simpler unpack ALREADY fails the ALU budget at amplification 1.0. There is no crossing point, and the sweep is charged optimistically at every step.",
+  "verdict": "REFUTED FOR THIS KERNEL GEOMETRY. The two halves of the acceptance cannot be satisfied at once. Fine entry points keep decode cheap but the index costs more bits than the entropy coding saves; coarse entry points keep the bits but multiply decode by the amplification factor, and q3's far simpler unpack ALREADY fails the ALU budget at amplification 1.0. There is no crossing point, and the sweep is charged optimistically at every step. ESCAPE CLAUSE NOW ALSO CLOSED: see escape_clause_tested.",
   "what_would_change_it": [
     "A kernel geometry whose threads consume CONTIGUOUS runs rather than strided 8-weight windows would cut amplification to ~1. That means retiling the GEMV all 401 GEMVs depend on, against a kernel already at 88% of the bandwidth roof.",
     "A codec whose decode is genuinely cheaper per symbol than a q3 nibble unpack. rANS is not: a state multiply, a renormalize and a table lookup against a shift and a mask.",
     "Bandwidth becoming the binding resource again -- which would require the ALU side to get faster, not the byte side to get smaller."
   ],
-  "commit": "fd8a0fa3a15194a24b047d961451e08deb4486df"
+  "commit": "fd8a0fa3a15194a24b047d961451e08deb4486df",
+  "escape_clause_tested": {
+    "claim_being_tested": "This receipt named one geometry that would reopen entropy coding: a kernel whose threads consume CONTIGUOUS runs instead of strided 8-weight windows, which cuts the forward-decode amplification to ~1 and makes the resumable-state index cheap.",
+    "method": "qwen_uniform_q4_group64_matvec_contig_tg128 -- same threadgroup shape, same rows per TG, same 8-weight access unit, same total work. The ONLY change is that thread t walks the contiguous span [t*80, t*80+80) instead of striding by 512.",
+    "measured": {
+      "strided_geo_tpr64_ps_per_elem": 0.7909489795565605,
+      "contiguous_ps_per_elem": 3.5679899156093597,
+      "ratio": 4.511024108798681,
+      "strided_gb_s": 632.1520261399429,
+      "contiguous_gb_s": 140.13492521730052
+    },
+    "verdict": "THE ESCAPE GEOMETRY COSTS 4.5x. Contiguous runs measure 3.57 ps/element against the strided kernel's 0.79, and 140 GB/s against 632. With a stride the 64 threads of a row read ADJACENT bytes at each instant; with contiguous runs they read bytes 40 apart, and this memory system charges heavily for that.",
+    "consequence": "G039 is now refuted twice over. Entropy coding's best case saves 0.70 bits/elem of a 3.25-bit stream -- and bytes were never the binding resource anyway -- while the geometry it requires costs 4.5x on the axis that IS binding. There is no version of this trade that works on this machine, and the reopener this receipt itself named is now closed by measurement rather than left as a hope."
+  }
 }
