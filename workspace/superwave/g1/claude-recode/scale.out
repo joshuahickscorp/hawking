@@ -1,0 +1,27 @@
+q3 group 64. Same format, same stored bytes, same kernel: only the
+f16 scale value differs between the two rows of each pair.
+
+site                      scale     observed    probed   worst_u      gain  code b/w  range
+mlp.gate_proj@31          q4 ref    0.995363  0.993964  0.953731  0.844503                 
+                          absmax    0.975808  0.968449  0.751253  0.682982    2.3006      7
+                          mse       0.983175  0.977725  0.731867  0.598967    2.5980      7
+mlp.down_proj@31          q4 ref    0.993987  0.993973  0.983121  0.966432                 
+                          absmax    0.968627  0.968531  0.932068  0.905916    2.2972      7
+                          mse       0.977779  0.977657  0.941063  0.920683    2.5960      7
+mlp.up_proj@47            q4 ref    0.993539  0.993978  0.960804  0.885591                 
+                          absmax    0.967761  0.968579  0.830802  0.768094    2.2995      7
+                          mse       0.976960  0.977756  0.850996  0.681453    2.5965      7
+self_attn.q_proj@31       q4 ref    0.996680  0.993912  0.910686  0.849671                 
+                          absmax    0.983283  0.968087  0.729468  0.657731    2.2975      7
+                          mse       0.985050  0.977468  0.756942  0.626211    2.5960      7
+linear_attn.out_proj@30   q4 ref    0.993896  0.993853  0.980026  0.963082                 
+                          absmax    0.968172  0.967812  0.928327  0.902452    2.2942      7
+                          mse       0.977332  0.977294  0.940920  0.916611    2.5929      7
+mlp.gate_proj@63          q4 ref    0.998817  0.993768  0.964109  0.846658                 
+                          absmax    0.993641  0.967666  0.796961  0.725982    2.2976      7
+                          mse       0.995364  0.977055  0.822773  0.749000    2.5961      7
+
+weighted code cost over all sites:
+  absmax  2.2982 bits/weight coded  (+ 0.2500 scale = 2.5482 complete per element)
+  mse     2.5963 bits/weight coded  (+ 0.2500 scale = 2.8463 complete per element)
+  mse is -0.2981 bits/weight vs absmax on the coded stream
