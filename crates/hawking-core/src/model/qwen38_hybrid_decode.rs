@@ -2365,11 +2365,31 @@ mod device {
         ) -> Result<()> {
             let layout = Qwen38DeltaNetLayout::source_exact();
             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
+            let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
+                // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
+                // 2.54% faster, every pair favouring the retile, and token-identical on 24
+                // greedy tokens despite the tree reduction changing summation order.
+                // Set HAWKING_DN_RMSNORM_TG=0 to restore the scalar one-thread-per-head form.
+                .unwrap_or(256);
+            let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
+                ("qwen80_deltanet_gated_rmsnorm_tg",
+                 (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+            } else {
+                ("qwen80_deltanet_gated_rmsnorm_f32",
+                 (layout.value_heads as u32, 1, 1), (16, 1, 1))
+            };
             tcb.dispatch_threads(
-                "qwen80_deltanet_gated_rmsnorm_f32",
-                (layout.value_heads as u32, 1, 1),
-                (16, 1, 1),
+                dn_name,
+                dn_grid,
+                dn_tgd,
                 |encoder| {
+                    if dn_tg > 0 {
+                        encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
+                    }
                     encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
                     encoder.set_buffer(1, Some(&self.workspace.z), 0);
                     encoder.set_buffer(2, Some(norm_w), 0);
@@ -3050,11 +3070,31 @@ mod device {
             )?;
             self.encode_gated_delta(tcb, rec_off)?;
             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
+            let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
+                // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
+                // 2.54% faster, every pair favouring the retile, and token-identical on 24
+                // greedy tokens despite the tree reduction changing summation order.
+                // Set HAWKING_DN_RMSNORM_TG=0 to restore the scalar one-thread-per-head form.
+                .unwrap_or(256);
+            let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
+                ("qwen80_deltanet_gated_rmsnorm_tg",
+                 (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+            } else {
+                ("qwen80_deltanet_gated_rmsnorm_f32",
+                 (layout.value_heads as u32, 1, 1), (16, 1, 1))
+            };
             tcb.dispatch_threads(
-                "qwen80_deltanet_gated_rmsnorm_f32",
-                (layout.value_heads as u32, 1, 1),
-                (16, 1, 1),
+                dn_name,
+                dn_grid,
+                dn_tgd,
                 |encoder| {
+                    if dn_tg > 0 {
+                        encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
+                    }
                     encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
                     encoder.set_buffer(1, Some(&self.workspace.z), 0);
                     encoder.set_buffer(2, Some(norm_w), 0);
@@ -3422,11 +3462,31 @@ mod device {
             )?;
             self.encode_gated_delta(tcb, rec_off)?;
             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
+            let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
+                // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
+                // 2.54% faster, every pair favouring the retile, and token-identical on 24
+                // greedy tokens despite the tree reduction changing summation order.
+                // Set HAWKING_DN_RMSNORM_TG=0 to restore the scalar one-thread-per-head form.
+                .unwrap_or(256);
+            let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
+                ("qwen80_deltanet_gated_rmsnorm_tg",
+                 (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+            } else {
+                ("qwen80_deltanet_gated_rmsnorm_f32",
+                 (layout.value_heads as u32, 1, 1), (16, 1, 1))
+            };
             tcb.dispatch_threads(
-                "qwen80_deltanet_gated_rmsnorm_f32",
-                (layout.value_heads as u32, 1, 1),
-                (16, 1, 1),
+                dn_name,
+                dn_grid,
+                dn_tgd,
                 |encoder| {
+                    if dn_tg > 0 {
+                        encoder.set_threadgroup_memory_length(0, (dn_tg as u64) * 4);
+                    }
                     encoder.set_buffer(0, Some(&self.workspace.rec_out), 0);
                     encoder.set_buffer(1, Some(&self.workspace.z), 0);
                     encoder.set_buffer(2, Some(norm_w), 0);
