@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.nos.on_device_scheduler.v1",
+  "obligation": "G093 -- the receipt is dispatch count per token and critical-path ns",
+  "the_receipt_the_verify_asks_for": {
+    "dispatches_per_token": 964,
+    "critical_path_wall_ms": 30.606042,
+    "critical_path_gpu_ms": 29.535833,
+    "gpu_as_fraction_of_wall": 0.9650327539902089,
+    "host_encode_ms": 0.6764398,
+    "host_encode_ns_per_dispatch": 701.7010373443984,
+    "wait_minus_gpu_ms": 0.3943643,
+    "total_host_ceremony_ms": 1.0702089999999984
+  },
+  "the_token_decomposed": {
+    "gemv_on_gpu_ms": 21.587,
+    "non_gemv_on_gpu_ms": 7.9488330000000005,
+    "host_ceremony_ms": 1.0702089999999984,
+    "shares": {
+      "gemv_pct": 70.53182505598078,
+      "non_gemv_gpu_pct": 25.971450343040114,
+      "host_ceremony_pct": 3.4967246009791086
+    }
+  },
+  "bound_on_the_static_win": "An on-device scheduler removes HOST work, and the host holds only 1.070 ms of a 30.606 ms token -- 3.5%. The GPU is busy 96.5% of the time. Even a perfect scheduler takes the token to 29.536 ms, 33.86 TPS from 32.67. The 7.949 ms of non-GEMV work is ON DEVICE and a scheduler does not remove it.",
+  "the_premise_is_refuted_by_its_own_receipt": "The verify asserts that dynamic Gravity programs are UNSCHEDULABLE from the host at this dispatch cost. The measured cost is 702 ns of host encode per dispatch across 964 dispatches. A dynamic program branching once per LAYER adds roughly 200 dispatches = 0.140 ms, which is 0.46% of the token. Branching once per TOKEN adds a handful. It would take 12,853 extra dispatches to consume the whole non-GEMV budget. The host schedules dynamic programs at every granularity anyone has proposed; only per-element branching would be unschedulable, and nothing proposes that.",
+  "and_there_is_nothing_left_to_schedule": "Every dynamic mechanism this ledger proposed has already been refuted by measurement: G058 dynamic precision is density not execution, G062 attractor compilation fails because the blocks are mutually orthogonal, G064 conditional depth has zero skippable layers and no per-token variance, G084 the JIT risks seven times what it gains. The GPU-resident state machine would have no conditional operators, no routing and no adaptive depth to run.",
+  "the_cheaper_alternative_the_data_points_at": "host_encode_ms 0.676 is measured as a SEPARATE PHASE, so in this implementation the host encodes while the GPU is idle rather than overlapping. Pipelining encode against the previous command buffer would recover most of it with no on-device scheduler at all, and that is a far smaller change than a GPU-resident state machine.",
+  "commit": "c6e89befe81bf02ddcf2b8cc4d94f7a9ba4e0a66"
+}
