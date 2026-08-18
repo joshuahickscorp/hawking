@@ -1,0 +1,35 @@
+{
+  "schema": "hawking.nos.channel_scale_block_fold.v1",
+  "obligation": "G032 -- does the channel-scale win survive a CONSISTENT fold across the whole MLP block?",
+  "why": "The per-tensor measurement scaled one tensor at a time. A deployable fold changes three tensors at once: s on the hidden axis folds into input_layernorm, t on the intermediate axis folds into up_proj's OUTPUT rows, so up_proj is scaled on BOTH axes and its own quantization error changes. Only the block-level number is the real one.",
+  "fold_algebra": "gate' = Wg diag(s); up' = diag(1/t) Wu diag(s); down' = Wd diag(t); x' = x/s. Then gate'x' = gate, up'x' = up/t, h' = h/t, down'h' = down h. EXACT, zero runtime change and zero extra storage -- diag(1/s) folds into the RMSNorm weight and diag(1/t) into up_proj rows.",
+  "scales_fitted_on": "head slice of the capture; block scored on the disjoint tail slice",
+  "per_layer": [
+    {
+      "layer": 0,
+      "baseline_block_err": 0.19884085074632063,
+      "channel_scaled_block_err": 0.1790961225097865,
+      "fold_exactness_control": 1.3499768556357594e-06,
+      "ratio": 0.9007008461167555
+    },
+    {
+      "layer": 31,
+      "baseline_block_err": 0.3805550697860118,
+      "channel_scaled_block_err": 0.27086096502280144,
+      "fold_exactness_control": 1.8128122292182525e-06,
+      "ratio": 0.711752349469705
+    },
+    {
+      "layer": 63,
+      "baseline_block_err": 0.28839353690740577,
+      "channel_scaled_block_err": 0.22330178685788918,
+      "fold_exactness_control": 1.4686401073049637e-06,
+      "ratio": 0.7742953925128512
+    }
+  ],
+  "baseline_mean": 0.28926315247991274,
+  "channel_scaled_mean": 0.22441962479682567,
+  "ratio": 0.775832050756655,
+  "fold_exactness_control_max": 1.8128122292182525e-06,
+  "commit": "45843a99bdd871432b722bfabc2d9755e8e2a668"
+}
