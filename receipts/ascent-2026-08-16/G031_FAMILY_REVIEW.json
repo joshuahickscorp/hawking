@@ -18,17 +18,16 @@
       "obligation": "G0 baseline / incumbent",
       "verdict": "SURVIVES",
       "defects_found": {
+        "rank_deficient_capture": "N/A for the FIT -- absmax group quantization fits nothing against activations. For the EVALUATION it is assessed and CLEAN: the function-space ranking is identical across 256/1024/4096 captured rows and disjoint head/tail slices, max/min error ratio 1.047 (G031_CAPTURE_SAMPLING_STABILITY.json).",
+        "missing_sidecar": "NO. The f16 group scale is charged in every bits/elem figure (4.25, not 4.00), and the independent on-disk walk matches the accounting tool exactly.",
+        "goodhartable_metric": "NO, and it is the one family where all four instruments were made to agree independently: weight hold 0.993929, function-space output error 0.08396, capability 10/10 with the negative control watched failing 0/10, and greedy divergence as the reference with its determinism control at 32/32 identical. A metric that could be won without the capability would have to fool all four.",
         "hidden_cost": "88% of the 699.57 GB/s kernel roof at 0.810 ps/element -- it sits ON the bandwidth/ALU balance point, which is why it is hard to beat, not because it is efficient in bits.",
         "bytes_merely_moved": "NO. 4.255954555664 complete BPW confirmed by two independent accountings; declared and on-disk agree.",
         "kernel_different_math": "NO. greedy ids match the oracle; FALLBACKS 0, DENSE_W_MATERIALIZED 0.",
         "plausibility_masking": "NO. 10/10 with the negative control watched failing 0/10.",
         "narrow_test_distribution": "YES, ten deterministic items. Cannot separate 10/10 from 9/10."
       },
-      "defects_not_assessed": [
-        "rank_deficient_capture",
-        "goodhartable_metric",
-        "missing_sidecar"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "A wider battery (G126). Everything else about this family is measured.",
       "cites": [
         "receipts/ascent-2026-08-16/G029_PROTECTED_VERIFICATION.json",
@@ -41,6 +40,8 @@
       "obligation": "density floor",
       "verdict": "WEAKENED",
       "defects_found": {
+        "rank_deficient_capture": "N/A for the fit; the evaluation is sampling-stable, same check as q4.",
+        "goodhartable_metric": "NO, and it was actively checked: weight hold, function-space error and the capability gate all agree this artifact is coherent. The family's problem is speed, not a flattering metric.",
         "hidden_cost": "DECISIVE. Costs 5.6% more ALU per weight than its same-ABI q4 control while storing 25% fewer bytes, and runs at 63% of kernel roof against q4's 88%. End to end the artifact is 10.9% SLOWER than G0 on 17.4% fewer bytes. The byte saving is real and unrealizable.",
         "bytes_merely_moved": "PARTLY. Storage genuinely falls to 3.344821 BPW, verified two ways. But time does not follow, so the saving does not reach the user.",
         "plausibility_masking": "NO. 10/10, 0 degenerate, negative control watched failing.",
@@ -48,10 +49,7 @@
         "narrow_test_distribution": "YES, same ten items.",
         "missing_sidecar": "NO, once compacted. The UNCOMPACTED directory carried 5,659,352,471 bytes of superseded tensors inside live blobs and was quoted at its declared 3.344772 for weeks."
       },
-      "defects_not_assessed": [
-        "rank_deficient_capture",
-        "goodhartable_metric"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "Already settled on speed by CODEC_ALU_COST + DENSITY_LEADER_SPEED. What is NOT settled is whether a cheaper-to-decode 3-bit layout exists; the family is weakened by ITS CODEC, not by its bit width.",
       "cites": [
         "receipts/ascent-2026-08-16/DENSITY_LEADER_SPEED.json",
@@ -64,17 +62,16 @@
       "obligation": "explored, on record",
       "verdict": "KILLED",
       "defects_found": {
+        "rank_deficient_capture": "N/A for the fit; evaluation sampling-stable.",
+        "missing_sidecar": "NO, scales charged (2.25 bits/elem, not 2.00).",
+        "narrow_test_distribution": "Not the binding issue -- it fails at every width on every instrument: weight space, function space and the gate.",
+        "kernel_different_math": "N/A -- no q2 kernel was built; the family died before needing one.",
+        "bytes_merely_moved": "N/A -- it never reached a coherent artifact.",
         "plausibility_masking": "q2 attention is recorded fluent-but-wrong; q2 MLP dead.",
         "hidden_cost": "Even charging ZERO for compute it reaches only 97 TPS, so it cannot buy the mission target either.",
         "goodhartable_metric": "Hold at 0.772929 mean / 0.761303 min at group-64 -- far below the q3 0.968 class. Nothing to Goodhart; it simply fails."
       },
-      "defects_not_assessed": [
-        "rank_deficient_capture",
-        "missing_sidecar",
-        "narrow_test_distribution",
-        "kernel_different_math",
-        "bytes_merely_moved"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "Settled. Recorded as a bound, not a candidate.",
       "cites": [
         "receipts/ascent-2026-08-16/NX_TPS_FRONTIER.json",
@@ -86,17 +83,16 @@
       "obligation": "G114-G116, F1's density route",
       "verdict": "AT RISK -- UNREVIEWED ON ITS DECIDING AXIS",
       "defects_found": {
+        "rank_deficient_capture": "N/A -- lossless recoding of an existing symbol stream, no activation fit involved.",
+        "goodhartable_metric": "YES, structurally. Coded bits/elem is the metric this family optimizes and it is exactly the quantity that does NOT predict time on this machine (F5, F6). The L8/L32/L64 numbers are real and measure the wrong thing.",
+        "plausibility_masking": "N/A -- no artifact exists to generate from.",
+        "kernel_different_math": "N/A -- no kernel exists. That absence IS the family's open axis.",
         "hidden_cost": "UNMEASURED AND LIKELY FATAL. The measured budget is 0.810 ps/element: any codec spending more decode than that cannot convert its byte saving. rANS decode is a state multiply, a renormalize and a table lookup per symbol against a nibble's shift-mask-convert. q3 already blew the budget by 5.6% for a far cheaper unpack.",
         "missing_sidecar": "A shared frequency table plus per-block rANS state. Neither is in any BPW figure quoted for this family; the L8/L32/L64 numbers are CODED bits/elem, not complete BPW.",
         "bytes_merely_moved": "UNKNOWN until a consume-direct kernel exists. An expand-to-q3 staging buffer would move the bytes and keep the traffic.",
         "narrow_test_distribution": "The r-sweep grading (1.20 -> 10/10, 1.25 -> 9/10) is the same ten items; 9/10 there is not a measurement of anything."
       },
-      "defects_not_assessed": [
-        "rank_deficient_capture",
-        "goodhartable_metric",
-        "plausibility_masking",
-        "kernel_different_math"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "A STUB KERNEL that does rANS decode and nothing else, timed in ps/element against the 0.810 budget. This is the cheap half and it decides the expensive half. Building the packer first inverts the order.",
       "cites": [
         "receipts/ascent-2026-08-16/CODEC_ALU_COST.json",
@@ -108,17 +104,16 @@
       "obligation": "G129 joint optimizer",
       "verdict": "WEAKENED",
       "defects_found": {
+        "rank_deficient_capture": "N/A for the fit; evaluation sampling-stable.",
+        "missing_sidecar": "NO -- over-scaling changes the scale VALUE, not the count.",
+        "plausibility_masking": "Partly addressed: r=1.20 is realized in compact-q3attn-r1p2-v1 and gated 10/10 with the negative control watched failing. r>=1.25 has no gated artifact.",
+        "kernel_different_math": "NO for r=1.20 -- FALLBACKS 0 and DENSE_W_MATERIALIZED 0 on the native path.",
+        "bytes_merely_moved": "NO. MEASURED in function space: r=1.0 gives 0.19791 output error, r=2.5 gives 0.49449, r=3.0 gives 0.57835 which is EXACTLY the dead anchor. Over-scale buys coded bits by spending real function, along a measured curve.",
         "narrow_test_distribution": "The whole frontier -- 10/10, 9/10, 8/10, 6/10, 3/10 -- rests on ten deterministic items. The interesting region (1.20 vs 1.25) is one item wide.",
         "goodhartable_metric": "Over-scaling trades fidelity for a narrower symbol histogram, which is exactly a metric that improves coded bits while the thing being measured degrades. The A1 compiler law names this.",
         "hidden_cost": "r=1.20 is realized in compact-q3attn-r1p2-v1 and inherits that family's ALU problem; it is 29.90 TPS, slower than G0."
       },
-      "defects_not_assessed": [
-        "rank_deficient_capture",
-        "missing_sidecar",
-        "plausibility_masking",
-        "kernel_different_math",
-        "bytes_merely_moved"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "The wider battery (G126) applied to r=1.20 and r=1.25 side by side, with Tabula drift attached. Until then no promotion past r=1.20.",
       "cites": [
         "receipts/ascent-2026-08-16/DENSITY_LEADER_SPEED.json",
@@ -130,17 +125,16 @@
       "obligation": "G032",
       "verdict": "KILLED (this member)",
       "defects_found": {
+        "missing_sidecar": "NO -- Sylvester-Hadamard is generated from its size, zero stored bytes. Its cost is runtime, not storage, and that half is unpriced.",
+        "narrow_test_distribution": "Nine tensors, three depths, MLP only, weight space plus code entropy.",
+        "plausibility_masking": "N/A -- no artifact assembled.",
+        "kernel_different_math": "N/A -- no bound kernel; the FWHT was never built.",
         "hidden_cost": "Raises order-0 code entropy 0.0237-0.0334 bits/elem at every width, so under an entropy-coded route it is a net LOSS on bits. The runtime FWHT is additionally unpriced and lands on the ALU budget that is already binding.",
         "goodhartable_metric": "Improves hold by 0.6%-4% of a bit-step while raising the quantity that actually costs bytes. Improving hold alone would have looked like a win.",
         "bytes_merely_moved": "Worse: bytes go UP, function stays equal.",
         "rank_deficient_capture": "N/A -- weight-space transform, no activation fit involved."
       },
-      "defects_not_assessed": [
-        "missing_sidecar",
-        "narrow_test_distribution",
-        "plausibility_masking",
-        "kernel_different_math"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "Settled for Hadamard. The family is NOT settled: permutation, sign, channel scale, Kronecker and RoPE-commuting members are untested, and the ONE property Hadamard did deliver -- collapsing worst-case hold spread 185x, from 0.003139 to 0.000017 -- is worth chasing in a member that does not cost entropy.",
       "cites": [
         "receipts/ascent-2026-08-16/G032_XFORM_HADAMARD_Q3.json",
@@ -153,6 +147,8 @@
       "obligation": "G033",
       "verdict": "REFUTED AS A BODY CODEC, SURVIVES AS A DRAFT TIER",
       "defects_found": {
+        "rank_deficient_capture": "N/A for the fit -- greedy residual binarization is weight-space. The function-space evaluation that REFUTED it is sampling-stable across 12 conditions.",
+        "kernel_different_math": "NO -- the plane kernel was built and measured (0.620 / 0.684 / 1.001 ps/element for k=1/2/3), so its cost is a measurement rather than an estimate.",
         "goodhartable_metric": "DEMONSTRATED, AND IT CAUGHT US. Weight-space hold said 3 planes (0.971493) BEAT flat q3 (0.968397) and that 2 planes at 0.933975 sat close to q3. On REAL captured activations the ranking INVERTS: 3 planes cause 0.24128 output error against flat q3's 0.19791, at MORE bits, and 2 planes are at 0.33390 -- 69% worse than q3 and 0.357 of the way to dead q2. Weight cosine flattered this family and a promotion was drafted on it before the function-space check.",
         "hidden_cost": "NOT the problem here -- this family PASSES the ALU budget where q3 fails: one plane 0.620 ps/element and two 0.684 against a 0.8092 budget and q3's 0.867. It is fidelity, not speed, that kills it.",
         "missing_sidecar": "Counted throughout: k planes cost k*(1+16/g), and a finer group helps planes far LESS than flat codes (g64->g32 improves flat q3 by 11.2% and 2 planes by only 2.5%), because the plane residual is not scale-limited.",
@@ -160,10 +156,7 @@
         "narrow_test_distribution": "Six tensors, three depths, MLP only, 1024 captured rows each.",
         "plausibility_masking": "N/A -- no artifact was ever assembled, which is now the correct outcome rather than a gap."
       },
-      "defects_not_assessed": [
-        "rank_deficient_capture",
-        "kernel_different_math"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "SETTLED as a body codec: flat grouped quantization dominates the ladder at every point where coherence is plausible, in function space, at both group sizes tested. What SURVIVES both metrics is the sub-q2 regime -- one plane at 1.2500 bits causes LESS output error (0.52550) than flat q2 at 2.2500 (0.57835) while costing 0.620 ps/element. That regime is dead for a body codec and is exactly a DRAFT TIER profile, so this family should be re-aimed at G140/G141 (Matryoshka draft, self-speculative verify) rather than packed as a body.",
       "cites": [
         "receipts/ascent-2026-08-16/G033_PLANES_LADDER.json",
@@ -177,17 +170,16 @@
       "obligation": "G033 adjacent, prior campaign",
       "verdict": "WEAKENED",
       "defects_found": {
+        "goodhartable_metric": "YES, demonstrated. Parameter count and MAC count both fall -- MACs to 0.203x of dense -- which is what a factorization is usually sold on, while function-space error at IDENTICAL bits is 2.80x flat q3's (0.55674 vs 0.19879, G034_TENSOR_OPERATOR.json). Optimizing either headline number would have promoted it.",
+        "missing_sidecar": "NO -- both factors counted at f16 inside the matched-bit budget.",
+        "narrow_test_distribution": "Six tensors, three depths, MLP only.",
+        "plausibility_masking": "N/A -- removed from the shipped recipe, no artifact to generate from.",
+        "bytes_merely_moved": "NO -- bytes genuinely fall. Function falls faster.",
         "kernel_different_math": "The mixed pack's own claim_boundary records r160_b3_down_removed true -- the low-rank down_proj was TAKEN OUT of the shipped recipe. What is on disk is HGRAVU01, not the factor form.",
         "hidden_cost": "A rank-r factor is two GEMVs where there was one. On an ALU-bound kernel that is the wrong direction, and it was never priced in ps/element.",
         "rank_deficient_capture": "Prior campaign recorded fits underdetermined at median 92 rows against 2048 dims. Whether the thick v2 capture fixed this for THIS family is not established here."
       },
-      "defects_not_assessed": [
-        "goodhartable_metric",
-        "missing_sidecar",
-        "narrow_test_distribution",
-        "plausibility_masking",
-        "bytes_merely_moved"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "ps/element for a rank-r factor GEMV pair against the 0.810 budget, and a statement of which artifact if any still contains the factor form.",
       "cites": [
         "workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-q3attn-r1p2-v1/PACK_REPORT.json"
@@ -198,17 +190,16 @@
       "obligation": "G091, G141, F2",
       "verdict": "SURVIVES",
       "defects_found": {
+        "rank_deficient_capture": "N/A -- an execution primitive, nothing is fitted.",
+        "missing_sidecar": "N/A -- no stored representation; it changes how existing bytes are consumed.",
+        "narrow_test_distribution": "N/A for capability. The relevant width is the tile sweep: eight (R,K) tiles at two payload sizes.",
+        "plausibility_masking": "N/A -- produces numbers, not text.",
         "kernel_different_math": "NO. Two controls at exactly zero error: all-columns-identical reproduces the K=1 answer, and column k matches a dedicated K=1 run on that position.",
         "hidden_cost": "Register pressure is real and measured -- R=8 spills and loses. R=4 K=4 is the measured optimum at 2.57x.",
         "bytes_merely_moved": "NO. This moves FEWER bytes per token by construction; the sweep is amortized, not relocated.",
         "goodhartable_metric": "NO. The metric is wall time per position, which is the thing itself."
       },
-      "defects_not_assessed": [
-        "rank_deficient_capture",
-        "missing_sidecar",
-        "narrow_test_distribution",
-        "plausibility_masking"
-      ],
+      "defects_not_assessed": [],
       "settling_check": "It is a kernel primitive with controls, not a representation claim. What it still owes is a DRAFT: amortization is worthless without something to fill the K positions, and no draft tier exists.",
       "cites": [
         "receipts/ascent-2026-08-16/NX_MATMUL_K_AMORTIZATION.json"
@@ -217,5 +208,5 @@
   ],
   "broken_citations": [],
   "cross_cutting_finding": "Six of the nine families are limited by the SAME defect, and it is hidden_cost in the same currency: decode ALU per weight. CODEC_ALU_COST puts the budget at 0.810 ps/element, where q4 already sits at 88% of the bandwidth roof. Every family that buys bits by spending decode -- q3, rANS, planes, low-rank factors -- is spending the one resource that is already exhausted. The campaign has been selecting representations on bits while the machine charges in ops.",
-  "commit": "32a50a41815ed25b7b8562b7634c68dede7a7c87"
+  "commit": "be7a3f856157d4872f9eb00b92b706bf514d0c40"
 }

@@ -1,0 +1,54 @@
+{
+ "uniform grouped quantization (q4 group-64)": {
+  "rank_deficient_capture": "N/A for the FIT -- absmax group quantization fits nothing against activations. For the EVALUATION it is assessed and CLEAN: the function-space ranking is identical across 256/1024/4096 captured rows and disjoint head/tail slices, max/min error ratio 1.047 (G031_CAPTURE_SAMPLING_STABILITY.json).",
+  "missing_sidecar": "NO. The f16 group scale is charged in every bits/elem figure (4.25, not 4.00), and the independent on-disk walk matches the accounting tool exactly.",
+  "goodhartable_metric": "NO, and it is the one family where all four instruments were made to agree independently: weight hold 0.993929, function-space output error 0.08396, capability 10/10 with the negative control watched failing 0/10, and greedy divergence as the reference with its determinism control at 32/32 identical. A metric that could be won without the capability would have to fool all four."
+ },
+ "mixed per-organ quantization (q3 MLP + q3 attention, q4 endpoints)": {
+  "rank_deficient_capture": "N/A for the fit; the evaluation is sampling-stable, same check as q4.",
+  "goodhartable_metric": "NO, and it was actively checked: weight hold, function-space error and the capability gate all agree this artifact is coherent. The family's problem is speed, not a flattering metric."
+ },
+ "uniform q2": {
+  "rank_deficient_capture": "N/A for the fit; evaluation sampling-stable.",
+  "missing_sidecar": "NO, scales charged (2.25 bits/elem, not 2.00).",
+  "narrow_test_distribution": "Not the binding issue -- it fails at every width on every instrument: weight space, function space and the gate.",
+  "kernel_different_math": "N/A -- no q2 kernel was built; the family died before needing one.",
+  "bytes_merely_moved": "N/A -- it never reached a coherent artifact."
+ },
+ "interleaved rANS entropy coding over a q3 body": {
+  "rank_deficient_capture": "N/A -- lossless recoding of an existing symbol stream, no activation fit involved.",
+  "goodhartable_metric": "YES, structurally. Coded bits/elem is the metric this family optimizes and it is exactly the quantity that does NOT predict time on this machine (F5, F6). The L8/L32/L64 numbers are real and measure the wrong thing.",
+  "plausibility_masking": "N/A -- no artifact exists to generate from.",
+  "kernel_different_math": "N/A -- no kernel exists. That absence IS the family's open axis."
+ },
+ "over-scale (r = 1.20 .. 1.50)": {
+  "rank_deficient_capture": "N/A for the fit; evaluation sampling-stable.",
+  "missing_sidecar": "NO -- over-scaling changes the scale VALUE, not the count.",
+  "plausibility_masking": "Partly addressed: r=1.20 is realized in compact-q3attn-r1p2-v1 and gated 10/10 with the negative control watched failing. r>=1.25 has no gated artifact.",
+  "kernel_different_math": "NO for r=1.20 -- FALLBACKS 0 and DENSE_W_MATERIALIZED 0 on the native path.",
+  "bytes_merely_moved": "NO. MEASURED in function space: r=1.0 gives 0.19791 output error, r=2.5 gives 0.49449, r=3.0 gives 0.57835 which is EXACTLY the dead anchor. Over-scale buys coded bits by spending real function, along a measured curve."
+ },
+ "G-XFORM structured transforms (Hadamard member)": {
+  "missing_sidecar": "NO -- Sylvester-Hadamard is generated from its size, zero stored bytes. Its cost is runtime, not storage, and that half is unpriced.",
+  "narrow_test_distribution": "Nine tensors, three depths, MLP only, weight space plus code entropy.",
+  "plausibility_masking": "N/A -- no artifact assembled.",
+  "kernel_different_math": "N/A -- no bound kernel; the FWHT was never built."
+ },
+ "G-PLANES progressive planes (W ~ s1*P1 + s2*P2 + ...)": {
+  "rank_deficient_capture": "N/A for the fit -- greedy residual binarization is weight-space. The function-space evaluation that REFUTED it is sampling-stable across 12 conditions.",
+  "kernel_different_math": "NO -- the plane kernel was built and measured (0.620 / 0.684 / 1.001 ps/element for k=1/2/3), so its cost is a measurement rather than an estimate."
+ },
+ "low-rank factor (HGRAVS01 r160 / r192)": {
+  "goodhartable_metric": "YES, demonstrated. Parameter count and MAC count both fall -- MACs to 0.203x of dense -- which is what a factorization is usually sold on, while function-space error at IDENTICAL bits is 2.80x flat q3's (0.55674 vs 0.19879, G034_TENSOR_OPERATOR.json). Optimizing either headline number would have promoted it.",
+  "missing_sidecar": "NO -- both factors counted at f16 inside the matched-bit budget.",
+  "narrow_test_distribution": "Six tensors, three depths, MLP only.",
+  "plausibility_masking": "N/A -- removed from the shipped recipe, no artifact to generate from.",
+  "bytes_merely_moved": "NO -- bytes genuinely fall. Function falls faster."
+ },
+ "multi-token / R x K weight-sweep amortization": {
+  "rank_deficient_capture": "N/A -- an execution primitive, nothing is fitted.",
+  "missing_sidecar": "N/A -- no stored representation; it changes how existing bytes are consumed.",
+  "narrow_test_distribution": "N/A for capability. The relevant width is the tile sweep: eight (R,K) tiles at two payload sizes.",
+  "plausibility_masking": "N/A -- produces numbers, not text."
+ }
+}

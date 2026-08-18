@@ -1,0 +1,180 @@
+{
+  "schema": "hawking.nos.capture_sampling_stability.v1",
+  "obligation": "G031 defect: rank_deficient_capture / narrow sampling, applied to THIS campaign's own instrument",
+  "method": "Same codecs, same tensors, output error recomputed over 256/1024/4096 captured rows taken from the HEAD and the TAIL of each capture file. If the ranking moves with the sample, every function-space verdict in this ledger is undermined.",
+  "conditions": [
+    {
+      "layer": 31,
+      "organ": "gate_proj",
+      "rows": 256,
+      "slice": "head",
+      "errors": {
+        "flat q2": 0.6394240341331342,
+        "flat q3": 0.21487963794236126,
+        "flat q4": 0.0912314949449195,
+        "1 plane": 0.4854401648044586,
+        "2 planes": 0.3190574645996094
+      },
+      "rows_available": 6827
+    },
+    {
+      "layer": 31,
+      "organ": "gate_proj",
+      "rows": 256,
+      "slice": "tail",
+      "errors": {
+        "flat q2": 0.6516967703628804,
+        "flat q3": 0.21811418759461285,
+        "flat q4": 0.09237569161021049,
+        "1 plane": 0.47859883308410645,
+        "2 planes": 0.3167896270751953
+      },
+      "rows_available": 6827
+    },
+    {
+      "layer": 31,
+      "organ": "gate_proj",
+      "rows": 1024,
+      "slice": "head",
+      "errors": {
+        "flat q2": 0.6462130424193828,
+        "flat q3": 0.21840955821152128,
+        "flat q4": 0.09265750496931974,
+        "1 plane": 0.4832437336444855,
+        "2 planes": 0.3191823959350586
+      },
+      "rows_available": 6827
+    },
+    {
+      "layer": 31,
+      "organ": "gate_proj",
+      "rows": 1024,
+      "slice": "tail",
+      "errors": {
+        "flat q2": 0.652122914488114,
+        "flat q3": 0.21892041481835295,
+        "flat q4": 0.09273531611665875,
+        "1 plane": 0.47857481241226196,
+        "2 planes": 0.31665799021720886
+      },
+      "rows_available": 6827
+    },
+    {
+      "layer": 31,
+      "organ": "gate_proj",
+      "rows": 4096,
+      "slice": "head",
+      "errors": {
+        "flat q2": 0.6428194342037097,
+        "flat q3": 0.21661039062168017,
+        "flat q4": 0.09189429649234687,
+        "1 plane": 0.4834606647491455,
+        "2 planes": 0.31864264607429504
+      },
+      "rows_available": 6827
+    },
+    {
+      "layer": 31,
+      "organ": "gate_proj",
+      "rows": 4096,
+      "slice": "tail",
+      "errors": {
+        "flat q2": 0.6453376117194944,
+        "flat q3": 0.21724210434160043,
+        "flat q4": 0.09211794076152412,
+        "1 plane": 0.482097327709198,
+        "2 planes": 0.3180299997329712
+      },
+      "rows_available": 6827
+    },
+    {
+      "layer": 31,
+      "organ": "down_proj",
+      "rows": 256,
+      "slice": "head",
+      "errors": {
+        "flat q2": 0.6306755702509584,
+        "flat q3": 0.2230804989260128,
+        "flat q4": 0.0954305497735779,
+        "1 plane": 0.5656567215919495,
+        "2 planes": 0.3443896770477295
+      },
+      "rows_available": 23216
+    },
+    {
+      "layer": 31,
+      "organ": "down_proj",
+      "rows": 256,
+      "slice": "tail",
+      "errors": {
+        "flat q2": 0.643266576404619,
+        "flat q3": 0.2283964021062582,
+        "flat q4": 0.09786461632075606,
+        "1 plane": 0.5744480490684509,
+        "2 planes": 0.35279935598373413
+      },
+      "rows_available": 23216
+    },
+    {
+      "layer": 31,
+      "organ": "down_proj",
+      "rows": 1024,
+      "slice": "head",
+      "errors": {
+        "flat q2": 0.6189110923601379,
+        "flat q3": 0.2186588876702371,
+        "flat q4": 0.0934969845289223,
+        "1 plane": 0.558837890625,
+        "2 planes": 0.3395276963710785
+      },
+      "rows_available": 23216
+    },
+    {
+      "layer": 31,
+      "organ": "down_proj",
+      "rows": 1024,
+      "slice": "tail",
+      "errors": {
+        "flat q2": 0.6445289909140228,
+        "flat q3": 0.2288499521985897,
+        "flat q4": 0.09793262202242563,
+        "1 plane": 0.5746046304702759,
+        "2 planes": 0.35244518518447876
+      },
+      "rows_available": 23216
+    },
+    {
+      "layer": 31,
+      "organ": "down_proj",
+      "rows": 4096,
+      "slice": "head",
+      "errors": {
+        "flat q2": 0.6234154902303549,
+        "flat q3": 0.22040236930281376,
+        "flat q4": 0.09424912329479229,
+        "1 plane": 0.5619232654571533,
+        "2 planes": 0.34186071157455444
+      },
+      "rows_available": 23216
+    },
+    {
+      "layer": 31,
+      "organ": "down_proj",
+      "rows": 4096,
+      "slice": "tail",
+      "errors": {
+        "flat q2": 0.6353914597642865,
+        "flat q3": 0.22535565519408587,
+        "flat q4": 0.096436668273098,
+        "1 plane": 0.5672339200973511,
+        "2 planes": 0.34487012028694153
+      },
+      "rows_available": 23216
+    }
+  ],
+  "stable_per_organ": {
+    "gate_proj": 1,
+    "down_proj": 1
+  },
+  "commit": "be7a3f856157d4872f9eb00b92b706bf514d0c40"
+}

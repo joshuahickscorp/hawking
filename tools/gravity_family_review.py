@@ -30,11 +30,21 @@ D = ["rank_deficient_capture", "goodhartable_metric", "hidden_cost", "missing_si
 
 
 def fam(name, obligation, verdict, defects, settles, cites):
+    """Every family must carry a verdict for all eight defects.
+
+    "not assessed" and "does not apply" are different claims and the obligation
+    asks for the second, so N/A verdicts live in NOT_APPLICABLE below with their
+    reason attached rather than being left as silent gaps.
+    """
+    defects = {**NOT_APPLICABLE.get(name, {}), **defects}
     unknown = [d for d in D if d not in defects]
     return {"family": name, "obligation": obligation, "verdict": verdict,
             "defects_found": defects, "defects_not_assessed": unknown,
             "settling_check": settles, "cites": cites}
 
+
+NOT_APPLICABLE = json.loads(pathlib.Path(__file__).with_name(
+    "gravity_family_review_na.json").read_text())
 
 FAMILIES = [
  fam("uniform grouped quantization (q4 group-64)", "G0 baseline / incumbent", "SURVIVES",
