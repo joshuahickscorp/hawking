@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.nos.prefix_partial_evaluation.v1",
+  "obligation": "G082 -- constant-fold the fixed prefix, beyond ordinary KV caching",
+  "prize_measured_on_a_real_agent_prefix": {
+    "prefix": "system prompt with operating rules and ten tool signatures, the shape an agent actually carries; 2706 characters, 688 prompt tokens including the task",
+    "short": {
+      "prompt_len": 31,
+      "ms": 30.606,
+      "tps": 32.67
+    },
+    "with_prefix": {
+      "prompt_len": 688,
+      "ms": 34.99,
+      "tps": 28.58
+    },
+    "delta_ms_per_token": 4.384,
+    "context_tokens": 657,
+    "us_per_context_token": 6.672754946727549,
+    "prefix_share_of_every_token_pct": 12.529294084024006,
+    "tps_cost_pct": 12.519130700948894,
+    "statement": "A 688-token agent prefix costs 4.384 ms of EVERY token, forever -- 12.5% of the token and 12.5% of throughput. This is the quantity the obligation exists to attack."
+  },
+  "independent_confirmation": "the implied slope is 6.673 us per context token against G060's 6.971 measured on a different prompt set at different lengths -- 4.3% apart. Two independent prompts, one slope.",
+  "what_ordinary_kv_caching_already_gets": "the PREFILL: 688 prompt tokens at the unbatched ~40 ms/token this runtime still pays is roughly 27 seconds, one time. That is real but it is ordinary KV caching and this obligation explicitly asks for what lies BEYOND it. The 4.384 ms/token above is what KV caching does NOT remove, because attention re-reads the cached prefix on every single token.",
+  "bound_on_the_mechanism": {
+    "feature_dimension_route": "the prefix's K can be carried in its own subspace rather than at full head_dim. G061 measured K's effective rank at 147 of 256 at 99% energy, so this route is bounded at 1.74x on the context term: 4.384 -> 2.517 ms, a token of 33.123 ms and 30.19 TPS. Worth +1.61 TPS on this prefix.",
+    "position_count_route_NOT_measured": "reducing the NUMBER of prefix positions -- landmark or Nystrom summarisation -- is the only route that could beat that bound, because scores are exactly preserved under a feature-space projection but the softmax still runs over every position. It needs the prefix's actual K/V, which requires a capture on this prefix, and it is NOT measured here.",
+    "why_the_feature_route_cannot_do_better": "q . k_s is exactly preserved when every k_s lies in an r-dim subspace, so the scores are unchanged; but softmax must still normalise across all L positions. Projection reduces the cost per position, never the count."
+  },
+  "R_accounting_as_the_verify_demands": {
+    "full_prefix_kv_bytes": 90177536,
+    "low_rank_prefix_state_bytes": 51781632,
+    "reduction_pct": 42.578125,
+    "basis": "131072 bytes per position (16 GQA layers x 4 kv heads x 256 head_dim x K and V x f32), times 688 positions"
+  },
+  "status": "BLOCKED -- prize and bound measured, PREFIX_COMPILED_STATE not built",
+  "commit": "d46b8b6fcecdde246ff8d3c847b4ac397cee31e3"
+}
