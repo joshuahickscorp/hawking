@@ -42,7 +42,10 @@ def main():
     ap.add_argument("--artifact", action="append",
                     default=None)
     ap.add_argument("--contexts", default="4096,32768,131072")
-    ap.add_argument("--kv-bytes", type=int, default=2, help="f16 KV")
+    ap.add_argument("--kv-bytes", type=int, default=4,
+                    help="the cache is f32: qwen38_hybrid_decode.rs allocates f32b and "
+                         "mha.metal:605 reads device const float*. An earlier run of this "
+                         "tool defaulted to 2 (f16) and understated the state share by 2x.")
     a = ap.parse_args()
     arts = a.artifact or ["uniform-q4-v1", "compact-q3attn-r1p2-v1"]
     c = cfg()

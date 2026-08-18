@@ -1,0 +1,202 @@
+[
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 0,
+    "bits": 3,
+    "obj": "weight-space",
+    "gate": 0.8583678007125854,
+    "observed": 0.9775092601776123,
+    "probed": 0.9638259410858154,
+    "worst_unit": 0.8583678007125854
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 0,
+    "bits": 3,
+    "obj": "function",
+    "gate": 0.8912411332130432,
+    "observed": 0.9847012758255005,
+    "probed": 0.9756910800933838,
+    "worst_unit": 0.8912411332130432
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 0,
+    "bits": 4,
+    "obj": "weight-space",
+    "gate": 0.9638223052024841,
+    "observed": 0.9957338571548462,
+    "probed": 0.9930044412612915,
+    "worst_unit": 0.9638223052024841
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 0,
+    "bits": 4,
+    "obj": "function",
+    "gate": 0.9663859009742737,
+    "observed": 0.9962389469146729,
+    "probed": 0.9939014911651611,
+    "worst_unit": 0.9663859009742737
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "bits": 3,
+    "obj": "weight-space",
+    "gate": 0.6837282180786133,
+    "observed": 0.9711782336235046,
+    "probed": 0.962441086769104,
+    "worst_unit": 0.6837282180786133
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "bits": 3,
+    "obj": "function",
+    "gate": 0.7195166349411011,
+    "observed": 0.9818335175514221,
+    "probed": 0.974753201007843,
+    "worst_unit": 0.7195166349411011
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "bits": 4,
+    "obj": "weight-space",
+    "gate": 0.9228121638298035,
+    "observed": 0.9944912195205688,
+    "probed": 0.9927413463592529,
+    "worst_unit": 0.9228121638298035
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "bits": 4,
+    "obj": "function",
+    "gate": 0.9480996131896973,
+    "observed": 0.9953722953796387,
+    "probed": 0.9936411380767822,
+    "worst_unit": 0.9480996131896973
+  },
+  {
+    "cls": "mlp.up_proj",
+    "layer": 47,
+    "bits": 3,
+    "obj": "weight-space",
+    "gate": 0.734259307384491,
+    "observed": 0.9620462656021118,
+    "probed": 0.962704062461853,
+    "worst_unit": 0.734259307384491
+  },
+  {
+    "cls": "mlp.up_proj",
+    "layer": 47,
+    "bits": 3,
+    "obj": "function",
+    "gate": 0.8823094367980957,
+    "observed": 0.9746628403663635,
+    "probed": 0.9749257564544678,
+    "worst_unit": 0.8823094367980957
+  },
+  {
+    "cls": "mlp.up_proj",
+    "layer": 47,
+    "bits": 4,
+    "obj": "weight-space",
+    "gate": 0.9430623054504395,
+    "observed": 0.9922045469284058,
+    "probed": 0.9927957057952881,
+    "worst_unit": 0.9430623054504395
+  },
+  {
+    "cls": "mlp.up_proj",
+    "layer": 47,
+    "bits": 4,
+    "obj": "function",
+    "gate": 0.9613231420516968,
+    "observed": 0.9933592081069946,
+    "probed": 0.9937245845794678,
+    "worst_unit": 0.9613231420516968
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "bits": 3,
+    "obj": "weight-space",
+    "gate": 0.6096852421760559,
+    "observed": 0.9801051616668701,
+    "probed": 0.9620730876922607,
+    "worst_unit": 0.6096852421760559
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "bits": 3,
+    "obj": "function",
+    "gate": 0.7322786450386047,
+    "observed": 0.985100507736206,
+    "probed": 0.9743055701255798,
+    "worst_unit": 0.7322786450386047
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "bits": 4,
+    "obj": "weight-space",
+    "gate": 0.9012750387191772,
+    "observed": 0.9959881901741028,
+    "probed": 0.9926630258560181,
+    "worst_unit": 0.9012750387191772
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "bits": 4,
+    "obj": "function",
+    "gate": 0.9246777892112732,
+    "observed": 0.9963687062263489,
+    "probed": 0.9935423135757446,
+    "worst_unit": 0.9246777892112732
+  },
+  {
+    "cls": "self_attn.v_proj",
+    "layer": 63,
+    "bits": 3,
+    "obj": "weight-space",
+    "gate": 0.6206715703010559,
+    "observed": 0.9903604984283447,
+    "probed": 0.944551944732666,
+    "worst_unit": 0.6206715703010559
+  },
+  {
+    "cls": "self_attn.v_proj",
+    "layer": 63,
+    "bits": 3,
+    "obj": "function",
+    "gate": 0.6699194312095642,
+    "observed": 0.9934886693954468,
+    "probed": 0.9619569182395935,
+    "worst_unit": 0.6699194312095642
+  },
+  {
+    "cls": "self_attn.v_proj",
+    "layer": 63,
+    "bits": 4,
+    "obj": "weight-space",
+    "gate": 0.9018481969833374,
+    "observed": 0.9979599714279175,
+    "probed": 0.9882702231407166,
+    "worst_unit": 0.9018481969833374
+  },
+  {
+    "cls": "self_attn.v_proj",
+    "layer": 63,
+    "bits": 4,
+    "obj": "function",
+    "gate": 0.9086953401565552,
+    "observed": 0.998259425163269,
+    "probed": 0.989757776260376,
+    "worst_unit": 0.9086953401565552
+  }
+]

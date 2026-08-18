@@ -1,0 +1,170 @@
+{
+  "tensor": "language_model.model.layers.31.self_attn.q_proj.weight",
+  "layer": 31,
+  "x_rank": 143,
+  "x_dim": 5120,
+  "results": [
+    {
+      "construction": "q4_g128 = REFERENCE (calibrates scale, cannot fail)",
+      "should_pass": true,
+      "incumbent_healthy": true,
+      "gate_healthy": true,
+      "observed": 0.9959988594055176,
+      "probed": 0.9926630258560181,
+      "worst_unit": 0.9018722176551819,
+      "ref": {
+        "observed": 0.9959988594055176,
+        "probed": 0.9926630258560181,
+        "worst_unit": 0.9018722176551819
+      },
+      "deficit": {
+        "observed": 0.020000000000000018,
+        "probed": 0.020000000000000018,
+        "worst_unit": 0.09999999999999998
+      },
+      "gate": 0.020000000000000018,
+      "worst_axis": "observed",
+      "healthy": true,
+      "mode": "relative"
+    },
+    {
+      "construction": "q6_g128 (INDEPENDENT POSITIVE, richer, must pass)",
+      "should_pass": true,
+      "incumbent_healthy": true,
+      "gate_healthy": true,
+      "observed": 0.9997919797897339,
+      "probed": 0.9996210336685181,
+      "worst_unit": 0.9944728016853333,
+      "ref": {
+        "observed": 0.9959988594055176,
+        "probed": 0.9926630258560181,
+        "worst_unit": 0.9018722176551819
+      },
+      "deficit": {
+        "observed": 0.023793120384216326,
+        "probed": 0.026958007812500018,
+        "worst_unit": 0.19260058403015134
+      },
+      "gate": 0.023793120384216326,
+      "worst_axis": "observed",
+      "healthy": true,
+      "mode": "relative"
+    },
+    {
+      "construction": "q2_g128 (INDEPENDENT NEGATIVE, honest but too cheap, must fail)",
+      "should_pass": false,
+      "incumbent_healthy": false,
+      "gate_healthy": false,
+      "observed": 0.8210409283638,
+      "probed": 0.7279559373855591,
+      "worst_unit": -0.286996066570282,
+      "ref": {
+        "observed": 0.9959988594055176,
+        "probed": 0.9926630258560181,
+        "worst_unit": 0.9018722176551819
+      },
+      "deficit": {
+        "observed": -0.1549579310417175,
+        "probed": -0.24470708847045897,
+        "worst_unit": -1.0888682842254638
+      },
+      "gate": -1.0888682842254638,
+      "worst_axis": "worst_unit",
+      "healthy": false,
+      "mode": "relative"
+    },
+    {
+      "construction": "visible_subspace_only",
+      "should_pass": false,
+      "incumbent_healthy": true,
+      "gate_healthy": false,
+      "observed": 0.9999983310699463,
+      "probed": 0.17704492807388306,
+      "worst_unit": -0.07131087779998779,
+      "ref": {
+        "observed": 0.9959988594055176,
+        "probed": 0.9926630258560181,
+        "worst_unit": 0.9018722176551819
+      },
+      "deficit": {
+        "observed": 0.02399947166442873,
+        "probed": -0.795618097782135,
+        "worst_unit": -0.8731830954551697
+      },
+      "gate": -0.8731830954551697,
+      "worst_axis": "worst_unit",
+      "healthy": false,
+      "mode": "relative"
+    },
+    {
+      "construction": "unseen_subspace_corruption",
+      "should_pass": false,
+      "incumbent_healthy": true,
+      "gate_healthy": false,
+      "observed": 0.9999967217445374,
+      "probed": 0.03204333782196045,
+      "worst_unit": -0.23629145324230194,
+      "ref": {
+        "observed": 0.9959988594055176,
+        "probed": 0.9926630258560181,
+        "worst_unit": 0.9018722176551819
+      },
+      "deficit": {
+        "observed": 0.023997862339019793,
+        "probed": -0.9406196880340576,
+        "worst_unit": -1.0381636708974837
+      },
+      "gate": -1.0381636708974837,
+      "worst_axis": "worst_unit",
+      "healthy": false,
+      "mode": "relative"
+    },
+    {
+      "construction": "critical_channel_deletion",
+      "should_pass": false,
+      "incumbent_healthy": true,
+      "gate_healthy": false,
+      "observed": 0.998236894607544,
+      "probed": 0.9993028044700623,
+      "worst_unit": 0.0,
+      "ref": {
+        "observed": 0.9959988594055176,
+        "probed": 0.9926630258560181,
+        "worst_unit": 0.9018722176551819
+      },
+      "deficit": {
+        "observed": 0.022238035202026385,
+        "probed": 0.026639778614044207,
+        "worst_unit": -0.8018722176551819
+      },
+      "gate": -0.8018722176551819,
+      "worst_axis": "worst_unit",
+      "healthy": false,
+      "mode": "relative"
+    },
+    {
+      "construction": "sparse_row_corruption (33 rows, stand-in for control path)",
+      "should_pass": false,
+      "incumbent_healthy": true,
+      "gate_healthy": false,
+      "observed": 0.9998024702072144,
+      "probed": 0.9996510744094849,
+      "worst_unit": 0.696687638759613,
+      "ref": {
+        "observed": 0.9959988594055176,
+        "probed": 0.9926630258560181,
+        "worst_unit": 0.9018722176551819
+      },
+      "deficit": {
+        "observed": 0.023803610801696795,
+        "probed": 0.026988048553466815,
+        "worst_unit": -0.10518457889556887
+      },
+      "gate": -0.10518457889556887,
+      "worst_axis": "worst_unit",
+      "healthy": false,
+      "mode": "relative"
+    }
+  ],
+  "failures": []
+}

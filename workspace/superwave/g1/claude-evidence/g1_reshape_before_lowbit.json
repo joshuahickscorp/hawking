@@ -1,0 +1,3918 @@
+{
+  "schema": "hawking.gravity1.reshape_before_lowbit.v1",
+  "host": "Hawking Apple M3 Ultra, CPU numpy, no GPU",
+  "N": 26895998464,
+  "group": 128,
+  "axis_margin": {
+    "observed": 0.02,
+    "probed": 0.02,
+    "worst_unit": 0.1
+  },
+  "source": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+  "capture_v1": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/activation-capture-v1",
+  "capture_v2": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/activation-capture-v2/parent_bf16",
+  "capture_v2_sha256_self": "6acdc97d1c408b43c409981633f74ab3fc18103299b53a62419c56c997b12229",
+  "c_uniform_twin_maxabs": 0.0,
+  "doctor_demo": "PASS",
+  "v1_cite_reproduction": {
+    "L58_binary_g128": {
+      "frob_cosine": 0.30057543857046587,
+      "mean_row_cosine": 0.5965465392520019,
+      "n_hold": 64,
+      "wall_s": 0.6085397499991814,
+      "protocol": "v1 hidden + silu(X@Wg.T)*(X@Wu.T) last 64; mlp-floor cosine=frob"
+    },
+    "L62_q2_g64_f16": {
+      "frob_cosine": 0.7529306708239832,
+      "mean_row_cosine": 0.7386499643325806,
+      "n_hold": 64,
+      "wall_s": 0.38325100000656676,
+      "protocol": "v1 hidden + silu(X@Wg.T)*(X@Wu.T) last 64; mlp-floor cosine=frob"
+    },
+    "L0_binary_g128": {
+      "frob_cosine": 0.9194765981323668,
+      "mean_row_cosine": 0.9258328548999475,
+      "n_hold": 64,
+      "wall_s": 0.5075049579900224,
+      "protocol": "v1 hidden + silu(X@Wg.T)*(X@Wu.T) last 64; mlp-floor cosine=frob"
+    },
+    "L62_q2_g128_f16": {
+      "frob_cosine": 0.7058188698328225,
+      "mean_row_cosine": 0.6839091181755066,
+      "n_hold": 64,
+      "wall_s": 0.37054041599913035,
+      "protocol": "v1 hidden + silu(X@Wg.T)*(X@Wu.T) last 64; mlp-floor cosine=frob"
+    }
+  },
+  "v1_first_pass_mean_row": {
+    "L58_binary_mean_row": 0.596546539252,
+    "L62_q2_g64_mean_row": 0.738649964333,
+    "L0_binary_mean_row": 0.9258328549
+  },
+  "tensors": [
+    {
+      "layer": 0,
+      "cls": "mlp.down_proj",
+      "tag": "down",
+      "site": "post_swiglu",
+      "rss_gb": 2.937,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.914738,
+          "probed": 0.798135,
+          "worst_unit": 0.504122,
+          "gate": -0.373641,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.06294874373626702,
+            "probed": -0.1746268503570556,
+            "worst_unit": -0.37364093754577643
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.37364093754577643,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.95615,
+          "probed": 0.897927,
+          "worst_unit": 0.753031,
+          "gate": -0.124732,
+          "healthy": false,
+          "wall_s": 0.33,
+          "deficit": {
+            "observed": -0.021536743736267017,
+            "probed": -0.07483485035705562,
+            "worst_unit": -0.12473193754577638
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.12473193754577638,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.783204,
+          "probed": 0.730472,
+          "worst_unit": 0.323535,
+          "gate": -0.554228,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.19448274373626706,
+            "probed": -0.24228985035705564,
+            "worst_unit": -0.5542279375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5542279375457764,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.91466,
+          "probed": 0.796311,
+          "worst_unit": 0.519016,
+          "gate": -0.358747,
+          "healthy": false,
+          "wall_s": 0.23,
+          "deficit": {
+            "observed": -0.06302674373626704,
+            "probed": -0.17645085035705566,
+            "worst_unit": -0.35874693754577636
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.35874693754577636,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.955913,
+          "probed": 0.896751,
+          "worst_unit": 0.754254,
+          "gate": -0.123509,
+          "healthy": false,
+          "wall_s": 0.45,
+          "deficit": {
+            "observed": -0.02177374373626706,
+            "probed": -0.07601085035705568,
+            "worst_unit": -0.12350893754577641
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.12350893754577641,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.785224,
+          "probed": 0.724493,
+          "worst_unit": 0.36281,
+          "gate": -0.514953,
+          "healthy": false,
+          "wall_s": 0.21,
+          "deficit": {
+            "observed": -0.19246274373626704,
+            "probed": -0.2482688503570556,
+            "worst_unit": -0.5149529375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5149529375457764,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.840398,
+          "probed": 0.750605,
+          "worst_unit": 0.206197,
+          "gate": -0.671566,
+          "healthy": false,
+          "wall_s": 0.21,
+          "deficit": {
+            "observed": -0.1372887437362671,
+            "probed": -0.22215685035705568,
+            "worst_unit": -0.6715659375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6715659375457764,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.876687,
+          "probed": 0.8822,
+          "worst_unit": 0.14921,
+          "gate": -0.728553,
+          "healthy": false,
+          "wall_s": 0.42,
+          "deficit": {
+            "observed": -0.10099974373626708,
+            "probed": -0.09056185035705566,
+            "worst_unit": -0.7285529375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7285529375457764,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.699734,
+          "probed": 0.677033,
+          "worst_unit": -0.242472,
+          "gate": -1.120235,
+          "healthy": false,
+          "wall_s": 0.13,
+          "deficit": {
+            "observed": -0.2779527437362671,
+            "probed": -0.29572885035705565,
+            "worst_unit": -1.1202349375457763
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1202349375457763,
+          "healthy_from_ref": false
+        },
+        "binary_awq1": {
+          "observed": 0.78548,
+          "probed": 0.624231,
+          "worst_unit": 0.359407,
+          "gate": -0.518356,
+          "healthy": false,
+          "wall_s": 0.23,
+          "deficit": {
+            "observed": -0.19220674373626712,
+            "probed": -0.34853085035705567,
+            "worst_unit": -0.5183559375457765
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5183559375457765,
+          "healthy_from_ref": false
+        },
+        "ternary_awq1": {
+          "observed": 0.830409,
+          "probed": 0.848368,
+          "worst_unit": -0.00838,
+          "gate": -0.886143,
+          "healthy": false,
+          "wall_s": 0.42,
+          "deficit": {
+            "observed": -0.14727774373626712,
+            "probed": -0.12439385035705564,
+            "worst_unit": -0.8861429375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8861429375457764,
+          "healthy_from_ref": false
+        },
+        "q2_awq1": {
+          "observed": 0.629309,
+          "probed": 0.57772,
+          "worst_unit": -0.309196,
+          "gate": -1.186959,
+          "healthy": false,
+          "wall_s": 0.18,
+          "deficit": {
+            "observed": -0.34837774373626706,
+            "probed": -0.39504185035705564,
+            "worst_unit": -1.1869589375457763
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1869589375457763,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.926546,
+          "probed": 0.744745,
+          "worst_unit": 0.439141,
+          "gate": -0.438622,
+          "healthy": false,
+          "wall_s": 0.84,
+          "deficit": {
+            "observed": -0.05114074373626709,
+            "probed": -0.22801685035705566,
+            "worst_unit": -0.4386219375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4386219375457764,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.960744,
+          "probed": 0.873406,
+          "worst_unit": 0.622192,
+          "gate": -0.255571,
+          "healthy": false,
+          "wall_s": 1.0,
+          "deficit": {
+            "observed": -0.01694274373626703,
+            "probed": -0.09935585035705563,
+            "worst_unit": -0.2555709375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2555709375457764,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.95238,
+          "probed": 0.869005,
+          "worst_unit": 0.753514,
+          "gate": -0.124249,
+          "healthy": false,
+          "wall_s": 2.55,
+          "deficit": {
+            "observed": -0.025306743736267068,
+            "probed": -0.10375685035705562,
+            "worst_unit": -0.12424893754577637
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.12424893754577637,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.95615,
+          "probed": 0.897927,
+          "worst_unit": 0.753031,
+          "gate": -0.124732,
+          "healthy": false,
+          "wall_s": 5.53,
+          "deficit": {
+            "observed": -0.021536743736267017,
+            "probed": -0.07483485035705562,
+            "worst_unit": -0.12473193754577638
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.12473193754577638,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.955715,
+          "probed": 0.898793,
+          "worst_unit": 0.778988,
+          "gate": -0.098775,
+          "healthy": false,
+          "wall_s": 2.59,
+          "deficit": {
+            "observed": -0.02197174373626709,
+            "probed": -0.0739688503570557,
+            "worst_unit": -0.09877493754577638
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.09877493754577638,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.960744,
+          "probed": 0.873406,
+          "worst_unit": 0.622192,
+          "gate": -0.255571,
+          "healthy": false,
+          "wall_s": 6.85,
+          "deficit": {
+            "observed": -0.01694274373626703,
+            "probed": -0.09935585035705563,
+            "worst_unit": -0.2555709375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2555709375457764,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.960918,
+          "probed": 0.871387,
+          "worst_unit": 0.629603,
+          "gate": -0.24816,
+          "healthy": false,
+          "wall_s": 1.07,
+          "deficit": {
+            "observed": -0.016768743736267022,
+            "probed": -0.10137485035705562,
+            "worst_unit": -0.24815993754577637
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.24815993754577637,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.926533,
+          "probed": 0.74258,
+          "worst_unit": 0.444498,
+          "gate": -0.433265,
+          "healthy": false,
+          "wall_s": 2.25,
+          "deficit": {
+            "observed": -0.05115374373626702,
+            "probed": -0.23018185035705563,
+            "worst_unit": -0.4332649375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4332649375457764,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.880356,
+          "probed": 0.824731,
+          "worst_unit": 0.210955,
+          "gate": -0.666808,
+          "healthy": false,
+          "wall_s": 3.67,
+          "deficit": {
+            "observed": -0.09733074373626704,
+            "probed": -0.14803085035705565,
+            "worst_unit": -0.6668079375457764
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6668079375457764,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.916465,
+          "probed": 0.673518,
+          "worst_unit": 0.472793,
+          "gate": -0.40497,
+          "healthy": false,
+          "wall_s": 4.81,
+          "deficit": {
+            "observed": -0.0612217437362671,
+            "probed": -0.2992438503570557,
+            "worst_unit": -0.40496993754577637
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.40496993754577637,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9976867437362671,
+        "probed": 0.9927618503570557,
+        "worst_unit": 0.9777629375457764,
+        "shape": [
+          5120,
+          17408
+        ],
+        "site": "post_swiglu",
+        "split": {
+          "fit_pool": 17412,
+          "hold_pool": 5804,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_prompt_official"
+        }
+      }
+    },
+    {
+      "layer": 31,
+      "cls": "mlp.down_proj",
+      "tag": "down",
+      "site": "post_swiglu",
+      "rss_gb": 9.931,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.826214,
+          "probed": 0.795761,
+          "worst_unit": 0.593775,
+          "gate": -0.28498,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.14829432605361936,
+            "probed": -0.17698207489395135,
+            "worst_unit": -0.28497969923019406
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.28497969923019406,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.914427,
+          "probed": 0.897527,
+          "worst_unit": 0.689902,
+          "gate": -0.188852,
+          "healthy": false,
+          "wall_s": 0.34,
+          "deficit": {
+            "observed": -0.06008132605361938,
+            "probed": -0.07521607489395143,
+            "worst_unit": -0.1888526992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.1888526992301941,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.774145,
+          "probed": 0.730617,
+          "worst_unit": 0.438831,
+          "gate": -0.439924,
+          "healthy": false,
+          "wall_s": 0.11,
+          "deficit": {
+            "observed": -0.2003633260536194,
+            "probed": -0.24212607489395144,
+            "worst_unit": -0.4399236992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4399236992301941,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.821625,
+          "probed": 0.792122,
+          "worst_unit": 0.591689,
+          "gate": -0.287066,
+          "healthy": false,
+          "wall_s": 0.23,
+          "deficit": {
+            "observed": -0.15288332605361932,
+            "probed": -0.1806210748939514,
+            "worst_unit": -0.2870656992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2870656992301941,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.911653,
+          "probed": 0.894901,
+          "worst_unit": 0.698385,
+          "gate": -0.180369,
+          "healthy": false,
+          "wall_s": 0.4,
+          "deficit": {
+            "observed": -0.06285532605361932,
+            "probed": -0.07784207489395145,
+            "worst_unit": -0.18036969923019408
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.18036969923019408,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.758869,
+          "probed": 0.714091,
+          "worst_unit": 0.38447,
+          "gate": -0.494285,
+          "healthy": false,
+          "wall_s": 0.14,
+          "deficit": {
+            "observed": -0.21563932605361935,
+            "probed": -0.25865207489395137,
+            "worst_unit": -0.49428469923019414
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.49428469923019414,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.781778,
+          "probed": 0.777521,
+          "worst_unit": 0.431672,
+          "gate": -0.447082,
+          "healthy": false,
+          "wall_s": 0.21,
+          "deficit": {
+            "observed": -0.1927303260536194,
+            "probed": -0.19522207489395138,
+            "worst_unit": -0.4470826992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4470826992301941,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.892744,
+          "probed": 0.887794,
+          "worst_unit": 0.678111,
+          "gate": -0.200644,
+          "healthy": false,
+          "wall_s": 0.41,
+          "deficit": {
+            "observed": -0.08176432605361938,
+            "probed": -0.08494907489395143,
+            "worst_unit": -0.2006436992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2006436992301941,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.658184,
+          "probed": 0.690005,
+          "worst_unit": 0.164515,
+          "gate": -0.71424,
+          "healthy": false,
+          "wall_s": 0.12,
+          "deficit": {
+            "observed": -0.3163243260536194,
+            "probed": -0.2827380748939514,
+            "worst_unit": -0.7142396992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7142396992301941,
+          "healthy_from_ref": false
+        },
+        "binary_awq1": {
+          "observed": 0.680413,
+          "probed": 0.716512,
+          "worst_unit": 0.165358,
+          "gate": -0.713396,
+          "healthy": false,
+          "wall_s": 0.22,
+          "deficit": {
+            "observed": -0.2940953260536193,
+            "probed": -0.25623107489395136,
+            "worst_unit": -0.7133966992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7133966992301941,
+          "healthy_from_ref": false
+        },
+        "ternary_awq1": {
+          "observed": 0.839147,
+          "probed": 0.865685,
+          "worst_unit": 0.565489,
+          "gate": -0.313266,
+          "healthy": false,
+          "wall_s": 0.42,
+          "deficit": {
+            "observed": -0.1353613260536194,
+            "probed": -0.10705807489395136,
+            "worst_unit": -0.3132656992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3132656992301941,
+          "healthy_from_ref": false
+        },
+        "q2_awq1": {
+          "observed": 0.555593,
+          "probed": 0.624515,
+          "worst_unit": 0.046984,
+          "gate": -0.83177,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.41891532605361936,
+            "probed": -0.34822807489395136,
+            "worst_unit": -0.8317706992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8317706992301941,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.83433,
+          "probed": 0.788245,
+          "worst_unit": 0.605049,
+          "gate": -0.273705,
+          "healthy": false,
+          "wall_s": 0.76,
+          "deficit": {
+            "observed": -0.14017832605361935,
+            "probed": -0.18449807489395142,
+            "worst_unit": -0.27370569923019417
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.27370569923019417,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.919584,
+          "probed": 0.893452,
+          "worst_unit": 0.731649,
+          "gate": -0.147106,
+          "healthy": false,
+          "wall_s": 1.06,
+          "deficit": {
+            "observed": -0.05492432605361941,
+            "probed": -0.07929107489395137,
+            "worst_unit": -0.14710569923019412
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.14710569923019412,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.909384,
+          "probed": 0.879913,
+          "worst_unit": 0.727488,
+          "gate": -0.151267,
+          "healthy": false,
+          "wall_s": 2.65,
+          "deficit": {
+            "observed": -0.0651243260536194,
+            "probed": -0.09283007489395145,
+            "worst_unit": -0.1512666992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.1512666992301941,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.914427,
+          "probed": 0.897527,
+          "worst_unit": 0.689902,
+          "gate": -0.188852,
+          "healthy": false,
+          "wall_s": 5.47,
+          "deficit": {
+            "observed": -0.06008132605361938,
+            "probed": -0.07521607489395143,
+            "worst_unit": -0.1888526992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.1888526992301941,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.91555,
+          "probed": 0.898386,
+          "worst_unit": 0.689175,
+          "gate": -0.18958,
+          "healthy": false,
+          "wall_s": 2.5,
+          "deficit": {
+            "observed": -0.05895832605361939,
+            "probed": -0.07435707489395138,
+            "worst_unit": -0.18957969923019413
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.18957969923019413,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.919584,
+          "probed": 0.893452,
+          "worst_unit": 0.731649,
+          "gate": -0.147106,
+          "healthy": false,
+          "wall_s": 6.22,
+          "deficit": {
+            "observed": -0.05492432605361941,
+            "probed": -0.07929107489395137,
+            "worst_unit": -0.14710569923019412
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.14710569923019412,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.916844,
+          "probed": 0.890754,
+          "worst_unit": 0.730906,
+          "gate": -0.147848,
+          "healthy": false,
+          "wall_s": 0.94,
+          "deficit": {
+            "observed": -0.057664326053619375,
+            "probed": -0.08198907489395135,
+            "worst_unit": -0.14784869923019417
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.14784869923019417,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.830049,
+          "probed": 0.784482,
+          "worst_unit": 0.597473,
+          "gate": -0.281281,
+          "healthy": false,
+          "wall_s": 1.73,
+          "deficit": {
+            "observed": -0.14445932605361933,
+            "probed": -0.18826107489395139,
+            "worst_unit": -0.2812816992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2812816992301941,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.901152,
+          "probed": 0.88295,
+          "worst_unit": 0.727713,
+          "gate": -0.151042,
+          "healthy": false,
+          "wall_s": 3.15,
+          "deficit": {
+            "observed": -0.07335632605361941,
+            "probed": -0.08979307489395139,
+            "worst_unit": -0.15104169923019406
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.15104169923019406,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.803973,
+          "probed": 0.763405,
+          "worst_unit": 0.519027,
+          "gate": -0.359727,
+          "healthy": false,
+          "wall_s": 4.44,
+          "deficit": {
+            "observed": -0.17053532605361932,
+            "probed": -0.2093380748939514,
+            "worst_unit": -0.3597276992301941
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3597276992301941,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9945083260536194,
+        "probed": 0.9927430748939514,
+        "worst_unit": 0.9787546992301941,
+        "shape": [
+          5120,
+          17408
+        ],
+        "site": "post_swiglu",
+        "split": {
+          "fit_pool": 17412,
+          "hold_pool": 5804,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_prompt_official"
+        }
+      }
+    },
+    {
+      "layer": 58,
+      "cls": "mlp.down_proj",
+      "tag": "down",
+      "site": "post_swiglu",
+      "rss_gb": 10.74,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.634721,
+          "probed": 0.797947,
+          "worst_unit": 0.206815,
+          "gate": -0.626718,
+          "healthy": false,
+          "wall_s": 0.16,
+          "deficit": {
+            "observed": -0.33898987551116944,
+            "probed": -0.1750519576339722,
+            "worst_unit": -0.6267183704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6267183704948426,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.772427,
+          "probed": 0.899129,
+          "worst_unit": 0.510584,
+          "gate": -0.322949,
+          "healthy": false,
+          "wall_s": 0.34,
+          "deficit": {
+            "observed": -0.20128387551116944,
+            "probed": -0.0738699576339722,
+            "worst_unit": -0.3229493704948425
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3229493704948425,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.806211,
+          "probed": 0.735423,
+          "worst_unit": 0.294822,
+          "gate": -0.538711,
+          "healthy": false,
+          "wall_s": 0.11,
+          "deficit": {
+            "observed": -0.1674998755111694,
+            "probed": -0.2375759576339721,
+            "worst_unit": -0.5387113704948425
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5387113704948425,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.618747,
+          "probed": 0.793822,
+          "worst_unit": 0.169625,
+          "gate": -0.663909,
+          "healthy": false,
+          "wall_s": 0.25,
+          "deficit": {
+            "observed": -0.35496387551116937,
+            "probed": -0.17917695763397212,
+            "worst_unit": -0.6639083704948425
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6639083704948425,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.769812,
+          "probed": 0.896656,
+          "worst_unit": 0.528925,
+          "gate": -0.304609,
+          "healthy": false,
+          "wall_s": 0.37,
+          "deficit": {
+            "observed": -0.20389887551116936,
+            "probed": -0.07634295763397214,
+            "worst_unit": -0.3046083704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3046083704948426,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.790593,
+          "probed": 0.724137,
+          "worst_unit": 0.295827,
+          "gate": -0.537707,
+          "healthy": false,
+          "wall_s": 0.12,
+          "deficit": {
+            "observed": -0.18311787551116943,
+            "probed": -0.24886195763397212,
+            "worst_unit": -0.5377063704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5377063704948426,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.401019,
+          "probed": 0.753416,
+          "worst_unit": -0.177237,
+          "gate": -1.01077,
+          "healthy": false,
+          "wall_s": 0.22,
+          "deficit": {
+            "observed": -0.5726918755111694,
+            "probed": -0.21958295763397218,
+            "worst_unit": -1.0107703704948425
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.0107703704948425,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.733054,
+          "probed": 0.882335,
+          "worst_unit": 0.106674,
+          "gate": -0.726859,
+          "healthy": false,
+          "wall_s": 0.4,
+          "deficit": {
+            "observed": -0.24065687551116943,
+            "probed": -0.09066395763397217,
+            "worst_unit": -0.7268593704948425
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7268593704948425,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.61605,
+          "probed": 0.6797,
+          "worst_unit": -0.107218,
+          "gate": -0.940752,
+          "healthy": false,
+          "wall_s": 0.13,
+          "deficit": {
+            "observed": -0.35766087551116943,
+            "probed": -0.2932989576339722,
+            "worst_unit": -0.9407513704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9407513704948426,
+          "healthy_from_ref": false
+        },
+        "binary_awq1": {
+          "observed": 0.452164,
+          "probed": 0.635444,
+          "worst_unit": -0.046351,
+          "gate": -0.879884,
+          "healthy": false,
+          "wall_s": 0.22,
+          "deficit": {
+            "observed": -0.5215468755111694,
+            "probed": -0.33755495763397214,
+            "worst_unit": -0.8798843704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8798843704948426,
+          "healthy_from_ref": false
+        },
+        "ternary_awq1": {
+          "observed": 0.64667,
+          "probed": 0.851124,
+          "worst_unit": 0.089942,
+          "gate": -0.743592,
+          "healthy": false,
+          "wall_s": 0.44,
+          "deficit": {
+            "observed": -0.32704087551116945,
+            "probed": -0.12187495763397216,
+            "worst_unit": -0.7435913704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7435913704948426,
+          "healthy_from_ref": false
+        },
+        "q2_awq1": {
+          "observed": 0.549078,
+          "probed": 0.61137,
+          "worst_unit": -0.312444,
+          "gate": -1.145977,
+          "healthy": false,
+          "wall_s": 0.12,
+          "deficit": {
+            "observed": -0.42463287551116946,
+            "probed": -0.3616289576339722,
+            "worst_unit": -1.1459773704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1459773704948426,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.879595,
+          "probed": 0.756213,
+          "worst_unit": 0.191137,
+          "gate": -0.642396,
+          "healthy": false,
+          "wall_s": 0.63,
+          "deficit": {
+            "observed": -0.0941158755111694,
+            "probed": -0.21678595763397213,
+            "worst_unit": -0.6423963704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6423963704948426,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.93503,
+          "probed": 0.88167,
+          "worst_unit": 0.412725,
+          "gate": -0.420808,
+          "healthy": false,
+          "wall_s": 1.06,
+          "deficit": {
+            "observed": -0.03868087551116939,
+            "probed": -0.0913289576339722,
+            "worst_unit": -0.42080837049484254
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.42080837049484254,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.923929,
+          "probed": 0.879088,
+          "worst_unit": 0.479637,
+          "gate": -0.353896,
+          "healthy": false,
+          "wall_s": 2.6,
+          "deficit": {
+            "observed": -0.049781875511169416,
+            "probed": -0.09391095763397217,
+            "worst_unit": -0.35389637049484257
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.35389637049484257,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.772427,
+          "probed": 0.899129,
+          "worst_unit": 0.510584,
+          "gate": -0.322949,
+          "healthy": false,
+          "wall_s": 5.36,
+          "deficit": {
+            "observed": -0.20128387551116944,
+            "probed": -0.0738699576339722,
+            "worst_unit": -0.3229493704948425
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3229493704948425,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.788394,
+          "probed": 0.899762,
+          "worst_unit": 0.607257,
+          "gate": -0.226276,
+          "healthy": false,
+          "wall_s": 2.36,
+          "deficit": {
+            "observed": -0.18531687551116938,
+            "probed": -0.0732369576339722,
+            "worst_unit": -0.2262763704948425
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2262763704948425,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.93503,
+          "probed": 0.88167,
+          "worst_unit": 0.412725,
+          "gate": -0.420808,
+          "healthy": false,
+          "wall_s": 6.44,
+          "deficit": {
+            "observed": -0.03868087551116939,
+            "probed": -0.0913289576339722,
+            "worst_unit": -0.42080837049484254
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.42080837049484254,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.932268,
+          "probed": 0.879707,
+          "worst_unit": 0.434463,
+          "gate": -0.399071,
+          "healthy": false,
+          "wall_s": 1.14,
+          "deficit": {
+            "observed": -0.04144287551116943,
+            "probed": -0.09329195763397213,
+            "worst_unit": -0.39907037049484256
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.39907037049484256,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.874333,
+          "probed": 0.750805,
+          "worst_unit": 0.212852,
+          "gate": -0.620682,
+          "healthy": false,
+          "wall_s": 2.31,
+          "deficit": {
+            "observed": -0.09937787551116939,
+            "probed": -0.2221939576339722,
+            "worst_unit": -0.6206813704948425
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6206813704948425,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.838447,
+          "probed": 0.869695,
+          "worst_unit": 0.205688,
+          "gate": -0.627845,
+          "healthy": false,
+          "wall_s": 3.6,
+          "deficit": {
+            "observed": -0.13526387551116936,
+            "probed": -0.10330395763397215,
+            "worst_unit": -0.6278453704948426
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6278453704948426,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.847206,
+          "probed": 0.699483,
+          "worst_unit": 0.49364,
+          "gate": -0.339893,
+          "healthy": false,
+          "wall_s": 4.62,
+          "deficit": {
+            "observed": -0.1265048755111694,
+            "probed": -0.2735159576339722,
+            "worst_unit": -0.33989337049484253
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.33989337049484253,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9937108755111694,
+        "probed": 0.9929989576339722,
+        "worst_unit": 0.9335333704948425,
+        "shape": [
+          5120,
+          17408
+        ],
+        "site": "post_swiglu",
+        "split": {
+          "fit_pool": 17412,
+          "hold_pool": 5804,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_prompt_official"
+        }
+      }
+    },
+    {
+      "layer": 62,
+      "cls": "mlp.down_proj",
+      "tag": "down",
+      "site": "post_swiglu",
+      "rss_gb": 10.74,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.800109,
+          "probed": 0.793082,
+          "worst_unit": 0.007449,
+          "gate": -0.832971,
+          "healthy": false,
+          "wall_s": 0.16,
+          "deficit": {
+            "observed": -0.1726549961242676,
+            "probed": -0.17941377522277835,
+            "worst_unit": -0.8329713295707702
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8329713295707702,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.888827,
+          "probed": 0.895631,
+          "worst_unit": 0.309737,
+          "gate": -0.530683,
+          "healthy": false,
+          "wall_s": 0.29,
+          "deficit": {
+            "observed": -0.08393699612426753,
+            "probed": -0.07686477522277835,
+            "worst_unit": -0.5306833295707702
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5306833295707702,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.681467,
+          "probed": 0.726383,
+          "worst_unit": -0.230958,
+          "gate": -1.071378,
+          "healthy": false,
+          "wall_s": 0.13,
+          "deficit": {
+            "observed": -0.2912969961242675,
+            "probed": -0.2461127752227783,
+            "worst_unit": -1.0713783295707704
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.0713783295707704,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.785559,
+          "probed": 0.779279,
+          "worst_unit": -0.029573,
+          "gate": -0.869993,
+          "healthy": false,
+          "wall_s": 0.23,
+          "deficit": {
+            "observed": -0.18720499612426755,
+            "probed": -0.19321677522277825,
+            "worst_unit": -0.8699933295707702
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8699933295707702,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.878795,
+          "probed": 0.887791,
+          "worst_unit": 0.499799,
+          "gate": -0.340621,
+          "healthy": false,
+          "wall_s": 0.39,
+          "deficit": {
+            "observed": -0.09396899612426757,
+            "probed": -0.0847047752227783,
+            "worst_unit": -0.3406213295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3406213295707703,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.608863,
+          "probed": 0.694204,
+          "worst_unit": -0.332516,
+          "gate": -1.172937,
+          "healthy": false,
+          "wall_s": 0.12,
+          "deficit": {
+            "observed": -0.3639009961242675,
+            "probed": -0.27829177522277826,
+            "worst_unit": -1.1729363295707702
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1729363295707702,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.645505,
+          "probed": 0.693664,
+          "worst_unit": -0.016722,
+          "gate": -0.857142,
+          "healthy": false,
+          "wall_s": 0.21,
+          "deficit": {
+            "observed": -0.32725899612426756,
+            "probed": -0.27883177522277836,
+            "worst_unit": -0.8571423295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8571423295707703,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.69216,
+          "probed": 0.849847,
+          "worst_unit": -0.199763,
+          "gate": -1.040183,
+          "healthy": false,
+          "wall_s": 0.37,
+          "deficit": {
+            "observed": -0.28060399612426756,
+            "probed": -0.12264877522277828,
+            "worst_unit": -1.0401833295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.0401833295707703,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.355713,
+          "probed": 0.606225,
+          "worst_unit": -0.476156,
+          "gate": -1.316576,
+          "healthy": false,
+          "wall_s": 0.16,
+          "deficit": {
+            "observed": -0.6170509961242676,
+            "probed": -0.3662707752227783,
+            "worst_unit": -1.3165763295707702
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.3165763295707702,
+          "healthy_from_ref": false
+        },
+        "binary_awq1": {
+          "observed": 0.66054,
+          "probed": 0.547915,
+          "worst_unit": 0.012859,
+          "gate": -0.827562,
+          "healthy": false,
+          "wall_s": 0.25,
+          "deficit": {
+            "observed": -0.31222399612426754,
+            "probed": -0.42458077522277826,
+            "worst_unit": -0.8275613295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8275613295707703,
+          "healthy_from_ref": false
+        },
+        "ternary_awq1": {
+          "observed": 0.532817,
+          "probed": 0.788825,
+          "worst_unit": -0.419619,
+          "gate": -1.26004,
+          "healthy": false,
+          "wall_s": 0.41,
+          "deficit": {
+            "observed": -0.4399469961242676,
+            "probed": -0.1836707752227783,
+            "worst_unit": -1.2600393295707704
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.2600393295707704,
+          "healthy_from_ref": false
+        },
+        "q2_awq1": {
+          "observed": 0.314197,
+          "probed": 0.509045,
+          "worst_unit": -0.521628,
+          "gate": -1.362048,
+          "healthy": false,
+          "wall_s": 0.14,
+          "deficit": {
+            "observed": -0.6585669961242675,
+            "probed": -0.46345077522277833,
+            "worst_unit": -1.3620483295707704
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.3620483295707704,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.848297,
+          "probed": 0.756106,
+          "worst_unit": 0.069711,
+          "gate": -0.770709,
+          "healthy": false,
+          "wall_s": 0.65,
+          "deficit": {
+            "observed": -0.12446699612426759,
+            "probed": -0.21638977522277836,
+            "worst_unit": -0.7707093295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7707093295707703,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.918545,
+          "probed": 0.877612,
+          "worst_unit": 0.444457,
+          "gate": -0.395964,
+          "healthy": false,
+          "wall_s": 1.04,
+          "deficit": {
+            "observed": -0.054218996124267615,
+            "probed": -0.09488377522277835,
+            "worst_unit": -0.3959633295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3959633295707703,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.892078,
+          "probed": 0.869567,
+          "worst_unit": 0.571137,
+          "gate": -0.269283,
+          "healthy": false,
+          "wall_s": 2.45,
+          "deficit": {
+            "observed": -0.08068599612426752,
+            "probed": -0.10292877522277832,
+            "worst_unit": -0.2692833295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2692833295707703,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.888827,
+          "probed": 0.895631,
+          "worst_unit": 0.309737,
+          "gate": -0.530683,
+          "healthy": false,
+          "wall_s": 5.59,
+          "deficit": {
+            "observed": -0.08393699612426753,
+            "probed": -0.07686477522277835,
+            "worst_unit": -0.5306833295707702
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5306833295707702,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.889358,
+          "probed": 0.896337,
+          "worst_unit": 0.54808,
+          "gate": -0.29234,
+          "healthy": false,
+          "wall_s": 2.34,
+          "deficit": {
+            "observed": -0.08340599612426758,
+            "probed": -0.07615877522277825,
+            "worst_unit": -0.2923403295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2923403295707703,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.918545,
+          "probed": 0.877612,
+          "worst_unit": 0.444457,
+          "gate": -0.395964,
+          "healthy": false,
+          "wall_s": 6.68,
+          "deficit": {
+            "observed": -0.054218996124267615,
+            "probed": -0.09488377522277835,
+            "worst_unit": -0.3959633295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3959633295707703,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.913608,
+          "probed": 0.869032,
+          "worst_unit": 0.484658,
+          "gate": -0.355762,
+          "healthy": false,
+          "wall_s": 1.25,
+          "deficit": {
+            "observed": -0.059155996124267585,
+            "probed": -0.10346377522277828,
+            "worst_unit": -0.3557623295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3557623295707703,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.839423,
+          "probed": 0.739524,
+          "worst_unit": 0.073915,
+          "gate": -0.766505,
+          "healthy": false,
+          "wall_s": 2.33,
+          "deficit": {
+            "observed": -0.13334099612426753,
+            "probed": -0.23297177522277834,
+            "worst_unit": -0.7665053295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7665053295707703,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.744233,
+          "probed": 0.814369,
+          "worst_unit": -0.089922,
+          "gate": -0.930342,
+          "healthy": false,
+          "wall_s": 3.55,
+          "deficit": {
+            "observed": -0.22853099612426753,
+            "probed": -0.1581267752227783,
+            "worst_unit": -0.9303423295707702
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9303423295707702,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.831234,
+          "probed": 0.645879,
+          "worst_unit": 0.201279,
+          "gate": -0.639141,
+          "healthy": false,
+          "wall_s": 4.49,
+          "deficit": {
+            "observed": -0.14152999612426753,
+            "probed": -0.3266167752227783,
+            "worst_unit": -0.6391413295707703
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6391413295707703,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9927639961242676,
+        "probed": 0.9924957752227783,
+        "worst_unit": 0.9404203295707703,
+        "shape": [
+          5120,
+          17408
+        ],
+        "site": "post_swiglu",
+        "split": {
+          "fit_pool": 17412,
+          "hold_pool": 5804,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_prompt_official"
+        }
+      }
+    },
+    {
+      "layer": 63,
+      "cls": "mlp.down_proj",
+      "tag": "down",
+      "site": "post_swiglu",
+      "rss_gb": 10.74,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.777085,
+          "probed": 0.782799,
+          "worst_unit": -0.473389,
+          "gate": -1.283672,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.19662909416198726,
+            "probed": -0.18890123202896114,
+            "worst_unit": -1.2836712542190551
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.2836712542190551,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.875324,
+          "probed": 0.888888,
+          "worst_unit": 0.389801,
+          "gate": -0.420481,
+          "healthy": false,
+          "wall_s": 0.32,
+          "deficit": {
+            "observed": -0.0983900941619873,
+            "probed": -0.08281223202896115,
+            "worst_unit": -0.4204812542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4204812542190552,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.720342,
+          "probed": 0.715112,
+          "worst_unit": -0.307824,
+          "gate": -1.118106,
+          "healthy": false,
+          "wall_s": 0.12,
+          "deficit": {
+            "observed": -0.25337209416198725,
+            "probed": -0.2565882320289612,
+            "worst_unit": -1.1181062542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1181062542190552,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.747825,
+          "probed": 0.743678,
+          "worst_unit": -0.490698,
+          "gate": -1.30098,
+          "healthy": false,
+          "wall_s": 0.22,
+          "deficit": {
+            "observed": -0.22588909416198732,
+            "probed": -0.2280222320289612,
+            "worst_unit": -1.3009802542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.3009802542190552,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.859522,
+          "probed": 0.868771,
+          "worst_unit": 0.119848,
+          "gate": -0.690434,
+          "healthy": false,
+          "wall_s": 0.39,
+          "deficit": {
+            "observed": -0.11419209416198728,
+            "probed": -0.1029292320289612,
+            "worst_unit": -0.6904342542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6904342542190552,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.618581,
+          "probed": 0.669498,
+          "worst_unit": -0.541906,
+          "gate": -1.352189,
+          "healthy": false,
+          "wall_s": 0.11,
+          "deficit": {
+            "observed": -0.35513309416198724,
+            "probed": -0.3022022320289611,
+            "worst_unit": -1.352188254219055
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.352188254219055,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.619933,
+          "probed": 0.610893,
+          "worst_unit": -0.417898,
+          "gate": -1.228181,
+          "healthy": false,
+          "wall_s": 0.28,
+          "deficit": {
+            "observed": -0.35378109416198733,
+            "probed": -0.36080723202896114,
+            "worst_unit": -1.2281802542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.2281802542190552,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.730039,
+          "probed": 0.820422,
+          "worst_unit": -0.428756,
+          "gate": -1.239038,
+          "healthy": false,
+          "wall_s": 0.42,
+          "deficit": {
+            "observed": -0.2436750941619873,
+            "probed": -0.15127823202896118,
+            "worst_unit": -1.2390382542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.2390382542190552,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.410345,
+          "probed": 0.581535,
+          "worst_unit": -0.67712,
+          "gate": -1.487402,
+          "healthy": false,
+          "wall_s": 0.12,
+          "deficit": {
+            "observed": -0.5633690941619873,
+            "probed": -0.39016523202896114,
+            "worst_unit": -1.4874022542190553
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.4874022542190553,
+          "healthy_from_ref": false
+        },
+        "binary_awq1": {
+          "observed": 0.673777,
+          "probed": 0.479274,
+          "worst_unit": -0.241121,
+          "gate": -1.051404,
+          "healthy": false,
+          "wall_s": 0.24,
+          "deficit": {
+            "observed": -0.2999370941619873,
+            "probed": -0.4924262320289612,
+            "worst_unit": -1.0514032542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.0514032542190552,
+          "healthy_from_ref": false
+        },
+        "ternary_awq1": {
+          "observed": 0.585937,
+          "probed": 0.752666,
+          "worst_unit": -0.563759,
+          "gate": -1.374042,
+          "healthy": false,
+          "wall_s": 0.37,
+          "deficit": {
+            "observed": -0.38777709416198725,
+            "probed": -0.21903423202896122,
+            "worst_unit": -1.3740412542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.3740412542190552,
+          "healthy_from_ref": false
+        },
+        "q2_awq1": {
+          "observed": 0.256947,
+          "probed": 0.475193,
+          "worst_unit": -0.586785,
+          "gate": -1.397067,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.7167670941619873,
+            "probed": -0.4965072320289612,
+            "worst_unit": -1.3970672542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.3970672542190552,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.840238,
+          "probed": 0.711417,
+          "worst_unit": -0.292607,
+          "gate": -1.10289,
+          "healthy": false,
+          "wall_s": 1.01,
+          "deficit": {
+            "observed": -0.13347609416198725,
+            "probed": -0.2602832320289612,
+            "worst_unit": -1.1028892542190551
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1028892542190551,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.929268,
+          "probed": 0.857478,
+          "worst_unit": 0.593036,
+          "gate": -0.217246,
+          "healthy": false,
+          "wall_s": 0.92,
+          "deficit": {
+            "observed": -0.044446094161987304,
+            "probed": -0.1142222320289612,
+            "worst_unit": -0.2172462542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2172462542190552,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.910918,
+          "probed": 0.851714,
+          "worst_unit": 0.372425,
+          "gate": -0.437857,
+          "healthy": false,
+          "wall_s": 2.36,
+          "deficit": {
+            "observed": -0.06279609416198728,
+            "probed": -0.11998623202896119,
+            "worst_unit": -0.4378572542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4378572542190552,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.875324,
+          "probed": 0.888888,
+          "worst_unit": 0.389801,
+          "gate": -0.420481,
+          "healthy": false,
+          "wall_s": 5.28,
+          "deficit": {
+            "observed": -0.0983900941619873,
+            "probed": -0.08281223202896115,
+            "worst_unit": -0.4204812542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4204812542190552,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.882068,
+          "probed": 0.890486,
+          "worst_unit": 0.326931,
+          "gate": -0.483351,
+          "healthy": false,
+          "wall_s": 2.39,
+          "deficit": {
+            "observed": -0.09164609416198732,
+            "probed": -0.08121423202896116,
+            "worst_unit": -0.48335125421905517
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.48335125421905517,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.929268,
+          "probed": 0.857478,
+          "worst_unit": 0.593036,
+          "gate": -0.217246,
+          "healthy": false,
+          "wall_s": 6.74,
+          "deficit": {
+            "observed": -0.044446094161987304,
+            "probed": -0.1142222320289612,
+            "worst_unit": -0.2172462542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2172462542190552,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.919208,
+          "probed": 0.836204,
+          "worst_unit": 0.428126,
+          "gate": -0.382156,
+          "healthy": false,
+          "wall_s": 1.17,
+          "deficit": {
+            "observed": -0.05450609416198726,
+            "probed": -0.13549623202896122,
+            "worst_unit": -0.3821562542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3821562542190552,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.823122,
+          "probed": 0.664417,
+          "worst_unit": -0.296628,
+          "gate": -1.10691,
+          "healthy": false,
+          "wall_s": 2.15,
+          "deficit": {
+            "observed": -0.15059209416198727,
+            "probed": -0.30728323202896113,
+            "worst_unit": -1.1069102542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1069102542190552,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.782598,
+          "probed": 0.745915,
+          "worst_unit": -0.140135,
+          "gate": -0.950417,
+          "healthy": false,
+          "wall_s": 3.44,
+          "deficit": {
+            "observed": -0.19111609416198727,
+            "probed": -0.22578523202896117,
+            "worst_unit": -0.9504172542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9504172542190552,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.860607,
+          "probed": 0.53125,
+          "worst_unit": 0.187018,
+          "gate": -0.623265,
+          "healthy": false,
+          "wall_s": 4.45,
+          "deficit": {
+            "observed": -0.11310709416198728,
+            "probed": -0.44045023202896116,
+            "worst_unit": -0.6232642542190552
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6232642542190552,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9937140941619873,
+        "probed": 0.9917002320289612,
+        "worst_unit": 0.9102822542190552,
+        "shape": [
+          5120,
+          17408
+        ],
+        "site": "post_swiglu",
+        "split": {
+          "fit_pool": 17412,
+          "hold_pool": 5804,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_prompt_official"
+        }
+      }
+    },
+    {
+      "layer": 0,
+      "cls": "mlp.gate_proj",
+      "tag": "gate",
+      "site": "post_attn_norm",
+      "rss_gb": 10.913,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.854042,
+          "probed": 0.798573,
+          "worst_unit": 0.25314,
+          "gate": -0.610682,
+          "healthy": false,
+          "wall_s": 0.16,
+          "deficit": {
+            "observed": -0.12157598572540285,
+            "probed": -0.1744314412612915,
+            "worst_unit": -0.6106823052024841
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6106823052024841,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.929839,
+          "probed": 0.899273,
+          "worst_unit": 0.272932,
+          "gate": -0.59089,
+          "healthy": false,
+          "wall_s": 0.29,
+          "deficit": {
+            "observed": -0.04577898572540284,
+            "probed": -0.0737314412612915,
+            "worst_unit": -0.5908903052024841
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5908903052024841,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.811132,
+          "probed": 0.737866,
+          "worst_unit": 0.286029,
+          "gate": -0.577793,
+          "healthy": false,
+          "wall_s": 0.11,
+          "deficit": {
+            "observed": -0.16448598572540285,
+            "probed": -0.23513844126129146,
+            "worst_unit": -0.5777933052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5777933052024842,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.845671,
+          "probed": 0.797799,
+          "worst_unit": 0.320256,
+          "gate": -0.543567,
+          "healthy": false,
+          "wall_s": 0.19,
+          "deficit": {
+            "observed": -0.12994698572540286,
+            "probed": -0.17520544126129145,
+            "worst_unit": -0.5435663052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5435663052024842,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.927463,
+          "probed": 0.898923,
+          "worst_unit": 0.375764,
+          "gate": -0.488059,
+          "healthy": false,
+          "wall_s": 0.38,
+          "deficit": {
+            "observed": -0.04815498572540278,
+            "probed": -0.07408144126129146,
+            "worst_unit": -0.48805830520248417
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.48805830520248417,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.804708,
+          "probed": 0.737538,
+          "worst_unit": 0.231258,
+          "gate": -0.632564,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.17090998572540284,
+            "probed": -0.23546644126129146,
+            "worst_unit": -0.6325643052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6325643052024842,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.74679,
+          "probed": 0.781706,
+          "worst_unit": -0.111502,
+          "gate": -0.975324,
+          "healthy": false,
+          "wall_s": 0.23,
+          "deficit": {
+            "observed": -0.22882798572540286,
+            "probed": -0.19129844126129147,
+            "worst_unit": -0.9753243052024841
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9753243052024841,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.896088,
+          "probed": 0.893667,
+          "worst_unit": 0.465984,
+          "gate": -0.397838,
+          "healthy": false,
+          "wall_s": 0.35,
+          "deficit": {
+            "observed": -0.07952998572540282,
+            "probed": -0.0793374412612915,
+            "worst_unit": -0.39783830520248414
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.39783830520248414,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.729276,
+          "probed": 0.722218,
+          "worst_unit": -0.040879,
+          "gate": -0.904702,
+          "healthy": false,
+          "wall_s": 0.16,
+          "deficit": {
+            "observed": -0.24634198572540278,
+            "probed": -0.25078644126129146,
+            "worst_unit": -0.9047013052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9047013052024842,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.862619,
+          "probed": 0.784451,
+          "worst_unit": 0.284,
+          "gate": -0.579822,
+          "healthy": false,
+          "wall_s": 0.7,
+          "deficit": {
+            "observed": -0.11299898572540279,
+            "probed": -0.18855344126129148,
+            "worst_unit": -0.5798223052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5798223052024842,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.934451,
+          "probed": 0.892308,
+          "worst_unit": 0.174113,
+          "gate": -0.689709,
+          "healthy": false,
+          "wall_s": 0.78,
+          "deficit": {
+            "observed": -0.04116698572540278,
+            "probed": -0.0806964412612915,
+            "worst_unit": -0.6897093052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6897093052024842,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.923049,
+          "probed": 0.879995,
+          "worst_unit": 0.647808,
+          "gate": -0.216015,
+          "healthy": false,
+          "wall_s": 2.43,
+          "deficit": {
+            "observed": -0.052568985725402806,
+            "probed": -0.09300944126129151,
+            "worst_unit": -0.2160143052024841
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2160143052024841,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.929839,
+          "probed": 0.899273,
+          "worst_unit": 0.272932,
+          "gate": -0.59089,
+          "healthy": false,
+          "wall_s": 5.48,
+          "deficit": {
+            "observed": -0.04577898572540284,
+            "probed": -0.0737314412612915,
+            "worst_unit": -0.5908903052024841
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5908903052024841,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.930668,
+          "probed": 0.900055,
+          "worst_unit": 0.419708,
+          "gate": -0.444115,
+          "healthy": false,
+          "wall_s": 2.73,
+          "deficit": {
+            "observed": -0.044949985725402763,
+            "probed": -0.07294944126129144,
+            "worst_unit": -0.4441143052024841
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4441143052024841,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.934451,
+          "probed": 0.892308,
+          "worst_unit": 0.174113,
+          "gate": -0.689709,
+          "healthy": false,
+          "wall_s": 7.05,
+          "deficit": {
+            "observed": -0.04116698572540278,
+            "probed": -0.0806964412612915,
+            "worst_unit": -0.6897093052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6897093052024842,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.932559,
+          "probed": 0.891888,
+          "worst_unit": 0.305749,
+          "gate": -0.558074,
+          "healthy": false,
+          "wall_s": 0.98,
+          "deficit": {
+            "observed": -0.04305898572540279,
+            "probed": -0.08111644126129147,
+            "worst_unit": -0.5580733052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5580733052024842,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.857708,
+          "probed": 0.782124,
+          "worst_unit": 0.29332,
+          "gate": -0.570503,
+          "healthy": false,
+          "wall_s": 1.71,
+          "deficit": {
+            "observed": -0.11790998572540279,
+            "probed": -0.19088044126129144,
+            "worst_unit": -0.5705023052024841
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5705023052024841,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.902098,
+          "probed": 0.884927,
+          "worst_unit": 0.47373,
+          "gate": -0.390092,
+          "healthy": false,
+          "wall_s": 2.58,
+          "deficit": {
+            "observed": -0.07351998572540286,
+            "probed": -0.08807744126129147,
+            "worst_unit": -0.39009230520248417
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.39009230520248417,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.808232,
+          "probed": 0.749774,
+          "worst_unit": 0.305212,
+          "gate": -0.55861,
+          "healthy": false,
+          "wall_s": 3.3,
+          "deficit": {
+            "observed": -0.16738598572540286,
+            "probed": -0.22323044126129143,
+            "worst_unit": -0.5586103052024842
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5586103052024842,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9956179857254028,
+        "probed": 0.9930044412612915,
+        "worst_unit": 0.9638223052024841,
+        "shape": [
+          17408,
+          5120
+        ],
+        "site": "post_attn_norm",
+        "split": {
+          "fit_pool": 6571,
+          "hold_pool": 256,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_stored_prefix_tail25"
+        }
+      }
+    },
+    {
+      "layer": 31,
+      "cls": "mlp.gate_proj",
+      "tag": "gate",
+      "site": "post_attn_norm",
+      "rss_gb": 10.913,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.875716,
+          "probed": 0.794902,
+          "worst_unit": -0.111887,
+          "gate": -0.947655,
+          "healthy": false,
+          "wall_s": 0.16,
+          "deficit": {
+            "observed": -0.09981627424621575,
+            "probed": -0.17783934635925291,
+            "worst_unit": -0.9476550678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9476550678367615,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.930631,
+          "probed": 0.896981,
+          "worst_unit": 0.423439,
+          "gate": -0.412329,
+          "healthy": false,
+          "wall_s": 0.32,
+          "deficit": {
+            "observed": -0.04490127424621582,
+            "probed": -0.07576034635925288,
+            "worst_unit": -0.4123290678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4123290678367615,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.775969,
+          "probed": 0.72997,
+          "worst_unit": 0.028721,
+          "gate": -0.807047,
+          "healthy": false,
+          "wall_s": 0.11,
+          "deficit": {
+            "observed": -0.19956327424621578,
+            "probed": -0.2427713463592529,
+            "worst_unit": -0.8070470678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8070470678367615,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.872407,
+          "probed": 0.791721,
+          "worst_unit": -0.14123,
+          "gate": -0.976998,
+          "healthy": false,
+          "wall_s": 0.23,
+          "deficit": {
+            "observed": -0.10312527424621576,
+            "probed": -0.1810203463592529,
+            "worst_unit": -0.9769980678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9769980678367615,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.925646,
+          "probed": 0.895164,
+          "worst_unit": 0.376059,
+          "gate": -0.459709,
+          "healthy": false,
+          "wall_s": 0.39,
+          "deficit": {
+            "observed": -0.049886274246215834,
+            "probed": -0.07757734635925295,
+            "worst_unit": -0.4597090678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4597090678367615,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.760857,
+          "probed": 0.720913,
+          "worst_unit": -0.130544,
+          "gate": -0.966312,
+          "healthy": false,
+          "wall_s": 0.14,
+          "deficit": {
+            "observed": -0.2146752742462158,
+            "probed": -0.2518283463592529,
+            "worst_unit": -0.9663120678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9663120678367615,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.70233,
+          "probed": 0.785638,
+          "worst_unit": -0.690322,
+          "gate": -1.526091,
+          "healthy": false,
+          "wall_s": 0.24,
+          "deficit": {
+            "observed": -0.2732022742462158,
+            "probed": -0.18710334635925296,
+            "worst_unit": -1.5260900678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.5260900678367615,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.848117,
+          "probed": 0.894821,
+          "worst_unit": 0.100644,
+          "gate": -0.735124,
+          "healthy": false,
+          "wall_s": 0.38,
+          "deficit": {
+            "observed": -0.1274152742462158,
+            "probed": -0.07792034635925293,
+            "worst_unit": -0.7351240678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7351240678367615,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.661378,
+          "probed": 0.724196,
+          "worst_unit": -0.202503,
+          "gate": -1.038271,
+          "healthy": false,
+          "wall_s": 0.12,
+          "deficit": {
+            "observed": -0.3141542742462158,
+            "probed": -0.24854534635925296,
+            "worst_unit": -1.0382710678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.0382710678367615,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.908509,
+          "probed": 0.780027,
+          "worst_unit": 0.212346,
+          "gate": -0.623422,
+          "healthy": false,
+          "wall_s": 0.67,
+          "deficit": {
+            "observed": -0.06702327424621579,
+            "probed": -0.19271434635925289,
+            "worst_unit": -0.6234220678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6234220678367615,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.949295,
+          "probed": 0.888565,
+          "worst_unit": 0.576949,
+          "gate": -0.258819,
+          "healthy": false,
+          "wall_s": 0.75,
+          "deficit": {
+            "observed": -0.026237274246215803,
+            "probed": -0.08417634635925286,
+            "worst_unit": -0.25881906783676145
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.25881906783676145,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.917792,
+          "probed": 0.874446,
+          "worst_unit": 0.423679,
+          "gate": -0.412089,
+          "healthy": false,
+          "wall_s": 2.4,
+          "deficit": {
+            "observed": -0.05774027424621575,
+            "probed": -0.09829534635925297,
+            "worst_unit": -0.4120890678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4120890678367615,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.930631,
+          "probed": 0.896981,
+          "worst_unit": 0.423439,
+          "gate": -0.412329,
+          "healthy": false,
+          "wall_s": 5.19,
+          "deficit": {
+            "observed": -0.04490127424621582,
+            "probed": -0.07576034635925288,
+            "worst_unit": -0.4123290678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4123290678367615,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.930524,
+          "probed": 0.897841,
+          "worst_unit": 0.419289,
+          "gate": -0.416479,
+          "healthy": false,
+          "wall_s": 2.3,
+          "deficit": {
+            "observed": -0.045008274246215785,
+            "probed": -0.07490034635925291,
+            "worst_unit": -0.4164790678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4164790678367615,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.949295,
+          "probed": 0.888565,
+          "worst_unit": 0.576949,
+          "gate": -0.258819,
+          "healthy": false,
+          "wall_s": 6.74,
+          "deficit": {
+            "observed": -0.026237274246215803,
+            "probed": -0.08417634635925286,
+            "worst_unit": -0.25881906783676145
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.25881906783676145,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.944592,
+          "probed": 0.885793,
+          "worst_unit": 0.559789,
+          "gate": -0.275979,
+          "healthy": false,
+          "wall_s": 0.89,
+          "deficit": {
+            "observed": -0.030940274246215815,
+            "probed": -0.08694834635925286,
+            "worst_unit": -0.2759790678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2759790678367615,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.90733,
+          "probed": 0.776782,
+          "worst_unit": 0.217533,
+          "gate": -0.618235,
+          "healthy": false,
+          "wall_s": 1.72,
+          "deficit": {
+            "observed": -0.06820227424621583,
+            "probed": -0.19595934635925294,
+            "worst_unit": -0.6182350678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6182350678367615,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.843846,
+          "probed": 0.868949,
+          "worst_unit": 0.099829,
+          "gate": -0.735939,
+          "healthy": false,
+          "wall_s": 2.71,
+          "deficit": {
+            "observed": -0.13168627424621582,
+            "probed": -0.10379234635925294,
+            "worst_unit": -0.7359390678367614
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7359390678367614,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.898755,
+          "probed": 0.758903,
+          "worst_unit": 0.05918,
+          "gate": -0.776588,
+          "healthy": false,
+          "wall_s": 3.38,
+          "deficit": {
+            "observed": -0.07677727424621583,
+            "probed": -0.21383834635925292,
+            "worst_unit": -0.7765880678367615
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7765880678367615,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9955322742462158,
+        "probed": 0.9927413463592529,
+        "worst_unit": 0.9357680678367615,
+        "shape": [
+          17408,
+          5120
+        ],
+        "site": "post_attn_norm",
+        "split": {
+          "fit_pool": 6571,
+          "hold_pool": 256,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_stored_prefix_tail25"
+        }
+      }
+    },
+    {
+      "layer": 63,
+      "cls": "mlp.gate_proj",
+      "tag": "gate",
+      "site": "post_attn_norm",
+      "rss_gb": 10.913,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.958352,
+          "probed": 0.794167,
+          "worst_unit": -0.409752,
+          "gate": -1.075932,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.020310769794464112,
+            "probed": -0.17820759897994998,
+            "worst_unit": -1.0759315020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.0759315020103455,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.978363,
+          "probed": 0.895978,
+          "worst_unit": 0.151791,
+          "gate": -0.514389,
+          "healthy": false,
+          "wall_s": 0.35,
+          "deficit": {
+            "observed": -0.0002997697944641109,
+            "probed": -0.07639659897994988,
+            "worst_unit": -0.5143885020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5143885020103455,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.923274,
+          "probed": 0.725171,
+          "worst_unit": -0.25027,
+          "gate": -0.91645,
+          "healthy": false,
+          "wall_s": 0.12,
+          "deficit": {
+            "observed": -0.055388769794464054,
+            "probed": -0.24720359897994992,
+            "worst_unit": -0.9164495020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.9164495020103455,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.954346,
+          "probed": 0.79233,
+          "worst_unit": -0.479729,
+          "gate": -1.145908,
+          "healthy": false,
+          "wall_s": 0.21,
+          "deficit": {
+            "observed": -0.024316769794464066,
+            "probed": -0.18004459897994995,
+            "worst_unit": -1.1459085020103454
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1459085020103454,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.971039,
+          "probed": 0.894459,
+          "worst_unit": -0.007681,
+          "gate": -0.67386,
+          "healthy": false,
+          "wall_s": 0.39,
+          "deficit": {
+            "observed": -0.007623769794464108,
+            "probed": -0.07791559897994993,
+            "worst_unit": -0.6738605020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6738605020103455,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.918323,
+          "probed": 0.711253,
+          "worst_unit": -0.416779,
+          "gate": -1.082959,
+          "healthy": false,
+          "wall_s": 0.17,
+          "deficit": {
+            "observed": -0.06033976979446409,
+            "probed": -0.2611215989799499,
+            "worst_unit": -1.0829585020103454
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.0829585020103454,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.882329,
+          "probed": 0.784748,
+          "worst_unit": -0.758075,
+          "gate": -1.424255,
+          "healthy": false,
+          "wall_s": 0.22,
+          "deficit": {
+            "observed": -0.09633376979446406,
+            "probed": -0.18762659897994993,
+            "worst_unit": -1.4242545020103456
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.4242545020103456,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.973946,
+          "probed": 0.893085,
+          "worst_unit": 0.077426,
+          "gate": -0.588754,
+          "healthy": false,
+          "wall_s": 0.4,
+          "deficit": {
+            "observed": -0.004716769794464115,
+            "probed": -0.07928959897994992,
+            "worst_unit": -0.5887535020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5887535020103455,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.872858,
+          "probed": 0.714909,
+          "worst_unit": -0.508945,
+          "gate": -1.175124,
+          "healthy": false,
+          "wall_s": 0.14,
+          "deficit": {
+            "observed": -0.10580476979446407,
+            "probed": -0.2574655989799499,
+            "worst_unit": -1.1751245020103456
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1751245020103456,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.969431,
+          "probed": 0.773134,
+          "worst_unit": -0.129363,
+          "gate": -0.795543,
+          "healthy": false,
+          "wall_s": 0.68,
+          "deficit": {
+            "observed": -0.009231769794464051,
+            "probed": -0.19924059897994995,
+            "worst_unit": -0.7955425020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7955425020103455,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.982824,
+          "probed": 0.884273,
+          "worst_unit": 0.114124,
+          "gate": -0.552056,
+          "healthy": false,
+          "wall_s": 0.76,
+          "deficit": {
+            "observed": 0.004161230205535937,
+            "probed": -0.08810159897994996,
+            "worst_unit": -0.5520555020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5520555020103455,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.977698,
+          "probed": 0.86596,
+          "worst_unit": 0.327105,
+          "gate": -0.339074,
+          "healthy": false,
+          "wall_s": 2.5,
+          "deficit": {
+            "observed": -0.0009647697944641376,
+            "probed": -0.10641459897994998,
+            "worst_unit": -0.3390745020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3390745020103455,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.978363,
+          "probed": 0.895978,
+          "worst_unit": 0.151791,
+          "gate": -0.514389,
+          "healthy": false,
+          "wall_s": 5.46,
+          "deficit": {
+            "observed": -0.0002997697944641109,
+            "probed": -0.07639659897994988,
+            "worst_unit": -0.5143885020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5143885020103455,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.977989,
+          "probed": 0.896769,
+          "worst_unit": 0.217822,
+          "gate": -0.448358,
+          "healthy": false,
+          "wall_s": 2.3,
+          "deficit": {
+            "observed": -0.0006737697944640963,
+            "probed": -0.0756055989799499,
+            "worst_unit": -0.4483575020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4483575020103455,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.982824,
+          "probed": 0.884273,
+          "worst_unit": 0.114124,
+          "gate": -0.552056,
+          "healthy": false,
+          "wall_s": 6.29,
+          "deficit": {
+            "observed": 0.004161230205535937,
+            "probed": -0.08810159897994996,
+            "worst_unit": -0.5520555020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5520555020103455,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.977481,
+          "probed": 0.879562,
+          "worst_unit": 0.116106,
+          "gate": -0.550073,
+          "healthy": false,
+          "wall_s": 0.97,
+          "deficit": {
+            "observed": -0.0011817697944640493,
+            "probed": -0.09281259897994998,
+            "worst_unit": -0.5500735020103454
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5500735020103454,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.967882,
+          "probed": 0.770222,
+          "worst_unit": -0.165056,
+          "gate": -0.831236,
+          "healthy": false,
+          "wall_s": 1.66,
+          "deficit": {
+            "observed": -0.010780769794464073,
+            "probed": -0.20215259897994997,
+            "worst_unit": -0.8312355020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.8312355020103455,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.976097,
+          "probed": 0.871098,
+          "worst_unit": 0.311557,
+          "gate": -0.354623,
+          "healthy": false,
+          "wall_s": 2.59,
+          "deficit": {
+            "observed": -0.002565769794464101,
+            "probed": -0.1012765989799499,
+            "worst_unit": -0.3546225020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3546225020103455,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.968961,
+          "probed": 0.751551,
+          "worst_unit": -0.091711,
+          "gate": -0.757891,
+          "healthy": false,
+          "wall_s": 3.46,
+          "deficit": {
+            "observed": -0.009701769794464132,
+            "probed": -0.22082359897994996,
+            "worst_unit": -0.7578905020103455
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7578905020103455,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9986627697944641,
+        "probed": 0.99237459897995,
+        "worst_unit": 0.7661795020103455,
+        "shape": [
+          17408,
+          5120
+        ],
+        "site": "post_attn_norm",
+        "split": {
+          "fit_pool": 6571,
+          "hold_pool": 256,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_stored_prefix_tail25"
+        }
+      }
+    },
+    {
+      "layer": 31,
+      "cls": "self_attn.q_proj",
+      "tag": "q",
+      "site": "post_input_norm",
+      "rss_gb": 10.913,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.820792,
+          "probed": 0.794133,
+          "worst_unit": -0.247618,
+          "gate": -1.046082,
+          "healthy": false,
+          "wall_s": 0.09,
+          "deficit": {
+            "observed": -0.15588027268218996,
+            "probed": -0.17853002585601807,
+            "worst_unit": -1.046082322090149
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.046082322090149,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.920249,
+          "probed": 0.896588,
+          "worst_unit": -0.27214,
+          "gate": -1.070604,
+          "healthy": false,
+          "wall_s": 0.24,
+          "deficit": {
+            "observed": -0.05642327268218994,
+            "probed": -0.076075025856018,
+            "worst_unit": -1.0706043220901489
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.0706043220901489,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.857778,
+          "probed": 0.727956,
+          "worst_unit": -0.308743,
+          "gate": -1.107208,
+          "healthy": false,
+          "wall_s": 0.07,
+          "deficit": {
+            "observed": -0.11889427268218988,
+            "probed": -0.244707025856018,
+            "worst_unit": -1.107207322090149
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.107207322090149,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.806368,
+          "probed": 0.789544,
+          "worst_unit": -0.363352,
+          "gate": -1.161817,
+          "healthy": false,
+          "wall_s": 0.16,
+          "deficit": {
+            "observed": -0.17030427268218995,
+            "probed": -0.18311902585601803,
+            "worst_unit": -1.161816322090149
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.161816322090149,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.915013,
+          "probed": 0.893848,
+          "worst_unit": -0.429769,
+          "gate": -1.228233,
+          "healthy": false,
+          "wall_s": 0.27,
+          "deficit": {
+            "observed": -0.06165927268218996,
+            "probed": -0.07881502585601807,
+            "worst_unit": -1.228233322090149
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.228233322090149,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.857896,
+          "probed": 0.714182,
+          "worst_unit": -0.346014,
+          "gate": -1.144479,
+          "healthy": false,
+          "wall_s": 0.11,
+          "deficit": {
+            "observed": -0.11877627268218993,
+            "probed": -0.25848102585601807,
+            "worst_unit": -1.1444783220901489
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1444783220901489,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.645306,
+          "probed": 0.774475,
+          "worst_unit": -0.851511,
+          "gate": -1.649975,
+          "healthy": false,
+          "wall_s": 0.15,
+          "deficit": {
+            "observed": -0.3313662726821899,
+            "probed": -0.19818802585601802,
+            "worst_unit": -1.649975322090149
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.649975322090149,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.804348,
+          "probed": 0.891167,
+          "worst_unit": -0.387769,
+          "gate": -1.186233,
+          "healthy": false,
+          "wall_s": 0.29,
+          "deficit": {
+            "observed": -0.17232427268218997,
+            "probed": -0.081496025856018,
+            "worst_unit": -1.1862333220901489
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1862333220901489,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.629327,
+          "probed": 0.716594,
+          "worst_unit": -0.363108,
+          "gate": -1.161573,
+          "healthy": false,
+          "wall_s": 0.09,
+          "deficit": {
+            "observed": -0.34734527268218995,
+            "probed": -0.2560690258560181,
+            "worst_unit": -1.1615723220901488
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -1.1615723220901488,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.954352,
+          "probed": 0.749384,
+          "worst_unit": 0.374432,
+          "gate": -0.424032,
+          "healthy": false,
+          "wall_s": 0.43,
+          "deficit": {
+            "observed": -0.022320272682189946,
+            "probed": -0.223279025856018,
+            "worst_unit": -0.42403232209014896
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.42403232209014896,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.973853,
+          "probed": 0.875498,
+          "worst_unit": 0.571576,
+          "gate": -0.226889,
+          "healthy": false,
+          "wall_s": 0.49,
+          "deficit": {
+            "observed": -0.002819272682189955,
+            "probed": -0.09716502585601805,
+            "worst_unit": -0.22688832209014898
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.22688832209014898,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.95578,
+          "probed": 0.870145,
+          "worst_unit": 0.180045,
+          "gate": -0.618419,
+          "healthy": false,
+          "wall_s": 1.59,
+          "deficit": {
+            "observed": -0.02089227268218996,
+            "probed": -0.1025180258560181,
+            "worst_unit": -0.6184193220901489
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.6184193220901489,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9966722726821899,
+        "probed": 0.9926630258560181,
+        "worst_unit": 0.8984643220901489,
+        "shape": [
+          12288,
+          5120
+        ],
+        "site": "post_input_norm",
+        "split": {
+          "fit_pool": 6571,
+          "hold_pool": 256,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_stored_prefix_tail25"
+        }
+      }
+    },
+    {
+      "layer": 0,
+      "cls": "linear_attn.out_proj",
+      "tag": "out",
+      "site": "mixer_x",
+      "rss_gb": 10.913,
+      "rows": {
+        "binary_raw": {
+          "observed": 0.706223,
+          "probed": 0.782912,
+          "worst_unit": -0.61343,
+          "gate": -0.583103,
+          "healthy": false,
+          "wall_s": 0.05,
+          "deficit": {
+            "observed": -0.27314554839324945,
+            "probed": -0.18917369526672356,
+            "worst_unit": -0.5831030241179467
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.5831030241179467,
+          "healthy_from_ref": false
+        },
+        "ternary_raw": {
+          "observed": 0.9904,
+          "probed": 0.891747,
+          "worst_unit": -0.235282,
+          "gate": -0.204955,
+          "healthy": false,
+          "wall_s": 0.14,
+          "deficit": {
+            "observed": 0.011031451606750453,
+            "probed": -0.08033869526672366,
+            "worst_unit": -0.2049550241179466
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2049550241179466,
+          "healthy_from_ref": false
+        },
+        "q2_raw": {
+          "observed": 0.997893,
+          "probed": 0.730729,
+          "worst_unit": -0.324969,
+          "gate": -0.294642,
+          "healthy": false,
+          "wall_s": 0.03,
+          "deficit": {
+            "observed": 0.018524451606750536,
+            "probed": -0.24135669526672365,
+            "worst_unit": -0.2946420241179466
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2946420241179466,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq": {
+          "observed": 0.724536,
+          "probed": 0.779562,
+          "worst_unit": -0.510203,
+          "gate": -0.479876,
+          "healthy": false,
+          "wall_s": 0.09,
+          "deficit": {
+            "observed": -0.25483254839324954,
+            "probed": -0.19252369526672364,
+            "worst_unit": -0.4798760241179466
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.4798760241179466,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq": {
+          "observed": 0.98962,
+          "probed": 0.889785,
+          "worst_unit": -0.217587,
+          "gate": -0.18726,
+          "healthy": false,
+          "wall_s": 0.17,
+          "deficit": {
+            "observed": 0.010251451606750561,
+            "probed": -0.08230069526672357,
+            "worst_unit": -0.18726002411794662
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.18726002411794662,
+          "healthy_from_ref": false
+        },
+        "q2_col_eq": {
+          "observed": 0.997933,
+          "probed": 0.728021,
+          "worst_unit": -0.388798,
+          "gate": -0.358471,
+          "healthy": false,
+          "wall_s": 0.06,
+          "deficit": {
+            "observed": 0.018564451606750465,
+            "probed": -0.24406469526672359,
+            "worst_unit": -0.3584710241179466
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.3584710241179466,
+          "healthy_from_ref": false
+        },
+        "binary_sq05": {
+          "observed": 0.484779,
+          "probed": 0.723037,
+          "worst_unit": -0.804376,
+          "gate": -0.774049,
+          "healthy": false,
+          "wall_s": 0.08,
+          "deficit": {
+            "observed": -0.4945895483932495,
+            "probed": -0.24904869526672357,
+            "worst_unit": -0.7740490241179466
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7740490241179466,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05": {
+          "observed": 0.998314,
+          "probed": 0.868976,
+          "worst_unit": -0.106775,
+          "gate": -0.10311,
+          "healthy": false,
+          "wall_s": 0.13,
+          "deficit": {
+            "observed": 0.01894545160675054,
+            "probed": -0.10310969526672364,
+            "worst_unit": -0.07644802411794661
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.10310969526672364,
+          "healthy_from_ref": false
+        },
+        "q2_sq05": {
+          "observed": 0.971376,
+          "probed": 0.584568,
+          "worst_unit": -0.368762,
+          "gate": -0.387518,
+          "healthy": false,
+          "wall_s": 0.04,
+          "deficit": {
+            "observed": -0.007992548393249477,
+            "probed": -0.38751769526672364,
+            "worst_unit": -0.33843502411794657
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.38751769526672364,
+          "healthy_from_ref": false
+        },
+        "binary_awq1": {
+          "observed": 0.437489,
+          "probed": 0.590891,
+          "worst_unit": -0.797357,
+          "gate": -0.767031,
+          "healthy": false,
+          "wall_s": 0.06,
+          "deficit": {
+            "observed": -0.5418795483932495,
+            "probed": -0.38119469526672356,
+            "worst_unit": -0.7670300241179466
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.7670300241179466,
+          "healthy_from_ref": false
+        },
+        "ternary_awq1": {
+          "observed": 0.968802,
+          "probed": 0.807191,
+          "worst_unit": -0.283848,
+          "gate": -0.253521,
+          "healthy": false,
+          "wall_s": 0.13,
+          "deficit": {
+            "observed": -0.010566548393249442,
+            "probed": -0.16489469526672362,
+            "worst_unit": -0.25352102411794664
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.25352102411794664,
+          "healthy_from_ref": false
+        },
+        "q2_awq1": {
+          "observed": 0.776595,
+          "probed": 0.396092,
+          "worst_unit": -0.306665,
+          "gate": -0.575994,
+          "healthy": false,
+          "wall_s": 0.04,
+          "deficit": {
+            "observed": -0.20277354839324946,
+            "probed": -0.5759936952667236,
+            "worst_unit": -0.2763380241179466
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.5759936952667236,
+          "healthy_from_ref": false
+        },
+        "binary_actls": {
+          "observed": 0.998577,
+          "probed": 0.71114,
+          "worst_unit": 0.247712,
+          "gate": -0.260945,
+          "healthy": false,
+          "wall_s": 0.26,
+          "deficit": {
+            "observed": 0.019208451606750554,
+            "probed": -0.2609456952667236,
+            "worst_unit": 0.2780389758820534
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.2609456952667236,
+          "healthy_from_ref": false
+        },
+        "ternary_actls": {
+          "observed": 0.998956,
+          "probed": 0.853818,
+          "worst_unit": 0.20204,
+          "gate": -0.118267,
+          "healthy": false,
+          "wall_s": 0.25,
+          "deficit": {
+            "observed": 0.01958745160675046,
+            "probed": -0.11826769526672365,
+            "worst_unit": 0.23236697588205338
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.11826769526672365,
+          "healthy_from_ref": false
+        },
+        "q2_actmse": {
+          "observed": 0.998743,
+          "probed": 0.862732,
+          "worst_unit": 0.21552,
+          "gate": -0.109354,
+          "healthy": false,
+          "wall_s": 0.71,
+          "deficit": {
+            "observed": 0.019374451606750553,
+            "probed": -0.10935369526672356,
+            "worst_unit": 0.24584697588205337
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.10935369526672356,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal": {
+          "observed": 0.9904,
+          "probed": 0.891747,
+          "worst_unit": -0.235282,
+          "gate": -0.204955,
+          "healthy": false,
+          "wall_s": 1.99,
+          "deficit": {
+            "observed": 0.011031451606750453,
+            "probed": -0.08033869526672366,
+            "worst_unit": -0.2049550241179466
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.2049550241179466,
+          "healthy_from_ref": false
+        },
+        "ternary_bestt": {
+          "observed": 0.995564,
+          "probed": 0.892275,
+          "worst_unit": -0.228238,
+          "gate": -0.197911,
+          "healthy": false,
+          "wall_s": 0.77,
+          "deficit": {
+            "observed": 0.01619545160675051,
+            "probed": -0.07981069526672357,
+            "worst_unit": -0.19791102411794662
+          },
+          "worst_axis": "worst_unit",
+          "gate_from_ref": -0.19791102411794662,
+          "healthy_from_ref": false
+        },
+        "ternary_anneal_actls": {
+          "observed": 0.998956,
+          "probed": 0.853818,
+          "worst_unit": 0.20204,
+          "gate": -0.118267,
+          "healthy": false,
+          "wall_s": 2.36,
+          "deficit": {
+            "observed": 0.01958745160675046,
+            "probed": -0.11826769526672365,
+            "worst_unit": 0.23236697588205338
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.11826769526672365,
+          "healthy_from_ref": false
+        },
+        "ternary_col_eq_actls": {
+          "observed": 0.998968,
+          "probed": 0.849733,
+          "worst_unit": 0.170503,
+          "gate": -0.122353,
+          "healthy": false,
+          "wall_s": 0.4,
+          "deficit": {
+            "observed": 0.019599451606750473,
+            "probed": -0.12235269526672365,
+            "worst_unit": 0.20082997588205337
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.12235269526672365,
+          "healthy_from_ref": false
+        },
+        "binary_col_eq_actls": {
+          "observed": 0.998565,
+          "probed": 0.70169,
+          "worst_unit": 0.211495,
+          "gate": -0.270396,
+          "healthy": false,
+          "wall_s": 0.68,
+          "deficit": {
+            "observed": 0.019196451606750542,
+            "probed": -0.2703956952667236,
+            "worst_unit": 0.24182197588205337
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.2703956952667236,
+          "healthy_from_ref": false
+        },
+        "ternary_sq05_actls": {
+          "observed": 0.998326,
+          "probed": 0.680461,
+          "worst_unit": -0.162174,
+          "gate": -0.291625,
+          "healthy": false,
+          "wall_s": 1.05,
+          "deficit": {
+            "observed": 0.018957451606750553,
+            "probed": -0.29162469526672363,
+            "worst_unit": -0.13184702411794663
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.29162469526672363,
+          "healthy_from_ref": false
+        },
+        "binary_sq05_actls": {
+          "observed": 0.998156,
+          "probed": 0.655176,
+          "worst_unit": 0.044656,
+          "gate": -0.31691,
+          "healthy": false,
+          "wall_s": 1.33,
+          "deficit": {
+            "observed": 0.01878745160675055,
+            "probed": -0.31690969526672363,
+            "worst_unit": 0.07498297588205338
+          },
+          "worst_axis": "probed",
+          "gate_from_ref": -0.31690969526672363,
+          "healthy_from_ref": false
+        }
+      },
+      "q4_ref": {
+        "observed": 0.9993685483932495,
+        "probed": 0.9920856952667236,
+        "worst_unit": 0.06967302411794662,
+        "shape": [
+          5120,
+          6144
+        ],
+        "site": "mixer_x",
+        "split": {
+          "fit_pool": 7936,
+          "hold_pool": 256,
+          "n_fit": 8,
+          "n_hold": 256,
+          "split": "v2_stored_prefix_tail25"
+        }
+      }
+    }
+  ],
+  "q4_refs": {
+    "L0_down": {
+      "observed": 0.9976867437362671,
+      "probed": 0.9927618503570557,
+      "worst_unit": 0.9777629375457764,
+      "shape": [
+        5120,
+        17408
+      ],
+      "site": "post_swiglu",
+      "split": {
+        "fit_pool": 17412,
+        "hold_pool": 5804,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_prompt_official"
+      }
+    },
+    "L31_down": {
+      "observed": 0.9945083260536194,
+      "probed": 0.9927430748939514,
+      "worst_unit": 0.9787546992301941,
+      "shape": [
+        5120,
+        17408
+      ],
+      "site": "post_swiglu",
+      "split": {
+        "fit_pool": 17412,
+        "hold_pool": 5804,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_prompt_official"
+      }
+    },
+    "L58_down": {
+      "observed": 0.9937108755111694,
+      "probed": 0.9929989576339722,
+      "worst_unit": 0.9335333704948425,
+      "shape": [
+        5120,
+        17408
+      ],
+      "site": "post_swiglu",
+      "split": {
+        "fit_pool": 17412,
+        "hold_pool": 5804,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_prompt_official"
+      }
+    },
+    "L62_down": {
+      "observed": 0.9927639961242676,
+      "probed": 0.9924957752227783,
+      "worst_unit": 0.9404203295707703,
+      "shape": [
+        5120,
+        17408
+      ],
+      "site": "post_swiglu",
+      "split": {
+        "fit_pool": 17412,
+        "hold_pool": 5804,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_prompt_official"
+      }
+    },
+    "L63_down": {
+      "observed": 0.9937140941619873,
+      "probed": 0.9917002320289612,
+      "worst_unit": 0.9102822542190552,
+      "shape": [
+        5120,
+        17408
+      ],
+      "site": "post_swiglu",
+      "split": {
+        "fit_pool": 17412,
+        "hold_pool": 5804,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_prompt_official"
+      }
+    },
+    "L0_gate": {
+      "observed": 0.9956179857254028,
+      "probed": 0.9930044412612915,
+      "worst_unit": 0.9638223052024841,
+      "shape": [
+        17408,
+        5120
+      ],
+      "site": "post_attn_norm",
+      "split": {
+        "fit_pool": 6571,
+        "hold_pool": 256,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_stored_prefix_tail25"
+      }
+    },
+    "L31_gate": {
+      "observed": 0.9955322742462158,
+      "probed": 0.9927413463592529,
+      "worst_unit": 0.9357680678367615,
+      "shape": [
+        17408,
+        5120
+      ],
+      "site": "post_attn_norm",
+      "split": {
+        "fit_pool": 6571,
+        "hold_pool": 256,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_stored_prefix_tail25"
+      }
+    },
+    "L63_gate": {
+      "observed": 0.9986627697944641,
+      "probed": 0.99237459897995,
+      "worst_unit": 0.7661795020103455,
+      "shape": [
+        17408,
+        5120
+      ],
+      "site": "post_attn_norm",
+      "split": {
+        "fit_pool": 6571,
+        "hold_pool": 256,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_stored_prefix_tail25"
+      }
+    },
+    "L31_q": {
+      "observed": 0.9966722726821899,
+      "probed": 0.9926630258560181,
+      "worst_unit": 0.8984643220901489,
+      "shape": [
+        12288,
+        5120
+      ],
+      "site": "post_input_norm",
+      "split": {
+        "fit_pool": 6571,
+        "hold_pool": 256,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_stored_prefix_tail25"
+      }
+    },
+    "L0_out": {
+      "observed": 0.9993685483932495,
+      "probed": 0.9920856952667236,
+      "worst_unit": 0.06967302411794662,
+      "shape": [
+        5120,
+        6144
+      ],
+      "site": "mixer_x",
+      "split": {
+        "fit_pool": 7936,
+        "hold_pool": 256,
+        "n_fit": 8,
+        "n_hold": 256,
+        "split": "v2_stored_prefix_tail25"
+      }
+    }
+  },
+  "calib_L58_down": [
+    {
+      "n_fit": 64,
+      "binary_actls_observed": 0.866555,
+      "ternary_actls_observed": 0.928172,
+      "ternary_anneal_observed": 0.772427,
+      "binary_actls_fit_s": 0.29,
+      "ternary_actls_fit_s": 0.35,
+      "ternary_anneal_fit_s": 5.04
+    },
+    {
+      "n_fit": 128,
+      "binary_actls_observed": 0.87012,
+      "ternary_actls_observed": 0.92992,
+      "ternary_anneal_observed": 0.772427,
+      "binary_actls_fit_s": 0.39,
+      "ternary_actls_fit_s": 0.6,
+      "ternary_anneal_fit_s": 4.96
+    },
+    {
+      "n_fit": 256,
+      "binary_actls_observed": 0.879595,
+      "ternary_actls_observed": 0.93503,
+      "ternary_anneal_observed": 0.772427,
+      "binary_actls_fit_s": 0.6,
+      "ternary_actls_fit_s": 0.58,
+      "ternary_anneal_fit_s": 4.53
+    },
+    {
+      "n_fit": 512,
+      "binary_actls_observed": 0.881213,
+      "ternary_actls_observed": 0.935992,
+      "ternary_anneal_observed": 0.772427,
+      "binary_actls_fit_s": 1.03,
+      "ternary_actls_fit_s": 0.99,
+      "ternary_anneal_fit_s": 4.6
+    },
+    {
+      "n_fit": 1024,
+      "binary_actls_observed": 0.881262,
+      "ternary_actls_observed": 0.936235,
+      "ternary_anneal_observed": 0.772427,
+      "binary_actls_fit_s": 1.66,
+      "ternary_actls_fit_s": 1.82,
+      "ternary_anneal_fit_s": 4.5
+    }
+  ],
+  "up_side_effect_L58": {
+    "up_raw": {
+      "binary_observed": 0.795945,
+      "ternary_observed": 0.910706,
+      "weight_row_cosine_vs_raw": 1.0
+    },
+    "up_after_down_col_eq": {
+      "binary_observed": 0.801283,
+      "ternary_observed": 0.913633,
+      "weight_row_cosine_vs_raw": 1.0
+    },
+    "up_after_down_sq05": {
+      "binary_observed": 0.84027,
+      "ternary_observed": 0.931465,
+      "weight_row_cosine_vs_raw": 1.0
+    }
+  },
+  "hold512": {
+    "L58": {
+      "n_hold": 512,
+      "q4": {
+        "observed": 0.9936606884002686,
+        "probed": 0.9929989576339722,
+        "worst_unit": 0.9537137746810913
+      },
+      "binary_raw": {
+        "observed": 0.6738389277790322,
+        "probed": 0.7979470276916973,
+        "worst_unit": 0.36601489158847156,
+        "deficit": {
+          "observed": -0.29982176062123633,
+          "probed": -0.1750519299422748,
+          "worst_unit": -0.4876988830926198
+        },
+        "gate": -0.4876988830926198,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      },
+      "ternary_raw": {
+        "observed": 0.805871298729255,
+        "probed": 0.8991287068442229,
+        "worst_unit": 0.484462163062994,
+        "deficit": {
+          "observed": -0.16778938967101353,
+          "probed": -0.07387025078974929,
+          "worst_unit": -0.36925161161809733
+        },
+        "gate": -0.36925161161809733,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      },
+      "binary_col_eq_actls": {
+        "observed": 0.8610109090805054,
+        "probed": 0.7508046627044678,
+        "worst_unit": 0.21285153925418854,
+        "deficit": {
+          "observed": -0.11264977931976317,
+          "probed": -0.22219429492950438,
+          "worst_unit": -0.6408622354269028
+        },
+        "gate": -0.6408622354269028,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      },
+      "ternary_actls": {
+        "observed": 0.9294984142492181,
+        "probed": 0.8816696636723399,
+        "worst_unit": 0.4127250710607959,
+        "deficit": {
+          "observed": -0.04416227415105045,
+          "probed": -0.09132929396163225,
+          "worst_unit": -0.4409887036202954
+        },
+        "gate": -0.4409887036202954,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      },
+      "ternary_col_eq_actls": {
+        "observed": 0.9260764122009277,
+        "probed": 0.879707396030426,
+        "worst_unit": 0.4344625174999237,
+        "deficit": {
+          "observed": -0.0475842761993408,
+          "probed": -0.09329156160354612,
+          "worst_unit": -0.4192512571811676
+        },
+        "gate": -0.4192512571811676,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      }
+    },
+    "L62": {
+      "n_hold": 512,
+      "q4": {
+        "observed": 0.9928439855575562,
+        "probed": 0.9924957752227783,
+        "worst_unit": 0.9453291296958923
+      },
+      "binary_raw": {
+        "observed": 0.8044226502526097,
+        "probed": 0.7930815990563232,
+        "worst_unit": -0.23246035339970555,
+        "deficit": {
+          "observed": -0.1684213353049464,
+          "probed": -0.17941417616645505,
+          "worst_unit": -1.0777894830955979
+        },
+        "gate": -1.0777894830955979,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      },
+      "ternary_raw": {
+        "observed": 0.8919636442855623,
+        "probed": 0.8956313052517217,
+        "worst_unit": 0.1254468067385652,
+        "deficit": {
+          "observed": -0.08088034127199384,
+          "probed": -0.07686446997105656,
+          "worst_unit": -0.7198823229573271
+        },
+        "gate": -0.7198823229573271,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      },
+      "binary_col_eq_actls": {
+        "observed": 0.843756377696991,
+        "probed": 0.739524245262146,
+        "worst_unit": -0.11190814524888992,
+        "deficit": {
+          "observed": -0.12908760786056517,
+          "probed": -0.2329715299606323,
+          "worst_unit": -0.9572372749447823
+        },
+        "gate": -0.9572372749447823,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      },
+      "ternary_actls": {
+        "observed": 0.9205013830533335,
+        "probed": 0.8776121642635988,
+        "worst_unit": 0.44445680245013874,
+        "deficit": {
+          "observed": -0.052342602504222624,
+          "probed": -0.09488361095917952,
+          "worst_unit": -0.4008723272457536
+        },
+        "gate": -0.4008723272457536,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      },
+      "ternary_col_eq_actls": {
+        "observed": 0.9155555963516235,
+        "probed": 0.8690317869186401,
+        "worst_unit": 0.48465830087661743,
+        "deficit": {
+          "observed": -0.0572883892059326,
+          "probed": -0.10346398830413817,
+          "worst_unit": -0.3606708288192749
+        },
+        "gate": -0.3606708288192749,
+        "worst_axis": "worst_unit",
+        "healthy": false
+      }
+    }
+  },
+  "primary_wall_s": 297.61,
+  "finish_wall_s": 14.082019916007994,
+  "rss_max_gb": 4.649762816,
+  "log": "/Users/scammermike/.grok/sessions/%2FUsers%2Fscammermike%2F.claude-grok%2Fworktrees%2F209-reshape-before-lowbit-20260817-181049/01a011c7-1664-70c3-8654-06522307083c/terminal/call-43e81411-b9e4-4841-a522-64d9e79cb0f8-35.log"
+}

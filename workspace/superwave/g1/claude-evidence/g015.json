@@ -1,0 +1,128 @@
+[
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "scheme": "flat q2",
+    "bpw": 2.125003590303309,
+    "gate": -0.2790600657463074
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "scheme": "flat q3",
+    "bpw": 3.125003590303309,
+    "gate": 0.6837282180786133
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "scheme": "flat q4",
+    "bpw": 4.125003590303309,
+    "gate": 0.9228121638298035
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "scheme": "ladder 1x1bit",
+    "bpw": 1.1250035903033089,
+    "gate": 0.09455017745494843
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "scheme": "ladder 2x1bit",
+    "bpw": 2.2500071806066178,
+    "gate": 0.06503172218799591
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "layer": 31,
+    "scheme": "ladder 3x1bit",
+    "bpw": 3.3750107709099266,
+    "gate": 0.07703819125890732
+  },
+  {
+    "cls": "mlp.down_proj",
+    "layer": 31,
+    "scheme": "flat q2",
+    "bpw": 2.125003590303309,
+    "gate": 0.464835524559021
+  },
+  {
+    "cls": "mlp.down_proj",
+    "layer": 31,
+    "scheme": "flat q3",
+    "bpw": 3.125003590303309,
+    "gate": 0.893102765083313
+  },
+  {
+    "cls": "mlp.down_proj",
+    "layer": 31,
+    "scheme": "flat q4",
+    "bpw": 4.125003590303309,
+    "gate": 0.9766623973846436
+  },
+  {
+    "cls": "mlp.down_proj",
+    "layer": 31,
+    "scheme": "ladder 1x1bit",
+    "bpw": 1.1250035903033089,
+    "gate": 0.6136239767074585
+  },
+  {
+    "cls": "mlp.down_proj",
+    "layer": 31,
+    "scheme": "ladder 2x1bit",
+    "bpw": 2.2500071806066178,
+    "gate": 0.8315518498420715
+  },
+  {
+    "cls": "mlp.down_proj",
+    "layer": 31,
+    "scheme": "ladder 3x1bit",
+    "bpw": 3.3750107709099266,
+    "gate": 0.884395182132721
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "scheme": "flat q2",
+    "bpw": 2.125005086263021,
+    "gate": -0.23313355445861816
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "scheme": "flat q3",
+    "bpw": 3.125005086263021,
+    "gate": 0.6096852421760559
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "scheme": "flat q4",
+    "bpw": 4.1250050862630205,
+    "gate": 0.9012750387191772
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "scheme": "ladder 1x1bit",
+    "bpw": 1.1250050862630208,
+    "gate": -0.028904151171445847
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "scheme": "ladder 2x1bit",
+    "bpw": 2.2500101725260415,
+    "gate": 0.43981024622917175
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "layer": 31,
+    "scheme": "ladder 3x1bit",
+    "bpw": 3.3750152587890625,
+    "gate": 0.39415788650512695
+  }
+]

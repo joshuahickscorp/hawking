@@ -1,0 +1,443 @@
+{
+  "pre_run_g0_manifest_sha256": "d650a757c4cffed463ce8c24dfd5052c2cb47c0f6b1eb10349947854fc47b9df",
+  "g0_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1/manifest.json",
+  "N": 26895998464,
+  "mixed-q3mlp-v1": {
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1",
+    "catalog_bytes": 180124,
+    "n_tensors": 851,
+    "n_segments_declared": 258,
+    "payload_bytes_sum_nbytes": 12149632429,
+    "elements_sum": 26895998464,
+    "complete_physical_bpw_G0def": 3.6138111608720234,
+    "complete_physical_bpw_PACK_REPORT_style": 3.6138647373176767,
+    "self_containment": {
+      "absolute_segment_filenames": 0,
+      "absolute_examples": [],
+      "resolved_outside_artifact_root": [],
+      "other_roots_named_by_abs": {},
+      "missing_segment_files": [],
+      "payload_extends_past_file": [],
+      "unique_segment_paths": 258,
+      "files_under_this_root": 258,
+      "files_under_root_hardlinked_elsewhere": 66,
+      "hardlink_share_counts_by_sibling": {
+        "mixed-2p0-v1": 66,
+        "mixed-q4down-v1": 66
+      },
+      "hardlink_examples": [
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/00_embed.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q4down-v1"
+          ]
+        ],
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/L00.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q4down-v1"
+          ]
+        ],
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/L01.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q4down-v1"
+          ]
+        ],
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/L02.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q4down-v1"
+          ]
+        ],
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/L03.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q4down-v1"
+          ]
+        ]
+      ],
+      "standalone_root": true,
+      "bytes_resolved_only_via_this_root_path": true
+    },
+    "codec_counts": {
+      "3": 851
+    },
+    "role_counts": {
+      "embed": 1,
+      "other": 129,
+      "attn": 528,
+      "mlp.gate": 64,
+      "mlp.up": 64,
+      "mlp.down": 64,
+      "lm_head": 1
+    },
+    "role_codec": {
+      "embed": {
+        "3": 1
+      },
+      "other": {
+        "3": 129
+      },
+      "attn": {
+        "3": 528
+      },
+      "mlp.gate": {
+        "3": 64
+      },
+      "mlp.up": {
+        "3": 64
+      },
+      "mlp.down": {
+        "3": 64
+      },
+      "lm_head": {
+        "3": 1
+      }
+    },
+    "role_bytes": {
+      "embed": 675430686,
+      "other": 384033,
+      "attn": 3846274384,
+      "mlp.gate": 2317370880,
+      "mlp.up": 2317370880,
+      "mlp.down": 2317370880,
+      "lm_head": 675430686
+    },
+    "role_elems": {
+      "embed": 1271398400,
+      "other": 660480,
+      "attn": 7239780864,
+      "mlp.gate": 5704253440,
+      "mlp.up": 5704253440,
+      "mlp.down": 5704253440,
+      "lm_head": 1271398400
+    },
+    "role_bpw": {
+      "embed": 4.250001799593266,
+      "other": 4.6515625,
+      "attn": 4.2501555848196455,
+      "mlp.gate": 3.2500251321231617,
+      "mlp.up": 3.2500251321231617,
+      "mlp.down": 3.2500251321231617,
+      "lm_head": 4.250001799593266
+    },
+    "mlp_bytes": 6952112640,
+    "mlp_elems": 17112760320,
+    "peeks": [
+      {
+        "role": "embed",
+        "name": "language_model.model.embed_tokens.weight",
+        "codec": 3,
+        "nbytes": 675430686,
+        "magic": "HGRAVU01",
+        "magic_hex": "4847524156553031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/00_embed.hq38seg",
+        "offset": 0
+      },
+      {
+        "role": "mlp.gate",
+        "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+        "codec": 3,
+        "nbytes": 36208920,
+        "magic": "HGRAVU01",
+        "magic_hex": "4847524156553031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/replace_language_model_model_layers_0_mlp_gate_proj_weight.hq38seg",
+        "offset": 0
+      },
+      {
+        "role": "mlp.up",
+        "name": "language_model.model.layers.0.mlp.up_proj.weight",
+        "codec": 3,
+        "nbytes": 36208920,
+        "magic": "HGRAVU01",
+        "magic_hex": "4847524156553031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/replace_language_model_model_layers_0_mlp_up_proj_weight.hq38seg",
+        "offset": 0
+      },
+      {
+        "role": "mlp.down",
+        "name": "language_model.model.layers.0.mlp.down_proj.weight",
+        "codec": 3,
+        "nbytes": 36208920,
+        "magic": "HGRAVU01",
+        "magic_hex": "4847524156553031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/replace_language_model_model_layers_0_mlp_down_proj_weight.hq38seg",
+        "offset": 0
+      },
+      {
+        "role": "lm_head",
+        "name": "language_model.lm_head.weight",
+        "codec": 3,
+        "nbytes": 675430686,
+        "magic": "HGRAVU01",
+        "magic_hex": "4847524156553031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-v1/segments/99_terminal.hq38seg",
+        "offset": 2977
+      }
+    ],
+    "l0": [
+      {
+        "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+        "codec": 3,
+        "shape": [
+          17408,
+          5120
+        ],
+        "nbytes": 36208920,
+        "magic": "HGRAVU01"
+      },
+      {
+        "name": "language_model.model.layers.0.mlp.up_proj.weight",
+        "codec": 3,
+        "shape": [
+          17408,
+          5120
+        ],
+        "nbytes": 36208920,
+        "magic": "HGRAVU01"
+      },
+      {
+        "name": "language_model.model.layers.0.mlp.down_proj.weight",
+        "codec": 3,
+        "shape": [
+          5120,
+          17408
+        ],
+        "nbytes": 36208920,
+        "magic": "HGRAVU01"
+      }
+    ],
+    "mlp_bpw": 3.2500251321231617
+  },
+  "mixed-q4down-v1": {
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1",
+    "catalog_bytes": 166064,
+    "n_tensors": 851,
+    "n_segments_declared": 130,
+    "payload_bytes_sum_nbytes": 9948135693,
+    "elements_sum": 26895998464,
+    "complete_physical_bpw_G0def": 2.9589935339460913,
+    "complete_physical_bpw_PACK_REPORT_style": 2.9590429283570026,
+    "self_containment": {
+      "absolute_segment_filenames": 0,
+      "absolute_examples": [],
+      "resolved_outside_artifact_root": [],
+      "other_roots_named_by_abs": {},
+      "missing_segment_files": [],
+      "payload_extends_past_file": [],
+      "unique_segment_paths": 130,
+      "files_under_this_root": 130,
+      "files_under_root_hardlinked_elsewhere": 66,
+      "hardlink_share_counts_by_sibling": {
+        "mixed-2p0-v1": 66,
+        "mixed-q3mlp-v1": 66
+      },
+      "hardlink_examples": [
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/00_embed.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q3mlp-v1"
+          ]
+        ],
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/L00.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q3mlp-v1"
+          ]
+        ],
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/L01.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q3mlp-v1"
+          ]
+        ],
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/L02.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q3mlp-v1"
+          ]
+        ],
+        [
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/L03.hq38seg",
+          3,
+          [
+            "mixed-2p0-v1",
+            "mixed-q3mlp-v1"
+          ]
+        ]
+      ],
+      "standalone_root": true,
+      "bytes_resolved_only_via_this_root_path": true
+    },
+    "codec_counts": {
+      "0": 64,
+      "1": 64,
+      "3": 723
+    },
+    "role_counts": {
+      "embed": 1,
+      "other": 129,
+      "attn": 528,
+      "mlp.gate": 64,
+      "mlp.up": 64,
+      "mlp.down": 64,
+      "lm_head": 1
+    },
+    "role_codec": {
+      "embed": {
+        "3": 1
+      },
+      "other": {
+        "3": 129
+      },
+      "attn": {
+        "3": 528
+      },
+      "mlp.gate": {
+        "0": 64
+      },
+      "mlp.up": {
+        "1": 64
+      },
+      "mlp.down": {
+        "3": 64
+      },
+      "lm_head": {
+        "3": 1
+      }
+    },
+    "role_bytes": {
+      "embed": 675430686,
+      "other": 384033,
+      "attn": 3846274384,
+      "mlp.gate": 802177344,
+      "mlp.up": 918036000,
+      "mlp.down": 3030402560,
+      "lm_head": 675430686
+    },
+    "role_elems": {
+      "embed": 1271398400,
+      "other": 660480,
+      "attn": 7239780864,
+      "mlp.gate": 5704253440,
+      "mlp.up": 5704253440,
+      "mlp.down": 5704253440,
+      "lm_head": 1271398400
+    },
+    "role_bpw": {
+      "embed": 4.250001799593266,
+      "other": 4.6515625,
+      "attn": 4.2501555848196455,
+      "mlp.gate": 1.1250234267290902,
+      "mlp.up": 1.2875108157887178,
+      "mlp.down": 4.250025132123162,
+      "lm_head": 4.250001799593266
+    },
+    "mlp_bytes": 4750615904,
+    "mlp_elems": 17112760320,
+    "peeks": [
+      {
+        "role": "embed",
+        "name": "language_model.model.embed_tokens.weight",
+        "codec": 3,
+        "nbytes": 675430686,
+        "magic": "HGRAVU01",
+        "magic_hex": "4847524156553031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/00_embed.hq38seg",
+        "offset": 0
+      },
+      {
+        "role": "mlp.gate",
+        "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+        "codec": 0,
+        "nbytes": 12534021,
+        "magic": "HGRAVB01",
+        "magic_hex": "4847524156423031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/L00.hq38seg",
+        "offset": 61567511
+      },
+      {
+        "role": "mlp.up",
+        "name": "language_model.model.layers.0.mlp.up_proj.weight",
+        "codec": 1,
+        "nbytes": 14344242,
+        "magic": "HGRAVR02",
+        "magic_hex": "4847524156523032",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/L00.hq38seg",
+        "offset": 74101532
+      },
+      {
+        "role": "mlp.down",
+        "name": "language_model.model.layers.0.mlp.down_proj.weight",
+        "codec": 3,
+        "nbytes": 47350040,
+        "magic": "HGRAVU01",
+        "magic_hex": "4847524156553031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/replace_language_model_model_layers_0_mlp_down_proj_weight.hq38seg",
+        "offset": 0
+      },
+      {
+        "role": "lm_head",
+        "name": "language_model.lm_head.weight",
+        "codec": 3,
+        "nbytes": 675430686,
+        "magic": "HGRAVU01",
+        "magic_hex": "4847524156553031",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q4down-v1/segments/99_terminal.hq38seg",
+        "offset": 2977
+      }
+    ],
+    "l0": [
+      {
+        "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+        "codec": 0,
+        "shape": [
+          17408,
+          5120
+        ],
+        "nbytes": 12534021,
+        "magic": "HGRAVB01"
+      },
+      {
+        "name": "language_model.model.layers.0.mlp.up_proj.weight",
+        "codec": 1,
+        "shape": [
+          17408,
+          5120
+        ],
+        "nbytes": 14344242,
+        "magic": "HGRAVR02"
+      },
+      {
+        "name": "language_model.model.layers.0.mlp.down_proj.weight",
+        "codec": 3,
+        "shape": [
+          5120,
+          17408
+        ],
+        "nbytes": 47350040,
+        "magic": "HGRAVU01"
+      }
+    ],
+    "mlp_bpw": 2.2208531248803234
+  }
+}

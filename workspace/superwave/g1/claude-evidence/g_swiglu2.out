@@ -1,0 +1,6 @@
+post_swiglu width 17408, fit 17412 hold 5804, range finder k=3136
+
+ layer  fitE@256 fitE@1024   fitE@k  heldE@256 heldE@1024  heldE@k   verdict
+     0  0.991940  0.999928 0.999943   0.283594   0.331737 0.438919   prompt-dependent
+    31  0.685807  0.940499 0.985824   0.316655   0.409863 0.552320   prompt-dependent
+    63  0.907897  0.979796 0.994272   0.753357   0.840705 0.904628   narrow

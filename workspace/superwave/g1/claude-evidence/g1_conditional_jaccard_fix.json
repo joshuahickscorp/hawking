@@ -1,0 +1,56 @@
+{
+  "prefix_all5": 10,
+  "prefix_first4": 45,
+  "layers": {
+    "0": {
+      "same_id_all_repeats_mean": 0.8924118310956406,
+      "same_id_one_copy_of_shared_prefix_mean": 0.7376877743226373,
+      "n_ids_one_copy": 20,
+      "same_id_outside_shared45_mean": 0.6315918845894093,
+      "n_ids_outside_shared45": 11,
+      "random_diff_id_mean": 0.12033465025533994,
+      "consecutive_in_prompt_mean": 0.12693772651604301,
+      "shared45_same_offset_mean": 1.0
+    },
+    "6": {
+      "same_id_all_repeats_mean": 0.8075159237222135,
+      "same_id_one_copy_of_shared_prefix_mean": 0.5260678182923785,
+      "n_ids_one_copy": 20,
+      "same_id_outside_shared45_mean": 0.3598876345340502,
+      "n_ids_outside_shared45": 11,
+      "random_diff_id_mean": 0.09456238375625275,
+      "consecutive_in_prompt_mean": 0.12493685340504318,
+      "shared45_same_offset_mean": 0.9879183996831055
+    },
+    "7": {
+      "same_id_all_repeats_mean": 0.7714865126394923,
+      "same_id_one_copy_of_shared_prefix_mean": 0.43881544890222113,
+      "n_ids_one_copy": 20,
+      "same_id_outside_shared45_mean": 0.23342432811735395,
+      "n_ids_outside_shared45": 11,
+      "random_diff_id_mean": 0.05437663529606707,
+      "consecutive_in_prompt_mean": 0.09078723285624007,
+      "shared45_same_offset_mean": 0.9866508219449396
+    },
+    "32": {
+      "same_id_all_repeats_mean": 0.7650004441742937,
+      "same_id_one_copy_of_shared_prefix_mean": 0.4337088767599055,
+      "n_ids_one_copy": 20,
+      "same_id_outside_shared45_mean": 0.2273099823513361,
+      "n_ids_outside_shared45": 11,
+      "random_diff_id_mean": 0.14566555739920198,
+      "consecutive_in_prompt_mean": 0.2265858824960463,
+      "shared45_same_offset_mean": 0.9825311942959001
+    },
+    "63": {
+      "same_id_all_repeats_mean": 0.7468957929439112,
+      "same_id_one_copy_of_shared_prefix_mean": 0.41373741477405784,
+      "n_ids_one_copy": 20,
+      "same_id_outside_shared45_mean": 0.22155078975345302,
+      "n_ids_outside_shared45": 11,
+      "random_diff_id_mean": 0.09609299263313636,
+      "consecutive_in_prompt_mean": 0.1589610502507877,
+      "shared45_same_offset_mean": 0.9650952098010922
+    }
+  }
+}

@@ -31,7 +31,17 @@ import numpy as np
 
 BF16 = "workspace/campaign/records/runs/qwen38-27b/bf16"
 CAPTURE = "workspace/campaign/records/runs/qwen38-27b/activation-capture-v1"
-PASS_THRESHOLD = 0.95  # a construction scoring above this is judged HEALTHY by the gate
+PASS_THRESHOLD = 0.95
+
+# Absolute mode needs PER-AXIS thresholds, not one flat number, and the reason is structural
+# rather than empirical. `observed` and `probed` are MEANS over rows. `worst_unit` and `gain`
+# both take a MIN over output units, and a minimum over 17,408 units is structurally lower
+# than a mean for ANY codec including a faithful one -- an honest Q4 g128 scores about 0.90 on
+# gain by construction. Holding all four to 0.95 rejected the faithful codec in demo(), which
+# is what adding the gain axis silently broke.
+# These are floors for the SYNTHETIC self-check only. Relative mode, which compares against a
+# same-tensor honest-codec reference, is the real gate and is unaffected.
+ABS_THRESHOLD = {"observed": 0.95, "probed": 0.95, "worst_unit": 0.85, "gain": 0.85}
 
 
 # ---------------------------------------------------------------- loading
@@ -180,8 +190,10 @@ def gate(W, Wh, X, ref=None, seed=None):
     """
     a = axes(W, Wh, X, seed=seed)
     if ref is None:
-        g = min(a.values())
-        return {**a, "gate": g, "healthy": g >= PASS_THRESHOLD, "mode": "absolute"}
+        slack = {k: a[k] - ABS_THRESHOLD[k] for k in a}
+        worst = min(slack, key=slack.get)
+        return {**a, "gate": slack[worst], "worst_axis": worst,
+                "healthy": slack[worst] >= 0.0, "mode": "absolute"}
     deficits = {k: a[k] - (ref[k] - AXIS_MARGIN[k]) for k in a}
     worst = min(deficits, key=deficits.get)
     return {**a, "ref": ref, "deficit": deficits,

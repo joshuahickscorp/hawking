@@ -1,0 +1,610 @@
+{
+  "schema": "hawking.g1.capability_gate.measure.v1",
+  "self_check": {
+    "self_check_cosine": 0.9951864747866593,
+    "max_abs_err": 0.004397718235850334
+  },
+  "labeled_vs_content": {
+    "labeled_artifact": "56dd65d465f31741f8d40a86d84de779a939fdd9b9b90ecd3d1cb4f82aa4287a",
+    "labeled_runtime": "ecfc1cac8742d51dac35bca3c702520a7409089914b9dd637d7927baae0cfe72",
+    "labeled_genome": "688d8b87bddc6baa7bd083229f1b1c7c96ea01adb893c42a98ad534c3341cd7e",
+    "g0_manifest_sha256": "d650a757c4cffed463ce8c24dfd5052c2cb47c0f6b1eb10349947854fc47b9df",
+    "mixed_catalog_sha256": "6a16f7fdb58a91925dc154f37f4fa3e2f1364e95bb21a9aed80b61b1a92e52da",
+    "same": false
+  },
+  "g0_min_q4_cosine_fold": {
+    "manifest_field": 1.0,
+    "q4_tensors": 402,
+    "min": null,
+    "n_none": 402,
+    "n": 402,
+    "status": "FAIL_NONE"
+  },
+  "g0_catalog_merkle": {
+    "merkle_sha256": "c33d59d8811669760eaf6c27a39338f855fce97a48563b2bcab00c2e310c9641",
+    "n_files": 755,
+    "wall_s": 9.207828499987954,
+    "bind": "sha256(concat(name || 0x00 || sha256(file_bytes) || newline) in manifest order)",
+    "first3": [
+      {
+        "name": "language_model.model.embed_tokens.weight",
+        "artifact": "7cf1b122be1f8265ad64c83b9a9f1c065e1e780bea0fd1c74ac4598596cb3c69.hq30uq4",
+        "sha256": "8bf67af581661b60dced866143eed48ae14fe7d5d15ab6dd64bc856268aaed62",
+        "bytes": 675430440
+      },
+      {
+        "name": "language_model.model.layers.0.input_layernorm.weight",
+        "artifact": "b562b986ad0a175dff2803bfe05a6582e815edf279aa777207d81f32556d9630.f32v2",
+        "sha256": "4487e59fb774e13c79f8668afb1f49f7e41f268118653d52bc55192857847de3",
+        "bytes": 20488
+      },
+      {
+        "name": "language_model.model.layers.0.post_attention_layernorm.weight",
+        "artifact": "a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2.f32v2",
+        "sha256": "fb986ccbccce3b2671fc71b7eadedc35c301d6cfba97c403ba322c84eab75413",
+        "bytes": 20488
+      }
+    ],
+    "last1": {
+      "name": "language_model.lm_head.weight",
+      "artifact": "9a327c6eaaee2b1b171f349900068f722121a57c1a481679dc1fd3e521b5da9a.hq30uq4",
+      "sha256": "e86b8de6f6df4207d128e482a3d5955e01dc3614b3538145d23c3cdfe56313ba",
+      "bytes": 675430440
+    }
+  },
+  "g0_artifact_content_sha": "f590664c259cbea8fe90889e06e2f78f09c57f03f34f97b26635e524e5e06b5e",
+  "g0_dequant_cosine_rows": [
+    {
+      "name": "language_model.model.layers.0.linear_attn.out_proj.weight",
+      "shape": [
+        5120,
+        6144
+      ],
+      "elements": 31457280,
+      "q4_bytes": 16711720,
+      "cosine": 0.9935414911194438,
+      "rel_l2": 0.11425257960453206,
+      "rmse": 0.0017970296207338885,
+      "src_norm": 88.21649638934416,
+      "recon_norm": 88.82484928726986,
+      "n_nonfinite": 0,
+      "wall_s": 0.09711616700224113,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "out_proj"
+    },
+    {
+      "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "elements": 89128960,
+      "q4_bytes": 47349800,
+      "cosine": 0.9941447925762601,
+      "rel_l2": 0.10873951632127579,
+      "rmse": 0.0011055815216529997,
+      "src_norm": 95.98708303027591,
+      "recon_norm": 96.59338762732669,
+      "n_nonfinite": 0,
+      "wall_s": 0.2906750410038512,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "gate"
+    },
+    {
+      "name": "language_model.model.layers.0.mlp.up_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "elements": 89128960,
+      "q4_bytes": 47349800,
+      "cosine": 0.9941928218031617,
+      "rel_l2": 0.1082863284583889,
+      "rmse": 0.0010631400180694513,
+      "src_norm": 92.68858593388717,
+      "recon_norm": 93.26758324822764,
+      "n_nonfinite": 0,
+      "wall_s": 0.28408537499490194,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "up"
+    },
+    {
+      "name": "language_model.model.layers.0.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "elements": 89128960,
+      "q4_bytes": 47349800,
+      "cosine": 0.994008404206767,
+      "rel_l2": 0.11000192672662153,
+      "rmse": 0.001169710443377656,
+      "src_norm": 100.38931591408824,
+      "recon_norm": 101.03010455281603,
+      "n_nonfinite": 0,
+      "wall_s": 0.2749362909962656,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "down"
+    },
+    {
+      "name": "language_model.model.layers.3.self_attn.o_proj.weight",
+      "shape": [
+        5120,
+        6144
+      ],
+      "elements": 31457280,
+      "q4_bytes": 16711720,
+      "cosine": 0.9937473451468555,
+      "rel_l2": 0.11242167774005858,
+      "rmse": 0.0017928079055814236,
+      "src_norm": 89.44257222645027,
+      "recon_norm": 90.05777702294166,
+      "n_nonfinite": 0,
+      "wall_s": 0.09941408300073817,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "out_proj"
+    },
+    {
+      "name": "language_model.model.layers.3.self_attn.q_proj.weight",
+      "shape": [
+        12288,
+        5120
+      ],
+      "elements": 62914560,
+      "q4_bytes": 33423400,
+      "cosine": 0.9939553680199088,
+      "rel_l2": 0.11049581256788257,
+      "rmse": 0.0019058125453938538,
+      "src_norm": 136.8075115180211,
+      "recon_norm": 137.6925588054893,
+      "n_nonfinite": 0,
+      "wall_s": 0.19589195899607148,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "q_proj"
+    },
+    {
+      "name": "language_model.model.layers.63.self_attn.o_proj.weight",
+      "shape": [
+        5120,
+        6144
+      ],
+      "elements": 31457280,
+      "q4_bytes": 16711720,
+      "cosine": 0.9925598851191002,
+      "rel_l2": 0.12271062829724379,
+      "rmse": 0.0021963609688226797,
+      "src_norm": 100.38807386702182,
+      "recon_norm": 101.17361091468001,
+      "n_nonfinite": 0,
+      "wall_s": 0.09592416700616013,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "out_proj"
+    },
+    {
+      "name": "language_model.model.layers.63.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "elements": 89128960,
+      "q4_bytes": 47349800,
+      "cosine": 0.9932512059131099,
+      "rel_l2": 0.11681500835603364,
+      "rmse": 0.0013588344719171772,
+      "src_norm": 109.8189611100133,
+      "recon_norm": 110.60625021548212,
+      "n_nonfinite": 0,
+      "wall_s": 0.29682995899929665,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "down"
+    },
+    {
+      "name": "language_model.model.embed_tokens.weight",
+      "shape": [
+        248320,
+        5120
+      ],
+      "elements": 1271398400,
+      "q4_bytes": 675430440,
+      "cosine": 0.9942128523312148,
+      "rel_l2": 0.10809969270808145,
+      "rmse": 0.0013765986888481538,
+      "src_norm": 454.0709546262009,
+      "recon_norm": 456.90599986402765,
+      "n_nonfinite": 0,
+      "wall_s": 3.9741201669967268,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "embed"
+    },
+    {
+      "name": "language_model.lm_head.weight",
+      "shape": [
+        248320,
+        5120
+      ],
+      "elements": 1271398400,
+      "q4_bytes": 675430440,
+      "cosine": 0.9937578775846426,
+      "rel_l2": 0.11230407530937533,
+      "rmse": 0.0015437653391757122,
+      "src_norm": 490.1472832911878,
+      "recon_norm": 493.4203925641246,
+      "n_nonfinite": 0,
+      "wall_s": 4.062272916009533,
+      "kind": "q4_dequant_vs_bf16_weight",
+      "manifest_cosine": null,
+      "role": "lm_head"
+    }
+  ],
+  "g0_dequant_cosine_min": 0.9925598851191002,
+  "g0_dequant_cosine_max": 0.9942128523312148,
+  "f32v2_norm_vs_bf16_raw": {
+    "name": "language_model.model.layers.0.input_layernorm.weight",
+    "shape": [
+      5120
+    ],
+    "elements": 5120,
+    "cosine": -0.5882498371575625,
+    "rel_l2": 1.0335574002160521,
+    "compare_to": "bf16_raw",
+    "stored_first": 0.046875,
+    "src_first": 1.046875,
+    "kind": "f32v2_vs_bf16"
+  },
+  "f32v2_norm_vs_bf16_minus_1": {
+    "name": "language_model.model.layers.0.input_layernorm.weight",
+    "shape": [
+      5120
+    ],
+    "elements": 5120,
+    "cosine": 1.0,
+    "rel_l2": 0.0,
+    "compare_to": "bf16_minus_1",
+    "stored_first": 0.046875,
+    "src_first": 0.046875,
+    "kind": "f32v2_vs_bf16"
+  },
+  "mixed_2p0_generate": {
+    "receipt": "/tmp/QWEN38_NATIVE_MIXED_2P0_GENERATE.json",
+    "engine_field": null,
+    "fallbacks_total": 0,
+    "dense_w_materialized_total": 0,
+    "n_prompts": 6,
+    "classes": {
+      "INCOHERENT": 6
+    },
+    "rows": [
+      {
+        "prompt": "Say hi.",
+        "class": "INCOHERENT",
+        "reasons": [
+          "degenerate_cycle"
+        ],
+        "task": null,
+        "task_ok": null,
+        "parent_prefix_match": null,
+        "stats": {
+          "n": 16,
+          "unique": 1,
+          "unique_ratio": 0.0625,
+          "top_id": 198,
+          "top_frac": 1.0,
+          "entropy_bits": 0.0,
+          "newline_frac": 1.0,
+          "punct_only_frac": 1.0
+        },
+        "text": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+        "ids": [
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198
+        ]
+      },
+      {
+        "prompt": "Write a function that reverses a string.",
+        "class": "INCOHERENT",
+        "reasons": [
+          "majority_token_collapse"
+        ],
+        "task": "reverse_string",
+        "task_ok": false,
+        "parent_prefix_match": null,
+        "stats": {
+          "n": 16,
+          "unique": 3,
+          "unique_ratio": 0.1875,
+          "top_id": 1076,
+          "top_frac": 0.75,
+          "entropy_bits": 1.014097655573916,
+          "newline_frac": 0.0625,
+          "punct_only_frac": 1.0
+        },
+        "text": "......)...)............)\n...............",
+        "ids": [
+          1076,
+          1076,
+          8,
+          1076,
+          8,
+          1076,
+          1076,
+          1076,
+          1076,
+          8,
+          198,
+          1076,
+          1076,
+          1076,
+          1076,
+          1076
+        ]
+      },
+      {
+        "prompt": "What is the capital of France?",
+        "class": "INCOHERENT",
+        "reasons": [
+          "degenerate_cycle"
+        ],
+        "task": "france",
+        "task_ok": false,
+        "parent_prefix_match": null,
+        "stats": {
+          "n": 16,
+          "unique": 2,
+          "unique_ratio": 0.125,
+          "top_id": 198,
+          "top_frac": 0.9375,
+          "entropy_bits": 0.3372900666170139,
+          "newline_frac": 0.9375,
+          "punct_only_frac": 1.0
+        },
+        "text": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n)",
+        "ids": [
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          8
+        ]
+      },
+      {
+        "prompt": "Explain what a hash map is in one sentence.",
+        "class": "INCOHERENT",
+        "reasons": [
+          "newline_collapse"
+        ],
+        "task": null,
+        "task_ok": null,
+        "parent_prefix_match": null,
+        "stats": {
+          "n": 16,
+          "unique": 3,
+          "unique_ratio": 0.1875,
+          "top_id": 198,
+          "top_frac": 0.625,
+          "entropy_bits": 1.3294340029249652,
+          "newline_frac": 0.625,
+          "punct_only_frac": 1.0
+        },
+        "text": "\n\n\n\n\n\n\n\n\n)..)).\n",
+        "ids": [
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          8,
+          13,
+          13,
+          8,
+          8,
+          13,
+          198
+        ]
+      },
+      {
+        "prompt": "def fibonacci(n):",
+        "class": "INCOHERENT",
+        "reasons": [
+          "newline_collapse"
+        ],
+        "task": null,
+        "task_ok": null,
+        "parent_prefix_match": null,
+        "stats": {
+          "n": 16,
+          "unique": 3,
+          "unique_ratio": 0.1875,
+          "top_id": 198,
+          "top_frac": 0.6875,
+          "entropy_bits": 1.1216407621868583,
+          "newline_frac": 0.6875,
+          "punct_only_frac": 1.0
+        },
+        "text": ")))))))))\n\n\n\n\n\n\n\n\n\n\n",
+        "ids": [
+          578,
+          578,
+          578,
+          578,
+          8,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198
+        ]
+      },
+      {
+        "prompt": "The three primary colors are",
+        "class": "INCOHERENT",
+        "reasons": [
+          "degenerate_cycle"
+        ],
+        "task": null,
+        "task_ok": null,
+        "parent_prefix_match": null,
+        "stats": {
+          "n": 16,
+          "unique": 2,
+          "unique_ratio": 0.125,
+          "top_id": 198,
+          "top_frac": 0.6875,
+          "entropy_bits": 0.8960382325345574,
+          "newline_frac": 0.6875,
+          "punct_only_frac": 1.0
+        },
+        "text": ")\n\n\n\n\n\n\n\n\n\n\n))))",
+        "ids": [
+          8,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          198,
+          8,
+          8,
+          8,
+          8
+        ]
+      }
+    ],
+    "gate_verdict": "FAIL"
+  },
+  "g0_oracle32_class": {
+    "prompt": "Say hi.",
+    "class": "COHERENT",
+    "reasons": [],
+    "task": null,
+    "task_ok": null,
+    "parent_prefix_match": null,
+    "stats": {
+      "n": 32,
+      "unique": 29,
+      "unique_ratio": 0.90625,
+      "top_id": 1910,
+      "top_frac": 0.0625,
+      "entropy_bits": 4.8125,
+      "newline_frac": 0.03125,
+      "punct_only_frac": 0.0625
+    },
+    "text": "<think>\nThe user simply wants me to say \"hi.\" This is a very simple, direct request. I'll just say hi in a friendly, natural way",
+    "ids": [
+      248068,
+      198,
+      760,
+      1156,
+      4777,
+      6587,
+      728,
+      310,
+      1910,
+      328,
+      5834,
+      1149,
+      1061,
+      369,
+      264,
+      1546,
+      4145,
+      11,
+      2050,
+      1622,
+      13,
+      353,
+      3172,
+      1066,
+      1910,
+      15131,
+      303,
+      264,
+      11321,
+      11,
+      5629,
+      1560
+    ]
+  },
+  "g0_oracle32_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    4777,
+    6587,
+    728,
+    310,
+    1910,
+    328,
+    5834,
+    1149,
+    1061,
+    369,
+    264,
+    1546,
+    4145,
+    11,
+    2050,
+    1622,
+    13,
+    353,
+    3172,
+    1066,
+    1910,
+    15131,
+    303,
+    264,
+    11321,
+    11,
+    5629,
+    1560
+  ]
+}

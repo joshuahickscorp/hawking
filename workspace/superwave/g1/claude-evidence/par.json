@@ -1,0 +1,11 @@
+{
+  "A_fixed": 73040428,
+  "B_rans_pertile_L8": 57564714,
+  "C_rans_shared_L8": 57493870,
+  "B_rans_pertile_L16": 57740330,
+  "C_rans_shared_L16": 57669486,
+  "B_rans_pertile_L32": 58091562,
+  "C_rans_shared_L32": 58020718,
+  "B_rans_pertile_L64": 58794026,
+  "C_rans_shared_L64": 58723182
+}
