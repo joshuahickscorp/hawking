@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.nos.channel_scale_norm_precision.v1",
+  "obligation": "G032 -- the fold needs the norm carrying diag(1/s) stored at higher precision",
+  "finding": "Dividing g by s WIDENS the norm's dynamic range, and the artifact stores norms uniform-encoded at group 64 (2977 bytes for 5120 elements). The widened range quantizes badly and destroys the fold: deployable-today is a LOSS, not a win. Storing the folded norm at f16 restores it, for 7263 extra bytes per layer.",
+  "per_layer": [
+    {
+      "layer": 0,
+      "baseline": 0.19884085074632063,
+      "fold_q4_norm": 0.18219519125122402,
+      "fold_f16_norm": 0.17910421204007088,
+      "f16_norm_no_fold_control": 0.19884085074632063
+    },
+    {
+      "layer": 31,
+      "baseline": 0.3805550697860118,
+      "fold_q4_norm": 0.6217864468522359,
+      "fold_f16_norm": 0.2708483073810165,
+      "f16_norm_no_fold_control": 0.3805550697860118
+    },
+    {
+      "layer": 63,
+      "baseline": 0.28839353690740577,
+      "fold_q4_norm": 0.2341431513053668,
+      "fold_f16_norm": 0.22329608396278716,
+      "f16_norm_no_fold_control": 0.28839353690740577
+    }
+  ],
+  "means": {
+    "baseline": 0.28926315247991274,
+    "fold_q4_norm": 0.3460415964696089,
+    "fold_f16_norm": 0.22441620112795815,
+    "f16_norm_no_fold_control": 0.28926315247991274
+  },
+  "ratios": {
+    "f16_norm_no_fold_control": 1.0,
+    "fold_q4_norm": 1.1962864730710525,
+    "fold_f16_norm": 0.7758202149288346
+  },
+  "f16_norm_extra_bytes_total": 464832,
+  "f16_norm_extra_complete_bpw": 0.00013826056708686165,
+  "commit": "ed14a17ab294da81873de0b1e48ccf98ec87bf72"
+}
