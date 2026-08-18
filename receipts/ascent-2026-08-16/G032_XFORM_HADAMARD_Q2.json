@@ -1,0 +1,224 @@
+{
+  "schema": "hawking.nos.gxform_hadamard.v1",
+  "obligation": "G032 -- structured transform that lowers achievable bits at equal function",
+  "transform": {
+    "family": "block-diagonal Sylvester-Hadamard, right-multiplied on the contraction axis",
+    "block": 1024,
+    "exactly_function_preserving": "H is orthogonal, so W x == (W H)(H^T x) in exact arithmetic. Both 5120 and 17408 are 1024*odd, so the block tiles with no padding.",
+    "stored_bytes": 0,
+    "stored_bytes_reason": "Sylvester-Hadamard is generated from its size, not stored.",
+    "runtime_cost": "one in-place FWHT per activation vector per bound tensor, O(n log n) adds, no multiplies. NOT YET MEASURED ON DEVICE.",
+    "fold_at_pack_time": "W H is packed instead of W. The H^T x half is the part that costs runtime and is what a device measurement must price."
+  },
+  "fixed": {
+    "bits": 2,
+    "group": 64,
+    "quantizer": "symmetric absmax group, round-to-nearest"
+  },
+  "tensors": [
+    {
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "baseline": {
+        "hold_cosine": 0.7781863335578566,
+        "rel_fro": 0.7185514967862201,
+        "code_entropy_bits": 0.9262617812233854,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.7809766215368472,
+        "rel_fro": 0.7175612023220468,
+        "code_entropy_bits": 0.9352453034160592,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.002790287978990613,
+      "delta_rel_fro_pct": -0.13781816176049816,
+      "delta_entropy_bits": 0.008983522192673732
+    },
+    {
+      "tensor": "language_model.model.layers.0.mlp.up_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "baseline": {
+        "hold_cosine": 0.7785882199695084,
+        "rel_fro": 0.7185331877926919,
+        "code_entropy_bits": 0.9264736844416633,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.7810635209316218,
+        "rel_fro": 0.7174816921900307,
+        "code_entropy_bits": 0.9353873077061212,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.002475300962113347,
+      "delta_rel_fro_pct": -0.14633918384360564,
+      "delta_entropy_bits": 0.008913623264457882
+    },
+    {
+      "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "baseline": {
+        "hold_cosine": 0.773194131558145,
+        "rel_fro": 0.7225963063901693,
+        "code_entropy_bits": 0.9166039381713815,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.7812645744147503,
+        "rel_fro": 0.717286319503027,
+        "code_entropy_bits": 0.9356300434973346,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.008070442856605298,
+      "delta_rel_fro_pct": -0.734848329583778,
+      "delta_entropy_bits": 0.019026105325953058
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "baseline": {
+        "hold_cosine": 0.7730813201618946,
+        "rel_fro": 0.7224299629780158,
+        "code_entropy_bits": 0.9026994195058633,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.7810818135367704,
+        "rel_fro": 0.7174984842129574,
+        "code_entropy_bits": 0.9355816915201489,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.00800049337487585,
+      "delta_rel_fro_pct": -0.6826237860802106,
+      "delta_entropy_bits": 0.03288227201428562
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.up_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "baseline": {
+        "hold_cosine": 0.7727439535823178,
+        "rel_fro": 0.7224761381593607,
+        "code_entropy_bits": 0.8976324544355108,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.781152894404528,
+        "rel_fro": 0.7174031063545037,
+        "code_entropy_bits": 0.9356269417552523,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.00840894082221011,
+      "delta_rel_fro_pct": -0.7021729212789707,
+      "delta_entropy_bits": 0.03799448731974153
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "baseline": {
+        "hold_cosine": 0.7729606110477447,
+        "rel_fro": 0.7226104953668772,
+        "code_entropy_bits": 0.8984506359306605,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.7811806606231821,
+        "rel_fro": 0.7173794012412719,
+        "code_entropy_bits": 0.9358121503784138,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.008220049575437427,
+      "delta_rel_fro_pct": -0.7239161566494288,
+      "delta_entropy_bits": 0.03736151444775326
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "baseline": {
+        "hold_cosine": 0.770690273658832,
+        "rel_fro": 0.7237186814383871,
+        "code_entropy_bits": 0.8993698582596081,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.7811525173028273,
+        "rel_fro": 0.7174333495916129,
+        "code_entropy_bits": 0.9357822758305181,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.010462243643995284,
+      "delta_rel_fro_pct": -0.8684772146937263,
+      "delta_entropy_bits": 0.03641241757090996
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.up_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "baseline": {
+        "hold_cosine": 0.7756140531418227,
+        "rel_fro": 0.720343457345351,
+        "code_entropy_bits": 0.9130395746080536,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.7811058943553271,
+        "rel_fro": 0.7174074215859613,
+        "code_entropy_bits": 0.9357662232336735,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.005491841213504323,
+      "delta_rel_fro_pct": -0.407588314914355,
+      "delta_entropy_bits": 0.022726648625619905
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "baseline": {
+        "hold_cosine": 0.7613028521703923,
+        "rel_fro": 0.7289037956702348,
+        "code_entropy_bits": 0.8396810184344785,
+        "distinct_symbols": 3
+      },
+      "hadamard": {
+        "hold_cosine": 0.7812277732843952,
+        "rel_fro": 0.7173665750500334,
+        "code_entropy_bits": 0.9359736806297723,
+        "distinct_symbols": 3
+      },
+      "delta_hold": 0.019924921114002903,
+      "delta_rel_fro_pct": -1.5828180191588592,
+      "delta_entropy_bits": 0.09629266219529375
+    }
+  ],
+  "summary": {
+    "mean_delta_hold": 0.008204946837970573,
+    "mean_delta_rel_fro_pct": -0.6651780097737148,
+    "mean_delta_entropy_bits": 0.033399250328520966
+  },
+  "commit": "037702b570193f8585aaa7cddef79d3ffe4aab99"
+}
