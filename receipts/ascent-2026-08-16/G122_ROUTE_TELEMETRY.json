@@ -1,0 +1,71 @@
+{
+  "schema": "hawking.nos.nvm_route_telemetry.v1",
+  "obligation": "G122 -- per-route ns and bytes reconciling to TOKEN_NS and DRAM bytes/token",
+  "per_route": [
+    {
+      "route_kind": "EMBED",
+      "count": 1,
+      "elements_each": 1360,
+      "ns_each": 1.1458,
+      "bytes_each": 722,
+      "ns_total": 1.1458,
+      "bytes_total": 722
+    },
+    {
+      "route_kind": "GQA_ATTENTION",
+      "count": 16,
+      "elements_each": 104857511,
+      "ns_each": 88342.4530175,
+      "bytes_each": 55705552,
+      "ns_total": 1413479.24828,
+      "bytes_total": 891288832
+    },
+    {
+      "route_kind": "GATED_DELTA_RECURRENCE",
+      "count": 48,
+      "elements_each": 115844700,
+      "ns_each": 97599.15975,
+      "bytes_each": 61542496,
+      "ns_total": 4684759.6680000005,
+      "bytes_total": 2954039808
+    },
+    {
+      "route_kind": "MLP_SWIGLU",
+      "count": 64,
+      "elements_each": 267386880,
+      "ns_each": 225273.44640000002,
+      "bytes_each": 142049280,
+      "ns_total": 14417500.569600001,
+      "bytes_total": 9091153920
+    },
+    {
+      "route_kind": "LM_HEAD",
+      "count": 1,
+      "elements_each": 1271398400,
+      "ns_each": 1071153.152,
+      "bytes_each": 675430400,
+      "ns_total": 1071153.152,
+      "bytes_total": 675430400
+    }
+  ],
+  "reconciliation": {
+    "ns": {
+      "sum_per_route_gemv_ms": 21.58689378368,
+      "host_ceremony_ms": 1.07,
+      "residual_ms": 7.772106216319997,
+      "measured_token_ms": 30.429,
+      "residual_pct": 25.5417733619902
+    },
+    "bytes": {
+      "sum_per_route_bytes": 13611913682,
+      "norms_bytes": 6475776,
+      "residual_bytes": 3877502,
+      "measured_active_bytes_per_token": 13622266960,
+      "residual_pct": 0.028464439959852324
+    }
+  },
+  "the_two_axes_reconcile_very_differently": "BYTES close to 0.0285% -- the per-route element census times the codec width accounts for essentially all DRAM traffic, because bytes ARE routes: every byte moved is a weight some route reads. NS leave a 25.5% residual, because time is not only weight movement -- norms, rope, softmax and the recurrent state update all consume it and belong to no single route's weight stream. The asymmetry is the finding: a route graph explains the artifact completely and the clock only three-quarters.",
+  "the_residual_is_the_same_one": "7.772 ms here against G108's 7.837 and G093's 7.949 from the dispatch side. Three decompositions on three different observables, one term.",
+  "what_is_derived_not_measured": "per-route ns and bytes are DERIVED: the element census divided by route count, priced at the measured 0.8425 ps/element and the declared 4.25 bits. Exact in aggregate because both inputs are measured, but it apportions elements evenly across layers of a kind. The residual is not apportioned at all -- per-kernel timing to split it does not exist in this runtime.",
+  "commit": "82c40c5d52a63798600ea2c5b0d040aba191fd1f"
+}
