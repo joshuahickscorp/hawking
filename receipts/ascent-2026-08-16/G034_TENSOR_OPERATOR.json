@@ -58,5 +58,58 @@
   "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.93x the output error of flat q3 on every tensor tested. It reduces operations to 0.203x dense, but the acceptance requires bytes AND operations WITH function preserved.",
   "note": "A side observation worth keeping: at a much LOWER budget (~1.04 b/elem, rank 256) gate_proj low-rank gives 0.514 output error, which beats flat q2's 0.578 at 2.25 b/elem -- so low-rank is competitive in the DEAD zone, the same place binary planes survive. down_proj is far worse (0.863), matching the campaign's recorded finding that down_proj inverts the ranking.",
   "commit": "f4a8a3ec2eb0953c3c4703afbbe677aa30303290",
-  "correction": "RE-RUN at the verified MLP activation site. v1 used post_input_norm for gate/up; verified against the capture, silu(gate(x))*up(x) reproduces captured post_swiglu to cosine 0.999986 with post_attn_norm and 0.48 with post_input_norm."
+  "correction": "RE-RUN at the verified MLP activation site. v1 used post_input_norm for gate/up; verified against the capture, silu(gate(x))*up(x) reproduces captured post_swiglu to cosine 0.999986 with post_attn_norm and 0.48 with post_input_norm.",
+  "untested_members_now_tested": {
+    "tt_matrix_unfolding": {
+      "method": "The natural 2-core TT for a matrix: regroup the indices as W[i,j] with i = i1*m2+i2 and j = j1*n2+j2, form M[(i1,j1),(i2,j2)], factor that, and fold back. For 17408x5120 this unfolds to 10880x8192, whose more balanced shape buys rank 949 at the same parameter budget that gives plain low-rank only 803.",
+      "rows": [
+        {
+          "tensor": "L31.gate_proj",
+          "scheme": "flat q3 (reference)",
+          "bits_per_elem": 3.25,
+          "out_rel_fro": 0.1981181580972974,
+          "rank": null
+        },
+        {
+          "tensor": "L31.gate_proj",
+          "scheme": "plain low-rank r=803",
+          "bits_per_elem": 3.25,
+          "out_rel_fro": 0.49263978004455566,
+          "rank": 803
+        },
+        {
+          "tensor": "L31.gate_proj",
+          "scheme": "TT unfold 10880x8192 r=949",
+          "bits_per_elem": 3.25,
+          "out_rel_fro": 0.7251943349838257,
+          "rank": 949
+        },
+        {
+          "tensor": "L63.down_proj",
+          "scheme": "flat q3 (reference)",
+          "bits_per_elem": 3.25,
+          "out_rel_fro": 0.2399187021584067,
+          "rank": null
+        },
+        {
+          "tensor": "L63.down_proj",
+          "scheme": "plain low-rank r=803",
+          "bits_per_elem": 3.25,
+          "out_rel_fro": 0.5934067964553833,
+          "rank": 803
+        },
+        {
+          "tensor": "L63.down_proj",
+          "scheme": "TT unfold 10880x8192 r=949",
+          "bits_per_elem": 3.25,
+          "out_rel_fro": 0.8146367073059082,
+          "rank": 949
+        }
+      ],
+      "verdict": "REFUTED, and WORSE than the plain low-rank it was meant to improve on. At matched 3.25 bits/elem: L31.gate_proj flat q3 0.19812, plain low-rank 0.49264, TT unfold 0.72519. L63.down_proj 0.23992 / 0.59341 / 0.81464. The extra 146 ranks the balanced shape buys do not compensate.",
+      "why": "The regrouping SCATTERS structure rather than exposing it. A weight matrix's low-rank structure lives in its natural index pairing -- output channel against input channel -- and interleaving those indices produces a matrix with a FLATTER spectrum, so the same parameter budget captures less.",
+      "coverage_note": "Tucker on a 2-way tensor IS the SVD, already tested as plain low-rank. Tensor-ring is a cyclic variant of the same TT unfolding and shares its index-regrouping premise, which is the step that fails here."
+    }
+  },
+  "family_verdict": "COMPREHENSIVELY REFUTED at the coherent operating point. Plain low-rank is 2.93x flat q3's error at identical bits; TT unfolding is worse again. The acceptance also requires a native kernel path and none was built, but no member has earned one."
 }
