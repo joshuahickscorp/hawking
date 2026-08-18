@@ -2384,7 +2384,7 @@ mod device {
             let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
                 // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
                 // 2.54% faster, every pair favouring the retile, and token-identical on 24
@@ -2428,7 +2428,7 @@ mod device {
             let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
                 // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
                 // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
@@ -2981,7 +2981,7 @@ mod device {
             let rms_tg: u32 = std::env::var("HAWKING_RMSNORM_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: 256 gives
                 // 35.569/35.840/35.967 and 1024 gives 34.239/34.467/34.095 ms per token.
                 // Mean 35.792 -> 34.267, 4.26% faster, every pair favouring the retile,
@@ -3167,7 +3167,7 @@ mod device {
             let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
                 // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
                 // 2.54% faster, every pair favouring the retile, and token-identical on 24
@@ -3264,7 +3264,7 @@ mod device {
             let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
                 // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
                 // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
@@ -3578,7 +3578,7 @@ mod device {
             let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
                 // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
                 // 2.54% faster, every pair favouring the retile, and token-identical on 24
@@ -3666,7 +3666,7 @@ mod device {
             let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
                 // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
                 // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
