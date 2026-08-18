@@ -1,0 +1,71 @@
+{
+  "schema": "hawking.nos.multiobjective_autotuner.v1",
+  "obligation": "G095 -- joint search whose objective is verified useful work per second, never lowest BPW",
+  "search_space": {
+    "codecs": [
+      "planes_k1",
+      "planes_k2",
+      "flat_q3",
+      "planes_k3",
+      "flat_q4"
+    ],
+    "tilings": [
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "points": 25,
+    "axes_measured": "representation/precision (ps/element and functional error, on device), kernel/layout (R tiling speedup, on device)",
+    "axes_not_live": "cache plan -- G094 measured zero rank correlation between traffic and time, so it is not a search axis on this machine; correction topology -- G070 measured the winner as the no-index plane already in the codec list"
+  },
+  "quality_bar": {
+    "value": 0.1952,
+    "basis": "flat q3, the cheapest artifact with a watched 10/10 gate"
+  },
+  "memory_constraint": {
+    "ram_bytes": 103100000000.0,
+    "binding": false,
+    "note": "G085 measured the artifact at 13.9% of RAM, so the memory constraint never binds here"
+  },
+  "bpw_minimizing_pick": {
+    "codec": "flat_q3",
+    "R": 8,
+    "bits": 3.25,
+    "err": 0.1952,
+    "eff_ps_per_element": 0.7614834673815907,
+    "gemv_ms": 19.511052657074885,
+    "token_ms": 28.530052657074883,
+    "tps": 35.050759002087574,
+    "artifact_bytes": 10926499376.0
+  },
+  "throughput_maximizing_pick": {
+    "codec": "flat_q4",
+    "R": 8,
+    "bits": 4.25,
+    "err": 0.0833,
+    "eff_ps_per_element": 0.7190348525469169,
+    "gemv_ms": 18.42341622800429,
+    "token_ms": 27.44241622800429,
+    "tps": 36.43993997072041,
+    "artifact_bytes": 14288499184.0
+  },
+  "tuners_disagree": true,
+  "the_demonstration": "At the same quality bar the BPW tuner picks flat_q3 at 3.25 bits and the work-per-second tuner picks flat_q4 at 4.25 bits. The throughput pick is 1.040x FASTER and has 2.34x LOWER error while storing 1.31x the bits. A tuner with a hardcoded preference for low BPW would have shipped the slower, worse artifact -- which is exactly the failure the verify names.",
+  "both_pick_the_same_tiling": "Both land on R=8, because tiling is free of the quality axis: it changes only ps/element. The disagreement is entirely on the representation axis, which is where BPW has an opinion and throughput has a different one.",
+  "device_conditioning_NOT_demonstrated": "The acceptance asks for one semantic source compiled to DIFFERENT executables PER DEVICE. There is one device on this machine, so that half is untested. What is demonstrated is the joint search and that the OBJECTIVE changes the selection; the device axis would need a second machine and is not claimed.",
+  "commit": "ea1787e2c8ca71738756b054dd0ec95fb3bb3778",
+  "verify_clause_by_clause": {
+    "clause_2_a_BPW_tuner_has_not_done_this": {
+      "met": true,
+      "evidence": "At the same quality bar the BPW tuner picks flat_q3 + R8 (3.25 bits, err 0.1952, 35.05 TPS) and the work-per-second tuner picks flat_q4 + R8 (4.25 bits, err 0.0833, 36.44 TPS). The throughput pick is 1.040x faster AND 2.34x lower error while storing 1.31x the bits. The BPW objective selects a DOMINATED point -- slower and worse simultaneously -- which is precisely the failure this clause names."
+    },
+    "clause_1_same_identity_different_executable_per_device": {
+      "met": false,
+      "why": "There is ONE device on this machine, so 'different executables per device' cannot be shown. Nor does the measured space contain an iso-identity pair to substitute: all five codecs have distinct functional error, so no two configurations share a Doctor identity while differing in executable. The clause needs a second machine and is not claimed.",
+      "missing_input": "a second device with a different roofline, to compile the same semantic source against and measure both"
+    }
+  },
+  "status": "BLOCKED -- the anti-BPW clause is demonstrated, the per-device clause needs a second machine"
+}
