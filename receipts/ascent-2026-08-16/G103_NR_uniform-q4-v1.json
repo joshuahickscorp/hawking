@@ -1,0 +1,51 @@
+{
+  "nr_version": "1.0.0",
+  "nr_kind": "hawking.nos.noetic_representation",
+  "semantic_provenance": {
+    "parent_model": "Qwen3.8-27B (Genesis patient)",
+    "parent_revision": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+    "parameter_count": 26895998464,
+    "patient_note": "abliterated parent; Tabula drift is a Doctor axis and is NOT recorded here because NR states what the representation IS, not how it scored"
+  },
+  "representation": {
+    "tensors": {
+      "count": 755,
+      "payload_bytes": 14297694680,
+      "codec_families": [
+        {
+          "family": "grouped_absmax",
+          "bits": 4,
+          "group": 64,
+          "applies_to": "q4_tensors",
+          "count": 402
+        },
+        {
+          "family": "raw_f32",
+          "applies_to": "f32_tensors",
+          "count": 353
+        }
+      ],
+      "complete_bits_per_weight": 4.252735126866492
+    },
+    "entropy_streams": [],
+    "shared_structures": [],
+    "generated_structures": [],
+    "latent_codes": [],
+    "correction_planes": [],
+    "exact_islands": [],
+    "route_graph": null,
+    "absent_sections_are_measured_not_unfilled": "entropy_streams, shared_structures, generated_structures, latent_codes, correction_planes, exact_islands and route_graph are EMPTY because this campaign measured them absent or refuted: G035/G062 refuted sharing, G042 records GENERATED_BPW_EQUIVALENT and CORRECTION_BPW at 0, G043 records ROUTING_FLOPS at 0 for this dense model, and no packer emits an entropy stream yet."
+  },
+  "kernel_requirements": [
+    {
+      "requires": "grouped_absmax_decoder",
+      "bits": 4,
+      "group": 64,
+      "note": "a REQUIREMENT on the decoder family and its parameters. Naming a specific kernel, threadgroup geometry or device here would make this NX, not NR."
+    },
+    {
+      "requires": "gated_delta_recurrence",
+      "note": "the mixer family the representation assumes; no implementation named"
+    }
+  ]
+}

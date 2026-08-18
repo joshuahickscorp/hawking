@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hawking NR container",
+  "description": "Protected representation. Contains what the patient IS. Any field that could only be true of one machine belongs in the NX genome (G104) and is rejected by the validator.",
+  "type": "object",
+  "required": [
+    "nr_version",
+    "semantic_provenance",
+    "representation",
+    "kernel_requirements"
+  ],
+  "properties": {
+    "nr_version": {
+      "type": "string"
+    },
+    "semantic_provenance": {
+      "type": "object",
+      "required": [
+        "parent_model",
+        "parent_revision",
+        "parameter_count"
+      ]
+    },
+    "representation": {
+      "type": "object"
+    },
+    "kernel_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "requires"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "implementation"
+              ]
+            },
+            {
+              "required": [
+                "kernel"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "x-rejected-field-names": [
+    "cache_plan",
+    "device",
+    "device_id",
+    "dispatch",
+    "dispatches",
+    "gb_s",
+    "gpu",
+    "grid",
+    "k_amortization",
+    "kernel",
+    "kernel_name",
+    "kernels",
+    "machine_genome",
+    "metallib",
+    "occupancy",
+    "ps_per_element",
+    "r_tiling",
+    "register_pressure",
+    "residency_plan",
+    "schedule",
+    "shader",
+    "simd_width",
+    "tg_size",
+    "threadgroup",
+    "threadgroup_size",
+    "token_ns",
+    "tps"
+  ]
+}

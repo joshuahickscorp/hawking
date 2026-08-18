@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.nos.nr_container_spec.v1",
+  "obligation": "G103 -- NR container spec with no machine-specific fields",
+  "artifacts": {
+    "schema": "spec/nr_container.schema.json",
+    "tool": "tools/nr_container.py",
+    "serialized_candidate": "receipts/ascent-2026-08-16/G103_NR_uniform-q4-v1.json"
+  },
+  "exit_codes_the_verify_asks_for": {
+    "serialize_uniform_q4_v1": 0,
+    "validate_round_trip": 0,
+    "negative_test": 1
+  },
+  "negative_test_detail": {
+    "injected": [
+      "representation.threadgroup_size = 128",
+      "kernel_requirements[0].kernel = qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+    ],
+    "rejections": 3,
+    "note": "the validator caught the injection three separate ways -- two deny-listed field names and the structural rule that a kernel_requirements entry may name a REQUIREMENT but never an IMPLEMENTATION"
+  },
+  "the_subtle_case_the_spec_had_to_get_right": "The obligation lists 'kernel requirements' as an NR field, which sounds machine-specific and is not. NR may say 'this stream needs a grouped-absmax decoder at group 64' because that is a property of the REPRESENTATION. It may not say 'dispatch qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 at threadgroup 128' because that is a property of a MACHINE. Requirement is portable, binding is not, and the validator enforces the line structurally rather than by name-matching alone.",
+  "empty_sections_are_measured_not_unfilled": "entropy_streams, shared_structures, generated_structures, latent_codes, correction_planes, exact_islands and route_graph are all EMPTY in the serialized candidate, and the container says why inline: G035 and G062 refuted sharing, G042 records GENERATED_BPW_EQUIVALENT and CORRECTION_BPW at 0, G043 records ROUTING_FLOPS at 0 for this dense model, and no packer emits an entropy stream. An empty section that does not say whether it is refuted or merely unbuilt is the same defect as a missing axis, which G041 already recorded for the T axis.",
+  "commit": "741d7412ee6df5abccdc17773d26581c5928e5ee"
+}
