@@ -1,0 +1,53 @@
+{
+  "schema": "hawking.nos.dispatch_fusion_bound.v1",
+  "obligation": "G112 -- reduce dispatch count by real fusion, and what that can buy",
+  "isolated_dispatch_floor": {
+    "probes": [
+      {
+        "organ": "probe.rows2",
+        "rows": 2,
+        "elements": 10240,
+        "median_us": 17.375
+      },
+      {
+        "organ": "probe.rows8",
+        "rows": 8,
+        "elements": 40960,
+        "median_us": 17.5
+      },
+      {
+        "organ": "probe.rows32",
+        "rows": 32,
+        "elements": 163840,
+        "median_us": 15.875
+      },
+      {
+        "organ": "probe.rows128",
+        "rows": 128,
+        "elements": 655360,
+        "median_us": 16.459
+      },
+      {
+        "organ": "probe.rows512",
+        "rows": 512,
+        "elements": 2621440,
+        "median_us": 17.291
+      }
+    ],
+    "floor_us": 17.291,
+    "work_span_x": 256,
+    "time_span_x": 1.1023622047244095,
+    "reading": "From 2 rows to 512 rows -- 256x the work -- the measured time moves 1.10x and stays near 17.3 us. The compute is invisible; the whole measurement is the cost of committing one command buffer and waiting on its timestamp."
+  },
+  "what_this_floor_does_NOT_measure": "It is NOT the in-command-buffer dispatch cost, which is what a fusion would remove. Production puts 964 dispatches in ONE buffer with no per-dispatch commit or wait. This probe measures the harness floor, and separating the in-buffer term needs instrumentation this runtime does not expose.",
+  "the_bound_that_IS_measurable": {
+    "host_encode_ns_per_dispatch": 702,
+    "dispatches": 964,
+    "host_encode_ms_total": 0.676728,
+    "halving_dispatches_saves_ms": 0.338364,
+    "as_pct_of_token": 1.1096084475634551,
+    "statement": "G093 measured 702 ns of host encode per dispatch. Halving 964 dispatches saves 0.338 ms of host time = 1.1% of the token. That is the floor of what fusion buys; the GPU-side term could add more and is unmeasured."
+  },
+  "a_prior_measurement_IS_RETROACTIVELY_QUALIFIED": "G111's evidence records the retiled argmax at 0.0131 ms = 13.1 us. That is BELOW this 17.3 us isolated-dispatch floor, so the harness could not have resolved it -- the '25.9x' was measuring the floor, not the kernel. This is the missing explanation for why that win transferred 0 of 0.326 ms end to end: there was no 0.326 ms to transfer, because the 0.0131 ms endpoint was never a kernel time. ANY isolated kernel measurement in this campaign below ~17 us is measuring the harness.",
+  "commit": "ed4e270a1931c33da6a0f42daf4d98f79cd58fe5"
+}

@@ -29,7 +29,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         const REPS: usize = 5;
         const RS: [usize; 4] = [1, 2, 4, 8];
         // (name, rows, cols) straight from the Qwen3.8 genome.
-        const ORGANS: [(&str, usize, usize); 8] = [
+        // Tiny shapes first. Their compute is negligible, so T(rows) extrapolated to zero
+        // rows is the per-dispatch overhead -- the ceiling on what any fusion can buy.
+        const ORGANS: [(&str, usize, usize); 13] = [
+            ("probe.rows2", 2, 5120),
+            ("probe.rows8", 8, 5120),
+            ("probe.rows32", 32, 5120),
+            ("probe.rows128", 128, 5120),
+            ("probe.rows512", 512, 5120),
             ("attn.q_proj", 12288, 5120),
             ("attn.k_proj", 1024, 5120),
             ("attn.v_proj", 1024, 5120),
