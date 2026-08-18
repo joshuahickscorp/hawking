@@ -1,0 +1,35 @@
+mixed-q3mlp-q3attn-v1: 496 re-encoded segments on disk
+
+segment                                       tile      disk B       new B   ratio   b/elem  index%
+L0_linear_attn_in_proj_a                       512     100,106      80,685  0.8060   2.6265    0.04
+L11_self_attn_o_proj                           512  12,779,797  10,264,446  0.8032   2.6104    0.04
+L14_linear_attn_in_proj_b                      512     100,106      78,293  0.7821   2.5486    0.04
+L16_mlp_gate_proj                              512  36,208,920  29,121,226  0.8043   2.6139    0.04
+L19_mlp_up_proj                                512  36,208,920  29,100,782  0.8037   2.6120    0.04
+L20_mlp_up_proj                                512  36,208,920  29,101,523  0.8037   2.6121    0.04
+L23_self_attn_k_proj                           512   2,130,194   1,668,638  0.7833   2.5461    0.04
+L26_linear_attn_in_proj_a                      512     100,106      78,476  0.7839   2.5546    0.04
+L28_mlp_down_proj                              512  36,208,920  28,993,501  0.8007   2.6024    0.04
+L30_linear_attn_in_proj_b                      512     100,106      75,171  0.7509   2.4470    0.04
+L32_mlp_gate_proj                              512  36,208,920  28,973,653  0.8002   2.6006    0.04
+L35_mlp_up_proj                                512  36,208,920  28,991,402  0.8007   2.6022    0.04
+L37_mlp_up_proj                                512  36,208,920  29,060,793  0.8026   2.6084    0.04
+L3_self_attn_o_proj                            512  12,779,797  10,242,850  0.8015   2.6049    0.04
+L42_linear_attn_in_proj_b                      512     100,106      74,804  0.7472   2.4350    0.04
+L44_mlp_gate_proj                              512  36,208,920  29,014,092  0.8013   2.6042    0.04
+L47_mlp_up_proj                                512  36,208,920  28,994,310  0.8008   2.6025    0.04
+L49_mlp_up_proj                                512  36,208,920  28,985,056  0.8005   2.6016    0.04
+L51_self_attn_k_proj                           512   2,130,194   1,684,779  0.7909   2.5708    0.04
+L54_linear_attn_in_proj_a                      512     100,106      76,689  0.7661   2.4964    0.04
+L56_mlp_down_proj                              512  36,208,920  29,087,006  0.8033   2.6108    0.04
+L59_mlp_gate_proj                              512  36,208,920  29,079,688  0.8031   2.6101    0.04
+L60_mlp_gate_proj                              512  36,208,920  29,041,738  0.8021   2.6067    0.04
+L63_mlp_up_proj                                512  36,208,920  29,065,248  0.8027   2.6088    0.04
+  SAMPLE TOTAL                                 512 537,345,498 430,934,849  0.8020   2.6064
+
+best tile size 512 groups, ratio 0.8020 on the sampled segments
+current complete BPW 3.344772300772
+if that ratio holds over ALL re-encoded segments, and the copied endpoint and
+norm segments are unchanged, the recoded artifact lands near 2.761975 complete BPW
+  (endpoints are 0.4018 BPW and do not shrink; this is an ESTIMATE over the
+   sampled segments, not a packed artifact)
