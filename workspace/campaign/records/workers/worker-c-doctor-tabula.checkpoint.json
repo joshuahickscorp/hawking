@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.nos.worker_checkpoint.v1",
+  "worker": "worker-c-doctor-tabula",
+  "parent": "mixed-q3mlp-v1",
+  "obligations": [
+    "G137",
+    "G138"
+  ],
+  "state": {
+    "hypothesis": "divergence and capability are independent axes.",
+    "code_changes": [
+      "tools/greedy_divergence.py",
+      "tools/doctor_seal.py",
+      "tools/tabula_drift.py"
+    ],
+    "measurements": [],
+    "negative_science": [
+      "greedy divergence ranks candidates OPPOSITELY to capability",
+      "cosine gate was blind to magnitude all campaign"
+    ],
+    "blocker": "behavioral probe too weak to certify absence of the removed direction",
+    "next_experiment": "widen the battery past 60 items on the axis Tabula moves"
+  },
+  "rebind_count": 1,
+  "stale": {
+    "uniform-q4-v1": {
+      "measurements": [
+        {
+          "what": "g032 diverges 81.6% at equal capability",
+          "parent": "uniform-q4-v1"
+        },
+        {
+          "what": "Tabula ladder off recorded by constant 2.47-2.60x",
+          "parent": "uniform-q4-v1"
+        }
+      ]
+    }
+  },
+  "commit": "a644b7fe6f0aa34298d5147ee875b2447e2ed72c",
+  "rebind_note": "rebound uniform-q4-v1 -> mixed-q3mlp-v1. ['hypothesis', 'code_changes', 'negative_science', 'blocker', 'next_experiment'] carried unchanged; ['measurements'] INVALIDATED and moved to stale[uniform-q4-v1] because a measurement is a statement about one artifact, not about a family. Obligations carried in full -- no progress reset."
+}

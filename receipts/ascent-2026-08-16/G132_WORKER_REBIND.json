@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.nos.worker_rebind_protocol.v1",
+  "obligation": "G132 -- worker checkpoint / rebind protocol",
+  "required_fields": [
+    "hypothesis",
+    "code_changes",
+    "measurements",
+    "negative_science",
+    "blocker",
+    "next_experiment"
+  ],
+  "survives_rebind": [
+    "hypothesis",
+    "code_changes",
+    "negative_science",
+    "blocker",
+    "next_experiment"
+  ],
+  "invalidated_on_rebind": [
+    "measurements"
+  ],
+  "why_measurements_do_not_survive": "a token time, a BPW or a capability score is a statement about ONE artifact. Carrying it across a rebind describes a model that is no longer resident. The campaign has already been burned by this exact shape: a lane result is valid only against the HEAD it measured on. Rebind moves measurements to stale[] stamped with the parent they were taken against -- unusable by accident, readable on purpose.",
+  "why_eviction_is_routine": "G131 measured 15.59 GB wired per resident worker and a hard ceiling of three, so eviction is the normal operating condition of this machine and the checkpoint path is the common path, not the failure path.",
+  "controls": {
+    "incomplete_checkpoint_refused": true,
+    "note": "a protocol that accepts anything enforces nothing, so both controls run inside the same invocation as the successful path"
+  },
+  "results": {
+    "obligations_carried": true,
+    "measurements_invalidated": true,
+    "negative_science_survived": true,
+    "workers": [
+      "worker-a-representation",
+      "worker-b-kernel-nx",
+      "worker-c-doctor-tabula"
+    ]
+  },
+  "commit": "a644b7fe6f0aa34298d5147ee875b2447e2ed72c",
+  "the_protocol_is_self_enforcing_after_rebind": "control 2 exposed a property that was not designed in: after a rebind the checkpoint's measurements list is EMPTY, so re-checkpointing that worker REFUSES until it has measured something against its new parent. A rebound worker therefore cannot carry a stale number forward even deliberately -- it must re-measure before it can persist again. The refusal message names both the emptied field and the real hole: missing ['measurements','blocker']."
+}
