@@ -1,0 +1,59 @@
+{
+  "schema": "hawking.nos.critical_route_depth.v1",
+  "obligation": "G108 -- critical route depth with the serial ns attributable to it",
+  "critical_route_depth": 130,
+  "why_depth_equals_route_count": "The Genesis route graph (G106) is a chain: every route consumes the state the previous one produced, so no two routes can overlap and the critical path IS the full route count. Depth would be less than count only if the graph branched, and it does not.",
+  "per_route": [
+    {
+      "route_kind": "EMBED",
+      "count": 1,
+      "elements_each": 1360,
+      "gemv_us_each": 0.0011458,
+      "note": "one row gather, not a GEMV",
+      "gemv_ms_total": 1.1458e-06
+    },
+    {
+      "route_kind": "GQA_ATTENTION mixer",
+      "count": 16,
+      "elements_each": 104857511,
+      "gemv_us_each": 88.34245301749999,
+      "note": "q/k/v/o projections",
+      "gemv_ms_total": 1.4134792482799998
+    },
+    {
+      "route_kind": "GATED_DELTA mixer",
+      "count": 48,
+      "elements_each": 115844700,
+      "gemv_us_each": 97.59915975,
+      "note": "in_proj family and out_proj",
+      "gemv_ms_total": 4.684759668
+    },
+    {
+      "route_kind": "MLP_SWIGLU",
+      "count": 64,
+      "elements_each": 267386880,
+      "gemv_us_each": 225.2734464,
+      "note": "gate, up, down",
+      "gemv_ms_total": 14.417500569600001
+    },
+    {
+      "route_kind": "LM_HEAD",
+      "count": 1,
+      "elements_each": 1271398400,
+      "gemv_us_each": 1071.153152,
+      "note": "vocab projection",
+      "gemv_ms_total": 1.0711531520000002
+    }
+  ],
+  "reconciliation": {
+    "sum_per_route_gemv_ms": 21.58689378368,
+    "host_ceremony_ms": 1.07,
+    "residual_on_device_non_gemv_ms": 7.837106216319999,
+    "measured_token_ms": 30.494,
+    "residual_pct_of_token": 25.70048605076408,
+    "closes_exactly": true
+  },
+  "what_is_measured_and_what_is_derived": "The per-route GEMV column is DERIVED: the element census divided by route count, priced at the measured 0.8425 ps/element. It is exact in aggregate because the census and the rate are both measured, but it apportions elements evenly across layers of a kind, which is an assumption about uniformity rather than a per-layer measurement. The RESIDUAL is not apportioned at all -- it is stated as one number because attributing norms, rope, softmax and the recurrent state update to individual routes would require per-kernel timing this runtime does not expose.",
+  "the_residual_is_the_finding": "7.837 ms of 30.494 ms -- 25.7% of the token -- is on-device work that the route graph's weight movement does not explain. Per route that is 60.3 us against a mean serial budget of 234.6 us. This is the same 7.9 ms G093 isolated from the dispatch side, arrived at independently from the route side, and it is the term that three separate ceilings now depend on.",
+  "commit": "cd30ec50cef8c0ed73b194d463abfff9c26b051f"
+}
