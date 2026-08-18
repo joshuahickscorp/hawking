@@ -1,0 +1,649 @@
+{
+  "schema": "hawking.nos.horizon_efficiency.v1",
+  "obligation": "G045 -- preserved functional information per stored physical bit",
+  "proxy": "MEASURED sensitivity: the relative block-output response to a relative random perturbation of that tensor's OWN output, at eps=1e-3. A directional derivative, measured on real captured activations, not an assumed structural quantity.",
+  "metric": "HORIZON_EFFICIENCY = sensitivity / stored_bits (per Gbit at q3)",
+  "target": "damage_q2: the block output error increase when THAT tensor alone is coarsened to q2 while the other two stay q3. Measured per tensor on real activations.",
+  "protocol": {
+    "fit_layers": [
+      0,
+      12,
+      24,
+      36
+    ],
+    "held_out_layers": [
+      48,
+      60
+    ],
+    "note": "linear fit on the fit layers, scored on held-out layers only"
+  },
+  "results": {
+    "elements": {
+      "held_out_spearman": null,
+      "held_out_mae": null,
+      "label": "parameter count (the named bar)"
+    },
+    "weight_rel_fro_q2": {
+      "held_out_spearman": 0.2571428571428571,
+      "held_out_mae": 0.08750541513099601,
+      "label": "weight-space q2 error"
+    },
+    "input_stable_rank": {
+      "held_out_spearman": 0.3142857142857143,
+      "held_out_mae": 0.0590628001698277,
+      "label": "input stable rank"
+    },
+    "sensitivity": {
+      "held_out_spearman": 0.5428571428571428,
+      "held_out_mae": 0.07700353777802069,
+      "label": "measured sensitivity"
+    },
+    "HORIZON_EFFICIENCY": {
+      "held_out_spearman": 0.5428571428571428,
+      "held_out_mae": 0.0770035377780207,
+      "label": "HORIZON_EFFICIENCY"
+    }
+  },
+  "parameter_count_is_degenerate": "Every MLP tensor here has 89,128,960 elements, so parameter count is CONSTANT and carries no information. The obligation names it as the bar to beat, and it is beaten trivially -- so a fairer bar is included: the tensor's own weight-space quantization error, which is what a weight-cosine gate would rank by.",
+  "estimate_label": "Sensitivity and HORIZON_EFFICIENCY are ESTIMATES. Sensitivity is a finite random-direction probe of a nonlinear block, not an exact Jacobian norm, and no mutual-information quantity is claimed exact anywhere here.",
+  "tensors": [
+    {
+      "layer": 0,
+      "organ": "gate_proj",
+      "elements": 89128960,
+      "damage_q2": 0.07049045748595198,
+      "sensitivity": 0.23241049619925414,
+      "input_stable_rank": 7.315382480621338,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7185514967862201,
+      "HORIZON_EFFICIENCY": 0.8023309360668274
+    },
+    {
+      "layer": 0,
+      "organ": "up_proj",
+      "elements": 89128960,
+      "damage_q2": 0.06703401995208488,
+      "sensitivity": 0.22735918261778987,
+      "input_stable_rank": 7.315382480621338,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7185331877926919,
+      "HORIZON_EFFICIENCY": 0.7848927169654462
+    },
+    {
+      "layer": 0,
+      "organ": "down_proj",
+      "elements": 89128960,
+      "damage_q2": 0.34972427889633667,
+      "sensitivity": 0.5557666202141179,
+      "input_stable_rank": 7.315382480621338,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7225963063901693,
+      "HORIZON_EFFICIENCY": 1.9186257072004014
+    },
+    {
+      "layer": 12,
+      "organ": "gate_proj",
+      "elements": 89128960,
+      "damage_q2": 0.24222202958179978,
+      "sensitivity": 0.73996773117143,
+      "input_stable_rank": 4.496402740478516,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7189517134116394,
+      "HORIZON_EFFICIENCY": 2.554527493891755
+    },
+    {
+      "layer": 12,
+      "organ": "up_proj",
+      "elements": 89128960,
+      "damage_q2": 0.22434457105957434,
+      "sensitivity": 0.7040496869103756,
+      "input_stable_rank": 4.496402740478516,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7187879367146484,
+      "HORIZON_EFFICIENCY": 2.430530692779319
+    },
+    {
+      "layer": 12,
+      "organ": "down_proj",
+      "elements": 89128960,
+      "damage_q2": 0.35648171479707264,
+      "sensitivity": 0.8641819834080465,
+      "input_stable_rank": 4.496402740478516,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7200614550644975,
+      "HORIZON_EFFICIENCY": 2.9833417638996056
+    },
+    {
+      "layer": 24,
+      "organ": "gate_proj",
+      "elements": 89128960,
+      "damage_q2": 0.41600408489128765,
+      "sensitivity": 0.8663285097121523,
+      "input_stable_rank": 3.144282102584839,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7195896635139887,
+      "HORIZON_EFFICIENCY": 2.990752033603555
+    },
+    {
+      "layer": 24,
+      "organ": "up_proj",
+      "elements": 89128960,
+      "damage_q2": 0.2527972659434134,
+      "sensitivity": 0.7180886194707536,
+      "input_stable_rank": 3.144282102584839,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7205459587587949,
+      "HORIZON_EFFICIENCY": 2.4789961024176606
+    },
+    {
+      "layer": 24,
+      "organ": "down_proj",
+      "elements": 89128960,
+      "damage_q2": 0.3454424078710902,
+      "sensitivity": 0.8709126634372174,
+      "input_stable_rank": 3.144282102584839,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7206579142445748,
+      "HORIZON_EFFICIENCY": 3.0065775165720714
+    },
+    {
+      "layer": 36,
+      "organ": "gate_proj",
+      "elements": 89128960,
+      "damage_q2": 0.34643191799177064,
+      "sensitivity": 1.0983012984323446,
+      "input_stable_rank": 2.94461727142334,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7213422851987019,
+      "HORIZON_EFFICIENCY": 3.7915719094681015
+    },
+    {
+      "layer": 36,
+      "organ": "up_proj",
+      "elements": 89128960,
+      "damage_q2": 0.2564247776785191,
+      "sensitivity": 0.7905310480736026,
+      "input_stable_rank": 2.94461727142334,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7208929368905836,
+      "HORIZON_EFFICIENCY": 2.729082920794604
+    },
+    {
+      "layer": 36,
+      "organ": "down_proj",
+      "elements": 89128960,
+      "damage_q2": 0.3566236505549064,
+      "sensitivity": 0.9063491207434278,
+      "input_stable_rank": 2.94461727142334,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7208594618547709,
+      "HORIZON_EFFICIENCY": 3.1289117761100242
+    },
+    {
+      "layer": 48,
+      "organ": "gate_proj",
+      "elements": 89128960,
+      "damage_q2": 0.31519945640569413,
+      "sensitivity": 1.060896643077367,
+      "input_stable_rank": 2.9774792194366455,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7219978560271969,
+      "HORIZON_EFFICIENCY": 3.6624430076542747
+    },
+    {
+      "layer": 48,
+      "organ": "up_proj",
+      "elements": 89128960,
+      "damage_q2": 0.2536269428482706,
+      "sensitivity": 0.8339078587353367,
+      "input_stable_rank": 2.9774792194366455,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7219267379825202,
+      "HORIZON_EFFICIENCY": 2.8788289850686763
+    },
+    {
+      "layer": 48,
+      "organ": "down_proj",
+      "elements": 89128960,
+      "damage_q2": 0.36215510839456444,
+      "sensitivity": 0.9493630233456896,
+      "input_stable_rank": 2.9774792194366455,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7240954868796918,
+      "HORIZON_EFFICIENCY": 3.277405003839172
+    },
+    {
+      "layer": 60,
+      "organ": "gate_proj",
+      "elements": 89128960,
+      "damage_q2": 0.32781590761580454,
+      "sensitivity": 1.3354101733917967,
+      "input_stable_rank": 3.560624122619629,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.72183900803495,
+      "HORIZON_EFFICIENCY": 4.610122657851126
+    },
+    {
+      "layer": 60,
+      "organ": "up_proj",
+      "elements": 89128960,
+      "damage_q2": 0.184213243278244,
+      "sensitivity": 0.7830334934689781,
+      "input_stable_rank": 3.560624122619629,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.7195347226801511,
+      "HORIZON_EFFICIENCY": 2.7031997524243456
+    },
+    {
+      "layer": 60,
+      "organ": "down_proj",
+      "elements": 89128960,
+      "damage_q2": 0.3948331804100133,
+      "sensitivity": 0.9769465646302666,
+      "input_stable_rank": 3.560624122619629,
+      "stored_bits_at_q3": 289669120.0,
+      "weight_rel_fro_q2": 0.720689674527507,
+      "HORIZON_EFFICIENCY": 3.372629311092141
+    }
+  ],
+  "commit": "61bfa7fa9cd5041effaa51c513147d6ee9b90697",
+  "multiwidth_test": {
+    "why": "In the fixed-width sample HORIZON_EFFICIENCY ranked IDENTICALLY to raw sensitivity because stored_bits was constant, so the metric's defining per-bit term never operated. Varying the degraded tensor's stored width makes stored_bits move and puts the per-bit term under test.",
+    "fit_layers": [
+      0,
+      12,
+      24,
+      36
+    ],
+    "held_out_layers": [
+      48,
+      60
+    ],
+    "n_fit": 24,
+    "n_held_out": 12,
+    "results": {
+      "elements": {
+        "spearman": null,
+        "mae": null,
+        "label": "parameter count (named bar)"
+      },
+      "stored_bits": {
+        "spearman": -0.5944055944055944,
+        "mae": 0.034568883659632864,
+        "label": "stored bits"
+      },
+      "sensitivity": {
+        "spearman": -0.027972027972027972,
+        "mae": 0.15315365324604924,
+        "label": "measured sensitivity"
+      },
+      "HORIZON_EFFICIENCY": {
+        "spearman": 0.7552447552447552,
+        "mae": 0.1176639232922498,
+        "label": "HORIZON_EFFICIENCY"
+      }
+    },
+    "pairs": [
+      {
+        "layer": 0,
+        "organ": "gate_proj",
+        "bits": 2,
+        "damage": 0.07049045748595198,
+        "sensitivity": 0.23241049619925414,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 1.1589224632076396
+      },
+      {
+        "layer": 0,
+        "organ": "gate_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.23241049619925414,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 0.8023309360668274
+      },
+      {
+        "layer": 0,
+        "organ": "up_proj",
+        "bits": 2,
+        "damage": 0.06703401995208488,
+        "sensitivity": 0.22735918261778987,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 1.1337339245056446
+      },
+      {
+        "layer": 0,
+        "organ": "up_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.22735918261778987,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 0.7848927169654462
+      },
+      {
+        "layer": 0,
+        "organ": "down_proj",
+        "bits": 2,
+        "damage": 0.34972427889633667,
+        "sensitivity": 0.5557666202141179,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 2.771348243733913
+      },
+      {
+        "layer": 0,
+        "organ": "down_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.5557666202141179,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 1.9186257072004014
+      },
+      {
+        "layer": 12,
+        "organ": "gate_proj",
+        "bits": 2,
+        "damage": 0.24222202958179978,
+        "sensitivity": 0.73996773117143,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 3.6898730467325347
+      },
+      {
+        "layer": 12,
+        "organ": "gate_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.73996773117143,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 2.554527493891755
+      },
+      {
+        "layer": 12,
+        "organ": "up_proj",
+        "bits": 2,
+        "damage": 0.22434457105957434,
+        "sensitivity": 0.7040496869103756,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 3.510766556236794
+      },
+      {
+        "layer": 12,
+        "organ": "up_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.7040496869103756,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 2.430530692779319
+      },
+      {
+        "layer": 12,
+        "organ": "down_proj",
+        "bits": 2,
+        "damage": 0.35648171479707264,
+        "sensitivity": 0.8641819834080465,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 4.309271436743875
+      },
+      {
+        "layer": 12,
+        "organ": "down_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.8641819834080465,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 2.9833417638996056
+      },
+      {
+        "layer": 24,
+        "organ": "gate_proj",
+        "bits": 2,
+        "damage": 0.41600408489128765,
+        "sensitivity": 0.8663285097121523,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 4.31997515964958
+      },
+      {
+        "layer": 24,
+        "organ": "gate_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.8663285097121523,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 2.990752033603555
+      },
+      {
+        "layer": 24,
+        "organ": "up_proj",
+        "bits": 2,
+        "damage": 0.2527972659434134,
+        "sensitivity": 0.7180886194707536,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 3.5807721479366212
+      },
+      {
+        "layer": 24,
+        "organ": "up_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.7180886194707536,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 2.4789961024176606
+      },
+      {
+        "layer": 24,
+        "organ": "down_proj",
+        "bits": 2,
+        "damage": 0.3454424078710902,
+        "sensitivity": 0.8709126634372174,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 4.342834190604104
+      },
+      {
+        "layer": 24,
+        "organ": "down_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.8709126634372174,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 3.0065775165720714
+      },
+      {
+        "layer": 36,
+        "organ": "gate_proj",
+        "bits": 2,
+        "damage": 0.34643191799177064,
+        "sensitivity": 1.0983012984323446,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 5.4767149803428135
+      },
+      {
+        "layer": 36,
+        "organ": "gate_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 1.0983012984323446,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 3.7915719094681015
+      },
+      {
+        "layer": 36,
+        "organ": "up_proj",
+        "bits": 2,
+        "damage": 0.2564247776785191,
+        "sensitivity": 0.7905310480736026,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 3.942008663369984
+      },
+      {
+        "layer": 36,
+        "organ": "up_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.7905310480736026,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 2.729082920794604
+      },
+      {
+        "layer": 36,
+        "organ": "down_proj",
+        "bits": 2,
+        "damage": 0.3566236505549064,
+        "sensitivity": 0.9063491207434278,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 4.519539232158924
+      },
+      {
+        "layer": 36,
+        "organ": "down_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.9063491207434278,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 3.1289117761100242
+      },
+      {
+        "layer": 48,
+        "organ": "gate_proj",
+        "bits": 2,
+        "damage": 0.31519945640569413,
+        "sensitivity": 1.060896643077367,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 5.290195455500619
+      },
+      {
+        "layer": 48,
+        "organ": "gate_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 1.060896643077367,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 3.6624430076542747
+      },
+      {
+        "layer": 48,
+        "organ": "up_proj",
+        "bits": 2,
+        "damage": 0.2536269428482706,
+        "sensitivity": 0.8339078587353367,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 4.158308533988088
+      },
+      {
+        "layer": 48,
+        "organ": "up_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.8339078587353367,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 2.8788289850686763
+      },
+      {
+        "layer": 48,
+        "organ": "down_proj",
+        "bits": 2,
+        "damage": 0.36215510839456444,
+        "sensitivity": 0.9493630233456896,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 4.734029449989915
+      },
+      {
+        "layer": 48,
+        "organ": "down_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.9493630233456896,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 3.277405003839172
+      },
+      {
+        "layer": 60,
+        "organ": "gate_proj",
+        "bits": 2,
+        "damage": 0.32781590761580454,
+        "sensitivity": 1.3354101733917967,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 6.659066061340515
+      },
+      {
+        "layer": 60,
+        "organ": "gate_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 1.3354101733917967,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 4.610122657851126
+      },
+      {
+        "layer": 60,
+        "organ": "up_proj",
+        "bits": 2,
+        "damage": 0.184213243278244,
+        "sensitivity": 0.7830334934689781,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 3.904621864612944
+      },
+      {
+        "layer": 60,
+        "organ": "up_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.7830334934689781,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 2.7031997524243456
+      },
+      {
+        "layer": 60,
+        "organ": "down_proj",
+        "bits": 2,
+        "damage": 0.3948331804100133,
+        "sensitivity": 0.9769465646302666,
+        "elements": 89128960,
+        "stored_bits": 200540160.0,
+        "HORIZON_EFFICIENCY": 4.871575671577537
+      },
+      {
+        "layer": 60,
+        "organ": "down_proj",
+        "bits": 3,
+        "damage": 0.0,
+        "sensitivity": 0.9769465646302666,
+        "elements": 89128960,
+        "stored_bits": 289669120.0,
+        "HORIZON_EFFICIENCY": 3.372629311092141
+      }
+    ]
+  }
+}
