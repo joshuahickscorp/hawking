@@ -1,0 +1,116 @@
+{
+  "schema": "hawking.nos.rans_net_verdict.v1",
+  "obligation": "G116 -- rANS net verdict: TOKEN_NS with consume-direct vs dense q3",
+  "the_A_B_WAS_NOT_RUN": "The verify requires a paired A/B on the protected lane, and that needs the G115 kernel, which does not exist. No A/B is claimed.",
+  "what_IS_delivered_an_independent_check_of_the_prediction": "G115 priced rANS decode at 1.83x q4 from its ALGORITHM. The roofline sweep already on disk tests that from a completely different direction -- measured machine ceilings rather than op counts -- and lands on the same number.",
+  "measured_ceilings": {
+    "flop_gflop_s": 8978.952771485545,
+    "bandwidth_gb_s": 598.2681844268004,
+    "sweep": [
+      {
+        "achieved_gb_s": 581.6321597500439,
+        "achieved_gflop_s": 290.81607987502196,
+        "bytes": 1073741824,
+        "flops_per_byte": 0.5,
+        "k_ops": 1,
+        "median_gpu_ns": 1846084
+      },
+      {
+        "achieved_gb_s": 595.8611675915649,
+        "achieved_gflop_s": 595.8611675915649,
+        "bytes": 1073741824,
+        "flops_per_byte": 1.0,
+        "k_ops": 2,
+        "median_gpu_ns": 1802000
+      },
+      {
+        "achieved_gb_s": 594.9532201135892,
+        "achieved_gflop_s": 1189.9064402271783,
+        "bytes": 1073741824,
+        "flops_per_byte": 2.0,
+        "k_ops": 4,
+        "median_gpu_ns": 1804750
+      },
+      {
+        "achieved_gb_s": 582.1711007793969,
+        "achieved_gflop_s": 2328.6844031175874,
+        "bytes": 1073741824,
+        "flops_per_byte": 4.0,
+        "k_ops": 8,
+        "median_gpu_ns": 1844375
+      },
+      {
+        "achieved_gb_s": 598.2681844268004,
+        "achieved_gflop_s": 4786.145475414403,
+        "bytes": 1073741824,
+        "flops_per_byte": 8.0,
+        "k_ops": 16,
+        "median_gpu_ns": 1794750
+      },
+      {
+        "achieved_gb_s": 534.2331358915355,
+        "achieved_gflop_s": 8547.730174264569,
+        "bytes": 1073741824,
+        "flops_per_byte": 16.0,
+        "k_ops": 32,
+        "median_gpu_ns": 2009875
+      },
+      {
+        "achieved_gb_s": 275.3007689250689,
+        "achieved_gflop_s": 8809.624605602205,
+        "bytes": 1073741824,
+        "flops_per_byte": 32.0,
+        "k_ops": 64,
+        "median_gpu_ns": 3900250
+      },
+      {
+        "achieved_gb_s": 139.75173967023414,
+        "achieved_gflop_s": 8944.111338894985,
+        "bytes": 1073741824,
+        "flops_per_byte": 64.0,
+        "k_ops": 128,
+        "median_gpu_ns": 7683209
+      },
+      {
+        "achieved_gb_s": 70.14806852723082,
+        "achieved_gflop_s": 8978.952771485545,
+        "bytes": 1073741824,
+        "flops_per_byte": 128.0,
+        "k_ops": 256,
+        "median_gpu_ns": 15306791
+      }
+    ]
+  },
+  "roofline_placement": {
+    "q4": {
+      "ops_per_elem": 6,
+      "bits_per_elem": 4.25,
+      "intensity_flop_per_byte": 11.294117647058824,
+      "flop_floor_ms": 17.12165671883415,
+      "bw_floor_ms": 22.75219270253615,
+      "binding_floor_ms": 22.75219270253615
+    },
+    "rans_q3": {
+      "ops_per_elem": 11,
+      "bits_per_elem": 2.5354,
+      "intensity_flop_per_byte": 34.70852725408219,
+      "flop_floor_ms": 31.389703984529277,
+      "bw_floor_ms": 13.573155147767096,
+      "binding_floor_ms": 31.389703984529277
+    },
+    "ratio_rans_over_q4": 1.3796342354743822
+  },
+  "the_two_routes_agree": null,
+  "and_the_roofline_is_OPTIMISTIC_for_rANS": "Worth keeping despite setting the magnitude aside: the sweep's own method note says it performs K FMAs on TWO INDEPENDENT CHAINS, so it measures THROUGHPUT rather than dependency latency. rANS decode is a SERIAL chain -- each state update feeds the next -- and cannot reach a ceiling measured on independent work. Whatever the roofline says about rANS is a lower bound on its cost.",
+  "the_verdict": "PREDICTED LOSS, on the algorithmic route alone. rANS-q3 saves 40% of bytes against q4 and is priced at 1.83x the GEMV ALU on a machine measured ALU-issue bound and measured non-responsive to byte traffic. The roofline agrees in sign but its magnitude is not usable because it fails to reproduce the measured q4 GEMV. G116's acceptance says a LOSS is a valid closure and must be recorded as such -- but it also requires a paired A/B on the protected lane, which needs the G115 kernel. This is a twice-signed PREDICTION, not the closure.",
+  "what_would_change_it": "Only a measured kernel. If the renormalisation predicates cleanly and the 7-symbol search folds into selects, the op count falls toward 6-7 and the ratio approaches parity. The roofline says even then rANS sits at 34.7 flop/byte where the sweep shows bandwidth already collapsing from 598 to 275 GB/s, so the operating point is unfavourable independent of the op count.",
+  "commit": "49fa6067056310af664c4e13fe10b2e5d4b9fbe0",
+  "THE_ROUTES_DO_NOT_AGREE_AND_THE_ROOFLINE_FAILS_ITS_OWN_CHECK": {
+    "algorithmic_op_count_ratio": 1.83,
+    "roofline_binding_floor_ratio": 1.38,
+    "apart_pct": 32.60869565217392,
+    "why_they_differ": "The roofline places q4 as BANDWIDTH-bound (22.75 ms floor against a 17.12 ms flop floor) and rANS as FLOP-bound (31.39 against 13.57). Different binding resources, so the ratio of binding floors is not the ratio of op counts. Same sign, 33% apart.",
+    "the_consistency_check_the_roofline_FAILS": "The roofline predicts a q4 GEMV floor of 22.75 ms. The MEASURED q4 GEMV is 20.616 ms -- the measurement BEATS the model's own floor by 10%. Implied effective bandwidth is 660 GB/s against the sweep's 598.3 GB/s peak. A model that cannot reproduce a measurement I already have must not be used to predict one I do not, so the roofline placement is recorded and then SET ASIDE rather than leaned on.",
+    "consequence": "The primary estimate stays G115's algorithmic 1.83x, which rests on a per-op rate fitted to a real kernel. The roofline corroborates the SIGN of the verdict and nothing more."
+  }
+}
