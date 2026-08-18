@@ -18,6 +18,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import struct
 import sys
 import time
@@ -52,6 +53,7 @@ ORGAN_GATE = 0
 ORGAN_UP = 1
 ORGAN_DOWN = 2
 ORGAN_NONMLP = 3
+_LAYER_RE = re.compile(r"[.]layers[.]([0-9]+)[.]")
 ORGAN_ATTN = 4       # virtual: attention GEMVs only, never embed / lm_head / norms
 
 
@@ -339,6 +341,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--up-bits", type=int, default=None)
     p.add_argument("--attn-bits", type=int, default=None,
                    help="re-encode the attention GEMVs only; embed, lm_head and norms are untouched")
+    p.add_argument("--early-layers", type=int, default=None,
+                   help="layers strictly below this index use --early-bits instead")
+    p.add_argument("--early-bits", type=int, default=None,
+                   help="bit width for layers below --early-layers. q_inject is 1.597e-04 at "
+                        "L0 and 2.577e-03 at L63, a 16.1x spread, so the same relative error "
+                        "costs the residual stream ~16x more late than early")
     p.add_argument("--root", type=Path, default=None)
     p.add_argument("--mixed", type=Path, default=MIXED_2P0)
     p.add_argument("--model-dir", type=Path, default=MODEL_DIR)
@@ -359,6 +367,9 @@ def main() -> int:
     bits_ok(args.gate_bits, "--gate-bits")
     bits_ok(args.up_bits, "--up-bits")
     bits_ok(args.attn_bits, "--attn-bits")
+    bits_ok(args.early_bits, "--early-bits")
+    if (args.early_bits is None) != (args.early_layers is None):
+        raise PackError("--early-bits and --early-layers must be given together")
     replace_bits = {
         ORGAN_DOWN: int(args.down_bits),
     }
@@ -377,6 +388,8 @@ def main() -> int:
             parts.append(f"up-q{args.up_bits}")
         if args.attn_bits is not None:
             parts.append(f"attn-q{args.attn_bits}")
+        if args.early_bits is not None:
+            parts.append(f"L0-{args.early_layers}-q{args.early_bits}")
         tag = "mixed-" + "-".join(parts) + "-v1"
     root: Path = args.root or (RUNS / tag)
     root.mkdir(parents=True, exist_ok=True)
@@ -407,6 +420,10 @@ def main() -> int:
             continue
         bits = replace_bits[organ]
         name = rec["name"]
+        if args.early_bits is not None:
+            m = _LAYER_RE.search(name)
+            if m and int(m.group(1)) < args.early_layers:
+                bits = int(args.early_bits)
         t0 = time.perf_counter()
         values = np.ascontiguousarray(
             load_tensor(args.model_dir, weight_map, name), dtype=np.float32
