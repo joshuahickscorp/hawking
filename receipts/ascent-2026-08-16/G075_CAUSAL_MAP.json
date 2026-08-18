@@ -1,0 +1,36 @@
+{
+  "schema": "hawking.nos.causal_information_map.v1",
+  "obligation": "G075 -- which bits cause protected capability, by independent signals",
+  "why_the_final_stream": "the one place in this model where the path to a decision is short enough to compute EXACTLY: final_norm = (h/rms(h))*g_F and z = lm_head @ final_norm. No backward pass, no surrogate loss.",
+  "signals": {
+    "S1_data_side": "E_tokens[final_norm_i^2] -- knows nothing about lm_head",
+    "S2_weight_side": "||lm_head[:,i]||_2 -- knows nothing about the data",
+    "S3_intervention": "fraction of tokens whose ARGMAX changes when channel i is zeroed; exact rather than linearized, and nonlinear because argmax is"
+  },
+  "independence": "S1 and S2 are computed from DISJOINT tensors, so their agreement cannot be an artefact of a shared input",
+  "sampling": "S3 measured on a stratified sample of 256 channels over 16 quantile cells of the S1 x S2 plane. Sampling by one signal's top-N would hand that signal the correlation.",
+  "tokens": 128,
+  "channels_total": 5120,
+  "channels_sampled": 256,
+  "spearman": {
+    "S1_vs_S2": -0.24525122332339186,
+    "S1_vs_S3": 0.17116545548180362,
+    "S2_vs_S3": 0.03153181506065461,
+    "S1_times_S2_squared_vs_S3": 0.16869850080109866
+  },
+  "ablation": {
+    "mean_flip_rate": 0.00567626953125,
+    "max_flip_rate": 0.0390625,
+    "channels_flipping_nothing": 113
+  },
+  "signals_agree": false,
+  "commit": "3f91989b081c500178e6824adf0415383d2057bc",
+  "verdict": {
+    "signals_agree": false,
+    "statement": "NO CAUSAL MAP IS ESTABLISHED, and that is the result. The verify says agreement between independent signals is evidence and a single signal is a hypothesis. These signals do not agree: the data-side and weight-side signals are mildly ANTI-correlated (-0.2453 across all 5120 channels, no sampling involved), and neither predicts the intervention -- +0.1712 for data-side, +0.0315 for weight-side. The algebraic product S1*S2^2, which is what the sensitivity of the logits to a channel actually factorises into, scores +0.1687, no better than the data term alone.",
+    "what_it_rules_out": "bit allocation by stream-channel energy or by lm_head reach is not supported at this level. Both are standard importance heuristics and neither tracks which channels change a decision.",
+    "structural_finding": "the anti-correlation is itself robust and does not depend on the sampled intervention: channels that CARRY the most energy are not the channels lm_head reaches furthest into. High-energy channels are systematically ones the decision layer weights less.",
+    "limitation_that_could_explain_the_weak_intervention": "the capture's 128 tokens produce only 30 DISTINCT argmax tokens, because the v2 prompt set is heavily repetitive. Over a narrow output distribution the top-1 margins are large and a single-channel ablation rarely flips anything -- 113 of 256 sampled channels flip NOTHING and the mean flip rate is 0.57%. So the low S1/S2-vs-S3 correlations are measured against a ground truth with little variance to explain, and a wider prompt set (the G126 battery) is the input that would sharpen this. The S1-vs-S2 anti-correlation does NOT depend on that and stands on its own.",
+    "relationship_to_G074": "G074 measured functional exception selection beating magnitude by 1.15-2.34x, scored on output FROBENIUS error. This scores stream channels against DECISION FLIPS. They are different granularities and different targets and do not contradict each other, but the pairing is worth stating: a signal that ranks Frobenius error well is not thereby shown to rank capability well, and here the correlation between an energy-style importance signal and actual argmax change is +0.17."
+  }
+}
