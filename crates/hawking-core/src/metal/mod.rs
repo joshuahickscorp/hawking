@@ -1217,6 +1217,42 @@ mod imp {
             "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128" => {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
             }
+            "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r2k2_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r2k2_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r8k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r8k4_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r8k8_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r8k8_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r2k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r2k4_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r4k2_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r4k2_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r4k8_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r4k8_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r16k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r16k4_geo_tpr64_tg128"
+            }
             "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe" => {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe"
             }

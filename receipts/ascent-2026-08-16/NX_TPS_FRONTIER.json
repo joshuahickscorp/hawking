@@ -1,5 +1,55 @@
 {
   "schema": "hawking.nos.nx_tps_frontier.v1",
+  "measured_amortization": {
+    "best_tile": "R=4 K=4",
+    "kernel": "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128",
+    "amortization_x": 2.5661108682036797,
+    "k1_code_gb_s": 632.9152961980549,
+    "payload_mib": 4096,
+    "per_position_control_holds": true,
+    "what_100_tps_needs_now": [
+      {
+        "candidate": "G0 uniform-q4-v1",
+        "complete_bpw": 4.255954555664,
+        "weight_ms_per_token": 8.380890991345398,
+        "non_gemv_ms_budget_for_100_tps": 1.6191090086546027,
+        "reachable": true,
+        "non_gemv_cut_needed_x": 7.79393507944591
+      },
+      {
+        "candidate": "mixed-q3mlp-q3attn-v1",
+        "complete_bpw": 3.350594741913529,
+        "weight_ms_per_token": 6.506768856543404,
+        "non_gemv_ms_budget_for_100_tps": 3.493231143456596,
+        "reachable": true,
+        "non_gemv_cut_needed_x": 3.6124808184073136
+      },
+      {
+        "candidate": "rANS-L32 over q3 body",
+        "complete_bpw": 2.972607019672707,
+        "weight_ms_per_token": 5.724322865263571,
+        "non_gemv_ms_budget_for_100_tps": 4.275677134736429,
+        "reachable": true,
+        "non_gemv_cut_needed_x": 2.951399299418314
+      },
+      {
+        "candidate": "rANS-L8 over q3 body",
+        "complete_bpw": 2.951421600030946,
+        "weight_ms_per_token": 5.680468407309205,
+        "non_gemv_ms_budget_for_100_tps": 4.319531592690795,
+        "reachable": true,
+        "non_gemv_cut_needed_x": 2.9214349355271225
+      },
+      {
+        "candidate": "uniform-q2 (DEAD)",
+        "complete_bpw": 2.3506931024188487,
+        "weight_ms_per_token": 4.436942289535798,
+        "non_gemv_ms_budget_for_100_tps": 5.563057710464202,
+        "reachable": true,
+        "non_gemv_cut_needed_x": 2.2683982724577927
+      }
+    ]
+  },
   "multi_token_escape": [
     {
       "candidate": "G0 uniform-q4-v1",
@@ -332,5 +382,5 @@
       "verdict": "IMPOSSIBLE: non-GEMV alone exceeds the 10 ms token"
     }
   ],
-  "commit": "502b9885a4d13f588202b3c89f5809f894fe18de"
+  "commit": "aa2175611705ba8673f962d04259db2597abc779"
 }

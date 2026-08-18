@@ -16,6 +16,7 @@ import subprocess
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ROOF = ROOT / "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
 LEDGER = ROOT / "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+AMORT = ROOT / "receipts/ascent-2026-08-16/NX_MATMUL_K_AMORTIZATION.json"
 
 # Language parameter count. BPW denominator, always (ledger ASSUMPTIONS).
 N_PARAMS = 26_895_998_464
@@ -165,6 +166,47 @@ def main():
                 }
             )
 
+    # MEASURED amortization, not projection. NX_MATMUL_K_AMORTIZATION.json times
+    # the R x K tiled geo_tpr64 kernel against the K=1 kernel on the same codes.
+    measured_amort = None
+    if AMORT.exists():
+        am = json.loads(AMORT.read_text())
+        best = None
+        for res in am["results"]:
+            for row in res.get("by_rk", []):
+                if not row.get("per_position_control_holds"):
+                    continue
+                if best is None or row["amortization_x"] > best["amortization_x"]:
+                    best = {**row, "payload_mib": res["payload_mib"]}
+        if best:
+            k1 = next(
+                r for res in am["results"] for r in res["by_k"]
+                if r["k"] == 1 and res["payload_mib"] == best["payload_mib"]
+            )
+            measured_amort = {
+                "best_tile": f"R={best['r']} K={best['k']}",
+                "kernel": best["kernel"],
+                "amortization_x": best["amortization_x"],
+                "k1_code_gb_s": k1["achieved_gb_s"],
+                "payload_mib": best["payload_mib"],
+                "per_position_control_holds": best["per_position_control_holds"],
+            }
+            gb_s = k1["achieved_gb_s"]
+            amort = best["amortization_x"]
+            rows_out = []
+            for c in cands:
+                per_token_ns = c["active_gemv_bytes"] / gb_s / amort
+                budget_ns = 10_000_000.0 - per_token_ns
+                rows_out.append({
+                    "candidate": c["name"],
+                    "complete_bpw": c["complete_bpw"],
+                    "weight_ms_per_token": per_token_ns / 1e6,
+                    "non_gemv_ms_budget_for_100_tps": budget_ns / 1e6,
+                    "reachable": budget_ns > 0,
+                    "non_gemv_cut_needed_x": (non_gemv_ns / budget_ns) if budget_ns > 0 else None,
+                })
+            measured_amort["what_100_tps_needs_now"] = rows_out
+
     # One full weight sweep per token is an ASSUMPTION of the current genome,
     # not a law. If K tokens are emitted per sweep (multi-token head,
     # speculative verify, matryoshka draft-then-verify), weight movement is
@@ -196,6 +238,7 @@ def main():
 
     doc = {
         "schema": "hawking.nos.nx_tps_frontier.v1",
+        "measured_amortization": measured_amort,
         "multi_token_escape": multi_token,
         "multi_token_note": (
             "K is tokens emitted per full weight sweep. K>1 requires a verified "
@@ -267,6 +310,18 @@ def main():
                     f"non-GEMV budget {b['non_gemv_ms_budget_for_100_tps']:.3f} ms "
                     f"({b['non_gemv_reduction_needed_x']:.2f}x cut needed)"
                 )
+
+    if measured_amort:
+        print(f"\nMEASURED amortization: {measured_amort['best_tile']} = "
+              f"{measured_amort['amortization_x']:.2f}x "
+              f"(K=1 code rate {measured_amort['k1_code_gb_s']:.1f} GB/s, controls hold)")
+        for r in measured_amort["what_100_tps_needs_now"]:
+            if not r["reachable"]:
+                print(f"  {r['candidate']:<26} weight {r['weight_ms_per_token']:.3f} ms -> 100 TPS IMPOSSIBLE")
+            else:
+                print(f"  {r['candidate']:<26} weight {r['weight_ms_per_token']:.3f} ms/token, "
+                      f"non-GEMV budget {r['non_gemv_ms_budget_for_100_tps']:.3f} ms "
+                      f"({r['non_gemv_cut_needed_x']:.2f}x cut needed)")
 
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)

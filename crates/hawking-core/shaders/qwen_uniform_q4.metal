@@ -1106,3 +1106,264 @@ kernel void qwen_uniform_q4_group64_matvec_vecgroup_x64(
         output[row] = sh[simd_id] + sh[simd_id + 1u];
     }
 }
+
+// ── K-column geo_tpr64: amortize the weight sweep over K positions ────────
+//
+// Decode is bandwidth-bound at K=1: the measured single-GEMV roof is
+// 699.57 GB/s on 13.6 GB of Q4 codes, and decode+FMA are a 4.7% tax on top
+// (HONEST_ROOF_WEIGHT_ADDRESSING.json). One full weight sweep per token puts
+// 100 TPS out of reach for every representation that has shown capability
+// (NX_TPS_FRONTIER.json). The only axis that moves that wall is emitting K
+// positions per sweep.
+//
+// Thread map, launch geometry and per-weight arithmetic are IDENTICAL to
+// qwen_uniform_q4_group64_matvec_geo_tpr64_tg128. The single change: each
+// decoded weight is multiplied into K accumulators instead of one, so the
+// same code byte serves K positions. Bytes stay flat, FLOPs scale K.
+//
+// Activations are position-interleaved -- input[col * K + k] -- so the K
+// values a thread needs for one column are contiguous. Output matches:
+// output[row * K + k]. At K == 1 both collapse to the matvec layout and the
+// arithmetic is bit-identical to it (same (q*scale)*x association, same
+// accumulation order, same two-stage reduction).
+//
+// Grid: ceil(rows / 2) * 128, TG (128, 1, 1). Same as the matvec.
+
+template <uint K>
+static inline void qwen_uniform_q4_unpack8_mac_k(
+    uint packed,
+    float scale,
+    device const float* x,
+    uint col,
+    thread float* acc)
+{
+    for (uint i = 0u; i < 4u; ++i) {
+        const uint byte = (packed >> (8u * i)) & 0xffu;
+        const float w_even = float(int(byte & 0x0fu) - 8) * scale;
+        const float w_odd = float(int(byte >> 4u) - 8) * scale;
+        const uint c_even = (col + 2u * i) * K;
+        const uint c_odd = c_even + K;
+        for (uint k = 0u; k < K; ++k) {
+            acc[k] += w_even * x[c_even + k];
+            acc[k] += w_odd * x[c_odd + k];
+        }
+    }
+}
+
+template <uint K>
+static inline void qwen_uniform_q4_geo_tpr64_matmul_k_body(
+    device const uchar* codes,
+    device const half* scales,
+    device const float* input,
+    device float* output,
+    uint rows,
+    uint cols,
+    uint groups_per_row,
+    threadgroup float* red,
+    uint group_id,
+    uint simd_lane,
+    uint simd_id)
+{
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+
+    float acc[K];
+    for (uint k = 0u; k < K; ++k) {
+        acc[k] = 0.0f;
+    }
+    if (row < rows) {
+        const uint rgb0 = row * groups_per_row;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            qwen_uniform_q4_unpack8_mac_k<K>(packed, scale, input, col, acc);
+        }
+    }
+    for (uint k = 0u; k < K; ++k) {
+        const float summed = simd_sum(acc[k]);
+        if (simd_lane == 0u) {
+            red[k * 4u + simd_id] = summed;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        for (uint k = 0u; k < K; ++k) {
+            output[row * K + k] =
+                red[k * 4u + team * kSplit] + red[k * 4u + team * kSplit + 1u];
+        }
+    }
+}
+
+#define QWEN_UNIFORM_Q4_MATMUL_K(KVAL)                                        \
+kernel void qwen_uniform_q4_group64_matmul_k##KVAL##_geo_tpr64_tg128(         \
+    device const uchar* codes       [[buffer(0)]],                            \
+    device const half* scales       [[buffer(1)]],                            \
+    device const float* input       [[buffer(2)]],                            \
+    device float* output            [[buffer(3)]],                            \
+    constant uint& rows             [[buffer(4)]],                            \
+    constant uint& cols             [[buffer(5)]],                            \
+    constant uint& groups_per_row   [[buffer(6)]],                            \
+    uint group_id                    [[threadgroup_position_in_grid]],        \
+    uint simd_lane                   [[thread_index_in_simdgroup]],           \
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])      \
+{                                                                             \
+    threadgroup float red[4u * KVAL];                                         \
+    qwen_uniform_q4_geo_tpr64_matmul_k_body<KVAL>(                            \
+        codes, scales, input, output, rows, cols, groups_per_row,             \
+        red, group_id, simd_lane, simd_id);                                   \
+}
+
+QWEN_UNIFORM_Q4_MATMUL_K(1)
+QWEN_UNIFORM_Q4_MATMUL_K(2)
+QWEN_UNIFORM_Q4_MATMUL_K(4)
+QWEN_UNIFORM_Q4_MATMUL_K(8)
+
+#undef QWEN_UNIFORM_Q4_MATMUL_K
+
+// ── R x K tiled geo_tpr64: fix the activation:code ratio ──────────────────
+//
+// NX_MATMUL_K_AMORTIZATION.json (first pass) measured the naive K-column
+// kernel above and REFUTED it: K=4 amortized only 1.19x and K=8 was a net
+// loss. The cause is visible in the byte ratios -- a Q4 code byte holds two
+// weights, so it consumes 8 bytes of f32 activation. Activation traffic is
+// 8x code traffic at K=1 and 8K at K=1 rows/thread:
+//
+//   K=1  code  633 GB/s   activation  5065 GB/s   ratio  8:1
+//   K=4  code  188 GB/s   activation  6020 GB/s   ratio 32:1
+//   K=8  code   65 GB/s   activation  4183 GB/s   ratio 64:1
+//
+// Adding accumulators does not make the sweep cheaper if each accumulator
+// drags its own activation stream. The ratio is fixed by R, the number of
+// ROWS a thread serves from one activation load: 8K/R bytes of activation
+// per byte of code. R == K restores the K=1 ratio, so the code stream should
+// return to its K=1 rate while serving K positions.
+//
+// Each thread holds R*K accumulators and loads 8*K activations per 4*R code
+// bytes. Launch geometry, thread map and per-weight arithmetic are otherwise
+// unchanged from the matvec. Rows per TG = 2 * R.
+//
+// Grid: ceil(rows / (2*R)) * 128, TG (128, 1, 1).
+
+template <uint R, uint K>
+static inline void qwen_uniform_q4_geo_tpr64_matmul_rk_body(
+    device const uchar* codes,
+    device const half* scales,
+    device const float* input,
+    device float* output,
+    uint rows,
+    uint cols,
+    uint groups_per_row,
+    threadgroup float* red,
+    uint group_id,
+    uint simd_lane,
+    uint simd_id)
+{
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row0 = (group_id * 2u + team) * R;
+
+    // Live registers: R packed + R scales + R*K accumulators + 2*K staged
+    // activations. Staging all 8*K activations at once (the first version of
+    // this kernel) spilled at K=4 and cost more than it saved -- R=4 K=4
+    // amortized 1.33x against R=2 K=2's 1.73x. Only one code-byte's worth of
+    // activations is held live here.
+    float acc[R * K];
+    for (uint i = 0u; i < R * K; ++i) {
+        acc[i] = 0.0f;
+    }
+
+    for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+        const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+        const uint local_byte = (col - group * QWEN_UNIFORM_Q4_GROUP_SIZE) >> 1u;
+
+        uint packed[R];
+        float scale[R];
+        for (uint r = 0u; r < R; ++r) {
+            const uint row = row0 + r;
+            const uint safe = row < rows ? row : (rows - 1u);
+            const uint rgb = safe * groups_per_row + group;
+            scale[r] = row < rows ? float(scales[rgb]) : 0.0f;
+            packed[r] = *((device const uint*)(codes
+                + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + local_byte));
+        }
+
+        for (uint i = 0u; i < 4u; ++i) {
+            // One activation pair load feeds all R rows.
+            float xe[K];
+            float xo[K];
+            const uint base_e = (col + 2u * i) * K;
+            for (uint k = 0u; k < K; ++k) {
+                xe[k] = input[base_e + k];
+                xo[k] = input[base_e + K + k];
+            }
+            for (uint r = 0u; r < R; ++r) {
+                const uint byte = (packed[r] >> (8u * i)) & 0xffu;
+                const float w_even = float(int(byte & 0x0fu) - 8) * scale[r];
+                const float w_odd = float(int(byte >> 4u) - 8) * scale[r];
+                for (uint k = 0u; k < K; ++k) {
+                    acc[r * K + k] += w_even * xe[k];
+                    acc[r * K + k] += w_odd * xo[k];
+                }
+            }
+        }
+    }
+
+    for (uint i = 0u; i < R * K; ++i) {
+        const float summed = simd_sum(acc[i]);
+        if (simd_lane == 0u) {
+            red[i * 4u + simd_id] = summed;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        for (uint r = 0u; r < R; ++r) {
+            const uint row = row0 + r;
+            if (row >= rows) {
+                break;
+            }
+            for (uint k = 0u; k < K; ++k) {
+                const uint i = r * K + k;
+                output[row * K + k] =
+                    red[i * 4u + team * kSplit] + red[i * 4u + team * kSplit + 1u];
+            }
+        }
+    }
+}
+
+#define QWEN_UNIFORM_Q4_MATMUL_RK(RVAL, KVAL)                                 \
+kernel void qwen_uniform_q4_group64_matmul_r##RVAL##k##KVAL##_geo_tpr64_tg128(\
+    device const uchar* codes       [[buffer(0)]],                            \
+    device const half* scales       [[buffer(1)]],                            \
+    device const float* input       [[buffer(2)]],                            \
+    device float* output            [[buffer(3)]],                            \
+    constant uint& rows             [[buffer(4)]],                            \
+    constant uint& cols             [[buffer(5)]],                            \
+    constant uint& groups_per_row   [[buffer(6)]],                            \
+    uint group_id                    [[threadgroup_position_in_grid]],        \
+    uint simd_lane                   [[thread_index_in_simdgroup]],           \
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])      \
+{                                                                             \
+    threadgroup float red[4u * RVAL * KVAL];                                  \
+    qwen_uniform_q4_geo_tpr64_matmul_rk_body<RVAL, KVAL>(                     \
+        codes, scales, input, output, rows, cols, groups_per_row,             \
+        red, group_id, simd_lane, simd_id);                                   \
+}
+
+QWEN_UNIFORM_Q4_MATMUL_RK(2, 2)
+QWEN_UNIFORM_Q4_MATMUL_RK(4, 4)
+QWEN_UNIFORM_Q4_MATMUL_RK(8, 4)
+QWEN_UNIFORM_Q4_MATMUL_RK(8, 8)
+QWEN_UNIFORM_Q4_MATMUL_RK(2, 4)
+QWEN_UNIFORM_Q4_MATMUL_RK(4, 2)
+QWEN_UNIFORM_Q4_MATMUL_RK(4, 8)
+QWEN_UNIFORM_Q4_MATMUL_RK(16, 4)
+
+#undef QWEN_UNIFORM_Q4_MATMUL_RK
