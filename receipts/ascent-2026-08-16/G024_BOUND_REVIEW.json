@@ -1,0 +1,132 @@
+{
+  "schema": "hawking.nos.bound_adversarial_review.v1",
+  "obligation": "G024 verify line -- adversarial review of the lower-bound evidence",
+  "hole_1_memoryless": {
+    "attack": "specialized context models over the q3 symbol stream: conditional entropy given the row neighbour (contraction axis), the column neighbour (same input channel, next output row), and both.",
+    "per_tensor": [
+      {
+        "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+        "order0_bits": 2.3206961304506954,
+        "H_given_row_neighbour": 2.3207136387938427,
+        "H_given_col_neighbour": 2.32068498603687,
+        "H_given_both": 2.3207029464279785,
+        "best_reduction_bits": 1.1144413825547872e-05
+      },
+      {
+        "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+        "order0_bits": 2.313080677151045,
+        "H_given_row_neighbour": 2.3130914310207085,
+        "H_given_col_neighbour": 2.313069706934869,
+        "H_given_both": 2.3130792528237007,
+        "best_reduction_bits": 1.0970216175909542e-05
+      },
+      {
+        "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+        "order0_bits": 2.3017731710652116,
+        "H_given_row_neighbour": 2.301801025247283,
+        "H_given_col_neighbour": 2.3017542605489596,
+        "H_given_both": 2.301782031953569,
+        "best_reduction_bits": 1.8910516252024223e-05
+      },
+      {
+        "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
+        "order0_bits": 2.2984061902336945,
+        "H_given_row_neighbour": 2.2984428247144892,
+        "H_given_col_neighbour": 2.298381357677442,
+        "H_given_both": 2.298418562079612,
+        "best_reduction_bits": 2.48325562526297e-05
+      },
+      {
+        "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
+        "order0_bits": 2.2987781498181454,
+        "H_given_row_neighbour": 2.298694395221611,
+        "H_given_col_neighbour": 2.298695367119442,
+        "H_given_both": 2.298614676818146,
+        "best_reduction_bits": 0.00016347299999930343
+      },
+      {
+        "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+        "order0_bits": 2.245732627239281,
+        "H_given_row_neighbour": 2.2457196649114985,
+        "H_given_col_neighbour": 2.244433955358867,
+        "H_given_both": 2.244426375025168,
+        "best_reduction_bits": 0.0013062522141127353
+      }
+    ],
+    "best_reduction_bits_found": 0.0013062522141127353,
+    "verdict": "CONFIRMED MEMORYLESS"
+  },
+  "hole_2_anchor": {
+    "attack": "re-anchor the distortion on the gated artifact's OWN worst replaced tensor rather than the sample's central estimate, then ask what distortion would put the floor at 1.0 complete BPW.",
+    "artifact_replaced_tensor_cosine": {
+      "n": 496,
+      "min": 0.9460644440747047,
+      "median": 0.9684466870964236,
+      "max": 0.969823634048785
+    },
+    "sampled_q3_mean_hold": 0.968397,
+    "slb_bits_sample_anchor": 1.918189745254591,
+    "complete_bpw_sample_anchor": 2.1448607738433716,
+    "slb_bits_worst_tensor_anchor": 1.5326021764883393,
+    "complete_bpw_worst_tensor_anchor": 1.795758547111952,
+    "body_bits_needed_for_complete_1_0": 0.6536773802225044,
+    "distortion_multiple_needed_for_1_0": 5.771813684571412,
+    "distortion_multiple_of_the_dead_anchor": 7.7584261716948415,
+    "implied_weight_cosine_at_1_0": 0.8175933721264894,
+    "function_space_distortion_sweep": {
+      "method": "over-scaled q3 (scale = r*absmax/qmax) swept in r, MSE ratio against r=1 measured per tensor, output error measured on the same real captured activations as G033_FUNCTION_SPACE_RANK.",
+      "rows": [
+        {
+          "r": 1.0,
+          "mse_x_q3": 1.0,
+          "out_rel_fro": 0.19791
+        },
+        {
+          "r": 1.5,
+          "mse_x_q3": 2.24,
+          "out_rel_fro": 0.30085
+        },
+        {
+          "r": 2.0,
+          "mse_x_q3": 4.06,
+          "out_rel_fro": 0.41075
+        },
+        {
+          "r": 2.41,
+          "mse_x_q3": 5.47,
+          "out_rel_fro": 0.47952
+        },
+        {
+          "r": 2.5,
+          "mse_x_q3": 5.82,
+          "out_rel_fro": 0.49449
+        },
+        {
+          "r": 2.79,
+          "mse_x_q3": 6.95,
+          "out_rel_fro": 0.542
+        },
+        {
+          "r": 3.0,
+          "mse_x_q3": 7.76,
+          "out_rel_fro": 0.57835
+        }
+      ],
+      "cross_check": "The review computed the DEAD anchor at 7.8x the gated distortion from entropy arithmetic alone. The sweep reaches q2's exact output error 0.57835 at 7.76x, measured on activations. Two independent routes agreeing to 0.05x validates the distortion framework rather than either number alone.",
+      "the_1_0_bpw_point": {
+        "mse_x_q3": 5.82,
+        "out_rel_fro": 0.49449,
+        "fraction_of_the_way_to_dead": 0.8550012967925996,
+        "reading": "complete BPW 1.0 sits at output error 0.49449, 85.5% of the dead anchor's, with 0.084 of output-error headroom left."
+      }
+    }
+  },
+  "verdict": "BOUND STANDS BUT DOES NOT EXCLUDE. Sub-1.0 complete BPW is NOT impossible. It requires TWO things at once: a codec that hits the Shannon bound exactly -- nothing tested comes within 1.33 bits/elem of it, q3 spends 3.2500 against 1.9182 required -- AND the model remaining coherent at 5.8x the gated artifact's distortion, which is 85.5% of the way to a distortion measured to destroy it. The first is unachieved by any construction; the second is unmeasured and close to a measured failure.",
+  "residual_holes": [
+    "The cosine-to-MSE conversion assumes quantization error roughly orthogonal to the weight, which is standard for absmax rounding but is an approximation.",
+    "Context models tested are order-1 in two axes. A learned high-order model, or one conditioned on the group scale, is not covered.",
+    "Coherence is still a two-point anchor (q3 alive, q2 dead). The true threshold between them is not measured, and only an assembled artifact per rung would find it."
+  ],
+  "commit": "c732676bb859f9b288c430a72e50d131df7594eb",
+  "supersedes": "G024_RATE_DISTORTION_BOUND.json claimed sub-1.0 was EXCLUDED. That anchored on the six-tensor sample's mean hold 0.968397. The gated artifact's own worst replaced tensor sits at 0.946064, so it tolerates more distortion than the sample's central estimate and the floor falls from 2.1449 to 1.7958 complete BPW. The exclusion claim was overconfident and is retracted here."
+}
