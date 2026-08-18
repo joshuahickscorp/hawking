@@ -1,0 +1,57 @@
+{
+  "schema": "hawking.nos.q3_load_alignment_control.v1",
+  "question": "Is q3's measured penalty against q4 caused by unaligned narrow loads or by decode work?",
+  "why": "G044's knee misclassified q3, and counting arithmetic from the two shaders' source suggested q3 has FEWER ops per weight than q4 (~6.5 vs ~7.0) while measuring slower, which pointed at its three unaligned uchar loads against q4's one aligned uint load. That is a caveat under F6's ALU framing and had to be tested rather than argued.",
+  "control": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload: byte-for-byte the same 3-bit extraction arithmetic, same bits stored and decoded, same output. The ONLY change is that the three code bytes come from two ALIGNED uint loads plus shifts instead of three unaligned byte loads.",
+  "measurements": [
+    {
+      "codec": "q4_group64_hgravu",
+      "ps_per_element_reps": [
+        0.7931917905807495,
+        0.7906462997198105
+      ],
+      "mean": 0.79191904515028,
+      "spread_pct": 0.3219506449143059
+    },
+    {
+      "codec": "q3_group64_hgravu",
+      "ps_per_element_reps": [
+        0.8867977187037468,
+        0.8523620665073395
+      ],
+      "mean": 0.8695798926055431,
+      "spread_pct": 4.040026363152425
+    },
+    {
+      "codec": "q3_group64_alignedload",
+      "ps_per_element_reps": [
+        0.9446172043681145,
+        0.944826751947403
+      ],
+      "mean": 0.9447219781577587,
+      "spread_pct": 0.02218333292253087
+    },
+    {
+      "codec": "binary_planes_k1",
+      "ps_per_element_reps": [
+        0.6061047315597534,
+        0.6058409810066223
+      ],
+      "mean": 0.6059728562831879,
+      "spread_pct": 0.04353461739958138
+    },
+    {
+      "codec": "binary_planes_k2",
+      "ps_per_element_reps": [
+        0.681052915751934,
+        0.6849801167845726
+      ],
+      "mean": 0.6830165162682533,
+      "spread_pct": 0.5766366961813272
+    }
+  ],
+  "verdict": "REFUTED. Aligned loads are SLOWER, +8.6%. Two aligned uint loads plus the shift/OR to reassemble cost more than three byte loads on this GPU, so narrow unaligned byte loads are not q3's problem and F6's decode framing stands.",
+  "what_it_leaves_open": "If op COUNT were the metric, q3's ~6.5 ops/weight should beat q4's ~7.0 and it does not. The likely remaining mechanism is dependency DEPTH rather than op count: two of q3's eight weights straddle byte boundaries and need b0/b1 combined before extraction, putting extra ops on the critical chain. That is a further measurement, not a conclusion.",
+  "measurement_hygiene": "The first rep of every codec in this bench runs 65-85% slow (7.0-7.9 ms against a 4.2 ms steady state) and one entire earlier run came in 44% high on q3 while q4 was unchanged. Median-of-5 absorbs the warmup rep but NOT a bad run. Single runs of this bench are not trustworthy for absolute numbers; the within-run comparison is the valid one.",
+  "commit": "97eeddbec44a310a0461855c4df74b60eaed78b6"
+}

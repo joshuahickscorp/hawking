@@ -82,6 +82,11 @@ mod macos {
                 bound: 3,
                 hgravu_abi: true,
             },
+            Codec {
+                name: "q3_group64_alignedload",
+                kernel: "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload",
+                code_bytes_per_group: 24, bits: 3, bound: 3, hgravu_abi: true,
+            },
             Codec { name: "binary_planes_k1", kernel: "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
                     code_bytes_per_group: 8, bits: 1, bound: 0, hgravu_abi: false },
             Codec { name: "binary_planes_k2", kernel: "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",

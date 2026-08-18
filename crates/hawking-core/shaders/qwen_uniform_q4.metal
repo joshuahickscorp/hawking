@@ -1501,3 +1501,81 @@ kernel void hawking_roofline_sweep_f4(
     const float4 r = a + b;
     output[gid] = r.x + r.y + r.z + r.w;
 }
+
+// ── q3 with ALIGNED loads: isolate load efficiency from decode ALU ────────
+//
+// G044 found the roofline knee misclassifying q3, and counting decode ops from
+// the two shaders' source says why it might: per 8 weights q4 does ~56 arithmetic
+// ops behind ONE aligned uint load, while q3 does ~52 behind THREE separate
+// unaligned uchar loads. q3 has FEWER arithmetic ops per weight and is measurably
+// slower, which points at the loads rather than the ALU -- and that is a caveat
+// under F6's "ALU-issue bound" framing.
+//
+// This kernel is the control that separates them. The per-weight arithmetic is
+// byte-for-byte the same 3-bit extraction as hgravu01_q3_unpack8; the ONLY change
+// is that the three code bytes come from two ALIGNED uint loads and shifts rather
+// than three unaligned byte loads. Same bits stored, same bits decoded, same
+// output. If ps/element moves toward q4, the cost was loads. If it does not, the
+// cost was ALU and F6 stands as written.
+//
+// Grid: ceil(rows/2)*128, TG 128.
+kernel void qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound            [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {
+        const uint groups_per_row = cols >> 6u;
+        const int qbound = int(bound);
+        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+            const uint group = col >> 6u;
+            const uint local = col & 63u;
+            const uint rgb = row * groups_per_row + group;
+            const float scale = float(scales[rgb]);
+            const uint byte0 = rgb * 24u + ((local * 3u) >> 3u);
+            // Two ALIGNED uint loads spanning the three bytes, then shift them
+            // into place. A group is 24 bytes so the base is 8-aligned and the
+            // pair always covers byte0..byte0+2.
+            const uint base = byte0 & ~3u;
+            const uint shift = (byte0 & 3u) * 8u;
+            const uint w0 = *((device const uint*)(codes + base));
+            const uint w1 = *((device const uint*)(codes + base + 4u));
+            const uint lo = shift == 0u ? w0 : ((w0 >> shift) | (w1 << (32u - shift)));
+            const uint b0 = lo & 0xffu;
+            const uint b1 = (lo >> 8u) & 0xffu;
+            const uint b2 = (lo >> 16u) & 0xffu;
+            acc += float(int(b0 & 7u) - qbound) * scale * input[col];
+            acc += float(int((b0 >> 3u) & 7u) - qbound) * scale * input[col + 1u];
+            acc += float(int(((b0 >> 6u) | (b1 << 2u)) & 7u) - qbound) * scale * input[col + 2u];
+            acc += float(int((b1 >> 1u) & 7u) - qbound) * scale * input[col + 3u];
+            acc += float(int((b1 >> 4u) & 7u) - qbound) * scale * input[col + 4u];
+            acc += float(int(((b1 >> 7u) | (b2 << 1u)) & 7u) - qbound) * scale * input[col + 5u];
+            acc += float(int((b2 >> 2u) & 7u) - qbound) * scale * input[col + 6u];
+            acc += float(int((b2 >> 5u) & 7u) - qbound) * scale * input[col + 7u];
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}
