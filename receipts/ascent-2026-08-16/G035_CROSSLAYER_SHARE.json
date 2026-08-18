@@ -1,0 +1,100 @@
+{
+  "schema": "hawking.nos.crosslayer_share.v1",
+  "obligation": "G035 -- shared basis plus per-layer coefficients vs independent, matched bits",
+  "method": "Randomized-SVD range finder; only the leading subspace is compared, an exact SVD of a 17408x10240 matrix is neither affordable nor needed. Independent gives each layer its own rank-r factorization; shared computes one column basis from the two layers concatenated and projects both onto it. The shared basis IS the alignment and it is inside the parameter budget, so there is no separate alignment cost to omit.",
+  "matched_budget": "Shared rank is the largest whose parameters fit the independent budget, so sharing spends its saving on rank rather than on a smaller artifact.",
+  "error_space": "FUNCTION space on the thick v2 capture, not weight cosine -- weight space already inverted a ranking once in this campaign (G033).",
+  "control": "A far-apart layer pair. If sharing helps adjacent layers it should help distant ones measurably less; equal help would mean the effect is the factorization, not layer affinity.",
+  "pairs": [
+    {
+      "organ": "gate_proj",
+      "layers": [
+        30,
+        31
+      ],
+      "kind": "adjacent",
+      "shape": [
+        17408,
+        5120
+      ],
+      "rank_independent": 256,
+      "rank_shared": 417,
+      "params_independent": 11534336,
+      "params_shared": 11529216,
+      "bits_per_elem_independent": 1.035294117647059,
+      "bits_per_elem_shared": 1.0348345588235295,
+      "independent_out_rel_fro": [
+        0.5129355192184448,
+        0.5150356888771057
+      ],
+      "shared_out_rel_fro": [
+        0.5378942489624023,
+        0.5414770841598511
+      ],
+      "independent_mean": 0.5139856040477753,
+      "shared_mean": 0.5396856665611267,
+      "shared_beats_independent": false
+    },
+    {
+      "organ": "down_proj",
+      "layers": [
+        30,
+        31
+      ],
+      "kind": "adjacent",
+      "shape": [
+        5120,
+        17408
+      ],
+      "rank_independent": 256,
+      "rank_shared": 288,
+      "params_independent": 11534336,
+      "params_shared": 11501568,
+      "bits_per_elem_independent": 1.035294117647059,
+      "bits_per_elem_shared": 1.0323529411764707,
+      "independent_out_rel_fro": [
+        0.85255366563797,
+        0.8725307583808899
+      ],
+      "shared_out_rel_fro": [
+        0.8563296794891357,
+        0.8782581686973572
+      ],
+      "independent_mean": 0.8625422120094299,
+      "shared_mean": 0.8672939240932465,
+      "shared_beats_independent": false
+    },
+    {
+      "organ": "gate_proj",
+      "layers": [
+        15,
+        47
+      ],
+      "kind": "far control",
+      "shape": [
+        17408,
+        5120
+      ],
+      "rank_independent": 256,
+      "rank_shared": 417,
+      "params_independent": 11534336,
+      "params_shared": 11529216,
+      "bits_per_elem_independent": 1.035294117647059,
+      "bits_per_elem_shared": 1.0348345588235295,
+      "independent_out_rel_fro": [
+        0.5634581446647644,
+        0.5641568303108215
+      ],
+      "shared_out_rel_fro": [
+        0.5542383193969727,
+        0.5833343267440796
+      ],
+      "independent_mean": 0.563807487487793,
+      "shared_mean": 0.5687863230705261,
+      "shared_beats_independent": false
+    }
+  ],
+  "adjacent_mean_error_reduction": -0.015225887298583984,
+  "far_control_mean_error_reduction": -0.004978835582733154,
+  "commit": "f4a8a3ec2eb0953c3c4703afbbe677aa30303290"
+}

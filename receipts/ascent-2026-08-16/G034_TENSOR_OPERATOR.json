@@ -1,0 +1,103 @@
+{
+  "schema": "hawking.nos.gtensor_operator.v1",
+  "obligation": "G034 -- structured operator replacing a dense linear map",
+  "method": "Rank chosen so the factorization costs EXACTLY the same bits/elem as flat q3 (3.2500), f16 factors. Error in FUNCTION space on the thick v2 capture. MAC count reported because the acceptance requires reducing BOTH bytes and operations.",
+  "per_tensor": [
+    {
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "bits_per_elem": 3.25,
+      "flat_q3_out_rel_fro": 0.23649897594037775,
+      "lowrank_rank": 803,
+      "lowrank_out_rel_fro": 0.6944595575332642,
+      "dense_macs": 89128960,
+      "lowrank_macs": 18089984,
+      "mac_ratio": 0.2029641544117647,
+      "lowrank_wins": false
+    },
+    {
+      "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "bits_per_elem": 3.25,
+      "flat_q3_out_rel_fro": 0.14790852908202548,
+      "lowrank_rank": 803,
+      "lowrank_out_rel_fro": 0.545408308506012,
+      "dense_macs": 89128960,
+      "lowrank_macs": 18089984,
+      "mac_ratio": 0.2029641544117647,
+      "lowrank_wins": false
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "bits_per_elem": 3.25,
+      "flat_q3_out_rel_fro": 0.21859885533319953,
+      "lowrank_rank": 803,
+      "lowrank_out_rel_fro": 0.42060425877571106,
+      "dense_macs": 89128960,
+      "lowrank_macs": 18089984,
+      "mac_ratio": 0.2029641544117647,
+      "lowrank_wins": false
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "bits_per_elem": 3.25,
+      "flat_q3_out_rel_fro": 0.21803725476232977,
+      "lowrank_rank": 803,
+      "lowrank_out_rel_fro": 0.7296385169029236,
+      "dense_macs": 89128960,
+      "lowrank_macs": 18089984,
+      "mac_ratio": 0.2029641544117647,
+      "lowrank_wins": false
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "bits_per_elem": 3.25,
+      "flat_q3_out_rel_fro": 0.12809063571921156,
+      "lowrank_rank": 803,
+      "lowrank_out_rel_fro": 0.34974247217178345,
+      "dense_macs": 89128960,
+      "lowrank_macs": 18089984,
+      "mac_ratio": 0.2029641544117647,
+      "lowrank_wins": false
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "bits_per_elem": 3.25,
+      "flat_q3_out_rel_fro": 0.24363242549646577,
+      "lowrank_rank": 803,
+      "lowrank_out_rel_fro": 0.6005870699882507,
+      "dense_macs": 89128960,
+      "lowrank_macs": 18089984,
+      "mac_ratio": 0.2029641544117647,
+      "lowrank_wins": false
+    }
+  ],
+  "mean_flat_q3": 0.19879444605560162,
+  "mean_lowrank": 0.5567400306463242,
+  "mean_mac_ratio": 0.2029641544117647,
+  "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.80x the output error of flat q3 on every tensor tested. It does reduce operations (0.203x the dense MACs), but the acceptance requires reducing bytes AND operations while preserving function, and function is not preserved.",
+  "note": "A side observation worth keeping: at a much LOWER budget (~1.04 b/elem, rank 256) gate_proj low-rank gives 0.514 output error, which beats flat q2's 0.578 at 2.25 b/elem -- so low-rank is competitive in the DEAD zone, the same place binary planes survive. down_proj is far worse (0.863), matching the campaign's recorded finding that down_proj inverts the ranking.",
+  "commit": "f4a8a3ec2eb0953c3c4703afbbe677aa30303290"
+}
