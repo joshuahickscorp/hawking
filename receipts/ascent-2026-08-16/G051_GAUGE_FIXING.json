@@ -1,0 +1,109 @@
+{
+  "schema": "hawking.nos.gauge_fixing_economics.v1",
+  "obligation": "G051 -- gauge fixing, with the transform's own bits counted",
+  "economics_rule": "a transform saving X bits and costing Y bits is REJECTED when Y >= X. Cost is description bits PLUS any entropy the transform adds, since an entropy-coded route pays that too.",
+  "bit_conversion": "error ratios are converted to equivalent bits using the MEASURED q3->q4 function-space slope (error ratio 0.4224 per bit), so 'bits saved' is an equivalent, not a stored quantity",
+  "members": [
+    {
+      "member": "channel rescaling a=0.25",
+      "error_ratio": 0.8239839232290167,
+      "equivalent_bits_saved": 0.2246503687804547,
+      "description_bits_per_elem": 0.0009191176470588235,
+      "entropy_delta_bits_per_elem": -0.023834631616340474,
+      "total_bits_cost": -0.02291551396928165,
+      "foldable_at_zero_runtime": true,
+      "note": "folds into post_attention_layernorm (s) and up_proj rows (t); gated artifact exists",
+      "net_bits_fixed_width": 0.22373125113339587,
+      "net_bits_entropy_coded": 0.24756588274973634,
+      "verdict_fixed_width": "ACCEPTED",
+      "verdict_entropy_coded": "ACCEPTED"
+    },
+    {
+      "member": "channel rescaling a=0.5",
+      "error_ratio": 0.8587480077611499,
+      "equivalent_bits_saved": 0.1766991243871231,
+      "description_bits_per_elem": 0.0009191176470588235,
+      "entropy_delta_bits_per_elem": -0.12525897999083302,
+      "total_bits_cost": -0.1243398623437742,
+      "foldable_at_zero_runtime": true,
+      "note": "same fold",
+      "net_bits_fixed_width": 0.17578000674006428,
+      "net_bits_entropy_coded": 0.3010389867308973,
+      "verdict_fixed_width": "ACCEPTED",
+      "verdict_entropy_coded": "ACCEPTED"
+    },
+    {
+      "member": "permutation, magnitude-sorted",
+      "error_ratio": 0.9733778343095069,
+      "equivalent_bits_saved": 0.03130990197095474,
+      "description_bits_per_elem": 0.0007078313473625553,
+      "entropy_delta_bits_per_elem": 0.01242700814100628,
+      "total_bits_cost": 0.013134839488368834,
+      "foldable_at_zero_runtime": true,
+      "note": "a relabeling; folds into tensor layout at zero runtime cost",
+      "net_bits_fixed_width": 0.030602070623592187,
+      "net_bits_entropy_coded": 0.018175062482585908,
+      "verdict_fixed_width": "ACCEPTED",
+      "verdict_entropy_coded": "ACCEPTED"
+    },
+    {
+      "member": "signed permutation",
+      "error_ratio": 1.0,
+      "equivalent_bits_saved": -0.0,
+      "description_bits_per_elem": 0.0007652762003037318,
+      "entropy_delta_bits_per_elem": -7.340764645036302e-07,
+      "total_bits_cost": 0.0007645421238392282,
+      "foldable_at_zero_runtime": true,
+      "note": "sign measured EXACTLY null (1.0000 to five figures), so signed permutation reduces to permutation and inherits its verdict",
+      "net_bits_fixed_width": -0.0007652762003037318,
+      "net_bits_entropy_coded": -0.0007645421238392282,
+      "verdict_fixed_width": "REJECTED",
+      "verdict_entropy_coded": "REJECTED"
+    },
+    {
+      "member": "dense orthogonal rotation (the economics bar)",
+      "error_ratio": null,
+      "equivalent_bits_saved": null,
+      "description_bits_per_elem": 4.705882352941177,
+      "entropy_delta_bits_per_elem": null,
+      "total_bits_cost": 4.705882352941177,
+      "net_bits": null,
+      "foldable_at_zero_runtime": false,
+      "verdict": "EXCLUDED BY ECONOMICS REGARDLESS OF FIT",
+      "note": "5120x5120 f16 = 52.4 MB per site = 4.706 bits/elem on this tensor; the ledger's own bar puts it at 0.998 BPW artifact-wide",
+      "net_bits_fixed_width": null,
+      "net_bits_entropy_coded": null
+    },
+    {
+      "member": "Hadamard / Kronecker",
+      "error_ratio": null,
+      "equivalent_bits_saved": null,
+      "description_bits_per_elem": 0.0,
+      "entropy_delta_bits_per_elem": 0.0237,
+      "total_bits_cost": 0.0237,
+      "net_bits": null,
+      "foldable_at_zero_runtime": false,
+      "verdict": "REFUTED",
+      "note": "zero stored bytes but RAISES code entropy 0.0237-0.0334 b/elem; weights are near-Gaussian (kurtosis 3.23-3.76 vs 3.0) so there is no heavy tail to flatten",
+      "net_bits_fixed_width": null,
+      "net_bits_entropy_coded": null
+    }
+  ],
+  "pipeline_order_measured": {
+    "order": "GAUGE FIX -> ALIGN -> SHARE -> COMPRESS",
+    "gauge_fix": "channel rescaling, applied BEFORE representation, folded at pack time",
+    "align": "no-op: there is nothing to align because SHARE is empty",
+    "share": "EMPTY -- G035 measured cross-layer sharing losing to independent at matched bits on 3/3 pairs, so the stage contributes nothing and is not speculatively retained",
+    "compress": "q3 grouped, group 64",
+    "end_to_end": "g032-chanscale-a025-compact: 3.344826061335 complete BPW, block output error 0.8935x the unfixed pipeline with q4 norms and 0.8444x with f16 norms, 10/10 capability with watched controls, and adversarial distinguishability 0.022 at k=48 against the unfixed twin's 0.229",
+    "transform_bits_counted": "+0.0000023195 complete BPW, entirely the rewritten norms"
+  },
+  "still_untested": [
+    "head alignment",
+    "RoPE-compatible rotation"
+  ],
+  "untested_note": "both are attention-side transforms and every measurement in this receipt is MLP-side; they are named as gaps rather than folded into the verdict",
+  "commit": "8d9550f06ee306880159a50fbd299f99083b5146",
+  "two_regimes": "The economics verdict depends on whether entropy coding is in the pipeline. G039 measured entropy coding REFUTED for this kernel geometry -- at the 8-weight granularity geo_tpr64 reads, the resumable-state index costs 1.75 bits/elem against q3's 3.25 total -- so FIXED WIDTH is the deployed route and its column is the operative one. The entropy-coded column is kept because it changes the ranking, which is worth knowing if the kernel geometry ever changes.",
+  "correction": "An earlier line in this analysis called permutation's verdict a rejection driven by entropy. That was wrong: permutation is a MARGINAL ACCEPT in both regimes (+0.0306 fixed width, +0.0182 entropy-coded). What is true is that its cost is dominated by entropy -- 0.0124 b/elem against a 0.00071 b/elem description cost, 18x -- so entropy is what nearly cancels it."
+}
