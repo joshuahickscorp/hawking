@@ -1,0 +1,126 @@
+{
+  "schema": "hawking.nos.h_equivalence_distinguisher.v1",
+  "obligation": "G048 -- adversarial distinguisher instead of a fixed benchmark",
+  "teacher": "uniform-q4-v1",
+  "query_budget": 48,
+  "seed": 77,
+  "max_new_tokens": 110,
+  "prompt_space": "seeded generation over six deterministic templates (add, mul, sub, letter-count, reverse, character-count) with randomised operands and words -- the budget buys DRAWS FROM A SPACE, not reruns of a list",
+  "distinguishing_event": "teacher correct AND candidate wrong. A prompt both get wrong says nothing about equivalence, and mere token disagreement says nothing either -- G004 measured greedy divergence ranking candidates OPPOSITELY to capability",
+  "control_ran_first": true,
+  "control_works": true,
+  "results": [
+    {
+      "candidate": "mixed-q4down-v1",
+      "is_known_bad": true,
+      "distinguishing_events": 45,
+      "budget": 48,
+      "distinguishability": 0.9375,
+      "queries_to_first_event": 1,
+      "teacher_correct": 45,
+      "events": [
+        {
+          "query": 0,
+          "prompt": "What is 133 - 23? Reply with the number only.",
+          "expected": "110",
+          "candidate_said": "1"
+        },
+        {
+          "query": 1,
+          "prompt": "What is 9 times 6? Reply with the number only.",
+          "expected": "54",
+          "candidate_said": ""
+        },
+        {
+          "query": 2,
+          "prompt": "What is 171 - 46? Reply with the number only.",
+          "expected": "125",
+          "candidate_said": ""
+        },
+        {
+          "query": 3,
+          "prompt": "Write the word \"mount\" backwards. Reply with the word only.",
+          "expected": "tnuom",
+          "candidate_said": ""
+        },
+        {
+          "query": 4,
+          "prompt": "What is 19 times 3? Reply with the number only.",
+          "expected": "57",
+          "candidate_said": ""
+        },
+        {
+          "query": 5,
+          "prompt": "What is 57 - 42? Reply with the number only.",
+          "expected": "15",
+          "candidate_said": ""
+        }
+      ]
+    },
+    {
+      "candidate": "compact-q3attn-r1p2-v1",
+      "is_known_bad": false,
+      "distinguishing_events": 11,
+      "budget": 48,
+      "distinguishability": 0.22916666666666666,
+      "queries_to_first_event": 11,
+      "teacher_correct": 45,
+      "events": [
+        {
+          "query": 10,
+          "prompt": "Write the word \"sandw\" backwards. Reply with the word only.",
+          "expected": "wdnas",
+          "candidate_said": "<think>\n\n</think>\n\ndwans"
+        },
+        {
+          "query": 15,
+          "prompt": "Write the word \"eleph\" backwards. Reply with the word only.",
+          "expected": "hpele",
+          "candidate_said": "<think>\n\n</think>\n\nphele"
+        },
+        {
+          "query": 18,
+          "prompt": "How many letters are in the word \"elephant\"? Reply with the number only.",
+          "expected": "8",
+          "candidate_said": "<think>\n\n"
+        },
+        {
+          "query": 19,
+          "prompt": "Write the word \"eleph\" backwards. Reply with the word only.",
+          "expected": "hpele",
+          "candidate_said": "<think>\n\n</think>\n\nphele"
+        },
+        {
+          "query": 20,
+          "prompt": "What is 163 - 46? Reply with the number only.",
+          "expected": "117",
+          "candidate_said": "<think>\n</think>"
+        },
+        {
+          "query": 23,
+          "prompt": "Write the word \"compu\" backwards. Reply with the word only.",
+          "expected": "upmoc",
+          "candidate_said": "<think>\n\n</think>\n\nu\n\n"
+        }
+      ]
+    },
+    {
+      "candidate": "g032-chanscale-a025-compact",
+      "is_known_bad": false,
+      "distinguishing_events": 1,
+      "budget": 48,
+      "distinguishability": 0.020833333333333332,
+      "queries_to_first_event": 32,
+      "teacher_correct": 45,
+      "events": [
+        {
+          "query": 31,
+          "prompt": "How many times does the letter \"a\" appear in \"sandwich\"? Reply with the number only.",
+          "expected": "1",
+          "candidate_said": "<think>\nThe user wants to know how many times the letter \"a\" appears in the word \"sandwich\".\n\nLet me count the letter \"a\" in \"sandwich\":\n\ns-a-n-d-w-i-c-h\n\nLet m"
+        }
+      ]
+    }
+  ],
+  "commit": "28d33ab9cdd6d736b1d11240a81ff2f8eb4b671f"
+}
