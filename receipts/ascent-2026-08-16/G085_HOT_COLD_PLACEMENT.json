@@ -1,0 +1,58 @@
+{
+  "schema": "hawking.nos.hot_cold_placement.v1",
+  "obligation": "G085 -- HOT|WARM|COLD|RARE placement across the memory hierarchy",
+  "machine": {
+    "ram_bytes": 103100000000.0,
+    "ram_gb": 103.1
+  },
+  "artifact": {
+    "addressed_bytes": 14297694680,
+    "gb": 14.29769468,
+    "pct_of_ram": 13.867793094083414
+  },
+  "measured_ssd_read_gb_s": 6.61,
+  "ssd_measurement_caveat": "6.61 GB/s measured by streaming 2.15 GB from an untouched bf16 shard. macOS has no posix_fadvise, so the page cache could not be dropped and this may be inflated. That makes it an UPPER BOUND on true SSD throughput, which only strengthens the conclusion below -- the real penalty is at least this large.",
+  "there_is_no_pressure_to_relieve": "The artifact addresses 14.30 GB against 103.1 GB of RAM -- 13.9% of the machine, leaving 88.8 GB free. Even at the model's maximum 131072 context the KV adds 17.18 GB for a total of 31.48 GB, still 71.6 GB clear. A COLD or SSD tier has nothing to relieve.",
+  "structural_crossover": "RAM pressure would begin at 677,508 KV positions, and this model's maximum context is 131,072. The crossover is 5.2x beyond what the architecture allows, so it is not merely unreached, it is unreachable.",
+  "and_any_ssd_placement_is_catastrophic": [
+    {
+      "fraction_on_ssd": 0.01,
+      "bytes_on_ssd": 142976946.8,
+      "token_ms_all_ram": 24.09453097404786,
+      "token_ms_with_ssd_tier": 45.483986087907994,
+      "added_ms": 21.389455113860134,
+      "added_pct_of_token": 69.88647687989327,
+      "ram_freed_gb": 0.1429769468
+    },
+    {
+      "fraction_on_ssd": 0.06,
+      "bytes_on_ssd": 857861680.8,
+      "token_ms_all_ram": 24.09453097404786,
+      "token_ms_with_ssd_tier": 152.4312616572086,
+      "added_ms": 128.33673068316074,
+      "added_pct_of_token": 419.3188612793594,
+      "ram_freed_gb": 0.8578616807999999
+    },
+    {
+      "fraction_on_ssd": 0.25,
+      "bytes_on_ssd": 3574423670.0,
+      "token_ms_all_ram": 24.09453097404786,
+      "token_ms_with_ssd_tier": 558.830908820551,
+      "added_ms": 534.7363778465032,
+      "added_pct_of_token": 1747.1619219973309,
+      "ram_freed_gb": 3.57442367
+    },
+    {
+      "fraction_on_ssd": 1.0,
+      "bytes_on_ssd": 14297694680.0,
+      "token_ms_all_ram": 24.09453097404786,
+      "token_ms_with_ssd_tier": 2163.0400423600604,
+      "added_ms": 2138.9455113860126,
+      "added_pct_of_token": 6988.6476879893235,
+      "ram_freed_gb": 14.29769468
+    }
+  ],
+  "cache_tier": "The weight stream is 14.30 GB per token, far beyond any on-chip cache, so no weight can be cache-resident ACROSS tokens and there is no HOT tier to promote into. The only cache-resident objects are activations, already accounted in G042 at ~5000-6000 GB/s measured.",
+  "verdict": "MOOT ON THIS CONFIGURATION. The tier policy the acceptance describes reduces to 'everything in unified RAM', which is what the runtime already does. This is a refutation by MACHINE rather than by mechanism: the policy is sound and would matter on a box where the artifact did not fit, and the condition under which it becomes live is stated above as a number.",
+  "commit": "ea505b5c960a6568e0e80272a504e87b990e3047"
+}
