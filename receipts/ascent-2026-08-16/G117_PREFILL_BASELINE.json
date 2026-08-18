@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.nos.prefill_baseline.v1",
+  "obligation": "G117 -- batched prefill ported to qwen38, exact math",
+  "measured_baseline": [
+    {
+      "prompt_len": 11,
+      "prefill_ms_per_token": 37.015,
+      "decode_ms_per_token": 30.35
+    },
+    {
+      "prompt_len": 31,
+      "prefill_ms_per_token": 32.827,
+      "decode_ms_per_token": 30.46
+    },
+    {
+      "prompt_len": 688,
+      "prefill_ms_per_token": 32.552,
+      "decode_ms_per_token": 34.864
+    }
+  ],
+  "ZERO_BATCHING_PROVEN_NOT_CITED": "Prompt length spans 63x from 11 to 688 tokens and prefill cost per prompt token spans 1.14x, sitting flat near 32.5 ms. If ANY weight-sweep amortization existed the per-token cost would fall with length. It does not, so every prompt token pays a full model pass -- which is exactly what the directive asserts, now measured on the current build rather than cited.",
+  "prefill_costs_what_decode_costs": "32.55 ms per prompt token against 30.46 ms per decode token. A prompt token and a generated token cost the same, which is the signature of no batching at all.",
+  "the_wall_in_wall_clock": {
+    "agent_prefix_688_tokens_s": 22.395775999999998,
+    "context_32k_s": 1066.663936,
+    "context_32k_min": 17.777732266666664,
+    "note": "the directive estimates ~22 minutes for a 32k prompt; measured on this build it is 17.8 minutes. Same order, now measured."
+  },
+  "what_batching_would_buy_from_MEASURED_amortization": {
+    "amortization_source": "G091 measured r4k4 at 2.567x per position on the protected lane, the best of a 12-point R x K sweep. r4k8 and r8k4 both fall back, so 2.567x is the peak and not a trend to extrapolate.",
+    "gemv_ms_per_token": 20.616,
+    "non_gemv_ms_per_token": 11.936,
+    "projected_ms_per_token_gemv_only_amortized": 19.96716478379431,
+    "projected_ms_per_token_all_amortized": 12.680950525905725,
+    "speedup_gemv_only": 1.6302765241072061,
+    "speedup_all": 2.567,
+    "honest_range": "If batching amortizes only the weight sweep, prefill goes 32.552 -> 19.97 ms/token = 1.63x. If the non-GEMV work amortizes too it reaches 12.68 ms = 2.57x. Which one holds is the same unmeasured question G091 hit, and it cannot be settled without the batched path existing."
+  },
+  "and_the_wall_survives_the_fix": "Even at the optimistic 2.57x, a 32k prompt still costs 6.9 minutes before the first generated token. Batched prefill is a real and large win and it does not make long-context prefill interactive.",
+  "not_delivered": "the port itself. No batched prefill path was written, and the acceptance's exact-math / bit-identical requirement has nothing to test yet.",
+  "commit": "b63352b301ce13f9f3fa320e0b73c0fc300a62d6"
+}
