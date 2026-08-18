@@ -1,0 +1,85 @@
+{
+  "schema": "hawking.nos.protected_verification.v1",
+  "obligation": "G029 -- load-bearing measurements independently re-derived",
+  "method": "Each claim class re-measured by a path that shares no code with the one that produced it, or (capability) by the same scorer with BOTH named controls watched.",
+  "bpw": {
+    "independent_method": "find -type f | stat -f '%d %i %z' | dedupe by (dev,inode) | sum | *8/N. Shell only; shares no code with tools/gravity_bpw.py.",
+    "n_params_denominator": 26895998464,
+    "artifacts": {
+      "uniform-q4-v1": {
+        "files": 1109,
+        "bytes": 14308518399,
+        "independent_complete_bpw": 4.255954555664269,
+        "tool_complete_bpw": 4.255954555664,
+        "agree_exactly": true
+      },
+      "mixed-q3mlp-v1": {
+        "files": 261,
+        "bytes": 13963923935,
+        "independent_complete_bpw": 4.153457683659689,
+        "tool_complete_bpw": 4.15345768366,
+        "agree_exactly": true
+      },
+      "mixed-q3mlp-q3attn-v1": {
+        "files": 565,
+        "bytes": 16904476304,
+        "independent_complete_bpw": 5.028101507851127,
+        "tool_complete_bpw": 5.028101507851,
+        "agree_exactly": true
+      },
+      "mixed-q3mlp-q3attn-r1p2-v1": {
+        "files": 565,
+        "bytes": 16904476323,
+        "independent_complete_bpw": 5.028101513502525,
+        "tool_complete_bpw": 5.028101513503,
+        "agree_exactly": true
+      },
+      "compact-q3attn-r1p2-v1": {
+        "files": 854,
+        "bytes": 11245288072,
+        "independent_complete_bpw": 3.3448211523514755,
+        "tool_complete_bpw": 3.344821152351,
+        "agree_exactly": true
+      }
+    },
+    "verdict": "EVERY artifact agrees to full printed precision. The accounting tool is confirmed."
+  },
+  "token_cost": {
+    "independent_harness": "ascension_qwen38_hybrid_greedy --complete-wall --pairs 3, a different binary from ascension_qwen38_token_ns, plus its own uninstrumented generate_greedy control.",
+    "independent_complete_wall_ns_per_token": null,
+    "independent_tps": null,
+    "uninstrumented_control_ns_per_token": null,
+    "census_harness_wall_ns_per_token": 29624653,
+    "census_harness_tps": 33.75566964446807,
+    "note": "Different prompt length (64 new tokens vs 16), so the independent figure carries more context per token and is expected to be slightly slower."
+  },
+  "capability": {
+    "scorer": "tools/gravity_doctor_capability.py, native runtime, FALLBACKS and DENSE_W_MATERIALIZED both asserted 0",
+    "positive_control": {
+      "artifact": "uniform-q4-v1",
+      "correct": 10,
+      "n": 10,
+      "degenerate": 0
+    },
+    "negative_control": {
+      "artifact": "mixed-q4down-v1",
+      "correct": 0,
+      "n": 10,
+      "degenerate": 10
+    },
+    "subject": {
+      "artifact": "compact-q3attn-r1p2-v1",
+      "correct": 10,
+      "n": 10,
+      "degenerate": 0
+    },
+    "controls_observed": "negative control WATCHED FAILING 0/10 with 10 degenerate; positive control watched passing 10/10.",
+    "residual_independence_gap": "Same scorer as prior capability claims. A genuinely independent second scorer is G126's job; ten deterministic items also cannot separate 10/10 from 9/10."
+  },
+  "artifact_identity_correction": {
+    "finding": "The density leader named in the directive and in this ledger, mixed-q3mlp-q3attn-v1, measures 5.028102 complete BPW on disk -- WORSE than G0's 4.255955. Its 3.344772 is a DECLARED figure: all 562 segments are catalog-referenced, and 5,659,352,471 bytes of superseded tensors sit inside live blobs.",
+    "resolution": "The realized artifact exists under a different name: compact-q3attn-r1p2-v1, 11,245,288,072 bytes, 3.344821152351 complete BPW, 851 one-tensor segments. Independent walk and tools/gravity_bpw.py agree exactly.",
+    "what_was_missing": "No receipt in the repository referenced compact-q3attn-r1p2-v1. The compaction tool's own contract says nothing is claimed until the capability gate runs, and it had never run on it. It has now: 10/10, 0 degenerate, controls behaving."
+  },
+  "commit": "2699a44ad39df497fc6dcaba40384844257461c2"
+}
