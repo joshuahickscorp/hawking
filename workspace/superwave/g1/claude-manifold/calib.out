@@ -1,0 +1,48 @@
+reference = same-tensor uniform q4 group 64; candidate = uniform q3 group 64,
+which is exactly what mixed-q3mlp-v1 packs into all 192 MLP tensors and which is
+COHERENT end to end at 3.6138647373 complete BPW.
+
+tensor                          observed    probed   worst_u      gain   verdict
+mlp.gate_proj@L0                0.981122  0.969375  0.890227  0.823527   reject: probed,gain
+  (q4 reference)                0.996448  0.994139  0.969206  0.922356
+mlp.up_proj@L0                  0.980194  0.969637  0.894937  0.824239   reject: probed,gain
+  (q4 reference)                0.996241  0.994194  0.974646  0.918613
+mlp.down_proj@L0                0.968663  0.968652  0.939600  0.912208   reject: observed,probed,gain
+  (q4 reference)                0.994010  0.994002  0.985584  0.965458
+mlp.gate_proj@L15               0.977435  0.969665  0.839811  0.767295   reject: probed,worst_unit,gain
+  (q4 reference)                0.995742  0.994181  0.956370  0.901285
+mlp.up_proj@L15                 0.974015  0.969556  0.818373  0.721846   reject: observed,probed,worst_unit,gain
+  (q4 reference)                0.995006  0.994185  0.963599  0.898492
+mlp.down_proj@L15               0.969238  0.969235  0.941714  0.899031   reject: observed,probed,gain
+  (q4 reference)                0.994118  0.994067  0.988227  0.965090
+mlp.gate_proj@L31               0.975853  0.968541  0.755464  0.682819   reject: probed,worst_unit,gain
+  (q4 reference)                0.995363  0.993963  0.953731  0.844503
+mlp.up_proj@L31                 0.966537  0.968420  0.798184  0.640383   reject: observed,probed,gain
+  (q4 reference)                0.993027  0.993947  0.857981  0.834259
+mlp.down_proj@L31               0.968678  0.968528  0.921632  0.902167   reject: observed,probed,gain
+  (q4 reference)                0.993987  0.993948  0.983403  0.963951
+mlp.gate_proj@L47               0.976615  0.968593  0.720515  0.760337   reject: probed,worst_unit,gain
+  (q4 reference)                0.995590  0.993975  0.943796  0.890446
+mlp.up_proj@L47                 0.967794  0.968686  0.836452  0.763553   reject: observed,probed,worst_unit,gain
+  (q4 reference)                0.993539  0.993981  0.960804  0.885591
+mlp.down_proj@L47               0.968489  0.968424  0.921137  0.900565   reject: observed,probed,gain
+  (q4 reference)                0.993963  0.993943  0.979319  0.966951
+mlp.gate_proj@L63               0.993650  0.967660  0.796917  0.729807   reject: probed,worst_unit,gain
+  (q4 reference)                0.998817  0.993752  0.964109  0.846658
+mlp.up_proj@L63                 0.994882  0.968844  0.770180  0.749527   reject: probed,worst_unit,gain
+  (q4 reference)                0.998998  0.994045  0.953923  0.864823
+mlp.down_proj@L63               0.965246  0.965048  0.909445  0.892702   reject: observed,probed,gain
+  (q4 reference)                0.993256  0.993219  0.979006  0.956512
+
+15 of 15 MLP tensors REJECTED by the gate.
+The gate is STRICTER THAN DEMONSTRATED COHERENCE at this point: it rejects a
+construction that is packed into a coherent artifact and runs end to end.
+Consequence: every bound derived from the same-tensor-Q4 bar is CONSERVATIVE,
+and the per-organ Doctor bar owed by G025 should be calibrated against measured
+end-to-end behaviour rather than assumed equal to Q4 on every organ.
+
+how far below the Q4 reference a COHERENT construction actually sits:
+  observed     worst deficit  -0.028011   current margin 0.02   -> margin would need to be >= 0.0280
+  probed       worst deficit  -0.028172   current margin 0.02   -> margin would need to be >= 0.0282
+  worst_unit   worst deficit  -0.223281   current margin 0.10   -> margin would need to be >= 0.2233
+  gain         worst deficit  -0.193876   current margin 0.02   -> margin would need to be >= 0.1939
