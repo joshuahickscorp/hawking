@@ -1,0 +1,69 @@
+{
+  "schema": "hawking.nos.attention_function_space.v1",
+  "obligation": "extends G032 (channel scale) and the G033/G034 codec ranking to ATTENTION",
+  "why": "Every function-space, transform, sensitivity and codec result this session was MLP-only, while attention is 34% of the artifact's addressed bytes. The mixer_x capture site existed and had never been used.",
+  "site_verified": "mixer_x is labelled PER LAYER in the capture: deltanet layers carry 'deltanet_gated_recurrent_normed_out_proj_input' and every fourth layer carries 'gqa_softmax_gated_repeat_v_o_proj_input'. Both are 6144 wide and both matched the tensors' input dimension exactly, which is checked in code rather than assumed.",
+  "measurements": [
+    {
+      "layer": 30,
+      "organ": "linear_attn.out_proj",
+      "kind": "deltanet",
+      "schemes": {
+        "flat q2": 0.6657492243895031,
+        "flat q3": 0.24412086575189143,
+        "flat q4": 0.10422339224023257,
+        "q3 + channel scale a=0.25": 0.23635316549398153,
+        "q3 + channel scale a=0.5": 0.2714851867489857
+      }
+    },
+    {
+      "layer": 31,
+      "organ": "self_attn.o_proj",
+      "kind": "gqa",
+      "schemes": {
+        "flat q2": 0.8205066331737728,
+        "flat q3": 0.30105618376034965,
+        "flat q4": 0.12984777765805136,
+        "q3 + channel scale a=0.25": 0.2952156819981971,
+        "q3 + channel scale a=0.5": 0.3212598092895654
+      }
+    },
+    {
+      "layer": 62,
+      "organ": "linear_attn.out_proj",
+      "kind": "deltanet",
+      "schemes": {
+        "flat q2": 0.723367385455674,
+        "flat q3": 0.2791150800349499,
+        "flat q4": 0.120038468855964,
+        "q3 + channel scale a=0.25": 0.18165010799306633,
+        "q3 + channel scale a=0.5": 0.21937397192675182
+      }
+    },
+    {
+      "layer": 63,
+      "organ": "self_attn.o_proj",
+      "kind": "gqa",
+      "schemes": {
+        "flat q2": 0.6512522374717439,
+        "flat q3": 0.22750277091045643,
+        "flat q4": 0.0978951437856468,
+        "q3 + channel scale a=0.25": 0.18615772820084073,
+        "q3 + channel scale a=0.5": 0.20294198690731885
+      }
+    }
+  ],
+  "finding_1_codec_ranking_holds": "q4 < q3 < q2 in output error on every attention tensor, the same ordering as MLP. Flat-code dominance is not an MLP artifact.",
+  "finding_2_attention_is_more_sensitive": "q3 costs attention 0.228-0.301 output error against MLP's 0.198-0.240 at the same width, consistent with the campaign's standing note that attention sets the BPW floor.",
+  "finding_3_channel_scale_gains_MORE_on_deep_attention": {
+    "L30 deltanet out_proj": -3.18,
+    "L31 gqa o_proj": -1.94,
+    "L62 deltanet out_proj": -34.92,
+    "L63 gqa o_proj": -18.17,
+    "note": "a=0.25 against flat q3. L62's -34.92% is the LARGEST channel-scale gain measured anywhere this session, against roughly -18% on MLP. The shallow attention layers gain little and the deep ones gain a great deal, which is a stronger depth dependence than MLP showed."
+  },
+  "consequence": "g032-chanscale-a025-compact folds s and t on MLP ONLY. These numbers say the transform is worth MORE on deep attention than on the MLP it is currently applied to, and linear_attn is 2.954 GB of the 3.845 GB attention payload.",
+  "open_question_foldability": "For MLP the fold was exact and free because diag(1/s) went into post_attention_layernorm. For deltanet out_proj there is a gated_rmsnorm immediately before it that could carry diag(1/s) the same way -- plausible but NOT verified. For GQA o_proj the input is a sigmoid-gated repeat of v and the fold path is not obvious. So the deltanet half (48 of 64 layers) is the tractable one and even that needs the algebra checked before it is claimed.",
+  "width": "four tensors, two depths, one scheme family. a=0.5 is worse than a=0.25 on all four, matching MLP.",
+  "commit": "ce9d5ae8146f25f3ee580fe1de2314cade2ac83d"
+}
