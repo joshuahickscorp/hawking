@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.nos.rans_byte_accounting.v1",
+  "obligation": "G114 -- complete byte accounting for an interleaved-rANS q3 stream",
+  "measured_on": [
+    "language_model.model.layers.31.mlp.gate_proj.weight",
+    "language_model.model.layers.63.mlp.down_proj.weight",
+    "language_model.model.layers.63.self_attn.q_proj.weight"
+  ],
+  "elements": 241172480,
+  "alphabet": 7,
+  "empirical_entropy_bits_per_symbol": 2.275405080520933,
+  "raw_code_bits": 3,
+  "accounting": "coded payload at the empirical entropy, plus a 0.01 bit/symbol rANS renormalisation charge, plus a frequency table (u16 per symbol + header), plus one 32-bit state per interleaved stream, plus a per-stream index, plus worst-case flush padding. Scales are charged separately at 16 bits per group of 64, the same denominator gravity_bpw uses.",
+  "rows": [
+    {
+      "interleave_L": 8,
+      "coded_bits_per_elem": 2.285408862046918,
+      "complete_bits_per_elem_with_scales": 2.535408862046918,
+      "body_bytes": 68897215.38422914,
+      "scale_bytes": 7536640.0
+    },
+    {
+      "interleave_L": 32,
+      "coded_bits_per_elem": 2.285418415375722,
+      "complete_bits_per_elem_with_scales": 2.535418415375722,
+      "body_bytes": 68897503.38422914,
+      "scale_bytes": 7536640.0
+    },
+    {
+      "interleave_L": 64,
+      "coded_bits_per_elem": 2.2854311531474614,
+      "complete_bits_per_elem_with_scales": 2.5354311531474614,
+      "body_bytes": 68897887.38422914,
+      "scale_bytes": 7536640.0
+    }
+  ],
+  "raw_q3_complete_bits_per_elem": 3.25,
+  "directive_claims": {
+    "8": 2.5591,
+    "32": 2.5825,
+    "64": 2.6138
+  },
+  "commit": "73fa8f6c63ee6b07b44bb8f897516aa4ad79823e",
+  "findings": {
+    "the_alphabet_is_7_not_8": "Over 241,172,480 real q3 symbols, only SEVEN of the eight code values ever occur. The symmetric absmax quantizer's range is [-4,3] and one extreme is never produced, so a packer sizing its table at 8 would carry a symbol with zero frequency.",
+    "the_22_pct_is_CONFIRMED": "Empirical entropy is 2.2754 bits/symbol against a 3-bit fixed code -- 0.7246 bits of headroom. With complete accounting (coded payload + 0.01 b/symbol renormalisation + frequency table + per-stream state + index + flush padding + the 16-bit-per-group scale stream, on the same denominator gravity_bpw uses) the result is 2.5354 b/elem against raw q3's 3.2500 -- 22.0% smaller. The directive's L8 figure of 2.5591 sits 0.024 b/elem above that, so the headline claim survives complete accounting.",
+    "the_L_DEPENDENCE_IS_NOT_REPRODUCED": "The directive reports coded bits RISING with interleave -- 2.5591 / 2.5825 / 2.6138 at L = 8 / 32 / 64, a spread of 0.055 b/elem. This accounting finds NO L-dependence at all, and shows why it cannot come from the per-stream overheads: state, index and flush padding total 12*L bytes, which at L=64 is 768 bytes against 68 MB of payload -- 9e-5 b/elem. Whatever produces the directive's spread is an implementation effect this model does not capture, and the difference should not be attributed to interleaving overhead without measuring a real encoder.",
+    "what_the_win_is_worth_given_everything_else_measured": "22% fewer bytes, on a codec G099 measured PARETO-DOMINATED by flat q4 at R=8 (lower error AND lower time on both axes), in a currency G094 and G097 measured non-predictive of machine cost, paid for in decode ALU which G072 measured as the binding resource. The saving is real; whether it converts is exactly G116's question, and its acceptance already says a LOSS is a valid closure."
+  },
+  "not_delivered": "The acceptance requires a REAL PACKED STREAM ON DISK and the verify requires running the complete-BPW tool to show declared == on-disk. This delivers the accounting MODEL measured on real symbols, not the packer. No stream was written and none is claimed."
+}
