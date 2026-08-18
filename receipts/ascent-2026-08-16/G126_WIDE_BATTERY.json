@@ -508,8 +508,5 @@
   ],
   "scoring": "deterministic, post-</think> only. A response that never closes its think block is TRUNCATED rather than wrong -- G076 found a 48-token budget scoring every artifact 0.00 on a dimension its reference passes.",
   "two_categories_need_their_design_stated": "ADVERSARIAL items carry a PLAUSIBLE WRONG answer (Sydney, Einstein, Saturn) and the run records whether the LURE was emitted, so a model falling into a specific trap is distinguishable from one merely getting items wrong. CALIBRATION items have NO answer and reward declining -- the only category where refusing is correct, included because every other category rewards producing something.",
-  "commit": "e4ec9850d6d860250dab93856898f79ef5b8a72a",
-  "resolution_limit_is_the_finding": "G0 scores 1.00 on 9 of 10 categories and 0.98 overall. A battery the reference aces cannot discriminate among HEALTHY artifacts -- it is the same ceiling G076 hit at 53 items, reached again at 60. Widening the item count did not widen the resolution, which is worth recording because 'more items' was the assumed fix.",
-  "what_it_IS_good_for": "a reference profile against a KNOWN-BAD artifact, which is G127's job. Ceiling behaviour on G0 is exactly what a reference should do; the gap to a degraded candidate is where the signal lives. The adversarial category is the sharpest instrument here: 0 of 6 lures emitted, so any future candidate that starts answering Sydney or Einstein is caught by name rather than by score.",
-  "only_longform_has_headroom": "0.80, the single category below ceiling. If a discriminating battery is wanted, longform is the shape that works -- multi-step problems with a single checkable number -- and the other nine categories need harder items rather than more of them."
+  "commit": "1940d4f63c20ba086796e7282f2a12379d6c384d"
 }
