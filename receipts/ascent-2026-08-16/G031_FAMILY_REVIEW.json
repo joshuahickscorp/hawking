@@ -155,7 +155,7 @@
       "defects_found": {
         "bytes_merely_moved": "NO, and this is the surprise. Measured at equal total bits with BOTH sides counting their scale streams: ONE binary plane at 1.2500 b/elem holds 0.796776, against flat q2 at 2.2500 b/elem holding 0.772929 -- 44% fewer bits AND better hold. Two planes at 2.5000 reach 0.933975. The ladder DOMINATES the low-bit end.",
         "goodhartable_metric": "The win reverses with width: 3 planes (3.7500) hold 0.971493 against flat q3's 0.968397 at 3.2500, so planes cost more bits for the same hold there, and 4 planes lose outright to flat q4. Quoting only the low end would be the Goodhart.",
-        "hidden_cost": "UNMEASURED AND NOW THE DECIDING AXIS -- but the prior is FAVOURABLE, unlike rANS. A binary plane decodes with a shift, a mask and a select, and its MAC is a sign flip, not a multiply. Two planes may cost LESS ALU than one q3 unpack, which crosses byte boundaries. That has to be measured against the 0.810 ps/element budget, not assumed in either direction.",
+        "hidden_cost": "MEASURED, AND IT CLEARS. Against a q4 budget of 0.8092 ps/element: one plane 0.620 (0.766x), two planes 0.684 (0.846x), three planes 1.001 (1.237x, fails). q3 fails at 0.867. So TWO PLANES ARE BOTH SMALLER AND FASTER THAN q4 PER WEIGHT -- the first candidate in this campaign on the right side of both axes. Three planes are dominated by q3 and should be dropped from the ladder.",
         "missing_sidecar": "Counted. Each plane carries one f16 per group and the table above charges it: k*(1+16/64) against flat b+16/64.",
         "narrow_test_distribution": "Nine tensors, three depths, MLP only. No attention, no assembled artifact, no behavioural evidence at all.",
         "plausibility_masking": "N/A so far -- nothing has been generated from a plane artifact."
@@ -164,7 +164,7 @@
         "rank_deficient_capture",
         "kernel_different_math"
       ],
-      "settling_check": "A STUB KERNEL timing binary-plane decode in ps/element against the 0.810 budget. If two planes come in under one q3 unpack, this family is the best low-bit candidate on the board and deserves a packer. The crossover sits AT the coherence boundary -- q3's 0.968 class is coherent, q2's 0.773 is dead, and 2 planes land at 0.934 in between, which is untested territory that only an assembled artifact can settle.",
+      "settling_check": "The ALU half is now settled and it PASSED, so the remaining question is purely behavioural: 2 planes hold 0.933975, between q3's coherent 0.968 and q2's dead 0.773, and only an assembled artifact plus the capability gate can place it. That means a packer -- which the measurements now justify, where for rANS they do not.",
       "cites": [
         "receipts/ascent-2026-08-16/G033_PLANES_LADDER.json",
         "receipts/ascent-2026-08-16/CODEC_ALU_COST.json"
@@ -215,5 +215,5 @@
   ],
   "broken_citations": [],
   "cross_cutting_finding": "Six of the nine families are limited by the SAME defect, and it is hidden_cost in the same currency: decode ALU per weight. CODEC_ALU_COST puts the budget at 0.810 ps/element, where q4 already sits at 88% of the bandwidth roof. Every family that buys bits by spending decode -- q3, rANS, planes, low-rank factors -- is spending the one resource that is already exhausted. The campaign has been selecting representations on bits while the machine charges in ops.",
-  "commit": "a7618ee1a1a5498b8828aef9a4db955311424697"
+  "commit": "d5f01fade40e58c65f4ad5e4f2ef168eeae5b815"
 }

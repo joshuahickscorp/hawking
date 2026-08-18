@@ -1367,3 +1367,102 @@ QWEN_UNIFORM_Q4_MATMUL_RK(4, 8)
 QWEN_UNIFORM_Q4_MATMUL_RK(16, 4)
 
 #undef QWEN_UNIFORM_Q4_MATMUL_RK
+
+// ── binary-plane matvec: W ~ s1*P1 + s2*P2 + ..., each Pi a sign plane ────
+//
+// G033 measured this family winning the low-bit end offline: one plane at
+// 1.2500 b/elem holds 0.796776 against flat q2's 0.772929 at 2.2500, and two
+// planes reach 0.933975 at 2.5000. CODEC_ALU_COST then set the bar every codec
+// has to clear -- 0.810 ps/element, where q4 sits at 88% of the bandwidth roof
+// and q3 already fails at 0.855. So the family lives or dies on decode ALU.
+//
+// The reason the prior is favourable here: a sign plane needs a bit test and a
+// select, not a field extract that crosses byte boundaries, and its weight is
+// applied by choosing +s or -s rather than converting an integer and
+// multiplying. The K per-plane contributions are summed FIRST and the
+// activation is touched ONCE, so the cost is K selects plus K adds plus one
+// FMA per weight, against q4's shift, mask, convert, multiply and FMA.
+//
+// Layout, matching the accounting in tools/gravity_planes_ladder.py exactly:
+//   codes  [(row * groups_per_row + group) * K + k] * 8 + byte_in_group
+//          one bit per weight per plane, 8 weights per byte, 8 bytes per
+//          group of 64 per plane
+//   scales [(row * groups_per_row + group) * K + k]   one f16 per group per plane
+// so a plane costs 1 + 16/64 bits/elem and K planes cost K * 1.25.
+//
+// Grid: ceil(rows/2)*128, TG 128. Same thread map as geo_tpr64.
+
+template <uint K>
+static inline void qwen_binary_planes_geo_tpr64_body(
+    device const uchar* codes,
+    device const half* scales,
+    device const float* input,
+    device float* output,
+    uint rows,
+    uint cols,
+    uint groups_per_row,
+    threadgroup float* red,
+    uint group_id,
+    uint simd_lane,
+    uint simd_id)
+{
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows) {
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint gbase = (row * groups_per_row + group) * K;
+            uchar plane[K];
+            float s[K];
+            for (uint k = 0u; k < K; ++k) {
+                plane[k] = codes[(gbase + k) * 8u + (local >> 3u)];
+                s[k] = float(scales[gbase + k]);
+            }
+            for (uint e = 0u; e < 8u; ++e) {
+                float w = 0.0f;
+                for (uint k = 0u; k < K; ++k) {
+                    w += ((plane[k] >> e) & 1u) ? s[k] : -s[k];
+                }
+                acc += w * input[col + e];
+            }
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}
+
+#define QWEN_BINARY_PLANES(KVAL)                                              \
+kernel void qwen_binary_planes_k##KVAL##_matvec_geo_tpr64_tg128(              \
+    device const uchar* codes       [[buffer(0)]],                            \
+    device const half* scales       [[buffer(1)]],                            \
+    device const float* input       [[buffer(2)]],                            \
+    device float* output            [[buffer(3)]],                            \
+    constant uint& rows             [[buffer(4)]],                            \
+    constant uint& cols             [[buffer(5)]],                            \
+    constant uint& groups_per_row   [[buffer(6)]],                            \
+    uint group_id                    [[threadgroup_position_in_grid]],        \
+    uint simd_lane                   [[thread_index_in_simdgroup]],           \
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])      \
+{                                                                             \
+    threadgroup float red[4];                                                 \
+    qwen_binary_planes_geo_tpr64_body<KVAL>(                                  \
+        codes, scales, input, output, rows, cols, groups_per_row,             \
+        red, group_id, simd_lane, simd_id);                                   \
+}
+
+QWEN_BINARY_PLANES(1)
+QWEN_BINARY_PLANES(2)
+QWEN_BINARY_PLANES(3)
+
+#undef QWEN_BINARY_PLANES

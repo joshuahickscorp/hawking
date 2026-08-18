@@ -82,6 +82,12 @@ mod macos {
                 bound: 3,
                 hgravu_abi: true,
             },
+            Codec { name: "binary_planes_k1", kernel: "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+                    code_bytes_per_group: 8, bits: 1, bound: 0, hgravu_abi: false },
+            Codec { name: "binary_planes_k2", kernel: "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+                    code_bytes_per_group: 16, bits: 1, bound: 0, hgravu_abi: false },
+            Codec { name: "binary_planes_k3", kernel: "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
+                    code_bytes_per_group: 24, bits: 1, bound: 0, hgravu_abi: false },
         ]
     }
 
@@ -130,8 +136,12 @@ mod macos {
                     s = s.wrapping_mul(1664525).wrapping_add(1013904223);
                     *b = (s >> 24) as u8;
                 }
-                let mut scales = Vec::with_capacity(rows * groups_per_row * 2);
-                for i in 0..rows * groups_per_row {
+                let scale_slots = rows * groups_per_row
+                    * if c.name.starts_with("binary_planes") {
+                        c.code_bytes_per_group / 8
+                    } else { 1 };
+                let mut scales = Vec::with_capacity(scale_slots * 2);
+                for i in 0..scale_slots {
                     // small positive f16 scales
                     let h: u16 = 0x1c00u16.wrapping_add((i % 13) as u16);
                     scales.extend_from_slice(&h.to_le_bytes());

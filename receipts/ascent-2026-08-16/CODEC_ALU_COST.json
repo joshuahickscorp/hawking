@@ -1,5 +1,5 @@
 {
-  "commit": "168651a653709d751bc7174d66a7d0a930d26c55",
+  "commit": "d5f01fade40e58c65f4ad5e4f2ef168eeae5b815",
   "control": "Identical rows, cols, launch geometry and thread map across codecs. Element count held EQUAL so byte counts differ -- a codec that stores fewer bytes but costs more ops appears as a higher ps/element. q4_group64_hgravu is a same-width control: it stores exactly as many bytes as q4_group64 and differs only in ABI and offset convention, so any gap between those two is measurement noise plus ABI, not codec width.",
   "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
   "question": "Per WEIGHT, not per byte, what does each codec cost on this GPU?",
@@ -10,123 +10,116 @@
         {
           "bits": 4,
           "bytes_per_element": 0.5,
-          "code_bytes": 671088640,
-          "code_bytes_per_group": 32,
-          "code_gb_s": 511.17554846995125,
-          "codec": "q4_group64",
-          "elements": 1342177280,
-          "gpu_ns_reps": [
-            1989250,
-            1941916,
-            1312834,
-            1067666,
-            1065875
-          ],
-          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
-          "median_gpu_ns": 1312834,
-          "ps_per_element": 0.9781375527381897
-        },
-        {
-          "bits": 4,
-          "bytes_per_element": 0.5,
-          "code_bytes": 671088640,
-          "code_bytes_per_group": 32,
-          "code_gb_s": 625.5778513167094,
-          "codec": "q4_group64_hgravu",
-          "elements": 1342177280,
-          "gpu_ns_reps": [
-            1952459,
-            1843666,
-            1072000,
-            1071500,
-            1072750
-          ],
-          "kernel": "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
-          "median_gpu_ns": 1072750,
-          "ps_per_element": 0.7992610335350037
-        },
-        {
-          "bits": 3,
-          "bytes_per_element": 0.375,
-          "code_bytes": 503316480,
-          "code_bytes_per_group": 24,
-          "code_gb_s": 254.2270775046457,
-          "codec": "q3_group64_hgravu",
-          "elements": 1342177280,
-          "gpu_ns_reps": [
-            2158166,
-            2089500,
-            1788791,
-            1979625,
-            1979791
-          ],
-          "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
-          "median_gpu_ns": 1979791,
-          "ps_per_element": 1.4750592410564423
-        }
-      ],
-      "cols": 5120,
-      "elements": 1342177280,
-      "rows": 262144
-    },
-    {
-      "by_codec": [
-        {
-          "bits": 4,
-          "bytes_per_element": 0.5,
           "code_bytes": 2684354560,
           "code_bytes_per_group": 32,
-          "code_gb_s": 634.2679579387502,
+          "code_gb_s": 606.553747482818,
           "codec": "q4_group64",
           "elements": 5368709120,
           "gpu_ns_reps": [
-            7080000,
-            4231834,
-            4231834,
-            4232209,
-            4232500
+            7312584,
+            6107834,
+            4425584,
+            4229875,
+            4231416
           ],
           "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
-          "median_gpu_ns": 4232209,
-          "ps_per_element": 0.7883103564381599
+          "median_gpu_ns": 4425584,
+          "ps_per_element": 0.8243292570114136
         },
         {
           "bits": 4,
           "bytes_per_element": 0.5,
           "code_bytes": 2684354560,
           "code_bytes_per_group": 32,
-          "code_gb_s": 617.501120855738,
+          "code_gb_s": 629.6806809974382,
           "codec": "q4_group64_hgravu",
           "elements": 5368709120,
           "gpu_ns_reps": [
-            7333084,
-            4400750,
-            4243500,
-            4347125,
-            4244500
+            7329250,
+            6747750,
+            4245750,
+            4243834,
+            4263041
           ],
           "kernel": "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
-          "median_gpu_ns": 4347125,
-          "ps_per_element": 0.8097151294350624
+          "median_gpu_ns": 4263041,
+          "ps_per_element": 0.7940532639622688
         },
         {
           "bits": 3,
           "bytes_per_element": 0.375,
           "code_bytes": 2013265920,
           "code_bytes_per_group": 24,
-          "code_gb_s": 438.552284625316,
+          "code_gb_s": 432.4721379088126,
           "codec": "q3_group64_hgravu",
           "elements": 5368709120,
           "gpu_ns_reps": [
-            7635625,
-            4590709,
-            4578584,
-            4576250,
-            4720625
+            5794000,
+            4575666,
+            4675291,
+            4655250,
+            4578625
           ],
           "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
-          "median_gpu_ns": 4590709,
-          "ps_per_element": 0.8550861850380898
+          "median_gpu_ns": 4655250,
+          "ps_per_element": 0.8671078830957413
+        },
+        {
+          "bits": 1,
+          "bytes_per_element": 0.125,
+          "code_bytes": 671088640,
+          "code_bytes_per_group": 8,
+          "code_gb_s": 201.6316001215038,
+          "codec": "binary_planes_k1",
+          "elements": 5368709120,
+          "gpu_ns_reps": [
+            3363625,
+            3301625,
+            3247750,
+            3339375,
+            3328291
+          ],
+          "kernel": "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+          "median_gpu_ns": 3328291,
+          "ps_per_element": 0.6199425086379051
+        },
+        {
+          "bits": 1,
+          "bytes_per_element": 0.25,
+          "code_bytes": 1342177280,
+          "code_bytes_per_group": 16,
+          "code_gb_s": 365.37579190595346,
+          "codec": "binary_planes_k2",
+          "elements": 5368709120,
+          "gpu_ns_reps": [
+            6155666,
+            5986416,
+            3567000,
+            3568166,
+            3673416
+          ],
+          "kernel": "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+          "median_gpu_ns": 3673416,
+          "ps_per_element": 0.6842270493507385
+        },
+        {
+          "bits": 1,
+          "bytes_per_element": 0.375,
+          "code_bytes": 2013265920,
+          "code_bytes_per_group": 24,
+          "code_gb_s": 374.5611013953488,
+          "codec": "binary_planes_k3",
+          "elements": 5368709120,
+          "gpu_ns_reps": [
+            8133541,
+            5295375,
+            5401041,
+            5375000,
+            5295375
+          ],
+          "kernel": "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
+          "median_gpu_ns": 5375000,
+          "ps_per_element": 1.0011717677116394
         }
       ],
       "cols": 5120,

@@ -137,21 +137,21 @@ FAMILIES = [
                              "against flat q3's 0.968397 at 3.2500, so planes cost more bits for "
                              "the same hold there, and 4 planes lose outright to flat q4. "
                              "Quoting only the low end would be the Goodhart.",
-      "hidden_cost": "UNMEASURED AND NOW THE DECIDING AXIS -- but the prior is FAVOURABLE, unlike "
-                     "rANS. A binary plane decodes with a shift, a mask and a select, and its MAC "
-                     "is a sign flip, not a multiply. Two planes may cost LESS ALU than one q3 "
-                     "unpack, which crosses byte boundaries. That has to be measured against the "
-                     "0.810 ps/element budget, not assumed in either direction.",
+      "hidden_cost": "MEASURED, AND IT CLEARS. Against a q4 budget of 0.8092 ps/element: one "
+                     "plane 0.620 (0.766x), two planes 0.684 (0.846x), three planes 1.001 "
+                     "(1.237x, fails). q3 fails at 0.867. So TWO PLANES ARE BOTH SMALLER AND "
+                     "FASTER THAN q4 PER WEIGHT -- the first candidate in this campaign on the "
+                     "right side of both axes. Three planes are dominated by q3 and should be "
+                     "dropped from the ladder.",
       "missing_sidecar": "Counted. Each plane carries one f16 per group and the table above "
                          "charges it: k*(1+16/64) against flat b+16/64.",
       "narrow_test_distribution": "Nine tensors, three depths, MLP only. No attention, no "
                                   "assembled artifact, no behavioural evidence at all.",
       "plausibility_masking": "N/A so far -- nothing has been generated from a plane artifact."},
-     "A STUB KERNEL timing binary-plane decode in ps/element against the 0.810 budget. If two "
-     "planes come in under one q3 unpack, this family is the best low-bit candidate on the board "
-     "and deserves a packer. The crossover sits AT the coherence boundary -- q3's 0.968 class is "
-     "coherent, q2's 0.773 is dead, and 2 planes land at 0.934 in between, which is untested "
-     "territory that only an assembled artifact can settle.",
+     "The ALU half is now settled and it PASSED, so the remaining question is purely "
+     "behavioural: 2 planes hold 0.933975, between q3's coherent 0.968 and q2's dead 0.773, and "
+     "only an assembled artifact plus the capability gate can place it. That means a packer -- "
+     "which the measurements now justify, where for rANS they do not.",
      [R+"G033_PLANES_LADDER.json", R+"CODEC_ALU_COST.json"]),
 
  fam("low-rank factor (HGRAVS01 r160 / r192)", "G033 adjacent, prior campaign", "WEAKENED",
