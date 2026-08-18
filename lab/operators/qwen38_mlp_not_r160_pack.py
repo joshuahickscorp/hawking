@@ -54,6 +54,7 @@ ORGAN_UP = 1
 ORGAN_DOWN = 2
 ORGAN_NONMLP = 3
 _LAYER_RE = re.compile(r"[.]layers[.]([0-9]+)[.]")
+SCALE_RATIO = [1.0]
 ORGAN_ATTN = 4       # virtual: attention GEMVs only, never embed / lm_head / norms
 
 
@@ -87,7 +88,12 @@ def encode_uniform_payload(values: np.ndarray, bits: int) -> bytes:
     padded[: flat.size] = flat
     grouped = padded.reshape(groups, GROUP_UNIFORM)
     bound = (1 << (bits - 1)) - 1
-    scales = (np.max(np.abs(grouped), axis=1) / max(bound, 1)).astype("<f2")
+    # scale ratio r: s = r * max|w| / bound. r=1.0 is absmax, the incumbent. r>1 OVER-scales
+    # so codes never reach the bound, which concentrates the histogram and cuts the
+    # entropy-coded size at some cost in fidelity. Stored bytes and container format are
+    # IDENTICAL either way, so the existing kernel consumes it unchanged; the saving is only
+    # realised once an entropy stage exists to consume the concentration.
+    scales = (np.max(np.abs(grouped), axis=1) * SCALE_RATIO[0] / max(bound, 1)).astype("<f2")
     denominator = np.where(scales.astype(np.float32) > 0.0, scales.astype(np.float32), 1.0)
     signed = np.rint(grouped / denominator[:, None]).clip(-bound, bound).astype(np.int16)
     unsigned = (signed.reshape(-1) + bound).astype(np.uint8)
@@ -343,6 +349,8 @@ def parse_args() -> argparse.Namespace:
                    help="re-encode the attention GEMVs only; embed, lm_head and norms are untouched")
     p.add_argument("--early-layers", type=int, default=None,
                    help="layers strictly below this index use --early-bits instead")
+    p.add_argument("--scale-ratio", type=float, default=1.0,
+                   help="group scale = ratio * absmax / bound; 1.0 is the incumbent absmax")
     p.add_argument("--early-bits", type=int, default=None,
                    help="bit width for layers below --early-layers. q_inject is 1.597e-04 at "
                         "L0 and 2.577e-03 at L63, a 16.1x spread, so the same relative error "
@@ -368,6 +376,9 @@ def main() -> int:
     bits_ok(args.up_bits, "--up-bits")
     bits_ok(args.attn_bits, "--attn-bits")
     bits_ok(args.early_bits, "--early-bits")
+    if not 0.5 <= args.scale_ratio <= 4.0:
+        raise PackError("--scale-ratio outside the measured 0.5..4.0 range")
+    SCALE_RATIO[0] = float(args.scale_ratio)
     if (args.early_bits is None) != (args.early_layers is None):
         raise PackError("--early-bits and --early-layers must be given together")
     replace_bits = {
@@ -390,6 +401,8 @@ def main() -> int:
             parts.append(f"attn-q{args.attn_bits}")
         if args.early_bits is not None:
             parts.append(f"L0-{args.early_layers}-q{args.early_bits}")
+        if args.scale_ratio != 1.0:
+            parts.append(f"r{args.scale_ratio:g}".replace(".", "p"))
         tag = "mixed-" + "-".join(parts) + "-v1"
     root: Path = args.root or (RUNS / tag)
     root.mkdir(parents=True, exist_ok=True)
