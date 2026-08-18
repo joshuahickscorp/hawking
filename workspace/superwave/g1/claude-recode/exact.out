@@ -1,0 +1,19 @@
+mixed-q3mlp-q3attn-r1p2-v1: 496 re-encoded segments, 66 copied segments
+  ...100/496
+  ...200/496
+  ...300/496
+  ...400/496
+
+on-disk now: re-encoded 9,892,550,384 + copied 7,011,580,330 + catalog/report 345,609 = 16,904,476,323
+complete BPW now: 5.028101513503
+
+global symbol histogram: [78820111, 1451460716, 5699644829, 9889038393, 5701130246, 1451737783, 78724082]
+global entropy: 2.0473 bits
+
+table scope        recoded bytes     total bytes    complete BPW   ratio
+per-artifact       7,090,822,581  14,102,748,520  4.194749948064  0.7168
+per-tensor         7,090,186,245  14,102,112,184  4.194560675002  0.7167
+
+EXACT over all 496 re-encoded segments, 32 lanes, tile 512 groups.
+copied endpoint and norm segments counted at full size, not assumed.
+BEST: per-tensor table -> 4.194560675002 complete BPW
