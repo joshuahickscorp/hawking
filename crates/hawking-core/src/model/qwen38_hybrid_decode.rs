@@ -2409,11 +2409,30 @@ mod device {
             let cache_off = (slot * slot_elems * 4) as u64;
             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
+            let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
+                // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
+                // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
+                // tokens. Set HAWKING_ROPE_TG=0 to restore the one-thread-per-head form.
+                .unwrap_or(256);
+            let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
+                ("qwen38_gqa_qk_norm_rope_cache_tg",
+                 (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+            } else {
+                ("qwen38_gqa_qk_norm_rope_cache_f32",
+                 (QWEN38_GQA_HEADS as u32, 1, 1), (QWEN38_GQA_HEADS as u32, 1, 1))
+            };
             tcb.dispatch_threads(
-                "qwen38_gqa_qk_norm_rope_cache_f32",
-                (QWEN38_GQA_HEADS as u32, 1, 1),
-                (QWEN38_GQA_HEADS as u32, 1, 1),
+                rope_name,
+                rope_grid,
+                rope_tgd,
                 |encoder| {
+                    if rope_tg > 0 {
+                        encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
+                    }
                     encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
                     encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
                     encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);
@@ -3167,11 +3186,30 @@ mod device {
             }
             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
+            let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
+                // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
+                // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
+                // tokens. Set HAWKING_ROPE_TG=0 to restore the one-thread-per-head form.
+                .unwrap_or(256);
+            let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
+                ("qwen38_gqa_qk_norm_rope_cache_tg",
+                 (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+            } else {
+                ("qwen38_gqa_qk_norm_rope_cache_f32",
+                 (QWEN38_GQA_HEADS as u32, 1, 1), (QWEN38_GQA_HEADS as u32, 1, 1))
+            };
             tcb.dispatch_threads(
-                "qwen38_gqa_qk_norm_rope_cache_f32",
-                (QWEN38_GQA_HEADS as u32, 1, 1),
-                (QWEN38_GQA_HEADS as u32, 1, 1),
+                rope_name,
+                rope_grid,
+                rope_tgd,
                 |encoder| {
+                    if rope_tg > 0 {
+                        encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
+                    }
                     encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
                     encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
                     encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);
@@ -3550,11 +3588,30 @@ mod device {
             )?;
             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
+            let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
+                // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
+                // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
+                // tokens. Set HAWKING_ROPE_TG=0 to restore the one-thread-per-head form.
+                .unwrap_or(256);
+            let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
+                ("qwen38_gqa_qk_norm_rope_cache_tg",
+                 (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+            } else {
+                ("qwen38_gqa_qk_norm_rope_cache_f32",
+                 (QWEN38_GQA_HEADS as u32, 1, 1), (QWEN38_GQA_HEADS as u32, 1, 1))
+            };
             tcb.dispatch_threads(
-                "qwen38_gqa_qk_norm_rope_cache_f32",
-                (QWEN38_GQA_HEADS as u32, 1, 1),
-                (QWEN38_GQA_HEADS as u32, 1, 1),
+                rope_name,
+                rope_grid,
+                rope_tgd,
                 |encoder| {
+                    if rope_tg > 0 {
+                        encoder.set_threadgroup_memory_length(0, (rope_tg as u64) * 4);
+                    }
                     encoder.set_buffer(0, Some(&self.workspace.q_proj), 0);
                     encoder.set_buffer(1, Some(&self.workspace.k_proj), 0);
                     encoder.set_buffer(2, Some(&self.workspace.v_proj), 0);

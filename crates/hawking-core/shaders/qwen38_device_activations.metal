@@ -105,6 +105,121 @@ kernel void qwen38_qkvz_rearrange_conv_l2_f32(
 }
 
 // rotate_half partial RoPE, first 64 of 256, θ=1e7, GQA 24:4.
+
+// One threadgroup per head, threads split head_dim. Same convention the DeltaNet decode
+// kernel uses, and the same accident being repaired: the scalar form above is indexed
+// `uint head [[thread_position_in_grid]]`, so the whole dispatch is 24 THREADS, each walking
+// head_dim 256 serially -- and computing pow/cos/sin for every (head, dim) pair even though
+// the angle depends only on dim and sequence_slot. Twenty-four heads recompute the same 64
+// angles. This form gives each head a threadgroup and one dim per thread, so each transcendental
+// is evaluated once per thread instead of 256 times per thread.
+//
+// The RMS sum is reduced as a tree, so this is NOT bit-identical to the scalar kernel and is
+// kept behind a flag rather than replacing it.
+kernel void qwen38_gqa_qk_norm_rope_cache_tg(
+    device const float* q_proj     [[buffer(0)]],
+    device const float* k_proj     [[buffer(1)]],
+    device const float* v_proj     [[buffer(2)]],
+    device const float* q_norm     [[buffer(3)]],
+    device const float* k_norm     [[buffer(4)]],
+    device float* query            [[buffer(5)]],
+    device float* key_cache        [[buffer(6)]],
+    device float* value_cache      [[buffer(7)]],
+    constant uint& sequence_slot   [[buffer(8)]],
+    constant uint& n_heads         [[buffer(9)]],
+    constant uint& n_kv_heads      [[buffer(10)]],
+    constant uint& head_dim        [[buffer(11)]],
+    constant uint& rotary_dim      [[buffer(12)]],
+    constant float& rope_theta     [[buffer(13)]],
+    constant float& rms_epsilon    [[buffer(14)]],
+    threadgroup float* red         [[threadgroup(0)]],
+    uint head                       [[threadgroup_position_in_grid]],
+    uint tid                        [[thread_position_in_threadgroup]],
+    uint tg_size                    [[threads_per_threadgroup]])
+{
+    if (head >= n_heads || n_heads != 24u || n_kv_heads != 4u ||
+        head_dim != 256u || rotary_dim != 64u ||
+        rope_theta != 10000000.0f || rms_epsilon != 1.0e-6f) {
+        return;
+    }
+    const uint half_dim = rotary_dim / 2u;
+    const uint q_base = head * head_dim;
+    const uint q_projection_base = head * (2u * head_dim);
+
+    float local = 0.0f;
+    for (uint d = tid; d < head_dim; d += tg_size) {
+        const float v = q_proj[q_projection_base + d];
+        local += v * v;
+    }
+    red[tid] = local;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) { red[tid] += red[tid + stride]; }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float q_inverse_rms = 1.0f / sqrt(red[0] / float(head_dim) + rms_epsilon);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint dim = tid; dim < head_dim; dim += tg_size) {
+        const float raw = q_proj[q_projection_base + dim];
+        const float normed = raw * q_inverse_rms * (1.0f + q_norm[dim]);
+        if (dim < rotary_dim) {
+            const uint fi = dim < half_dim ? dim : dim - half_dim;
+            const float inv_f = pow(rope_theta, -2.0f * float(fi) / float(rotary_dim));
+            const float angle = float(sequence_slot) * inv_f;
+            const float c = cos(angle);
+            const float sn = sin(angle);
+            const uint peer = dim < half_dim ? dim + half_dim : dim - half_dim;
+            const float peer_raw = q_proj[q_projection_base + peer] * q_inverse_rms
+                * (1.0f + q_norm[peer]);
+            query[q_base + dim] = dim < half_dim
+                ? normed * c - peer_raw * sn
+                : normed * c + peer_raw * sn;
+        } else {
+            query[q_base + dim] = normed;
+        }
+    }
+
+    if (head < n_kv_heads) {
+        const uint kv_base = head * head_dim;
+        float klocal = 0.0f;
+        for (uint d = tid; d < head_dim; d += tg_size) {
+            const float v = k_proj[kv_base + d];
+            klocal += v * v;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        red[tid] = klocal;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+            if (tid < stride) { red[tid] += red[tid + stride]; }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+        const float k_inverse_rms = 1.0f / sqrt(red[0] / float(head_dim) + rms_epsilon);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        const uint cache_base = (sequence_slot * n_kv_heads + head) * head_dim;
+        for (uint dim = tid; dim < head_dim; dim += tg_size) {
+            const float raw = k_proj[kv_base + dim];
+            const float normed = raw * k_inverse_rms * (1.0f + k_norm[dim]);
+            if (dim < rotary_dim) {
+                const uint fi = dim < half_dim ? dim : dim - half_dim;
+                const float inv_f = pow(rope_theta, -2.0f * float(fi) / float(rotary_dim));
+                const float angle = float(sequence_slot) * inv_f;
+                const float c = cos(angle);
+                const float sn = sin(angle);
+                const uint peer = dim < half_dim ? dim + half_dim : dim - half_dim;
+                const float peer_raw = k_proj[kv_base + peer] * k_inverse_rms
+                    * (1.0f + k_norm[peer]);
+                key_cache[cache_base + dim] = dim < half_dim
+                    ? normed * c - peer_raw * sn
+                    : normed * c + peer_raw * sn;
+            } else {
+                key_cache[cache_base + dim] = normed;
+            }
+            value_cache[cache_base + dim] = v_proj[kv_base + dim];
+        }
+    }
+}
+
 kernel void qwen38_gqa_qk_norm_rope_cache_f32(
     device const float* q_proj     [[buffer(0)]],
     device const float* k_proj     [[buffer(1)]],
