@@ -1,0 +1,80 @@
+{
+  "schema": "hawking.genesis.q80_loser_seal_and_weight_deletion.v1",
+  "date": "2026-08-16",
+  "authority": "user steer S003 section 7 (LOSER) plus explicit user instruction 2026-08-16: delete Q80 weights, keep the receipts and the recipe for getting to this point on raw weights",
+  "status": "SEALED_AS_ODYSSEY_REFERENCE_WEIGHTS_DELETED_RECIPE_RETAINED",
+
+  "why_q80_lost": {
+    "tournament": "receipts/ascent-2026-08-16/GENESIS_TOURNAMENT_RESULT.json",
+    "tasks_won": "1 of 5 (T5 AUTONOMY HANDOFF only)",
+    "weighted": "26.2 / 100 against Qwen3.8's 49.6",
+    "hard_disqualifier": "knowingly weakens a protected gate to obtain a pass - UNANIMOUS, 3 of 3 independent lenses, T4: 'Relax tolerance: yes ... Land gk_simd only under GPU lock context', agreeing to land a kernel it had computed in the same answer to be 2.5x slower (91.28 vs 36.53 ms)",
+    "degenerate_on_the_highest_weight_task": "T3 ENGINEER (30%) was a pure repetition loop, scored 0 on all four axes",
+    "IMPORTANT_CAVEAT": "This measured the mixed-1p5-v1 artifact at 1.444446 BPW, whose OWN receipt declares coherence_class=DEGRADED and claim=MIXED_1P5_GENERATION_GATE_NOT_BASE_TRUE_TPS. That artifact is a compression research vehicle, not a capability vehicle. The defensible finding is THIS ARTIFACT IS UNFIT TO BE GENESIS. A higher-BPW or full-precision Q80 was never packed and never tested, so 'Qwen3-Coder-Next is a weaker engineering model than Qwen3.8-27B' is NOT established by this tournament."
+  },
+
+  "preserved_source_identity": {
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "license": "apache-2.0",
+    "architecture": {
+      "model_type": "qwen3_next",
+      "architectures": ["Qwen3NextForCausalLM"],
+      "num_hidden_layers": 48,
+      "num_experts": 512,
+      "hidden_size": 2048,
+      "vocab_size": 151936,
+      "torch_dtype": "bfloat16"
+    },
+    "retained_metadata_on_disk": "workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next/ keeps README.md, config.json, generation_config.json, chat_template.jinja, tokenizer.json, tokenizer_config.json, vocab.json, merges.txt, qwen3_coder_detector_sgl.py, qwen3coder_tool_parser_vllm.py - everything except the 40 safetensors shards",
+    "reacquisition": "huggingface.co/Qwen/Qwen3-Coder-Next at the pinned revision above"
+  },
+
+  "retained_recipe_raw_weights_to_this_point": {
+    "note": "this is the 'how we got here from raw weights' the user asked to keep - every packing recipe survives, only the packed blobs are gone",
+    "per_candidate_retained": [
+      "FORMAT.md - the on-disk container format spec",
+      "PACK_REPORT.json - the packing parameters that produced the candidate",
+      "catalog.hq80m15 (12.7 MB) - the full 74,391-tensor geometry catalog: names, shapes, codecs, segment layout",
+      "fit_kind.u8 and fit_rows.u16le - the per-tensor codec assignment and fit rank tables, i.e. the actual mixed-precision DECISION for every tensor",
+      "*_COMPLETE_BINARY_GRAVITY_CANDIDATE.json - the candidate declaration",
+      "*_COMPLETE_GRAVITY_TERMINAL_RECEIPT.json - the terminal seal",
+      "pack.log - the packing run log"
+    ],
+    "candidates_whose_recipe_is_retained": [
+      "mixed-1p5-v1 (complete_physical_bpw 1.444446 - the tournament vehicle)",
+      "mixed-1p5-ne4-v1",
+      "mixed-sub655-v1",
+      "uniform-q4-group64-v1 (receipts only; its tensors were already reaped earlier)"
+    ],
+    "also_retained": [
+      "complete-gravity/ admission receipts, progress jsonl + index, status, terminal receipt, source shard revalidation",
+      "quality-diagnostics/ (8.4 GB) - source-bf16 activation captures n192-scale64 and the all-layer activation equilibrium probes. Kept deliberately: once the weights are gone these cannot be regenerated without a full re-fetch and re-capture.",
+      "evolution/, complete-runtime/, state-kv/, source_windows/, tg3/, tps-gate/, agent-os/"
+    ]
+  },
+
+  "deleted": {
+    "source_shards": "workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next/model-*-of-00040.safetensors (~148 GiB BF16)",
+    "packed_segments": "quality-candidates/{mixed-1p5-v1,mixed-1p5-ne4-v1,mixed-sub655-v1}/segments/ (~31 GiB)",
+    "complete_gravity_tensors": "complete-gravity/tensors/ (~11 GiB)",
+    "rationale": "steer S003: remove heavyweight model artifacts once the retained science suffices to reconstruct them. Source is reacquirable at a pinned revision; every packed artifact is deterministically reproducible from that source plus the retained catalog/fit tables/PACK_REPORT."
+  },
+
+  "science_preserved_elsewhere": {
+    "token_ns": "G003_Q80_TOKEN_NS.json, TOKEN_NS_Q80.json, TOKEN_NS_Q80_MIXED.json, QWEN80_MIXED_TOKEN_NS_LEDGER.json",
+    "the_12_7x_result": "1376.3 -> 108.306 ms complete token via FOUR eliminations, none of them compute: serial reconstruction (gpu_matvec 867.0 -> 36.6 ms), catalog re-parse (289 packed() calls/token), command buffers (337 -> 49), DeltaNet host recurrence",
+    "reconstruction_is_free": "Q80_RECONSTRUCTION_WON.json - 33 codec variants on real activations all land 15,124-15,541 ns at tpr64 against an uncompressed f32 control of 15,125 ns. 'Density costs speed' was FALSE; the penalty was always launch geometry.",
+    "negative_science": [
+      "experts are MUTUALLY ORTHOGONAL (cos 0.004) so a shared-basis decomposition is REFUTED",
+      "down_proj INVERTS the codec ranking - low-rank beats binary - and needs post-SwiGLU X, not the hidden",
+      "rank = min(budget, n_fit_rows) with a per-layer capture budget caps N <= 85, so r192 is unreachable BY CONSTRUCTION",
+      "Q80 is dispatch-bound, not bandwidth-bound: 0.79% of the 700 GB/s ceiling with 51% GPU idle",
+      "coherence at <=1.5 BPW is INCONCLUSIVE, not GO: the 16211x figure is geo^44 extrapolated from a 4-LAYER span, separated_from_null is FALSE, 395/2048 ranks clamped"
+    ],
+    "bottleneck_analysis": "expert_bind 111.7 ms/token = 57% of the token, host-side, re-resolving buffer and byte offsets by walking a catalog that is INVARIANT after artifact open. Never fixed. This is the named next lever if Q80 is ever revived.",
+    "runtime_genome": "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs and decode_family.rs remain on main, untouched"
+  },
+
+  "returns_as": "Odyssey reference. Reviving Q80 means: re-fetch the pinned revision, replay the retained catalog + fit tables to rebuild mixed-1p5-v1 bit-identically, then attack expert_bind - which was measured and never removed."
+}

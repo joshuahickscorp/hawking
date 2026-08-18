@@ -1,0 +1,383 @@
+{
+  "uniform-q4-v1": {
+    "artifact": "uniform-q4-v1",
+    "n": 10,
+    "fallbacks": 0,
+    "dense_materialized": 0,
+    "rows": [
+      {
+        "dim": "factual",
+        "prompt": "The capital of France is",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 39,
+        "text": "<think>\nThe user is asking a simple factual question: \"The capital of France is\" \u2014 they're looking for the completion of"
+      },
+      {
+        "dim": "factual",
+        "prompt": "The chemical symbol for gold is",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 76,
+        "text": "<think>\n\n</think>\n\nThe chemical symbol for gold is **Au**.\n\n### Explanation:\n1.  **Origin**: The symbol **Au** is derive"
+      },
+      {
+        "dim": "arithmetic",
+        "prompt": "17 x 19 =",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 175,
+        "text": "<think>\nThe user wants me to calculate 17 \u00d7 19.\n\nLet me compute this:\n17 \u00d7 19 = 17 \u00d7 (20 - 1) = 340 - 17 = 323\n\nOr alter"
+      },
+      {
+        "dim": "arithmetic",
+        "prompt": "What is 144 divided by 12? Answer:",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 6,
+        "text": "<think>\n\n</think>\n\n12"
+      },
+      {
+        "dim": "code",
+        "prompt": "Complete this Python line: def add(a, b): return",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 113,
+        "text": "<think>\nThe user wants me to complete a Python function definition. The function `add(a, b)` should return the sum of `a"
+      },
+      {
+        "dim": "code",
+        "prompt": "In Python, the keyword to define a function is",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 162,
+        "text": "<think>\nThe user is asking about the Python keyword used to define a function. This is a straightforward Python programm"
+      },
+      {
+        "dim": "tool",
+        "prompt": "Repeat this JSON exactly: {\"ok\": true}",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 32,
+        "text": "<think>\nThe user wants me to repeat the exact JSON string they provided. Let me simply output it exactly as written.\n</t"
+      },
+      {
+        "dim": "instruction",
+        "prompt": "Reply with exactly one word: yes or no. Is the sky blue?",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 97,
+        "text": "<think>\nThe user asks me to reply with exactly one word: \"yes\" or \"no\" to the question \"Is the sky blue?\"\n\nThe sky is co"
+      },
+      {
+        "dim": "multilingual",
+        "prompt": "Translate to French: the cat. Answer:",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 50,
+        "text": "<think>\nThe user wants me to translate \"the cat\" into French. In French, \"the cat\" is \"le chat.\" The word \"chat\" is masc"
+      },
+      {
+        "dim": "reasoning",
+        "prompt": "List three prime numbers greater than 20.",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 94,
+        "text": "<think>\n\n</think>\n\nHere are three prime numbers greater than 20:\n\n1. **23**\n2. **29**\n3. **31**\n\n**Verification:**\n*   *"
+      }
+    ],
+    "by_dim": {
+      "factual": [
+        2,
+        2,
+        0
+      ],
+      "arithmetic": [
+        2,
+        2,
+        0
+      ],
+      "code": [
+        2,
+        2,
+        0
+      ],
+      "tool": [
+        1,
+        1,
+        0
+      ],
+      "instruction": [
+        1,
+        1,
+        0
+      ],
+      "multilingual": [
+        1,
+        1,
+        0
+      ],
+      "reasoning": [
+        1,
+        1,
+        0
+      ]
+    },
+    "correct": 10,
+    "degenerate": 0
+  },
+  "mixed-q4down-v1": {
+    "artifact": "mixed-q4down-v1",
+    "n": 10,
+    "fallbacks": 0,
+    "dense_materialized": 0,
+    "rows": [
+      {
+        "dim": "factual",
+        "prompt": "The capital of France is",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 0,
+        "text": ""
+      },
+      {
+        "dim": "factual",
+        "prompt": "The chemical symbol for gold is",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 1,
+        "text": "\""
+      },
+      {
+        "dim": "arithmetic",
+        "prompt": "17 x 19 =",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 1,
+        "text": "1"
+      },
+      {
+        "dim": "arithmetic",
+        "prompt": "What is 144 divided by 12? Answer:",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 0,
+        "text": ""
+      },
+      {
+        "dim": "code",
+        "prompt": "Complete this Python line: def add(a, b): return",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 0,
+        "text": ""
+      },
+      {
+        "dim": "code",
+        "prompt": "In Python, the keyword to define a function is",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 0,
+        "text": ""
+      },
+      {
+        "dim": "tool",
+        "prompt": "Repeat this JSON exactly: {\"ok\": true}",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 1,
+        "text": "<think>"
+      },
+      {
+        "dim": "instruction",
+        "prompt": "Reply with exactly one word: yes or no. Is the sky blue?",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 1,
+        "text": "yes"
+      },
+      {
+        "dim": "multilingual",
+        "prompt": "Translate to French: the cat. Answer:",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 0,
+        "text": ""
+      },
+      {
+        "dim": "reasoning",
+        "prompt": "List three prime numbers greater than 20.",
+        "ok": false,
+        "degenerate": true,
+        "n_tokens": 1,
+        "text": "\n\n"
+      }
+    ],
+    "by_dim": {
+      "factual": [
+        0,
+        2,
+        2
+      ],
+      "arithmetic": [
+        0,
+        2,
+        2
+      ],
+      "code": [
+        0,
+        2,
+        2
+      ],
+      "tool": [
+        0,
+        1,
+        1
+      ],
+      "instruction": [
+        0,
+        1,
+        1
+      ],
+      "multilingual": [
+        0,
+        1,
+        1
+      ],
+      "reasoning": [
+        0,
+        1,
+        1
+      ]
+    },
+    "correct": 0,
+    "degenerate": 10
+  },
+  "mixed-q3mlp-v1": {
+    "artifact": "mixed-q3mlp-v1",
+    "n": 10,
+    "fallbacks": 0,
+    "dense_materialized": 0,
+    "rows": [
+      {
+        "dim": "factual",
+        "prompt": "The capital of France is",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 5,
+        "text": "<think>\n\n</think>\n\nParis"
+      },
+      {
+        "dim": "factual",
+        "prompt": "The chemical symbol for gold is",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 61,
+        "text": "<think>\nThe user is asking about the chemical symbol for gold. This is a straightforward chemistry question.\n\nGold's che"
+      },
+      {
+        "dim": "arithmetic",
+        "prompt": "17 x 19 =",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 104,
+        "text": "<think>\nLet me calculate 17 \u00d7 19.\n\n17 \u00d7 19 = 17 \u00d7 (20 - 1) = 340 - 17 = 323\n\nOr: 17 \u00d7 19 = (18-1)(18+1) = 18\u00b2 - 1 = 324 "
+      },
+      {
+        "dim": "arithmetic",
+        "prompt": "What is 144 divided by 12? Answer:",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 82,
+        "text": "<think>\nThe user is asking what 144 divided by 12 is. Let me calculate this.\n\n144 \u00f7 12 = 12\n\n12 \u00d7 12 = 144, so yes, 144 "
+      },
+      {
+        "dim": "code",
+        "prompt": "Complete this Python line: def add(a, b): return",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 137,
+        "text": "<think>\nThe user wants me to complete a Python function definition. The line is:\n\n`def add(a, b): return`\n\nThis is a sim"
+      },
+      {
+        "dim": "code",
+        "prompt": "In Python, the keyword to define a function is",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 180,
+        "text": "<think>\nThe user is asking about the Python keyword used to define a function. This is a straightforward Python programm"
+      },
+      {
+        "dim": "tool",
+        "prompt": "Repeat this JSON exactly: {\"ok\": true}",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 9,
+        "text": "<think>\n\n</think>\n\n{\"ok\": true}"
+      },
+      {
+        "dim": "instruction",
+        "prompt": "Reply with exactly one word: yes or no. Is the sky blue?",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 94,
+        "text": "<think>\nThe user asks \"Is the sky blue?\" and wants exactly one word: yes or no.\n\nThe sky appears blue to our eyes due to"
+      },
+      {
+        "dim": "multilingual",
+        "prompt": "Translate to French: the cat. Answer:",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 6,
+        "text": "<think>\n\n</think>\n\nle chat"
+      },
+      {
+        "dim": "reasoning",
+        "prompt": "List three prime numbers greater than 20.",
+        "ok": true,
+        "degenerate": false,
+        "n_tokens": 199,
+        "text": "<think>\nThe user wants three prime numbers greater than 20. Let me think of some:\n\n- 23 is prime (greater than 20)\n- 29 "
+      }
+    ],
+    "by_dim": {
+      "factual": [
+        2,
+        2,
+        0
+      ],
+      "arithmetic": [
+        2,
+        2,
+        0
+      ],
+      "code": [
+        2,
+        2,
+        0
+      ],
+      "tool": [
+        1,
+        1,
+        0
+      ],
+      "instruction": [
+        1,
+        1,
+        0
+      ],
+      "multilingual": [
+        1,
+        1,
+        0
+      ],
+      "reasoning": [
+        1,
+        1,
+        0
+      ]
+    },
+    "correct": 10,
+    "degenerate": 0
+  }
+}

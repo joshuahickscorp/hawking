@@ -353,9 +353,9 @@
     }
   ],
   "decision_sha256": "be256163c83b72d3b5699c750178d9aa813975b959b8044c5beeac8a4c0de101",
-  "recorded_at": "2026-08-09T17:44:43.494655Z",
+  "recorded_at": "2026-08-10T17:24:00.040925Z",
   "schema": "hawking.ascension.v3_active_lanes.v1",
-  "seal_sha256": "d32ba59ca96f31c20cee04e539d8323f64323c966559d1fcd9e80d007223cead",
+  "seal_sha256": "766b84c521e844878bcd31be2ee947fa50bfba067c400330479d27ed8133ab58",
   "tournament": {
     "armed_at": "2026-08-09T06:16:03.096010Z",
     "blockers": [

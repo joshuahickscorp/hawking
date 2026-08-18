@@ -1,0 +1,40 @@
+{
+  "schema": "hawking.q80.controller_measured_wall.v1",
+  "date": "2026-08-16",
+  "MEASURED_BY_ME": "Three reps under tools/gpu_lane_lock.sh on merged main, all four wins composed.",
+  "wall_ms": {
+    "reps": [
+      111.450686,
+      106.944913,
+      108.305682
+    ],
+    "median": 108.306,
+    "min": 106.944913,
+    "max": 111.450686,
+    "spread_pct": 4.2
+  },
+  "gpu_matvec_ms": {
+    "reps": [
+      41.634146,
+      37.507238,
+      39.188984
+    ],
+    "median": 39.189
+  },
+  "tok_s": 9.23,
+  "CONFIRMS_THE_LANE": "The DeltaNet lane reported 111.733 ms as its 6/6 paired median. My independent median is 108.306, inside its range and slightly better. The four wins DO compose - this is not an artifact of one lane's protocol.",
+  "partly_explains_the_26ms_discrepancy": "gpu_matvec is now ~39.2 ms against 36.5 measured right after the reconstruction fix. The rebase lane predicted this exactly: 'the fused suffix CB (recurrent + gated RMS + out_proj) is attributed there - accounting, not a matvec regression'. So at least part of the unaccounted 26 ms is cost MOVING BETWEEN BUCKETS rather than appearing from nowhere, which is why subtracting deltas from a stale component table failed.",
+  "q80_today": {
+    "morning_ms": 1376.3,
+    "now_ms": 108.306,
+    "improvement_x": 12.7,
+    "fs_per_weight": 30397,
+    "gb_s": 20.48,
+    "pct_of_honest_ceiling": 4.98
+  },
+  "gate_distance": {
+    "gate_ms": 20.0,
+    "factor_off": 5.42
+  },
+  "scope": "DIRTY_ENGINEERING - three lanes were live. Still the honest current number, and the qualifying CLEAN_CANDIDATE run needs a drained box."
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "hawking.genesis.dsv4f_seal_and_weight_deletion.v1",
+  "date": "2026-08-16",
+  "authority": "user steer S003 section 1 - PRESERVE SCIENCE, DELETE WEIGHTS",
+  "status": "SEALED_SCIENCE_RETAINED_WEIGHTS_DELETED",
+
+  "why_dsv4f_left_the_active_fleet": {
+    "physical_finding": "10.280 GB unique bytes per token against the honest 411.51 GB/s unique-once decode ceiling = a 24.98 ms complete-token floor.",
+    "consequence": "The 20 ms gate (50 TPS) sits BELOW the artifact's own DRAM floor. Its roof is 40.03 TPS - beneath the gate itself.",
+    "this_is_conditioned_not_absolute": "That floor is a property of THIS artifact's byte count, not of DeepSeek-V4-Flash. A reseal to 7.042 GB/token would move the floor to 17.11 ms (58.44 TPS). See DSV4F_UNBLOCK_REQUIRES_RESEAL.json.",
+    "reseal_decision": "NOT TAKEN. C2 would replace bit-identity with greedy-token identity + logit delta <= 0.05 + HC cosine >= 0.995. Left open deliberately; DSV4F returns as an Odyssey reconstruction test.",
+    "second_blocker": "status=FULL_MODEL_STREAMED_SEALED_NOT_RUNTIME_READY - the full 43-layer streamed artifact never had a local execution adapter. runtime_ready=false."
+  },
+
+  "preserved_identity_and_provenance": {
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+    "authority": "pinned_public_huggingface_hub_control_plane_plus_full_streamed_lfs_sha256",
+    "source_shard_windows": 46,
+    "per_window_sha256": "retained in manifest.json source.source_windows",
+    "metadata_assets_with_full_urls_and_sha256": "retained in manifest.json source.metadata_assets (config.json, inference/config.json, inference/convert.py, inference/kernel.py, tokenizer, index)",
+    "architecture_fingerprint": {
+      "model_type": "deepseek_v4",
+      "architectures": ["DeepseekV4ForCausalLM"],
+      "n_layers": 43,
+      "tensor_count": 69187,
+      "n_routed_experts": 256,
+      "n_activated_experts": 6,
+      "n_shared_experts": 1,
+      "dim": 4096,
+      "n_heads": 64,
+      "head_dim": 512,
+      "q_lora_rank": 1024,
+      "o_lora_rank": 1024,
+      "moe_inter_dim": 2048,
+      "vocab_size": 129280,
+      "dtype": "fp8",
+      "expert_dtype": "fp4",
+      "scale_fmt": "ue8m0",
+      "score_func": "sqrtsoftplus",
+      "hc_mult": 4,
+      "hc_sinkhorn_iters": 20,
+      "original_seq_len": 65536
+    },
+    "artifact_seal": {
+      "content_addressed_chunk_count": 69837,
+      "content_addressed_chunk_sha256": "15e00fb1b91ac074b7f24686de4e289f76d66eb1c3fb4ad643de027adc78ca13",
+      "format": "gravity.content_addressed.chunk_directory.v1",
+      "total_tensor_bytes": 159609485896,
+      "seal_sha256": "f9b928f1cbb96e8f7238a3983a3f68ef3dc2946cca66fdf3e098781a533a5b0d"
+    },
+    "rebuild_command": "tools/condense/.venv/bin/python tools/condense/deepseek_v4_gravity.py build-full --artifact-dir <ARTIFACT_DIR> --workspace-root /Users/scammermike/Downloads/hawking --xet-root <NEW_EMPTY_XET_ROOT>",
+    "rebuild_note": "source_parent_retained was already false before this deletion - the chunk directory was the only local copy of the weights. Reconstruction therefore re-fetches from the pinned HF revision above and replays the build. Every fetched byte is verifiable against the retained per-window sha256 set, and the finished directory against content_addressed_chunk_sha256."
+  },
+
+  "retained_on_disk": [
+    "workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/manifest.json (144M - architecture, source provenance, tensor table, native decode validation, kernel grammar)",
+    "workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/stream-ranges.jsonl (103M - the 69837 range journal)",
+    "workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/metadata/ (11M - config.json, inference/, tokenizer.json, tokenizer_config.json, model.safetensors.index.json)",
+    "workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/restart-receipt.json",
+    "workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/stream-journal.json",
+    "workspace/campaign/records/runs/deepseek-v4/activation-x-capture-3k/ (930M - captured activations; NOT cheaply regenerable once weights are gone, so kept deliberately)",
+    "workspace/campaign/records/runs/deepseek-v4/child-baseline-v1..v3/",
+    "workspace/campaign/records/runs/deepseek-v4/DSV4F_HCLI_ENCODING_SOURCE-60d8d707/",
+    "workspace/campaign/records/runs/deepseek-v4/streamed-layer4-diagnostic.gravity/ (10M)",
+    "all receipts under receipts/ (TOKEN_NS, latency, bottleneck, negative science, hc_sha evidence)",
+    "all source code: crates/, tools/condense/deepseek_v4_gravity.py, the runtime genome"
+  ],
+
+  "deleted": {
+    "path": "workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/chunks/",
+    "what": "the 69837 content-addressed weight chunks - the model weight blob itself",
+    "bytes_freed_gib": 149,
+    "justification": "steer S003: DELETE model weight blobs. Retained record above is sufficient to reacquire (pinned HF revision + per-window sha256) and reconstruct (resume_command + range journal + manifest)."
+  },
+
+  "science_preserved_elsewhere": {
+    "token_ns_ledger": "receipts/ascent-2026-08-16/DSV4F_TOKEN_NS_LEDGER.json, TOKEN_NS_DSV4F.json",
+    "physical_floor": "receipts/ascent-2026-08-16/DSV4F_GATE_BELOW_DRAM_FLOOR.json",
+    "reseal_analysis": "receipts/ascent-2026-08-16/DSV4F_UNBLOCK_REQUIRES_RESEAL.json",
+    "eliminations": "78s -> 3.375s/token via three identity-bookkeeping eliminations (hash-per-token, clone-tree-on-open, st_dev) - see 2026-08-15 ascension v4 results",
+    "negative_science": "expert_slab_io 415 ms with 73% GPU idle; body 1037.8 ms; occupancy-geometry parity resolved (A005 VERIFIED)"
+  },
+
+  "returns_as": "Odyssey reconstruction/generalization test for Genesis - rebuild DSV4F from this record alone, then generalize the Genesis execution genome to a 43-layer 256-expert MoE it was not designed for."
+}

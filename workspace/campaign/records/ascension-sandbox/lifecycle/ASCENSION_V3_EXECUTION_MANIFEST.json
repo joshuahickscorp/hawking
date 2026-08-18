@@ -111,7 +111,7 @@
   "kernel_compiler_contract": {
     "configuration_only": true,
     "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_KERNEL_COMPILER_CONTRACT.json",
-    "seal_sha256": "59a20a9ab958c3c1464a65f1a2867bc5e47d8a88282aab65fa8ba7f5ef753af6",
+    "seal_sha256": "50caf664c4a8448d8263947b7bc1d8f804a53deb1c1c8b0633bbd894aa9a998f",
     "status": "CONTROLLER_CONFIGURATION_ONLY"
   },
   "knowledge_plane_contract": {
@@ -216,7 +216,7 @@
     "runtime_phase": "ARMED_WAITING_FOR_QUALIFICATIONS",
     "status": "CONTROLLER_WORKFLOW_ONLY"
   },
-  "recorded_at": "2026-08-09T17:44:43.566439Z",
+  "recorded_at": "2026-08-10T17:24:14.200800Z",
   "safe_automatic_lanes": [
     {
       "action": "re-evaluate sealed controller intake and derive continuation outputs",
@@ -270,13 +270,13 @@
     }
   ],
   "schema": "hawking.ascension.v3_execution_manifest.v1",
-  "seal_sha256": "e2d676f2e683af549fd2050f67ae49303bc705cfc730bbc075bcb3954f7611b7",
+  "seal_sha256": "6e3974f4eece07775d30834f05b18c91e1b3cfb319be36a08f176a3cd1b8b878",
   "source_metadata": {
     "candidate_only": true,
     "not_lifecycle_certification": true,
     "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/SOURCE_ADMISSION_STATUS.json",
     "present": true,
-    "recorded_at": "2026-08-09T06:16:04.580869Z",
+    "recorded_at": "2026-08-10T06:16:51.877229Z",
     "records": [
       {
         "artifact_id": "QWEN30_SOURCE_METADATA_CANDIDATE",

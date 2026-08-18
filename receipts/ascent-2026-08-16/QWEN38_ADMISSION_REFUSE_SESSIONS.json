@@ -1,0 +1,31 @@
+{
+  "schema": "hawking.qwen38.shared_sessions.v1",
+  "mode": "refuse-session-count",
+  "demonstrated": "REFUSE",
+  "measured_workspace_bytes": 175361796,
+  "measured_marginal_rss_bytes": 173703168,
+  "per_session_cost_bytes": 242470660,
+  "requested_sessions": 144,
+  "host": {
+    "page_size_bytes": 16384,
+    "pages_free": 2320595,
+    "pages_purgeable": 26855,
+    "pages_speculative": 30023,
+    "free_bytes": 38020628480,
+    "memsize_bytes": 103079215104
+  },
+  "admission": {
+    "schema": "hawking.qwen38.host_admission.v1",
+    "verdict": "refuse",
+    "reason": "free after request would be 3104853440 B < reserve 4294967296 B; refusing before swap",
+    "request": {
+      "label": "144-shared-sessions",
+      "cost_bytes": 34915775040,
+      "kind": "shared_session_batch"
+    },
+    "free_before_bytes": 38020628480,
+    "reserve_bytes": 4294967296,
+    "free_after_if_admitted_bytes": 3104853440,
+    "would_breach_reserve": true
+  }
+}

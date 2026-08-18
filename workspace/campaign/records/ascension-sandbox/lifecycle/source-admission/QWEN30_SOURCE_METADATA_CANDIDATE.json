@@ -206,9 +206,9 @@
     "unknown_size_count": 0,
     "weight_file_count": 16
   },
-  "recorded_at": "2026-08-09T06:16:04.474778Z",
+  "recorded_at": "2026-08-10T06:16:51.745950Z",
   "schema": "hawking.ascension.source_admission_candidate.v1",
-  "seal_sha256": "6312846a38e868f4f8cb6af5c9ada2f15aacb926183908c1f96ade202665d5e7",
+  "seal_sha256": "e8207c464f514a415f436686026f471b6efc4ea6cd55b974eedaf7504da11102",
   "source": {
     "gated": false,
     "license_card_value": null,

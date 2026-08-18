@@ -1,0 +1,29 @@
+{
+  "schema": "hawking.ascent.qwen38_mixed_sub15_native_catalog.v1",
+  "status": "EMITTED",
+  "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-sub15-v1",
+  "catalog": "/Users/scammermike/.claude-grok/worktrees/50-sub15-native-impl-20260817-113010/workspace/superwave/g1/mixed-sub15-native-catalog/catalog.hq38m20",
+  "tensors": 851,
+  "segments": 723,
+  "hardlinked_new": 0,
+  "hardlinked_reused": 0,
+  "codecs": {
+    "0": 64,
+    "1": 368,
+    "2": 64,
+    "3": 2,
+    "4": 353
+  },
+  "roles": {
+    "mlp_gate_hgravb01": 64,
+    "mlp_up_hgravr02": 64,
+    "mlp_down_hgravs01": 64,
+    "attention_hgravr02": 304,
+    "embed_hq30uq4": 1,
+    "lm_head_hq30uq4": 1,
+    "small_f32v2": 353
+  },
+  "note": "catalog points at packed HGRAV*/HQ30UQ4/f32v2 bytes. No reconstruct-to-Q4. No mlx-delta on f32v2.",
+  "segment_mode": "absolute_paths",
+  "install": "cp /Users/scammermike/.claude-grok/worktrees/50-sub15-native-impl-20260817-113010/workspace/superwave/g1/mixed-sub15-native-catalog/catalog.hq38m20 /Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-sub15-v1/catalog.hq38m20"
+}

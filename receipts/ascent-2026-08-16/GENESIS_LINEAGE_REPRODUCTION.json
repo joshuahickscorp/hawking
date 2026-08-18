@@ -1,0 +1,196 @@
+{
+  "schema": "hawking.lineage.reproduction_machinery.v1",
+  "date": "2026-08-16",
+  "campaign": "ascent-2026-08-16",
+  "title": "Genesis lineage reproduction machinery",
+  "authority": "external promotion only; parent and child cannot self-certify",
+  "what_was_built": {
+    "lineage_state": "lab/lineage/state.py \u2014 CURRENT, CANDIDATE, LAST_KNOWN_GOOD; never zero valid Genesis once armed",
+    "promotion_gate": "lab/lineage/promotion.py \u2014 12 mechanical clauses, REJECT on present-but-wrong, PENDING on missing, never fabricated ACCEPT",
+    "state_transfer": "lab/lineage/transfer.py \u2014 eight required keys including NEXT_BOTTLENECK; far-side sha256 before authority moves",
+    "research_bus": "lab/lineage/bus.py \u2014 nine typed messages; MEASURED_FACT requires receipt_ref; IMPOSSIBLE requires named_saturated_resource",
+    "four_slots": "tools/agentos/slots.py \u2014 hard cap 4; slot 3 preemptible for qualification, never permanent",
+    "cycle": "lab/lineage/cycle.py \u2014 gate, checksum, launch, handover; launch failure rolls back"
+  },
+  "genesis_parent_identity": {
+    "model": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+    "base_rev": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "artifact": "workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+    "binary": "ascension_qwen38_hybrid_greedy",
+    "complete_token_ns": 35227918,
+    "bpw": 4.2527
+  },
+  "promotion_clauses_watched_fail": [
+    {
+      "clause": "capability_ge_parent_contract",
+      "test": "test_each_clause_rejects_when_input_corrupted[capability_below_contract]",
+      "corruption": "child engineering capability set to 0.0"
+    },
+    {
+      "clause": "no_new_silent_fallback",
+      "test": "test_each_clause_rejects_when_input_corrupted[new_silent_fallback]",
+      "corruption": "added silent_cpu_path"
+    },
+    {
+      "clause": "complete_token_wall_improves_materially",
+      "test": "test_each_clause_rejects_when_input_corrupted[complete_token_worse]",
+      "corruption": "child reps 40ms > parent 35.2ms"
+    },
+    {
+      "clause": "complete_token_wall_improves_materially",
+      "test": "test_each_clause_rejects_when_input_corrupted[complete_token_not_material]",
+      "corruption": "1us flicker, below 1% material floor"
+    },
+    {
+      "clause": "complete_token_wall_improves_materially",
+      "test": "test_cpu_wait_proxy_timing_rejected",
+      "corruption": "timing_authority=cpu_wait_proxy"
+    },
+    {
+      "clause": "complete_token_wall_improves_materially",
+      "test": "test_component_win_without_token_move_is_reject",
+      "corruption": "component_win_ns claimed, token wall unchanged"
+    },
+    {
+      "clause": "artifact_identity_exact",
+      "test": "test_each_clause_rejects_when_input_corrupted[artifact_identity_swapped]",
+      "corruption": "artifact_receipt.sha swapped"
+    },
+    {
+      "clause": "representation_bpw_exact",
+      "test": "test_each_clause_rejects_when_input_corrupted[representation_bpw_mismatch]",
+      "corruption": "receipt bpw 1.111111 vs child"
+    },
+    {
+      "clause": "runtime_and_kernel_genome_exact",
+      "test": "test_each_clause_rejects_when_input_corrupted[runtime_genome_mismatch]",
+      "corruption": "runtime_sha swapped"
+    },
+    {
+      "clause": "protected_tests_pass",
+      "test": "test_each_clause_rejects_when_input_corrupted[protected_test_failed]",
+      "corruption": "coherence_greedy_ids FAIL"
+    },
+    {
+      "clause": "protected_tests_pass",
+      "test": "test_each_clause_rejects_when_input_corrupted[protected_test_skipped]",
+      "corruption": "coherence_greedy_ids SKIP \u2014 skipped is FAILURE"
+    },
+    {
+      "clause": "state_transfer_test_passes",
+      "test": "test_each_clause_rejects_when_input_corrupted[state_transfer_unverified]",
+      "corruption": "checksum_verified=false"
+    },
+    {
+      "clause": "rollback_artifact_exists",
+      "test": "test_rollback_artifact_clause_rejects_when_lkg_cleared",
+      "corruption": "LAST_KNOWN_GOOD cleared"
+    },
+    {
+      "clause": "reject_tps_up_capability_down",
+      "test": "test_tps_up_capability_down_named_reject",
+      "corruption": "faster child, coherence=0.0"
+    },
+    {
+      "clause": "reject_bpw_improved_token_worse",
+      "test": "test_each_clause_rejects_when_input_corrupted[bpw_improved_token_worse]",
+      "corruption": "bpw 3.0 with 40ms token wall"
+    },
+    {
+      "clause": "reject_benchmark_changed",
+      "test": "test_each_clause_rejects_when_input_corrupted[benchmark_changed]",
+      "corruption": "benchmark_fingerprint swapped"
+    }
+  ],
+  "self_certification_refused": [
+    {
+      "who": "parent",
+      "test": "test_parent_self_certification_refused"
+    },
+    {
+      "who": "child",
+      "test": "test_child_self_certification_refused"
+    },
+    {
+      "who": "sandbox_model",
+      "test": "test_sandbox_model_cannot_invoke_gate"
+    },
+    {
+      "who": "GenesisInstance.invoke_promotion_gate",
+      "test": "test_parent_and_child_cannot_invoke_gate_method"
+    }
+  ],
+  "rollback_exercised": {
+    "test": "test_failed_successor_launch_rolls_back_to_lkg",
+    "also": [
+      "test_successor_launch_exception_rolls_back",
+      "test_reproduce_happy_path_and_failed_launch"
+    ],
+    "result": "CURRENT restored from LAST_KNOWN_GOOD; CANDIDATE marked invalid; valid_count >= 1; zero_valid_genesis=false"
+  },
+  "state_transfer": {
+    "test_ok": "test_state_transfer_checksum_verified_on_far_side",
+    "test_corrupt": "test_corrupt_checksum_is_refused_and_authority_stays",
+    "payload_keys": [
+      "task_graph",
+      "memories",
+      "genomes",
+      "negative_science",
+      "active_hypotheses",
+      "grok_findings",
+      "open_experiments",
+      "NEXT_BOTTLENECK"
+    ],
+    "authority_moves_only_after": "accept_transfer verifies seal + payload sha256"
+  },
+  "research_bus": {
+    "test_exchange": "test_parent_child_a_child_b_exchange",
+    "test_measured_fact_without_receipt": "test_measured_fact_without_receipt_refused",
+    "test_impossibility": "test_impossibility_requires_saturated_resource",
+    "test_negative_not_impossible": "test_negative_science_may_report_failure_not_impossibility"
+  },
+  "four_slots": {
+    "test_cap": "test_hard_cap_is_four",
+    "test_slot3_not_permanent": "test_slot_3_cannot_be_permanent",
+    "test_preempt": "test_slot_3_preempted_for_qualification"
+  },
+  "tests_run": {
+    "command": "python3 -m pytest -q lab/tests/test_genesis_lineage_state.py lab/tests/test_genesis_promotion_gate.py lab/tests/test_genesis_research_bus.py lab/tests/test_genesis_slots.py",
+    "result": "55 passed"
+  },
+  "required_full_suite": {
+    "command": "python3 -m pytest -q lab/tests/",
+    "status": "BLOCKED_PREEXISTING",
+    "exact_command_without_flags": "collection ERROR on tools/ascent + tokenizers (pytest stops at first collection error)",
+    "continued_run": {
+      "flags": "--continue-on-collection-errors",
+      "result": "64 failed, 889 passed, 6 skipped, 7 errors in 204s",
+      "lineage_tests": "all 55 passed; none of the 64 failures are lineage tests",
+      "failure_classes": [
+        "sparse-checkout missing workspace/campaign/records/ascension-sandbox/...",
+        "sparse-checkout missing tools/ascent/roof_rungs.py",
+        "missing python module tokenizers",
+        "missing python module torch (test_doctor6_waterfill)",
+        "missing receipts/dsv4f_fullseq_capture_L0_frozen_export",
+        "missing workspace/campaign/records/runs/deepseek-v4/DSV4F_TENSOR_SCHEDULE.json"
+      ]
+    },
+    "blockers_to_materialize": [
+      "tools/ascent/__init__.py",
+      "tools/ascent/roof_rungs.py",
+      "workspace/campaign/records/ascension-sandbox/",
+      "workspace/campaign/records/runs/deepseek-v4/DSV4F_TENSOR_SCHEDULE.json",
+      "workspace/ops/build/rust/debug/examples/ascension_qwen80_source_token_l0_l1_full_layer_same_runtime_device"
+    ],
+    "blockers_not_a_path": [
+      "tokenizers",
+      "torch"
+    ]
+  },
+  "non_goals_honored": [
+    "no Metal kernel, codec, or decode path edits",
+    "no model optimization experiments",
+    "no AgentOS/HCLI/World State/Odyssey implementation beyond the four-slot scheduler under tools/agentos/"
+  ],
+  "seal_sha256": "50d5047376d2868b88f19733a7749cbfc027cd06241adea09c87598feaf6ceb3"
+}

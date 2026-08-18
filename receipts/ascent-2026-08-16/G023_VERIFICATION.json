@@ -1,0 +1,27 @@
+{
+  "schema": "hawking.ascension.g023_verification.v1",
+  "date": "2026-08-16",
+  "what_was_verified_BY_ME_not_claimed_by_the_lane": {
+    "qwen38_end_to_end": {
+      "method": "ran ascension_qwen38_hybrid_greedy on the G023 build, compared against the main-branch run",
+      "new_token_ids": "16/16 IDENTICAL",
+      "generated_text": "identical",
+      "fallbacks": 0
+    },
+    "dsv4f_end_to_end": {
+      "method": "HAWKING_DSV4F_NATIVE_GRAPH_E2E=1 full 43-layer forward",
+      "hc_sha": "c94da765c4bbf795b598d96209cd80821e5a81ab97a8712586f54b8c8b612597",
+      "matches_sealed_ledger": true,
+      "note": "identical to DSV4F_TOKEN_NS_LEDGER.json correctness.hc_sha recorded BEFORE the kernel change"
+    }
+  },
+  "why_i_did_not_take_the_lane_at_its_word": "The lane reported operator-level bit-identity but stated plainly that full DSV4F hc_sha and Q80 greedy were NOT re-run. Operator identity does not imply end-to-end identity if dispatch or ordering changed, and this touches both production graphs.",
+  "defect_found_and_fixed": {
+    "file": "crates/hawking-core/tests/dsv4f_native_token_graph_e2e.rs",
+    "defect": "The hc_sha check was an eprintln with no assertion. The test gated only on rss_within_bound and weight_within_bound, so it would have PASSED on arbitrarily wrong numerics.",
+    "fix": "assert_eq against the sealed graph hash; oracle comparison kept informational since the CPU oracle uses a different add order.",
+    "proven_bidirectionally": "corrupted sealed constant -> test FAILS with the regression message; restored -> passes. A gate that has not been seen to fail is not a gate."
+  },
+  "G023_STATUS": "PARTIAL, not verified. The unification leg is real and numerically sound: gk_family.metal (11 kernels) is dispatched by both graphs, codec helpers collapse from 6 kinds x 2-5 copies to 1, and both graphs' numerics are preserved. The acceptance ALSO requires each facet of the token budget measured separately before/after, and that has NOT been done - the lane reported a single microbench, not per-facet deltas.",
+  "perf_note": "Qwen3.8 GPU median moved 33.547 -> 34.019 ms (+1.41%) but 4 GPU lanes were running during both measurements, so this is inside noise and is NOT claimed as a regression or an improvement."
+}

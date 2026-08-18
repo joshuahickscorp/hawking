@@ -1,0 +1,118 @@
+{
+  "schema": "hawking.g002.tiles_into_family.v1",
+  "date": "2026-08-16",
+  "lane": "g002-tiles-into-family-20260816-181100",
+  "parent": "fbe795b8e4390ea26c1c427390a20b7b1f891c1a",
+  "status": "SHIPPED",
+  "gpu_touched": true,
+  "timing_label": "MTLCommandBuffer GPUStartTime/GPUEndTime after wait; wall is decode_secs / 11 steady tokens",
+  "lock": "tools/gpu_lane_lock.sh",
+  "what": "Occupancy tiles are family constants and accessors. production_kernel_for and the shipping dispatch_* helpers take every matvec name from decode_family. Same Metal kernels run; only the source of the name changed.",
+  "not_done": "Tiles were not ported into gk_family.metal. FAMILY_KERNELS still lists only the gk_* serial/simd entry points that live in that shader. Q80_TILE_KERNELS names the shipping geometry in q80_mixed_decode.metal.",
+  "why_not_swap_to_existing_family_kernels": {
+    "source": "receipts/ascent-2026-08-16/Q80_GK_SIMD_NEGATIVE.json",
+    "gk_simd_ms": 91.28,
+    "tiles_ms": 36.53,
+    "family_existing_is_slower_by": 2.5
+  },
+  "files": [
+    "crates/hawking-core/src/decode_family.rs",
+    "crates/hawking-core/src/model/qwen80_mixed_hybrid_decode.rs"
+  ],
+  "family_constants": {
+    "MATVEC_BINARY_TILES": "q80_binary_group_matvec_tg256",
+    "MATVEC_BINARY_CSR_TILES": "q80_binary_group_csr_matvec_tg256",
+    "MATVEC_HGRAVS_TILES": "q80_hgravs01_factor_matvec_simd3",
+    "MATVEC_HGRAVS_NBIT_TILES": "q80_hgravs01_factor_matvec_simd",
+    "MATVEC_UNIFORM8_TILES": "q80_uniform8_matvec_tg256",
+    "MATVEC_UNIFORM8_SIMD_BYTES": "q80_uniform8_matvec_simd_bytes"
+  },
+  "binary": {
+    "path": "workspace/ops/build/rust/release/examples/ascension_qwen80_mixed_hybrid_greedy",
+    "sha256": "3b3627062371840bb7b7dae2abe587a481b5aa7d0639477ae1b79e02d5402ceb",
+    "profile": "release"
+  },
+  "build": {
+    "command": "cargo build --release -p hawking-core --example ascension_qwen80_mixed_hybrid_greedy --target-dir workspace/ops/build/rust",
+    "exit": 0
+  },
+  "gk_family_parity": {
+    "command": "cargo test --release -p hawking-core --test gk_family_parity --target-dir workspace/ops/build/rust",
+    "result": "8 passed; 0 failed",
+    "both_graphs_dispatch_the_shared_family": "PASS",
+    "why_8_of_8_is_legitimate": "The test was not edited. HEAD already accepts DSV4F pack_worklist() / decode_family:: in the source-string checks (the pre-existing PACK_WORKLIST miss). Q80 assertions still require decode_family::, MATVEC_BINARY, MATVEC_HGRAVS, and q80_sparse_q1_apply_csr; those strings remain. This lane did not loosen the test."
+  },
+  "decode_family_unit_tests": {
+    "command": "cargo test --release -p hawking-core --lib decode_family",
+    "result": "5 passed; 0 failed",
+    "includes": "occupancy_tiles_keep_the_shipping_q80_names"
+  },
+  "dispatched_kernel": "q80_binary_group_matvec_tg256",
+  "dispatched_kernels_all_six_runs": [
+    "q80_uniform8_matvec_tg256",
+    "q80_uniform8_matvec_simd_bytes",
+    "q80_binary_group_matvec_tg256",
+    "q80_binary_group_csr_matvec_tg256",
+    "q80_hgravs01_factor_matvec_simd3"
+  ],
+  "dispatched_kernel_proof": "execution.native.dispatched_kernels on each generate receipt. Unique names actually passed to TokenCommandBuffer::dispatch_threads on the mixed matvec path. q80_binary_group_matvec_tg256 is present in all 6 runs. HAWKING_DECODE_FAMILY=0 still launches the tiles (the family toggle only fills unused serial_name).",
+  "pair_receipts": "receipts/ascent-2026-08-16/g002-tiles-into-family/",
+  "protocol": "3 alternating pairs under one gpu_lane_lock: family (default HAWKING_DECODE_FAMILY) then legacy (HAWKING_DECODE_FAMILY=0), --reps 1 per process, 12-token greedy, same release binary",
+  "generated_token_ids": [8420, 748, 264, 729, 429, 17431, 288, 264, 914, 320, 72, 1734],
+  "generated_text": "Here’s a function that reverses a string (i.e",
+  "ids_identical_all_runs": true,
+  "runs_checked": 6,
+  "silent_fallback_counters": {
+    "dense_w_materialized": 0,
+    "host_expert_payload_bind": 0,
+    "host_mixed_matvec": 0,
+    "all_runs_zero": true
+  },
+  "topology": {
+    "command_buffers_per_token": 49.0,
+    "dispatches_per_token": 2834.0
+  },
+  "confound": {
+    "pair_1_family_is_first_touch": true,
+    "pair_1_family_wall_ms": 233.964,
+    "analysis_drops": "pair 1 family (page-cache / first-touch). Same rule as G002_FAMILY_FACET_AB and G003 first-touch smoke."
+  },
+  "baseline": {
+    "source": "receipts/ascent-2026-08-16/G003_Q80_MIXED_DELTANET_VI_REBASE3.json verdict.wall_ours_median_ms",
+    "wall_median_ms": 111.73308336363637,
+    "gpu_matvec_median_ms": 39.10517640909091,
+    "spread_ms": 5.200481090909094
+  },
+  "wall": {
+    "raw_ns": {
+      "p1_family": 233964007.63636363,
+      "p1_legacy": 109637409.0909091,
+      "p2_family": 109194208.36363636,
+      "p2_legacy": 110709322.0,
+      "p3_family": 110592818.18181819,
+      "p3_legacy": 107622053.00000001
+    },
+    "warm_ns": [109637409.0909091, 109194208.36363636, 110709322.0, 110592818.18181819, 107622053.00000001],
+    "warm_median_ns": 109637409.0909091,
+    "warm_median_ms": 109.6374090909091,
+    "warm_min_ms": 107.622053,
+    "warm_max_ms": 110.709322,
+    "delta_vs_g003_median_ms": -2.09567427272727,
+    "inside_g003_spread": true,
+    "verdict": "UNCHANGED_WITHIN_NOISE"
+  },
+  "gpu_matvec": {
+    "warm_ns": [40849597.72727273, 40852812.54545455, 42797786.54545455, 41256202.90909091, 38336548.09090909],
+    "warm_median_ms": 40.85281254545455,
+    "g003_ours_median_ms": 39.10517640909091,
+    "inside_g003_ours_range": true,
+    "note": "G003 ours gpu_matvec ranged 37.88-43.79 ms. This warm set is 38.34-42.80."
+  },
+  "acceptance": {
+    "1_production_kernel_for_names_from_family_both_branches": true,
+    "2_dispatched_kernel_unchanged_q80_binary_group_matvec_tg256": true,
+    "3_wall_unchanged_within_noise": true,
+    "4_greedy_ids_identical": true,
+    "5_silent_fallbacks_zero": true
+  }
+}

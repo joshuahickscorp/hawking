@@ -1,0 +1,64 @@
+{
+  "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+  "layer": 0,
+  "x_rank": 111,
+  "x_dim": 5120,
+  "results": [
+    {
+      "construction": "faithful_q4_g128 (POSITIVE CONTROL, must pass)",
+      "should_pass": true,
+      "incumbent_healthy": true,
+      "gate_healthy": true,
+      "observed": 0.9957399368286133,
+      "probed": 0.9930044412612915,
+      "worst_unit": 0.9638223052024841,
+      "gate": 0.9638223052024841,
+      "healthy": true
+    },
+    {
+      "construction": "visible_subspace_only",
+      "should_pass": false,
+      "incumbent_healthy": true,
+      "gate_healthy": false,
+      "observed": 1.0,
+      "probed": 0.19344943761825562,
+      "worst_unit": -0.11392464488744736,
+      "gate": -0.11392464488744736,
+      "healthy": false
+    },
+    {
+      "construction": "unseen_subspace_corruption",
+      "should_pass": false,
+      "incumbent_healthy": true,
+      "gate_healthy": false,
+      "observed": 1.0,
+      "probed": 0.035805594176054,
+      "worst_unit": -0.2233601212501526,
+      "gate": -0.2233601212501526,
+      "healthy": false
+    },
+    {
+      "construction": "critical_channel_deletion",
+      "should_pass": false,
+      "incumbent_healthy": true,
+      "gate_healthy": false,
+      "observed": 0.998863697052002,
+      "probed": 0.9996129274368286,
+      "worst_unit": 0.0,
+      "gate": 0.0,
+      "healthy": false
+    },
+    {
+      "construction": "sparse_row_corruption (33 rows, stand-in for control path)",
+      "should_pass": false,
+      "incumbent_healthy": true,
+      "gate_healthy": false,
+      "observed": 0.9998564720153809,
+      "probed": 0.9997628927230835,
+      "worst_unit": 0.8301647901535034,
+      "gate": 0.8301647901535034,
+      "healthy": false
+    }
+  ],
+  "failures": []
+}

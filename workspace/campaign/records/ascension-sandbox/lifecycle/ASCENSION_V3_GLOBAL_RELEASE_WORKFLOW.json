@@ -118,8 +118,8 @@
     "state": "TG2_TG1_FRONTIER",
     "status": "PENDING_PREREQUISITES"
   },
-  "recorded_at": "2026-08-09T17:44:43.558274Z",
+  "recorded_at": "2026-08-10T17:24:14.117577Z",
   "schema": "hawking.ascension.global_release_workflow.v1",
-  "seal_sha256": "f4beca0de878b663ed1bd2235dd074b2de835bf157747751674d15d34dfcc122",
+  "seal_sha256": "24ec7b08d47cc8baff2596d83f9f508e15951695fd1be138f916d5a69ea215f8",
   "status": "CONTROLLER_WORKFLOW_ONLY"
 }

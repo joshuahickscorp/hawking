@@ -1,0 +1,117 @@
+[
+  {
+    "cls": "mlp.gate_proj",
+    "pair": [
+      30,
+      31
+    ],
+    "shape": [
+      17408,
+      5120
+    ],
+    "raw_cos": 0.0024525439366698265,
+    "canon_cos": 0.002211702521890402,
+    "canon_null": 0.00010169882443733513,
+    "spectrum_cos": 0.9999486804008484,
+    "spectrum_worst_rel": 0.026197519153356552,
+    "spectrum_null": 0.9999998807907104,
+    "costs": {
+      "permutation_bytes": 6963.644996508168,
+      "sign_bytes": 640.0,
+      "channel_scale_bytes": 10240,
+      "dense_orthogonal_bytes": 52428800
+    }
+  },
+  {
+    "cls": "mlp.gate_proj",
+    "pair": [
+      15,
+      47
+    ],
+    "shape": [
+      17408,
+      5120
+    ],
+    "raw_cos": 0.08642220497131348,
+    "canon_cos": 0.00157774961553514,
+    "canon_null": 0.0001069573118002154,
+    "spectrum_cos": 0.9991040229797363,
+    "spectrum_worst_rel": 0.20856206119060516,
+    "spectrum_null": 0.9999999403953552,
+    "costs": {
+      "permutation_bytes": 6963.644996508168,
+      "sign_bytes": 640.0,
+      "channel_scale_bytes": 10240,
+      "dense_orthogonal_bytes": 52428800
+    }
+  },
+  {
+    "cls": "mlp.down_proj",
+    "pair": [
+      30,
+      31
+    ],
+    "shape": [
+      5120,
+      17408
+    ],
+    "raw_cos": 5.620216688839719e-05,
+    "canon_cos": 0.00010443980863783509,
+    "canon_null": 0.00013011583359912038,
+    "spectrum_cos": 0.9997578859329224,
+    "spectrum_worst_rel": 0.11941401660442352,
+    "spectrum_null": 0.9999998807907104,
+    "costs": {
+      "permutation_bytes": 27516.060919385312,
+      "sign_bytes": 2176.0,
+      "channel_scale_bytes": 34816,
+      "dense_orthogonal_bytes": 606076928
+    }
+  },
+  {
+    "cls": "self_attn.q_proj",
+    "pair": [
+      31,
+      35
+    ],
+    "shape": [
+      12288,
+      5120
+    ],
+    "raw_cos": 0.007738030515611172,
+    "canon_cos": 0.004692197311669588,
+    "canon_null": 1.4877981811878271e-05,
+    "spectrum_cos": 0.9996253848075867,
+    "spectrum_worst_rel": 0.1423671692609787,
+    "spectrum_null": 0.9999998807907104,
+    "costs": {
+      "permutation_bytes": 6963.644996508168,
+      "sign_bytes": 640.0,
+      "channel_scale_bytes": 10240,
+      "dense_orthogonal_bytes": 52428800
+    }
+  },
+  {
+    "cls": "self_attn.v_proj",
+    "pair": [
+      31,
+      35
+    ],
+    "shape": [
+      1024,
+      5120
+    ],
+    "raw_cos": -0.0017111195484176278,
+    "canon_cos": 0.001089598867110908,
+    "canon_null": 0.0011060924734920263,
+    "spectrum_cos": 0.9993914365768433,
+    "spectrum_worst_rel": 0.15551966428756714,
+    "spectrum_null": 0.9999994039535522,
+    "costs": {
+      "permutation_bytes": 6963.644996508168,
+      "sign_bytes": 640.0,
+      "channel_scale_bytes": 10240,
+      "dense_orthogonal_bytes": 52428800
+    }
+  }
+]

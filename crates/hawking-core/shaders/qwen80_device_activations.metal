@@ -201,6 +201,51 @@ kernel void qwen80_deltanet_gated_rmsnorm_f32(
     }
 }
 
+// One threadgroup per value head, following the convention the gated-delta decode kernel
+// immediately below already uses. The scalar form above runs ONE THREAD PER HEAD -- 48 threads
+// for the whole dispatch, each serially walking value_head_dim twice -- which is the same
+// occupancy accident measured in mha_decode_f32, where raising the threadgroup cut the
+// dominant context term 2.58x. This form gives each head a threadgroup and splits the head
+// dimension across its threads.
+//
+// The sum is reduced as a tree rather than in index order, so results are NOT bit-identical to
+// the scalar kernel. That is why this is a SEPARATE kernel behind a flag rather than an edit to
+// the one above: the difference must be gated, not assumed.
+kernel void qwen80_deltanet_gated_rmsnorm_tg(
+    device const float* input     [[buffer(0)]],
+    device const float* gate      [[buffer(1)]],
+    device const float* weight    [[buffer(2)]],
+    device float* output          [[buffer(3)]],
+    constant uint& heads          [[buffer(4)]],
+    constant uint& value_head_dim [[buffer(5)]],
+    constant float& eps           [[buffer(6)]],
+    threadgroup float* red        [[threadgroup(0)]],
+    uint head                      [[threadgroup_position_in_grid]],
+    uint tid                       [[thread_position_in_threadgroup]],
+    uint tg_size                   [[threads_per_threadgroup]])
+{
+    if (head >= heads) return;
+    const uint base = head * value_head_dim;
+    float local = 0.0f;
+    for (uint i = tid; i < value_head_dim; i += tg_size) {
+        const float v = input[base + i];
+        local += v * v;
+    }
+    red[tid] = local;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) { red[tid] += red[tid + stride]; }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inverse_rms = 1.0f / sqrt(red[0] / float(value_head_dim) + eps);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint i = tid; i < value_head_dim; i += tg_size) {
+        const float z = gate[base + i];
+        const float silu = z / (1.0f + exp(-z));
+        output[base + i] = input[base + i] * inverse_rms * weight[i] * silu;
+    }
+}
+
 // One threadgroup per value head. 128 threads walk the key axis so the
 // 128x128 recurrent update is not serialized on a single GPU thread.
 // Reductions sum key index 0..127 in order to stay close to the host oracle.

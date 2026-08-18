@@ -1,0 +1,30 @@
+{
+  "admission": {
+    "free_after_if_admitted_bytes": null,
+    "free_before_bytes": 30772674560,
+    "reason": "cost 36645207265 B exceeds free 30772674560 B; refusing before swap",
+    "request": {
+      "cost_bytes": 36645207265,
+      "kind": "oversub_demo",
+      "label": "refuse-demo"
+    },
+    "reserve_bytes": 4294967296,
+    "schema": "hawking.qwen38.host_admission.v1",
+    "verdict": "refuse",
+    "would_breach_reserve": true
+  },
+  "child_id": "refuse-demo",
+  "demonstrated": "REFUSE",
+  "host": {
+    "free_bytes": 30772674560,
+    "memsize_bytes": 103079215104,
+    "page_size_bytes": 16384,
+    "pages_free": 1878215,
+    "pages_purgeable": 9465,
+    "pages_speculative": 19207
+  },
+  "lock_held": false,
+  "mode": "refuse",
+  "schema": "hawking.qwen38.shared_sessions.v1",
+  "workspace_bytes": 427020036
+}

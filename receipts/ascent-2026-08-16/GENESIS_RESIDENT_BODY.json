@@ -1,0 +1,72 @@
+{
+  "schema": "hawking.ascent.genesis_resident_body.v1",
+  "date": "2026-08-16",
+  "timing_label": "DIRTY_ENGINEERING",
+  "timing_label_reason": "Campaign box, GPU lock held for the series. A preceding Qwen3.8 lane had just dropped the same artifact, so file/Metal upload was cache-hot. Not CLEAN_CANDIDATE, not BASE_TRUE_TPS. Not a tokens/s claim.",
+  "not_a_throughput_claim": true,
+  "concurrent_decode_ceiling": 1,
+  "win": "load_time_and_residency",
+  "not_the_win": "tokens_per_second",
+  "established_box_cold_load_s": 50,
+  "established_box_cold_load_note": "Contract fact from seating. This run did not re-measure a box-cold load: the previous lock holder had just uploaded uniform-q4-v1.",
+  "binary": "/tmp/genesis-resident-target/release/genesis-resident",
+  "source": "tools/agentos/genesis_body",
+  "client": "tools/agentos/genesis_resident.py",
+  "daemon": "tools/ascent_daemon.py genesis_proposes prefers the socket, falls back to the greedy oneshot",
+  "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+  "max_seq_len_measured": 128,
+  "max_new_tokens_measured": 4,
+  "prompt": "Say hi.",
+  "pid": 55576,
+  "before_oneshot_greedy": {
+    "wall_ns": 4649308749,
+    "generate_wall_ns": 631612792,
+    "exit": 0,
+    "fallbacks": 0,
+    "new_tokens": [248068, 198, 760, 1156],
+    "regime": "process start + load + generate + exit, cache-hot"
+  },
+  "resident_load": {
+    "load_ns": 4908153958,
+    "ready_wall_ns": 5577653625,
+    "load_count": 1,
+    "body_resident": true,
+    "resident_weight_bytes": 14297675776,
+    "workspace_bytes": 175361796,
+    "rss_bytes": 15511666688,
+    "phys_footprint_bytes": 15385816488,
+    "ioaccelerator_graphics_dirty_bytes": 14473019392
+  },
+  "three_serves": {
+    "one_load": true,
+    "same_pid": true,
+    "serve_count": 3,
+    "new_tokens_identical": [248068, 198, 760, 1156],
+    "fallbacks": [0, 0, 0],
+    "client_wall_ns": [939274249, 916758083, 921617166],
+    "generate_wall_ns": [634859875, 521441958, 523809791],
+    "rss_bytes": [15514615808, 15514992640, 15515402240],
+    "phys_footprint_after_three_bytes": 15659740632
+  },
+  "stopfile": {
+    "path_used": "receipts/ascent-2026-08-16/genesis-resident/GENESIS_STOP",
+    "not_the_campaign_stopfile": "workspace/ops/GENESIS_STOP was never created",
+    "same_exists_check": true,
+    "exit_code": 0,
+    "wait_ns": 295441916,
+    "alive_after": false,
+    "health_after": null,
+    "stderr_contains": "GENESIS_STOP present, exiting"
+  },
+  "fallback": {
+    "service_live": false,
+    "proposal": "fallback-after-kill",
+    "wall_ns": 77232125,
+    "ok": true,
+    "note": "genesis_proposes returned the stub-greedy text after the body was stopped. The unattended loop does not stall."
+  },
+  "raw": "receipts/ascent-2026-08-16/genesis-resident/GENESIS_RESIDENT.json",
+  "start": "python3 tools/agentos/genesis_resident.py serve --artifact-root workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1 --tokenizer workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json --max-seq-len 4096",
+  "build": "CARGO_TARGET_DIR=/tmp/genesis-resident-target cargo build --release --manifest-path tools/agentos/genesis_body/Cargo.toml",
+  "stop": "touch workspace/ops/GENESIS_STOP"
+}

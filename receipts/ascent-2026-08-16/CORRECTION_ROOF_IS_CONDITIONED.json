@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.correction.roof_is_conditioned.v1",
+  "date": "2026-08-16",
+  "MY_ERROR_CORRECTED_BY_S002": "I wrote repeatedly today that Qwen3.8 is at 86.6% of its roof and therefore density is its ONLY lever - in QWEN38_RUNG_TARGETS.json, in the G006 ledger evidence, in the femtosecond receipts, and in several turn summaries. That framing treats a measured roof as a physical limit. It is not.",
+  "why_it_was_wrong": "A roof is conditioned on the CURRENT representation, bytes, kernel, launch geometry, fusion, command topology, synchronization, residency, addressing, host/GPU partition, KV strategy and runtime genome. Every one of those is changeable.",
+  "the_proof_was_already_in_my_own_data": "Q80 went 1376.3 -> 108.3 ms today, 12.7x, and BPW was never the lever. All four eliminations were execution-genome changes: a serial extract replaced by in-register consumption, a catalog re-parsed 289 times per token, 337 command buffers collapsed to 49, and a recurrence moved off the host. I had the counterexample in hand and still applied roof-as-physics reasoning to the other model.",
+  "the_correct_form": "NOT 'Qwen3.8 is near its roof so only density remains'. INSTEAD 'Qwen3.8 is near the roof of the PRESENT EXECUTION GENOME' - then attack the genome.",
+  "what_changes_operationally": [
+    "no BPW change is required to justify an execution experiment on Qwen3.8",
+    "no execution win is dismissed because a bandwidth model predicted little headroom - measure it",
+    "both fronts stay alive: representation (invent the sub-Q4 attention codec) AND execution (TOKEN_NS closure, fixed host overhead, persistent state, ICB, fusion, occupancy, launch geometry, direct packed consumption, addressing, synchronization, KV movement, residency, GPU gaps, kernel specialization)",
+    "after each accepted win: reprofile, recompute TOKEN_NS, recompute the roof, challenge the new largest term"
+  ],
+  "what_survives_from_the_old_framing": "The MEASUREMENTS stand - Qwen3.8 does achieve 406.2 of 411.51 GB/s on its current genome, and 2.0856 BPW is genuinely incoherent. What was wrong was the INFERENCE from those measurements to 'only density remains'.",
+  "related_correction": "G006 stays BLOCKED on the coherence floor, but its block is now correctly scoped: it blocks the DENSITY front, not Qwen3.8's execution ascent."
+}

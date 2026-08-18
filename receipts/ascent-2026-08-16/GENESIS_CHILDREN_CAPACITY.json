@@ -1,0 +1,192 @@
+{
+  "schema": "hawking.ascent.genesis_children_capacity.v1",
+  "date": "2026-08-16",
+  "label": "MEASURED",
+  "vehicle": {
+    "binary": "ascension_qwen38_hybrid_greedy",
+    "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+    "artifact_on_disk_gb": 8.5,
+    "tokenizer": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json",
+    "genome": "uniform-q4-v1 4.2527 BPW",
+    "complete_token_wall_ns_authority": 35227918,
+    "weight_addressing_ns": 21293103
+  },
+  "trust": {
+    "per_process": "footprint phys_footprint (includes private Metal IOAccelerator)",
+    "machine": "vm_stat wired + anonymous + compressor. Activity-monitor 'used' counts purgeable/file cache and is not used for admission.",
+    "do_not_trust": "ps RSS. At N=4 seq=2048, RSS was 5.92-12.89 GB while phys_footprint was 15.96 GB on every pid. RSS undercounts Metal wired and would overcount shared file pages if the artifact were actually mapped.",
+    "artifact_pages_shared": false,
+    "why_not_shared": "Each child copies the catalog into a private IOAccelerator buffer. mapped-file clean is ~4.5 MB, not the 8.5 GB artifact. IOAccelerator dirty is identical across children at the same seq-len (14,476,197,888 B at seq=128; 14,727,856,128 B at seq=2048)."
+  },
+  "safe_n": 3,
+  "recommended_operating_n_for_text_search": 2,
+  "saturated_resource_at_n4": "unified_memory_metal_private_ioaccelerator",
+  "n8": {
+    "status": "REFUSED_NOT_LAUNCHED",
+    "reason": "N=4 at seq-len 2048 already used 751 MB swap with 0.81 GB free. 8 * 15.659 GB phys = 125.3 GB against a 96 GB box. Launching it would swap and make every number a lie."
+  },
+  "rss_curve": [
+    {
+      "n": 1,
+      "seq_len": 128,
+      "max_new_tokens": 64,
+      "phys_footprint_bytes": 15658626568,
+      "rss_bytes": 15516041216,
+      "ioaccelerator_dirty_bytes": 14476197888,
+      "mapped_file_bytes": 4571136,
+      "malloc_large_bytes": 861405184,
+      "complete_token_ns": 37855081,
+      "aggregate_wall_ns": 7254523625,
+      "completions": 1,
+      "label": "MEASURED"
+    },
+    {
+      "n": 1,
+      "seq_len": 2048,
+      "max_new_tokens": 8,
+      "complete_token_ns": 37526833,
+      "aggregate_wall_ns": 4853574375,
+      "completions": 1,
+      "phys_footprint_bytes": null,
+      "note": "Short-generate token time MEASURED; footprint sample missed because the process exited before footprint(1) returned. Residency at seq=2048 is taken from the N=4 sample (same Metal copy + 2048 KV).",
+      "label": "MEASURED_TOKEN_TIME"
+    },
+    {
+      "n": 1,
+      "seq_len": 8192,
+      "max_new_tokens": 64,
+      "phys_footprint_bytes": 16721080608,
+      "rss_bytes": 16578134016,
+      "ioaccelerator_dirty_bytes": 15533162496,
+      "mapped_file_bytes": 4571136,
+      "complete_token_ns": 40996195,
+      "aggregate_wall_ns": 8601582667,
+      "completions": 1,
+      "label": "MEASURED"
+    },
+    {
+      "n": 2,
+      "seq_len": 128,
+      "max_new_tokens": 64,
+      "sum_phys_footprint_bytes": 31325412392,
+      "ioaccelerator_dirty_bytes_each": 14476197888,
+      "mapped_file_bytes": [4653056, 4587520],
+      "complete_token_ns": [54992414, 55695022],
+      "aggregate_wall_ns": 10123331750,
+      "completions": 2,
+      "throughput_completions_per_s": 0.1976,
+      "label": "MEASURED"
+    },
+    {
+      "n": 3,
+      "seq_len": 2048,
+      "max_new_tokens": 200,
+      "complete_token_ns": [79299091, 79412505, 79538749],
+      "child_wall_ns": [17349168959, 17366951834, 17321776625],
+      "aggregate_wall_ns": 17366951834,
+      "completions": 3,
+      "note": "Opportunistic sample of a concurrent 3-child generate already on the box. Same artifact, TEXT, no GPU lock. STEADY_DECODE_WALL_NS_PER_TOKEN.",
+      "label": "MEASURED"
+    },
+    {
+      "n": 4,
+      "seq_len": 2048,
+      "max_new_tokens": 1200,
+      "phys_footprint_bytes": [15980048096, 15977017128, 15963582200, 15960125128],
+      "rss_bytes": [12806471680, 6040567808, 12893519872, 5924306944],
+      "ioaccelerator_dirty_bytes_each": 14727856128,
+      "mapped_file_bytes": [4653056, 4587520, 4587520, 4538368],
+      "complete_token_ns": [111830273, 112359035, 111109663, 112600355],
+      "child_wall_ns": [137511999167, 139438985875, 136061553542, 139469842417],
+      "machine_at_sample": {
+        "free_gb": 0.813,
+        "wired_gb": 70.110,
+        "swap_used_mb": 751.75
+      },
+      "completions": 4,
+      "label": "MEASURED",
+      "saturated": true
+    },
+    {
+      "n": 4,
+      "seq_len": 128,
+      "max_new_tokens": 8,
+      "aggregate_wall_ns": 42817319875,
+      "completions": 4,
+      "complete_token_ns": [56207125, 62591160, 47402529, 58659226],
+      "per_child_wall_ns": [42754526917, 42728441917, 42765083625, 42723322916],
+      "throughput_completions_per_s": 0.0934,
+      "via": "GenesisPool.spawn TEXT, hold_gpu_lock=false",
+      "label": "MEASURED",
+      "note": "Cold-ish 4-way Metal upload of private 14.48 GB buffers. Load dominates; completions/s is worse than N=1 (0.138) and N=2 (0.198)."
+    },
+    {
+      "n": 8,
+      "status": "REFUSED_NOT_LAUNCHED",
+      "label": "NOT_A_MEASUREMENT"
+    }
+  ],
+  "seq_len_effect": {
+    "kv_bytes_per_position_from_source": 131072,
+    "kv_bytes_per_position_note": "ESTIMATE from QWEN38_GQA_LAYERS=16 * 2 (K,V) * 4 heads * 256 dim * 4 B. Confirmed by the measured IOAccelerator delta.",
+    "measured_ioaccelerator_seq128": 14476197888,
+    "measured_ioaccelerator_seq8192": 15533162496,
+    "measured_delta_bytes": 1056964608,
+    "source_estimate_delta_bytes": 1056964608,
+    "delta_matches_source_estimate": true,
+    "does_not_double_child_count": true,
+    "complete_token_ns_seq128": 37855081,
+    "complete_token_ns_seq8192": 40996195,
+    "complete_token_delta_ns": 3141114
+  },
+  "throughput_knee": {
+    "metric": "aggregate_decode_tokens_per_s = n / complete_token_s",
+    "n1": {"complete_token_ns": 37855081, "tok_per_s": 26.42},
+    "n2": {"complete_token_ns_mean": 55343718, "tok_per_s": 36.14, "vs_n1": 1.37},
+    "n3": {"complete_token_ns_mean": 79416782, "tok_per_s": 37.78, "vs_n1": 1.43},
+    "n4": {"complete_token_ns_mean": 111974832, "tok_per_s": 35.72, "vs_n1": 1.35},
+    "knee": 2,
+    "why": "One child already moves 13.618 GB/token at 401.6/411.51 GB/s. Extra children partition the same DRAM. N=2 recovers the leftover host/encoder slack. N=3 is flat. N=4 is worse and swaps.",
+    "short_generate_warning": "For 8-token TEXT evals the Metal upload dominates. N=1 was 5.37-7.25 s; N=4 was 42.82 s. Do not cold-start four children for a short recipe eval."
+  },
+  "workloads": {
+    "A_gravity_recipe": {
+      "kind": "TEXT",
+      "hold_gpu_lock": false,
+      "parallelizes": "per-layer / per-tensor assignment evals, up to recommended_operating_n=2 (hard cap safe_n=3)",
+      "lock_bound": false,
+      "why_not_more": "Metal weight copies are private; GPU bandwidth is already ~98% of the honest decode ceiling on one child."
+    },
+    "B_kernel_floor": {
+      "kind": "TIMING",
+      "hold_gpu_lock": true,
+      "parallelizes": "build/setup of candidate N+1 (compile, pack, shader) as a no-lock child",
+      "lock_bound": "the generate that produces a complete-token wall. gpu_lane_lock.sh serializes those.",
+      "why_lock": "A contended TIMING is not a number. The 35,227,918 ns ledger was taken under the lock."
+    }
+  },
+  "kill_reclaim_live": {
+    "label": "MEASURED",
+    "phys_footprint_before_bytes": 15653629520,
+    "wired_before_bytes": 21435875328,
+    "wired_after_bytes": 6986891264,
+    "wired_reclaimed_bytes": 14448984064,
+    "pid_gone": true,
+    "rss_after": null
+  },
+  "admission_refuse_live": {
+    "label": "MEASURED",
+    "safe_n": 1,
+    "spawn_2_raised": "AdmissionRefused",
+    "second_process_created": false
+  },
+  "files": [
+    "lab/genesis_pool.py",
+    "tools/genesis_pool.py",
+    "lab/tests/test_genesis_pool.py",
+    "receipts/ascent-2026-08-16/GENESIS_CHILDREN_FOOTPRINT_POINTS.json",
+    "receipts/ascent-2026-08-16/GENESIS_CHILDREN_MEASURE_POINTS.json",
+    "receipts/ascent-2026-08-16/GENESIS_POOL_E2E.json",
+    "receipts/ascent-2026-08-16/GENESIS_POOL.md"
+  ]
+}

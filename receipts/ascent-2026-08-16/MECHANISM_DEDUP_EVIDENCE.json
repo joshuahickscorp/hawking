@@ -1,0 +1,310 @@
+{
+  "schema": "hawking.ascent.mechanism_dedup.evidence.v1",
+  "date": "2026-08-16",
+  "identity_schema": "hawking.ascent.mechanism_identity.v1",
+  "law": "Dedup BOTTLENECKS is not dedup MECHANISMS. weight_addressing may be attacked again; the same MECHANISM may not, unless a precondition, implementation, representation or the evidence changed, or the previous test was invalid.",
+  "demonstrations": {
+    "semantic_duplicate_refused": {
+      "schema": "hawking.ascent.mechanism_dedup.v1",
+      "verdict": "REFUSE",
+      "red": true,
+      "gate": "semantic_duplicate",
+      "reason": "semantic duplicate of wa-exhausted-01 (canonical_id); no precondition, implementation, representation or evidence changed, and the previous test was valid",
+      "changed": [],
+      "match_score": 1.0,
+      "matched_prior": {
+        "id": "wa-exhausted-01",
+        "mechanism": "fusing tiny kernels into the following GEMV",
+        "bottleneck": "weight_addressing",
+        "model": "qwen38",
+        "status": "retained_negative",
+        "test_valid": true,
+        "invalid_reason": null,
+        "representation": "uniform-q4-group64",
+        "implementation": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "evidence_digest": null,
+        "bytes_per_token": 13618000000.0,
+        "genome": "1 CB / 964 dispatches; qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "launch_geometry": "tpr64_tg128",
+        "command_topology": "1cb_964_dispatches",
+        "synchronization": null,
+        "residency": null,
+        "addressing": null,
+        "host_gpu_partition": null,
+        "kv_strategy": null,
+        "artifact": "uniform-q4-v1",
+        "outcome": "REGRESSION +10,679,189 ns",
+        "science_id": null
+      },
+      "matched_science": null,
+      "retrieved": {
+        "science": [],
+        "attempts": [
+          "wa-exhausted-01"
+        ],
+        "running": []
+      },
+      "synthesized": null,
+      "details": {},
+      "proposal_mechanism": "fuse small Metal kernels into the next GEMV",
+      "matched_prior_id": "wa-exhausted-01",
+      "matched_prior_mechanism": "fusing tiny kernels into the following GEMV"
+    },
+    "legitimate_retry_allowed": {
+      "schema": "hawking.ascent.mechanism_dedup.v1",
+      "verdict": "ALLOW",
+      "red": false,
+      "gate": "retry_delta",
+      "reason": "same mechanism as wa-exhausted-01 but precondition changed",
+      "changed": [
+        "precondition"
+      ],
+      "match_score": 1.0,
+      "matched_prior": {
+        "id": "wa-exhausted-01",
+        "mechanism": "fusing tiny kernels into the following GEMV",
+        "bottleneck": "weight_addressing",
+        "model": "qwen38",
+        "status": "retained_negative",
+        "test_valid": true,
+        "invalid_reason": null,
+        "representation": "uniform-q4-group64",
+        "implementation": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "evidence_digest": null,
+        "bytes_per_token": 13618000000.0,
+        "genome": "1 CB / 964 dispatches; qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "launch_geometry": "tpr64_tg128",
+        "command_topology": "1cb_964_dispatches",
+        "synchronization": null,
+        "residency": null,
+        "addressing": null,
+        "host_gpu_partition": null,
+        "kv_strategy": null,
+        "artifact": "uniform-q4-v1",
+        "outcome": "REGRESSION +10,679,189 ns",
+        "science_id": null
+      },
+      "matched_science": null,
+      "retrieved": {
+        "science": [],
+        "attempts": [
+          "wa-exhausted-01"
+        ],
+        "running": []
+      },
+      "synthesized": null,
+      "details": {
+        "precondition": {
+          "before": {
+            "genome": "1 CB / 964 dispatches; qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "launch_geometry": "tpr64_tg128",
+            "command_topology": "1cb_964_dispatches",
+            "synchronization": null,
+            "residency": null,
+            "addressing": null,
+            "host_gpu_partition": null,
+            "kv_strategy": null,
+            "artifact": "uniform-q4-v1"
+          },
+          "after": {
+            "genome": "1 CB / 964 dispatches; geo_tpr32_tg256",
+            "launch_geometry": "tpr32_tg256",
+            "command_topology": "1cb_964_dispatches",
+            "synchronization": null,
+            "residency": null,
+            "addressing": null,
+            "host_gpu_partition": null,
+            "kv_strategy": null,
+            "artifact": "uniform-q4-v1"
+          },
+          "which": [
+            "genome",
+            "launch_geometry"
+          ]
+        }
+      },
+      "which_precondition_changed": [
+        "genome",
+        "launch_geometry"
+      ],
+      "before": {
+        "genome": "1 CB / 964 dispatches; qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "launch_geometry": "tpr64_tg128",
+        "command_topology": "1cb_964_dispatches",
+        "synchronization": null,
+        "residency": null,
+        "addressing": null,
+        "host_gpu_partition": null,
+        "kv_strategy": null,
+        "artifact": "uniform-q4-v1"
+      },
+      "after": {
+        "genome": "1 CB / 964 dispatches; geo_tpr32_tg256",
+        "launch_geometry": "tpr32_tg256",
+        "command_topology": "1cb_964_dispatches",
+        "synchronization": null,
+        "residency": null,
+        "addressing": null,
+        "host_gpu_partition": null,
+        "kv_strategy": null,
+        "artifact": "uniform-q4-v1"
+      }
+    },
+    "synthesis_from_dry_queue": {
+      "schema": "hawking.ascent.mechanism_dedup.v1",
+      "verdict": "SYNTHESIZE",
+      "red": false,
+      "gate": "synthesis_when_dry",
+      "reason": "queue dry; invented per_layer_per_head_assignment against remaining weight_addressing (21293103 ns)",
+      "changed": [],
+      "match_score": null,
+      "matched_prior": null,
+      "matched_science": null,
+      "retrieved": null,
+      "synthesized": {
+        "mechanism_id": "per_layer_per_head_assignment",
+        "mechanism": "Assign codecs per layer and per head on the coherent 4.2527 vehicle, instead of one uniform codec. Uniform Q4 is the genome-chosen quantity; per-layer assignment is UNEXPLORED.",
+        "bottleneck": "weight_addressing",
+        "axis": "representation",
+        "assumption_attacked": "one codec applied uniformly to every layer, which is how 4.2527 BPW and 13.618 GB/token are generated",
+        "experiment": "On the coherent 4.2527 vehicle, assign a different codec to a named subset of layers/heads (not another uniform out_proj trial). Measure unique-once bytes and complete-token wall with >=3 alternating paired reps; capability is greedy ids unchanged on >=3 prompts.",
+        "target_id": "auto-qwen38-weight-addressing-per-layer-per-head-assignment"
+      },
+      "details": {
+        "remaining": [
+          {
+            "component": "weight_addressing",
+            "ns_per_token": 21293103.0,
+            "pct": 60.44,
+            "triage": "EXISTENTIAL"
+          },
+          {
+            "component": "deltanet",
+            "ns_per_token": 3732795.0,
+            "pct": 10.6,
+            "triage": "research"
+          }
+        ],
+        "skipped": [],
+        "n_exhausted": 9,
+        "pending_refusals": []
+      },
+      "pending": [],
+      "new_mechanism": "Assign codecs per layer and per head on the coherent 4.2527 vehicle, instead of one uniform codec. Uniform Q4 is the genome-chosen quantity; per-layer assignment is UNEXPLORED.",
+      "new_mechanism_id": "per_layer_per_head_assignment",
+      "not_replay_of": [
+        "wa-exhausted-01",
+        "wa-exhausted-02",
+        "wa-exhausted-03",
+        "wa-exhausted-04",
+        "wa-exhausted-05",
+        "wa-exhausted-06",
+        "wa-exhausted-07",
+        "wa-exhausted-08",
+        "wa-exhausted-09"
+      ]
+    }
+  },
+  "gates_corrupted": [
+    {
+      "gate": "named_mechanism_required",
+      "corrupt": "empty mechanism text",
+      "verdict": "ERROR",
+      "red": true,
+      "reason": "proposal has no mechanism; a bottleneck is not a mechanism"
+    },
+    {
+      "gate": "named_mechanism_required",
+      "corrupt": "mechanism is only the bottleneck name",
+      "verdict": "REFUSE",
+      "red": true,
+      "reason": "mechanism text is only a bottleneck name; name the action, not the cost"
+    },
+    {
+      "gate": "semantic_duplicate",
+      "corrupt": "paraphrase of exhausted fuse-into-GEMV with no delta",
+      "verdict": "REFUSE",
+      "red": true,
+      "reason": "semantic duplicate of wa-exhausted-01 (canonical_id); no precondition, implementation, representation or evidence changed, and the previous test was valid"
+    },
+    {
+      "gate": "retry_delta",
+      "corrupt": "claimed change but launch_geometry and the rest are identical",
+      "verdict": "REFUSE",
+      "red": true,
+      "reason": "semantic duplicate of wa-exhausted-01 (canonical_id); no precondition, implementation, representation or evidence changed, and the previous test was valid"
+    },
+    {
+      "gate": "invalid_prior",
+      "corrupt": "prior marked valid and no delta, so invalid-prior path must not fire (duplicate red)",
+      "verdict": "REFUSE",
+      "red": true,
+      "reason": "semantic duplicate of wa-exhausted-01 (canonical_id); no precondition, implementation, representation or evidence changed, and the previous test was valid"
+    },
+    {
+      "gate": "inflight_duplicate",
+      "corrupt": "running record with empty mechanism",
+      "verdict": "ERROR",
+      "red": true,
+      "reason": "running record 'live-1' has no mechanism; cannot tell if this is a duplicate"
+    },
+    {
+      "gate": "inflight_duplicate",
+      "corrupt": "same mechanism already running",
+      "verdict": "REFUSE",
+      "red": true,
+      "reason": "already in flight as live-assign (canonical_id)"
+    },
+    {
+      "gate": "negative_science",
+      "corrupt": "science entry missing class",
+      "verdict": "ERROR",
+      "red": true,
+      "reason": "science register unreadable: science entry missing id, mechanism or class"
+    },
+    {
+      "gate": "negative_science",
+      "corrupt": "unknown science class",
+      "verdict": "ERROR",
+      "red": true,
+      "reason": "science NS-X has unknown class 'HAPPY'"
+    },
+    {
+      "gate": "negative_science",
+      "corrupt": "terminal science with retry_when never",
+      "verdict": "REFUSE",
+      "red": true,
+      "reason": "matches NS-009 (REFUTED): Evaluate or fit compression on Gaussian / synthetic proxy activations \u2014 NS-009 retry_when starts with never"
+    },
+    {
+      "gate": "sealed_model",
+      "corrupt": "model=q80 (weights deleted)",
+      "verdict": "REFUSE",
+      "red": true,
+      "reason": "q80 is sealed and its weights are deleted; exclude at launch"
+    },
+    {
+      "gate": "synthesis_needs_bottleneck",
+      "corrupt": "ledger components all zero / missing ns",
+      "verdict": "ERROR",
+      "red": true,
+      "reason": "measured ledger unreadable: bottleneck row missing component or ns"
+    },
+    {
+      "gate": "synthesis_needs_bottleneck",
+      "corrupt": "ledger dict with no components and no ranked_by_ns",
+      "verdict": "ERROR",
+      "red": true,
+      "reason": "measured ledger unreadable: ledger has no components or ranked_by_ns"
+    },
+    {
+      "gate": "synthesis_not_replay",
+      "corrupt": "catalog contains only an already-exhausted item",
+      "verdict": "ERROR",
+      "red": true,
+      "reason": "every catalog item for every remaining bottleneck is exhausted or science-blocked; will not replay mechanism one and will not declare the bottleneck complete"
+    }
+  ],
+  "all_corrupt_gates_red": true,
+  "n_campaign_exhausted": 9
+}

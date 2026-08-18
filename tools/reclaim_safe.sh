@@ -34,7 +34,14 @@ if [ -d "$GT" ]; then
     [ -d "$d" ] || continue
     id=$(basename "$d")
     if pgrep -f "$id" >/dev/null; then echo "[keep] task $id (running)"; continue; fi
-    run "rm -rf '$d'"
+    # Keep grok-report.md and metadata.json. The daemon's harvest() mines
+    # NEXT_BOTTLENECK out of those reports to generate its next target, so
+    # deleting them starves the autonomous loop: on 2026-08-16 this purge ran on
+    # most ticks (DISK_WARN raised to 90 GiB) and the daemon logged "queue dry -
+    # harvest supplied no new pending target" with ZERO launches all day.
+    # The bulk is diff.patch and grok-output.json; the report is a few KB.
+    run "find '$d' -type f ! -name grok-report.md ! -name metadata.json -delete 2>/dev/null || true"
+    run "find '$d' -mindepth 1 -type d -empty -delete 2>/dev/null || true"
   done
   echo "[ok] purged non-running task artifacts"
 fi

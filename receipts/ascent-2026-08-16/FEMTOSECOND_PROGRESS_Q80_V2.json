@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.ascent.femtosecond_progress_q80.v2",
+  "date": "2026-08-16",
+  "supersedes": "FEMTOSECOND_PROGRESS_Q80.json (v1), which stopped at 250.7 ms before the DeltaNet win landed",
+  "metric": "fs_per_weight_served = wall_seconds / active_weights_served. AMORTIZED THROUGHPUT under concurrency, never physical latency (S004 s1).",
+  "q80_active_weights_per_token_G": 3.563,
+  "trajectory": {
+    "morning_serial_reconstruction": {
+      "ms": 1376.3,
+      "fs": 386270,
+      "gb_s": 1.61,
+      "pct_ceiling": 0.39
+    },
+    "after_in_register_reconstruction": {
+      "ms": 301.4,
+      "fs": 84590,
+      "gb_s": 7.36,
+      "pct_ceiling": 1.79
+    },
+    "after_catalog_and_CB_collapse": {
+      "ms": 160.5,
+      "fs": 45046,
+      "gb_s": 13.82,
+      "pct_ceiling": 3.36
+    },
+    "after_deltanet_to_gpu_VERIFIED": {
+      "ms": 111.733,
+      "fs": 31359,
+      "gb_s": 19.85,
+      "pct_ceiling": 4.82
+    }
+  },
+  "improvement_today_x": 12.3,
+  "floor": {
+    "active_bpw": 4.98,
+    "fs_floor": 760,
+    "still_above_floor_x": 41
+  },
+  "honest_scope": "All DIRTY_ENGINEERING. The 111.733 ms is the DeltaNet lane's 6/6 paired median on current main; the qualifying CLEAN_CANDIDATE run still needs a drained box, which three live lanes and the user's own projects preclude.",
+  "what_the_number_says": "Q80 sits at 4.82% of the honest decode ceiling and 41x above its own representation floor. Both say the same thing the rung instrument and the byte census said independently: the remaining gap is EXECUTION, not representation. Four ceremony eliminations moved it 12.3x and none of them touched a codec."
+}

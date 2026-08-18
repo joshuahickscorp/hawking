@@ -867,7 +867,7 @@ kernel void q80_hgravs01_factor_matvec_simd3(
     // 2048x160: the 256-tile path did zero 8-wide work and fell through
     // to the 1-wide remainder.
     for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
-        const uint byte0 = ((row_base + col) * 3u) >> 3u;
+        const uint byte0 = gk_packed_lsb_byte(row_base + col, 3u);
         const uint b0 = uint(codes[byte0]);
         const uint b1 = uint(codes[byte0 + 1u]);
         const uint b2 = uint(codes[byte0 + 2u]);
@@ -904,6 +904,148 @@ kernel void q80_hgravs01_factor_matvec_simd3(
     partial = simd_sum(partial);
     if (simd_lane == 0u) {
         output[row] = partial;
+    }
+}
+
+// ── HGRAVU01 geo_tpr64 (G0 launch class, existing packed bytes) ───────────
+//
+// Same thread mapping as qwen_uniform_q4_group64_matvec_geo_tpr64_tg128:
+//   TG 128, 4 simdgroups, 2 rows/TG, 64 threads/row, col = lane*8, stride 512.
+// Consumes the HGRAVU01 body already on disk. No repack. No dense W.
+//
+//   bits=3: 24 code bytes/group, LSB 3-bit, q = code - bound (bound=3)
+//   bits=4: 32 code bytes/group, even nibble low, q = nibble - bound (bound=7)
+//
+// groups_per_row is derived as cols/64. Caller must bind only when
+// group_size==64 and cols%64==0 (every Qwen3.8 Uniform GEMV K).
+
+static inline float hgravu01_q3_unpack8(
+    device const uchar* codes,
+    uint byte0,
+    float scale,
+    int bound,
+    device const float* x,
+    uint col)
+{
+    const uint b0 = uint(codes[byte0]);
+    const uint b1 = uint(codes[byte0 + 1u]);
+    const uint b2 = uint(codes[byte0 + 2u]);
+    float sum = 0.0f;
+    sum += float(int(b0 & 7u) - bound) * scale * x[col];
+    sum += float(int((b0 >> 3u) & 7u) - bound) * scale * x[col + 1u];
+    sum += float(int(((b0 >> 6u) | (b1 << 2u)) & 7u) - bound) * scale * x[col + 2u];
+    sum += float(int((b1 >> 1u) & 7u) - bound) * scale * x[col + 3u];
+    sum += float(int((b1 >> 4u) & 7u) - bound) * scale * x[col + 4u];
+    sum += float(int(((b1 >> 7u) | (b2 << 1u)) & 7u) - bound) * scale * x[col + 5u];
+    sum += float(int((b2 >> 2u) & 7u) - bound) * scale * x[col + 6u];
+    sum += float(int((b2 >> 5u) & 7u) - bound) * scale * x[col + 7u];
+    return sum;
+}
+
+static inline float hgravu01_q4_unpack8(
+    uint packed,
+    float scale,
+    int bound,
+    device const float* x,
+    uint col)
+{
+    float sum = 0.0f;
+    for (uint i = 0u; i < 4u; ++i) {
+        const uint byte = (packed >> (8u * i)) & 0xffu;
+        sum += float(int(byte & 0x0fu) - bound) * scale * x[col + 2u * i];
+        sum += float(int(byte >> 4u) - bound) * scale * x[col + 2u * i + 1u];
+    }
+    return sum;
+}
+
+// Grid: ceil(rows/2)*128, TG 128. bits must be 3, group_size 64, cols % 64 == 0.
+kernel void qwen_uniform_q3_group64_matvec_geo_tpr64_tg128(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {
+        const uint groups_per_row = cols >> 6u;
+        const int qbound = int(bound);
+        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+            const uint group = col >> 6u;
+            const uint local = col & 63u;
+            const uint rgb = row * groups_per_row + group;
+            const float scale = float(scales[rgb]);
+            const uint byte0 = rgb * 24u + ((local * 3u) >> 3u);
+            acc += hgravu01_q3_unpack8(codes, byte0, scale, qbound, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}
+
+// Grid: ceil(rows/2)*128, TG 128. bits must be 4, group_size 64, cols % 64 == 0.
+// Same nibble packing as HQ30UQ4; offset is bound=7, not nibble-8.
+// Address by (row, group), not element*bits: uint32 element*4 overflows
+// on lm_head (248320×5120) at row 209715.
+kernel void qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& group_size       [[buffer(6)]],
+    constant uint& bits             [[buffer(7)]],
+    constant uint& bound             [[buffer(8)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows && bits == 4u && group_size == 64u && (cols & 63u) == 0u) {
+        const uint groups_per_row = cols >> 6u;
+        const int qbound = int(bound);
+        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+            const uint group = col >> 6u;
+            const uint local = col & 63u;
+            const uint rgb = row * groups_per_row + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes + rgb * 32u + (local >> 1u)));
+            acc += hgravu01_q4_unpack8(packed, scale, qbound, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
     }
 }
 
@@ -1602,7 +1744,7 @@ kernel void q80_hgravs01_factor_matvec_simd3_addr_probe(
     if (row < rows && group_size != 0u) {
         const uint row_base = row * cols;
         for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
-            const uint byte0 = ((row_base + col) * 3u) >> 3u;
+            const uint byte0 = gk_packed_lsb_byte(row_base + col, 3u);
             const uint b0 = uint(codes[byte0]);
             const uint b2 = uint(codes[byte0 + 2u]);
             const float s0 = float(scales[(row_base + col) / group_size]);
@@ -1638,7 +1780,7 @@ kernel void q80_hgravs01_factor_matvec_simd3_decode_probe(
     if (row < rows && bits == 3u && group_size != 0u) {
         const uint row_base = row * cols;
         for (uint col = simd_lane * 8u; col + 8u <= cols; col += 256u) {
-            const uint byte0 = ((row_base + col) * 3u) >> 3u;
+            const uint byte0 = gk_packed_lsb_byte(row_base + col, 3u);
             const uint b0 = uint(codes[byte0]);
             const uint b1 = uint(codes[byte0 + 1u]);
             const uint b2 = uint(codes[byte0 + 2u]);

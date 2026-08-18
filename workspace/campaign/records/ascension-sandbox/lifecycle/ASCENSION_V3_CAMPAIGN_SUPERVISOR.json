@@ -100,11 +100,11 @@
     "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_GLOBAL_RELEASE_WORKFLOW.json",
     "status": "CONTROLLER_WORKFLOW_ONLY"
   },
-  "heartbeat": 2214,
+  "heartbeat": 3120,
   "kernel_compiler_contract": {
     "configuration_only": true,
     "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_KERNEL_COMPILER_CONTRACT.json",
-    "seal_sha256": "59a20a9ab958c3c1464a65f1a2867bc5e47d8a88282aab65fa8ba7f5ef753af6",
+    "seal_sha256": "50caf664c4a8448d8263947b7bc1d8f804a53deb1c1c8b0633bbd894aa9a998f",
     "status": "CONTROLLER_CONFIGURATION_ONLY"
   },
   "knowledge_plane_contract": {
@@ -225,15 +225,15 @@
     "process_group": 61438,
     "python_executable": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python"
   },
-  "recorded_at": "2026-08-09T17:44:43.593240Z",
+  "recorded_at": "2026-08-10T17:24:16.552189Z",
   "schema": "hawking.ascension.v3_campaign_supervisor.v1",
-  "seal_sha256": "9ce612113107268958c3b88d44ce1884f667c7c2352f1b8d618edf01f357411c",
+  "seal_sha256": "77e683c4288c7b1eccee106b24e4a48020c23d8984143b937bf8e29ac051ee2d",
   "source_metadata": {
     "candidate_only": true,
     "not_lifecycle_certification": true,
     "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/SOURCE_ADMISSION_STATUS.json",
     "present": true,
-    "recorded_at": "2026-08-09T06:16:04.580869Z",
+    "recorded_at": "2026-08-10T06:16:51.877229Z",
     "records": [
       {
         "artifact_id": "QWEN30_SOURCE_METADATA_CANDIDATE",

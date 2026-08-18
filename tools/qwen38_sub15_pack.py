@@ -10,11 +10,13 @@ Recipe (dense SwiGLU, real mixed-2p0 MLP, no MoE machinery):
   embed + lm_head   HQ30UQ4 group-64              (oracle Q4, generate-id later)
   norms / A_log / dt_bias / conv1d   f32          (same as the sealed Q4 catalog)
 
-The generate vehicle is a hard-linked copy of uniform-q4-v1 with overwritten
-Q4 files of the *reconstructed* mixed/rice weights. hybrid_greedy only speaks
-HQ30UQ4 + f32v2; TPS is projected from packed bytes, not from this vehicle.
+The generate vehicle written by --phase mlp/attn is a hard-linked copy of
+uniform-q4-v1 with overwritten Q4 files of the *reconstructed* mixed/rice
+weights. That vehicle is the expand-to-Q4 confound.
 
-Does not mutate the BF16 source or the sealed uniform-q4-v1 files.
+--phase catalog emits catalog.hq38m20 + segments/ hardlinks over the already
+packed HGRAV* / HQ30UQ4 / f32v2 blobs so load() takes the native mixed path.
+It does not re-encode and does not touch BF16 or uniform-q4-v1.
 """
 from __future__ import annotations
 
@@ -25,7 +27,7 @@ import os
 import struct
 import sys
 import time
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -615,6 +617,403 @@ def ledger(
     }
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def hardlink_into(src: Path, dest: Path) -> None:
+    """Hardlink src -> dest. Refuse to replace an unrelated existing file."""
+    if not src.is_file():
+        raise PackError(f"missing segment source {src}")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists() or dest.is_symlink():
+        try:
+            if dest.samefile(src):
+                return
+        except OSError:
+            pass
+        raise PackError(
+            f"refusing to replace existing {dest} (not a hardlink of {src})"
+        )
+    os.link(src, dest)
+
+
+def write_catalog(
+    path: Path,
+    records: list[dict[str, Any]],
+    segments: list[dict[str, Any]],
+) -> bytes:
+    """HQ38M20 v1, 128-byte records. Same layout as HQ80M15 / mixed-2p0."""
+    names = [r["name"] for r in records]
+    name_blob = bytearray()
+    offs: list[int] = []
+    for name in names:
+        raw = name.encode("utf-8")
+        offs.append(len(name_blob))
+        name_blob.extend(raw)
+    table = bytearray()
+    for rec, off in zip(records, offs):
+        raw_name = rec["name"].encode("utf-8")
+        dims = [0, 0, 0, 0]
+        shape = rec["shape"]
+        if len(shape) > 4:
+            raise PackError(f"{rec['name']} rank {len(shape)} exceeds catalog")
+        for i, d in enumerate(shape):
+            dims[i] = int(d)
+        digest = bytes.fromhex(rec["sha256"])
+        if len(digest) != 32:
+            raise PackError("catalog sha256 is not 32 bytes")
+        rec_bytes = struct.pack(
+            "<IHBBBB",
+            off,
+            len(raw_name),
+            int(rec["codec"]),
+            int(rec["organ"]),
+            len(shape),
+            0,
+        )
+        # 2-byte pad so the IIII shape block starts at offset 12 (mixed-2p0).
+        rec_bytes += b"\x00\x00"
+        rec_bytes += struct.pack(
+            "<IIIIQHHQQ32sIIf",
+            dims[0],
+            dims[1],
+            dims[2],
+            dims[3],
+            int(rec["elements"]),
+            int(rec["segment_id"]),
+            int(rec.get("achieved_rank") or 0),
+            int(rec["offset"]),
+            int(rec["nbytes"]),
+            digest,
+            int(rec.get("flags") or 0),
+            int(rec.get("n_fit_rows") or 0),
+            float(rec["codec_bpw"]),
+        )
+        if len(rec_bytes) > RECORD_SIZE:
+            raise PackError(f"record packed {len(rec_bytes)} > {RECORD_SIZE}")
+        rec_bytes = rec_bytes + b"\x00" * (RECORD_SIZE - len(rec_bytes))
+        table.extend(rec_bytes)
+    seg_blob = bytearray()
+    for seg in segments:
+        name = str(seg["filename"]).encode("utf-8")
+        digest = bytes.fromhex(seg["sha256"])
+        if len(digest) != 32:
+            raise PackError("segment sha256 is not 32 bytes")
+        seg_blob.extend(
+            struct.pack(
+                "<HHQ32s",
+                int(seg["id"]),
+                len(name),
+                int(seg["bytes"]),
+                digest,
+            )
+        )
+        seg_blob.extend(name)
+    blob = (
+        CATALOG_MAGIC
+        + struct.pack(
+            "<IIIIII",
+            CATALOG_VERSION,
+            len(records),
+            len(segments),
+            0,
+            len(name_blob),
+            0,
+        )
+        + bytes(seg_blob)
+        + bytes(table)
+        + bytes(name_blob)
+    )
+    write_atomic(path, blob)
+    return blob
+
+
+def write_hq38m20(
+    root: Path,
+    mixed_root: Path,
+    manifest: dict[str, Any],
+    catalog_out: Path | None = None,
+) -> dict[str, Any]:
+    """Emit catalog.hq38m20 + segments/ hardlinks over already-packed blobs.
+
+    Does not re-encode. Does not touch BF16 or uniform-q4-v1. MLP payloads
+    stay in mixed-2p0-v1/segments/Lxx.hq38seg (hardlinked). Attention rice,
+    embed/lm_head HQ30UQ4, and f32v2 small tensors are hardlinked from this
+    artifact's packed/attn and tensors/.
+    """
+    attn_json = root / "packed" / "attn_rows.json"
+    if not attn_json.is_file():
+        raise PackError(f"missing {attn_json}; run --phase attn first")
+    attn_rows = json.loads(attn_json.read_text())
+    if len(attn_rows) != 304:
+        raise PackError(f"expected 304 attention rice rows, got {len(attn_rows)}")
+
+    mixed = read_mixed_catalog(mixed_root)
+    mixed_by_name = {r["name"]: r for r in mixed["records"]}
+    mixed_seg_by_id = {s["id"]: s for s in mixed["segments"]}
+
+    wanted_mlp = []
+    for layer in range(N_LAYERS):
+        wanted_mlp.extend(mlp_names(layer))
+    if len(wanted_mlp) != 192:
+        raise PackError(f"internal mlp name count {len(wanted_mlp)}")
+
+    records: list[dict[str, Any]] = []
+    segments: list[dict[str, Any]] = []
+    filename_to_id: dict[str, int] = {}
+    linked = 0
+    reused = 0
+
+    def ensure_segment(
+        filename: str,
+        src: Path,
+        *,
+        nbytes: int | None = None,
+        digest: str | None = None,
+    ) -> int:
+        nonlocal linked, reused
+        src = src.resolve()
+        if filename in filename_to_id:
+            return filename_to_id[filename]
+        dest = root / "segments" / filename
+        stored_name = filename
+        try:
+            existed = dest.exists() or dest.is_symlink()
+            hardlink_into(src, dest)
+            if existed:
+                reused += 1
+            else:
+                linked += 1
+            payload_path = dest
+        except (PermissionError, OSError):
+            # Sandbox / cross-device: name the already-packed file absolutely.
+            # load() joins root/segments/filename; an absolute filename wins.
+            stored_name = str(src)
+            payload_path = src
+            if stored_name in filename_to_id:
+                return filename_to_id[stored_name]
+        if nbytes is None:
+            nbytes = payload_path.stat().st_size
+        if digest is None:
+            digest = sha256_file(payload_path)
+        sid = len(segments)
+        segments.append(
+            {
+                "id": sid,
+                "filename": stored_name,
+                "bytes": int(nbytes),
+                "sha256": digest,
+            }
+        )
+        filename_to_id[filename] = sid
+        filename_to_id[stored_name] = sid
+        return sid
+
+    for name, shape in wanted_mlp:
+        rec = mixed_by_name.get(name)
+        if rec is None:
+            raise PackError(f"mixed-2p0 missing {name}")
+        if list(rec["shape"]) != list(shape):
+            raise PackError(f"{name} mixed shape {rec['shape']} != {shape}")
+        if int(rec["codec"]) not in (CODEC_BINARY, CODEC_RESIDUAL, CODEC_HGRAVS01):
+            raise PackError(f"{name} mixed codec {rec['codec']} is not 0/1/2")
+        seg = mixed_seg_by_id[int(rec["segment_id"])]
+        src = mixed_root / "segments" / seg["filename"]
+        sid = ensure_segment(
+            seg["filename"],
+            src,
+            nbytes=int(seg["bytes"]),
+            digest=seg["sha256"],
+        )
+        records.append(
+            {
+                "name": name,
+                "codec": int(rec["codec"]),
+                "organ": int(rec["organ"]),
+                "shape": list(shape),
+                "elements": int(rec["elements"]),
+                "segment_id": sid,
+                "achieved_rank": int(rec.get("achieved_rank") or 0),
+                "offset": int(rec["offset"]),
+                "nbytes": int(rec["nbytes"]),
+                "sha256": rec["sha256"],
+                "flags": int(rec.get("flags") or 0),
+                "n_fit_rows": int(rec.get("n_fit_rows") or 0),
+                "codec_bpw": float(rec["codec_bpw"]),
+            }
+        )
+
+    packed_attn = root / "packed" / "attn"
+    for row in attn_rows:
+        name = row["name"]
+        stem = sha256_hex(name.encode("utf-8"))
+        src = packed_attn / f"{stem}.rice"
+        if not src.is_file():
+            raise PackError(f"missing rice {src}")
+        nbytes = int(row["packed_bytes"])
+        if src.stat().st_size != nbytes:
+            raise PackError(f"{src} size {src.stat().st_size} != packed_bytes {nbytes}")
+        sid = ensure_segment(f"{stem}.rice", src, nbytes=nbytes)
+        records.append(
+            {
+                "name": name,
+                "codec": CODEC_RESIDUAL,
+                "organ": ORGAN_ATTN,
+                "shape": list(row["shape"]),
+                "elements": int(row["elements"]),
+                "segment_id": sid,
+                "achieved_rank": 0,
+                "offset": 0,
+                "nbytes": nbytes,
+                "sha256": sha256_file(src),
+                "flags": 0,
+                "n_fit_rows": 0,
+                "codec_bpw": float(row["packed_bpw"]),
+            }
+        )
+
+    name_to_tensor = {t["name"]: t for t in manifest["tensors"]}
+
+    def add_oracle(name: str, codec: int, organ: int) -> None:
+        row = name_to_tensor.get(name)
+        if row is None:
+            raise PackError(f"manifest missing {name}")
+        src = root / "tensors" / row["artifact"]
+        if not src.is_file():
+            raise PackError(f"missing oracle {src}")
+        nbytes = int(row["bytes"])
+        if src.stat().st_size != nbytes:
+            raise PackError(f"{src} size {src.stat().st_size} != manifest {nbytes}")
+        sid = ensure_segment(row["artifact"], src, nbytes=nbytes)
+        records.append(
+            {
+                "name": name,
+                "codec": codec,
+                "organ": organ,
+                "shape": list(row["shape"]),
+                "elements": int(row["elements"]),
+                "segment_id": sid,
+                "achieved_rank": 0,
+                "offset": 0,
+                "nbytes": nbytes,
+                "sha256": sha256_file(src),
+                "flags": 0,
+                "n_fit_rows": 0,
+                "codec_bpw": 8.0 * nbytes / max(int(row["elements"]), 1),
+            }
+        )
+
+    add_oracle(
+        "language_model.model.embed_tokens.weight", CODEC_UNIFORM4, ORGAN_EMB
+    )
+    add_oracle("language_model.lm_head.weight", CODEC_UNIFORM4, ORGAN_HEAD)
+    for row in manifest["tensors"]:
+        if row["kind"] != "f32":
+            continue
+        add_oracle(row["name"], CODEC_F32, ORGAN_SMALL)
+
+    if len(records) != 851:
+        raise PackError(f"native catalog would have {len(records)} tensors, expected 851")
+
+    codecs = Counter(int(r["codec"]) for r in records)
+    if codecs != Counter({0: 64, 1: 368, 2: 64, 3: 2, 4: 353}):
+        raise PackError(f"native catalog codec census {dict(codecs)} is not the sub15 recipe")
+
+    catalog_path = Path(catalog_out) if catalog_out is not None else root / "catalog.hq38m20"
+    fallback = (
+        Path(__file__).resolve().parents[1]
+        / "workspace"
+        / "superwave"
+        / "g1"
+        / "mixed-sub15-native-catalog"
+        / "catalog.hq38m20"
+    )
+    try:
+        catalog_path.parent.mkdir(parents=True, exist_ok=True)
+        write_catalog(catalog_path, records, segments)
+    except (PermissionError, OSError) as err:
+        if catalog_out is not None:
+            raise PackError(f"cannot write {catalog_path}: {err}") from err
+        log(f"cannot write {catalog_path} ({err}); falling back to {fallback}")
+        fallback.parent.mkdir(parents=True, exist_ok=True)
+        catalog_path = fallback
+        write_catalog(catalog_path, records, segments)
+
+    checked = read_mixed_catalog(catalog_path.parent)
+    if len(checked["records"]) != 851:
+        raise PackError(f"re-read catalog has {len(checked['records'])} records")
+    if len(checked["segments"]) != len(segments):
+        raise PackError("re-read segment count drifted")
+
+    def resolve_seg(filename: str) -> Path:
+        path = Path(filename)
+        return path if path.is_absolute() else root / "segments" / filename
+
+    def peek(name: str, expect: bytes) -> None:
+        rec = next(r for r in checked["records"] if r["name"] == name)
+        seg = next(s for s in checked["segments"] if s["id"] == rec["segment_id"])
+        path = resolve_seg(seg["filename"])
+        with path.open("rb") as handle:
+            handle.seek(int(rec["offset"]))
+            got = handle.read(8)
+        if got != expect:
+            raise PackError(f"{name} magic {got!r} != {expect!r}")
+
+    peek("language_model.model.layers.0.mlp.gate_proj.weight", b"HGRAVB01")
+    peek("language_model.model.layers.0.mlp.up_proj.weight", b"HGRAVR02")
+    peek("language_model.model.layers.0.mlp.down_proj.weight", b"HGRAVS01")
+    peek(
+        "language_model.model.layers.0.linear_attn.in_proj_qkv.weight",
+        b"HGRAVR02",
+    )
+    peek("language_model.model.embed_tokens.weight", b"HQ30UQ4\0")
+    peek("language_model.lm_head.weight", b"HQ30UQ4\0")
+
+    report = {
+        "schema": "hawking.ascent.qwen38_mixed_sub15_native_catalog.v1",
+        "status": "EMITTED",
+        "root": str(root),
+        "catalog": str(catalog_path),
+        "tensors": 851,
+        "segments": len(segments),
+        "hardlinked_new": linked,
+        "hardlinked_reused": reused,
+        "codecs": {str(k): int(v) for k, v in sorted(codecs.items())},
+        "roles": {
+            "mlp_gate_hgravb01": 64,
+            "mlp_up_hgravr02": 64,
+            "mlp_down_hgravs01": 64,
+            "attention_hgravr02": 304,
+            "embed_hq30uq4": 1,
+            "lm_head_hq30uq4": 1,
+            "small_f32v2": 353,
+        },
+        "note": (
+            "catalog points at packed HGRAV*/HQ30UQ4/f32v2 bytes. "
+            "No reconstruct-to-Q4. No mlx-delta on f32v2."
+        ),
+        "segment_mode": "hardlink" if linked or reused else "absolute_paths",
+        "install": (
+            f"cp {catalog_path} {root / 'catalog.hq38m20'}"
+            if catalog_path.resolve() != (root / "catalog.hq38m20").resolve()
+            else "already at artifact root"
+        ),
+    }
+    (catalog_path.parent / "NATIVE_CATALOG.json").write_text(
+        json.dumps(report, indent=2) + "\n"
+    )
+    log(
+        f"emitted {catalog_path} tensors=851 segments={len(segments)} "
+        f"new_links={linked} reused={reused} codecs={dict(codecs)}"
+    )
+    return report
+
+
 def write_reports(root: Path, body: dict[str, Any]) -> None:
     path = root / "PACK_REPORT.json"
     path.write_text(json.dumps(body, indent=2) + "\n")
@@ -634,8 +1033,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--mixed", type=Path, default=MIXED_2P0)
     p.add_argument("--max-layers", type=int, default=None)
     p.add_argument(
+        "--catalog-out",
+        type=Path,
+        default=None,
+        help="Write catalog.hq38m20 here instead of <root>/catalog.hq38m20",
+    )
+    p.add_argument(
         "--phase",
-        choices=("init", "mlp", "attn", "report", "all"),
+        choices=("init", "mlp", "attn", "report", "catalog", "all"),
         default="all",
     )
     return p.parse_args()
@@ -651,7 +1056,7 @@ def main() -> int:
     attn_json = root / "packed" / "attn_rows.json"
     (root / "packed").mkdir(exist_ok=True)
 
-    if args.phase in ("init", "mlp", "attn", "all", "report"):
+    if args.phase in ("init", "mlp", "attn", "all", "report", "catalog"):
         manifest = init_generate_root(root)
 
     mlp_rows: list[dict[str, Any]] = []
@@ -707,6 +1112,12 @@ def main() -> int:
         if body["complete_physical_bpw"] >= 1.5:
             log(f"WARNING bpw {body['complete_physical_bpw']} is not < 1.5")
             return 2
+
+    if args.phase in ("catalog", "all"):
+        report = write_hq38m20(
+            root, args.mixed, manifest, catalog_out=args.catalog_out
+        )
+        print(json.dumps(report, indent=2), flush=True)
     return 0
 
 

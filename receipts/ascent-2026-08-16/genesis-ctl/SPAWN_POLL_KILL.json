@@ -1,0 +1,26 @@
+{
+  "spawn": {
+    "child_id": "ctl-0",
+    "pid": 61161,
+    "alive": true,
+    "exit_code": null,
+    "workload": "refuse",
+    "lock_held": false,
+    "stdout": "receipts/ascent-2026-08-16/genesis-ctl/ctl-0.stdout",
+    "stderr": "receipts/ascent-2026-08-16/genesis-ctl/ctl-0.stderr",
+    "json": "receipts/ascent-2026-08-16/genesis-ctl/ctl-0.json"
+  },
+  "after_kill": {
+    "child_id": "ctl-0",
+    "pid": 61161,
+    "alive": false,
+    "exit_code": -15,
+    "workload": "refuse",
+    "lock_held": false,
+    "stdout": "receipts/ascent-2026-08-16/genesis-ctl/ctl-0.stdout",
+    "stderr": "receipts/ascent-2026-08-16/genesis-ctl/ctl-0.stderr",
+    "json": "receipts/ascent-2026-08-16/genesis-ctl/ctl-0.json"
+  },
+  "liveness_source": "os.kill(pid,0)+waitpid",
+  "status_file_consulted": false
+}

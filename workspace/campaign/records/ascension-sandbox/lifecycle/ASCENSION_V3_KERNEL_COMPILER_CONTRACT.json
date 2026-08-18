@@ -117,7 +117,7 @@
     "context_regime",
     "session_regime"
   ],
-  "recorded_at": "2026-08-09T17:44:43.536707Z",
+  "recorded_at": "2026-08-10T17:24:13.538421Z",
   "representation_tournament_classes": [
     "native_mixed_precision",
     "organ_aware_q3",
@@ -157,7 +157,7 @@
     "GENERIC_HF_REFERENCE"
   ],
   "schema": "hawking.ascension.v3_kernel_compiler_contract.v1",
-  "seal_sha256": "59a20a9ab958c3c1464a65f1a2867bc5e47d8a88282aab65fa8ba7f5ef753af6",
+  "seal_sha256": "50caf664c4a8448d8263947b7bc1d8f804a53deb1c1c8b0633bbd894aa9a998f",
   "shared_primitives": [
     "packed_load_decode",
     "scale_codebook_application",

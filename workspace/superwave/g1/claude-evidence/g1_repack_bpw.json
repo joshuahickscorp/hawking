@@ -1,0 +1,1573 @@
+{
+  "g0": {
+    "name": "G0_recompute",
+    "tensor_payload_bytes": 14297694680,
+    "island_sidecar_bytes": 0,
+    "catalog_bytes": 141051,
+    "artifact_bytes": 14297835731,
+    "elems": 26895998464,
+    "n_tensors_catalog": 755,
+    "complete_physical_bpw": 4.252735126866492,
+    "artifact_complete_bpw": 4.252777081360262,
+    "mlp_bpw": 4.250003590303309,
+    "attn_bpw": 4.250009196169866,
+    "tab_bpw": 4.250000251691366,
+    "small_bpw": 32.00853977162764,
+    "mlp_bytes": 9091161600,
+    "attn_bytes": 3845087360,
+    "tab_bytes": 1350860880,
+    "small_bytes": 10584840,
+    "by_class": {
+      "mlp.gate_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 3030387200,
+        "bpw": 4.250003590303309,
+        "kinds": {
+          "UQ4": 64
+        }
+      },
+      "mlp.up_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 3030387200,
+        "bpw": 4.250003590303309,
+        "kinds": {
+          "UQ4": 64
+        }
+      },
+      "mlp.down_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 3030387200,
+        "bpw": 4.250003590303309,
+        "kinds": {
+          "UQ4": 64
+        }
+      },
+      "dn.in_proj_qkvz": {
+        "n": 48,
+        "elems": 4026531840,
+        "bytes": 2139096960,
+        "bpw": 4.250003814697266,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "dn.in_proj_ba": {
+        "n": 48,
+        "elems": 23592960,
+        "bytes": 12535680,
+        "bpw": 4.250651041666667,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "dn.out_proj": {
+        "n": 48,
+        "elems": 1509949440,
+        "bytes": 802162560,
+        "bpw": 4.250010172526042,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "gqa.q_proj": {
+        "n": 16,
+        "elems": 1006632960,
+        "bytes": 534774400,
+        "bpw": 4.2500050862630205,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.k_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 44565120,
+        "bpw": 4.25006103515625,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.v_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 44565120,
+        "bpw": 4.25006103515625,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.o_proj": {
+        "n": 16,
+        "elems": 503316480,
+        "bytes": 267387520,
+        "bpw": 4.250010172526042,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "embed": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 675430440,
+        "bpw": 4.250000251691366,
+        "kinds": {
+          "UQ4": 1
+        }
+      },
+      "lm_head": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 675430440,
+        "bpw": 4.250000251691366,
+        "kinds": {
+          "UQ4": 1
+        }
+      },
+      "dn.conv1d": {
+        "n": 48,
+        "elems": 1966080,
+        "bytes": 7864704,
+        "bpw": 32.0015625,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "input_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "post_attention_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "dn.norm": {
+        "n": 48,
+        "elems": 6144,
+        "bytes": 24960,
+        "bpw": 32.5,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "final_norm": {
+        "n": 1,
+        "elems": 5120,
+        "bytes": 20488,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 1
+        }
+      },
+      "gqa.q_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "gqa.k_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "dn.A_log": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "dn.dt_bias": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      }
+    },
+    "vs_1_5": 2.752735126866492,
+    "vs_g0": 0.0
+  },
+  "C": {
+    "name": "G1-C conservative",
+    "tensor_payload_bytes": 12158635352,
+    "island_sidecar_bytes": 0,
+    "catalog_bytes": 141051,
+    "artifact_bytes": 12158776403,
+    "elems": 26895998464,
+    "n_tensors_catalog": 755,
+    "complete_physical_bpw": 3.616489008437207,
+    "artifact_complete_bpw": 3.616530962930977,
+    "mlp_bpw": 3.250020285213695,
+    "attn_bpw": 4.250009196169866,
+    "tab_bpw": 4.250000251691366,
+    "small_bpw": 32.00853977162764,
+    "mlp_bytes": 6952102272,
+    "attn_bytes": 3845087360,
+    "tab_bytes": 1350860880,
+    "small_bytes": 10584840,
+    "by_class": {
+      "mlp.gate_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 2317367424,
+        "bpw": 3.250020285213695,
+        "kinds": {
+          "HU3": 64
+        }
+      },
+      "mlp.up_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 2317367424,
+        "bpw": 3.250020285213695,
+        "kinds": {
+          "HU3": 64
+        }
+      },
+      "mlp.down_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 2317367424,
+        "bpw": 3.250020285213695,
+        "kinds": {
+          "HU3": 64
+        }
+      },
+      "dn.in_proj_qkvz": {
+        "n": 48,
+        "elems": 4026531840,
+        "bytes": 2139096960,
+        "bpw": 4.250003814697266,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "dn.in_proj_ba": {
+        "n": 48,
+        "elems": 23592960,
+        "bytes": 12535680,
+        "bpw": 4.250651041666667,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "dn.out_proj": {
+        "n": 48,
+        "elems": 1509949440,
+        "bytes": 802162560,
+        "bpw": 4.250010172526042,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "gqa.q_proj": {
+        "n": 16,
+        "elems": 1006632960,
+        "bytes": 534774400,
+        "bpw": 4.2500050862630205,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.k_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 44565120,
+        "bpw": 4.25006103515625,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.v_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 44565120,
+        "bpw": 4.25006103515625,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.o_proj": {
+        "n": 16,
+        "elems": 503316480,
+        "bytes": 267387520,
+        "bpw": 4.250010172526042,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "embed": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 675430440,
+        "bpw": 4.250000251691366,
+        "kinds": {
+          "UQ4": 1
+        }
+      },
+      "lm_head": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 675430440,
+        "bpw": 4.250000251691366,
+        "kinds": {
+          "UQ4": 1
+        }
+      },
+      "dn.conv1d": {
+        "n": 48,
+        "elems": 1966080,
+        "bytes": 7864704,
+        "bpw": 32.0015625,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "input_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "post_attention_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "dn.norm": {
+        "n": 48,
+        "elems": 6144,
+        "bytes": 24960,
+        "bpw": 32.5,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "final_norm": {
+        "n": 1,
+        "elems": 5120,
+        "bytes": 20488,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 1
+        }
+      },
+      "gqa.q_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "gqa.k_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "dn.A_log": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "dn.dt_bias": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      }
+    },
+    "vs_1_5": 2.116489008437207,
+    "vs_g0": -0.6362461184292849
+  },
+  "R": {
+    "name": "G1-R recommended",
+    "tensor_payload_bytes": 12354061566,
+    "island_sidecar_bytes": 6030336,
+    "catalog_bytes": 166503,
+    "artifact_bytes": 12354228069,
+    "elems": 26895998464,
+    "n_tensors_catalog": 883,
+    "complete_physical_bpw": 3.674616975468905,
+    "artifact_complete_bpw": 3.6746665004568615,
+    "mlp_bpw": 3.3385604736851713,
+    "attn_bpw": 4.250009196169866,
+    "tab_bpw": 4.250000251691366,
+    "small_bpw": 32.00853977162764,
+    "mlp_bytes": 7141498150,
+    "attn_bytes": 3845087360,
+    "tab_bytes": 1350860880,
+    "small_bytes": 10584840,
+    "by_class": {
+      "mlp.gate_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 2317367424,
+        "bpw": 3.250020285213695,
+        "kinds": {
+          "HU3": 64
+        }
+      },
+      "mlp.up_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 2317367424,
+        "bpw": 3.250020285213695,
+        "kinds": {
+          "HU3": 64
+        }
+      },
+      "mlp.down_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 2506763302,
+        "bpw": 3.5156408506281234,
+        "kinds": {
+          "HU3": 47,
+          "UQ4": 17
+        }
+      },
+      "dn.in_proj_qkvz": {
+        "n": 48,
+        "elems": 4026531840,
+        "bytes": 2139096960,
+        "bpw": 4.250003814697266,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "dn.in_proj_ba": {
+        "n": 48,
+        "elems": 23592960,
+        "bytes": 12535680,
+        "bpw": 4.250651041666667,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "dn.out_proj": {
+        "n": 48,
+        "elems": 1509949440,
+        "bytes": 802162560,
+        "bpw": 4.250010172526042,
+        "kinds": {
+          "UQ4": 48
+        }
+      },
+      "gqa.q_proj": {
+        "n": 16,
+        "elems": 1006632960,
+        "bytes": 534774400,
+        "bpw": 4.2500050862630205,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.k_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 44565120,
+        "bpw": 4.25006103515625,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.v_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 44565120,
+        "bpw": 4.25006103515625,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "gqa.o_proj": {
+        "n": 16,
+        "elems": 503316480,
+        "bytes": 267387520,
+        "bpw": 4.250010172526042,
+        "kinds": {
+          "UQ4": 16
+        }
+      },
+      "embed": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 675430440,
+        "bpw": 4.250000251691366,
+        "kinds": {
+          "UQ4": 1
+        }
+      },
+      "lm_head": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 675430440,
+        "bpw": 4.250000251691366,
+        "kinds": {
+          "UQ4": 1
+        }
+      },
+      "dn.conv1d": {
+        "n": 48,
+        "elems": 1966080,
+        "bytes": 7864704,
+        "bpw": 32.0015625,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "input_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "post_attention_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "dn.norm": {
+        "n": 48,
+        "elems": 6144,
+        "bytes": 24960,
+        "bpw": 32.5,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "final_norm": {
+        "n": 1,
+        "elems": 5120,
+        "bytes": 20488,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 1
+        }
+      },
+      "gqa.q_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "gqa.k_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "dn.A_log": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "dn.dt_bias": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "island_row_3994": {
+        "n": 128,
+        "elems": 0,
+        "bytes": 6030336,
+        "bpw": null,
+        "kinds": {}
+      }
+    },
+    "vs_1_5": 2.174616975468905,
+    "vs_g0": -0.5781181513975868
+  },
+  "A1_HU2_HU3": {
+    "name": "A1",
+    "tensor_payload_bytes": 7028538934,
+    "island_sidecar_bytes": 6030336,
+    "catalog_bytes": 166503,
+    "artifact_bytes": 7028705437,
+    "elems": 26895998464,
+    "n_tensors_catalog": 883,
+    "complete_physical_bpw": 2.090582788635305,
+    "artifact_complete_bpw": 2.0906323136232614,
+    "mlp_bpw": 1.8750198364257813,
+    "attn_bpw": 2.3509823255804907,
+    "tab_bpw": 2.7500014598099227,
+    "small_bpw": 32.00853977162764,
+    "mlp_bytes": 4010845632,
+    "attn_bytes": 2126991262,
+    "tab_bytes": 874086864,
+    "small_bytes": 10584840,
+    "by_class": {
+      "mlp.gate_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1336948544,
+        "bpw": 1.8750198364257813,
+        "kinds": {
+          "HB1": 32,
+          "HU2": 20,
+          "HU3": 12
+        }
+      },
+      "mlp.up_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1336948544,
+        "bpw": 1.8750198364257813,
+        "kinds": {
+          "HB1": 32,
+          "HU2": 20,
+          "HU3": 12
+        }
+      },
+      "mlp.down_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1336948544,
+        "bpw": 1.8750198364257813,
+        "kinds": {
+          "HB1": 32,
+          "HU2": 20,
+          "HU3": 12
+        }
+      },
+      "dn.in_proj_qkvz": {
+        "n": 48,
+        "elems": 4026531840,
+        "bytes": 943729008,
+        "bpw": 1.8750210762023927,
+        "kinds": {
+          "HB1": 24,
+          "HU2": 15,
+          "HU3": 9
+        }
+      },
+      "dn.in_proj_ba": {
+        "n": 48,
+        "elems": 23592960,
+        "bytes": 10146306,
+        "bpw": 3.440452067057292,
+        "kinds": {
+          "HU3": 39,
+          "UQ4": 9
+        }
+      },
+      "dn.out_proj": {
+        "n": 48,
+        "elems": 1509949440,
+        "bytes": 648815457,
+        "bpw": 3.4375479857126874,
+        "kinds": {
+          "HU3": 39,
+          "UQ4": 9
+        }
+      },
+      "gqa.q_proj": {
+        "n": 16,
+        "elems": 1006632960,
+        "bytes": 235933112,
+        "bpw": 1.8750279108683268,
+        "kinds": {
+          "HB1": 8,
+          "HU2": 5,
+          "HU3": 3
+        }
+      },
+      "gqa.k_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 36047780,
+        "bpw": 3.437784194946289,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "gqa.v_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 36047780,
+        "bpw": 3.437784194946289,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "gqa.o_proj": {
+        "n": 16,
+        "elems": 503316480,
+        "bytes": 216271819,
+        "bpw": 3.4375479857126874,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "embed": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 357581032,
+        "bpw": 2.2500014598099227,
+        "kinds": {
+          "HU2": 1
+        }
+      },
+      "lm_head": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 516505832,
+        "bpw": 3.2500014598099227,
+        "kinds": {
+          "HU3": 1
+        }
+      },
+      "dn.conv1d": {
+        "n": 48,
+        "elems": 1966080,
+        "bytes": 7864704,
+        "bpw": 32.0015625,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "input_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "post_attention_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "dn.norm": {
+        "n": 48,
+        "elems": 6144,
+        "bytes": 24960,
+        "bpw": 32.5,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "final_norm": {
+        "n": 1,
+        "elems": 5120,
+        "bytes": 20488,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 1
+        }
+      },
+      "gqa.q_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "gqa.k_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "dn.A_log": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "dn.dt_bias": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "island_row_3994": {
+        "n": 128,
+        "elems": 0,
+        "bytes": 6030336,
+        "bpw": null,
+        "kinds": {}
+      }
+    },
+    "vs_1_5": 0.590582788635305,
+    "vs_g0": -2.162152338231187
+  },
+  "A2_HU2_HU3": {
+    "name": "A2",
+    "tensor_payload_bytes": 6276512734,
+    "island_sidecar_bytes": 6030336,
+    "catalog_bytes": 166503,
+    "artifact_bytes": 6276679237,
+    "elems": 26895998464,
+    "n_tensors_catalog": 883,
+    "complete_physical_bpw": 1.8668985997752918,
+    "artifact_complete_bpw": 1.866948124763248,
+    "mlp_bpw": 1.5234570559333354,
+    "attn_bpw": 2.3509823255804907,
+    "tab_bpw": 2.7500014598099227,
+    "small_bpw": 32.00853977162764,
+    "mlp_bytes": 3258819432,
+    "attn_bytes": 2126991262,
+    "tab_bytes": 874086864,
+    "small_bytes": 10584840,
+    "by_class": {
+      "mlp.gate_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1086273144,
+        "bpw": 1.5234570559333354,
+        "kinds": {
+          "HB1": 52,
+          "HU3": 12
+        }
+      },
+      "mlp.up_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1086273144,
+        "bpw": 1.5234570559333354,
+        "kinds": {
+          "HB1": 52,
+          "HU3": 12
+        }
+      },
+      "mlp.down_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1086273144,
+        "bpw": 1.5234570559333354,
+        "kinds": {
+          "HB1": 52,
+          "HU3": 12
+        }
+      },
+      "dn.in_proj_qkvz": {
+        "n": 48,
+        "elems": 4026531840,
+        "bytes": 943729008,
+        "bpw": 1.8750210762023927,
+        "kinds": {
+          "HB1": 24,
+          "HU2": 15,
+          "HU3": 9
+        }
+      },
+      "dn.in_proj_ba": {
+        "n": 48,
+        "elems": 23592960,
+        "bytes": 10146306,
+        "bpw": 3.440452067057292,
+        "kinds": {
+          "HU3": 39,
+          "UQ4": 9
+        }
+      },
+      "dn.out_proj": {
+        "n": 48,
+        "elems": 1509949440,
+        "bytes": 648815457,
+        "bpw": 3.4375479857126874,
+        "kinds": {
+          "HU3": 39,
+          "UQ4": 9
+        }
+      },
+      "gqa.q_proj": {
+        "n": 16,
+        "elems": 1006632960,
+        "bytes": 235933112,
+        "bpw": 1.8750279108683268,
+        "kinds": {
+          "HB1": 8,
+          "HU2": 5,
+          "HU3": 3
+        }
+      },
+      "gqa.k_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 36047780,
+        "bpw": 3.437784194946289,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "gqa.v_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 36047780,
+        "bpw": 3.437784194946289,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "gqa.o_proj": {
+        "n": 16,
+        "elems": 503316480,
+        "bytes": 216271819,
+        "bpw": 3.4375479857126874,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "embed": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 357581032,
+        "bpw": 2.2500014598099227,
+        "kinds": {
+          "HU2": 1
+        }
+      },
+      "lm_head": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 516505832,
+        "bpw": 3.2500014598099227,
+        "kinds": {
+          "HU3": 1
+        }
+      },
+      "dn.conv1d": {
+        "n": 48,
+        "elems": 1966080,
+        "bytes": 7864704,
+        "bpw": 32.0015625,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "input_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "post_attention_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "dn.norm": {
+        "n": 48,
+        "elems": 6144,
+        "bytes": 24960,
+        "bpw": 32.5,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "final_norm": {
+        "n": 1,
+        "elems": 5120,
+        "bytes": 20488,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 1
+        }
+      },
+      "gqa.q_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "gqa.k_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "dn.A_log": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "dn.dt_bias": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "island_row_3994": {
+        "n": 128,
+        "elems": 0,
+        "bytes": 6030336,
+        "bpw": null,
+        "kinds": {}
+      }
+    },
+    "vs_1_5": 0.3668985997752918,
+    "vs_g0": -2.3858365270912003
+  },
+  "A3_HU2_HU3": {
+    "name": "A3",
+    "tensor_payload_bytes": 5992414054,
+    "island_sidecar_bytes": 6030336,
+    "catalog_bytes": 166503,
+    "artifact_bytes": 5992580557,
+    "elems": 26895998464,
+    "n_tensors_catalog": 883,
+    "complete_physical_bpw": 1.7823957157108796,
+    "artifact_complete_bpw": 1.7824452406988358,
+    "mlp_bpw": 1.390644499834846,
+    "attn_bpw": 2.3509823255804907,
+    "tab_bpw": 2.7500014598099227,
+    "small_bpw": 32.00853977162764,
+    "mlp_bytes": 2974720752,
+    "attn_bytes": 2126991262,
+    "tab_bytes": 874086864,
+    "small_bytes": 10584840,
+    "by_class": {
+      "mlp.gate_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 991573584,
+        "bpw": 1.390644499834846,
+        "kinds": {
+          "HB1": 56,
+          "HU3": 8
+        }
+      },
+      "mlp.up_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 991573584,
+        "bpw": 1.390644499834846,
+        "kinds": {
+          "HB1": 56,
+          "HU3": 8
+        }
+      },
+      "mlp.down_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 991573584,
+        "bpw": 1.390644499834846,
+        "kinds": {
+          "HB1": 56,
+          "HU3": 8
+        }
+      },
+      "dn.in_proj_qkvz": {
+        "n": 48,
+        "elems": 4026531840,
+        "bytes": 943729008,
+        "bpw": 1.8750210762023927,
+        "kinds": {
+          "HB1": 24,
+          "HU2": 15,
+          "HU3": 9
+        }
+      },
+      "dn.in_proj_ba": {
+        "n": 48,
+        "elems": 23592960,
+        "bytes": 10146306,
+        "bpw": 3.440452067057292,
+        "kinds": {
+          "HU3": 39,
+          "UQ4": 9
+        }
+      },
+      "dn.out_proj": {
+        "n": 48,
+        "elems": 1509949440,
+        "bytes": 648815457,
+        "bpw": 3.4375479857126874,
+        "kinds": {
+          "HU3": 39,
+          "UQ4": 9
+        }
+      },
+      "gqa.q_proj": {
+        "n": 16,
+        "elems": 1006632960,
+        "bytes": 235933112,
+        "bpw": 1.8750279108683268,
+        "kinds": {
+          "HB1": 8,
+          "HU2": 5,
+          "HU3": 3
+        }
+      },
+      "gqa.k_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 36047780,
+        "bpw": 3.437784194946289,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "gqa.v_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 36047780,
+        "bpw": 3.437784194946289,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "gqa.o_proj": {
+        "n": 16,
+        "elems": 503316480,
+        "bytes": 216271819,
+        "bpw": 3.4375479857126874,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "embed": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 357581032,
+        "bpw": 2.2500014598099227,
+        "kinds": {
+          "HU2": 1
+        }
+      },
+      "lm_head": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 516505832,
+        "bpw": 3.2500014598099227,
+        "kinds": {
+          "HU3": 1
+        }
+      },
+      "dn.conv1d": {
+        "n": 48,
+        "elems": 1966080,
+        "bytes": 7864704,
+        "bpw": 32.0015625,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "input_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "post_attention_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "dn.norm": {
+        "n": 48,
+        "elems": 6144,
+        "bytes": 24960,
+        "bpw": 32.5,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "final_norm": {
+        "n": 1,
+        "elems": 5120,
+        "bytes": 20488,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 1
+        }
+      },
+      "gqa.q_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "gqa.k_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "dn.A_log": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "dn.dt_bias": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "island_row_3994": {
+        "n": 128,
+        "elems": 0,
+        "bytes": 6030336,
+        "bpw": null,
+        "kinds": {}
+      }
+    },
+    "vs_1_5": 0.2823957157108796,
+    "vs_g0": -2.4703394111556123
+  },
+  "A2_HU2_HU2": {
+    "name": "A2e2l2",
+    "tensor_payload_bytes": 6117587934,
+    "island_sidecar_bytes": 6030336,
+    "catalog_bytes": 166503,
+    "artifact_bytes": 6117754437,
+    "elems": 26895998464,
+    "n_tensors_catalog": 883,
+    "complete_physical_bpw": 1.8196276869031873,
+    "artifact_complete_bpw": 1.8196772118911435,
+    "mlp_bpw": 1.5234570559333354,
+    "attn_bpw": 2.3509823255804907,
+    "tab_bpw": 2.2500014598099227,
+    "small_bpw": 32.00853977162764,
+    "mlp_bytes": 3258819432,
+    "attn_bytes": 2126991262,
+    "tab_bytes": 715162064,
+    "small_bytes": 10584840,
+    "by_class": {
+      "mlp.gate_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1086273144,
+        "bpw": 1.5234570559333354,
+        "kinds": {
+          "HB1": 52,
+          "HU3": 12
+        }
+      },
+      "mlp.up_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1086273144,
+        "bpw": 1.5234570559333354,
+        "kinds": {
+          "HB1": 52,
+          "HU3": 12
+        }
+      },
+      "mlp.down_proj": {
+        "n": 64,
+        "elems": 5704253440,
+        "bytes": 1086273144,
+        "bpw": 1.5234570559333354,
+        "kinds": {
+          "HB1": 52,
+          "HU3": 12
+        }
+      },
+      "dn.in_proj_qkvz": {
+        "n": 48,
+        "elems": 4026531840,
+        "bytes": 943729008,
+        "bpw": 1.8750210762023927,
+        "kinds": {
+          "HB1": 24,
+          "HU2": 15,
+          "HU3": 9
+        }
+      },
+      "dn.in_proj_ba": {
+        "n": 48,
+        "elems": 23592960,
+        "bytes": 10146306,
+        "bpw": 3.440452067057292,
+        "kinds": {
+          "HU3": 39,
+          "UQ4": 9
+        }
+      },
+      "dn.out_proj": {
+        "n": 48,
+        "elems": 1509949440,
+        "bytes": 648815457,
+        "bpw": 3.4375479857126874,
+        "kinds": {
+          "HU3": 39,
+          "UQ4": 9
+        }
+      },
+      "gqa.q_proj": {
+        "n": 16,
+        "elems": 1006632960,
+        "bytes": 235933112,
+        "bpw": 1.8750279108683268,
+        "kinds": {
+          "HB1": 8,
+          "HU2": 5,
+          "HU3": 3
+        }
+      },
+      "gqa.k_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 36047780,
+        "bpw": 3.437784194946289,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "gqa.v_proj": {
+        "n": 16,
+        "elems": 83886080,
+        "bytes": 36047780,
+        "bpw": 3.437784194946289,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "gqa.o_proj": {
+        "n": 16,
+        "elems": 503316480,
+        "bytes": 216271819,
+        "bpw": 3.4375479857126874,
+        "kinds": {
+          "HU3": 13,
+          "UQ4": 3
+        }
+      },
+      "embed": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 357581032,
+        "bpw": 2.2500014598099227,
+        "kinds": {
+          "HU2": 1
+        }
+      },
+      "lm_head": {
+        "n": 1,
+        "elems": 1271398400,
+        "bytes": 357581032,
+        "bpw": 2.2500014598099227,
+        "kinds": {
+          "HU2": 1
+        }
+      },
+      "dn.conv1d": {
+        "n": 48,
+        "elems": 1966080,
+        "bytes": 7864704,
+        "bpw": 32.0015625,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "input_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "post_attention_layernorm": {
+        "n": 64,
+        "elems": 327680,
+        "bytes": 1311232,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 64
+        }
+      },
+      "dn.norm": {
+        "n": 48,
+        "elems": 6144,
+        "bytes": 24960,
+        "bpw": 32.5,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "final_norm": {
+        "n": 1,
+        "elems": 5120,
+        "bytes": 20488,
+        "bpw": 32.0125,
+        "kinds": {
+          "F32": 1
+        }
+      },
+      "gqa.q_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "gqa.k_norm": {
+        "n": 16,
+        "elems": 4096,
+        "bytes": 16512,
+        "bpw": 32.25,
+        "kinds": {
+          "F32": 16
+        }
+      },
+      "dn.A_log": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "dn.dt_bias": {
+        "n": 48,
+        "elems": 2304,
+        "bytes": 9600,
+        "bpw": 33.333333333333336,
+        "kinds": {
+          "F32": 48
+        }
+      },
+      "island_row_3994": {
+        "n": 128,
+        "elems": 0,
+        "bytes": 6030336,
+        "bpw": null,
+        "kinds": {}
+      }
+    },
+    "vs_1_5": 0.3196276869031873,
+    "vs_g0": -2.4331074399633046
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "total_gib": 96.0,
+  "used_gib": 70.12,
+  "available_gib": 25.88,
+  "target_fill": 0.9,
+  "target_used_gib": 86.4,
+  "generation_reserve_gib": 14.08,
+  "no_swap_floor_gib": 4.0,
+  "seq_len": 2048,
+  "per_session_mib": 407.2,
+  "parent_body_gib": 0.0,
+  "admissible_sessions": 0,
+  "projected_used_gib": 84.2,
+  "equivalent_processes_if_not_shared": 0.0,
+  "throughput_note": "concurrent decode ceiling is 1 (measured); sessions are research slots, not a TPS lever"
+}

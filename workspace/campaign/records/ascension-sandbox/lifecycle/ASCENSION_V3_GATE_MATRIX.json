@@ -46,9 +46,9 @@
     "timeline_completion": "REFUSE",
     "unverified_deletion": "REFUSE"
   },
-  "recorded_at": "2026-08-09T17:44:43.494800Z",
+  "recorded_at": "2026-08-10T17:24:00.085477Z",
   "schema": "hawking.ascension.v3_gate_matrix.v1",
-  "seal_sha256": "7784df4a98218f5042f249583601fc9559bcb7bb8444e67326070fabb10eccc7",
+  "seal_sha256": "809a291c56911c639dd0672e44d8bf910ccfdf89a4558b1c36600a1c9b7bc93f",
   "states": [
     {
       "blockers": [],

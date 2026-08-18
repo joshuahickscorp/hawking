@@ -94,8 +94,8 @@
     "timeline_completion": "REFUSE",
     "unverified_deletion": "REFUSE"
   },
-  "recorded_at": "2026-08-09T17:44:43.482740Z",
+  "recorded_at": "2026-08-10T17:23:58.096775Z",
   "schema": "hawking.ascension.v3_constitution_controller.v1",
-  "seal_sha256": "bfe6b54b6d4d97001724cbbc3a502b4b943b465f859f31ebf0f8705d6bb2d5e7",
+  "seal_sha256": "d2f4dd02b589d0f3dd4a90ca53ef4f8ec56bd0c2185e91a06e6a09b3126306c1",
   "status": "CONTROLLER_CONFIGURATION_ONLY"
 }

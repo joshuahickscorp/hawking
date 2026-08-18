@@ -69,6 +69,13 @@ pub mod metal;
 #[cfg(target_os = "macos")]
 pub mod router;
 
+/// Honest roof for the Qwen3.8 Q4 grouped-GEMV decode access pattern.
+///
+/// Adjudicates the three disagreeing active-byte counts and, on macOS,
+/// measures bandwidth vs working-set size with GPU timestamps. Does not
+/// change codecs, kernels, or the decode path.
+pub mod honest_roof;
+
 /// The set of primitive compute verbs a [`Backend`] may implement.
 ///
 /// Used by [`Backend::supports`] for capability queries (e.g. a CPU

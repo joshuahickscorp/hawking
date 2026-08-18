@@ -88,7 +88,7 @@
         "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_SOURCE_METADATA_CANDIDATE.json",
         "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
         "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
-        "seal_sha256": "6312846a38e868f4f8cb6af5c9ada2f15aacb926183908c1f96ade202665d5e7",
+        "seal_sha256": "e8207c464f514a415f436686026f471b6efc4ea6cd55b974eedaf7504da11102",
         "status": "PINNED_CANDIDATE_METADATA"
       },
       "source_teacher_model_id": "Qwen3-Coder-30B-A3B-Instruct",
@@ -169,7 +169,7 @@
         "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN80_SOURCE_METADATA_CANDIDATE.json",
         "repository": "Qwen/Qwen3-Coder-Next",
         "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
-        "seal_sha256": "2d1c9cdd0db5e5bdb7fd8b59cf2e0c674ba77077df5d0bf415640858f8aff4a5",
+        "seal_sha256": "4bf01f6e7d6d58afea99f67464a7f515f2bb2ddc69b1a0e96f028c8ad7dfa548",
         "status": "PINNED_CANDIDATE_METADATA"
       },
       "source_teacher_model_id": "Qwen3-Coder-Next-80B",
@@ -195,7 +195,7 @@
     }
   ],
   "raw_bf16_models_are_source_authorities_not_tournament_participants": true,
-  "recorded_at": "2026-08-09T17:44:43.544999Z",
+  "recorded_at": "2026-08-10T17:24:13.972474Z",
   "resource_and_authority_policy": {
     "executor_and_reviewer_may_emit_candidate_reports_only": "lab/hcli/option_c.py",
     "minimum_operational_custom_kernel_base_true_tps": 100.0,
@@ -206,6 +206,6 @@
     "use_bounded_process_runner_for_body_work": "workspace/ops/ascension/bounded_process_runner.py"
   },
   "schema": "hawking.ascension.dual_manager_workflow.v1",
-  "seal_sha256": "88d8e2e17378bc61fc4c9486bee4bbf83cc0d0e37e5f416932747e95b0fff2bf",
+  "seal_sha256": "c2c39a7b6d57433bc864d2cedc5fb9a27bea03bcaf058451b1e6e59e2e3acc5c",
   "status": "CONTROLLER_WORKFLOW_ONLY"
 }

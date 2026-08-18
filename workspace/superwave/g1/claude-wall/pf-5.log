@@ -1,0 +1,34 @@
+qwen38 prompt tokens=5 text="The capital of France is"
+qwen38-decode opening Metal + 755 catalog tensors
+qwen38-decode upload 0/755
+qwen38-decode upload 50/755
+qwen38-decode upload 100/755
+qwen38-decode upload 150/755
+qwen38-decode upload 200/755
+qwen38-decode upload 250/755
+qwen38-decode upload 300/755
+qwen38-decode upload 350/755
+qwen38-decode upload 400/755
+qwen38-decode upload 450/755
+qwen38-decode upload 500/755
+qwen38-decode upload 550/755
+qwen38-decode upload 600/755
+qwen38-decode upload 650/755
+qwen38-decode upload 700/755
+qwen38-decode upload 750/755
+[hawking] HAWKING_TCB_TRACE="(unset)" → mode=Off
+GENERATED_TEXT_VERBATIM:  Paris
+FALLBACKS: 0
+DENSE_W_MATERIALIZED: 0
+PROMPT_LEN: 5
+NEW_TOKENS: [11751]
+generated_token_ids=[11751]
+GPU_NS_PER_STEP: [87348499, 37546749, 37452250, 36827750, 36671374]
+WAIT_NS_PER_STEP: [152959292, 37892375, 38412583, 37203417, 36961625]
+MEDIAN_GPU_NS_PER_TOKEN: Some(37452250)
+WALL_NS: 312349750
+PREFILL_WALL_NS: 312348958
+DECODE_WALL_NS: 42
+FIRST_STEP_WALL_NS: 158167166
+STEADY_DECODE_WALL_NS_PER_TOKEN: None
+wrote /tmp/pf-5.json

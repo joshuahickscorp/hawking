@@ -324,7 +324,7 @@
       },
       "protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
       "purpose": "Select the Hawking operating intelligence that produces the most correct, verified, recoverable engineering progress per unit of machine resource while preserving the Ascension constitution.",
-      "recorded_at": "2026-08-09T17:44:43.553370Z",
+      "recorded_at": "2026-08-10T17:24:14.080874Z",
       "schema": "hawking.ascension.final_manager_tournament_protocol.v1",
       "scorecards": {
         "do_not_collapse_to_scalar_before_complete_evidence_matrix": true,
@@ -395,7 +395,7 @@
           "resource_use"
         ]
       },
-      "seal_sha256": "adeb31664984241b5ed6757fba355280e8867cf551a42fdc46bf305077868db8",
+      "seal_sha256": "ef05b5bbda51ec6004591ae5c0aca21e0e12c1a9c6c9b3722406d63d174564bc",
       "status": "PREPARED_FINAL_MANAGER_SELECTION_PROTOCOL_NOT_EXECUTED",
       "winner_freeze_and_alternate": {
         "cold_store_hash_verify_restore_test_one_command_recovery_required": true,
@@ -407,7 +407,7 @@
     "protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
     "runs_only_after_both_candidates_are_frozen_at_complete_manager_floor": true,
     "schema": "hawking.ascension.final_manager_tournament_protocol.v1",
-    "seal_sha256": "adeb31664984241b5ed6757fba355280e8867cf551a42fdc46bf305077868db8"
+    "seal_sha256": "ef05b5bbda51ec6004591ae5c0aca21e0e12c1a9c6c9b3722406d63d174564bc"
   },
   "pre_tournament_kernel_gate": {
     "each_candidate_requires_exact_model_custom_kernel": true,
@@ -432,7 +432,7 @@
       "human_operator"
     ]
   },
-  "recorded_at": "2026-08-09T17:44:43.553554Z",
+  "recorded_at": "2026-08-10T17:24:14.080983Z",
   "runtime_phase": "ARMED_WAITING_FOR_QUALIFICATIONS",
   "sandbox_start_contract": {
     "losing_gravity_artifact_cold_stored_then_locally_evicted": true,
@@ -443,6 +443,6 @@
     "second_local_manager_active": false
   },
   "schema": "hawking.ascension.manager_tournament_workflow.v1",
-  "seal_sha256": "bb6356d3e3878bf5fa4576eba3d23cbf2c2992820e830905e060877b00b28d11",
+  "seal_sha256": "9d0fe71eb4e19453de8fd0ae6d0132290f6748ff06d8746b3606cdaaefff9fdc",
   "status": "CONTROLLER_WORKFLOW_ONLY"
 }

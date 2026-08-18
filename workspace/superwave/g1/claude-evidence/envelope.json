@@ -1,0 +1,91 @@
+{
+  "inventory": {
+    "model.embed_tokens": {
+      "sites": 1,
+      "elements": 1271398400,
+      "m": 248320,
+      "n": 5120
+    },
+    "linear_attn.in_proj_a": {
+      "sites": 48,
+      "elements": 11796480,
+      "m": 48,
+      "n": 5120
+    },
+    "linear_attn.in_proj_b": {
+      "sites": 48,
+      "elements": 11796480,
+      "m": 48,
+      "n": 5120
+    },
+    "linear_attn.in_proj_qkv": {
+      "sites": 48,
+      "elements": 2516582400,
+      "m": 10240,
+      "n": 5120
+    },
+    "linear_attn.in_proj_z": {
+      "sites": 48,
+      "elements": 1509949440,
+      "m": 6144,
+      "n": 5120
+    },
+    "linear_attn.out_proj": {
+      "sites": 48,
+      "elements": 1509949440,
+      "m": 5120,
+      "n": 6144
+    },
+    "mlp.down_proj": {
+      "sites": 64,
+      "elements": 5704253440,
+      "m": 5120,
+      "n": 17408
+    },
+    "mlp.gate_proj": {
+      "sites": 64,
+      "elements": 5704253440,
+      "m": 17408,
+      "n": 5120
+    },
+    "mlp.up_proj": {
+      "sites": 64,
+      "elements": 5704253440,
+      "m": 17408,
+      "n": 5120
+    },
+    "self_attn.k_proj": {
+      "sites": 16,
+      "elements": 83886080,
+      "m": 1024,
+      "n": 5120
+    },
+    "self_attn.o_proj": {
+      "sites": 16,
+      "elements": 503316480,
+      "m": 5120,
+      "n": 6144
+    },
+    "self_attn.q_proj": {
+      "sites": 16,
+      "elements": 1006632960,
+      "m": 12288,
+      "n": 5120
+    },
+    "self_attn.v_proj": {
+      "sites": 16,
+      "elements": 83886080,
+      "m": 1024,
+      "n": 5120
+    },
+    "lm_head": {
+      "sites": 1,
+      "elements": 1271398400,
+      "m": 248320,
+      "n": 5120
+    }
+  },
+  "body_requirement_bits_per_elem": 0.8711374982968767,
+  "endpoint_bpw": 0.20090137970644406,
+  "target": 0.99
+}

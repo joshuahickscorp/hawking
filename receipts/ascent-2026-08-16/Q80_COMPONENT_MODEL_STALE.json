@@ -1,0 +1,30 @@
+{
+  "schema": "hawking.q80.component_model_no_longer_closes.v1",
+  "date": "2026-08-16",
+  "FINDING": "Summing the four landed deltas against the original 14-component ledger gives 85.47 ms, but the measured wall after those wins is 111.733 ms. 26.26 ms - 23.5% of the token - is unaccounted for.",
+  "the_arithmetic": {
+    "naive_sum_of_deltas_ms": 85.47,
+    "measured_wall_ms": 111.733,
+    "unaccounted_ms": 26.26,
+    "landed": {
+      "host_preparation": "84.79 -> 25.0",
+      "synchronization": "83.38 -> 15.9",
+      "deltanet": "46.94 -> 4.449"
+    },
+    "untouched": {
+      "weight_addressing": 18.59,
+      "moe_routed": 13.99,
+      "weight_decode": 3.81,
+      "gqa": 1.5,
+      "command_submission": 1.23
+    }
+  },
+  "why_this_matters": "G001 and G003 both established CLOSURE as the standard - sum(components) + named residual == the measured token, to the nanosecond. The projection I have been quoting (~85 ms with all identified work) does not meet that standard against the new measurement, so it is an ESTIMATE and I should stop presenting it as a component budget.",
+  "three_candidate_explanations_none_yet_tested": [
+    "the deltas do not compose - removing host recurrence may have shifted cost into synchronization or weight_addressing rather than deleting it",
+    "a component GREW. The CB collapse added 96 dispatches and the DeltaNet port added a fused suffix CB, both of which could raise a neighbouring bucket",
+    "the 111.733 ms baseline was measured under different conditions from the 250.732 ms ledger - the ledger was 3 warm generates over 33 steps, the rebase was 6 alternating pairs"
+  ],
+  "what_this_does_NOT_change": "The wins are real and independently verified: each was a paired measurement with identical greedy ids and zero fallbacks. 1376 -> 111.733 ms stands. What is unreliable is the per-component ATTRIBUTION after the fact.",
+  "required_next_step": "Re-run the full 14-component decomposition on current main. The original one is what made all four wins findable; the same instrument now needs pointing at the post-win token, and the autonomous lane on host_preparation residual will need that table to know what it actually shifted."
+}

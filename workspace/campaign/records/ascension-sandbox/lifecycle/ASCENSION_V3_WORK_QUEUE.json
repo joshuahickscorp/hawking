@@ -902,8 +902,8 @@
       "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
     }
   ],
-  "recorded_at": "2026-08-09T17:44:43.494293Z",
+  "recorded_at": "2026-08-10T17:23:59.828744Z",
   "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle",
   "schema": "hawking.ascension.v3_work_queue.v1",
-  "seal_sha256": "7951457b10ba4d4f8669d043ea09c332d18c235de034ede711cd6f7251b1d0ca"
+  "seal_sha256": "b2c2d3e28ab447a1d2d6a19e868ef7d5d04ada41ab9803d2ffb5f1c6ae45b5ca"
 }

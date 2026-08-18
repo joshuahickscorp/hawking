@@ -1,13 +1,13 @@
-//! Diagnostic HQ30UQ4 (uniform Q4 group-64) complete-body admission.
+//! Diagnostic HQ30UQ4 (uniform Q4 group-64 / group-128) complete-body admission.
 //!
 //! Layout matches `qwen_uniform_q4.metal`:
-//!   * magic `HQ30UQ4\\0`, version 1, group_size 64
-//!   * FP16 scale per group of 64 flat elements
-//!   * 32 code bytes per group (even nibble low, odd high; q = nibble - 8)
+//!   * magic `HQ30UQ4\\0`, version 1, group_size 64 or 128
+//!   * FP16 scale per group of `group_size` flat elements
+//!   * `group_size/2` code bytes per group (even nibble low, odd high; q = nibble - 8)
 //!
-//! Produces a normal [`CompleteBinaryArtifact`] whose headers use
-//! `group_size=64` and whose `sign_offset` points at the code body. The
-//! runtime must dispatch `qwen_uniform_q4_*` kernels, never binary matvec.
+//! The sealed G0 admission path still requires group_size=64. The parser
+//! accepts 128 so a group-128 payload can bind `geo_tpr64`. The runtime must
+//! dispatch `qwen_uniform_q4_*` kernels, never binary matvec.
 
 use super::*;
 use std::sync::Arc;
@@ -15,7 +15,25 @@ use std::sync::Arc;
 pub const UNIFORM_Q4_MAGIC: [u8; 8] = *b"HQ30UQ4\0";
 pub const UNIFORM_Q4_VERSION: u32 = 1;
 pub const UNIFORM_Q4_GROUP_SIZE: usize = 64;
+pub const UNIFORM_Q4_GROUP_SIZE_128: usize = 128;
 pub const UNIFORM_Q4_CODE_BYTES_PER_GROUP: usize = UNIFORM_Q4_GROUP_SIZE / 2;
+/// Group sizes the HQ30UQ4 header parser will admit. Unsupported sizes still
+/// refuse. The sealed G0 admission contract remains group 64 only.
+pub const UNIFORM_Q4_SUPPORTED_GROUP_SIZES: [usize; 2] =
+    [UNIFORM_Q4_GROUP_SIZE, UNIFORM_Q4_GROUP_SIZE_128];
+
+pub fn uniform_q4_group_size_supported(group_size: usize) -> bool {
+    UNIFORM_Q4_SUPPORTED_GROUP_SIZES.contains(&group_size)
+}
+
+pub fn uniform_q4_code_bytes_per_group(group_size: usize) -> Result<usize> {
+    if !uniform_q4_group_size_supported(group_size) {
+        return Err(Error::Model(format!(
+            "uniform Q4 group_size={group_size} must be 64 or 128"
+        )));
+    }
+    Ok(group_size / 2)
+}
 pub const QWEN30_UNIFORM_Q4_SCHEMA: &str =
     "hawking.ascension.qwen30_uniform_q4_group64_candidate.v1";
 pub const QWEN30_UNIFORM_Q4_CANDIDATE_STATUS: &str =
@@ -57,9 +75,9 @@ pub fn parse_uniform_q4_header(payload: &[u8]) -> Result<CompleteBinaryHeader> {
         )));
     }
     let group_size = read_u32(payload, 12)? as usize;
-    if group_size != UNIFORM_Q4_GROUP_SIZE {
+    if !uniform_q4_group_size_supported(group_size) {
         return Err(Error::Model(format!(
-            "uniform Q4 group_size={group_size} must be {UNIFORM_Q4_GROUP_SIZE}"
+            "uniform Q4 group_size={group_size} must be 64 or 128"
         )));
     }
     let rank = read_u16(payload, 16)? as usize;
@@ -116,8 +134,9 @@ pub fn parse_uniform_q4_header(payload: &[u8]) -> Result<CompleteBinaryHeader> {
     let scale_bytes = groups
         .checked_mul(2)
         .ok_or_else(|| Error::Model("uniform Q4 scale byte count overflow".into()))?;
+    let code_bytes_per_group = uniform_q4_code_bytes_per_group(group_size)?;
     let code_bytes = groups
-        .checked_mul(UNIFORM_Q4_CODE_BYTES_PER_GROUP)
+        .checked_mul(code_bytes_per_group)
         .ok_or_else(|| Error::Model("uniform Q4 code byte count overflow".into()))?;
     let scale_offset = after_dimensions;
     let sign_offset = scale_offset
@@ -553,4 +572,60 @@ fn admit_qwen30_uniform_q4_artifact_inner(
         tensors,
         verified_payloads,
     })
+}
+
+#[cfg(test)]
+mod parse_group_size_tests {
+    use super::*;
+
+    fn hq30uq4_payload(shape: &[usize], group_size: usize) -> Vec<u8> {
+        let elements = shape.iter().product::<usize>();
+        let groups = elements.div_ceil(group_size.max(1));
+        let code_bytes_per_group = group_size / 2;
+        let mut payload = Vec::new();
+        payload.extend_from_slice(&UNIFORM_Q4_MAGIC);
+        payload.extend_from_slice(&UNIFORM_Q4_VERSION.to_le_bytes());
+        payload.extend_from_slice(&(group_size as u32).to_le_bytes());
+        payload.extend_from_slice(&(shape.len() as u16).to_le_bytes());
+        payload.extend_from_slice(&0u16.to_le_bytes());
+        payload.extend_from_slice(&(elements as u64).to_le_bytes());
+        payload.extend_from_slice(&0u32.to_le_bytes());
+        for dimension in shape {
+            payload.extend_from_slice(&(*dimension as u32).to_le_bytes());
+        }
+        payload.resize(payload.len() + groups * 2, 0);
+        payload.resize(payload.len() + groups * code_bytes_per_group, 0);
+        payload
+    }
+
+    #[test]
+    fn parse_accepts_group_64_and_128_and_refuses_the_rest() {
+        let g64 = parse_uniform_q4_header(&hq30uq4_payload(&[4, 64], 64)).unwrap();
+        assert_eq!(g64.group_size, 64);
+        assert_eq!(g64.groups, 4);
+        assert_eq!(g64.elements, 256);
+
+        let g128 = parse_uniform_q4_header(&hq30uq4_payload(&[4, 128], 128)).unwrap();
+        assert_eq!(g128.group_size, 128);
+        assert_eq!(g128.groups, 4);
+        assert_eq!(g128.elements, 512);
+        assert_eq!(
+            g128.payload_bytes,
+            COMPLETE_BINARY_HEADER_BYTES + 8 + 4 * 2 + 4 * 64
+        );
+
+        for group_size in [0usize, 32, 96, 256, 512] {
+            let err = parse_uniform_q4_header(&hq30uq4_payload(&[4, 256], group_size))
+                .expect_err("unsupported group size must refuse");
+            let msg = format!("{err}");
+            assert!(
+                msg.contains("must be 64 or 128"),
+                "group_size={group_size} refuse message was {msg}"
+            );
+            assert!(
+                msg.contains(&format!("group_size={group_size}")),
+                "group_size={group_size} refuse message was {msg}"
+            );
+        }
+    }
 }

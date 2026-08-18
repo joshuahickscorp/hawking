@@ -2,16 +2,16 @@
   "actions": [
     {
       "action": "PREFLIGHT_SAMPLE",
-      "at": "2026-08-15T06:10:44.563364Z",
+      "at": "2026-08-17T04:36:45.424220Z",
       "sample": {
         "cpu_percent": 0.0,
-        "free_disk_bytes": 244469534720,
-        "monotonic_s": 3168.617998875,
+        "free_disk_bytes": 342870261760,
+        "monotonic_s": 37859.287016541,
         "pid": null,
         "process_rss_bytes": 0,
         "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
-        "swap_used_bytes": 0,
-        "transfer_bytes": 216954962
+        "swap_used_bytes": 1581514752,
+        "transfer_bytes": 655399849
       }
     },
     {
@@ -31,32 +31,32 @@
         "--parallel-workers",
         "32"
       ],
-      "at": "2026-08-15T06:10:44.563551Z",
+      "at": "2026-08-17T04:36:45.424427Z",
       "reason": "RAMP_STEP",
       "workers": 32
     },
     {
       "action": "CHILD_STARTED",
-      "at": "2026-08-15T06:10:44.565158Z",
-      "pid": 15633,
+      "at": "2026-08-17T04:36:45.425876Z",
+      "pid": 30905,
       "workers": 32
     },
     {
       "action": "CHILD_EXIT_OBSERVED",
-      "at": "2026-08-15T06:10:46.720240Z",
+      "at": "2026-08-17T04:36:49.641585Z",
       "exit_code": 2,
       "reason": "ERROR_EXIT",
       "workers": 32
     },
     {
       "action": "STOP_RAMP",
-      "at": "2026-08-15T06:10:46.720337Z",
+      "at": "2026-08-17T04:36:49.641757Z",
       "exit_code": 2,
       "reason": "ERROR_EXIT",
       "recommended_workers": null
     }
   ],
-  "baseline_swap_used_bytes": 0,
+  "baseline_swap_used_bytes": 1581514752,
   "candidates": [
     {
       "actions": [
@@ -77,19 +77,19 @@
             "--parallel-workers",
             "32"
           ],
-          "at": "2026-08-15T06:10:44.563551Z",
+          "at": "2026-08-17T04:36:45.424427Z",
           "reason": "RAMP_STEP",
           "workers": 32
         },
         {
           "action": "CHILD_STARTED",
-          "at": "2026-08-15T06:10:44.565158Z",
-          "pid": 15633,
+          "at": "2026-08-17T04:36:45.425876Z",
+          "pid": 30905,
           "workers": 32
         },
         {
           "action": "CHILD_EXIT_OBSERVED",
-          "at": "2026-08-15T06:10:46.720240Z",
+          "at": "2026-08-17T04:36:49.641585Z",
           "exit_code": 2,
           "reason": "ERROR_EXIT",
           "workers": 32
@@ -110,33 +110,43 @@
         "--parallel-workers",
         "32"
       ],
-      "duration_seconds": 2.1567073750002237,
+      "duration_seconds": 4.217199124999752,
       "exit_code": 2,
-      "observed_cpu_percent_mean": 0.0,
-      "peak_rss_bytes": 32768,
+      "observed_cpu_percent_mean": 33.333333333333336,
+      "peak_rss_bytes": 504381440,
       "reasons": [
         "ERROR_EXIT"
       ],
       "samples": [
         {
           "cpu_percent": 0.0,
-          "free_disk_bytes": 244469534720,
-          "monotonic_s": 3168.632940916,
-          "pid": 15633,
+          "free_disk_bytes": 342870261760,
+          "monotonic_s": 37859.303336041,
+          "pid": 30905,
           "process_rss_bytes": 32768,
           "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
-          "swap_used_bytes": 0,
-          "transfer_bytes": 216954962
+          "swap_used_bytes": 1581514752,
+          "transfer_bytes": 655399849
+        },
+        {
+          "cpu_percent": 100.0,
+          "free_disk_bytes": 342860996608,
+          "monotonic_s": 37861.417124833,
+          "pid": 30905,
+          "process_rss_bytes": 504381440,
+          "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
+          "swap_used_bytes": 1581514752,
+          "transfer_bytes": 655399849
         },
         {
           "cpu_percent": 0.0,
-          "free_disk_bytes": 244469276672,
-          "monotonic_s": 3170.759422666,
+          "free_disk_bytes": 342855712768,
+          "monotonic_s": 37863.487890375,
           "pid": null,
           "process_rss_bytes": 0,
           "schema": "hawking.gravity.deepseek_v4.build_full_resource_sample.v1",
-          "swap_used_bytes": 0,
-          "transfer_bytes": 216954962
+          "swap_used_bytes": 1581514752,
+          "transfer_bytes": 655399849
         }
       ],
       "status": "ERROR_EXIT",
@@ -144,7 +154,7 @@
       "workers": 32
     }
   ],
-  "created_at": "2026-08-15T06:10:46.720340Z",
+  "created_at": "2026-08-17T04:36:49.641763Z",
   "notes": [
     "Observed CPU utilization is reported per candidate; this supervisor does not promise or attempt zero CPU idle.",
     "Each candidate is launched through the existing build-full CLI so the sealed journal permits resumption after a measured stop."

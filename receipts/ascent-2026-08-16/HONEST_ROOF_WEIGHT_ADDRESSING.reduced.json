@@ -1,0 +1,645 @@
+{
+  "byte_count_adjudication": {
+    "defended_bytes": 13611663360,
+    "defended_name": "geometry GEMV payload (codes + f16 scales)",
+    "defended_reason": "weight_addressing is the addr_probe fraction of the Q4 grouped GEMVs. The kernel loads 32 code bytes + 2 scale bytes per group of 64 weights. Headers stay on disk after load. Norms, embed-row gather, conv, and A_log are other components.",
+    "gemv_payload_breakdown": {
+      "embed_row_bytes": 2720,
+      "embed_table_excluded": 675430440,
+      "full_attn_bytes": 891289600,
+      "gemv_payload": 13611663360,
+      "geometry_active": 13618141856,
+      "linear_attn_bytes": 2953789440,
+      "lm_head_bytes": 675430400,
+      "mlp_bytes": 9091153920,
+      "norms_bytes": 6475776
+    },
+    "header_and_extra_accounting": {
+      "full_extra_non_gemv": 33024,
+      "full_gemv_tensors": 64,
+      "full_headers": 2560,
+      "full_manifest_minus_geometry": 35584,
+      "hq30uq4_rank2_header_bytes": 40,
+      "linear_extra_non_gemv": 7908864,
+      "linear_gemv_tensors": 144,
+      "linear_headers": 5760,
+      "linear_manifest_minus_geometry": 7914624,
+      "lm_head_manifest_minus_geometry": 40,
+      "lm_head_tensors": 1,
+      "mlp_explained_as_headers": 7680,
+      "mlp_manifest_minus_geometry": 7680,
+      "mlp_tensors": 192,
+      "note": "MLP and lm_head extras are exactly rank-2 HQ30UQ4 headers (40 B/tensor). Linear/full extras are headers plus mixer tensors the Q4 GEMV kernel never streams (conv, A_log, dt_bias, q/k RMS). Those bytes are not weight_addressing traffic."
+    },
+    "sources": [
+      {
+        "bytes": 13618141856,
+        "name": "ledger_geometry_active",
+        "what_it_counts": "Q4 GEMV payload + f32 norms + one gathered embed row. Embed table excluded.",
+        "why_wrong_for_weight_addressing": "Includes 6_475_776 B of norms and 2_720 B of embed-row that the GEMV addr_probe does not load. Those live in `normalization` and `unattributed_residual`."
+      },
+      {
+        "bytes": 13621829601,
+        "name": "bandwidth_receipt_active",
+        "what_it_counts": "total_payload 14_297_694_680 minus a stale embed figure 675_865_079.",
+        "why_wrong_for_weight_addressing": "Arithmetic remainder, not a GEMV census. The embed subtraction is 434_639 B larger than the measured HQ30UQ4 embed table (675_430_440). total_payload itself is manifest-active + measured embed, so this number is a mis-classified remainder of the third source."
+      },
+      {
+        "bytes": 13622264240,
+        "name": "source_constant_ACTIVE_BUDGET_BYTES",
+        "what_it_counts": "Sum of 755-tensor manifest classes excluding the embed table. Includes per-tensor HQ30UQ4 headers and extra mixer tensors.",
+        "why_wrong_for_weight_addressing": "Headers are not streamed by geo_tpr64. Extra linear/full bytes are not GEMV traffic. Manifest norms (2_642_952) also are not GEMV traffic."
+      }
+    ]
+  },
+  "clean_box": false,
+  "contamination_note": "GPU lane lock was held and timings are completed-command-buffer GPU timestamps, but concurrent CPU builds and a repeatedly respawned sealed-model supervisor were present. Unified-memory contention was not excluded; absolute roof values require a clean paired rerun.",
+  "date": "2026-08-17",
+  "denominator_correction": {
+    "correct_attribution": {
+      "achieved_gb_s": 639.2522348492898,
+      "bytes": 13611663360,
+      "bytes_name": "geometry GEMV payload (mlp+linear+full+lm_head codes+scales)",
+      "sealed_probe_split": "mlp addr 87.17% of GEMV; dn 90.51%; gqa 83.03%; lm_head 91.57%. Addressing dominates GEMV time; decode+FMA are the remainder.",
+      "time_is_weight_addressing_not_total_gpu": true,
+      "time_name": "sealed ledger weight_addressing ns (addr_probe fraction of isolated class GEMVs)",
+      "time_ns": 21293102.5
+    },
+    "wrong_97p6": {
+      "achieved_gb_s": 401.5690060604206,
+      "bytes_used": 13618141856,
+      "ceiling_used_gb_s": 411.51,
+      "claimed_pct_of_411p51": 0.975842643095965,
+      "time_used_name": "median production GPU ns (entire token, all kernels)",
+      "time_used_ns": 33912333,
+      "why_bytes_wrong": "13_618_141_856 is geometry-active, not GEMV payload. Norms + embed-row do not move in weight_addressing.",
+      "why_ceiling_wrong": "411.51 GB/s is the 512 MiB point of a sequential unique_once read-reduce. The 1024 MiB point of the same sweep was 301.63 GB/s and was discarded. unique_once cannot even take a 13.6 GB nbytes: the kernel's nbytes is uint32.",
+      "why_time_wrong": "33.91 ms includes DeltaNet, GQA, norms, SwiGLU, KV, terminal FMA, and residual GPU work that does not stream the GEMV bytes."
+    }
+  },
+  "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+  "hardware": {
+    "chip": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "published_peak_gb_s": 819.0,
+    "unified_memory_bytes": 103079215104
+  },
+  "q4_production_catalog_addr_probe": null,
+  "q4_production_catalog_decode_probe": null,
+  "q4_production_catalog_full": null,
+  "q4_single_gemv_addr_probe": [
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+      "label": "64mib",
+      "payload_bytes": 67107840,
+      "requested_payload_bytes": 67108864,
+      "rows": 24672,
+      "spread": {
+        "all_ns": [
+          81250,
+          106791,
+          76041,
+          79709,
+          78459
+        ],
+        "max_gb_s": 882.5217974513749,
+        "max_ns": 106791,
+        "median_gb_s": 841.9104492591803,
+        "median_ns": 79709,
+        "min_gb_s": 628.4035171503217,
+        "min_ns": 76041
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+      "label": "128mib",
+      "payload_bytes": 134215680,
+      "requested_payload_bytes": 134217728,
+      "rows": 49344,
+      "spread": {
+        "all_ns": [
+          204709,
+          220334,
+          216375,
+          198250,
+          194750
+        ],
+        "max_gb_s": 689.1690885750962,
+        "max_ns": 220334,
+        "median_gb_s": 655.6413250028089,
+        "median_ns": 204709,
+        "min_gb_s": 609.1464776203401,
+        "min_ns": 194750
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+      "label": "256mib",
+      "payload_bytes": 268434080,
+      "requested_payload_bytes": 268435456,
+      "rows": 98689,
+      "spread": {
+        "all_ns": [
+          386209,
+          371334,
+          386000,
+          381334,
+          571375
+        ],
+        "max_gb_s": 722.8911976818713,
+        "max_ns": 571375,
+        "median_gb_s": 695.4250777202072,
+        "median_ns": 386000,
+        "min_gb_s": 469.8036840953839,
+        "min_ns": 371334
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+      "label": "512mib",
+      "payload_bytes": 536870880,
+      "requested_payload_bytes": 536870912,
+      "rows": 197379,
+      "spread": {
+        "all_ns": [
+          729375,
+          799541,
+          7682541,
+          1032750,
+          745291
+        ],
+        "max_gb_s": 736.0697583547558,
+        "max_ns": 7682541,
+        "median_gb_s": 671.4738581260998,
+        "median_ns": 799541,
+        "min_gb_s": 69.88194140454311,
+        "min_ns": 729375
+      },
+      "topology": "single_gemv"
+    }
+  ],
+  "q4_single_gemv_decode_probe": [
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+      "label": "64mib",
+      "payload_bytes": 67107840,
+      "requested_payload_bytes": 67108864,
+      "rows": 24672,
+      "spread": {
+        "all_ns": [
+          136625,
+          169875,
+          166875,
+          167041,
+          196666
+        ],
+        "max_gb_s": 491.1827264409881,
+        "max_ns": 196666,
+        "median_gb_s": 401.74472135583477,
+        "median_ns": 167041,
+        "min_gb_s": 341.22746178800605,
+        "min_ns": 136625
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+      "label": "128mib",
+      "payload_bytes": 134215680,
+      "requested_payload_bytes": 134217728,
+      "rows": 49344,
+      "spread": {
+        "all_ns": [
+          205875,
+          204459,
+          204625,
+          365875,
+          444791
+        ],
+        "max_gb_s": 656.4430032427039,
+        "max_ns": 444791,
+        "median_gb_s": 651.928014571949,
+        "median_ns": 205875,
+        "min_gb_s": 301.7499904449505,
+        "min_ns": 204459
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+      "label": "256mib",
+      "payload_bytes": 268434080,
+      "requested_payload_bytes": 268435456,
+      "rows": 98689,
+      "spread": {
+        "all_ns": [
+          508750,
+          492000,
+          692625,
+          747125,
+          409791
+        ],
+        "max_gb_s": 655.0511846282617,
+        "max_ns": 747125,
+        "median_gb_s": 527.6345552825553,
+        "median_ns": 508750,
+        "min_gb_s": 359.28938263342815,
+        "min_ns": 409791
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+      "label": "512mib",
+      "payload_bytes": 536870880,
+      "requested_payload_bytes": 536870912,
+      "rows": 197379,
+      "spread": {
+        "all_ns": [
+          902125,
+          790750,
+          973625,
+          1319084,
+          1100166
+        ],
+        "max_gb_s": 678.9388302244704,
+        "max_ns": 1319084,
+        "median_gb_s": 551.4144357427141,
+        "median_ns": 973625,
+        "min_gb_s": 407.00279891197226,
+        "min_ns": 790750
+      },
+      "topology": "single_gemv"
+    }
+  ],
+  "q4_single_gemv_full": [
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "label": "64mib",
+      "payload_bytes": 67107840,
+      "requested_payload_bytes": 67108864,
+      "rows": 24672,
+      "spread": {
+        "all_ns": [
+          182875,
+          117959,
+          118334,
+          132625,
+          123625
+        ],
+        "max_gb_s": 568.9081799608339,
+        "max_ns": 182875,
+        "median_gb_s": 542.8338928210313,
+        "median_ns": 123625,
+        "min_gb_s": 366.96016404647986,
+        "min_ns": 117959
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "label": "128mib",
+      "payload_bytes": 134215680,
+      "requested_payload_bytes": 134217728,
+      "rows": 49344,
+      "spread": {
+        "all_ns": [
+          369375,
+          368375,
+          232459,
+          317459,
+          336791
+        ],
+        "max_gb_s": 577.3735583479237,
+        "max_ns": 369375,
+        "median_gb_s": 398.51326193395903,
+        "median_ns": 336791,
+        "min_gb_s": 363.3588629441624,
+        "min_ns": 232459
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "label": "256mib",
+      "payload_bytes": 268434080,
+      "requested_payload_bytes": 268435456,
+      "rows": 98689,
+      "spread": {
+        "all_ns": [
+          579416,
+          688459,
+          436875,
+          420584,
+          578916
+        ],
+        "max_gb_s": 638.2413025697601,
+        "max_ns": 688459,
+        "median_gb_s": 463.6839886961148,
+        "median_ns": 578916,
+        "min_gb_s": 389.9056879204136,
+        "min_ns": 420584
+      },
+      "topology": "single_gemv"
+    },
+    {
+      "cols": 5120,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "label": "512mib",
+      "payload_bytes": 536870880,
+      "requested_payload_bytes": 536870912,
+      "rows": 197379,
+      "spread": {
+        "all_ns": [
+          848209,
+          820541,
+          817250,
+          812666,
+          818625
+        ],
+        "max_gb_s": 660.629188375052,
+        "max_ns": 848209,
+        "median_gb_s": 655.8202840128264,
+        "median_ns": 818625,
+        "min_gb_s": 632.9464554137011,
+        "min_ns": 812666
+      },
+      "topology": "single_gemv"
+    }
+  ],
+  "q4_tiled_production_organ": [
+    {
+      "dispatches": 11,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "label": "512mib_tiled_gate",
+      "organ_cols": 5120,
+      "organ_rows": 17408,
+      "organs": 11,
+      "payload_bytes": 520847360,
+      "spread": {
+        "all_ns": [
+          1620709,
+          907166,
+          982291,
+          1553250,
+          1141750
+        ],
+        "max_gb_s": 574.1477965444031,
+        "max_ns": 1620709,
+        "median_gb_s": 456.1833676373987,
+        "median_ns": 1141750,
+        "min_gb_s": 321.3700670509018,
+        "min_ns": 907166
+      },
+      "topology": "tiled_production_organ"
+    },
+    {
+      "dispatches": 11,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+      "label": "512mib_tiled_gate_addr",
+      "organ_cols": 5120,
+      "organ_rows": 17408,
+      "organs": 11,
+      "payload_bytes": 520847360,
+      "spread": {
+        "all_ns": [
+          1512459,
+          1314125,
+          772000,
+          790584,
+          1109250
+        ],
+        "max_gb_s": 674.6727461139897,
+        "max_ns": 1512459,
+        "median_gb_s": 469.54911877394636,
+        "median_ns": 1109250,
+        "min_gb_s": 344.37122593075253,
+        "min_ns": 772000
+      },
+      "topology": "tiled_production_organ"
+    }
+  ],
+  "reduced_sweep": true,
+  "schema": "hawking.ascension.qwen38_honest_roof.v1",
+  "sealed_ledger_cited_not_rerun": {
+    "production_gpu_ns": 33912333,
+    "production_wall_ns": 35227917,
+    "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+    "weight_addressing_ns": 21293102.5
+  },
+  "source_head_at_measurement": "81bb0e90c21fd6c328e6adb73ebed1274493f1da",
+  "source_tree_clean_at_measurement": false,
+  "timing_label": "GPU_PROTECTED_CPU_CONTENDED",
+  "unique_once_sweep": [
+    {
+      "chunk_bytes": 67108864,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "q80_decode_shape_unique_once",
+      "label": "64mib",
+      "payload_bytes": 67108864,
+      "spread": {
+        "all_ns": [
+          165834,
+          161375,
+          162666,
+          157000,
+          340459
+        ],
+        "max_gb_s": 427.44499363057326,
+        "max_ns": 340459,
+        "median_gb_s": 412.55618260730574,
+        "median_ns": 162666,
+        "min_gb_s": 197.1129093371008,
+        "min_ns": 157000
+      },
+      "threads": 15360,
+      "topology": "single_dispatch",
+      "why_chunked": "q80_decode_shape_unique_once takes constant uint nbytes; a single dispatch cannot cover 13.6 GB."
+    },
+    {
+      "chunk_bytes": 134217728,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "q80_decode_shape_unique_once",
+      "label": "128mib",
+      "payload_bytes": 134217728,
+      "spread": {
+        "all_ns": [
+          359000,
+          483459,
+          552625,
+          383625,
+          364750
+        ],
+        "max_gb_s": 373.86553760445685,
+        "max_ns": 552625,
+        "median_gb_s": 349.86700032583906,
+        "median_ns": 383625,
+        "min_gb_s": 242.87306582221217,
+        "min_ns": 359000
+      },
+      "threads": 15360,
+      "topology": "single_dispatch",
+      "why_chunked": "q80_decode_shape_unique_once takes constant uint nbytes; a single dispatch cannot cover 13.6 GB."
+    },
+    {
+      "chunk_bytes": 268435456,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "q80_decode_shape_unique_once",
+      "label": "256mib",
+      "payload_bytes": 268435456,
+      "spread": {
+        "all_ns": [
+          936625,
+          738084,
+          726959,
+          1166334,
+          955625
+        ],
+        "max_gb_s": 369.2580406873015,
+        "max_ns": 1166334,
+        "median_gb_s": 286.5986451354598,
+        "median_ns": 936625,
+        "min_gb_s": 230.15316024397814,
+        "min_ns": 726959
+      },
+      "threads": 15360,
+      "topology": "single_dispatch",
+      "why_chunked": "q80_decode_shape_unique_once takes constant uint nbytes; a single dispatch cannot cover 13.6 GB."
+    },
+    {
+      "chunk_bytes": 536870912,
+      "dispatches": 1,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "q80_decode_shape_unique_once",
+      "label": "512mib",
+      "payload_bytes": 536870912,
+      "spread": {
+        "all_ns": [
+          2089875,
+          1469416,
+          2189375,
+          1427500,
+          2270125
+        ],
+        "max_gb_s": 376.0917071803853,
+        "max_ns": 2270125,
+        "median_gb_s": 256.8913987678689,
+        "median_ns": 2089875,
+        "min_gb_s": 236.49398689499478,
+        "min_ns": 1427500
+      },
+      "threads": 15360,
+      "topology": "single_dispatch",
+      "why_chunked": "q80_decode_shape_unique_once takes constant uint nbytes; a single dispatch cannot cover 13.6 GB."
+    },
+    {
+      "chunk_bytes": 536870912,
+      "dispatches": 2,
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+      "kernel": "q80_decode_shape_unique_once",
+      "label": "1024mib",
+      "payload_bytes": 1073741824,
+      "spread": {
+        "all_ns": [
+          3774750,
+          2968000,
+          3391791,
+          3791875,
+          8317375
+        ],
+        "max_gb_s": 361.77285175202155,
+        "max_ns": 8317375,
+        "median_gb_s": 284.45375826213655,
+        "median_ns": 3774750,
+        "min_gb_s": 129.09623817610725,
+        "min_ns": 2968000
+      },
+      "threads": 15360,
+      "topology": "chunked_uint32_nbytes",
+      "why_chunked": "q80_decode_shape_unique_once takes constant uint nbytes; a single dispatch cannot cover 13.6 GB."
+    }
+  ],
+  "verdict": {
+    "measured_q4_addr_catalog_gb_s": null,
+    "measured_q4_addr_kernel_roof_gb_s": null,
+    "named_resource": null,
+    "production_catalog_at_13p6gb": {
+      "addr_gb_s": null,
+      "full_gb_s": null
+    },
+    "published_peak_gb_s": 819.0,
+    "refuted_ceiling_gb_s": 411.51,
+    "resource_absence": "sealed weight_addressing is below the measured Q4-addr roof at 13.6 GB; addressing has unused bandwidth on this genome.",
+    "roof_is_conditioned_on": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128, cols=5120 groups, unique codes+scales, production launch (64 threads/row, 128-thread TG)",
+    "saturated_on_this_genome": false,
+    "sealed_over_kernel_roof": null,
+    "sealed_weight_addressing_gb_s": 639.2522348492898,
+    "single_gemv_at_13p6gb": {
+      "addr_gb_s": null,
+      "alu_plus_decode_tax_vs_addr": null,
+      "decode_gb_s": null,
+      "full_gb_s": null
+    },
+    "unique_once_contrast": {
+      "at_1024mib_gb_s": 284.45375826213655,
+      "at_13p6gb_gb_s": null,
+      "at_512mib_gb_s": 256.8913987678689,
+      "is_not_the_q4_gemv_ceiling": true
+    }
+  },
+  "wall_s": 0.643154542,
+  "what_was_under_test": {
+    "claimed_ceiling_gb_s": 411.51,
+    "claimed_pct": 0.976,
+    "claimed_weight_addressing_ms": 21.293,
+    "refuted_because": [
+      "411.51 is unique_once at 512 MiB, not Q4 grouped GEMV",
+      "the same unique_once sweep's 1024 MiB point is 301.63 GB/s and was discarded",
+      "97.6% used total production GPU time as the denominator",
+      "unique_once nbytes is uint32 so the old control cannot even name a 13.6 GB point without tiling"
+    ]
+  }
+}

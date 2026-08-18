@@ -1,0 +1,147 @@
+{
+  "schema": "hawking.ascent.qwen38_fixed_overhead_deleted.v1",
+  "date": "2026-08-16",
+  "lane": "qwen38-kill-fixed-overhead",
+  "commit": "9c87c500dc4c1e4b96962a99a1b017a23f273906",
+  "timing_label": "DIRTY_ENGINEERING",
+  "machine": "Apple M3 Ultra",
+  "claim": "Qwen3.8's per-token encode of 964 identical dispatches is not irreducible. Encoding the graph once into an Indirect Command Buffer and replaying it drops encode_host_prepare from 886 µs to 91 µs. Named fixed overhead (encode + wait-minus-gpu + submit + tokenizer + epilogue) falls from 1.332 ms mean / ~1.415 ms claimed to 0.671 ms. Greedy ids stay bit-identical on the 3-prompt Q4 seal. wait-minus-gpu rose 136 µs; the net is still a deletion.",
+  "status": "DONE",
+  "s004_section_7": {
+    "item_8_persistent_gpu_metadata": "DONE. Token, position, and MHA seq_len live in a 64 KiB shared scalar slab. Static set_bytes payloads (rows/cols/eps/geometry) are interned once at ICB encode. Kernels keep their constant uint& / ArgbufMhaDecode bindings; the CPU no longer set_bytes them each token.",
+    "item_9_collapse_command_buffers": "Already 1 CB. The real collapse was 964 compute encoders → 1 executeCommandsInBuffer. Serial-group CPU fallback remains behind HAWKING_QWEN38_SCHEDULE=serial.",
+    "item_13_function_constants": "NOT REQUIRED. Persistent buffers at the existing constant-buffer slots delete the host encode work without a shader rewrite. Function constants would only remove a few interned binds on replay, which is already ~90 µs total.",
+    "prefer_delete": "964 pipeline lookups + encoder create/set_buffer/set_bytes/dispatch/end_encoding per token are gone. Replay writes 3 u32s and executes the ICB."
+  },
+  "mechanism": {
+    "schedule": "icb",
+    "icb_commands": 964,
+    "icb_error": null,
+    "scalar_slab_bytes": 65536,
+    "per_token_host_writes": ["token", "position", "mha_seq_len=position+1"],
+    "barriers": "ICB setBarrier on every producer→consumer edge; omitted only on independent pairs (gate/up, qkvz/ba, k/v after q).",
+    "mha_shmem": "oversized to (max_seq_len + 128) floats so dispatch geometry stays fixed while seq_len lives in the packed arg buffer",
+    "disable": "HAWKING_QWEN38_ICB=0 or HAWKING_QWEN38_SCHEDULE=serial|multi"
+  },
+  "measurement": {
+    "vehicle": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1",
+    "tokenizer": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json",
+    "gpu_lock": "./tools/gpu_lane_lock.sh qwen38-kill-fixed-overhead-wall",
+    "binary": "workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy",
+    "profile": "release lto=fat codegen-units=1",
+    "regime": "warm after one discarded cold generate; 3 alternating A/B pairs = 6 in-process generates; steady = decode steps only (Q80 rule; last prefill emits new-token[0])",
+    "gpu_authority": "completed MTLCommandBuffer GPUEndTime-GPUStartTime after wait",
+    "full_wall_receipt": "receipts/ascent-2026-08-16/QWEN38_FIXED_OVERHEAD_ICB_WALL.json",
+    "baseline_authority": "receipts/ascent-2026-08-16/QWEN38_COMPLETE_TOKEN_WALL_AUTHORITY.json"
+  },
+  "named_fixed_components_ns": {
+    "basis": "mean of each of 6 warm-rep per-step means, then mean across reps",
+    "encode_host_prepare": {
+      "before_mean": 886200,
+      "after_mean": 90981,
+      "after_spread": {"min": 85012, "median": 89980, "max": 96317, "n": 6},
+      "delta": -795219
+    },
+    "wait_minus_gpu": {
+      "before_mean": 425900,
+      "after_mean": 561994,
+      "after_spread": {"min": 535978, "median": 564531, "max": 597687, "n": 6},
+      "delta": 136094,
+      "note": "ENCODE FELL AND WAIT ROSE. ICB execute has a larger host-side wait tail than 964 encoder boundaries. Reported, not hidden. Net named fixed still drops."
+    },
+    "submit": {
+      "before_mean": 10500,
+      "after_mean": 9420,
+      "after_spread": {"min": 9144, "median": 9449, "max": 9730, "n": 6},
+      "delta": -1080
+    },
+    "tokenizer": {
+      "before_mean": 6300,
+      "after_mean": 6831,
+      "after_spread": {"min": 6266, "median": 6797, "max": 7542, "n": 6},
+      "delta": 531
+    },
+    "epilogue": {
+      "before_mean": 1800,
+      "after_mean": 1708,
+      "after_spread": {"min": 1590, "median": 1731, "max": 1872, "n": 6},
+      "delta": -92
+    }
+  },
+  "named_fixed_sum": {
+    "before_claimed_ms": 1.415,
+    "before_authority_mean_ms": 1.3307,
+    "after_mean_ms": 0.670934,
+    "after_mean_ns": 670934,
+    "delta_vs_claimed_ms": -0.744,
+    "below_1415_us": true
+  },
+  "complete_token_wall": {
+    "before_headline_ms": 38.216792,
+    "after_headline_ms": 36.683916,
+    "after_tps": 27.2599,
+    "after_rep_median_wall_ns": [36661166, 36663333, 36728917, 36683916, 36647500, 36706041],
+    "before_gpu_ms": 36.987458,
+    "after_gpu_ms": 36.01225,
+    "after_rep_median_gpu_ns": [35997000, 36031208, 36093541, 36012250, 35989750, 36010916],
+    "before_wall_minus_gpu_ms": 1.229334,
+    "after_wall_minus_gpu_ms": 0.671666,
+    "gpu_as_fraction_of_wall": 0.9817,
+    "steady_decode_steps_per_rep": 31,
+    "prefill_excluded": true
+  },
+  "density_share_after": {
+    "note": "fixed 0.671 ms no longer scales with BPW; it is now a smaller tax than 1.415 ms",
+    "at_2_00_bpw_of_11_27_plus_fixed": "if GPU scales and fixed stays 0.671, share is 0.671/11.27 ≈ 6.0% vs 12.6% before",
+    "at_1_00_bpw_of_9_11_plus_fixed": "0.671/9.11 ≈ 7.4% vs 15.5% before"
+  },
+  "coherence": {
+    "gate": "tools/coherence_gate.py verify",
+    "prompts": 3,
+    "seal": "receipts/ascent-2026-08-16/QWEN38_COHERENCE_SEAL.json",
+    "result": "PASS: 3 prompts id-identical to seal",
+    "greedy_16_matches_bringup": [248068, 198, 760, 1156, 4777, 6587, 728, 310, 1910, 328, 5834, 1149, 1061, 369, 264, 1546],
+    "fallbacks": 0
+  },
+  "verification_pasted": {
+    "build": {
+      "cmd": "CARGO_TARGET_DIR=workspace/ops/build/rust cargo build --release -p hawking-core --example ascension_qwen38_hybrid_greedy --offline",
+      "result": "Finished `release` profile [optimized] target(s) in 2m 24s"
+    },
+    "coherence_gate": {
+      "cmd": "python3 tools/coherence_gate.py verify --binary workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy --args \"--artifact-root /Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/uniform-q4-v1 --tokenizer /Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16/tokenizer.json --max-new-tokens 12\" --prompts <3 sealed prompts> --seal receipts/ascent-2026-08-16/QWEN38_COHERENCE_SEAL.json",
+      "stdout": "verify: 3 prompts\n  prompt 1/3: 12 ids\n  prompt 2/3: 12 ids\n  prompt 3/3: 12 ids\nPASS: 3 prompts id-identical to seal"
+    },
+    "complete_wall_stdout": {
+      "COMPLETE_WALL_MS_PER_TOKEN": 36.683916,
+      "COMPLETE_WALL_TPS": 27.2599,
+      "GPU_NS_PER_TOKEN": 36012250,
+      "WALL_MINUS_GPU_NS": 671666,
+      "REP_MEDIANS_NS": [36661166, 36663333, 36728917, 36683916, 36647500, 36706041],
+      "SCHEDULE": "icb",
+      "ICB_COMMANDS": 964,
+      "ENCODE_HOST_PREPARE_NS": 90981,
+      "WAIT_MINUS_GPU_NS": 561994,
+      "SUBMIT_NS": 9420,
+      "TOKENIZER_DECODE_NS": 6831,
+      "COMMIT_EPILOGUE_NS": 1708,
+      "NAMED_FIXED_SUM_MS": 0.670934
+    }
+  },
+  "files_touched": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "crates/hawking-core/src/metal/mod.rs",
+    "crates/hawking-core/examples/ascension_qwen38_hybrid_greedy.rs",
+    "receipts/ascent-2026-08-16/QWEN38_FIXED_OVERHEAD_ICB_WALL.json",
+    "receipts/ascent-2026-08-16/QWEN38_FIXED_OVERHEAD_DELETED.json"
+  ],
+  "not_touched": [
+    "qwen80 decode",
+    "dsv4f decode",
+    "gk_family.metal",
+    "qwen38_device_activations.metal (no kernel rewrite required)",
+    "tools/gpu_lane_lock.sh",
+    "tools/coherence_gate.py",
+    "sealed receipts created by other lanes"
+  ]
+}

@@ -50,6 +50,8 @@ pub mod qwen38_geometry;
 pub mod qwen38_64_layer_execution_schedule;
 pub mod qwen38_pack;
 pub mod qwen38_hybrid_decode;
+/// Host-memory admission for Qwen3.8 shared-session / process-pool children.
+pub mod qwen38_host_admission;
 /// Per-token ns ledger for the Qwen3.8 uniform-Q4 hybrid vehicle.
 pub mod qwen38_token_ns_ledger;
 /// Strict Qwen3-Coder-Next complete-binary hybrid catalog and native-state

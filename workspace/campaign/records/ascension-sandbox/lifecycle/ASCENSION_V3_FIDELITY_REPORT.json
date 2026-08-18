@@ -2112,7 +2112,7 @@
       "schedule_declared_status": "NOT_STARTED"
     }
   ],
-  "recorded_at": "2026-08-09T17:44:43.523353Z",
+  "recorded_at": "2026-08-10T17:24:11.929160Z",
   "requirements": [
     {
       "certified_states": [
@@ -3946,5 +3946,5 @@
     }
   },
   "schema": "hawking.ascension.v3_fidelity_report.v1",
-  "seal_sha256": "d168fd55efb1a8164a3569c015e3dbc13660b4184490fb950d85023e33ab72c5"
+  "seal_sha256": "a75b25719fe8681e18090a96457db0a7b9f80e605b891418f789270e11e21dfe"
 }
