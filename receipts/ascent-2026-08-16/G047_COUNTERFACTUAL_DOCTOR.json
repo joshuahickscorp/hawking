@@ -1,0 +1,62 @@
+{
+  "schema": "hawking.nos.counterfactual_doctor.v1",
+  "obligation": "G047 -- deliberately excite unseen directions",
+  "scope_honesty": "NO NEW CAPTURE WAS BUILT. The thick v2 capture already contains the counterfactual families the acceptance names -- adversarial 8 prompts, code 12, math 10, multilingual 10, instruction 10, long 3 -- so 'ordinary' is taken to be prose (16) and the rest are the counterfactual set. The synthetic hidden-state perturbations ARE built here, as random directions in the orthogonal complement of the observed span.",
+  "site": "post_swiglu, down_proj input, width 17408, 256 rows per family",
+  "energy_outside_the_ordinary_span": {
+    "method": "basis = prose rows only at 99% energy; report the fraction of each other family's energy that falls OUTSIDE it",
+    "L0": {
+      "rank_prose": 554,
+      "code": 0.601,
+      "math": 0.5824,
+      "instruction": 0.5432,
+      "multilingual": 0.6637,
+      "adversarial": 0.4766,
+      "long": 0.7688
+    },
+    "L31": {
+      "rank_prose": 237,
+      "code": 0.7944,
+      "math": 0.6558,
+      "instruction": 0.7551,
+      "multilingual": 0.6266,
+      "adversarial": 0.7381,
+      "long": 0.7306
+    },
+    "L63": {
+      "rank_prose": 205,
+      "code": 0.3079,
+      "math": 0.2648,
+      "instruction": 0.2286,
+      "multilingual": 0.3567,
+      "adversarial": 0.2649,
+      "long": 0.2083
+    }
+  },
+  "operator_gain_on_never_observed_directions": {
+    "method": "span = ALL families at 99.9% energy; draw random unit directions, project the observed span OUT of them (residual check ~1e-6 confirms they are in the complement), and compare ||W_down d|| against unit directions drawn INSIDE the span",
+    "L0": {
+      "rank_observed": 554,
+      "gain_seen": 1.06004,
+      "gain_unseen": 0.75112,
+      "ratio": 0.7086
+    },
+    "L31": {
+      "rank_observed": 1538,
+      "gain_seen": 0.89179,
+      "gain_unseen": 0.80802,
+      "ratio": 0.9061
+    },
+    "L63": {
+      "rank_observed": 1392,
+      "gain_seen": 0.81037,
+      "gain_unseen": 0.83426,
+      "ratio": 1.0295
+    }
+  },
+  "finding_1": "A Doctor calibrated on ordinary prose is BLIND to most of what the other families do. At L31, 79.4% of code energy, 75.5% of instruction, 73.8% of adversarial and 73.1% of long fall OUTSIDE the prose span. L63 is the mildest at 21-36% outside, L0 and L31 are severe.",
+  "finding_2": "DIRECTIONS THE CAPTURE NEVER VISITS ARE NOT FUNCTIONALLY DEAD. down_proj's gain on unit directions drawn from the orthogonal complement of the entire observed span is 0.71x the seen-direction gain at L0, 0.91x at L31, and 1.03x at L63 -- at the last layer the operator amplifies NEVER-OBSERVED directions slightly MORE than observed ones. The manifold boundary is a property of the PROMPT SET, not of the operator.",
+  "consequence": "Every method that fits a representation to observed activations is unconstrained on a subspace the operator treats with essentially equal gain. G046 showed the span keeps growing with each family added; this shows the untouched remainder is live. So an adequacy gate scored only on captured directions cannot bound behaviour on inputs that excite the rest, and NOT OBSERVED must not be read as IMPOSSIBLE.",
+  "width": "Gain is a linear operator-norm probe on down_proj, not a full-block or end-to-end behavioural measure. 256 rows per family, one site, three depths. A real counterfactual CAPTURE -- new prompts run through the model with hooks -- is still owed and would test whether new prompt families keep extending the span beyond these seven.",
+  "commit": "73e61db6c34649c51c8ac6ceb1ae09b2d5ce0efb"
+}
