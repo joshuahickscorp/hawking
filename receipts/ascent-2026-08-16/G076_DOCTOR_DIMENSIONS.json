@@ -1,0 +1,93 @@
+{
+  "schema": "hawking.nos.doctor_dimensions.v1",
+  "obligation": "G076 -- separate Doctor dimensions so a collapse cannot hide in an average",
+  "dimensions": {
+    "FACTUAL": "memorized facts; retrieval only, cannot be recomputed",
+    "REASONING": "arithmetic on randomly drawn operands, so it must be computed",
+    "PROCEDURAL": "multi-step string transformation",
+    "LANGUAGE": "grammar-forced completions -- the fluency axis the verify warns survives",
+    "TOOL": "required structured form with the right field",
+    "IDENTITY": "self-consistency across three phrasings, scored as agreement between the artifact's OWN answers -- the patient is abliterated so there is no ground truth string to score against"
+  },
+  "no_aggregate": "no score is averaged across dimensions; that is the whole point of the obligation and averaging would reintroduce exactly what it forbids",
+  "control_first": true,
+  "control_works": true,
+  "control_note": "a battery never watched detect a real deletion has not been shown to work, so the known-bad artifact runs FIRST and every number is conditional on it separating",
+  "n_per_dimension": 10,
+  "seed": 20260818,
+  "max_new_tokens": 320,
+  "truncation_is_not_failure": "only text AFTER </think> is scored, and a response that never closes its think block is reported as TRUNCATED rather than wrong. A first pass at 48 tokens conflated them and scored 0.00 on LANGUAGE for EVERY artifact including the reference -- the model was still reasoning when the budget ran out. Scoring the think text instead is not the fix: it gave PROCEDURAL false credit, since a reversed word appears in the reasoning long before the model commits to it.",
+  "results": [
+    {
+      "artifact": "mixed-q4down-v1",
+      "is_known_bad": true,
+      "by_dimension": {
+        "FACTUAL": null,
+        "REASONING": null,
+        "PROCEDURAL": null,
+        "LANGUAGE": null,
+        "TOOL": null,
+        "IDENTITY": 0.0
+      },
+      "truncation_rate": {
+        "FACTUAL": 1.0,
+        "REASONING": 1.0,
+        "PROCEDURAL": 1.0,
+        "LANGUAGE": 1.0,
+        "TOOL": 1.0,
+        "IDENTITY": 1.0
+      }
+    },
+    {
+      "artifact": "uniform-q4-v1",
+      "is_known_bad": false,
+      "by_dimension": {
+        "FACTUAL": 1.0,
+        "REASONING": 1.0,
+        "PROCEDURAL": 0.8,
+        "LANGUAGE": 0.75,
+        "TOOL": 1.0,
+        "IDENTITY": 0.24945054945054945
+      },
+      "truncation_rate": {
+        "FACTUAL": 0.0,
+        "REASONING": 0.0,
+        "PROCEDURAL": 0.0,
+        "LANGUAGE": 0.2,
+        "TOOL": 0.0,
+        "IDENTITY": 0.0
+      }
+    },
+    {
+      "artifact": "g032-chanscale-a025-compact",
+      "is_known_bad": false,
+      "by_dimension": {
+        "FACTUAL": 1.0,
+        "REASONING": 1.0,
+        "PROCEDURAL": 0.9,
+        "LANGUAGE": 0.8333333333333334,
+        "TOOL": 1.0,
+        "IDENTITY": 0.15895061728395063
+      },
+      "truncation_rate": {
+        "FACTUAL": 0.0,
+        "REASONING": 0.0,
+        "PROCEDURAL": 0.0,
+        "LANGUAGE": 0.4,
+        "TOOL": 0.0,
+        "IDENTITY": 0.0
+      }
+    }
+  ],
+  "silent_fact_deletion_detected": [],
+  "commit": "ab322640645f67ecd121429e040c1a61e42b63be",
+  "findings": {
+    "control_separates_by_TRUNCATION_not_by_wrong_answers": "mixed-q4down-v1 truncates on 100% of items in every dimension -- it never closes a think block at all. That is a distinct failure mode from answering wrongly, and a score-only battery would have reported it as 0.00 CORRECT rather than NEVER TERMINATES. Separating the two is what makes the control legible.",
+    "no_silent_fact_deletion_between_the_live_artifacts": "g032-chanscale-a025-compact matches or exceeds the q4 reference on FACTUAL (1.00 vs 1.00), REASONING (1.00 vs 1.00), PROCEDURAL (0.90 vs 0.80), TOOL (1.00 vs 1.00) and LANGUAGE (0.83 vs 0.75). The failure this obligation exists to catch does not occur between these two.",
+    "the_cost_that_only_a_split_battery_sees": "g032's TRUNCATION rate on LANGUAGE is twice the reference's -- 0.40 against 0.20, same prompts, same 320-token budget. The compressed artifact needs more tokens to commit to an answer. Its accuracy is equal or better, so every pass/fail battery in this campaign would score the two identical while one of them costs measurably more tokens per decision. On an agent workload that is a real price, and it is invisible without reporting truncation as its own axis.",
+    "which_primitive_destroys_which_dimension": "down_proj at reduced precision (mixed-q4down-v1) destroys EVERY dimension, and it does so by destroying termination rather than knowledge. The channel-scale gauge fold at q3 (g032-chanscale-a025-compact) destroys NO dimension and costs decisiveness instead.",
+    "identity_is_too_thin_to_read": "self-consistency 0.25 -> 0.16 between reference and g032, but over only THREE phrasings. That is a suggestive number, not a measurement, and it is not being treated as one. The Tabula instrument remains the real answer for this axis.",
+    "resolution_limit": "FACTUAL, REASONING and TOOL sit at 1.00 for BOTH live artifacts even after hardening the items (atomic numbers, three-step arithmetic, six-element sorts). So 'no silent deletion' is a BOUND -- deletion is below this battery's resolution -- not a proof of its absence. Raising the resolution is the G126 battery."
+  },
+  "method_defect_caught": "The answer key for LANGUAGE was WRONG and it cost the whole dimension. The first version paired ('Many people','have') and ('One person','has') with the template '___ waiting outside', which takes a PROGRESSIVE auxiliary -- 'many people are waiting', never 'have waiting'. The reference model answered correctly and was marked wrong, scoring 0.38 and reading exactly like a grammar failure in the reference. Pairing the auxiliaries with templates that accept them moved the reference to 0.75. A wrong key is indistinguishable from a broken model until the generations are read. A SECOND defect preceded it: at a 48-token budget every artifact scored 0.00 on LANGUAGE because the model was still inside its think block, and scoring the think text instead gave PROCEDURAL false credit since a reversed word appears in the reasoning before the model commits to it."
+}
