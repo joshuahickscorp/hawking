@@ -1,0 +1,56 @@
+{
+  "schema": "hawking.nos.context_wall.v1",
+  "obligation": "G060 baseline -- the current full-K/V path measured at real context, not at 128",
+  "measured": [
+    {
+      "prompt_len": 392,
+      "ms_per_token": 32.763
+    },
+    {
+      "prompt_len": 772,
+      "ms_per_token": 35.414
+    },
+    {
+      "prompt_len": 1532,
+      "ms_per_token": 40.71
+    }
+  ],
+  "fit": {
+    "intercept_ms": 30.03034736842105,
+    "slope_us_per_context_token": 6.97105263157895,
+    "linearity_check": "middle point predicted 35.412, measured 35.414"
+  },
+  "extrapolated": {
+    "8192": {
+      "ms_per_token": 87.13721052631581,
+      "tps": 11.476153459124053,
+      "context_share_of_token": 0.6553671251691978
+    },
+    "32768": {
+      "ms_per_token": 258.4578000000001,
+      "tps": 3.869103582867299,
+      "context_share_of_token": 0.8838094754020925
+    },
+    "131072": {
+      "ms_per_token": 943.7401578947372,
+      "tps": 1.0596136994220584,
+      "context_share_of_token": 0.9681794325300178
+    }
+  },
+  "kv_geometry": {
+    "layers": 16,
+    "kv_heads": 4,
+    "head_dim": 256,
+    "kv_bytes_per_position": 131072,
+    "source": "QWEN38_GQA_KV_HEADS read from qwen38_geometry.rs; confirmed by the token_ns receipt's gqa_kv_write_bytes = 131072"
+  },
+  "the_finding": {
+    "kv_read_gb_s": 18.802325405813505,
+    "roof_gb_s": 594.3,
+    "fraction_of_roof": 0.03163776780382552,
+    "statement": "the context path moves 131,072 bytes per context position in 6.971 us, which is 18.8 GB/s against a measured 594.3 GB/s streaming roof -- 3.2% of it, roughly 32x off its own bandwidth bound"
+  },
+  "consequence_for_latent_kv": "G060 proposes caching a latent instead of full K/V, which reduces BYTES. The path is at 3.2% of its bandwidth bound, so bytes are not what it is paying for. A 2x byte reduction on a path 32x off its roof buys at most 2x of a 32x problem, and it adds reconstruction cost on top. This is the same structural result as CODEC_ALU_COST: reducing bytes on a path that is not bandwidth-bound does not convert.",
+  "consequence_for_the_mission": "The whole campaign has been optimising the 30.03 ms intercept. At 8192 context the context term is already 66% of the token, at 32768 it is 88%, at 131072 it is 97%. Decode at the model's own context limit is 1.06 TPS. The 100 TPS target is a SHORT-CONTEXT target and no amount of density or GEMV work touches the term that dominates an agent workload.",
+  "commit": "30c798f61e85244a4d218b9afcfb67088aff4a38"
+}

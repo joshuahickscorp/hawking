@@ -1,0 +1,70 @@
+{
+  "schema": "hawking.nos.profile_guided.v2",
+  "site": "post_swiglu",
+  "tensor": "down_proj L63",
+  "rows_per_class": 800,
+  "classes": [
+    "prose",
+    "code",
+    "math",
+    "instruction",
+    "multilingual",
+    "adversarial"
+  ],
+  "results": [
+    {
+      "eval_class": "prose",
+      "matched": 0.27581292390823364,
+      "prose_fitted": 0.27581292390823364,
+      "pooled": 0.2872740924358368,
+      "prose_penalty_pct": 0.0,
+      "pooled_penalty_pct": 4.155413881699177
+    },
+    {
+      "eval_class": "code",
+      "matched": 0.2735625207424164,
+      "prose_fitted": 0.2970114052295685,
+      "pooled": 0.28733041882514954,
+      "prose_penalty_pct": 8.571672911740457,
+      "pooled_penalty_pct": 5.032815915487521
+    },
+    {
+      "eval_class": "math",
+      "matched": 0.27178433537483215,
+      "prose_fitted": 0.2829456925392151,
+      "pooled": 0.28165099024772644,
+      "prose_penalty_pct": 4.106696270404875,
+      "pooled_penalty_pct": 3.6303250734766035
+    },
+    {
+      "eval_class": "instruction",
+      "matched": 0.2726786434650421,
+      "prose_fitted": 0.27549123764038086,
+      "pooled": 0.286589115858078,
+      "prose_penalty_pct": 1.0314684493064608,
+      "pooled_penalty_pct": 5.10141616382922
+    },
+    {
+      "eval_class": "multilingual",
+      "matched": 0.28522565960884094,
+      "prose_fitted": 0.3744513988494873,
+      "pooled": 0.31094181537628174,
+      "prose_penalty_pct": 31.28250780908377,
+      "pooled_penalty_pct": 9.016073730080244
+    },
+    {
+      "eval_class": "adversarial",
+      "matched": 0.224509134888649,
+      "prose_fitted": 0.24779511988162994,
+      "pooled": 0.21970605850219727,
+      "prose_penalty_pct": 10.371954354788393,
+      "pooled_penalty_pct": -2.139367909833123
+    }
+  ],
+  "prose_penalty_mean_pct": 11.072859959064791,
+  "prose_penalty_worst_pct": 31.28250780908377,
+  "pooled_penalty_mean_pct": 4.13277947578994,
+  "pooled_penalty_worst_pct": 9.016073730080244,
+  "supersedes": "G081_PROFILE_GUIDED.json measured prose-vs-code only; this covers all six classes",
+  "commit": "86804e00ac5e046ba7d9f026ee070ab65beb6c72"
+}

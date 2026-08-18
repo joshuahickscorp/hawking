@@ -1,0 +1,181 @@
+{
+  "schema": "hawking.nos.error_propagation_chain.v2",
+  "obligation": "G004 -- per-layer A_l from real activations, predicting better than uniform",
+  "method": "Perturbation propagated ALONG THE CAPTURED TRAJECTORY: e_{l+1} = e_l + (f_l(x_l + e_l) - f_l(x_l)) with x_l taken from the thick v2 capture at every step rather than from a simulated stream. That pinning is what makes this stable where the earlier CPU-only span simulation diverged to inf and was retracted.",
+  "quantity": "RESIDUAL gain ||e + df||/||e||, not BLOCK gain ||df||/||e||. In x_{l+1} = x_l + f(x_l) the identity path carries the error forward, so residual gain is the network-relevant number and block gain is a diagnostic. Both are reported because they disagree sharply.",
+  "per_layer": [
+    {
+      "layer": 0,
+      "block_gain": 0.06823498010635376,
+      "residual_gain": 0.9988260269165039,
+      "stream_norm": 103.08939361572266,
+      "block_out_norm": 25.79051971435547
+    },
+    {
+      "layer": 4,
+      "block_gain": 0.1113588809967041,
+      "residual_gain": 0.9987598061561584,
+      "stream_norm": 174.9179229736328,
+      "block_out_norm": 24.6998291015625
+    },
+    {
+      "layer": 8,
+      "block_gain": 0.1625061184167862,
+      "residual_gain": 0.9994364976882935,
+      "stream_norm": 254.50839233398438,
+      "block_out_norm": 53.42206954956055
+    },
+    {
+      "layer": 12,
+      "block_gain": 0.20060814917087555,
+      "residual_gain": 0.997753918170929,
+      "stream_norm": 298.3062744140625,
+      "block_out_norm": 64.76869201660156
+    },
+    {
+      "layer": 16,
+      "block_gain": 0.2413770854473114,
+      "residual_gain": 0.9976671934127808,
+      "stream_norm": 349.2126770019531,
+      "block_out_norm": 85.80007934570312
+    },
+    {
+      "layer": 20,
+      "block_gain": 0.30446475744247437,
+      "residual_gain": 0.9642760157585144,
+      "stream_norm": 506.45233154296875,
+      "block_out_norm": 165.4576873779297
+    },
+    {
+      "layer": 24,
+      "block_gain": 0.3605153560638428,
+      "residual_gain": 0.9280974268913269,
+      "stream_norm": 615.0894775390625,
+      "block_out_norm": 193.3682861328125
+    },
+    {
+      "layer": 28,
+      "block_gain": 0.4045559763908386,
+      "residual_gain": 0.9299789071083069,
+      "stream_norm": 679.1911010742188,
+      "block_out_norm": 215.11990356445312
+    },
+    {
+      "layer": 32,
+      "block_gain": 0.451181024312973,
+      "residual_gain": 0.9427030086517334,
+      "stream_norm": 756.9814453125,
+      "block_out_norm": 274.7618713378906
+    },
+    {
+      "layer": 36,
+      "block_gain": 0.42117923498153687,
+      "residual_gain": 0.9208523631095886,
+      "stream_norm": 814.032958984375,
+      "block_out_norm": 288.0882873535156
+    },
+    {
+      "layer": 40,
+      "block_gain": 0.40960702300071716,
+      "residual_gain": 0.9043192863464355,
+      "stream_norm": 865.660888671875,
+      "block_out_norm": 298.01953125
+    },
+    {
+      "layer": 44,
+      "block_gain": 0.4659416377544403,
+      "residual_gain": 0.9644639492034912,
+      "stream_norm": 829.4078979492188,
+      "block_out_norm": 312.2243347167969
+    },
+    {
+      "layer": 48,
+      "block_gain": 0.5333688855171204,
+      "residual_gain": 0.9938082695007324,
+      "stream_norm": 913.642578125,
+      "block_out_norm": 409.44793701171875
+    },
+    {
+      "layer": 52,
+      "block_gain": 0.5716250538825989,
+      "residual_gain": 1.0544594526290894,
+      "stream_norm": 1062.389404296875,
+      "block_out_norm": 618.4337158203125
+    },
+    {
+      "layer": 56,
+      "block_gain": 0.5295213460922241,
+      "residual_gain": 1.0949742794036865,
+      "stream_norm": 1159.8299560546875,
+      "block_out_norm": 592.7969360351562
+    },
+    {
+      "layer": 60,
+      "block_gain": 0.6219347715377808,
+      "residual_gain": 1.1982297897338867,
+      "stream_norm": 1342.0687255859375,
+      "block_out_norm": 991.9107666015625
+    }
+  ],
+  "block_gain_spread": "0.06823 (L0) to 0.62193 (L60), 9.11x, monotone with depth",
+  "residual_gain_spread": "0.90432 to 1.19823, only 1.33x",
+  "regimes": "NEUTRAL L0-L16 at 0.998-0.999, error PERSISTS. DAMPING L20-L44 at 0.904-0.964. AMPLIFYING L52-L60 at 1.054-1.198. Amplifying and damping layers are identified, which the acceptance asks for, and the uniform assumption has no way to express any of it.",
+  "held_out_test": {
+    "fit_layers": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      28
+    ],
+    "held_out_layers": [
+      32,
+      36,
+      40,
+      44,
+      48,
+      52,
+      56,
+      60
+    ],
+    "uniform_A_fitted_on_fit_only": 0.9763890710984494,
+    "spans": [
+      {
+        "span": "L32-L44",
+        "n_blocks": 4,
+        "measured": 0.7870113849639893,
+        "chain_pred": 0.757133900267129,
+        "uniform_pred": 0.9088488008534491,
+        "chain_rel_err": 0.03796321789960806,
+        "uniform_rel_err": 0.1548102330121116
+      },
+      {
+        "span": "L40-L52",
+        "n_blocks": 4,
+        "measured": 0.9627683758735657,
+        "chain_pred": 0.9139875551440046,
+        "uniform_pred": 0.9088488008534491,
+        "chain_rel_err": 0.05066724453355654,
+        "uniform_rel_err": 0.05600472177037678
+      },
+      {
+        "span": "L48-L60",
+        "n_blocks": 4,
+        "measured": 1.4517669677734375,
+        "chain_pred": 1.374917124186854,
+        "uniform_pred": 0.9088488008534491,
+        "chain_rel_err": 0.05293538514962037,
+        "uniform_rel_err": 0.3739706020124272
+      }
+    ],
+    "mean_chain_rel_err": 0.047188615860928325,
+    "mean_uniform_rel_err": 0.19492851893163854
+  },
+  "verdict": "CHAIN BEATS UNIFORM BY 4.13x on held-out spans -- 4.72% mean relative error against 19.49%. The uniform model fails worst exactly where the profile is most non-uniform: on L48-L60 it predicts 0.909 against a measured 1.452, a 37.4% error, because it cannot express amplification at all.",
+  "scope": "MLP-ONLY propagation. The mixer between MLP blocks is treated as IDENTITY for the perturbation and the norm is not re-applied, so this is a linearised MLP-chain measurement along the captured trajectory, NOT the full network A_l. Stated because the earlier attempt was retracted for exactly this class of unstated approximation.",
+  "known_limit": "Perturbation is random-direction at 1e-3 relative. The ledger already records A_j at (62,63) being 4.937 for STRUCTURED upstream error against 1.62 isotropic, so allocation must use the structured figure and this table is the isotropic one.",
+  "commit": "871861e165606d09aecc3872d661affd7e3b8baf"
+}

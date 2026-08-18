@@ -1,0 +1,472 @@
+{
+  "schema": "hawking.nos.composition_graph.v1",
+  "obligation": "G068 -- multi-axis interaction; multiplicativity measured, not assumed",
+  "interaction_definition": "I = log2 e(a,b) + log2 e(a0,b0) - log2 e(a,b0) - log2 e(a0,b); zero means the two axes compose multiplicatively in error",
+  "threshold_log2": 0.1,
+  "threshold_justification": "one tenth of a halving of error, below the spread this harness shows between adjacent layers of the same organ, so anything under it is not distinguishable from site noise. Named before looking so the labels are not decoration.",
+  "baseline_cell": {
+    "bits": 4,
+    "group": 64,
+    "fold": false
+  },
+  "axes": {
+    "NUMERICAL": "quantizer bit depth [2, 3, 4]",
+    "STRUCTURAL": "scale group size [64, 256]",
+    "ALGEBRAIC": "channel-scale gauge fold at alpha=0.25, exact by construction"
+  },
+  "holdout": "channel scale fitted on the first half of captured rows, error scored on the second half",
+  "GRAVITY_COMPOSITION_GRAPH": {
+    "NUMERICAL x STRUCTURAL": {
+      "interaction_log2_mean": -0.0061085338475952876,
+      "interaction_log2_worst": -0.1557894476324586,
+      "n_cells": 10,
+      "label": "ORTHOGONAL",
+      "label_at_worst_cell": "SYNERGISTIC",
+      "error_ratio_mean": 0.9957748382047446,
+      "error_ratio_worst": 0.897641046235335,
+      "marginal": false
+    },
+    "NUMERICAL x ALGEBRAIC": {
+      "interaction_log2_mean": 0.0363428223968171,
+      "interaction_log2_worst": 0.2744279788433994,
+      "n_cells": 10,
+      "label": "ORTHOGONAL",
+      "label_at_worst_cell": "REDUNDANT",
+      "error_ratio_mean": 1.025510897377411,
+      "error_ratio_worst": 1.2095144278899732,
+      "marginal": false
+    },
+    "STRUCTURAL x ALGEBRAIC": {
+      "interaction_log2_mean": 0.09519822160491262,
+      "interaction_log2_worst": 0.2850590613986044,
+      "n_cells": 5,
+      "label": "ORTHOGONAL",
+      "label_at_worst_cell": "REDUNDANT",
+      "error_ratio_mean": 1.0682121668419022,
+      "error_ratio_worst": 1.2184601442703316,
+      "marginal": true
+    },
+    "DEPTH x anything": {
+      "label": "UNKNOWN",
+      "reason": "no live candidate varies depth or state (G062/G064 both refuted), and the entropy stage leaves dequantized values identical so it cannot move a functional error -- scoring it needs TOKEN_NS, not this harness"
+    },
+    "STATE x anything": {
+      "label": "UNKNOWN",
+      "reason": "no live candidate varies depth or state (G062/G064 both refuted), and the entropy stage leaves dequantized values identical so it cannot move a functional error -- scoring it needs TOKEN_NS, not this harness"
+    },
+    "ENTROPY x anything": {
+      "label": "UNKNOWN",
+      "reason": "no live candidate varies depth or state (G062/G064 both refuted), and the entropy stage leaves dequantized values identical so it cannot move a functional error -- scoring it needs TOKEN_NS, not this harness"
+    }
+  },
+  "sites": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "site": "post_attn_norm",
+      "provenance": "VERIFIED",
+      "grid": [
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": false,
+          "err": 0.3367877066722958
+        },
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": true,
+          "err": 0.2761981239168864
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": false,
+          "err": 0.4551648059785132
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": true,
+          "err": 0.37093576982002224
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": false,
+          "err": 0.10186431300259369
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": true,
+          "err": 0.09310822349667587
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": false,
+          "err": 0.12463971892506658
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": true,
+          "err": 0.11557719755501672
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": false,
+          "err": 0.043542917026253944
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": true,
+          "err": 0.04006711907544599
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": false,
+          "err": 0.053076302830430064
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": true,
+          "err": 0.04971244445864226
+        }
+      ]
+    },
+    {
+      "organ": "mlp.down_proj",
+      "layer": 63,
+      "site": "post_swiglu",
+      "provenance": "VERIFIED",
+      "grid": [
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": false,
+          "err": 0.6515707213105312
+        },
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": true,
+          "err": 0.4973910179867521
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": false,
+          "err": 0.7435441957701107
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": true,
+          "err": 0.6187626721059734
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": false,
+          "err": 0.2387899342011822
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": true,
+          "err": 0.1647874732125232
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": false,
+          "err": 0.3087950355936119
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": true,
+          "err": 0.252143680024263
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": false,
+          "err": 0.09896508728555418
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": true,
+          "err": 0.06246077036712829
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": false,
+          "err": 0.1244768916185289
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": true,
+          "err": 0.09572500266266365
+        }
+      ]
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "layer": 62,
+      "site": "mixer_x",
+      "provenance": "NAMED",
+      "grid": [
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": false,
+          "err": 0.7166051517231217
+        },
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": true,
+          "err": 0.4564600811332817
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": false,
+          "err": 0.8094263854328096
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": true,
+          "err": 0.5665432156125019
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": false,
+          "err": 0.2758987641784114
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": true,
+          "err": 0.16079326203959576
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": false,
+          "err": 0.3415996247244219
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": true,
+          "err": 0.21116387027175806
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": false,
+          "err": 0.1183542787568374
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": true,
+          "err": 0.06819310284679517
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": false,
+          "err": 0.14892880036087633
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": true,
+          "err": 0.0885313589589327
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.o_proj",
+      "layer": 63,
+      "site": "mixer_x",
+      "provenance": "NAMED",
+      "grid": [
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": false,
+          "err": 0.6426254336177007
+        },
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": true,
+          "err": 0.5178422887210794
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": false,
+          "err": 0.7597666383730138
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": true,
+          "err": 0.6455827203330602
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": false,
+          "err": 0.22532317707572855
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": true,
+          "err": 0.17606794546812765
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": false,
+          "err": 0.28732027220671313
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": true,
+          "err": 0.22358502772388042
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": false,
+          "err": 0.09719317291517125
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": true,
+          "err": 0.07461319040860943
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": false,
+          "err": 0.1201490791987989
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": true,
+          "err": 0.09512457316870268
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "site": "post_input_norm",
+      "provenance": "INFERRED",
+      "grid": [
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": false,
+          "err": 0.4002088562675303
+        },
+        {
+          "bits": 2,
+          "group": 64,
+          "fold": true,
+          "err": 0.3546642099772033
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": false,
+          "err": 0.5277703642528736
+        },
+        {
+          "bits": 2,
+          "group": 256,
+          "fold": true,
+          "err": 0.4785915660243972
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": false,
+          "err": 0.12779466352797755
+        },
+        {
+          "bits": 3,
+          "group": 64,
+          "fold": true,
+          "err": 0.12260495799091148
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": false,
+          "err": 0.15716183660456498
+        },
+        {
+          "bits": 3,
+          "group": 256,
+          "fold": true,
+          "err": 0.15886651309184036
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": false,
+          "err": 0.05527187077340401
+        },
+        {
+          "bits": 4,
+          "group": 64,
+          "fold": true,
+          "err": 0.053143299352747475
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": false,
+          "err": 0.06837896974006528
+        },
+        {
+          "bits": 4,
+          "group": 256,
+          "fold": true,
+          "err": 0.06929388996027022
+        }
+      ]
+    }
+  ],
+  "commit": "8b9ddbe999a34caf8fe091e7eefb58bc4e649055",
+  "verdict": {
+    "multiplicativity_holds_on_the_mean": true,
+    "statement": "Every measured pair is ORTHOGONAL on the mean, with |I| at most 0.0952 log2 = a 6.8% error discrepancy. This is the FIRST time this campaign's stacking assumption has been measured rather than assumed, and it survives.",
+    "but_not_per_cell": "No pair is orthogonal at EVERY cell. Worst cells reach I = +0.2851 (REDUNDANT, 1.218x the predicted error) and I = -0.1558 (SYNERGISTIC, 0.898x). So a stacked projection is sound in expectation and carries roughly a -10%/+22% per-cell band, which should be quoted with any stacked estimate rather than dropped.",
+    "marginal_pair": "STRUCTURAL x ALGEBRAIC sits at 0.0952 against a 0.1 threshold -- inside the label by 5%. Calling it ORTHOGONAL is defensible only because the threshold was named before looking; it is the pair most likely to flip with more sites, and is flagged rather than presented as settled.",
+    "unknowns_are_now_partly_answered": "DEPTH is UNKNOWN here for a stronger reason than when this obligation was written: G062 and G064 both refuted their mechanisms this session, so no live candidate varies depth at all. ENTROPY cannot move a functional error by construction -- the coding stage leaves dequantized values identical -- so it is not measurable on this harness and needs TOKEN_NS."
+  }
+}

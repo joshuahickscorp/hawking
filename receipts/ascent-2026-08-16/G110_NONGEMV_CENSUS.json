@@ -1,0 +1,237 @@
+{
+  "commit": "63cca2dd1e0d3481fe1ab6f9a5dfe3264a0489b6",
+  "kernels": [
+    {
+      "family": "NON_GEMV recurrence",
+      "headroom_threads": 896,
+      "kernel": "qwen38_gated_delta_decode_vi_simd",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    },
+    {
+      "family": "NON_GEMV recurrence (superseded)",
+      "headroom_threads": 896,
+      "kernel": "qwen38_gated_delta_decode_vi",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    },
+    {
+      "family": "NON_GEMV norm",
+      "headroom_threads": 768,
+      "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.25,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 256
+    },
+    {
+      "family": "NON_GEMV norm",
+      "headroom_threads": 960,
+      "kernel": "qwen80_deltanet_gated_rmsnorm_f32",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.0625,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 64
+    },
+    {
+      "family": "NON_GEMV norm",
+      "headroom_threads": 768,
+      "kernel": "qwen80_residual_rmsnorm_tg",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.25,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 256
+    },
+    {
+      "family": "NON_GEMV norm",
+      "headroom_threads": 960,
+      "kernel": "qwen80_residual_rmsnorm_f32",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.0625,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 64
+    },
+    {
+      "family": "NON_GEMV rope",
+      "headroom_threads": 768,
+      "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.25,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 256
+    },
+    {
+      "family": "NON_GEMV rope",
+      "headroom_threads": 960,
+      "kernel": "qwen38_gqa_qk_norm_rope_cache_f32",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.0625,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 64
+    },
+    {
+      "family": "NON_GEMV conv/rearrange",
+      "headroom_threads": 960,
+      "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.0625,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 64
+    },
+    {
+      "family": "NON_GEMV gate",
+      "headroom_threads": 960,
+      "kernel": "qwen38_attention_apply_sigmoid_gate",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.0625,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 64
+    },
+    {
+      "family": "NON_GEMV decay",
+      "headroom_threads": 960,
+      "kernel": "qwen80_ba_to_decay_beta_f32",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.0625,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 64
+    },
+    {
+      "family": "NON_GEMV sampling",
+      "headroom_threads": 768,
+      "kernel": "sample_argmax_f32_pass1",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.25,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 256
+    },
+    {
+      "family": "NON_GEMV sampling",
+      "headroom_threads": 768,
+      "kernel": "sample_argmax_f32_pass2",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.25,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 256
+    },
+    {
+      "family": "GEMV reference",
+      "headroom_threads": 896,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    },
+    {
+      "family": "GEMV tiling R4",
+      "headroom_threads": 896,
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    },
+    {
+      "family": "GEMV tiling R8",
+      "headroom_threads": 896,
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    },
+    {
+      "family": "GEMV tiling R16",
+      "headroom_threads": 896,
+      "kernel": "qwen_uniform_q4_group64_matmul_r16k1_geo_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    },
+    {
+      "family": "GEMV tiling R4K4",
+      "headroom_threads": 896,
+      "kernel": "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    },
+    {
+      "family": "GEMV tiling R8K8",
+      "headroom_threads": 896,
+      "kernel": "qwen_uniform_q4_group64_matmul_r8k8_geo_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    },
+    {
+      "family": "GEMV tiling R16K4",
+      "headroom_threads": 896,
+      "kernel": "qwen_uniform_q4_group64_matmul_r16k4_geo_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_its_own_limit": 0.125,
+      "register_limited": false,
+      "thread_execution_width": 32,
+      "threadgroup_dispatched": 128
+    }
+  ],
+  "obligation": "G110 -- per-kernel grid, TG, occupancy and register pressure",
+  "schema": "hawking.nos.nongemv_occupancy_census.v1",
+  "what_max_total_threads_measures": "Metal caps a threadgroup at 1024 threads. A pipeline reporting less is REGISTER-LIMITED, and the shortfall is the register pressure this acceptance calls load-bearing.",
+  "verdict": {
+    "no_kernel_is_register_limited": "All 20 kernels report maxTotalThreadsPerThreadgroup = 1024, the Metal maximum. NOT ONE is register-limited, and that includes the r8k8 and r16k4 tilings specifically.",
+    "a_standing_ledger_claim_is_REFUTED": "This obligation's own evidence states: 'Register pressure is already known to be load-bearing -- the R x K tiling spilled at R=8 -- so this is not optional.' Measured directly, r8k1, r8k8, r16k1 and r16k4 all report 1024. THE R=8 AND R=16 REGRESSIONS ARE NOT REGISTER SPILLS.",
+    "what_actually_limits_them": "Grid width, not threadgroup width. R rows share one threadgroup, so a tiling of R divides the threadgroup COUNT by R. On k_proj's 1024 rows: R=1 gives 512 threadgroups and fills all 60 cores; R=16 gives 32 threadgroups and leaves 28 cores idle. That is exactly the shape G109 measured -- small organs getting worse as R rises -- and it is an occupancy-across-cores problem rather than a registers-per-thread one.",
+    "the_owed_structural_data": "Every non-GEMV kernel dispatches at 6% to 25% of the threads its own pipeline would allow: 64 or 256 against a permitted 1024. The headroom is 4x to 16x and nothing in the hardware is preventing it -- the dispatch geometry is a choice, and on this evidence a conservative one.",
+    "what_this_does_NOT_say": "maxTotalThreadsPerThreadgroup is a compile-time pipeline property. It proves no kernel is REGISTER-limited; it does not prove that raising TG would be faster, because occupancy is not throughput -- G094 measured a 5.8x traffic swing producing zero rank correlation with time, and G111 measured argmax transferring 0 of a 25.9x isolated win. This census RANKS candidates for G111 to retile; it does not predict their end-to-end effect."
+  },
+  "grid_width_arithmetic": {
+    "1": {
+      "threadgroups_on_1024_rows": 512,
+      "cores_busy_pct": 100.0
+    },
+    "2": {
+      "threadgroups_on_1024_rows": 256,
+      "cores_busy_pct": 100.0
+    },
+    "4": {
+      "threadgroups_on_1024_rows": 128,
+      "cores_busy_pct": 100.0
+    },
+    "8": {
+      "threadgroups_on_1024_rows": 64,
+      "cores_busy_pct": 100.0
+    },
+    "16": {
+      "threadgroups_on_1024_rows": 32,
+      "cores_busy_pct": 53.333333333333336
+    }
+  }
+}

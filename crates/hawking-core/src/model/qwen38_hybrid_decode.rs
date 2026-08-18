@@ -7,7 +7,7 @@
 //! run; there is no reconstruct-to-Q4 path.
 
 use super::qwen38_64_layer_execution_schedule::qwen38_assert_schedule_intact;
-use super::qwen38_geometry::{
+use super::qwen38_geometry::{ARGMAX_GROUPS, 
     qwen38_deltanet_state_slot, qwen38_gqa_state_slot, qwen38_layer_name, qwen38_mixer_kind,
     Qwen38DeltaNetLayout, Qwen38MixerKind, QWEN38_GQA_HEAD_DIM, QWEN38_GQA_HEADS,
     QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM, QWEN38_HIDDEN,
@@ -1123,6 +1123,8 @@ mod device {
         down: PinnedBuffer,
         logits: PinnedBuffer,
         sampled: PinnedBuffer,
+        argmax_part_v: PinnedBuffer,
+        argmax_part_i: PinnedBuffer,
         conv_state: PinnedBuffer,
         rec_state: PinnedBuffer,
         gqa_key: PinnedBuffer,
@@ -1180,6 +1182,9 @@ mod device {
                 down: ctx.new_buffer_checked(hidden)?,
                 logits: ctx.new_buffer_checked(logits)?,
                 sampled: ctx.new_buffer_checked(std::mem::size_of::<u32>())?,
+                // ARGMAX_GROUPS partials, one (value, index) pair per threadgroup
+                argmax_part_v: ctx.new_buffer_checked(ARGMAX_GROUPS * 4)?,
+                argmax_part_i: ctx.new_buffer_checked(ARGMAX_GROUPS * 4)?,
                 conv_state: ctx.new_buffer_checked(conv)?,
                 rec_state: ctx.new_buffer_checked(rec)?,
                 gqa_key: ctx.new_buffer_checked(kv_cache)?,
@@ -2007,8 +2012,19 @@ mod device {
             let kd = layout.key_head_dim as u32;
             let vd = layout.value_head_dim as u32;
             let (kernel, grid) = if self.deltanet_vi_parallel {
+                // Both 128-element reductions in the vi kernel run on thread 0
+                // while 127 lanes wait. HAWKING_DN_VI_SIMD=0 restores it; the
+                // simd sibling is not bit-identical (tree vs serial
+                // association) and is gated on greedy token identity.
+                let simd = std::env::var("HAWKING_DN_VI_SIMD")
+                    .map(|v| v != "0")
+                    .unwrap_or(true);
                 (
-                    "qwen38_gated_delta_decode_vi",
+                    if simd {
+                        "qwen38_gated_delta_decode_vi_simd"
+                    } else {
+                        "qwen38_gated_delta_decode_vi"
+                    },
                     (kd, heads, vd),
                 )
             } else {
@@ -2368,7 +2384,7 @@ mod device {
             let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
                 // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
                 // 2.54% faster, every pair favouring the retile, and token-identical on 24
@@ -2412,7 +2428,7 @@ mod device {
             let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
                 // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
                 // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
@@ -2495,11 +2511,53 @@ mod device {
         }
 
         fn encode_argmax(&self, tcb: &mut TokenCommandBuffer<'_>) -> Result<()> {
-            sample_argmax_f32_tcb(
-                tcb,
-                &self.workspace.logits,
-                &self.workspace.sampled,
-                QWEN38_VOCAB,
+            // The single-threadgroup argmax scans the whole vocabulary on one of
+            // 60 cores, and the two-pass form below is 26x faster in isolation
+            // (0.3395 -> 0.0131 ms) with token-identical output. It is DEFAULT
+            // OFF anyway, because none of that saving reaches the token: four
+            // paired runs put the end-to-end median at -0.045 ms, i.e. nothing,
+            // against a within-arm spread of 0.281 ms. Shipping a second
+            // dispatch and two buffers for an unmeasurable win is not worth it.
+            // HAWKING_ARGMAX_TWO_PASS=1 enables it; see
+            // receipts/ascent-2026-08-16/ARGMAX_TWO_PASS_NO_TRANSFER.json.
+            let two_pass = std::env::var("HAWKING_ARGMAX_TWO_PASS")
+                .map(|v| v != "0")
+                .unwrap_or(false);
+            if !two_pass {
+                return sample_argmax_f32_tcb(
+                    tcb,
+                    &self.workspace.logits,
+                    &self.workspace.sampled,
+                    QWEN38_VOCAB,
+                );
+            }
+            let vocab = QWEN38_VOCAB as u32;
+            let groups = ARGMAX_GROUPS as u32;
+            tcb.dispatch_threads(
+                "sample_argmax_f32_pass1",
+                (groups * 256, 1, 1),
+                (256, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&self.workspace.logits), 0);
+                    enc.set_buffer(1, Some(&self.workspace.argmax_part_v), 0);
+                    enc.set_buffer(2, Some(&self.workspace.argmax_part_i), 0);
+                    enc.set_bytes(3, 4, &vocab as *const u32 as *const _);
+                    enc.set_threadgroup_memory_length(0, 256 * 4);
+                    enc.set_threadgroup_memory_length(1, 256 * 4);
+                },
+            )?;
+            tcb.dispatch_threads(
+                "sample_argmax_f32_pass2",
+                (256, 1, 1),
+                (256, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&self.workspace.argmax_part_v), 0);
+                    enc.set_buffer(1, Some(&self.workspace.argmax_part_i), 0);
+                    enc.set_buffer(2, Some(&self.workspace.sampled), 0);
+                    enc.set_bytes(3, 4, &groups as *const u32 as *const _);
+                    enc.set_threadgroup_memory_length(0, 256 * 4);
+                    enc.set_threadgroup_memory_length(1, 256 * 4);
+                },
             )
         }
 
@@ -2920,17 +2978,34 @@ mod device {
             hidden: u32,
         ) -> Result<()> {
             let weight = self.f32(weight_name)?;
+            let rms_tg: u32 = std::env::var("HAWKING_RMSNORM_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+                // MEASURED, interleaved A/B, 3 paired reps on G0: 256 gives
+                // 35.569/35.840/35.967 and 1024 gives 34.239/34.467/34.095 ms per token.
+                // Mean 35.792 -> 34.267, 4.26% faster, every pair favouring the retile,
+                // token-identical. HAWKING_RMSNORM_TG=0 restores the 256-pinned kernel.
+                .unwrap_or(1024);
+            let (rms_name, rms_n) = if rms_tg > 0 {
+                ("qwen80_residual_rmsnorm_tg", rms_tg)
+            } else {
+                ("qwen80_residual_rmsnorm_f32", 256)
+            };
             tcb.dispatch_threads(
-                "qwen80_residual_rmsnorm_f32",
-                (256, 1, 1),
-                (256, 1, 1),
+                rms_name,
+                (rms_n, 1, 1),
+                (rms_n, 1, 1),
                 |encoder| {
                     encoder.set_buffer(0, Some(input), 0);
                     encoder.set_buffer(1, Some(weight), 0);
                     encoder.set_buffer(2, Some(output), 0);
                     encoder.set_bytes(3, 4, &hidden as *const u32 as *const _);
                     encoder.set_bytes(4, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
-                    encoder.set_threadgroup_memory_length(0, 256 * 4);
+                    // sized to the ACTUAL threadgroup: the scratch is one float per thread and
+                    // a hardcoded 256 silently under-allocates for any larger tg, which showed
+                    // up immediately as diverged tokens rather than as a crash
+                    encoder.set_threadgroup_memory_length(0, (rms_n as u64) * 4);
                 },
             )
         }
@@ -3092,7 +3167,7 @@ mod device {
             let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
                 // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
                 // 2.54% faster, every pair favouring the retile, and token-identical on 24
@@ -3189,7 +3264,7 @@ mod device {
             let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
                 // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
                 // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
@@ -3503,7 +3578,7 @@ mod device {
             let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
                 // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
                 // 2.54% faster, every pair favouring the retile, and token-identical on 24
@@ -3591,7 +3666,7 @@ mod device {
             let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
                 .ok()
                 .and_then(|v| v.parse::<u32>().ok())
-                .filter(|v| v.is_power_of_two() && (32..=1024).contains(v))
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
                 // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
                 // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
                 // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy

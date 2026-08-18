@@ -1,0 +1,1454 @@
+{
+  "schema": "hawking.nos.route_graph.v1",
+  "obligation": "G106 -- ROUTE formalized and a route graph emitted",
+  "definition": "Directive section 29: a ROUTE is an independently schedulable semantic state transition in Gravity IR/NVM that consumes an input state and produces a Doctor-relevant output state. The section is explicit that every instruction, multiply and pointer operation is NOT a route.",
+  "what_that_excludes_and_why": "A layernorm is not a route. It consumes a state and produces one, but the state it produces is not Doctor-relevant on its own -- nothing downstream can be asked whether the model still answers correctly at that point without also running the operator the norm feeds. The same argument excludes rope, the residual add, and the SwiGLU elementwise stage. A route is a BLOCK HALF: the mixer, or the MLP, each of which takes the residual stream and returns it changed.",
+  "genesis_route_graph": {
+    "routes": 130,
+    "nodes": [
+      {
+        "route_id": "R000",
+        "kind": "EMBED",
+        "consumes": "token_id",
+        "produces": "h[0]",
+        "note": "token id to residual stream"
+      },
+      {
+        "route_id": "R001",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[0]",
+        "produces": "h_mid[0]",
+        "note": "layer 0 mixer"
+      },
+      {
+        "route_id": "R002",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[0]",
+        "produces": "h[1]",
+        "note": "layer 0 MLP"
+      },
+      {
+        "route_id": "R003",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[1]",
+        "produces": "h_mid[1]",
+        "note": "layer 1 mixer"
+      },
+      {
+        "route_id": "R004",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[1]",
+        "produces": "h[2]",
+        "note": "layer 1 MLP"
+      },
+      {
+        "route_id": "R005",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[2]",
+        "produces": "h_mid[2]",
+        "note": "layer 2 mixer"
+      },
+      {
+        "route_id": "R006",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[2]",
+        "produces": "h[3]",
+        "note": "layer 2 MLP"
+      },
+      {
+        "route_id": "R007",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[3]",
+        "produces": "h_mid[3]",
+        "note": "layer 3 mixer"
+      },
+      {
+        "route_id": "R008",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[3]",
+        "produces": "h[4]",
+        "note": "layer 3 MLP"
+      },
+      {
+        "route_id": "R009",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[4]",
+        "produces": "h_mid[4]",
+        "note": "layer 4 mixer"
+      },
+      {
+        "route_id": "R010",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[4]",
+        "produces": "h[5]",
+        "note": "layer 4 MLP"
+      },
+      {
+        "route_id": "R011",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[5]",
+        "produces": "h_mid[5]",
+        "note": "layer 5 mixer"
+      },
+      {
+        "route_id": "R012",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[5]",
+        "produces": "h[6]",
+        "note": "layer 5 MLP"
+      },
+      {
+        "route_id": "R013",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[6]",
+        "produces": "h_mid[6]",
+        "note": "layer 6 mixer"
+      },
+      {
+        "route_id": "R014",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[6]",
+        "produces": "h[7]",
+        "note": "layer 6 MLP"
+      },
+      {
+        "route_id": "R015",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[7]",
+        "produces": "h_mid[7]",
+        "note": "layer 7 mixer"
+      },
+      {
+        "route_id": "R016",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[7]",
+        "produces": "h[8]",
+        "note": "layer 7 MLP"
+      },
+      {
+        "route_id": "R017",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[8]",
+        "produces": "h_mid[8]",
+        "note": "layer 8 mixer"
+      },
+      {
+        "route_id": "R018",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[8]",
+        "produces": "h[9]",
+        "note": "layer 8 MLP"
+      },
+      {
+        "route_id": "R019",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[9]",
+        "produces": "h_mid[9]",
+        "note": "layer 9 mixer"
+      },
+      {
+        "route_id": "R020",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[9]",
+        "produces": "h[10]",
+        "note": "layer 9 MLP"
+      },
+      {
+        "route_id": "R021",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[10]",
+        "produces": "h_mid[10]",
+        "note": "layer 10 mixer"
+      },
+      {
+        "route_id": "R022",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[10]",
+        "produces": "h[11]",
+        "note": "layer 10 MLP"
+      },
+      {
+        "route_id": "R023",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[11]",
+        "produces": "h_mid[11]",
+        "note": "layer 11 mixer"
+      },
+      {
+        "route_id": "R024",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[11]",
+        "produces": "h[12]",
+        "note": "layer 11 MLP"
+      },
+      {
+        "route_id": "R025",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[12]",
+        "produces": "h_mid[12]",
+        "note": "layer 12 mixer"
+      },
+      {
+        "route_id": "R026",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[12]",
+        "produces": "h[13]",
+        "note": "layer 12 MLP"
+      },
+      {
+        "route_id": "R027",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[13]",
+        "produces": "h_mid[13]",
+        "note": "layer 13 mixer"
+      },
+      {
+        "route_id": "R028",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[13]",
+        "produces": "h[14]",
+        "note": "layer 13 MLP"
+      },
+      {
+        "route_id": "R029",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[14]",
+        "produces": "h_mid[14]",
+        "note": "layer 14 mixer"
+      },
+      {
+        "route_id": "R030",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[14]",
+        "produces": "h[15]",
+        "note": "layer 14 MLP"
+      },
+      {
+        "route_id": "R031",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[15]",
+        "produces": "h_mid[15]",
+        "note": "layer 15 mixer"
+      },
+      {
+        "route_id": "R032",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[15]",
+        "produces": "h[16]",
+        "note": "layer 15 MLP"
+      },
+      {
+        "route_id": "R033",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[16]",
+        "produces": "h_mid[16]",
+        "note": "layer 16 mixer"
+      },
+      {
+        "route_id": "R034",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[16]",
+        "produces": "h[17]",
+        "note": "layer 16 MLP"
+      },
+      {
+        "route_id": "R035",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[17]",
+        "produces": "h_mid[17]",
+        "note": "layer 17 mixer"
+      },
+      {
+        "route_id": "R036",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[17]",
+        "produces": "h[18]",
+        "note": "layer 17 MLP"
+      },
+      {
+        "route_id": "R037",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[18]",
+        "produces": "h_mid[18]",
+        "note": "layer 18 mixer"
+      },
+      {
+        "route_id": "R038",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[18]",
+        "produces": "h[19]",
+        "note": "layer 18 MLP"
+      },
+      {
+        "route_id": "R039",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[19]",
+        "produces": "h_mid[19]",
+        "note": "layer 19 mixer"
+      },
+      {
+        "route_id": "R040",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[19]",
+        "produces": "h[20]",
+        "note": "layer 19 MLP"
+      },
+      {
+        "route_id": "R041",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[20]",
+        "produces": "h_mid[20]",
+        "note": "layer 20 mixer"
+      },
+      {
+        "route_id": "R042",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[20]",
+        "produces": "h[21]",
+        "note": "layer 20 MLP"
+      },
+      {
+        "route_id": "R043",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[21]",
+        "produces": "h_mid[21]",
+        "note": "layer 21 mixer"
+      },
+      {
+        "route_id": "R044",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[21]",
+        "produces": "h[22]",
+        "note": "layer 21 MLP"
+      },
+      {
+        "route_id": "R045",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[22]",
+        "produces": "h_mid[22]",
+        "note": "layer 22 mixer"
+      },
+      {
+        "route_id": "R046",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[22]",
+        "produces": "h[23]",
+        "note": "layer 22 MLP"
+      },
+      {
+        "route_id": "R047",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[23]",
+        "produces": "h_mid[23]",
+        "note": "layer 23 mixer"
+      },
+      {
+        "route_id": "R048",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[23]",
+        "produces": "h[24]",
+        "note": "layer 23 MLP"
+      },
+      {
+        "route_id": "R049",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[24]",
+        "produces": "h_mid[24]",
+        "note": "layer 24 mixer"
+      },
+      {
+        "route_id": "R050",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[24]",
+        "produces": "h[25]",
+        "note": "layer 24 MLP"
+      },
+      {
+        "route_id": "R051",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[25]",
+        "produces": "h_mid[25]",
+        "note": "layer 25 mixer"
+      },
+      {
+        "route_id": "R052",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[25]",
+        "produces": "h[26]",
+        "note": "layer 25 MLP"
+      },
+      {
+        "route_id": "R053",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[26]",
+        "produces": "h_mid[26]",
+        "note": "layer 26 mixer"
+      },
+      {
+        "route_id": "R054",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[26]",
+        "produces": "h[27]",
+        "note": "layer 26 MLP"
+      },
+      {
+        "route_id": "R055",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[27]",
+        "produces": "h_mid[27]",
+        "note": "layer 27 mixer"
+      },
+      {
+        "route_id": "R056",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[27]",
+        "produces": "h[28]",
+        "note": "layer 27 MLP"
+      },
+      {
+        "route_id": "R057",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[28]",
+        "produces": "h_mid[28]",
+        "note": "layer 28 mixer"
+      },
+      {
+        "route_id": "R058",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[28]",
+        "produces": "h[29]",
+        "note": "layer 28 MLP"
+      },
+      {
+        "route_id": "R059",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[29]",
+        "produces": "h_mid[29]",
+        "note": "layer 29 mixer"
+      },
+      {
+        "route_id": "R060",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[29]",
+        "produces": "h[30]",
+        "note": "layer 29 MLP"
+      },
+      {
+        "route_id": "R061",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[30]",
+        "produces": "h_mid[30]",
+        "note": "layer 30 mixer"
+      },
+      {
+        "route_id": "R062",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[30]",
+        "produces": "h[31]",
+        "note": "layer 30 MLP"
+      },
+      {
+        "route_id": "R063",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[31]",
+        "produces": "h_mid[31]",
+        "note": "layer 31 mixer"
+      },
+      {
+        "route_id": "R064",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[31]",
+        "produces": "h[32]",
+        "note": "layer 31 MLP"
+      },
+      {
+        "route_id": "R065",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[32]",
+        "produces": "h_mid[32]",
+        "note": "layer 32 mixer"
+      },
+      {
+        "route_id": "R066",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[32]",
+        "produces": "h[33]",
+        "note": "layer 32 MLP"
+      },
+      {
+        "route_id": "R067",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[33]",
+        "produces": "h_mid[33]",
+        "note": "layer 33 mixer"
+      },
+      {
+        "route_id": "R068",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[33]",
+        "produces": "h[34]",
+        "note": "layer 33 MLP"
+      },
+      {
+        "route_id": "R069",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[34]",
+        "produces": "h_mid[34]",
+        "note": "layer 34 mixer"
+      },
+      {
+        "route_id": "R070",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[34]",
+        "produces": "h[35]",
+        "note": "layer 34 MLP"
+      },
+      {
+        "route_id": "R071",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[35]",
+        "produces": "h_mid[35]",
+        "note": "layer 35 mixer"
+      },
+      {
+        "route_id": "R072",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[35]",
+        "produces": "h[36]",
+        "note": "layer 35 MLP"
+      },
+      {
+        "route_id": "R073",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[36]",
+        "produces": "h_mid[36]",
+        "note": "layer 36 mixer"
+      },
+      {
+        "route_id": "R074",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[36]",
+        "produces": "h[37]",
+        "note": "layer 36 MLP"
+      },
+      {
+        "route_id": "R075",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[37]",
+        "produces": "h_mid[37]",
+        "note": "layer 37 mixer"
+      },
+      {
+        "route_id": "R076",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[37]",
+        "produces": "h[38]",
+        "note": "layer 37 MLP"
+      },
+      {
+        "route_id": "R077",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[38]",
+        "produces": "h_mid[38]",
+        "note": "layer 38 mixer"
+      },
+      {
+        "route_id": "R078",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[38]",
+        "produces": "h[39]",
+        "note": "layer 38 MLP"
+      },
+      {
+        "route_id": "R079",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[39]",
+        "produces": "h_mid[39]",
+        "note": "layer 39 mixer"
+      },
+      {
+        "route_id": "R080",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[39]",
+        "produces": "h[40]",
+        "note": "layer 39 MLP"
+      },
+      {
+        "route_id": "R081",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[40]",
+        "produces": "h_mid[40]",
+        "note": "layer 40 mixer"
+      },
+      {
+        "route_id": "R082",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[40]",
+        "produces": "h[41]",
+        "note": "layer 40 MLP"
+      },
+      {
+        "route_id": "R083",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[41]",
+        "produces": "h_mid[41]",
+        "note": "layer 41 mixer"
+      },
+      {
+        "route_id": "R084",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[41]",
+        "produces": "h[42]",
+        "note": "layer 41 MLP"
+      },
+      {
+        "route_id": "R085",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[42]",
+        "produces": "h_mid[42]",
+        "note": "layer 42 mixer"
+      },
+      {
+        "route_id": "R086",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[42]",
+        "produces": "h[43]",
+        "note": "layer 42 MLP"
+      },
+      {
+        "route_id": "R087",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[43]",
+        "produces": "h_mid[43]",
+        "note": "layer 43 mixer"
+      },
+      {
+        "route_id": "R088",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[43]",
+        "produces": "h[44]",
+        "note": "layer 43 MLP"
+      },
+      {
+        "route_id": "R089",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[44]",
+        "produces": "h_mid[44]",
+        "note": "layer 44 mixer"
+      },
+      {
+        "route_id": "R090",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[44]",
+        "produces": "h[45]",
+        "note": "layer 44 MLP"
+      },
+      {
+        "route_id": "R091",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[45]",
+        "produces": "h_mid[45]",
+        "note": "layer 45 mixer"
+      },
+      {
+        "route_id": "R092",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[45]",
+        "produces": "h[46]",
+        "note": "layer 45 MLP"
+      },
+      {
+        "route_id": "R093",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[46]",
+        "produces": "h_mid[46]",
+        "note": "layer 46 mixer"
+      },
+      {
+        "route_id": "R094",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[46]",
+        "produces": "h[47]",
+        "note": "layer 46 MLP"
+      },
+      {
+        "route_id": "R095",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[47]",
+        "produces": "h_mid[47]",
+        "note": "layer 47 mixer"
+      },
+      {
+        "route_id": "R096",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[47]",
+        "produces": "h[48]",
+        "note": "layer 47 MLP"
+      },
+      {
+        "route_id": "R097",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[48]",
+        "produces": "h_mid[48]",
+        "note": "layer 48 mixer"
+      },
+      {
+        "route_id": "R098",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[48]",
+        "produces": "h[49]",
+        "note": "layer 48 MLP"
+      },
+      {
+        "route_id": "R099",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[49]",
+        "produces": "h_mid[49]",
+        "note": "layer 49 mixer"
+      },
+      {
+        "route_id": "R100",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[49]",
+        "produces": "h[50]",
+        "note": "layer 49 MLP"
+      },
+      {
+        "route_id": "R101",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[50]",
+        "produces": "h_mid[50]",
+        "note": "layer 50 mixer"
+      },
+      {
+        "route_id": "R102",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[50]",
+        "produces": "h[51]",
+        "note": "layer 50 MLP"
+      },
+      {
+        "route_id": "R103",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[51]",
+        "produces": "h_mid[51]",
+        "note": "layer 51 mixer"
+      },
+      {
+        "route_id": "R104",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[51]",
+        "produces": "h[52]",
+        "note": "layer 51 MLP"
+      },
+      {
+        "route_id": "R105",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[52]",
+        "produces": "h_mid[52]",
+        "note": "layer 52 mixer"
+      },
+      {
+        "route_id": "R106",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[52]",
+        "produces": "h[53]",
+        "note": "layer 52 MLP"
+      },
+      {
+        "route_id": "R107",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[53]",
+        "produces": "h_mid[53]",
+        "note": "layer 53 mixer"
+      },
+      {
+        "route_id": "R108",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[53]",
+        "produces": "h[54]",
+        "note": "layer 53 MLP"
+      },
+      {
+        "route_id": "R109",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[54]",
+        "produces": "h_mid[54]",
+        "note": "layer 54 mixer"
+      },
+      {
+        "route_id": "R110",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[54]",
+        "produces": "h[55]",
+        "note": "layer 54 MLP"
+      },
+      {
+        "route_id": "R111",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[55]",
+        "produces": "h_mid[55]",
+        "note": "layer 55 mixer"
+      },
+      {
+        "route_id": "R112",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[55]",
+        "produces": "h[56]",
+        "note": "layer 55 MLP"
+      },
+      {
+        "route_id": "R113",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[56]",
+        "produces": "h_mid[56]",
+        "note": "layer 56 mixer"
+      },
+      {
+        "route_id": "R114",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[56]",
+        "produces": "h[57]",
+        "note": "layer 56 MLP"
+      },
+      {
+        "route_id": "R115",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[57]",
+        "produces": "h_mid[57]",
+        "note": "layer 57 mixer"
+      },
+      {
+        "route_id": "R116",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[57]",
+        "produces": "h[58]",
+        "note": "layer 57 MLP"
+      },
+      {
+        "route_id": "R117",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[58]",
+        "produces": "h_mid[58]",
+        "note": "layer 58 mixer"
+      },
+      {
+        "route_id": "R118",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[58]",
+        "produces": "h[59]",
+        "note": "layer 58 MLP"
+      },
+      {
+        "route_id": "R119",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[59]",
+        "produces": "h_mid[59]",
+        "note": "layer 59 mixer"
+      },
+      {
+        "route_id": "R120",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[59]",
+        "produces": "h[60]",
+        "note": "layer 59 MLP"
+      },
+      {
+        "route_id": "R121",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[60]",
+        "produces": "h_mid[60]",
+        "note": "layer 60 mixer"
+      },
+      {
+        "route_id": "R122",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[60]",
+        "produces": "h[61]",
+        "note": "layer 60 MLP"
+      },
+      {
+        "route_id": "R123",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[61]",
+        "produces": "h_mid[61]",
+        "note": "layer 61 mixer"
+      },
+      {
+        "route_id": "R124",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[61]",
+        "produces": "h[62]",
+        "note": "layer 61 MLP"
+      },
+      {
+        "route_id": "R125",
+        "kind": "GATED_DELTA_RECURRENCE",
+        "consumes": "h[62]",
+        "produces": "h_mid[62]",
+        "note": "layer 62 mixer"
+      },
+      {
+        "route_id": "R126",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[62]",
+        "produces": "h[63]",
+        "note": "layer 62 MLP"
+      },
+      {
+        "route_id": "R127",
+        "kind": "GQA_ATTENTION",
+        "consumes": "h[63]",
+        "produces": "h_mid[63]",
+        "note": "layer 63 mixer"
+      },
+      {
+        "route_id": "R128",
+        "kind": "MLP_SWIGLU",
+        "consumes": "h_mid[63]",
+        "produces": "h[64]",
+        "note": "layer 63 MLP"
+      },
+      {
+        "route_id": "R129",
+        "kind": "LM_HEAD",
+        "consumes": "h[64]",
+        "produces": "logits",
+        "note": "final norm and vocab projection"
+      }
+    ],
+    "edges": [
+      [
+        "R000",
+        "R001"
+      ],
+      [
+        "R001",
+        "R002"
+      ],
+      [
+        "R002",
+        "R003"
+      ],
+      [
+        "R003",
+        "R004"
+      ],
+      [
+        "R004",
+        "R005"
+      ],
+      [
+        "R005",
+        "R006"
+      ],
+      [
+        "R006",
+        "R007"
+      ],
+      [
+        "R007",
+        "R008"
+      ],
+      [
+        "R008",
+        "R009"
+      ],
+      [
+        "R009",
+        "R010"
+      ],
+      [
+        "R010",
+        "R011"
+      ],
+      [
+        "R011",
+        "R012"
+      ],
+      [
+        "R012",
+        "R013"
+      ],
+      [
+        "R013",
+        "R014"
+      ],
+      [
+        "R014",
+        "R015"
+      ],
+      [
+        "R015",
+        "R016"
+      ],
+      [
+        "R016",
+        "R017"
+      ],
+      [
+        "R017",
+        "R018"
+      ],
+      [
+        "R018",
+        "R019"
+      ],
+      [
+        "R019",
+        "R020"
+      ],
+      [
+        "R020",
+        "R021"
+      ],
+      [
+        "R021",
+        "R022"
+      ],
+      [
+        "R022",
+        "R023"
+      ],
+      [
+        "R023",
+        "R024"
+      ],
+      [
+        "R024",
+        "R025"
+      ],
+      [
+        "R025",
+        "R026"
+      ],
+      [
+        "R026",
+        "R027"
+      ],
+      [
+        "R027",
+        "R028"
+      ],
+      [
+        "R028",
+        "R029"
+      ],
+      [
+        "R029",
+        "R030"
+      ],
+      [
+        "R030",
+        "R031"
+      ],
+      [
+        "R031",
+        "R032"
+      ],
+      [
+        "R032",
+        "R033"
+      ],
+      [
+        "R033",
+        "R034"
+      ],
+      [
+        "R034",
+        "R035"
+      ],
+      [
+        "R035",
+        "R036"
+      ],
+      [
+        "R036",
+        "R037"
+      ],
+      [
+        "R037",
+        "R038"
+      ],
+      [
+        "R038",
+        "R039"
+      ],
+      [
+        "R039",
+        "R040"
+      ],
+      [
+        "R040",
+        "R041"
+      ],
+      [
+        "R041",
+        "R042"
+      ],
+      [
+        "R042",
+        "R043"
+      ],
+      [
+        "R043",
+        "R044"
+      ],
+      [
+        "R044",
+        "R045"
+      ],
+      [
+        "R045",
+        "R046"
+      ],
+      [
+        "R046",
+        "R047"
+      ],
+      [
+        "R047",
+        "R048"
+      ],
+      [
+        "R048",
+        "R049"
+      ],
+      [
+        "R049",
+        "R050"
+      ],
+      [
+        "R050",
+        "R051"
+      ],
+      [
+        "R051",
+        "R052"
+      ],
+      [
+        "R052",
+        "R053"
+      ],
+      [
+        "R053",
+        "R054"
+      ],
+      [
+        "R054",
+        "R055"
+      ],
+      [
+        "R055",
+        "R056"
+      ],
+      [
+        "R056",
+        "R057"
+      ],
+      [
+        "R057",
+        "R058"
+      ],
+      [
+        "R058",
+        "R059"
+      ],
+      [
+        "R059",
+        "R060"
+      ],
+      [
+        "R060",
+        "R061"
+      ],
+      [
+        "R061",
+        "R062"
+      ],
+      [
+        "R062",
+        "R063"
+      ],
+      [
+        "R063",
+        "R064"
+      ],
+      [
+        "R064",
+        "R065"
+      ],
+      [
+        "R065",
+        "R066"
+      ],
+      [
+        "R066",
+        "R067"
+      ],
+      [
+        "R067",
+        "R068"
+      ],
+      [
+        "R068",
+        "R069"
+      ],
+      [
+        "R069",
+        "R070"
+      ],
+      [
+        "R070",
+        "R071"
+      ],
+      [
+        "R071",
+        "R072"
+      ],
+      [
+        "R072",
+        "R073"
+      ],
+      [
+        "R073",
+        "R074"
+      ],
+      [
+        "R074",
+        "R075"
+      ],
+      [
+        "R075",
+        "R076"
+      ],
+      [
+        "R076",
+        "R077"
+      ],
+      [
+        "R077",
+        "R078"
+      ],
+      [
+        "R078",
+        "R079"
+      ],
+      [
+        "R079",
+        "R080"
+      ],
+      [
+        "R080",
+        "R081"
+      ],
+      [
+        "R081",
+        "R082"
+      ],
+      [
+        "R082",
+        "R083"
+      ],
+      [
+        "R083",
+        "R084"
+      ],
+      [
+        "R084",
+        "R085"
+      ],
+      [
+        "R085",
+        "R086"
+      ],
+      [
+        "R086",
+        "R087"
+      ],
+      [
+        "R087",
+        "R088"
+      ],
+      [
+        "R088",
+        "R089"
+      ],
+      [
+        "R089",
+        "R090"
+      ],
+      [
+        "R090",
+        "R091"
+      ],
+      [
+        "R091",
+        "R092"
+      ],
+      [
+        "R092",
+        "R093"
+      ],
+      [
+        "R093",
+        "R094"
+      ],
+      [
+        "R094",
+        "R095"
+      ],
+      [
+        "R095",
+        "R096"
+      ],
+      [
+        "R096",
+        "R097"
+      ],
+      [
+        "R097",
+        "R098"
+      ],
+      [
+        "R098",
+        "R099"
+      ],
+      [
+        "R099",
+        "R100"
+      ],
+      [
+        "R100",
+        "R101"
+      ],
+      [
+        "R101",
+        "R102"
+      ],
+      [
+        "R102",
+        "R103"
+      ],
+      [
+        "R103",
+        "R104"
+      ],
+      [
+        "R104",
+        "R105"
+      ],
+      [
+        "R105",
+        "R106"
+      ],
+      [
+        "R106",
+        "R107"
+      ],
+      [
+        "R107",
+        "R108"
+      ],
+      [
+        "R108",
+        "R109"
+      ],
+      [
+        "R109",
+        "R110"
+      ],
+      [
+        "R110",
+        "R111"
+      ],
+      [
+        "R111",
+        "R112"
+      ],
+      [
+        "R112",
+        "R113"
+      ],
+      [
+        "R113",
+        "R114"
+      ],
+      [
+        "R114",
+        "R115"
+      ],
+      [
+        "R115",
+        "R116"
+      ],
+      [
+        "R116",
+        "R117"
+      ],
+      [
+        "R117",
+        "R118"
+      ],
+      [
+        "R118",
+        "R119"
+      ],
+      [
+        "R119",
+        "R120"
+      ],
+      [
+        "R120",
+        "R121"
+      ],
+      [
+        "R121",
+        "R122"
+      ],
+      [
+        "R122",
+        "R123"
+      ],
+      [
+        "R123",
+        "R124"
+      ],
+      [
+        "R124",
+        "R125"
+      ],
+      [
+        "R125",
+        "R126"
+      ],
+      [
+        "R126",
+        "R127"
+      ],
+      [
+        "R127",
+        "R128"
+      ],
+      [
+        "R128",
+        "R129"
+      ]
+    ],
+    "shape": "1 embed + 64 mixers + 64 MLPs + 1 head, strictly sequential",
+    "mixer_split": "16 GQA attention routes, 48 gated-delta recurrence routes"
+  },
+  "the_three_counts_side_by_side": {
+    "routes_per_token": 130,
+    "dispatches_per_token": 964,
+    "distinct_kernels_bound": 38,
+    "dispatches_per_route": 7.415384615384616,
+    "dispatches_per_kernel": 25.36842105263158,
+    "routes_per_kernel": 3.4210526315789473
+  },
+  "the_difference_explained_numerically": "130 routes, 964 dispatches, 38 kernels are three different things and the ratios say what each is. A route lowers to 7.42 dispatches on average, because one mixer route becomes a norm, an input projection, a rope or conv stage, the attention or recurrence itself, and an output projection. A kernel is dispatched 25.4 times per token, because the same program runs once per layer. Counting dispatches as routes would overstate the semantic width of the program 7.4x; counting kernels as routes would understate it 3.4x.",
+  "RPT": 130,
+  "RPS": 4254.9,
+  "tps_used": 32.73,
+  "commit": "8ab21ca534b59d6057ab9cffc6caefe3aa12e3cc"
+}

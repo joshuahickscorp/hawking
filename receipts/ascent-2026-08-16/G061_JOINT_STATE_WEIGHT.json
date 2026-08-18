@@ -1,0 +1,229 @@
+{
+  "schema": "hawking.nos.joint_state_weight.v1",
+  "obligation": "G061 -- a factorization chosen because it induces a cheap state",
+  "architecture_already_does_the_easy_half": "k_proj is [1024, 5120], so K = W_k x is a 1024-dim projection of a 5120-dim hidden and the KV cache stores exactly that. The cache IS V^T x; nothing is repeatedly expanded. The open question is the INNER rank r < 1024 and how its subspace is chosen.",
+  "candidates": {
+    "weight_svd": "best rank-r of the W_k head block; sees no activations. This is what optimizing weights independently means.",
+    "state_pca": "best rank-r subspace of the K vectors actually produced on real tokens",
+    "query_weighted": "best rank-r in the metric of the empirical query second moment -- K is only consumed through q^T k, so this knows both what the state contains and how it is read"
+  },
+  "scored_on": "relative error in the attention scores q^T k, not reconstruction of K, because scores are what the mechanism produces. GQA respected: 48 query heads over 4 kv heads, 12 per kv head.",
+  "holdout": "subspaces fitted on the first half of captured tokens, scored on the second, so an in-sample PCA cannot win by memorising",
+  "layer": 63,
+  "tokens": 1024,
+  "kv_effective_rank": [
+    {
+      "head": 0,
+      "rank_for_90pct": 38,
+      "rank_for_99pct": 135,
+      "rank_for_999pct": 209
+    },
+    {
+      "head": 1,
+      "rank_for_90pct": 44,
+      "rank_for_99pct": 147,
+      "rank_for_999pct": 217
+    },
+    {
+      "head": 2,
+      "rank_for_90pct": 56,
+      "rank_for_99pct": 162,
+      "rank_for_999pct": 226
+    },
+    {
+      "head": 3,
+      "rank_for_90pct": 45,
+      "rank_for_99pct": 147,
+      "rank_for_999pct": 215
+    }
+  ],
+  "per_head": [
+    {
+      "head": 0,
+      "ranks": [
+        {
+          "rank": 16,
+          "weight_svd": 0.43422654271125793,
+          "state_pca": 0.26846545934677124,
+          "query_weighted": 0.44857972860336304
+        },
+        {
+          "rank": 32,
+          "weight_svd": 0.40164104104042053,
+          "state_pca": 0.19719843566417694,
+          "query_weighted": 0.25696656107902527
+        },
+        {
+          "rank": 64,
+          "weight_svd": 0.3685207664966583,
+          "state_pca": 0.12612628936767578,
+          "query_weighted": 0.13841359317302704
+        },
+        {
+          "rank": 128,
+          "weight_svd": 0.2553373873233795,
+          "state_pca": 0.07800468802452087,
+          "query_weighted": 0.07610822468996048
+        },
+        {
+          "rank": 192,
+          "weight_svd": 0.17202693223953247,
+          "state_pca": 0.042269062250852585,
+          "query_weighted": 0.04120812937617302
+        }
+      ]
+    },
+    {
+      "head": 1,
+      "ranks": [
+        {
+          "rank": 16,
+          "weight_svd": 0.4713924825191498,
+          "state_pca": 0.2821173071861267,
+          "query_weighted": 0.40799933671951294
+        },
+        {
+          "rank": 32,
+          "weight_svd": 0.37390509247779846,
+          "state_pca": 0.20457671582698822,
+          "query_weighted": 0.285969614982605
+        },
+        {
+          "rank": 64,
+          "weight_svd": 0.31613919138908386,
+          "state_pca": 0.15341828763484955,
+          "query_weighted": 0.13811500370502472
+        },
+        {
+          "rank": 128,
+          "weight_svd": 0.24278780817985535,
+          "state_pca": 0.088748998939991,
+          "query_weighted": 0.08077166974544525
+        },
+        {
+          "rank": 192,
+          "weight_svd": 0.17061324417591095,
+          "state_pca": 0.046527180820703506,
+          "query_weighted": 0.04629705473780632
+        }
+      ]
+    },
+    {
+      "head": 2,
+      "ranks": [
+        {
+          "rank": 16,
+          "weight_svd": 0.5741854310035706,
+          "state_pca": 0.29215580224990845,
+          "query_weighted": 0.3308072090148926
+        },
+        {
+          "rank": 32,
+          "weight_svd": 0.5077439546585083,
+          "state_pca": 0.23964309692382812,
+          "query_weighted": 0.21452157199382782
+        },
+        {
+          "rank": 64,
+          "weight_svd": 0.3847426176071167,
+          "state_pca": 0.17216366529464722,
+          "query_weighted": 0.1391449123620987
+        },
+        {
+          "rank": 128,
+          "weight_svd": 0.27222907543182373,
+          "state_pca": 0.10475688427686691,
+          "query_weighted": 0.08886830508708954
+        },
+        {
+          "rank": 192,
+          "weight_svd": 0.20680074393749237,
+          "state_pca": 0.0633731558918953,
+          "query_weighted": 0.04813815653324127
+        }
+      ]
+    },
+    {
+      "head": 3,
+      "ranks": [
+        {
+          "rank": 16,
+          "weight_svd": 0.41936159133911133,
+          "state_pca": 0.24174028635025024,
+          "query_weighted": 0.3400830328464508
+        },
+        {
+          "rank": 32,
+          "weight_svd": 0.3648836314678192,
+          "state_pca": 0.18804535269737244,
+          "query_weighted": 0.20412129163742065
+        },
+        {
+          "rank": 64,
+          "weight_svd": 0.30404284596443176,
+          "state_pca": 0.13996648788452148,
+          "query_weighted": 0.13159309327602386
+        },
+        {
+          "rank": 128,
+          "weight_svd": 0.23418892920017242,
+          "state_pca": 0.08390815556049347,
+          "query_weighted": 0.07581412047147751
+        },
+        {
+          "rank": 192,
+          "weight_svd": 0.13823255896568298,
+          "state_pca": 0.046619974076747894,
+          "query_weighted": 0.041430529206991196
+        }
+      ]
+    }
+  ],
+  "aggregate": [
+    {
+      "rank": 16,
+      "weight_svd": 0.4747915118932724,
+      "state_pca": 0.27111971378326416,
+      "query_weighted": 0.38186732679605484,
+      "best_over_weight": 1.7512245984178987
+    },
+    {
+      "rank": 32,
+      "weight_svd": 0.4120434299111366,
+      "state_pca": 0.20736590027809143,
+      "query_weighted": 0.24039475992321968,
+      "best_over_weight": 1.9870356184819156
+    },
+    {
+      "rank": 64,
+      "weight_svd": 0.34336135536432266,
+      "state_pca": 0.1479186825454235,
+      "query_weighted": 0.13681665062904358,
+      "best_over_weight": 2.5096459662303237
+    },
+    {
+      "rank": 128,
+      "weight_svd": 0.25113580003380775,
+      "state_pca": 0.08885468170046806,
+      "query_weighted": 0.0803905799984932,
+      "best_over_weight": 3.123945616992873
+    },
+    {
+      "rank": 192,
+      "weight_svd": 0.1719183698296547,
+      "state_pca": 0.04969734326004982,
+      "query_weighted": 0.04426846746355295,
+      "best_over_weight": 3.8835401286750724
+    }
+  ],
+  "joint_ties_with_independent": false,
+  "commit": "1a3480cd85e1eb4e5f4a3dcab96c04f05ff175ea",
+  "cost_fairness": "Matched rank means matched CACHE BYTES, and the two schemes get there differently, so this is stated rather than assumed. Weight SVD gives W_k ~ U_r V_r^T, and K = U_r (V_r^T x), so the cache holds z = V_r^T x at r dims. State PCA projects the 256-dim K onto a rank-r subspace and caches r dims. Both store r numbers per position per head. The comparison is like for like.",
+  "what_it_means_for_G060": {
+    "kv_effective_rank_99pct_mean_of_256": 147,
+    "byte_reduction_at_99pct_energy": 0.42578125,
+    "statement": "K's effective rank on real held-out tokens is 147 of 256 at 99% energy (90% is reached by 38-56 dims). So the KV state genuinely IS redundant and a latent cache at roughly 147 dims would cut K bytes by 43%. But G060 already measured that the attention path is 32x off its bandwidth bound and that BYTES ARE NOT WHAT THE PATH PAYS FOR, so this redundancy converts to RESIDENT MEMORY (17.18 GB of KV at 131k context) rather than to speed. That distinction is the whole reason G060 is still open: nothing here is a TPS claim.",
+    "not_a_capability_claim": "an 8% relative error in attention scores at rank 128 is a number, not a verdict. No capability run has been made on a latent-KV artifact and none is implied."
+  },
+  "limitation": "one layer (L63) and its 4 kv heads. The effective ranks are consistent across those four heads (135-162 at 99%), but this is not a whole-model measurement."
+}

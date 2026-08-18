@@ -1,0 +1,280 @@
+{
+  "schema": "hawking.nos.exception_selection.v1",
+  "obligation": "G074 -- functional exception allocation measured against magnitude",
+  "rules": {
+    "MAGNITUDE": "|w|, the classic outlier rule",
+    "RESIDUAL": "|w - q(w)|, the weights the quantizer got most wrong",
+    "FUNCTIONAL": "d_j*(w-q(w))^2, the weights whose error the output feels"
+  },
+  "why_residual_is_included": "without it a functional win could be dismissed as 'magnitude does not know about the quantizer'. RESIDUAL knows exactly that and nothing about activations, so the gap between RESIDUAL and FUNCTIONAL isolates what the activation statistics contribute on their own.",
+  "equal_budget": "every rule picks the SAME number of exceptions from the same tensor and the same base; only the ranking differs",
+  "holdout": "d fitted on the first half of captured rows, error scored on the second",
+  "sites": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "site": "post_attn_norm",
+      "provenance": "VERIFIED",
+      "shape": [
+        1536,
+        5120
+      ],
+      "base_output_rel_fro": 0.10825395941812849,
+      "budgets": [
+        {
+          "budget_bits_per_elem": 0.25,
+          "exceptions": 50412,
+          "exception_frac_of_tensor": 0.00641021728515625,
+          "err": {
+            "MAGNITUDE": 0.10801623944712091,
+            "RESIDUAL": 0.1052961659992256,
+            "FUNCTIONAL": 0.09281188119903203
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 0.21959471254939436,
+            "RESIDUAL": 2.732272736074691,
+            "FUNCTIONAL": 14.264677525051791
+          },
+          "functional_over_magnitude_error_ratio": 1.1638190935434618,
+          "functional_over_residual_error_ratio": 1.1345117094806152
+        },
+        {
+          "budget_bits_per_elem": 0.5,
+          "exceptions": 100824,
+          "exception_frac_of_tensor": 0.0128204345703125,
+          "err": {
+            "MAGNITUDE": 0.10771886508519395,
+            "RESIDUAL": 0.10323342131709194,
+            "FUNCTIONAL": 0.09017985831021315
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 0.49429539188285115,
+            "RESIDUAL": 4.6377408531034225,
+            "FUNCTIONAL": 16.696018515225415
+          },
+          "functional_over_magnitude_error_ratio": 1.1944891808839142,
+          "functional_over_residual_error_ratio": 1.1447503162177894
+        },
+        {
+          "budget_bits_per_elem": 1.0,
+          "exceptions": 201649,
+          "exception_frac_of_tensor": 0.02564099629720052,
+          "err": {
+            "MAGNITUDE": 0.10687063129771954,
+            "RESIDUAL": 0.10017554881692868,
+            "FUNCTIONAL": 0.0865808009778455
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 1.277854526378916,
+            "RESIDUAL": 7.462462014896958,
+            "FUNCTIONAL": 20.02066119038741
+          },
+          "functional_over_magnitude_error_ratio": 1.234345606540021,
+          "functional_over_residual_error_ratio": 1.1570180419393652
+        }
+      ]
+    },
+    {
+      "organ": "mlp.down_proj",
+      "layer": 63,
+      "site": "post_swiglu",
+      "provenance": "VERIFIED",
+      "shape": [
+        1536,
+        17408
+      ],
+      "base_output_rel_fro": 0.26334763434741637,
+      "budgets": [
+        {
+          "budget_bits_per_elem": 0.25,
+          "exceptions": 163040,
+          "exception_frac_of_tensor": 0.006097531786151961,
+          "err": {
+            "MAGNITUDE": 0.26144728113036214,
+            "RESIDUAL": 0.2409684518579093,
+            "FUNCTIONAL": 0.19032958954259369
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 0.7216139312446697,
+            "RESIDUAL": 8.49796222584774,
+            "FUNCTIONAL": 27.726865663997202
+          },
+          "functional_over_magnitude_error_ratio": 1.3736554665970795,
+          "functional_over_residual_error_ratio": 1.2660588006153568
+        },
+        {
+          "budget_bits_per_elem": 0.5,
+          "exceptions": 326081,
+          "exception_frac_of_tensor": 0.012195100971296722,
+          "err": {
+            "MAGNITUDE": 0.2601372076621569,
+            "RESIDUAL": 0.23591966200881848,
+            "FUNCTIONAL": 0.17067325774480674
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 1.2190831686090464,
+            "RESIDUAL": 10.415120077522346,
+            "FUNCTIONAL": 35.190890107009935
+          },
+          "functional_over_magnitude_error_ratio": 1.5241825878259032,
+          "functional_over_residual_error_ratio": 1.3822883861604678
+        },
+        {
+          "budget_bits_per_elem": 1.0,
+          "exceptions": 652163,
+          "exception_frac_of_tensor": 0.024390239341586243,
+          "err": {
+            "MAGNITUDE": 0.26032058804572367,
+            "RESIDUAL": 0.22850299060678578,
+            "FUNCTIONAL": 0.1454785871251664
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 1.1494488299444265,
+            "RESIDUAL": 13.23142462508794,
+            "FUNCTIONAL": 44.75796697940088
+          },
+          "functional_over_magnitude_error_ratio": 1.7894082778089526,
+          "functional_over_residual_error_ratio": 1.5706984451958357
+        }
+      ]
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "layer": 62,
+      "site": "mixer_x",
+      "provenance": "NAMED",
+      "shape": [
+        1536,
+        6144
+      ],
+      "base_output_rel_fro": 0.27787772886647233,
+      "budgets": [
+        {
+          "budget_bits_per_elem": 0.25,
+          "exceptions": 58982,
+          "exception_frac_of_tensor": 0.0062499576144748265,
+          "err": {
+            "MAGNITUDE": 0.27755106204401037,
+            "RESIDUAL": 0.2688759365381902,
+            "FUNCTIONAL": 0.15210995936144267
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 0.1175577559938008,
+            "RESIDUAL": 3.2394795959368636,
+            "FUNCTIONAL": 45.26011135115633
+          },
+          "functional_over_magnitude_error_ratio": 1.8246738294400262,
+          "functional_over_residual_error_ratio": 1.7676418931865532
+        },
+        {
+          "budget_bits_per_elem": 0.5,
+          "exceptions": 117964,
+          "exception_frac_of_tensor": 0.012499915228949653,
+          "err": {
+            "MAGNITUDE": 0.27747745639417654,
+            "RESIDUAL": 0.26365592067742655,
+            "FUNCTIONAL": 0.13539069772234083
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 0.14404625873710608,
+            "RESIDUAL": 5.118009365867439,
+            "FUNCTIONAL": 51.276880563753394
+          },
+          "functional_over_magnitude_error_ratio": 2.049457319166987,
+          "functional_over_residual_error_ratio": 1.9473710167158749
+        },
+        {
+          "budget_bits_per_elem": 1.0,
+          "exceptions": 235929,
+          "exception_frac_of_tensor": 0.02499993642171224,
+          "err": {
+            "MAGNITUDE": 0.27654268376716085,
+            "RESIDUAL": 0.25578512041906737,
+            "FUNCTIONAL": 0.11835033730381223
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 0.48044336073907074,
+            "RESIDUAL": 7.950478268814789,
+            "FUNCTIONAL": 57.409203757857576
+          },
+          "functional_over_magnitude_error_ratio": 2.3366446608196783,
+          "functional_over_residual_error_ratio": 2.1612538354026998
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "site": "post_input_norm",
+      "provenance": "INFERRED",
+      "shape": [
+        1536,
+        5120
+      ],
+      "base_output_rel_fro": 0.14345403209382265,
+      "budgets": [
+        {
+          "budget_bits_per_elem": 0.25,
+          "exceptions": 50412,
+          "exception_frac_of_tensor": 0.00641021728515625,
+          "err": {
+            "MAGNITUDE": 0.14205276768700972,
+            "RESIDUAL": 0.13722243707087423,
+            "FUNCTIONAL": 0.12359929295592245
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 0.9768037791342572,
+            "RESIDUAL": 4.343966448341307,
+            "FUNCTIONAL": 13.8404887252766
+          },
+          "functional_over_magnitude_error_ratio": 1.149300811434804,
+          "functional_over_residual_error_ratio": 1.1102202430867465
+        },
+        {
+          "budget_bits_per_elem": 0.5,
+          "exceptions": 100824,
+          "exception_frac_of_tensor": 0.0128204345703125,
+          "err": {
+            "MAGNITUDE": 0.1411840711915851,
+            "RESIDUAL": 0.13377887743543682,
+            "FUNCTIONAL": 0.1194337321501149
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 1.5823611711052756,
+            "RESIDUAL": 6.744428523318212,
+            "FUNCTIONAL": 16.744248727702445
+          },
+          "functional_over_magnitude_error_ratio": 1.1821121943516968,
+          "functional_over_residual_error_ratio": 1.1201096627148155
+        },
+        {
+          "budget_bits_per_elem": 1.0,
+          "exceptions": 201649,
+          "exception_frac_of_tensor": 0.02564099629720052,
+          "err": {
+            "MAGNITUDE": 0.13994354849893698,
+            "RESIDUAL": 0.12908972085024625,
+            "FUNCTIONAL": 0.11304487638378691
+          },
+          "error_reduction_pct": {
+            "MAGNITUDE": 2.447113924681971,
+            "RESIDUAL": 10.013180552625922,
+            "FUNCTIONAL": 21.197839660684732
+          },
+          "functional_over_magnitude_error_ratio": 1.2379468488587593,
+          "functional_over_residual_error_ratio": 1.1419334071540506
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "functional_over_magnitude_mean": 1.505002989772607,
+    "functional_over_magnitude_worst": 1.149300811434804,
+    "functional_over_magnitude_best": 2.3366446608196783,
+    "functional_over_residual_mean": 1.408654646489181,
+    "functional_over_residual_worst": 1.1102202430867465,
+    "wins_every_cell_vs_magnitude": true,
+    "wins_every_cell_vs_residual": true
+  },
+  "commit": "3f91989b081c500178e6824adf0415383d2057bc"
+}

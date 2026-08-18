@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.nos.depth_sensitivity_model_in_loop.v1",
+  "obligation": "G004 -- error propagation, model-in-the-loop rather than local linearization",
+  "why": "G004's own evidence RETRACTED its multi-layer span simulation: stacking MLP blocks without attention and the layernorms is not the network, and the state diverged to inf. It recorded that model-in-the-loop propagation is the final authority. This is that measurement.",
+  "design": "Two artifacts with IDENTICAL bit budgets -- declared complete BPW 2.892092 and payload 9,722,998,037 bytes on both -- differing ONLY in which half of the 64 layers is degraded to q2 while the other half stays q3. Everything else, including endpoints and embeddings, is held fixed. Depth placement is the only free variable.",
+  "repro": [
+    "python3 lab/operators/qwen38_mlp_not_r160_pack.py --down-bits 3 --gate-bits 3 --up-bits 3 --attn-bits 3 --early-layers 32 --early-bits 2 --tag g004-early-q2-late-q3",
+    "python3 lab/operators/qwen38_mlp_not_r160_pack.py --down-bits 2 --gate-bits 2 --up-bits 2 --attn-bits 2 --early-layers 32 --early-bits 3 --tag g004-early-q3-late-q2"
+  ],
+  "capability": {
+    "scorer": "tools/gravity_doctor_capability.py, FALLBACKS 0 and DENSE_W_MATERIALIZED 0 on every run",
+    "positive_control": {
+      "correct": 10,
+      "n": 10,
+      "degenerate": 0
+    },
+    "negative_control": {
+      "correct": 0,
+      "n": 10,
+      "degenerate": 10
+    },
+    "early_half_degraded": {
+      "correct": 0,
+      "n": 10,
+      "degenerate": 5
+    },
+    "late_half_degraded": {
+      "correct": 2,
+      "n": 10,
+      "degenerate": 0
+    }
+  },
+  "divergence": {
+    "reference": "uniform-q4-v1",
+    "determinism_control": "reference vs itself 32/32 identical",
+    "rows": []
+  },
+  "finding": "AT MATCHED BIT BUDGET, DEPTH PLACEMENT CHANGES THE FAILURE MODE, NOT JUST ITS SIZE. Degrading the EARLY half gives 0/10 correct with 5 DEGENERATE; degrading the LATE half gives 2/10 correct with 0 degenerate. Early damage makes the model ABSENT, late damage makes it WRONG BUT PRESENT. That is exactly why the gate scores degeneracy separately from correctness.",
+  "contradicts": "The local linearization behind --early-bits states 'q_inject is 1.597e-04 at L0 and 2.577e-03 at L63, a 16.1x spread, so the same relative error costs the residual stream ~16x more late than early'. As a CAPABILITY ordering that is not confirmed: the late-degraded artifact kept 2/10 and 0 degenerate while the early-degraded one lost everything and collapsed on half the items. The local model predicts the wrong ordering of harm.",
+  "instruments_disagree": "Greedy divergence from G0 ranks these OPPOSITELY to capability: late-degraded has the LOWER token agreement (0.0013 vs 0.0081) and never rejoins on 32/32 prompts against 24/32. So the artifact that keeps more capability is the one that wanders furthest from G0's exact trajectory. Divergence must not be used to rank candidates on its own -- it measures trajectory distance, not whether the patient is still there. The coherent compact-q3attn-r1p2-v1 itself agrees with G0 on only 0.0885 of tokens, which puts the whole scale in perspective.",
+  "still_owed_by_G004": "This is a TWO-BAND test at one split point, not the per-layer A_l table the acceptance asks for, and it does not yet show a propagation model PREDICTING final error better than the uniform assumption. What it does settle is that the existing local-linearization table cannot be trusted for depth allocation, which was the reason G004 was marked STALE.",
+  "commit": "3c7588974e99e05f559eb0dec01a0ce59e290e1d"
+}

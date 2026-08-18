@@ -1,0 +1,138 @@
+{
+  "schema": "hawking.nos.h_equivalence_distinguisher.v1",
+  "obligation": "G048 -- adversarial distinguisher instead of a fixed benchmark",
+  "teacher": "uniform-q4-v1",
+  "query_budget": 32,
+  "seed": 20260818,
+  "max_new_tokens": 40,
+  "prompt_space": "seeded generation over six deterministic templates (add, mul, sub, letter-count, reverse, character-count) with randomised operands and words -- the budget buys DRAWS FROM A SPACE, not reruns of a list",
+  "distinguishing_event": "teacher correct AND candidate wrong. A prompt both get wrong says nothing about equivalence, and mere token disagreement says nothing either -- G004 measured greedy divergence ranking candidates OPPOSITELY to capability",
+  "control_ran_first": true,
+  "control_works": true,
+  "results": [
+    {
+      "candidate": "mixed-q4down-v1",
+      "is_known_bad": true,
+      "distinguishing_events": 16,
+      "budget": 32,
+      "distinguishability": 0.5,
+      "queries_to_first_event": 1,
+      "teacher_correct": 16,
+      "events": [
+        {
+          "query": 0,
+          "prompt": "What is 77 - 39? Reply with the number only.",
+          "expected": "38",
+          "candidate_said": ""
+        },
+        {
+          "query": 1,
+          "prompt": "What is 9 times 19? Reply with the number only.",
+          "expected": "171",
+          "candidate_said": ""
+        },
+        {
+          "query": 2,
+          "prompt": "How many times does the letter \"t\" appear in \"triangle\"? Reply with the number only.",
+          "expected": "1",
+          "candidate_said": ""
+        },
+        {
+          "query": 6,
+          "prompt": "What is 45 + 67? Reply with the number only.",
+          "expected": "112",
+          "candidate_said": ""
+        },
+        {
+          "query": 7,
+          "prompt": "What is 23 + 32? Reply with the number only.",
+          "expected": "55",
+          "candidate_said": ""
+        },
+        {
+          "query": 8,
+          "prompt": "How many letters are in the word \"mountain\"? Reply with the number only.",
+          "expected": "8",
+          "candidate_said": ""
+        }
+      ]
+    },
+    {
+      "candidate": "compact-q3attn-r1p2-v1",
+      "is_known_bad": false,
+      "distinguishing_events": 7,
+      "budget": 32,
+      "distinguishability": 0.21875,
+      "queries_to_first_event": 1,
+      "teacher_correct": 16,
+      "events": [
+        {
+          "query": 0,
+          "prompt": "What is 77 - 39? Reply with the number only.",
+          "expected": "38",
+          "candidate_said": "<think>\n</think>"
+        },
+        {
+          "query": 2,
+          "prompt": "How many times does the letter \"t\" appear in \"triangle\"? Reply with the number only.",
+          "expected": "1",
+          "candidate_said": "<think>\n\n</think>\n\nThe word \"triangle\" consists of the letters t, r, i, a, n, l, e. When examining, the letter \"t\" appears exactly once within this"
+        },
+        {
+          "query": 7,
+          "prompt": "What is 23 + 32? Reply with the number only.",
+          "expected": "55",
+          "candidate_said": "<think>\n- The user is asking"
+        },
+        {
+          "query": 8,
+          "prompt": "How many letters are in the word \"mountain\"? Reply with the number only.",
+          "expected": "8",
+          "candidate_said": "<think>\nReply with the number only.\n</think>\n\n7"
+        },
+        {
+          "query": 11,
+          "prompt": "How many letters are in the word \"sandwich\"? Reply with the number only.",
+          "expected": "8",
+          "candidate_said": "<think>\nThe user wants to know how many letters are in the word \"sandwich\". Let me count the letters in \"sandwich\":\n\ns-a-n-d-w-i-t-c-h = "
+        },
+        {
+          "query": 16,
+          "prompt": "How many letters are in the word \"triangle\"? Reply with the number only.",
+          "expected": "8",
+          "candidate_said": "<think>\nThinking:\n1.  **Identify the target word:** The word is \"triangle\".\n2.  **Count the letters in \"triangle\":**\n    *   t ("
+        }
+      ]
+    },
+    {
+      "candidate": "g032-chanscale-a025-compact",
+      "is_known_bad": false,
+      "distinguishing_events": 3,
+      "budget": 32,
+      "distinguishability": 0.09375,
+      "queries_to_first_event": 1,
+      "teacher_correct": 16,
+      "events": [
+        {
+          "query": 0,
+          "prompt": "What is 77 - 39? Reply with the number only.",
+          "expected": "38",
+          "candidate_said": "<think>\nThe user is asking what 77 - 39 equals. Let me calculate: 77 - 39 = 38. They want just the number.\n</think>"
+        },
+        {
+          "query": 2,
+          "prompt": "How many times does the letter \"t\" appear in \"triangle\"? Reply with the number only.",
+          "expected": "1",
+          "candidate_said": "<think>\nThe user wants to know how many times the letter \"t\" appears in the word \"triangle\".\n\nLet me spell out the word \"triangle\": t-r-i-a-n-g-l-e"
+        },
+        {
+          "query": 8,
+          "prompt": "How many letters are in the word \"mountain\"? Reply with the number only.",
+          "expected": "8",
+          "candidate_said": "<think>\nThe user is asking how many letters are in the word \"mountain\". Let me count them.\n\nM-O-U-N-T-A-I-N\n\nM (1), O (2),"
+        }
+      ]
+    }
+  ],
+  "commit": "28d33ab9cdd6d736b1d11240a81ff2f8eb4b671f"
+}

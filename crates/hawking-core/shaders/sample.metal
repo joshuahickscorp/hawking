@@ -305,3 +305,84 @@ kernel void sample_multinomial(
     out_token[0] = topk_idx[sc > 0 ? sc - 1 : 0];
 }
 
+
+// ── two-pass argmax: the single-threadgroup scan is a 1-of-60-core defect ──
+//
+// sample_argmax_f32 launches grid (256,1,1) with TG (256,1,1): ONE threadgroup
+// for the whole 248,320-entry vocabulary, so each thread walks ~970 logits
+// serially and 59 of 60 GPU cores are idle. Measured at 334 us for 993 KB, which
+// is 3.0 GB/s against a 594 GB/s streaming roof -- 0.5% of it.
+//
+// Pass 1 fans the scan across many threadgroups, each emitting its own
+// (value, index) winner. Pass 2 reduces those partials with the existing
+// single-threadgroup shape, which is now correct because there are only as many
+// partials as threadgroups.
+//
+// TIE-BREAK IS PRESERVED EXACTLY: lower index wins, at every level. A partial
+// keeps the lowest index among its own maxima, and the final reduction prefers
+// the lower index on equal value, so the result is identical to the serial
+// kernel rather than merely close.
+//
+// Pass 1 grid: (n_groups * 256, 1, 1), TG (256,1,1). Pass 2: (256,1,1) both.
+kernel void sample_argmax_f32_pass1(
+    device const float* logits   [[buffer(0)]],
+    device       float* part_v   [[buffer(1)]],
+    device       uint*  part_i   [[buffer(2)]],
+    constant     uint&  n        [[buffer(3)]],
+    threadgroup  float* shmem_v  [[threadgroup(0)]],
+    threadgroup  uint*  shmem_i  [[threadgroup(1)]],
+    uint                tid      [[thread_position_in_threadgroup]],
+    uint                gid      [[threadgroup_position_in_grid]],
+    uint                n_groups [[threadgroups_per_grid]],
+    uint                tg_size  [[threads_per_threadgroup]])
+{
+    float local_v = -INFINITY;
+    uint local_i = 0u;
+    // Strided by the whole grid so the reads stay coalesced across threadgroups.
+    for (uint i = gid * tg_size + tid; i < n; i += n_groups * tg_size) {
+        const float v = logits[i];
+        if (v > local_v || (v == local_v && i < local_i)) { local_v = v; local_i = i; }
+    }
+    shmem_v[tid] = local_v;
+    shmem_i[tid] = local_i;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) {
+            const float vb = shmem_v[tid + stride]; const uint ib = shmem_i[tid + stride];
+            const float va = shmem_v[tid];          const uint ia = shmem_i[tid];
+            if (vb > va || (vb == va && ib < ia)) { shmem_v[tid] = vb; shmem_i[tid] = ib; }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0u) { part_v[gid] = shmem_v[0]; part_i[gid] = shmem_i[0]; }
+}
+
+kernel void sample_argmax_f32_pass2(
+    device const float* part_v   [[buffer(0)]],
+    device const uint*  part_i   [[buffer(1)]],
+    device       uint*  token    [[buffer(2)]],
+    constant     uint&  n_part   [[buffer(3)]],
+    threadgroup  float* shmem_v  [[threadgroup(0)]],
+    threadgroup  uint*  shmem_i  [[threadgroup(1)]],
+    uint                tid      [[thread_position_in_threadgroup]],
+    uint                tg_size  [[threads_per_threadgroup]])
+{
+    float local_v = -INFINITY;
+    uint local_i = 0xffffffffu;
+    for (uint i = tid; i < n_part; i += tg_size) {
+        const float v = part_v[i]; const uint idx = part_i[i];
+        if (v > local_v || (v == local_v && idx < local_i)) { local_v = v; local_i = idx; }
+    }
+    shmem_v[tid] = local_v;
+    shmem_i[tid] = local_i;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) {
+            const float vb = shmem_v[tid + stride]; const uint ib = shmem_i[tid + stride];
+            const float va = shmem_v[tid];          const uint ia = shmem_i[tid];
+            if (vb > va || (vb == va && ib < ia)) { shmem_v[tid] = vb; shmem_i[tid] = ib; }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0u) { token[0] = shmem_i[0]; }
+}

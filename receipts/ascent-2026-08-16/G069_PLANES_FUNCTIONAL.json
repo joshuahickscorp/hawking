@@ -1,0 +1,642 @@
+{
+  "schema": "hawking.nos.planes_functional_fit.v1",
+  "obligation": "G069 -- planes fitted to functional error, not residual weights",
+  "derivation": "||X(W-What)^T||_F^2 = sum_r (w_r-what_r) H (w_r-what_r)^T with H = X^T X. The diagonal of H is the per-input-channel activation energy and reduces this to weighted least squares, whose plane fit differs from the weight-space one in exactly one place: the scale becomes sum_j d_j|r_j| / sum_j d_j instead of the plain mean. Signs are unchanged because every d_j > 0.",
+  "control": {
+    "d_none_reproduces_weight_space_fitter": true,
+    "why": "a 'new' fitter that is quietly a different algorithm would make every comparison here meaningless"
+  },
+  "holdout": "activation energy fitted on the first half of the captured rows, error measured on the second half. In-sample fitting is the trap that made the Q30 fits worthless, so the split is not optional.",
+  "bits_convention": "raw packed, same as every other family here: binary 1 bit/symbol, ternary 2 bits/symbol, plus 16 bits of scale per group. The log2(3) entropy floor for ternary is carried alongside, not substituted in.",
+  "sites": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "site": "post_attn_norm",
+      "site_provenance": "VERIFIED",
+      "eval_rows": 512,
+      "fit_rows": 512,
+      "points": [
+        {
+          "scheme": "planes weight-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.38346871733665466
+        },
+        {
+          "scheme": "planes function-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.3553507924079895
+        },
+        {
+          "scheme": "planes weight-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.22602421045303345
+        },
+        {
+          "scheme": "planes function-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.19346870481967926
+        },
+        {
+          "scheme": "planes weight-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.15019333362579346
+        },
+        {
+          "scheme": "planes function-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.1262587606906891
+        },
+        {
+          "scheme": "planes weight-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.11565956473350525
+        },
+        {
+          "scheme": "planes function-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.0942201167345047
+        },
+        {
+          "scheme": "planes weight-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.09776487201452255
+        },
+        {
+          "scheme": "planes function-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.07791797816753387
+        },
+        {
+          "scheme": "ternary function-fit k1",
+          "bits_per_elem": 2.25,
+          "entropy_coded_bits_per_elem": 1.834962500721156,
+          "output_rel_fro": 0.20809845626354218
+        },
+        {
+          "scheme": "ternary function-fit k2",
+          "bits_per_elem": 4.5,
+          "entropy_coded_bits_per_elem": 3.669925001442312,
+          "output_rel_fro": 0.09912000596523285
+        },
+        {
+          "scheme": "ternary function-fit k3",
+          "bits_per_elem": 6.75,
+          "entropy_coded_bits_per_elem": 5.504887502163468,
+          "output_rel_fro": 0.065296471118927
+        },
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.3368244701762823
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.10230859110856659
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.04376170920126823
+        },
+        {
+          "scheme": "flat q5",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.020417943770488414
+        }
+      ],
+      "function_fit_error_reduction_by_k": [
+        0.07332521182941733,
+        0.14403547995191002,
+        0.1593584239546699,
+        0.1853668397282995,
+        0.20300639113034902
+      ]
+    },
+    {
+      "organ": "mlp.down_proj",
+      "layer": 63,
+      "site": "post_swiglu",
+      "site_provenance": "VERIFIED",
+      "eval_rows": 512,
+      "fit_rows": 512,
+      "points": [
+        {
+          "scheme": "planes weight-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.6708104014396667
+        },
+        {
+          "scheme": "planes function-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.5200565457344055
+        },
+        {
+          "scheme": "planes weight-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.4730219542980194
+        },
+        {
+          "scheme": "planes function-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.25735753774642944
+        },
+        {
+          "scheme": "planes weight-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.39305686950683594
+        },
+        {
+          "scheme": "planes function-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.19544072449207306
+        },
+        {
+          "scheme": "planes weight-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.3570537567138672
+        },
+        {
+          "scheme": "planes function-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.15165895223617554
+        },
+        {
+          "scheme": "planes weight-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.32539618015289307
+        },
+        {
+          "scheme": "planes function-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.13332627713680267
+        },
+        {
+          "scheme": "ternary function-fit k1",
+          "bits_per_elem": 2.25,
+          "entropy_coded_bits_per_elem": 1.834962500721156,
+          "output_rel_fro": 0.29159751534461975
+        },
+        {
+          "scheme": "ternary function-fit k2",
+          "bits_per_elem": 4.5,
+          "entropy_coded_bits_per_elem": 3.669925001442312,
+          "output_rel_fro": 0.15755708515644073
+        },
+        {
+          "scheme": "ternary function-fit k3",
+          "bits_per_elem": 6.75,
+          "entropy_coded_bits_per_elem": 5.504887502163468,
+          "output_rel_fro": 0.11644342541694641
+        },
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.6524747147923218
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.24207885109199248
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.10059518636233664
+        },
+        {
+          "scheme": "flat q5",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.04647638517060544
+        }
+      ],
+      "function_fit_error_reduction_by_k": [
+        0.2247339268766842,
+        0.45592897875457655,
+        0.5027673101419387,
+        0.5752489663406322,
+        0.5902647748533587
+      ]
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "layer": 62,
+      "site": "mixer_x",
+      "site_provenance": "NAMED",
+      "eval_rows": 512,
+      "fit_rows": 512,
+      "points": [
+        {
+          "scheme": "planes weight-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.6561498045921326
+        },
+        {
+          "scheme": "planes function-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.4265541434288025
+        },
+        {
+          "scheme": "planes weight-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.4202995300292969
+        },
+        {
+          "scheme": "planes function-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.26193827390670776
+        },
+        {
+          "scheme": "planes weight-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.31640779972076416
+        },
+        {
+          "scheme": "planes function-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.19766762852668762
+        },
+        {
+          "scheme": "planes weight-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.2657068371772766
+        },
+        {
+          "scheme": "planes function-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.16227306425571442
+        },
+        {
+          "scheme": "planes weight-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.23403511941432953
+        },
+        {
+          "scheme": "planes function-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.14293374121189117
+        },
+        {
+          "scheme": "ternary function-fit k1",
+          "bits_per_elem": 2.25,
+          "entropy_coded_bits_per_elem": 1.834962500721156,
+          "output_rel_fro": 0.28541043400764465
+        },
+        {
+          "scheme": "ternary function-fit k2",
+          "bits_per_elem": 4.5,
+          "entropy_coded_bits_per_elem": 3.669925001442312,
+          "output_rel_fro": 0.16204555332660675
+        },
+        {
+          "scheme": "ternary function-fit k3",
+          "bits_per_elem": 6.75,
+          "entropy_coded_bits_per_elem": 5.504887502163468,
+          "output_rel_fro": 0.1226387768983841
+        },
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.7214992032858693
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.2777415155560121
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.11909432628665367
+        },
+        {
+          "scheme": "flat q5",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.05568904732920507
+        }
+      ],
+      "function_fit_error_reduction_by_k": [
+        0.34991347944704243,
+        0.37678190149665547,
+        0.3752757400382259,
+        0.3892777996245251,
+        0.38926370721803893
+      ]
+    },
+    {
+      "organ": "self_attn.o_proj",
+      "layer": 63,
+      "site": "mixer_x",
+      "site_provenance": "NAMED",
+      "eval_rows": 512,
+      "fit_rows": 512,
+      "points": [
+        {
+          "scheme": "planes weight-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.5136607885360718
+        },
+        {
+          "scheme": "planes function-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.44817814230918884
+        },
+        {
+          "scheme": "planes weight-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.3275813162326813
+        },
+        {
+          "scheme": "planes function-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.28826814889907837
+        },
+        {
+          "scheme": "planes weight-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.22903287410736084
+        },
+        {
+          "scheme": "planes function-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.2109699249267578
+        },
+        {
+          "scheme": "planes weight-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.1824183315038681
+        },
+        {
+          "scheme": "planes function-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.1686888039112091
+        },
+        {
+          "scheme": "planes weight-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.1566552370786667
+        },
+        {
+          "scheme": "planes function-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.14683032035827637
+        },
+        {
+          "scheme": "ternary function-fit k1",
+          "bits_per_elem": 2.25,
+          "entropy_coded_bits_per_elem": 1.834962500721156,
+          "output_rel_fro": 0.31260794401168823
+        },
+        {
+          "scheme": "ternary function-fit k2",
+          "bits_per_elem": 4.5,
+          "entropy_coded_bits_per_elem": 3.669925001442312,
+          "output_rel_fro": 0.1711443066596985
+        },
+        {
+          "scheme": "ternary function-fit k3",
+          "bits_per_elem": 6.75,
+          "entropy_coded_bits_per_elem": 5.504887502163468,
+          "output_rel_fro": 0.12410762161016464
+        },
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.6421710219475467
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.22642351157033933
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.09762848622463301
+        },
+        {
+          "scheme": "flat q5",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.04512732761265402
+        }
+      ],
+      "function_fit_error_reduction_by_k": [
+        0.1274822756346807,
+        0.12001040775377657,
+        0.07886618569933278,
+        0.07526396870025022,
+        0.06271680987885898
+      ]
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "site": "post_input_norm",
+      "site_provenance": "INFERRED",
+      "eval_rows": 512,
+      "fit_rows": 512,
+      "points": [
+        {
+          "scheme": "planes weight-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.45141711831092834
+        },
+        {
+          "scheme": "planes function-fit k1",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.38687580823898315
+        },
+        {
+          "scheme": "planes weight-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.29497063159942627
+        },
+        {
+          "scheme": "planes function-fit k2",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.22252687811851501
+        },
+        {
+          "scheme": "planes weight-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.22832031548023224
+        },
+        {
+          "scheme": "planes function-fit k3",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.14982038736343384
+        },
+        {
+          "scheme": "planes weight-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.19451797008514404
+        },
+        {
+          "scheme": "planes function-fit k4",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.11327976733446121
+        },
+        {
+          "scheme": "planes weight-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.17692334949970245
+        },
+        {
+          "scheme": "planes function-fit k5",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.09348262846469879
+        },
+        {
+          "scheme": "ternary function-fit k1",
+          "bits_per_elem": 2.25,
+          "entropy_coded_bits_per_elem": 1.834962500721156,
+          "output_rel_fro": 0.2391619235277176
+        },
+        {
+          "scheme": "ternary function-fit k2",
+          "bits_per_elem": 4.5,
+          "entropy_coded_bits_per_elem": 3.669925001442312,
+          "output_rel_fro": 0.1172163337469101
+        },
+        {
+          "scheme": "ternary function-fit k3",
+          "bits_per_elem": 6.75,
+          "entropy_coded_bits_per_elem": 5.504887502163468,
+          "output_rel_fro": 0.07714033871889114
+        },
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.3989980049603989
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.12752170794600717
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.055168928487067594
+        },
+        {
+          "scheme": "flat q5",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.025789852908263154
+        }
+      ],
+      "function_fit_error_reduction_by_k": [
+        0.1429748838799911,
+        0.24559649578704756,
+        0.34381490736681664,
+        0.41763854884524754,
+        0.47162074011686056
+      ]
+    }
+  ],
+  "function_fit_reduction_mean": 0.2832213662019675,
+  "function_fit_reduction_worst": 0.06271680987885898,
+  "commit": "49792c1d565485a6c20bc4e5511dde81f29b2eec",
+  "crossover_vs_flat": {
+    "rows": [
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 63,
+        "crossover_weight_fit": 2.8009181969949917,
+        "crossover_function_fit": 2.971202003338898,
+        "crossover_ternary": 2.946160267111853,
+        "shift_bits": 0.17028380634390627
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 63,
+        "crossover_weight_fit": 2.7257929883138563,
+        "crossover_function_fit": 3.4920701168614356,
+        "crossover_ternary": 3.3768781302170283,
+        "shift_bits": 0.7662771285475793
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 62,
+        "crossover_weight_fit": 3.0313021702838063,
+        "crossover_function_fit": 3.7575125208681133,
+        "crossover_ternary": 3.7074290484140233,
+        "shift_bits": 0.7262103505843069
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 63,
+        "crossover_weight_fit": 3.1264607679465777,
+        "crossover_function_fit": 3.206594323873122,
+        "crossover_ternary": 3.186560934891486,
+        "shift_bits": 0.08013355592654436
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 63,
+        "crossover_weight_fit": 2.6707011686143574,
+        "crossover_function_fit": 3.0112687813021703,
+        "crossover_ternary": 2.9862270450751254,
+        "shift_bits": 0.340567612687813
+      }
+    ],
+    "function_fit_mean": 3.2877295492487475,
+    "weight_fit_sites": 5,
+    "shift_bits_mean": 0.41669449081803,
+    "ternary_mean": 3.240651085141903,
+    "g067_weight_fit_reference": 2.9367,
+    "reading": "G067 put the flat/planes crossover at 2.9367 bits with WEIGHT-fitted planes. Fitting the same ladder against functional error moves it, and the direction is the result: the band in which the planes family is the better mechanism gets wider, because the fitting rule rather than the family was spending planes on directions the activations do not use."
+  },
+  "physical_cost_verdict": {
+    "alu_source": "receipts/ascent-2026-08-16/CODEC_ALU_COST.json, measured on device",
+    "decode_budget_ps_per_element": 0.8092,
+    "ladder": [
+      {
+        "k": 1,
+        "bits_per_elem": 1.25,
+        "ps_per_element": 0.6052898243069649,
+        "vs_budget_pct": -25.198983649658324,
+        "mean_output_rel_fro": 0.4274030864238739
+      },
+      {
+        "k": 2,
+        "bits_per_elem": 2.5,
+        "ps_per_element": 0.6647082045674324,
+        "vs_budget_pct": -17.856128946189777,
+        "mean_output_rel_fro": 0.24471190869808196,
+        "marginal_error_reduction_pct": 42.74446851902452,
+        "marginal_alu_increase_pct": 9.816517290456591,
+        "error_reduction_per_pct_alu": 4.3543414893772745
+      },
+      {
+        "k": 3,
+        "bits_per_elem": 3.75,
+        "ps_per_element": 0.9992625564336777,
+        "vs_budget_pct": 23.487710879100042,
+        "mean_output_rel_fro": 0.17603148519992828,
+        "marginal_error_reduction_pct": 28.06582804390181,
+        "marginal_alu_increase_pct": 50.33100984272654,
+        "error_reduction_per_pct_alu": 0.557624973780606
+      }
+    ],
+    "rivals": {
+      "flat q3": {
+        "bits": 3.25,
+        "ps": 0.8523620665073395,
+        "vs_budget_pct": 5.333918253502157,
+        "err": 0.19521483545458354
+      },
+      "flat q4": {
+        "bits": 4.25,
+        "ps": 0.804639421403408,
+        "vs_budget_pct": -0.5635910277548173,
+        "err": 0.08324972731239183
+      }
+    },
+    "stop_at_k": 2,
+    "stopping_rule_result": "The acceptance says to add planes until marginal gain per physical cost falls below another mechanism, and the ladder answers with a number. The second plane buys 42.7% error reduction for 9.8% more ALU: 4.36 points of error per point of ALU. The third buys 28.1% for 50.3%: 0.56 points per point, an order of magnitude collapse, and it carries the codec from 17.9% UNDER the decode budget to 23.5% OVER it while costing more ALU than flat q3 for only 9.8% less error. The ladder stops at TWO planes.",
+    "no_domination": "Function-fitting is a large real improvement to the family but does NOT produce a candidate that dominates the incumbent on the three-axis vector. k2 is 23% fewer bits and 22% less ALU than flat q3 but 25.4% MORE functional error. k3 is 9.8% less error but 15% more bits and 17.2% more ALU. Neither dominates, and saying so is the result -- the prime directive forbids letting a bits win overrule the executable.",
+    "incidental": "flat q4 sits at 0.8046 ps/element, BELOW the 0.8092 budget and below q3's 0.8524, while carrying 0.426x q3's error. The extra bit is free in ALU and buys 2.3x the fidelity, which is the same inversion already recorded for this pair."
+  }
+}

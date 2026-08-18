@@ -1,0 +1,83 @@
+{
+  "schema": "hawking.nos.multi_plane_gemv.v1",
+  "obligation": "G072 -- multi-plane Metal GEMV, measured GB/s against the kernel classes",
+  "kernels": "qwen_binary_planes_k{1,2,3}_matvec_geo_tpr64_tg128 -- one kernel loading k planes together, sharing the geo_tpr64 address math, accumulating per-plane scales in registers, never materializing a reconstruction buffer",
+  "measured_roof_gb_s": 595.9,
+  "roof_basis": "the roofline sweep in the SAME run peaks at 595.9 GB/s at low arithmetic intensity, so that is the ceiling these kernels are scored against rather than a figure from another day",
+  "replication": "re-run on the protected lane before contradicting a recorded claim. The plane kernels replicate at 0.11 / 0.44 / 1.25% and q3 at 0.03%. CAVEAT: q4_group64 (the non-hgravu variant, not used by any candidate) replicated at 31.08%, so the replication was NOT uniform across the whole table and only the rows quoted here are being relied on.",
+  "table": [
+    {
+      "codec": "binary_planes_k1",
+      "kernel": "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+      "ps_per_element": 0.6059417501091957,
+      "recorded_ps_per_element": 0.6052898243069649,
+      "replication_spread_pct": 0.10770473516174943,
+      "code_gb_s": 206.29045609990393,
+      "frac_of_measured_roof": 0.3461830107398959,
+      "code_bytes": 671088640
+    },
+    {
+      "codec": "binary_planes_k2",
+      "kernel": "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+      "ps_per_element": 0.6676185876131058,
+      "recorded_ps_per_element": 0.6647082045674324,
+      "replication_spread_pct": 0.43784370731023853,
+      "code_gb_s": 374.4653079444793,
+      "frac_of_measured_roof": 0.6284029332849125,
+      "code_bytes": 1342177280
+    },
+    {
+      "codec": "binary_planes_k3",
+      "kernel": "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
+      "ps_per_element": 0.9867362678050995,
+      "recorded_ps_per_element": 0.9992625564336777,
+      "replication_spread_pct": 1.2535532876648492,
+      "code_gb_s": 380.04075884851346,
+      "frac_of_measured_roof": 0.6377592865388714,
+      "code_bytes": 2013265920
+    },
+    {
+      "codec": "q4_group64_hgravu",
+      "kernel": "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
+      "ps_per_element": 0.842544250190258,
+      "recorded_ps_per_element": 0.804639421403408,
+      "replication_spread_pct": 4.710784455568738,
+      "code_gb_s": 593.4406411142123,
+      "frac_of_measured_roof": 0.9958728664443905,
+      "code_bytes": 2684354560
+    },
+    {
+      "codec": "q3_group64_hgravu",
+      "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+      "ps_per_element": 0.8520903065800667,
+      "recorded_ps_per_element": 0.8523620665073395,
+      "replication_spread_pct": 0.031883155991017646,
+      "code_gb_s": 440.09419788507256,
+      "frac_of_measured_roof": 0.7385369993036962,
+      "code_bytes": 2013265920
+    }
+  ],
+  "marginal": {
+    "k1_to_k2": {
+      "delta_ps_pct": 10.178674351585016,
+      "code_bytes_ratio": 2.0,
+      "gb_s": [
+        206.29045609990393,
+        374.4653079444793
+      ]
+    },
+    "k2_to_k3": {
+      "delta_ps_pct": 47.79940015344912,
+      "code_bytes_ratio": 1.5,
+      "gb_s": [
+        374.4653079444793,
+        380.04075884851346
+      ]
+    }
+  },
+  "verdict_on_the_recorded_claim": "The recorded finding -- 'all six variants are MEMORY-BOUND at 639.25 GB/s and none becomes compute-bound at any plane count, so plane count is free on the arithmetic axis' -- SPLITS rather than simply failing, and the split is the useful part. It is TRUE from k1 to k2: the second plane costs +10.2% time for 2x the code bytes, because it rides activations already loaded, and bandwidth climbs 206.3 -> 374.5 GB/s. It is FALSE from k2 to k3: bandwidth is flat at 374.5 -> 380.0 GB/s, so the kernel is saturated at its own ceiling and time now scales with bytes -- 1.5x the bytes for +47.8% time. Plane count is free until the kernel saturates, and it saturates at TWO.",
+  "the_real_gap": "None of these kernels is memory-bound in the sense of sitting at the roof. q4 reaches 593.4 GB/s = 99.6% of the measured 595.9 GB/s ceiling, while the plane kernels top out at 380.0 GB/s = 63.8%. The multi-plane GEMV leaves 36% of the bandwidth its own family already achieves on the table. Closing that gap would put k2 at 0.4275 ps/element, half of q4's. That is the named remaining lever on this kernel.",
+  "independent_agreement": "G069 set the ladder's stopping point at TWO planes from the DENSITY side -- marginal error reduction per unit ALU collapses 4.35 -> 0.56 at plane three. This measurement reaches the same k=2 from the KERNEL side, because that is exactly where the bandwidth saturates. Two independent routes to the same number.",
+  "binding_status": "NOT BOUND to the decode path, which is G071's obligation and is blocked on a packer. This obligation's verify asks for measured GB/s against the kernel classes, and that is what is delivered.",
+  "commit": "6fff5302f834a9924874cd3998421174c762cf0c"
+}

@@ -1,0 +1,103 @@
+{
+  "schema": "hawking.nos.tool_grammar_specialization.v1",
+  "obligation": "G083 -- can tool-grammar be specialized without altering general reasoning",
+  "site": "post_swiglu",
+  "tensor": "down_proj L63",
+  "rows_per_class": 800,
+  "classes": [
+    "prose",
+    "code",
+    "math",
+    "instruction",
+    "multilingual",
+    "adversarial"
+  ],
+  "matrix_fit_by_eval": {
+    "prose": {
+      "prose": 0.27581292390823364,
+      "code": 0.2970114052295685,
+      "math": 0.2829456925392151,
+      "instruction": 0.27549123764038086,
+      "multilingual": 0.3744513988494873,
+      "adversarial": 0.24779511988162994
+    },
+    "code": {
+      "prose": 0.2862967848777771,
+      "code": 0.2735625207424164,
+      "math": 0.28358572721481323,
+      "instruction": 0.28100553154945374,
+      "multilingual": 0.37542644143104553,
+      "adversarial": 0.24128057062625885
+    },
+    "math": {
+      "prose": 0.28009340167045593,
+      "code": 0.28492850065231323,
+      "math": 0.27178433537483215,
+      "instruction": 0.27804166078567505,
+      "multilingual": 0.36407193541526794,
+      "adversarial": 0.23168782889842987
+    },
+    "instruction": {
+      "prose": 0.28097784519195557,
+      "code": 0.2972811162471771,
+      "math": 0.2848187983036041,
+      "instruction": 0.2726786434650421,
+      "multilingual": 0.37299713492393494,
+      "adversarial": 0.24892385303974152
+    },
+    "multilingual": {
+      "prose": 0.29971107840538025,
+      "code": 0.3138962984085083,
+      "math": 0.29721808433532715,
+      "instruction": 0.3012487590312958,
+      "multilingual": 0.28522565960884094,
+      "adversarial": 0.23926642537117004
+    },
+    "adversarial": {
+      "prose": 0.3299494683742523,
+      "code": 0.3311942517757416,
+      "math": 0.31851300597190857,
+      "instruction": 0.3302907645702362,
+      "multilingual": 0.3758043348789215,
+      "adversarial": 0.224509134888649
+    }
+  },
+  "penalty_on_other_classes": {
+    "prose": {
+      "mean": 11.072859959064791,
+      "worst": 31.28250780908377
+    },
+    "code": {
+      "mean": 10.058325902197156,
+      "worst": 31.62435734074771
+    },
+    "math": {
+      "mean": 7.702904040360741,
+      "worst": 27.643472159747805
+    },
+    "instruction": {
+      "mean": 11.397224190293,
+      "worst": 30.772643469547578
+    },
+    "multilingual": {
+      "mean": 9.963459625062217,
+      "worst": 14.743897503441183
+    },
+    "adversarial": {
+      "mean": 22.154691627100938,
+      "worst": 31.7568466295425
+    }
+  },
+  "instruction_specialization": {
+    "cost_to_other_classes_mean_pct": 11.397224190293,
+    "cost_to_other_classes_worst_pct": 30.772643469547578,
+    "gain_on_instruction_vs_prose_fitted_pct": 1.0314684493064608
+  },
+  "commit": "a81b5da553909f8f7be8b303d7bf2939beebc904",
+  "verdict": {
+    "refuted_on_the_profile_axis": "Fitting the representation on the instruction class -- the tool-grammar workload -- buys +1.03% on instruction itself over the prose-fitted status quo and costs the other five classes +11.40% mean and +30.77% worst. The trade is roughly 11 to 1 against. G083's verify requires reduced overhead AND unchanged general capability, with either alone insufficient; general capability is not unchanged, so the profile route cannot satisfy it no matter what the token count does.",
+    "scope_this_does_not_refute": "ONLY the activation-profile axis. The acceptance also names grammar-constrained pathways -- JSON, tool calls, shell, patches -- and constrained DECODING is a different mechanism entirely: it reduces token count by restricting the sampler and never touches the weights, so it cannot damage general capability the way a profile does. Nothing here speaks to it, and it remains the live route for this obligation.",
+    "actionable_side_finding": "The campaign calibrates on PROSE, and prose is not even the best single class to calibrate on. Ranked by mean penalty on the other five: math +7.70%, multilingual +9.96%, code +10.06%, prose +11.07%, instruction +11.40%, adversarial +22.15%. Math generalises best and adversarial worst. A POOLED profile beats all of them at +4.13%, so pooling remains the answer, but if one class must be chosen it should be math rather than prose.",
+    "structure_worth_keeping": "multilingual is the outlier COLUMN: every non-multilingual profile scores about 0.374 on multilingual against 0.285 for the matched one. No other class is that badly served by foreign profiles, which is the same separation G079 saw when multilingual and adversarial were the only contrasts that moved."
+  }
+}

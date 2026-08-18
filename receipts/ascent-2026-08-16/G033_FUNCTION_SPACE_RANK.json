@@ -1,0 +1,353 @@
+{
+  "schema": "hawking.nos.function_space_codec_rank.v1",
+  "obligation": "G033 / G036 -- rank representations by functional error, not weight cosine",
+  "capture": {
+    "root": "workspace/campaign/records/runs/qwen38-27b/activation-capture-v2/parent_bf16",
+    "schema": "hawking.ascension.qwen38_activation_capture.v2",
+    "note": "real BF16 parent activations, adequacy-gated, NOT synthetic"
+  },
+  "method": "y = x W^T on real captured x; error is relative Frobenius of the OUTPUT and mean per-row output cosine. Both sides of every scheme charge their scale streams in bits_per_elem.",
+  "anchors": "flat q3 is a gated-coherent artifact (10/10, controls watched); flat q2 is recorded dead. They bracket the unknown.",
+  "table": [
+    {
+      "scheme": "1 binary plane",
+      "bits_per_elem": 1.25,
+      "mean_output_rel_fro": 0.5122095545132955,
+      "worst_output_rel_fro": 0.6702990531921387,
+      "mean_output_row_cosine": 0.8686656256516775,
+      "worst_output_row_cosine": 0.7616229057312012
+    },
+    {
+      "scheme": "flat q2",
+      "bits_per_elem": 2.25,
+      "mean_output_rel_fro": 0.5409543559219552,
+      "worst_output_rel_fro": 0.6557442684889315,
+      "mean_output_row_cosine": 0.8400932853825717,
+      "worst_output_row_cosine": 0.7524790517044913
+    },
+    {
+      "scheme": "2 binary planes",
+      "bits_per_elem": 2.5,
+      "mean_output_rel_fro": 0.3228553732236226,
+      "worst_output_rel_fro": 0.4714159369468689,
+      "mean_output_row_cosine": 0.9517615139484406,
+      "worst_output_row_cosine": 0.8903812170028687
+    },
+    {
+      "scheme": "flat q3",
+      "bits_per_elem": 3.25,
+      "mean_output_rel_fro": 0.1830720835862064,
+      "worst_output_rel_fro": 0.24284599661890788,
+      "mean_output_row_cosine": 0.9821883367328552,
+      "worst_output_row_cosine": 0.969401183692115
+    },
+    {
+      "scheme": "3 binary planes",
+      "bits_per_elem": 3.75,
+      "mean_output_rel_fro": 0.23439073810974756,
+      "worst_output_rel_fro": 0.3916018009185791,
+      "mean_output_row_cosine": 0.9743721882502238,
+      "worst_output_row_cosine": 0.9262725114822388
+    },
+    {
+      "scheme": "flat q4",
+      "bits_per_elem": 4.25,
+      "mean_output_rel_fro": 0.07759643784275713,
+      "worst_output_rel_fro": 0.1008254633444757,
+      "mean_output_row_cosine": 0.9967115285873454,
+      "worst_output_row_cosine": 0.9946434769144489
+    }
+  ],
+  "two_plane_position_between_q3_and_q2": 0.3905845593443587,
+  "per_tensor": [
+    {
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "site": "post_attn_norm",
+      "rows_used": 1024,
+      "rows_available": 6827,
+      "schemes": [
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.545626751572877,
+          "output_mean_row_cosine": 0.8472737358581908
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.19254270121230757,
+          "output_mean_row_cosine": 0.9810114719818175
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.08233566823111571,
+          "output_mean_row_cosine": 0.9964273910983283
+        },
+        {
+          "scheme": "1 binary plane",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.5197864174842834,
+          "output_mean_row_cosine": 0.8567279577255249
+        },
+        {
+          "scheme": "2 binary planes",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.3094903230667114,
+          "output_mean_row_cosine": 0.956649661064148
+        },
+        {
+          "scheme": "3 binary planes",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.21303234994411469,
+          "output_mean_row_cosine": 0.9806410074234009
+        }
+      ]
+    },
+    {
+      "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "site": "post_swiglu",
+      "rows_used": 1024,
+      "rows_available": 23216,
+      "schemes": [
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.501748183929375,
+          "output_mean_row_cosine": 0.8587469348985028
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.14277653352504383,
+          "output_mean_row_cosine": 0.990197358404322
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.060389089001572346,
+          "output_mean_row_cosine": 0.9981473845895887
+        },
+        {
+          "scheme": "1 binary plane",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.4511569142341614,
+          "output_mean_row_cosine": 0.9207185506820679
+        },
+        {
+          "scheme": "2 binary planes",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.28369200229644775,
+          "output_mean_row_cosine": 0.9722342491149902
+        },
+        {
+          "scheme": "3 binary planes",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.21368183195590973,
+          "output_mean_row_cosine": 0.9860595464706421
+        }
+      ]
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "site": "post_attn_norm",
+      "rows_used": 1024,
+      "rows_available": 6827,
+      "schemes": [
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.5868767314405,
+          "output_mean_row_cosine": 0.8174125498211231
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.199407166939282,
+          "output_mean_row_cosine": 0.9806927106230932
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.08482946455729913,
+          "output_mean_row_cosine": 0.9963466772568067
+        },
+        {
+          "scheme": "1 binary plane",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.4899655878543854,
+          "output_mean_row_cosine": 0.8781667947769165
+        },
+        {
+          "scheme": "2 binary planes",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.3069075047969818,
+          "output_mean_row_cosine": 0.9569287300109863
+        },
+        {
+          "scheme": "3 binary planes",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.20240050554275513,
+          "output_mean_row_cosine": 0.982599139213562
+        }
+      ]
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "site": "post_swiglu",
+      "rows_used": 1024,
+      "rows_available": 23216,
+      "schemes": [
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.6189110923601379,
+          "output_mean_row_cosine": 0.8206261582479688
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.2186588876702371,
+          "output_mean_row_cosine": 0.9772292987139842
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.0934969845289223,
+          "output_mean_row_cosine": 0.9957044891986417
+        },
+        {
+          "scheme": "1 binary plane",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.558837890625,
+          "output_mean_row_cosine": 0.8351439833641052
+        },
+        {
+          "scheme": "2 binary planes",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.3395276963710785,
+          "output_mean_row_cosine": 0.947124719619751
+        },
+        {
+          "scheme": "3 binary planes",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.23533205687999725,
+          "output_mean_row_cosine": 0.9762436151504517
+        }
+      ]
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "site": "post_attn_norm",
+      "rows_used": 1024,
+      "rows_available": 6827,
+      "schemes": [
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.33681910773990975,
+          "output_mean_row_cosine": 0.9440212817651532
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.10220121555146013,
+          "output_mean_row_cosine": 0.9945979969817994
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.043701957393157624,
+          "output_mean_row_cosine": 0.9989997524662579
+        },
+        {
+          "scheme": "1 binary plane",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.3832114636898041,
+          "output_mean_row_cosine": 0.959613561630249
+        },
+        {
+          "scheme": "2 binary planes",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.22609877586364746,
+          "output_mean_row_cosine": 0.9872505068778992
+        },
+        {
+          "scheme": "3 binary planes",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.15029588341712952,
+          "output_mean_row_cosine": 0.9944173097610474
+        }
+      ]
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "site": "post_swiglu",
+      "rows_used": 1024,
+      "rows_available": 23216,
+      "schemes": [
+        {
+          "scheme": "flat q2",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.6557442684889315,
+          "output_mean_row_cosine": 0.7524790517044913
+        },
+        {
+          "scheme": "flat q3",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.24284599661890788,
+          "output_mean_row_cosine": 0.969401183692115
+        },
+        {
+          "scheme": "flat q4",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.1008254633444757,
+          "output_mean_row_cosine": 0.9946434769144489
+        },
+        {
+          "scheme": "1 binary plane",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.6702990531921387,
+          "output_mean_row_cosine": 0.7616229057312012
+        },
+        {
+          "scheme": "2 binary planes",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.4714159369468689,
+          "output_mean_row_cosine": 0.8903812170028687
+        },
+        {
+          "scheme": "3 binary planes",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.3916018009185791,
+          "output_mean_row_cosine": 0.9262725114822388
+        }
+      ]
+    }
+  ],
+  "commit": "16470e4b651bce911a92266dfff8308b65784286"
+}

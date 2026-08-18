@@ -1,0 +1,114 @@
+{
+  "schema": "hawking.nos.gfunc_paired_fit.v2",
+  "obligation": "G036 -- RE-DERIVED at the verified MLP activation site",
+  "correction": "v1 used post_input_norm for gate/up. Verified against the capture: silu(gate(x))*up(x) reproduces captured post_swiglu to cosine 0.999986 with post_attn_norm and 0.48 with post_input_norm. v1's gate_proj numbers were measured at the wrong operating point; down_proj (post_swiglu) was correct in both.",
+  "per_tensor": [
+    {
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "site": "post_attn_norm",
+      "held_out_out_rel_fro": {
+        "baseline": 0.1953180235909972,
+        "weight_space_scale_a0.25": 0.1868317237601801,
+        "function_space_scale_a0.25": 0.18165477410544598,
+        "function_space_scale_a0.5": 0.18968462522012133
+      },
+      "code_entropy_bits": {
+        "baseline": 2.3206961304506954,
+        "weight_space_scale_a0.25": 2.3105697911227505,
+        "function_space_scale_a0.25": 2.3055919879542515,
+        "function_space_scale_a0.5": 2.250669790107024
+      },
+      "rows_available": 6827
+    },
+    {
+      "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+      "site": "post_swiglu",
+      "held_out_out_rel_fro": {
+        "baseline": 0.12100210251349515,
+        "weight_space_scale_a0.25": 0.12489293668440055,
+        "function_space_scale_a0.25": 0.11362405544391124,
+        "function_space_scale_a0.5": 0.13576578945906012
+      },
+      "code_entropy_bits": {
+        "baseline": 2.313080677151045,
+        "weight_space_scale_a0.25": 2.2745781319359186,
+        "function_space_scale_a0.25": 2.282750284677522,
+        "function_space_scale_a0.5": 2.1928129823025513
+      },
+      "rows_available": 23216
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "site": "post_attn_norm",
+      "held_out_out_rel_fro": {
+        "baseline": 0.20053208977231068,
+        "weight_space_scale_a0.25": 0.2021883778944731,
+        "function_space_scale_a0.25": 0.16265044601059073,
+        "function_space_scale_a0.5": 0.1688149251752203
+      },
+      "code_entropy_bits": {
+        "baseline": 2.3017731710652116,
+        "weight_space_scale_a0.25": 2.2962498410098626,
+        "function_space_scale_a0.25": 2.287981067513469,
+        "function_space_scale_a0.5": 2.2559721701443625
+      },
+      "rows_available": 6827
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
+      "site": "post_swiglu",
+      "held_out_out_rel_fro": {
+        "baseline": 0.22862115799704338,
+        "weight_space_scale_a0.25": 0.2304953072843615,
+        "function_space_scale_a0.25": 0.22373884610447659,
+        "function_space_scale_a0.5": 0.2364842157675731
+      },
+      "code_entropy_bits": {
+        "baseline": 2.2984061902336945,
+        "weight_space_scale_a0.25": 2.286528322071087,
+        "function_space_scale_a0.25": 2.2757804257610226,
+        "function_space_scale_a0.5": 2.2173588426314925
+      },
+      "rows_available": 23216
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
+      "site": "post_attn_norm",
+      "held_out_out_rel_fro": {
+        "baseline": 0.10414180219427209,
+        "weight_space_scale_a0.25": 0.10603693582355499,
+        "function_space_scale_a0.25": 0.09375438611570097,
+        "function_space_scale_a0.5": 0.0970173743029315
+      },
+      "code_entropy_bits": {
+        "baseline": 2.2987781498181454,
+        "weight_space_scale_a0.25": 2.2822951315874977,
+        "function_space_scale_a0.25": 2.2822038650271907,
+        "function_space_scale_a0.5": 2.2426913693365345
+      },
+      "rows_available": 6827
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "site": "post_swiglu",
+      "held_out_out_rel_fro": {
+        "baseline": 0.1884713232502327,
+        "weight_space_scale_a0.25": 0.1788376542997722,
+        "function_space_scale_a0.25": 0.12659501630726322,
+        "function_space_scale_a0.5": 0.1472855221073091
+      },
+      "code_entropy_bits": {
+        "baseline": 2.245732627239281,
+        "weight_space_scale_a0.25": 2.220976257037224,
+        "function_space_scale_a0.25": 2.201151525326573,
+        "function_space_scale_a0.5": 1.867407911491109
+      },
+      "rows_available": 23216
+    }
+  ],
+  "weight_space_ratio": 0.9915194315913081,
+  "function_space_ratio": 0.8689232782428913,
+  "gain_from_function_space_fit_pct": 12.364473094759209,
+  "v1_reported_gain_pct": 18.99,
+  "commit": "16470e4b651bce911a92266dfff8308b65784286"
+}

@@ -1,0 +1,316 @@
+{
+  "schema": "hawking.nos.rate_distortion_bound.v1",
+  "obligation": "G024 -- information/function lower bound, not a list of failed constructions",
+  "bound": "Shannon lower bound R(D) >= h(X) - 0.5*log2(2*pi*e*D), squared-error distortion",
+  "anchors": {
+    "coherent": {
+      "scheme": "flat q3",
+      "output_rel_fro": 0.19790743933156518,
+      "evidence": "compact-q3attn-r1p2-v1 gated 10/10, 0 degenerate, negative control watched failing 0/10"
+    },
+    "dead": {
+      "scheme": "flat q2",
+      "output_rel_fro": 0.5783472321822679,
+      "evidence": "q2 MLP recorded dead, q2 attention fluent-but-wrong"
+    }
+  },
+  "slb_bits_per_elem_at_coherent_distortion": 1.918189745254591,
+  "slb_bits_per_elem_at_dead_distortion": 0.4403077324872478,
+  "flat_q3_actual_bits_per_elem": 3.25,
+  "flat_q3_order0_code_entropy_bits": 2.2964111576596786,
+  "coding_gap_bits": 1.331810254745409,
+  "complete_bpw_if_body_at_information_floor": 2.1448607738433716,
+  "complete_bpw_if_body_at_dead_floor": 0.8068199673044122,
+  "sub_1_0_excluded_by_this_bound": true,
+  "memoryless_assumption_tested": {
+    "method": "q3 symbols packed one per byte, then zlib -9 and lzma -9e turned loose to find any structure an order-0 model misses.",
+    "per_tensor": {
+      "language_model.model.layers.0.mlp.gate_proj.weight": -0.20936655624507683,
+      "language_model.model.layers.0.mlp.down_proj.weight": -0.20958311248590356,
+      "language_model.model.layers.31.mlp.gate_proj.weight": -0.21042165315353856,
+      "language_model.model.layers.31.mlp.down_proj.weight": -0.2101146766091362,
+      "language_model.model.layers.63.mlp.gate_proj.weight": -0.2099215141294648,
+      "language_model.model.layers.63.mlp.down_proj.weight": -0.2111614731743221
+    },
+    "verdict": "Both compressors come in WORSE than the order-0 entropy, so no exploitable higher-order structure was found in the symbol stream. That is what makes the memoryless assumption usable here rather than a convenient one. It is evidence, not proof: a specialized context model could still find structure that byte-oriented general compressors cannot."
+  },
+  "caveats": [
+    "SLB is for a MEMORYLESS source. The assumption is TESTED above rather than assumed, but a specialized context model could still beat what zlib and lzma found.",
+    "Distortion is squared error on WEIGHTS. The anchors that fix it are FUNCTIONAL, measured on real captured activations in G033_FUNCTION_SPACE_RANK.json.",
+    "The bound applies to the BODY only. Endpoints, embedding, norms and headers are counted separately into complete BPW and do not shrink with it.",
+    "Coherence is anchored at flat q3 because that is the cheapest artifact actually gated coherent. A cheaper coherent artifact would move the anchor and loosen the bound; none is known."
+  ],
+  "per_tensor": [
+    {
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "differential_entropy_bits": -4.593623616499313,
+      "variance": 0.00010337289131712168,
+      "gaussian_reference_entropy_bits": -4.572831654369132,
+      "anchors": {
+        "flat q2": {
+          "weight_mse": 5.337357308441873e-05,
+          "slb_bits_per_elem": 0.4560382377765766,
+          "actual_bits_per_elem": 2.25,
+          "order0_code_entropy_bits": 0.9262617812233854
+        },
+        "flat q3": {
+          "weight_mse": 6.6497059975039716e-06,
+          "slb_bits_per_elem": 1.9584198048045023,
+          "actual_bits_per_elem": 3.25,
+          "order0_code_entropy_bits": 2.3206961304506954,
+          "general_compressor_bits_per_elem": {
+            "zlib_9": 2.7567525527056524,
+            "lzma_9e": 2.5300626866957723
+          },
+          "structure_beyond_order0_bits": -0.20936655624507683
+        },
+        "flat q4": {
+          "weight_mse": 1.2223148432740548e-06,
+          "slb_bits_per_elem": 3.1802571121199072,
+          "actual_bits_per_elem": 4.25,
+          "order0_code_entropy_bits": 3.4958027157771014
+        },
+        "1 binary plane": {
+          "weight_mse": 3.718934749485925e-05,
+          "slb_bits_per_elem": 0.7166563178446124,
+          "actual_bits_per_elem": 1.25
+        },
+        "2 binary planes": {
+          "weight_mse": 1.325702942267526e-05,
+          "slb_bits_per_elem": 1.4607222661123176,
+          "actual_bits_per_elem": 2.5
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "differential_entropy_bits": -4.527152773351018,
+      "variance": 0.00011307228851364926,
+      "gaussian_reference_entropy_bits": -4.50813790439768,
+      "anchors": {
+        "flat q2": {
+          "weight_mse": 5.9041803053489666e-05,
+          "slb_bits_per_elem": 0.44970348871414867,
+          "actual_bits_per_elem": 2.25,
+          "order0_code_entropy_bits": 0.9166039381713815
+        },
+        "flat q3": {
+          "weight_mse": 7.490567464961151e-06,
+          "slb_bits_per_elem": 1.9389984173976202,
+          "actual_bits_per_elem": 3.25,
+          "order0_code_entropy_bits": 2.313080677151045,
+          "general_compressor_bits_per_elem": {
+            "zlib_9": 2.749101795869715,
+            "lzma_9e": 2.5226637896369484
+          },
+          "structure_beyond_order0_bits": -0.20958311248590356
+        },
+        "flat q4": {
+          "weight_mse": 1.3682277886996264e-06,
+          "slb_bits_per_elem": 3.1653817078496864,
+          "actual_bits_per_elem": 4.25,
+          "order0_code_entropy_bits": 3.487696091573053
+        },
+        "1 binary plane": {
+          "weight_mse": 4.068588532391004e-05,
+          "slb_bits_per_elem": 0.7183076866617295,
+          "actual_bits_per_elem": 1.25
+        },
+        "2 binary planes": {
+          "weight_mse": 1.46950133057544e-05,
+          "slb_bits_per_elem": 1.4529085460401268,
+          "actual_bits_per_elem": 2.5
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "differential_entropy_bits": -4.535069484084506,
+      "variance": 0.00011804459063569084,
+      "gaussian_reference_entropy_bits": -4.477094638626012,
+      "anchors": {
+        "flat q2": {
+          "weight_mse": 6.161012201706278e-05,
+          "slb_bits_per_elem": 0.4110714715176691,
+          "actual_bits_per_elem": 2.25,
+          "order0_code_entropy_bits": 0.9026994195058633
+        },
+        "flat q3": {
+          "weight_mse": 7.824000020755678e-06,
+          "slb_bits_per_elem": 1.8996660283382605,
+          "actual_bits_per_elem": 3.25,
+          "order0_code_entropy_bits": 2.3017731710652116,
+          "general_compressor_bits_per_elem": {
+            "zlib_9": 2.738290943818934,
+            "lzma_9e": 2.51219482421875
+          },
+          "structure_beyond_order0_bits": -0.21042165315353856
+        },
+        "flat q4": {
+          "weight_mse": 1.4372846875562912e-06,
+          "slb_bits_per_elem": 3.121946290746033,
+          "actual_bits_per_elem": 4.25,
+          "order0_code_entropy_bits": 3.4757264607956424
+        },
+        "1 binary plane": {
+          "weight_mse": 4.302625166019425e-05,
+          "slb_bits_per_elem": 0.6700465870710781,
+          "actual_bits_per_elem": 1.25
+        },
+        "2 binary planes": {
+          "weight_mse": 1.554194386699237e-05,
+          "slb_bits_per_elem": 1.404571689829294,
+          "actual_bits_per_elem": 2.5
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.31.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "differential_entropy_bits": -4.415761510039607,
+      "variance": 0.00013022999337408692,
+      "gaussian_reference_entropy_bits": -4.406229727082904,
+      "anchors": {
+        "flat q2": {
+          "weight_mse": 6.800450936227921e-05,
+          "slb_bits_per_elem": 0.4591479348541734,
+          "actual_bits_per_elem": 2.25,
+          "order0_code_entropy_bits": 0.8984506359306605
+        },
+        "flat q3": {
+          "weight_mse": 8.62625390760911e-06,
+          "slb_bits_per_elem": 1.9485600987452223,
+          "actual_bits_per_elem": 3.25,
+          "order0_code_entropy_bits": 2.2984061902336945,
+          "general_compressor_bits_per_elem": {
+            "zlib_9": 2.7349009794347428,
+            "lzma_9e": 2.5085208668428307
+          },
+          "structure_beyond_order0_bits": -0.2101146766091362
+        },
+        "flat q4": {
+          "weight_mse": 1.5854586466791034e-06,
+          "slb_bits_per_elem": 3.1704770652933476,
+          "actual_bits_per_elem": 4.25,
+          "order0_code_entropy_bits": 3.4721886606297363
+        },
+        "1 binary plane": {
+          "weight_mse": 4.7399578761542216e-05,
+          "slb_bits_per_elem": 0.7195260229989904,
+          "actual_bits_per_elem": 1.25
+        },
+        "2 binary planes": {
+          "weight_mse": 1.7112439309130423e-05,
+          "slb_bits_per_elem": 1.4544404295786109,
+          "actual_bits_per_elem": 2.5
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "differential_entropy_bits": -4.187762786998377,
+      "variance": 0.00018628410180099308,
+      "gaussian_reference_entropy_bits": -4.148008327388748,
+      "anchors": {
+        "flat q2": {
+          "weight_mse": 9.758022602750683e-05,
+          "slb_bits_per_elem": 0.42666745253026317,
+          "actual_bits_per_elem": 2.25,
+          "order0_code_entropy_bits": 0.8993698582596081
+        },
+        "flat q3": {
+          "weight_mse": 1.2685347789961106e-05,
+          "slb_bits_per_elem": 1.8983803281223057,
+          "actual_bits_per_elem": 3.25,
+          "order0_code_entropy_bits": 2.2987781498181454,
+          "general_compressor_bits_per_elem": {
+            "zlib_9": 2.736036682128906,
+            "lzma_9e": 2.5086996639476102
+          },
+          "structure_beyond_order0_bits": -0.2099215141294648
+        },
+        "flat q4": {
+          "weight_mse": 2.3406633682359452e-06,
+          "slb_bits_per_elem": 3.1174671812466315,
+          "actual_bits_per_elem": 4.25,
+          "order0_code_entropy_bits": 3.472576326326189
+        },
+        "1 binary plane": {
+          "weight_mse": 6.817319808760658e-05,
+          "slb_bits_per_elem": 0.6853595334348643,
+          "actual_bits_per_elem": 1.25
+        },
+        "2 binary planes": {
+          "weight_mse": 2.493464489816688e-05,
+          "slb_bits_per_elem": 1.4108860363933298,
+          "actual_bits_per_elem": 2.5
+        }
+      }
+    },
+    {
+      "tensor": "language_model.model.layers.63.mlp.down_proj.weight",
+      "shape": [
+        5120,
+        17408
+      ],
+      "differential_entropy_bits": -4.395572024270556,
+      "variance": 0.00013531184231396765,
+      "gaussian_reference_entropy_bits": -4.378616550790553,
+      "anchors": {
+        "flat q2": {
+          "weight_mse": 7.189391342146279e-05,
+          "slb_bits_per_elem": 0.43921780953065603,
+          "actual_bits_per_elem": 2.25,
+          "order0_code_entropy_bits": 0.8396810184344785
+        },
+        "flat q3": {
+          "weight_mse": 9.959033659762315e-06,
+          "slb_bits_per_elem": 1.865113794119635,
+          "actual_bits_per_elem": 3.25,
+          "order0_code_entropy_bits": 2.245732627239281,
+          "general_compressor_bits_per_elem": {
+            "zlib_9": 2.68335059670841,
+            "lzma_9e": 2.456894100413603
+          },
+          "structure_beyond_order0_bits": -0.2111614731743221
+        },
+        "flat q4": {
+          "weight_mse": 1.8464381198304814e-06,
+          "slb_bits_per_elem": 3.0807442182444644,
+          "actual_bits_per_elem": 4.25,
+          "order0_code_entropy_bits": 3.416417067094593
+        },
+        "1 binary plane": {
+          "weight_mse": 5.1934632210759446e-05,
+          "slb_bits_per_elem": 0.6738041729645294,
+          "actual_bits_per_elem": 1.25
+        },
+        "2 binary planes": {
+          "weight_mse": 1.977938700292725e-05,
+          "slb_bits_per_elem": 1.3701537701671507,
+          "actual_bits_per_elem": 2.5
+        }
+      }
+    }
+  ],
+  "commit": "72df1f8920994b18046cf1c275169d22386b798a"
+}

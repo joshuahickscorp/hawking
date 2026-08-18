@@ -1,0 +1,110 @@
+{
+  "schema": "hawking.nos.latent_runtime_span.v1",
+  "obligation": "G089 -- can the source width be compiled down; answering the late-layer rank obstacle",
+  "results": {
+    "d_model_5120_L63": {
+      "ranks": [
+        256,
+        512,
+        1024,
+        2048,
+        3072,
+        4096
+      ],
+      "fit": "prose 2000 rows",
+      "held_prose": [
+        0.9246104168521974,
+        0.9600619907459235,
+        0.9759537706400869,
+        0.9843809416598731,
+        0.9843809416598731,
+        0.9843809416598731
+      ],
+      "held_code": [
+        0.5638625312139908,
+        0.6196145381040024,
+        0.6881815527580416,
+        0.7816554714187666,
+        0.7816554714187666,
+        0.7816554714187666
+      ],
+      "basis_rank_available": 1985
+    },
+    "intermediate_17408_L63": {
+      "ranks": [
+        256,
+        512,
+        1024,
+        2048,
+        3500
+      ],
+      "fit": "1000 rows each of prose, code, math, instruction",
+      "basis_rank_available": 3907,
+      "in_prose": [
+        0.8989513993997653,
+        0.9404538249048477,
+        0.970452224905432,
+        0.9864744708360547,
+        0.9918904393803849
+      ],
+      "in_code": [
+        0.9012540376694965,
+        0.9433458950687585,
+        0.9716832870414702,
+        0.986881613039494,
+        0.9926071675421055
+      ],
+      "in_math": [
+        0.9083955546185104,
+        0.9540867485268555,
+        0.9804813145095898,
+        0.9918171090195477,
+        0.995439899010507
+      ],
+      "in_instruction": [
+        0.905918032695412,
+        0.9443110868648064,
+        0.9713754949674541,
+        0.9863096610120579,
+        0.9922563557770823
+      ],
+      "held_multilingual": [
+        0.6565788892947403,
+        0.7070420901021586,
+        0.7571861544425899,
+        0.8100459170786676,
+        0.8587341795512317
+      ],
+      "held_adversarial": [
+        0.8110076823692409,
+        0.8458764772676269,
+        0.8773595981106546,
+        0.9104374218271801,
+        0.9402863597130299
+      ],
+      "held_long": [
+        0.8291564136781037,
+        0.8705145101069647,
+        0.9087527578174818,
+        0.9420518742726742,
+        0.9641554810670137
+      ]
+    },
+    "in_minus_held_energy_gap": {
+      "256": 0.13804876098176766,
+      "512": 0.1377383630157336,
+      "1024": 0.12573191023241115,
+      "2048": 0.10035897575061459,
+      "3500": 0.07198979198376154
+    }
+  },
+  "commit": "7be3ce7ebc2ee26261e33e1eb7c3f35698a1b6cd",
+  "caveat_basis_rank_cap": "the d_model basis was fitted on 2000 rows so its rank is capped at 1985. The r=2048/3072/4096 rows all report the SAME value because the basis is exhausted, not because the span saturates there. Those three entries are the full-basis capture, not rank measurements.",
+  "verdict": {
+    "in_distribution_the_mechanism_WORKS": "At rank 2048 of 17408 -- an 8.5x width reduction -- the four fitted classes retain 98.6-99.2% of their energy. For a KNOWN distribution a latent runtime is entirely plausible on this evidence, and that should not be lost in the negative below.",
+    "out_of_distribution_it_does_not": "The same basis retains only 81.0% of multilingual, 91.0% of adversarial and 94.2% of long. The in-minus-held gap narrows with rank but does not close: +0.138 at r=256, +0.100 at r=2048, +0.072 at r=3500. At the d_model width the same shape is sharper -- a prose-fitted basis holds 98.4% of held-out PROSE and 78.2% of CODE, a 20-point gap at its own full rank.",
+    "answering_the_standing_obstacle": "The verify says the late-layer rank evidence (2206 at L63) is the standing obstacle and must be answered rather than skipped. It is answered, and the answer is that RANK IS THE WRONG QUESTION. A basis's coverage is not a property of its rank but of what it was fitted on: at every rank tested, unseen distributions sit 7-20 points below seen ones, and adding rank shrinks that gap far too slowly to close it. Compiling d_model away requires a basis that generalises, and no observed mixture produced one.",
+    "this_strengthens_G059_where_it_was_weakest": "G059 closed as a measured negative using ISOTROPIC PROBES, and the fair objection was that random directions are not real inputs so the collapse might be an artefact of the probe. This replaces the probe with REAL HELD-OUT DISTRIBUTIONS from the capture -- multilingual, adversarial, long -- and the negative survives. G059's conclusion no longer rests on probes.",
+    "composition": "G089 is the composition of G059 + G060 + G061 and inherits their bounds. G059's span negative now holds on real distributions; G060 established that the attention path is 253x off per element so latent work is the second lever there; G061 showed the joint choice beats the independent one by up to 3.88x. The composition is therefore: a latent runtime is buildable FOR A FIXED KNOWN DISTRIBUTION and is not a general compilation of the source width."
+  }
+}

@@ -1,0 +1,288 @@
+{
+  "schema": "hawking.nos.profile_guided.v1",
+  "obligation": "G081 -- profile-guided compilation, and the narrowing it must declare",
+  "why_now": "F10 established that every activation-weighted result in this campaign was fitted on PROSE rows, so whether the profile matters decides whether those results carry an undeclared narrowing",
+  "profiles": {
+    "prose": "the accidental status quo",
+    "code": "opposite specialization",
+    "pooled": "the GENERAL GENESIS BUILD, equal parts",
+    "matched(oracle)": "fitted on the eval workload; no deployable build can have this, it bounds what profiling could ever buy"
+  },
+  "control": "flat q3 carried as the profile-INDEPENDENT reference -- its error does not depend on d at all, so it is the line a mismatched profile must stay under to be worth having",
+  "holdout": "fit and eval rows are disjoint and come from different prompts, since the capture splits by prompt id and refuses row shuffling",
+  "sites": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "site": "post_attn_norm",
+      "fit_rows": 500,
+      "eval_rows_prose": 500,
+      "eval_rows_code": 500,
+      "cells": [
+        {
+          "eval_workload": "prose",
+          "flat_q3_no_profile": 0.10770858370339399,
+          "by_profile": {
+            "prose": {
+              "err": 0.20260225236415863,
+              "bits_per_elem": 2.5
+            },
+            "code": {
+              "err": 0.20582658052444458,
+              "bits_per_elem": 2.5
+            },
+            "pooled": {
+              "err": 0.20313997566699982,
+              "bits_per_elem": 2.5
+            },
+            "matched(oracle)": {
+              "err": 0.202731192111969,
+              "bits_per_elem": 2.5
+            }
+          },
+          "narrowing_vs_matched": {
+            "prose": -0.0006360133656154732,
+            "code": 0.015268436890392145,
+            "pooled": 0.002016382140174411,
+            "matched(oracle)": 0.0
+          },
+          "mismatched_profile": "code",
+          "mismatch_penalty_pct": 1.5268436890392145,
+          "pooled_penalty_pct": 0.2016382140174411,
+          "flat_q2_no_profile": 0.34088195285496503,
+          "control_bits": {
+            "flat_q2": 2.25,
+            "planes_k2": 2.5,
+            "flat_q3": 3.25
+          }
+        },
+        {
+          "eval_workload": "code",
+          "flat_q3_no_profile": 0.1125713569908315,
+          "by_profile": {
+            "prose": {
+              "err": 0.20381204783916473,
+              "bits_per_elem": 2.5
+            },
+            "code": {
+              "err": 0.20270220935344696,
+              "bits_per_elem": 2.5
+            },
+            "pooled": {
+              "err": 0.20266388356685638,
+              "bits_per_elem": 2.5
+            },
+            "matched(oracle)": {
+              "err": 0.2022223323583603,
+              "bits_per_elem": 2.5
+            }
+          },
+          "narrowing_vs_matched": {
+            "prose": 0.007861226118128783,
+            "code": 0.002373016815157003,
+            "pooled": 0.00218349379787397,
+            "matched(oracle)": 0.0
+          },
+          "mismatched_profile": "prose",
+          "mismatch_penalty_pct": 0.7861226118128783,
+          "pooled_penalty_pct": 0.218349379787397,
+          "flat_q2_no_profile": 0.34744392806298907,
+          "control_bits": {
+            "flat_q2": 2.25,
+            "planes_k2": 2.5,
+            "flat_q3": 3.25
+          }
+        }
+      ]
+    },
+    {
+      "organ": "mlp.down_proj",
+      "layer": 63,
+      "site": "post_swiglu",
+      "fit_rows": 500,
+      "eval_rows_prose": 500,
+      "eval_rows_code": 500,
+      "cells": [
+        {
+          "eval_workload": "prose",
+          "flat_q3_no_profile": 0.2720385891597178,
+          "by_profile": {
+            "prose": {
+              "err": 0.280526340007782,
+              "bits_per_elem": 2.5
+            },
+            "code": {
+              "err": 0.29248976707458496,
+              "bits_per_elem": 2.5
+            },
+            "pooled": {
+              "err": 0.28304609656333923,
+              "bits_per_elem": 2.5
+            },
+            "matched(oracle)": {
+              "err": 0.2804693579673767,
+              "bits_per_elem": 2.5
+            }
+          },
+          "narrowing_vs_matched": {
+            "prose": 0.00020316672316100792,
+            "code": 0.04285819026478621,
+            "pooled": 0.009187237474484578,
+            "matched(oracle)": 0.0
+          },
+          "mismatched_profile": "code",
+          "mismatch_penalty_pct": 4.285819026478621,
+          "pooled_penalty_pct": 0.9187237474484578,
+          "flat_q2_no_profile": 0.7112612087399665,
+          "control_bits": {
+            "flat_q2": 2.25,
+            "planes_k2": 2.5,
+            "flat_q3": 3.25
+          }
+        },
+        {
+          "eval_workload": "code",
+          "flat_q3_no_profile": 0.26508241880382855,
+          "by_profile": {
+            "prose": {
+              "err": 0.2982284128665924,
+              "bits_per_elem": 2.5
+            },
+            "code": {
+              "err": 0.2740936577320099,
+              "bits_per_elem": 2.5
+            },
+            "pooled": {
+              "err": 0.274752140045166,
+              "bits_per_elem": 2.5
+            },
+            "matched(oracle)": {
+              "err": 0.273968905210495,
+              "bits_per_elem": 2.5
+            }
+          },
+          "narrowing_vs_matched": {
+            "prose": 0.08854839799231384,
+            "code": 0.00045535284896303097,
+            "pooled": 0.0028588457294789205,
+            "matched(oracle)": 0.0
+          },
+          "mismatched_profile": "prose",
+          "mismatch_penalty_pct": 8.854839799231385,
+          "pooled_penalty_pct": 0.28588457294789205,
+          "flat_q2_no_profile": 0.6924403454133583,
+          "control_bits": {
+            "flat_q2": 2.25,
+            "planes_k2": 2.5,
+            "flat_q3": 3.25
+          }
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "site": "post_input_norm",
+      "fit_rows": 500,
+      "eval_rows_prose": 500,
+      "eval_rows_code": 500,
+      "cells": [
+        {
+          "eval_workload": "prose",
+          "flat_q3_no_profile": 0.1423914659261029,
+          "by_profile": {
+            "prose": {
+              "err": 0.24000650644302368,
+              "bits_per_elem": 2.5
+            },
+            "code": {
+              "err": 0.24267415702342987,
+              "bits_per_elem": 2.5
+            },
+            "pooled": {
+              "err": 0.24116501212120056,
+              "bits_per_elem": 2.5
+            },
+            "matched(oracle)": {
+              "err": 0.23999541997909546,
+              "bits_per_elem": 2.5
+            }
+          },
+          "narrowing_vs_matched": {
+            "prose": 4.619448124953962e-05,
+            "code": 0.011161617353230069,
+            "pooled": 0.004873393593123554,
+            "matched(oracle)": 0.0
+          },
+          "mismatched_profile": "code",
+          "mismatch_penalty_pct": 1.1161617353230069,
+          "pooled_penalty_pct": 0.4873393593123554,
+          "flat_q2_no_profile": 0.44957641675774757,
+          "control_bits": {
+            "flat_q2": 2.25,
+            "planes_k2": 2.5,
+            "flat_q3": 3.25
+          }
+        },
+        {
+          "eval_workload": "code",
+          "flat_q3_no_profile": 0.13951798638104362,
+          "by_profile": {
+            "prose": {
+              "err": 0.23656262457370758,
+              "bits_per_elem": 2.5
+            },
+            "code": {
+              "err": 0.2352163940668106,
+              "bits_per_elem": 2.5
+            },
+            "pooled": {
+              "err": 0.23578809201717377,
+              "bits_per_elem": 2.5
+            },
+            "matched(oracle)": {
+              "err": 0.2344917207956314,
+              "bits_per_elem": 2.5
+            }
+          },
+          "narrowing_vs_matched": {
+            "prose": 0.008831457976638202,
+            "code": 0.003090400244069924,
+            "pooled": 0.0055284306718539344,
+            "matched(oracle)": 0.0
+          },
+          "mismatched_profile": "prose",
+          "mismatch_penalty_pct": 0.8831457976638202,
+          "pooled_penalty_pct": 0.5528430671853934,
+          "flat_q2_no_profile": 0.4456176560889566,
+          "control_bits": {
+            "flat_q2": 2.25,
+            "planes_k2": 2.5,
+            "flat_q3": 3.25
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "mismatch_penalty_pct_mean": 2.9088221099248215,
+    "mismatch_penalty_pct_max": 8.854839799231385,
+    "pooled_penalty_pct_mean": 0.44412972344982277,
+    "pooled_penalty_pct_max": 0.9187237474484578,
+    "mismatched_beats_no_profile_cells": 0,
+    "cells": 6
+  },
+  "commit": "347cfdb9ba2933f8fe709396508bf79bd9839d27",
+  "control_correction": {
+    "defect": "A first pass reported 'mismatched profile still beats no profile (flat q3) in 0/6 cells'. That comparison is at UNEQUAL COST and is exactly the error this campaign keeps flagging: flat q3 is 3.25 bits and 0.8521 ps/element while planes k2 is 2.50 bits and 0.6676 ps/element. A dearer codec having lower error is not a verdict about profiles.",
+    "corrected": "The profile-dependent codec is now BRACKETED by two profile-independent flat codecs, one cheaper and one dearer, so its position is readable.",
+    "planes_k2_beats_cheaper_flat_q2_cells": 6,
+    "cells": 6
+  },
+  "verdict": {
+    "profile_barely_matters": "A mismatched profile costs +2.91% over a matched one (max +8.85%), and the POOLED profile -- the general build -- costs only +0.44% (max +0.92%). Activation statistics transfer between these workloads almost completely.",
+    "consequence_for_the_obligation": "Profile-guided compilation is REAL but SMALL on this axis. A separate HAWKING-WORKLOAD build would recover under 3% of functional error over the general build, and the general pooled build gives up under 0.5% against an oracle it could never have. The narrowing a specialized build must declare is therefore small enough that keeping ONE general build is the better engineering choice on current evidence.",
+    "consequence_for_F10": "This substantially DE-RATES F10. Every d_j-weighted result in this campaign was fitted on prose, and the measured cost of that mismatch on the one contrasting workload available is under 3%. F10's qualifier stands -- the statistics are prose statistics -- but the expected error from it is small, not order-of-magnitude. The untested classes (math, multilingual, tool) could still behave differently and this does not speak for them.",
+    "scope": "prose against code, at one layer per organ, three organs. The contrast that would stress this hardest (math, tool syntax) has no captured rows."
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "hawking.nos.nongemv_retile_ab.v1",
+  "obligation": "G111 -- retile the lowest-occupancy non-GEMV kernels found by G110",
+  "what_G110_found": "Every non-GEMV kernel dispatches at 6-25% of the threads its own pipeline permits, and none is register-limited. That is 4x to 16x of unused threadgroup width with no hardware reason for it, which made raising TG the obvious first experiment.",
+  "why_knobs_rather_than_a_rewrite": "The rmsnorm, deltanet-rmsnorm and rope kernels already expose TG as an env knob, so the experiment G110 implies can be run end-to-end WITHOUT writing a kernel. Building first and measuring second would have inverted the order this obligation's own history warns about.",
+  "results": [
+    {
+      "config": "base",
+      "knob": "incumbent: rmsnorm TG 256, deltanet rmsnorm TG 256",
+      "token_ms": 30.505167,
+      "tps": 32.781331765861175,
+      "delta_pct_vs_base": 0.0,
+      "tokens_identical": true,
+      "pairs": 3,
+      "max_new_tokens": 24
+    },
+    {
+      "config": "rms512",
+      "knob": "HAWKING_RMSNORM_TG=512",
+      "token_ms": 30.906667,
+      "tps": 32.355478512128144,
+      "delta_pct_vs_base": -1.299072462261941,
+      "tokens_identical": true,
+      "pairs": 3,
+      "max_new_tokens": 24
+    },
+    {
+      "config": "rms1024",
+      "knob": "HAWKING_RMSNORM_TG=1024",
+      "token_ms": 30.493167,
+      "tps": 32.7942322291417,
+      "delta_pct_vs_base": 0.03935307867497517,
+      "tokens_identical": true,
+      "pairs": 3,
+      "max_new_tokens": 24
+    },
+    {
+      "config": "dn512",
+      "knob": "HAWKING_DN_RMSNORM_TG=512",
+      "token_ms": 30.453542,
+      "tps": 32.83690284696604,
+      "delta_pct_vs_base": 0.169520510947474,
+      "tokens_identical": true,
+      "pairs": 3,
+      "max_new_tokens": 24
+    },
+    {
+      "config": "dn1024",
+      "knob": "HAWKING_DN_RMSNORM_TG=1024",
+      "token_ms": 30.498083,
+      "tps": 32.78894611179332,
+      "delta_pct_vs_base": 0.02322768942559783,
+      "tokens_identical": true,
+      "pairs": 3,
+      "max_new_tokens": 24
+    }
+  ],
+  "verdict": "THE HEADROOM DOES NOT CONVERT. The best arm is dn512 at +0.17%, inside this harness's run-to-run spread, and rms512 is 1.30% SLOWER than the incumbent 256. Tokens are IDENTICAL in every arm. Quadrupling the threadgroup on kernels with 4x of measured headroom buys nothing and can cost.",
+  "these_kernels_are_CLOSED_not_rewritten": "The acceptance says kernels already near roof are to be DOCUMENTED AS CLOSED rather than rewritten. rmsnorm and deltanet-rmsnorm are at their optimum threadgroup: 256 beats 512 and ties 1024. They are closed on the TG axis.",
+  "occupancy_is_not_throughput_confirmed_a_third_time": "G094 measured a 5.8x traffic swing at zero rank correlation with time. G111's own prior evidence measured argmax transferring 0 of a 25.9x isolated win. This makes three independent confirmations that a structural headroom measurement does not predict an end-to-end win, and it is why G110 was recorded as a RANKING instrument rather than a budget.",
+  "not_measured": "The rope arm (HAWKING_ROPE_TG) ran at 16 tokens and 2 pairs while every other arm ran at 24 tokens and 3 pairs, and the matched-config baseline for it failed. Comparing across run configurations is how a false finding gets made, so the rope numbers are EXCLUDED rather than blended in. That axis is unmeasured.",
+  "commit": "a7192a32ad4fc40db61191a6135b05a317074785"
+}

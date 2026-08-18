@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.nos.rps_rpt_live.v1",
+  "obligation": "G107 -- RPT and RPS measured on the LIVE runtime alongside TPS",
+  "runs": [
+    {
+      "run": "default",
+      "config": "default (recon fuse on, one-pass argmax)",
+      "dispatches_per_token": 964,
+      "token_ms": 30.494459,
+      "tps": 32.792842791537964,
+      "RPT": 130,
+      "RPS": 4263.069562899936
+    },
+    {
+      "run": "a2",
+      "config": "HAWKING_ARGMAX_TWO_PASS=1",
+      "dispatches_per_token": 964,
+      "token_ms": 30.442916,
+      "tps": 32.84836446022451,
+      "RPT": 130,
+      "RPS": 4270.287379829187
+    },
+    {
+      "run": "rf",
+      "config": "HAWKING_QWEN38_RECON_FUSE=0",
+      "dispatches_per_token": 964,
+      "token_ms": 30.427167,
+      "tps": 32.865366663942126,
+      "RPT": 130,
+      "RPS": 4272.497666312476
+    }
+  ],
+  "RPT_is_reported_live_and_correctly_does_not_move": "RPT is 130 in all three runs. That is not the instrument failing to respond -- it is the instrument being RIGHT. A route is a semantic state transition (G106), and none of these toggles removes one: they swap kernels inside routes. An RPT that moved when a kernel was swapped would be counting dispatches, which is precisely the confusion G106 exists to prevent.",
+  "RPS_does_move_because_TPS_does": "RPS spans 4263 to 4272 routes/second across the three runs, tracking measured TPS. RPS is live because TPS is live; RPT is structural. Reporting both is what separates 'the program got faster' from 'the program got simpler'.",
+  "the_verify_half_that_could_NOT_be_demonstrated": {
+    "asked": "run before/after a known fusion, show RPT change",
+    "why_not": "No toggle in this runtime removes a ROUTE. HAWKING_QWEN38_RECON_FUSE=0 selects different kernel family NAMES at a constant 964 dispatches -- verified, 964 in both states -- so it is a kernel swap, not a fusion. Merging block halves is what would move RPT and nothing does that.",
+    "missing_input": "a route-level fusion, i.e. one that merges a mixer and an MLP into a single schedulable transition"
+  },
+  "an_anomaly_named_rather_than_resolved": "HAWKING_ARGMAX_TWO_PASS=1 is a LIVE knob -- its env parsing was read and is correct -- and the two-pass path dispatches two kernels where one-pass dispatches one. The reported dispatch count is 964 in BOTH states. So either the counter's scope excludes the sampling dispatch, or the two-pass path is not being taken. This is recorded as an open question rather than resolved, because guessing which would put an unverified claim in the ledger.",
+  "commit": "c068687dadf725dbe73e80cbda9fd3bd9fc6728b"
+}

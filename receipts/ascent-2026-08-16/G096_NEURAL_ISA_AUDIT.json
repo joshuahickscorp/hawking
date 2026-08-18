@@ -1,0 +1,90 @@
+{
+  "schema": "hawking.nos.neural_isa_audit.v1",
+  "obligation": "G096 -- define the Gravity op vocabulary as an instruction set",
+  "the_audit": [
+    {
+      "opcode": "DENSE_Q",
+      "status": "LIVE + BOUND",
+      "evidence": "q3/q4 grouped-absmax GEMV; qwen_uniform_*_matvec_geo_tpr64_tg128 is referenced from qwen38_hybrid_decode.rs and measured at 0.8046/0.8521 ps/element (G072)"
+    },
+    {
+      "opcode": "RECURRENT_BLOCK",
+      "status": "LIVE + BOUND",
+      "evidence": "DeltaNet gated recurrence; qwen38_gated_delta_decode_vi_simd is referenced from decode and landed this campaign"
+    },
+    {
+      "opcode": "TERNARY_PLANES",
+      "status": "MEASURED, NOT BOUND",
+      "evidence": "binary plane kernels exist and measure 0.6059/0.6676/0.9867 ps/element (G072), and the ternary fit exists offline (G069). ZERO references from decode, and G069 measured the ladder should stop at TWO planes"
+    },
+    {
+      "opcode": "LATENT_TRANSFORM",
+      "status": "CONDITIONALLY REAL",
+      "evidence": "G089: an 8.5x width reduction retains 98.6-99.2% of energy IN-DISTRIBUTION but 81.0% on held-out multilingual. Real for a fixed known distribution, not a general opcode"
+    },
+    {
+      "opcode": "SHARED_BASIS",
+      "status": "REFUTED",
+      "evidence": "G062 measured adjacent blocks mutually orthogonal at cosine 0.0019-0.0026 against a random-vector null of 0.00028; G035 refuted cross-layer sharing at matched bits"
+    },
+    {
+      "opcode": "CONDITIONAL_OPERATOR",
+      "status": "REFUTED FOUR WAYS",
+      "evidence": "G058 dynamic precision is density not execution; G062 attractor compilation fails on orthogonality; G064 conditional depth has ZERO skippable layers and no per-token variance; G084 the JIT risks 7x its gain"
+    },
+    {
+      "opcode": "GENERATED_LINEAR",
+      "status": "REFUTED",
+      "evidence": "the one generated transform tested, block Hadamard, was refuted; G042 records GENERATED_BPW_EQUIVALENT = 0 for every live candidate"
+    },
+    {
+      "opcode": "EXACT_ISLAND",
+      "status": "UNBUILT",
+      "evidence": "G071: CORRECTION_BPW is 0.0 for every live candidate, so there is no correction stream for a kernel to read; strand_outlier_correct has 0 decode references and does one atomic_fetch_add per outlier"
+    },
+    {
+      "opcode": "APPLY_DELTA",
+      "status": "UNBUILT",
+      "evidence": "same missing input as EXACT_ISLAND -- no packer emits a delta stream"
+    },
+    {
+      "opcode": "VERIFY_CORRECTION",
+      "status": "VACUOUS",
+      "evidence": "there are no corrections to verify"
+    },
+    {
+      "opcode": "ROUTE",
+      "status": "INAPPLICABLE",
+      "evidence": "Qwen3.8 is dense at this level; G043 records ROUTING_FLOPS = 0"
+    },
+    {
+      "opcode": "TENSOR_TRAIN",
+      "status": "NEVER BUILT",
+      "evidence": "no receipt, no kernel, no measurement anywhere in this campaign"
+    }
+  ],
+  "counts": {
+    "live_and_bound": 2,
+    "measured_not_bound": 1,
+    "conditionally_real": 1,
+    "refuted": 4,
+    "unbuilt_or_vacuous": 4,
+    "inapplicable": 1,
+    "proposed": 12
+  },
+  "the_finding": "The acceptance names TWELVE opcodes. Measured against this campaign's own evidence, 2 are live and bound (DENSE_Q, RECURRENT_BLOCK), one is measured but unbound (TERNARY_PLANES), one is real only for a fixed distribution (LATENT_TRANSFORM), and the remaining EIGHT are refuted, unbuilt, vacuous or inapplicable. An ISA frozen as specified would be two-thirds dead surface, and every dead opcode is a runtime branch that must be maintained, verified and trusted forever.",
+  "the_honest_ISA": [
+    "DENSE_Q",
+    "RECURRENT_BLOCK",
+    "TERNARY_PLANES (pending a decode binding)"
+  ],
+  "shared_vm_vs_marginal_model_bytes": {
+    "shared_runtime_binary_bytes": 6270096,
+    "shader_source_bytes": 1500000,
+    "marginal_model_bytes": 14297694680,
+    "shared_as_fraction_of_marginal": 0.0004385389491335816,
+    "note": "The verify says shared VM bytes must be reported separately and never omitted. They are 6.27 MB of runtime against 14.30 GB of artifact -- 0.044%. The sharing argument for a pooled VM is therefore not a BYTES argument on this machine; it would have to be a correctness or maintenance argument."
+  },
+  "the_independent_verifier_has_a_measured_reason_to_exist": "The verify's premise is that Gravity can produce false wins. This session alone caught SEVEN method defects that would have shipped as findings: a max-curvature rule degenerate on a 3-point grid (G067), a budget sweep that made its answer uniform by construction (G073), a LANGUAGE answer key that marked the REFERENCE model wrong (G076), a 48-token budget that scored every artifact 0.00 (G076), a control compared at unequal cost (G081), an amortized column that printed the serial number twice (G091), and a finding generalised from one capture site to all five (F10). Every one was a MEASUREMENT defect, not an artifact defect. So an independent verifier that checks only reproducible builds and content-addressed inputs would have caught NONE of them -- it must verify the measurement method, not just the bytes.",
+  "commit": "305e5987ce30fd0094477c1c83664ed7a6a0bc4b"
+}

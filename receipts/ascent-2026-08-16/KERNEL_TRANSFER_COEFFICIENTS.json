@@ -1,0 +1,58 @@
+{
+  "schema": "hawking.nos.kernel_transfer_coefficients.v1",
+  "obligation": "G110/G111 -- does isolated-family time predict what a retile buys?",
+  "method": "Revert each landed retile via its env knob and measure BOTH the isolated family delta and the production token delta, paired, 2 runs per arm. Transfer = d_token / d_iso.",
+  "prerequisite_defect_found_and_fixed": "The three revert knobs DID NOT WORK. Every site filtered the parsed value with `v.is_power_of_two() && (32..=1024).contains(v)`, which REJECTS 0, so the documented `HAWKING_ROPE_TG=0` fell through to `.unwrap_or(256)` -- the fast path -- and the `if tg > 0` branch selecting the old kernel was UNREACHABLE. Seven sites across three knobs. Three commit messages document those knobs as the way to revert and none of them reverted. A first attempt at this very experiment produced nonsense transfer coefficients (8.85, 1.63, 3.47) because of it. Fixed to `*v == 0 || (...)`; proof: rope_cache_16 goes 0.1369 -> 1.5880 ms with the knob at 0, an 11.6x revert that matches the pre-retile census figure of 1.5626.",
+  "measurements": [
+    {
+      "reverted": "rope",
+      "families": [
+        "rope_cache_16"
+      ],
+      "iso_on_ms": 0.1275,
+      "iso_off_ms": 1.5307,
+      "d_iso_ms": 1.4032,
+      "d_token_ms": 1.553,
+      "transfer": 1.11
+    },
+    {
+      "reverted": "rmsnorm",
+      "families": [
+        "post_norms",
+        "input_norms"
+      ],
+      "iso_on_ms": 0.9759,
+      "iso_off_ms": 2.3191,
+      "d_iso_ms": 1.3433,
+      "d_token_ms": 1.654,
+      "transfer": 1.23
+    },
+    {
+      "reverted": "dn_rmsnorm",
+      "families": [
+        "gated_rmsnorm_48"
+      ],
+      "iso_on_ms": 0.209,
+      "iso_off_ms": 1.3328,
+      "d_iso_ms": 1.1238,
+      "d_token_ms": 1.132,
+      "transfer": 1.01
+    },
+    {
+      "reverted": "argmax (separate run)",
+      "families": [
+        "argmax"
+      ],
+      "iso_on_ms": 0.0131,
+      "iso_off_ms": 0.3395,
+      "d_iso_ms": 0.3264,
+      "d_token_ms": -0.045,
+      "transfer": 0.0
+    }
+  ],
+  "finding": "TRANSFER DEPENDS ON FAMILY SIZE. The three families above 1 ms transfer at 1.01-1.23, i.e. essentially 1:1 given a 0.28 ms noise floor on ~1.5 ms deltas. The 0.33 ms family transfers 0.00.",
+  "correction": "This CORRECTS the generalisation I drew from argmax alone, that isolated-family time is 'a ranking signal, not a budget'. That was one case over-generalised. It IS a budget for families above about 1 ms -- all three tested transfer fully -- and argmax is the exception, not the rule.",
+  "hypothesis_for_argmax": "argmax is a single dispatch at the very END of the token, so its cost may overlap the host-side tail rather than sitting on the GPU critical path, whereas rope, rmsnorm and dn_rmsnorm are mid-token with dependents behind them. Stated as a hypothesis; not tested.",
+  "actionable_remainder": "Of the 5.869 ms non-GEMV wall, the attackable part is what sits above the ~1 ms transfer threshold: gated_delta_48 at 1.9795 ms, and possibly mha_16 at 0.5266. rearrange_48 (0.3511) and argmax (0.3343) are in the range argmax proved unrecoverable.",
+  "commit": "bc742b269b4478d6a79e9b569f75a59f99aedb3c"
+}

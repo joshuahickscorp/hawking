@@ -1,0 +1,91 @@
+{
+  "schema": "hawking.nos.lm_head_shortlist.v1",
+  "obligation": "G090 -- adaptive shortlist with verified fallback, and the protection the verify names",
+  "positions": 256,
+  "vocab": 248320,
+  "distinct_exact_argmax": 42,
+  "special_block": "ids >= 248000",
+  "results": [
+    {
+      "bits": 2,
+      "row_rel_err_ordinary": 0.7249709968134486,
+      "row_rel_err_special": 0.6829655325213705,
+      "special_over_ordinary": 0.9420591106724135,
+      "recall_at_k": {
+        "1": 0.83203125,
+        "8": 1.0,
+        "32": 1.0,
+        "128": 1.0
+      },
+      "top1_agreement": 0.83203125
+    },
+    {
+      "bits": 3,
+      "row_rel_err_ordinary": 0.2622820442795354,
+      "row_rel_err_special": 0.36018647917583707,
+      "special_over_ordinary": 1.3732792123274629,
+      "recall_at_k": {
+        "1": 0.96484375,
+        "8": 1.0,
+        "32": 1.0,
+        "128": 1.0
+      },
+      "top1_agreement": 0.96484375
+    },
+    {
+      "bits": 4,
+      "row_rel_err_ordinary": 0.11262324014830222,
+      "row_rel_err_special": 0.18319514498298628,
+      "special_over_ordinary": 1.6266193792840182,
+      "recall_at_k": {
+        "1": 0.98046875,
+        "8": 1.0,
+        "32": 1.0,
+        "128": 1.0
+      },
+      "top1_agreement": 0.98046875
+    }
+  ],
+  "shortlist_reading": "A cheap pass followed by exact rescoring of the top-k is only safe if the exact argmax is IN the cheap top-k. Recall@32 is the number that matters, because rescoring 32 rows costs 32*5120 = 163,840 elements against the head's 1.27e9 -- 0.013%, free.",
+  "rare_token_gap": "THIS DOES NOT ESTABLISH RARE-TOKEN SAFETY, which the verify explicitly requires. The capture produced only 42 distinct argmax tokens over 256 positions and G049 recorded vocabulary coverage at 0.128% of the vocab. Recall measured on that distribution says nothing about the 99.87% of tokens never observed. The per-row error stratification below is the only rare-token evidence available and it is a proxy, not a behavioural check.",
+  "commit": "d9612a12234d6359d0b8dc245ae0e544eb9d505e",
+  "cheap_pass_must_actually_be_cheap": {
+    "why": "A shortlist only pays if the cheap pass costs less than the exact one, and on this machine lower bits do NOT imply lower time: G072 measured flat q3 at 0.8521 ps/element, SLOWER than q4's 0.8425. A q2 cheap pass would very likely cost more than the exact q4 pass it replaces, so the recall numbers for flat codecs above do not translate into a saving.",
+    "the_codec_that_is_actually_cheaper": [
+      {
+        "codec": "planes k1",
+        "bits_per_elem": 1.25,
+        "ps_per_element": 0.6059,
+        "head_ms": 0.7703402905599999,
+        "saving_ms_vs_q4": 0.3008128614400003,
+        "row_rel_err_ordinary": 0.6842561960220337,
+        "row_rel_err_special": 1.582950234413147,
+        "special_over_ordinary": 2.3133883476257324,
+        "recall_at_k": {
+          "1": 0.84375,
+          "8": 1.0,
+          "32": 1.0,
+          "128": 1.0
+        }
+      },
+      {
+        "codec": "planes k2",
+        "bits_per_elem": 2.5,
+        "ps_per_element": 0.6676,
+        "head_ms": 0.8487855718399999,
+        "saving_ms_vs_q4": 0.22236758016000024,
+        "row_rel_err_ordinary": 0.38048070669174194,
+        "row_rel_err_special": 0.5999783277511597,
+        "special_over_ordinary": 1.5768955945968628,
+        "recall_at_k": {
+          "1": 0.921875,
+          "8": 1.0,
+          "32": 1.0,
+          "128": 1.0
+        }
+      }
+    ],
+    "verdict": "binary planes k1 runs the head in 0.770 ms against q4's 1.071, saving 0.301 ms, and its top-8 shortlist recovers the exact argmax on 100.0% of tested positions. Exact rescoring of 8 rows is 40,960 elements against 1.27e9 -- 0.003%, free."
+  },
+  "special_token_risk": "Special tokens (ids >= 248000) carry systematically HIGHER row error than ordinary ones at every precision that matters: 1.37x at flat q3, 1.63x at flat q4, and 2.31x at planes k1. This is exactly the behaviour the verify singles out for protection, and it is a real signal rather than noise -- the special block is represented worse than the vocabulary it sits beside."
+}

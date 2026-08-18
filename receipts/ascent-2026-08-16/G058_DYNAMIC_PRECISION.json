@@ -1,0 +1,137 @@
+{
+  "schema": "hawking.nos.dynamic_precision.v1",
+  "obligation": "G058 -- active bits chosen per token, reported at mean AND tail",
+  "policy": "one binary plane as the cheap prefix, a second added when the signal says the state is uncertain; both tiers measured on device in G072",
+  "signal": "LOGIT MARGIN of the previous token -- the only candidate from the acceptance list that is FREE at decode time, since those logits are already computed",
+  "tier_costs_measured": {
+    "k1": {
+      "bits": 1.25,
+      "ps_per_element": 0.6059
+    },
+    "k2": {
+      "bits": 2.5,
+      "ps_per_element": 0.6676
+    }
+  },
+  "perturbation_scale_caveat": "each tier's perturbation is applied at the RELATIVE output error that tier was measured to produce in G069. That OVERSTATES the effect if this layer contributes only part of the stream and UNDERSTATES it if error accumulates across layers. It is an order-of-magnitude stand-in for an assembled artifact, not a substitute for one.",
+  "tokens": 256,
+  "random_directions_per_tier": 4,
+  "margin_distribution": {
+    "min": 0.0069332122802734375,
+    "p10": 0.7743682861328125,
+    "median": 4.477984428405762,
+    "p90": 10.745767593383789,
+    "max": 20.043827056884766
+  },
+  "fragility_by_tier": {
+    "k1": {
+      "mean_flip_rate": 0.0556640625,
+      "tokens_ever_flipping": 35
+    },
+    "k2": {
+      "mean_flip_rate": 0.03125,
+      "tokens_ever_flipping": 21
+    }
+  },
+  "signal_predictiveness": {
+    "by_margin_quartile": [
+      {
+        "quartile": 0,
+        "n": 64,
+        "k1_flip": 0.21875,
+        "k2_flip": 0.125
+      },
+      {
+        "quartile": 1,
+        "n": 64,
+        "k1_flip": 0.00390625,
+        "k2_flip": 0.0
+      },
+      {
+        "quartile": 2,
+        "n": 64,
+        "k1_flip": 0.0,
+        "k2_flip": 0.0
+      },
+      {
+        "quartile": 3,
+        "n": 64,
+        "k1_flip": 0.0,
+        "k2_flip": 0.0
+      }
+    ],
+    "lowest_over_highest_flip_ratio": null,
+    "predictive": true
+  },
+  "policy_sweep": [
+    {
+      "promoted_fraction": 0.05,
+      "margin_threshold": 0.3751707077026367,
+      "mean_active_bpw": 1.3134765625,
+      "p99_active_bpw": 2.5,
+      "max_active_bpw": 2.5,
+      "mean_ps_per_element": 0.609033203125,
+      "p99_ps_per_element": 0.6676,
+      "max_ps_per_element": 0.6676,
+      "mean_flip_rate_under_policy": 0.0478515625,
+      "p99_flip_rate_under_policy": 0.5,
+      "vs_uniform_k2_bpw": 0.525390625,
+      "vs_uniform_k2_ps": 0.9122726230152786,
+      "vs_uniform_k2_flip": 1.53125
+    },
+    {
+      "promoted_fraction": 0.1,
+      "margin_threshold": 0.7743682861328125,
+      "mean_active_bpw": 1.376953125,
+      "p99_active_bpw": 2.5,
+      "max_active_bpw": 2.5,
+      "mean_ps_per_element": 0.6121664062500001,
+      "p99_ps_per_element": 0.6676,
+      "max_ps_per_element": 0.6676,
+      "mean_flip_rate_under_policy": 0.044921875,
+      "p99_flip_rate_under_policy": 0.5,
+      "vs_uniform_k2_bpw": 0.55078125,
+      "vs_uniform_k2_ps": 0.9169658571749552,
+      "vs_uniform_k2_flip": 1.4375
+    },
+    {
+      "promoted_fraction": 0.25,
+      "margin_threshold": 1.7549629211425781,
+      "mean_active_bpw": 1.5625,
+      "p99_active_bpw": 2.5,
+      "max_active_bpw": 2.5,
+      "mean_ps_per_element": 0.621325,
+      "p99_ps_per_element": 0.6676,
+      "max_ps_per_element": 0.6676,
+      "mean_flip_rate_under_policy": 0.0322265625,
+      "p99_flip_rate_under_policy": 0.5,
+      "vs_uniform_k2_bpw": 0.625,
+      "vs_uniform_k2_ps": 0.9306845416417017,
+      "vs_uniform_k2_flip": 1.03125
+    },
+    {
+      "promoted_fraction": 0.5,
+      "margin_threshold": 4.477984428405762,
+      "mean_active_bpw": 1.875,
+      "p99_active_bpw": 2.5,
+      "max_active_bpw": 2.5,
+      "mean_ps_per_element": 0.63675,
+      "p99_ps_per_element": 0.6676,
+      "max_ps_per_element": 0.6676,
+      "mean_flip_rate_under_policy": 0.03125,
+      "p99_flip_rate_under_policy": 0.5,
+      "vs_uniform_k2_bpw": 0.75,
+      "vs_uniform_k2_ps": 0.9537896944278011,
+      "vs_uniform_k2_flip": 1.0
+    }
+  ],
+  "commit": "f9e841fa149fc011692ab0cf65297889ec085888",
+  "verdict": {
+    "signal_is_strongly_predictive": "Fragility is almost perfectly concentrated in the lowest margin quartile: Q1 flips at 0.2188, Q2 at 0.0039, Q3 and Q4 at 0.0000. Logit margin does exactly what the acceptance hoped a named signal would do, and it is free at decode time.",
+    "but_the_tiers_are_too_close_in_cost": "k1 is 0.6059 ps/element and k2 is 0.6676 -- a 10.2% gap. So the ABSOLUTE CEILING on what any per-token policy can save is 9.2% of decode ALU, reached only by never promoting anything. Promoting 25% of tokens saves 6.9%. The mechanism cannot pay more than that no matter how good its signal is, because there is barely anything to skip.",
+    "the_same_measurement_cuts_both_ways": "G072 measured the second plane as nearly free on the arithmetic axis, +10.2% time for 2x the bytes, because it rides activations already loaded. That is what makes UNIFORM k2 attractive and it is precisely what destroys the case for DYNAMIC precision: a per-token policy only pays when the tiers differ substantially in cost, and here they do not.",
+    "the_tail_which_the_verify_demands": "p99 active BPW is 2.5000 and p99 ps/element is 0.6676 at EVERY promotion fraction -- the tail is the expensive tier by construction, so the mean is the only thing that improves. Worse, promotion does not repair the fragile tokens: the lowest-margin quartile still flips at 0.1250 under k2 against 0.2188 under k1. The p99 flip rate is 0.5000 at every setting. This is the shape the verify warns about -- cheap on average, unchanged at the tail.",
+    "classification": "DYNAMIC PRECISION IS A DENSITY MECHANISM ON THIS MACHINE, NOT AN EXECUTION ONE. It buys 25-47% of active BPW at 3-7% of decode time, and the mission's primary objective is verified useful EXECUTION. It does not serve the 100 TPS target and should not be built for that reason.",
+    "caveat": "flip rates use RANDOM perturbation directions at each tier's measured relative error. Real quantization error is structured, not random, so these rates are indicative of magnitude rather than exact. The quartile SEPARATION is the robust part; the absolute flip rates are not."
+  }
+}

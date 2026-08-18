@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.nos.lm_head_share.v1",
+  "obligation": "G090 -- the verify requires the head's share of TOKEN_NS measured FIRST",
+  "element_census": {
+    "mlp": 17112760320,
+    "linear_attn": 5560545600,
+    "full_attn": 1677720188,
+    "lm_head": 1271398400
+  },
+  "gemv_elements": 25622424508,
+  "lm_head_share_of_gemv_elements_pct": 4.962053452837907,
+  "measured_inputs": {
+    "ps_per_element_q4": 0.8425,
+    "ps_per_element_planes_k2": 0.6676,
+    "ps_per_element_planes_k1": 0.6059,
+    "token_ms": 30.606,
+    "note": "ps/element from G072 measured on device; token from this session's short-context run"
+  },
+  "scenarios": [
+    {
+      "scenario": "body at q4 (today)",
+      "body_ms": 20.51573949599,
+      "head_ms": 1.0711531520000002,
+      "non_gemv_ms": 9.01910735201,
+      "token_ms": 30.606,
+      "tps": 32.673332026400054,
+      "head_share_of_token_pct": 3.4998142586420964
+    },
+    {
+      "scenario": "body at planes k2",
+      "body_ms": 16.2567450297008,
+      "head_ms": 1.0711531520000002,
+      "non_gemv_ms": 9.01910735201,
+      "token_ms": 26.3470055337108,
+      "tps": 37.95497741557413,
+      "head_share_of_token_pct": 4.065559369278105
+    },
+    {
+      "scenario": "body at planes k1",
+      "body_ms": 14.7542867188372,
+      "head_ms": 1.0711531520000002,
+      "non_gemv_ms": 9.01910735201,
+      "token_ms": 24.8445472228472,
+      "tps": 40.2502807167439,
+      "head_share_of_token_pct": 4.311421505862506
+    },
+    {
+      "scenario": "body FREE (limit)",
+      "body_ms": 0.0,
+      "head_ms": 1.0711531520000002,
+      "non_gemv_ms": 9.01910735201,
+      "token_ms": 10.09026050401,
+      "tps": 99.10546904141742,
+      "head_share_of_token_pct": 10.615713554415269
+    }
+  ],
+  "the_rising_floor": "Today the head is 3.50% of the token. It does not shrink when the body does, so at planes k2 it becomes 4.07% and with a FREE body it is 10.62% of a 10.09 ms token. That limit token is 99.1 TPS, which is the ceiling density alone can reach and is itself the three-sided 100 TPS wall this campaign already recorded.",
+  "design_implication_BEFORE_choosing": "The head is worth at most 1.071 ms. Halving its cost buys 0.54 ms, which is 1.8% of today's token and 5.3% of the density-limit token. That bounds every design in the acceptance list before any of them is built, and it says the head is a real but SMALL floor -- not the thing standing between this machine and 100 TPS.",
+  "commit": "d9612a12234d6359d0b8dc245ae0e544eb9d505e"
+}

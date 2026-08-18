@@ -1,0 +1,56 @@
+{
+  "schema": "hawking.nos.latent_kv_verdict.v1",
+  "obligation": "G060 -- does a latent KV win survive at the context an agent actually uses",
+  "measured_inputs": {
+    "context_slope_ns_per_token": 6971.0,
+    "independent_confirmation": "G082 measured 6673 ns on a different prompt -- 4.3% apart",
+    "kv_bytes_per_position": 131072,
+    "kv_elements_per_position": 32768,
+    "gemv_ps_per_element": 0.8425,
+    "gemv_gb_s": 593.4,
+    "machine_roof_gb_s": 595.9
+  },
+  "the_attention_path_in_the_currency_that_binds": {
+    "attention_gb_s": 18.802467364797018,
+    "vs_gemv_kernel": 31.559687805175777,
+    "attention_ps_per_element": 212.738037109375,
+    "gemv_ps_per_element": 0.8425,
+    "ps_per_element_ratio": 252.5080559161721,
+    "statement": "Per context token the decode touches 32,768 f32 KV elements and spends 6971 ns, which is 212.7 ps PER ELEMENT. The GEMV kernel on the same machine runs at 0.8425 ps/element. The attention path is 253x more expensive per element than the kernel that streams the weights."
+  },
+  "occupancy_does_not_explain_it": {
+    "threadgroups": 24,
+    "cores": 60,
+    "occupancy_fraction": 0.4,
+    "ceiling_at_that_occupancy_gb_s": 238.35999999999999,
+    "measured_gb_s": 18.802467364797018,
+    "unexplained_factor": 12.677059631347655,
+    "statement": "One threadgroup per head puts 24 of 60 cores to work, so even a perfectly efficient kernel at that occupancy would reach 238 GB/s. The path delivers 18.8. Occupancy accounts for 2.5x of the gap and leaves 13x unexplained -- that residue is the serial scan inside each threadgroup, not the representation."
+  },
+  "therefore_latent_kv": {
+    "element_reduction_available": 0.42578125,
+    "best_case_slope_ns": 4002.87890625,
+    "best_case_speedup_on_context_term": 1.7414965986394557,
+    "ps_per_element_after": 212.738037109375,
+    "verdict": "G061 measured K's effective rank at 147 of 256, so a latent cache removes 43% of the elements and at best divides the context term by 1.74. It does NOT change ps/element at all -- the path would still cost 212.7 ps per surviving element, 253x the GEMV kernel. LATENT KV IS A 1.74x LEVER ON A PATH THAT IS 252x INEFFICIENT. The representation is not what this path pays for, which is what the standing status line already said and this now quantifies."
+  },
+  "what_perfect_would_look_like": {
+    "slope_ns_at_gemv_efficiency": 27.60704,
+    "token_ms_at_8192_now": 87.136432,
+    "token_ms_at_8192_at_gemv_efficiency": 30.256156871680002
+  },
+  "fairness_caveat": "the GEMV kernel is not a free reference. It streams contiguously with perfect coalescing and reuses each activation across rows, while attention has per-head strided access and a softmax that GEMV does not. Part of 252x is structural and unrecoverable. But those differences do not plausibly account for two orders of magnitude, and the occupancy arithmetic above already isolates 12x that nothing structural explains.",
+  "commit": "a23b7849234733ffe78737cc05816a941109df04",
+  "the_two_levers_composed": {
+    "context": 8192,
+    "today_ms": 87.136432,
+    "latent_kv_only_ms": 62.821584,
+    "efficient_kernel_only_ms": 30.256156871680002,
+    "both_ms": 30.15986351616,
+    "latent_kv_speedup_today": 1.3870460827603455,
+    "kernel_speedup": 2.8799570404647254,
+    "latent_kv_speedup_after_kernel_fix": 1.003192764962892,
+    "statement": "At 8192 context the token is 87.14 ms today. Latent KV alone takes it to 62.82 ms, a 1.39x win -- REAL, and it should not be dismissed. Fixing the kernel's per-element cost alone takes it to 30.26 ms, a 2.88x win. Applying latent KV AFTER the kernel fix takes 30.26 to 30.16 ms, a 1.003x win. So latent KV's entire value is as a workaround for the kernel's inefficiency: it is worth 1.39x today and 1.003x once the path is efficient."
+  },
+  "verdict_corrected": "THE WIN SURVIVES, BUT IT IS THE SECOND LEVER. An earlier reading of these numbers would say latent KV does not help because bytes are not what the path pays for. That is wrong: the path costs 212.7 ps per ELEMENT, so removing 43% of the elements removes 43% of the context term and is a genuine 1.39x on the token at 8192. What the measurement actually establishes is ORDERING -- the kernel's 253x per-element inefficiency dominates the representation's 1.74x, and after the kernel is fixed latent KV is worth 1.003x. Fix the kernel first."
+}

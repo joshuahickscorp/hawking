@@ -1,0 +1,129 @@
+{
+  "schema": "hawking.nos.entanglement_predictor.v1",
+  "obligation": "G066 -- entanglement entropy as a predictor of the collapse point",
+  "target": {
+    "definition": "bits/elem at which the flat family's measured output error crosses a fixed level, interpolated -- 'how many bits does this tensor need'",
+    "E_ref": 0.22338537204046083,
+    "E_ref_choice": "median flat-q3 output error across sites, so the level sits inside the measured range at every site rather than being a round number chosen to flatter a correlation",
+    "source": "receipts/ascent-2026-08-16/G067_PHASE_TRANSITION.json"
+  },
+  "framing_note": "S_vn is a functional of the same singular spectrum as its rivals, so this measures whether the ENTROPY functional beats simpler functionals of that spectrum -- not entropy against something unrelated.",
+  "scoring_rule": "Spearman rank correlation, chosen before looking, because the claim is that the predictor RANKS sites and rank correlation does not reward a lucky linear fit on ten points",
+  "sites": [
+    {
+      "S_vn_bits": 11.840321882206608,
+      "stable_rank": 221.49487522503017,
+      "eff_rank_90": 3450,
+      "n_singular_values": 5120,
+      "organ": "mlp.gate_proj",
+      "layer": 31,
+      "bits_needed_for_E_ref": 3.1845698044676727
+    },
+    {
+      "S_vn_bits": 11.768103301127386,
+      "stable_rank": 47.54311113712077,
+      "eff_rank_90": 3587,
+      "n_singular_values": 5120,
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "bits_needed_for_E_ref": 2.7419248632697486
+    },
+    {
+      "S_vn_bits": 11.799928489445865,
+      "stable_rank": 437.28198818794635,
+      "eff_rank_90": 3322,
+      "n_singular_values": 5120,
+      "organ": "mlp.down_proj",
+      "layer": 31,
+      "bits_needed_for_E_ref": 3.2410221096337164
+    },
+    {
+      "S_vn_bits": 11.920851520832844,
+      "stable_rank": 383.71909310877805,
+      "eff_rank_90": 3476,
+      "n_singular_values": 5120,
+      "organ": "mlp.down_proj",
+      "layer": 63,
+      "bits_needed_for_E_ref": 3.3679123335218057
+    },
+    {
+      "S_vn_bits": 11.199003166356484,
+      "stable_rank": 144.24834418242756,
+      "eff_rank_90": 2272,
+      "n_singular_values": 5120,
+      "organ": "linear_attn.out_proj",
+      "layer": 30,
+      "bits_needed_for_E_ref": 3.3884138332933147
+    },
+    {
+      "S_vn_bits": 11.493141700754126,
+      "stable_rank": 59.83617304009261,
+      "eff_rank_90": 2657,
+      "n_singular_values": 5120,
+      "organ": "linear_attn.out_proj",
+      "layer": 62,
+      "bits_needed_for_E_ref": 3.5964374960025247
+    },
+    {
+      "S_vn_bits": 10.933309028876282,
+      "stable_rank": 197.96982758493445,
+      "eff_rank_90": 1974,
+      "n_singular_values": 5120,
+      "organ": "self_attn.o_proj",
+      "layer": 31,
+      "bits_needed_for_E_ref": 3.7307064524917677
+    },
+    {
+      "S_vn_bits": 11.119085974983735,
+      "stable_rank": 193.9966454022686,
+      "eff_rank_90": 2137,
+      "n_singular_values": 5120,
+      "organ": "self_attn.o_proj",
+      "layer": 63,
+      "bits_needed_for_E_ref": 3.277981864680356
+    },
+    {
+      "S_vn_bits": 11.26675243688446,
+      "stable_rank": 73.90367797565725,
+      "eff_rank_90": 2772,
+      "n_singular_values": 5120,
+      "organ": "self_attn.q_proj",
+      "layer": 31,
+      "bits_needed_for_E_ref": 3.0371811622096074
+    },
+    {
+      "S_vn_bits": 11.321938663052304,
+      "stable_rank": 51.082877908134584,
+      "eff_rank_90": 2855,
+      "n_singular_values": 5120,
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "bits_needed_for_E_ref": 2.891562730104974
+    }
+  ],
+  "abs_spearman": {
+    "S_vn_bits": 0.3333333333333333,
+    "stable_rank": 0.3939393939393939,
+    "eff_rank_90": 0.6484848484848484
+  },
+  "best_singular_value_rival": "eff_rank_90",
+  "entanglement_entropy_wins": false,
+  "verdict": "KILLED -- the obligation requires killing a predictor that does not beat singular values alone, rather than keeping it as flavour",
+  "commit": "390ab2e590a9dc66a1f9dd5eee16f57325a7d381",
+  "why_it_fails": {
+    "entropy_ceiling_bits": 12.321928094887362,
+    "n_singular_values": 5120,
+    "S_vn_range": [
+      10.933309028876282,
+      11.920851520832844
+    ],
+    "S_vn_fraction_of_ceiling": [
+      0.8873050503689234,
+      0.9674501773613715
+    ],
+    "S_vn_dynamic_range_frac": 0.08014512699244813,
+    "rival_dynamic_range_frac": 0.4496793978254809,
+    "mechanism": "von Neumann entropy of a 5120-value spectrum is capped at log2(5120) = 12.3219 bits, and every site sits at 89-97% of that ceiling. The candidate therefore has 8.0% of its scale to discriminate with, against 45% for eff_rank_90. These weight matrices are all near-maximally spread, so the entropy functional is saturated and structurally unable to rank them. That makes the negative robust rather than a thin-sample accident: the predictor is not unlucky on ten points, it has almost no dynamic range to be lucky with.",
+    "sample_caveat": "n=10 sites is thin for a rank correlation; the ceiling argument above is what carries the verdict, not the correlation gap alone."
+  }
+}

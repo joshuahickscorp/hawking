@@ -1217,6 +1217,60 @@ mod imp {
             "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128" => {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
             }
+            "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r2k2_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r2k2_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r8k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r8k4_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r8k8_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r8k8_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r2k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r2k4_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r4k2_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r4k2_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r4k8_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r4k8_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matmul_r16k4_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matmul_r16k4_geo_tpr64_tg128"
+            }
+            "qwen_binary_planes_k1_matvec_geo_tpr64_tg128" => {
+                "qwen_binary_planes_k1_matvec_geo_tpr64_tg128"
+            }
+            "qwen_binary_planes_k2_matvec_geo_tpr64_tg128" => {
+                "qwen_binary_planes_k2_matvec_geo_tpr64_tg128"
+            }
+            "qwen_binary_planes_k3_matvec_geo_tpr64_tg128" => {
+                "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
+            }
+            "hawking_roofline_sweep_f4" => "hawking_roofline_sweep_f4",
+            "sample_argmax_f32_pass1" => "sample_argmax_f32_pass1",
+            "sample_argmax_f32_pass2" => "sample_argmax_f32_pass2",
+            "qwen_uniform_q4_group64_matvec_contig_tg128" => {
+                "qwen_uniform_q4_group64_matvec_contig_tg128"
+            }
+            "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload" => {
+                "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload"
+            }
             "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe" => {
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe"
             }
@@ -1318,6 +1372,7 @@ mod imp {
             "qwen38_qkvz_rearrange_conv_l2_f32" => "qwen38_qkvz_rearrange_conv_l2_f32",
             "qwen38_gqa_qk_norm_rope_cache_f32" => "qwen38_gqa_qk_norm_rope_cache_f32",
             "qwen38_gated_delta_decode_vi" => "qwen38_gated_delta_decode_vi",
+            "qwen38_gated_delta_decode_vi_simd" => "qwen38_gated_delta_decode_vi_simd",
             "qwen38_attention_apply_sigmoid_gate" => "qwen38_attention_apply_sigmoid_gate",
             "qwen38_f32_stream_probe" => "qwen38_f32_stream_probe",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",

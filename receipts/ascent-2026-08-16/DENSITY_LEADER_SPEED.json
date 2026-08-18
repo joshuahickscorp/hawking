@@ -1,0 +1,42 @@
+{
+  "schema": "hawking.nos.density_leader_speed.v1",
+  "question": "Does the coherent density floor run faster than G0, as its BPW implies?",
+  "answer": "NO. 1.109x G0 GPU time while moving 17.4% fewer weight bytes.",
+  "harness": "ascension_qwen38_hybrid_greedy --complete-wall --pairs 3, same binary, same prompt, each with its own uninstrumented generate_greedy control. timing_label DIRTY_ENGINEERING on both, so the COMPARISON is paired and the absolute is not offered.",
+  "g0": {
+    "artifact": "uniform-q4-v1",
+    "complete_bpw": 4.255954555664,
+    "gemv_payload_bytes": 13611663360,
+    "gpu": 29022249,
+    "wall": 30083709,
+    "tps": 33.24058213699647,
+    "fallbacks": 0
+  },
+  "density_leader": {
+    "artifact": "compact-q3attn-r1p2-v1",
+    "complete_bpw": 3.344821152351,
+    "gemv_payload_bytes": 11244907853,
+    "gpu": 32198249,
+    "wall": 33448916,
+    "tps": 29.896335056119607,
+    "fallbacks": 0,
+    "capability": "10/10, 0 degenerate, controls watched (CAPABILITY_COMPACT_Q3ATTN_R1P2.json)"
+  },
+  "arithmetic": {
+    "byte_ratio": 0.8261229767145813,
+    "bandwidth_bound_prediction_ns": 23975946.73483178,
+    "measured_ns": 32198249,
+    "measured_over_prediction": 1.3429396284578419,
+    "measured_over_g0": 1.1094332834095662
+  },
+  "verdict": "If decode were bandwidth-bound, 17.4% fewer bytes would buy 17.4% less time: 23.976 ms. Measured 32.198 ms, 1.34x the prediction and 1.109x G0. The q3 codec's extra ALU per weight eats the whole byte saving and more. This is FINDING F2's ALU-issue bound showing up end to end: density only pays on this machine if decode cost per weight does not rise with it.",
+  "consequence_for_rans": "F1 named interleaved rANS over the q3 body as the density route to 100 TPS, on a BYTES argument. rANS decode is MORE ALU per weight than q3 nibble unpacking, not less. G114-G116 must price decode ALU per weight BEFORE the byte saving or they repeat this result with a worse constant.",
+  "projection_refuted": {
+    "pack_report_formula": "ms = 1.229 + (38.217-1.229) * (bpw / 4.252735126866492)",
+    "projected_tps": 32.98149957599114,
+    "measured_tps": 29.896335056119607,
+    "error_pct": 10.319540887136313,
+    "why_wrong": "The formula scales token time linearly in BPW, which assumes bandwidth-bound decode. Measured decode is ALU-issue bound, so every BPW-linear TPS projection in this campaign inherits the error."
+  },
+  "commit": "21c7846d2e4db41a0b7adb9e337f6746ec8854eb"
+}

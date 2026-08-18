@@ -1,0 +1,2523 @@
+{
+  "schema": "hawking.nos.phase_transition_map.v1",
+  "obligation": "G067 -- physical cost vs capability per family, cliff located as a number",
+  "method": {
+    "error": "output-space relative Frobenius on real captured BF16 parent activations",
+    "why_not_weight_cosine": "Q30 was calibrated on a broken model and the sub-bit negatives were synthetic-activation artefacts; G036 requires fitting against the teacher function",
+    "intrinsic_rule": "bits/elem of maximum curvature in log(error) vs bits, anchored to nothing",
+    "anchored_rule": "bits/elem where the family's error crosses flat q2's error at the SAME site, interpolated; q2 is the recorded DEAD artifact so this transfers a real capability verdict across families at matched cost",
+    "circularity_declared": "for the FLAT family the dead anchor IS a family member, so its anchored number is the anchor by construction and only the intrinsic number is informative there"
+  },
+  "limitation": "the anchors' capability verdicts come from a TEN-ITEM gate, which G046 and G048 already measured as too narrow to certify equivalence. These PTPs are as strong as those verdicts and no stronger.",
+  "families": {
+    "FLAT": [
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 5,
+          "curvature": [
+            0.2267300144392883,
+            0.09056347158894096,
+            0.038990915246504,
+            0.01490016709107378,
+            0.004692840670991405
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.5842886981299894
+          },
+          {
+            "bits": 3.25,
+            "err": 0.1981181580972974
+          },
+          {
+            "bits": 4.25,
+            "err": 0.08427304215167783
+          },
+          {
+            "bits": 5.25,
+            "err": 0.03924499496122973
+          },
+          {
+            "bits": 6.25,
+            "err": 0.019002617340019484
+          },
+          {
+            "bits": 7.25,
+            "err": 0.00933928499872726
+          },
+          {
+            "bits": 8.25,
+            "err": 0.0046116029571679085
+          }
+        ]
+      },
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 5,
+          "curvature": [
+            0.34193048323460973,
+            0.08838950020629976,
+            0.03451564843401833,
+            0.01632915449693506,
+            0.007667822639795041
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.3397545829113097
+          },
+          {
+            "bits": 3.25,
+            "err": 0.10319567003717536
+          },
+          {
+            "bits": 4.25,
+            "err": 0.044122097389338276
+          },
+          {
+            "bits": 5.25,
+            "err": 0.020608097232861583
+          },
+          {
+            "bits": 6.25,
+            "err": 0.009963446572001976
+          },
+          {
+            "bits": 7.25,
+            "err": 0.004896355694207925
+          },
+          {
+            "bits": 8.25,
+            "err": 0.0024247469162149244
+          }
+        ]
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 5,
+          "curvature": [
+            0.19144385269167108,
+            0.09290000458605618,
+            0.028378119544543612,
+            0.01577017309451101,
+            0.015387424890986434
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.6220697901575696
+          },
+          {
+            "bits": 3.25,
+            "err": 0.21977360095906293
+          },
+          {
+            "bits": 4.25,
+            "err": 0.09402751228007193
+          },
+          {
+            "bits": 5.25,
+            "err": 0.04414487863898635
+          },
+          {
+            "bits": 6.25,
+            "err": 0.02132210949165558
+          },
+          {
+            "bits": 7.25,
+            "err": 0.010462341948170492
+          },
+          {
+            "bits": 8.25,
+            "err": 0.005213271285228835
+          }
+        ]
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 5,
+          "curvature": [
+            0.11721780700770423,
+            0.10769869561340362,
+            0.03968457815745863,
+            0.03267047530038525,
+            0.015567453248009677
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.6491324028377071
+          },
+          {
+            "bits": 3.25,
+            "err": 0.2399187021584067
+          },
+          {
+            "bits": 4.25,
+            "err": 0.09970156266054159
+          },
+          {
+            "bits": 5.25,
+            "err": 0.04614373836140066
+          },
+          {
+            "bits": 6.25,
+            "err": 0.02222073297576297
+          },
+          {
+            "bits": 7.25,
+            "err": 0.011055861562094938
+          },
+          {
+            "bits": 8.25,
+            "err": 0.005415841481823476
+          }
+        ]
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 30,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "EDGE -- argmax on the interior boundary; the maximum is outside the sweep",
+          "interior_candidates": 5,
+          "curvature": [
+            0.15455881793636728,
+            0.08547232721833886,
+            0.04838146402788679,
+            0.005480264508711752,
+            0.016143824760383563
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.6640612749721599
+          },
+          {
+            "bits": 3.25,
+            "err": 0.24264771722383982
+          },
+          {
+            "bits": 4.25,
+            "err": 0.10348283229098859
+          },
+          {
+            "bits": 5.25,
+            "err": 0.04807071297547835
+          },
+          {
+            "bits": 6.25,
+            "err": 0.023437140484802235
+          },
+          {
+            "bits": 7.25,
+            "err": 0.011489701119109443
+          },
+          {
+            "bits": 8.25,
+            "err": 0.005724321453100035
+          }
+        ]
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 62,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "EDGE -- argmax on the interior boundary; the maximum is outside the sweep",
+          "interior_candidates": 5,
+          "curvature": [
+            0.10724659633566036,
+            0.08582399264093632,
+            0.03908831268376867,
+            0.0010370374478370081,
+            0.02243388158395998
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.7224186952091668
+          },
+          {
+            "bits": 3.25,
+            "err": 0.2784602992717143
+          },
+          {
+            "bits": 4.25,
+            "err": 0.11948522334387039
+          },
+          {
+            "bits": 5.25,
+            "err": 0.05586476809463634
+          },
+          {
+            "bits": 6.25,
+            "err": 0.027160492413000253
+          },
+          {
+            "bits": 7.25,
+            "err": 0.013191278782376767
+          },
+          {
+            "bits": 8.25,
+            "err": 0.006552078154351339
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 5,
+          "curvature": [
+            0.15013563534492136,
+            0.08013804916348799,
+            0.03641086876318811,
+            0.021316845003402474,
+            0.009410041437847294
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.8318078036769406
+          },
+          {
+            "bits": 3.25,
+            "err": 0.30772096532484106
+          },
+          {
+            "bits": 4.25,
+            "err": 0.13228002242253104
+          },
+          {
+            "bits": 5.25,
+            "err": 0.061607692980766245
+          },
+          {
+            "bits": 6.25,
+            "err": 0.029756967573438826
+          },
+          {
+            "bits": 7.25,
+            "err": 0.014682505949601882
+          },
+          {
+            "bits": 8.25,
+            "err": 0.0073130480733257395
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "EDGE -- argmax on the interior boundary; the maximum is outside the sweep",
+          "interior_candidates": 5,
+          "curvature": [
+            0.20290604163191306,
+            0.06815755481846475,
+            0.06219668253499311,
+            0.013739807070748178,
+            0.037315111817278535
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.6445887669975121
+          },
+          {
+            "bits": 3.25,
+            "err": 0.22699714312185876
+          },
+          {
+            "bits": 4.25,
+            "err": 0.09792171792571244
+          },
+          {
+            "bits": 5.25,
+            "err": 0.04522078599820701
+          },
+          {
+            "bits": 6.25,
+            "err": 0.022223316187445184
+          },
+          {
+            "bits": 7.25,
+            "err": 0.010772400752533046
+          },
+          {
+            "bits": 8.25,
+            "err": 0.005420282035621785
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "EDGE -- argmax on the interior boundary; the maximum is outside the sweep",
+          "interior_candidates": 5,
+          "curvature": [
+            0.2825371279019624,
+            0.03504237223955009,
+            0.024597135618869004,
+            0.0021514917573690617,
+            0.02212752207638502
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.4609881334575972
+          },
+          {
+            "bits": 3.25,
+            "err": 0.15914813419975352
+          },
+          {
+            "bits": 4.25,
+            "err": 0.07288156208348806
+          },
+          {
+            "bits": 5.25,
+            "err": 0.03456626874635641
+          },
+          {
+            "bits": 6.25,
+            "err": 0.016802338596462716
+          },
+          {
+            "bits": 7.25,
+            "err": 0.00818505012396488
+          },
+          {
+            "bits": 8.25,
+            "err": 0.004076456525882354
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 3.25,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 5,
+          "curvature": [
+            0.30519352542053135,
+            0.07723621734655861,
+            0.03428759699069328,
+            0.019644712557084887,
+            0.004379978122665662
+          ]
+        },
+        "anchored_cliff_bits": 2.25,
+        "curve": [
+          {
+            "bits": 2.25,
+            "err": 0.39674368794207837
+          },
+          {
+            "bits": 3.25,
+            "err": 0.12653111516177956
+          },
+          {
+            "bits": 4.25,
+            "err": 0.05475559584590843
+          },
+          {
+            "bits": 5.25,
+            "err": 0.025597817940816375
+          },
+          {
+            "bits": 6.25,
+            "err": 0.012384209684555255
+          },
+          {
+            "bits": 7.25,
+            "err": 0.006110338047296957
+          },
+          {
+            "bits": 8.25,
+            "err": 0.003028059321987142
+          }
+        ]
+      }
+    ],
+    "PLANES": [
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 3.75,
+          "status": "LOCATED",
+          "interior_candidates": 3,
+          "curvature": [
+            0.04335943933409542,
+            0.11598119627831732,
+            0.07931731511575696
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.48925304412841797
+          },
+          {
+            "bits": 2.5,
+            "err": 0.3060416579246521
+          },
+          {
+            "bits": 3.75,
+            "err": 0.20209985971450806
+          },
+          {
+            "bits": 5.0,
+            "err": 0.15428154170513153
+          },
+          {
+            "bits": 6.25,
+            "err": 0.13005311787128448
+          }
+        ]
+      },
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 3.75,
+          "status": "LOCATED",
+          "interior_candidates": 3,
+          "curvature": [
+            0.09421377893560007,
+            0.11772114888548729,
+            0.07424237511249351
+          ]
+        },
+        "anchored_cliff_bits": 1.5997071527020335,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.38351204991340637
+          },
+          {
+            "bits": 2.5,
+            "err": 0.22710451483726501
+          },
+          {
+            "bits": 3.75,
+            "err": 0.15129277110099792
+          },
+          {
+            "bits": 5.0,
+            "err": 0.11676633358001709
+          },
+          {
+            "bits": 6.25,
+            "err": 0.09888283908367157
+          }
+        ]
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 2.5,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            0.10533081211458262,
+            0.08809873564154813,
+            0.074471176878386
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.5611237287521362
+          },
+          {
+            "bits": 2.5,
+            "err": 0.34144753217697144
+          },
+          {
+            "bits": 3.75,
+            "err": 0.2370118498802185
+          },
+          {
+            "bits": 5.0,
+            "err": 0.18367165327072144
+          },
+          {
+            "bits": 6.25,
+            "err": 0.15622201561927795
+          }
+        ]
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 2.5,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            0.13418595423343962,
+            0.07246375858092345,
+            0.005271863335125637
+          ]
+        },
+        "anchored_cliff_bits": 1.3198139412044185,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.6602412462234497
+          },
+          {
+            "bits": 2.5,
+            "err": 0.46134036779403687
+          },
+          {
+            "bits": 3.75,
+            "err": 0.38122865557670593
+          },
+          {
+            "bits": 5.0,
+            "err": 0.34489578008651733
+          },
+          {
+            "bits": 6.25,
+            "err": 0.3140885829925537
+          }
+        ]
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 30,
+        "intrinsic_cliff": {
+          "bits": 2.5,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            0.10576117398777674,
+            0.0858298246398776,
+            0.054941057658772136
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.6016021370887756
+          },
+          {
+            "bits": 2.5,
+            "err": 0.36943355202674866
+          },
+          {
+            "bits": 3.75,
+            "err": 0.25892719626426697
+          },
+          {
+            "bits": 5.0,
+            "err": 0.2020287960767746
+          },
+          {
+            "bits": 6.25,
+            "err": 0.1688397228717804
+          }
+        ]
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 62,
+        "intrinsic_cliff": {
+          "bits": 2.5,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            0.12959225380764056,
+            0.08694561575692158,
+            0.03968637489578414
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.6544575691223145
+          },
+          {
+            "bits": 2.5,
+            "err": 0.41888147592544556
+          },
+          {
+            "bits": 3.75,
+            "err": 0.3152479827404022
+          },
+          {
+            "bits": 5.0,
+            "err": 0.26449257135391235
+          },
+          {
+            "bits": 6.25,
+            "err": 0.23319493234157562
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 2.5,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            0.09970307629755737,
+            0.08735256488507856,
+            0.07726722246532791
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.6842514276504517
+          },
+          {
+            "bits": 2.5,
+            "err": 0.419554203748703
+          },
+          {
+            "bits": 3.75,
+            "err": 0.29139766097068787
+          },
+          {
+            "bits": 5.0,
+            "err": 0.22573815286159515
+          },
+          {
+            "bits": 6.25,
+            "err": 0.19260598719120026
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 3.75,
+          "status": "LOCATED",
+          "interior_candidates": 3,
+          "curvature": [
+            0.07102179008259801,
+            0.10471119493976921,
+            0.06029091896742304
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.5123551487922668
+          },
+          {
+            "bits": 2.5,
+            "err": 0.32752615213394165
+          },
+          {
+            "bits": 3.75,
+            "err": 0.22881069779396057
+          },
+          {
+            "bits": 5.0,
+            "err": 0.18220111727714539
+          },
+          {
+            "bits": 6.25,
+            "err": 0.15644286572933197
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 2.5,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            0.1563723658137354,
+            0.07457517224731863,
+            0.03935603547183551
+          ]
+        },
+        "anchored_cliff_bits": 1.9468028804009085,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.5717892050743103
+          },
+          {
+            "bits": 2.5,
+            "err": 0.37302231788635254
+          },
+          {
+            "bits": 3.75,
+            "err": 0.29588520526885986
+          },
+          {
+            "bits": 5.0,
+            "err": 0.2576298415660858
+          },
+          {
+            "bits": 6.25,
+            "err": 0.23563197255134583
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 2.5,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            0.1352634694304523,
+            0.07519741870981847,
+            0.0516043061726153
+          ]
+        },
+        "anchored_cliff_bits": 1.69979721854503,
+        "curve": [
+          {
+            "bits": 1.25,
+            "err": 0.45263856649398804
+          },
+          {
+            "bits": 2.5,
+            "err": 0.29730501770973206
+          },
+          {
+            "bits": 3.75,
+            "err": 0.23125074803829193
+          },
+          {
+            "bits": 5.0,
+            "err": 0.19759972393512726
+          },
+          {
+            "bits": 6.25,
+            "err": 0.18009591102600098
+          }
+        ]
+      }
+    ],
+    "GROUP": [
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            0.9997670374576444,
+            0.7481330677096464,
+            0.26814700732722907
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.10763321217646286
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.10017862369017937
+          },
+          {
+            "bits": 4.125,
+            "err": 0.09237823522029301
+          },
+          {
+            "bits": 4.5,
+            "err": 0.07519319485870994
+          },
+          {
+            "bits": 5.0,
+            "err": 0.06534581155124208
+          }
+        ]
+      },
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            1.1408018368788646,
+            0.9249595751708798,
+            0.3091041268028606
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.05844548921933799
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.05379838154718818
+          },
+          {
+            "bits": 4.125,
+            "err": 0.0489520497967923
+          },
+          {
+            "bits": 4.5,
+            "err": 0.03930250435618064
+          },
+          {
+            "bits": 5.0,
+            "err": 0.03423001763259612
+          }
+        ]
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            1.0674056003330392,
+            0.8196710302564689,
+            0.2783045708234839
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.12161118485541772
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.11270970905319629
+          },
+          {
+            "bits": 4.125,
+            "err": 0.10349276000390158
+          },
+          {
+            "bits": 4.5,
+            "err": 0.08435169008248489
+          },
+          {
+            "bits": 5.0,
+            "err": 0.07380831389912555
+          }
+        ]
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            1.9198511370047129,
+            1.142315284562644,
+            0.36846815938014144
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.1406092427873474
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.12517253560015573
+          },
+          {
+            "bits": 4.125,
+            "err": 0.11184348923377431
+          },
+          {
+            "bits": 4.5,
+            "err": 0.0873491359297297
+          },
+          {
+            "bits": 5.0,
+            "err": 0.07553258215618429
+          }
+        ]
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 30,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            1.3347176309861268,
+            0.9260106917753687,
+            0.2564924418993716
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.13566374448455398
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.12431284366378788
+          },
+          {
+            "bits": 4.125,
+            "err": 0.11346167345453907
+          },
+          {
+            "bits": 4.5,
+            "err": 0.09282368098150287
+          },
+          {
+            "bits": 5.0,
+            "err": 0.08074238035410922
+          }
+        ]
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 62,
+        "intrinsic_cliff": {
+          "bits": 4.125,
+          "status": "LOCATED",
+          "interior_candidates": 3,
+          "curvature": [
+            0.6027689623820258,
+            1.4219408165366034,
+            0.3127084451386425
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.16334531923126844
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.15051313773820105
+          },
+          {
+            "bits": 4.125,
+            "err": 0.13270003665003308
+          },
+          {
+            "bits": 4.5,
+            "err": 0.10622548831290335
+          },
+          {
+            "bits": 5.0,
+            "err": 0.09231581399952483
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            1.4737356017188468,
+            0.7672431412433086,
+            0.25996229687870775
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.17087196873275265
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.15666840047291455
+          },
+          {
+            "bits": 4.125,
+            "err": 0.1444124993281967
+          },
+          {
+            "bits": 4.5,
+            "err": 0.11811323974331944
+          },
+          {
+            "bits": 5.0,
+            "err": 0.10288223914337828
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            3.1522498958573806,
+            0.9757319485967871,
+            0.34305744069661015
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.1408021135692796
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.12118277805718243
+          },
+          {
+            "bits": 4.125,
+            "err": 0.10931182894389194
+          },
+          {
+            "bits": 4.5,
+            "err": 0.08490491371074683
+          },
+          {
+            "bits": 5.0,
+            "err": 0.07196384408434961
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 31,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            1.081455440074123,
+            0.7337724882825611,
+            0.24639526914259147
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.09243319671998539
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.08592485565012918
+          },
+          {
+            "bits": 4.125,
+            "err": 0.07944286002204125
+          },
+          {
+            "bits": 4.5,
+            "err": 0.06533918782254966
+          },
+          {
+            "bits": 5.0,
+            "err": 0.05695120699310432
+          }
+        ]
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 63,
+        "intrinsic_cliff": {
+          "bits": 4.0625,
+          "status": "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition",
+          "interior_candidates": 3,
+          "curvature": [
+            1.4848273805880865,
+            0.9817597988278758,
+            0.3318450770069242
+          ]
+        },
+        "anchored_cliff_bits": null,
+        "curve": [
+          {
+            "bits": 4.03125,
+            "err": 0.07457289555499727
+          },
+          {
+            "bits": 4.0625,
+            "err": 0.06774055804274776
+          },
+          {
+            "bits": 4.125,
+            "err": 0.06133206232279471
+          },
+          {
+            "bits": 4.5,
+            "err": 0.04882139468569242
+          },
+          {
+            "bits": 5.0,
+            "err": 0.04251735533113349
+          }
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "FLAT": {
+      "intrinsic_ptp_bits_mean": null,
+      "intrinsic_ptp_bits_max": null,
+      "anchored_ptp_bits_mean": 2.25,
+      "anchored_ptp_bits_max": 2.25,
+      "sites_with_no_anchored_crossing": 0,
+      "sites_with_a_located_intrinsic_cliff": 0,
+      "intrinsic_statuses": [
+        "EDGE -- argmax on the interior boundary; the maximum is outside the sweep",
+        "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition"
+      ]
+    },
+    "PLANES": {
+      "intrinsic_ptp_bits_mean": 3.75,
+      "intrinsic_ptp_bits_max": 3.75,
+      "anchored_ptp_bits_mean": 1.6415302982130977,
+      "anchored_ptp_bits_max": 1.9468028804009085,
+      "sites_with_no_anchored_crossing": 6,
+      "sites_with_a_located_intrinsic_cliff": 3,
+      "intrinsic_statuses": [
+        "LOCATED",
+        "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition"
+      ]
+    },
+    "GROUP": {
+      "intrinsic_ptp_bits_mean": 4.125,
+      "intrinsic_ptp_bits_max": 4.125,
+      "anchored_ptp_bits_mean": null,
+      "anchored_ptp_bits_max": null,
+      "sites_with_no_anchored_crossing": 10,
+      "sites_with_a_located_intrinsic_cliff": 1,
+      "intrinsic_statuses": [
+        "LOCATED",
+        "NO CLIFF -- curvature is monotone across the swept range, so the argmax is an edge of the interior set and not a located transition"
+      ]
+    }
+  },
+  "per_site": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 31,
+      "site": "post_attn_norm",
+      "site_provenance": "VERIFIED",
+      "shape": [
+        17408,
+        5120
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.5842886981299894,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.5842886981299894
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.1981181580972974
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.08427304215167783
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.03924499496122973
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.019002617340019484
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.00933928499872726
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.0046116029571679085
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.48925304412841797
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.3060416579246521
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.20209985971450806
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.15428154170513153
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.13005311787128448
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.06534581155124208
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.07519319485870994
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.09237823522029301
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.10017862369017937
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.10763321217646286
+        }
+      ]
+    },
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "site": "post_attn_norm",
+      "site_provenance": "VERIFIED",
+      "shape": [
+        17408,
+        5120
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.3397545829113097,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.3397545829113097
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.10319567003717536
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.044122097389338276
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.020608097232861583
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.009963446572001976
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.004896355694207925
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.0024247469162149244
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.38351204991340637
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.22710451483726501
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.15129277110099792
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.11676633358001709
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.09888283908367157
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.03423001763259612
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.03930250435618064
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.0489520497967923
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.05379838154718818
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.05844548921933799
+        }
+      ]
+    },
+    {
+      "organ": "mlp.down_proj",
+      "layer": 31,
+      "site": "post_swiglu",
+      "site_provenance": "VERIFIED",
+      "shape": [
+        5120,
+        17408
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.6220697901575696,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.6220697901575696
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.21977360095906293
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.09402751228007193
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.04414487863898635
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.02132210949165558
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.010462341948170492
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.005213271285228835
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.5611237287521362
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.34144753217697144
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.2370118498802185
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.18367165327072144
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.15622201561927795
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.07380831389912555
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.08435169008248489
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.10349276000390158
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.11270970905319629
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.12161118485541772
+        }
+      ]
+    },
+    {
+      "organ": "mlp.down_proj",
+      "layer": 63,
+      "site": "post_swiglu",
+      "site_provenance": "VERIFIED",
+      "shape": [
+        5120,
+        17408
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.6491324028377071,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.6491324028377071
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.2399187021584067
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.09970156266054159
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.04614373836140066
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.02222073297576297
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.011055861562094938
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.005415841481823476
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.6602412462234497
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.46134036779403687
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.38122865557670593
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.34489578008651733
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.3140885829925537
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.07553258215618429
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.0873491359297297
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.11184348923377431
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.12517253560015573
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.1406092427873474
+        }
+      ]
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "layer": 30,
+      "site": "mixer_x",
+      "site_provenance": "NAMED",
+      "shape": [
+        5120,
+        6144
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.6640612749721599,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.6640612749721599
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.24264771722383982
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.10348283229098859
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.04807071297547835
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.023437140484802235
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.011489701119109443
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.005724321453100035
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.6016021370887756
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.36943355202674866
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.25892719626426697
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.2020287960767746
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.1688397228717804
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.08074238035410922
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.09282368098150287
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.11346167345453907
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.12431284366378788
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.13566374448455398
+        }
+      ]
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "layer": 62,
+      "site": "mixer_x",
+      "site_provenance": "NAMED",
+      "shape": [
+        5120,
+        6144
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.7224186952091668,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.7224186952091668
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.2784602992717143
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.11948522334387039
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.05586476809463634
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.027160492413000253
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.013191278782376767
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.006552078154351339
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.6544575691223145
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.41888147592544556
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.3152479827404022
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.26449257135391235
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.23319493234157562
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.09231581399952483
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.10622548831290335
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.13270003665003308
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.15051313773820105
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.16334531923126844
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.o_proj",
+      "layer": 31,
+      "site": "mixer_x",
+      "site_provenance": "NAMED",
+      "shape": [
+        5120,
+        6144
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.8318078036769406,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.8318078036769406
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.30772096532484106
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.13228002242253104
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.061607692980766245
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.029756967573438826
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.014682505949601882
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.0073130480733257395
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.6842514276504517
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.419554203748703
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.29139766097068787
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.22573815286159515
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.19260598719120026
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.10288223914337828
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.11811323974331944
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.1444124993281967
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.15666840047291455
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.17087196873275265
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.o_proj",
+      "layer": 63,
+      "site": "mixer_x",
+      "site_provenance": "NAMED",
+      "shape": [
+        5120,
+        6144
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.6445887669975121,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.6445887669975121
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.22699714312185876
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.09792171792571244
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.04522078599820701
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.022223316187445184
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.010772400752533046
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.005420282035621785
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.5123551487922668
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.32752615213394165
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.22881069779396057
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.18220111727714539
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.15644286572933197
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.07196384408434961
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.08490491371074683
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.10931182894389194
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.12118277805718243
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.1408021135692796
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 31,
+      "site": "post_input_norm",
+      "site_provenance": "INFERRED",
+      "shape": [
+        12288,
+        5120
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.4609881334575972,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.4609881334575972
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.15914813419975352
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.07288156208348806
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.03456626874635641
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.016802338596462716
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.00818505012396488
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.004076456525882354
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.5717892050743103
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.37302231788635254
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.29588520526885986
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.2576298415660858
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.23563197255134583
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.05695120699310432
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.06533918782254966
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.07944286002204125
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.08592485565012918
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.09243319671998539
+        }
+      ]
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "site": "post_input_norm",
+      "site_provenance": "INFERRED",
+      "shape": [
+        12288,
+        5120
+      ],
+      "rows": 384,
+      "dead_anchor_error": 0.39674368794207837,
+      "points": [
+        {
+          "scheme": "flat q2",
+          "family": "FLAT",
+          "bits_per_elem": 2.25,
+          "output_rel_fro": 0.39674368794207837
+        },
+        {
+          "scheme": "flat q3",
+          "family": "FLAT",
+          "bits_per_elem": 3.25,
+          "output_rel_fro": 0.12653111516177956
+        },
+        {
+          "scheme": "flat q4",
+          "family": "FLAT",
+          "bits_per_elem": 4.25,
+          "output_rel_fro": 0.05475559584590843
+        },
+        {
+          "scheme": "flat q5",
+          "family": "FLAT",
+          "bits_per_elem": 5.25,
+          "output_rel_fro": 0.025597817940816375
+        },
+        {
+          "scheme": "flat q6",
+          "family": "FLAT",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.012384209684555255
+        },
+        {
+          "scheme": "flat q7",
+          "family": "FLAT",
+          "bits_per_elem": 7.25,
+          "output_rel_fro": 0.006110338047296957
+        },
+        {
+          "scheme": "flat q8",
+          "family": "FLAT",
+          "bits_per_elem": 8.25,
+          "output_rel_fro": 0.003028059321987142
+        },
+        {
+          "scheme": "1 plane",
+          "family": "PLANES",
+          "bits_per_elem": 1.25,
+          "output_rel_fro": 0.45263856649398804
+        },
+        {
+          "scheme": "2 planes",
+          "family": "PLANES",
+          "bits_per_elem": 2.5,
+          "output_rel_fro": 0.29730501770973206
+        },
+        {
+          "scheme": "3 planes",
+          "family": "PLANES",
+          "bits_per_elem": 3.75,
+          "output_rel_fro": 0.23125074803829193
+        },
+        {
+          "scheme": "4 planes",
+          "family": "PLANES",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.19759972393512726
+        },
+        {
+          "scheme": "5 planes",
+          "family": "PLANES",
+          "bits_per_elem": 6.25,
+          "output_rel_fro": 0.18009591102600098
+        },
+        {
+          "scheme": "flat q4 g16",
+          "family": "GROUP",
+          "bits_per_elem": 5.0,
+          "output_rel_fro": 0.04251735533113349
+        },
+        {
+          "scheme": "flat q4 g32",
+          "family": "GROUP",
+          "bits_per_elem": 4.5,
+          "output_rel_fro": 0.04882139468569242
+        },
+        {
+          "scheme": "flat q4 g128",
+          "family": "GROUP",
+          "bits_per_elem": 4.125,
+          "output_rel_fro": 0.06133206232279471
+        },
+        {
+          "scheme": "flat q4 g256",
+          "family": "GROUP",
+          "bits_per_elem": 4.0625,
+          "output_rel_fro": 0.06774055804274776
+        },
+        {
+          "scheme": "flat q4 g512",
+          "family": "GROUP",
+          "bits_per_elem": 4.03125,
+          "output_rel_fro": 0.07457289555499727
+        }
+      ]
+    }
+  ],
+  "group": 64,
+  "rows": 384,
+  "commit": "390ab2e590a9dc66a1f9dd5eee16f57325a7d381",
+  "family_crossover": {
+    "rows": [
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 31,
+        "flat_beats_planes_above_bits": 3.102130325814536,
+        "planes_error_floor_at_max_bits": 0.13005311787128448,
+        "flat_error_at_max_bits": 0.0046116029571679085,
+        "planes_floor_over_flat": 28.201282521328135
+      },
+      {
+        "organ": "mlp.gate_proj",
+        "layer": 63,
+        "flat_beats_planes_above_bits": 2.81140350877193,
+        "planes_error_floor_at_max_bits": 0.09888283908367157,
+        "flat_error_at_max_bits": 0.0024247469162149244,
+        "planes_floor_over_flat": 40.78068454172097
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 31,
+        "flat_beats_planes_above_bits": 3.0720551378446115,
+        "planes_error_floor_at_max_bits": 0.15622201561927795,
+        "flat_error_at_max_bits": 0.005213271285228835,
+        "planes_floor_over_flat": 29.96621642574287
+      },
+      {
+        "organ": "mlp.down_proj",
+        "layer": 63,
+        "flat_beats_planes_above_bits": 2.75125313283208,
+        "planes_error_floor_at_max_bits": 0.3140885829925537,
+        "flat_error_at_max_bits": 0.005415841481823476,
+        "planes_floor_over_flat": 57.994419527730024
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 30,
+        "flat_beats_planes_above_bits": 3.0720551378446115,
+        "planes_error_floor_at_max_bits": 0.1688397228717804,
+        "flat_error_at_max_bits": 0.005724321453100035,
+        "planes_floor_over_flat": 29.49515051785647
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "layer": 62,
+        "flat_beats_planes_above_bits": 3.041979949874687,
+        "planes_error_floor_at_max_bits": 0.23319493234157562,
+        "flat_error_at_max_bits": 0.006552078154351339,
+        "planes_floor_over_flat": 35.59098759936298
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 31,
+        "flat_beats_planes_above_bits": 3.1723057644110275,
+        "planes_error_floor_at_max_bits": 0.19260598719120026,
+        "flat_error_at_max_bits": 0.0073130480733257395,
+        "planes_floor_over_flat": 26.33730631331803
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "layer": 63,
+        "flat_beats_planes_above_bits": 3.132205513784461,
+        "planes_error_floor_at_max_bits": 0.15644286572933197,
+        "flat_error_at_max_bits": 0.005420282035621785,
+        "planes_floor_over_flat": 28.862495475548755
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 31,
+        "flat_beats_planes_above_bits": 2.56077694235589,
+        "planes_error_floor_at_max_bits": 0.23563197255134583,
+        "flat_error_at_max_bits": 0.004076456525882354,
+        "planes_floor_over_flat": 57.80313638947566
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "layer": 63,
+        "flat_beats_planes_above_bits": 2.651002506265664,
+        "planes_error_floor_at_max_bits": 0.18009591102600098,
+        "flat_error_at_max_bits": 0.003028059321987142,
+        "planes_floor_over_flat": 59.47568785006971
+      }
+    ],
+    "crossover_bits_mean": 2.9367167919799497,
+    "crossover_bits_min": 2.56077694235589,
+    "crossover_bits_max": 3.1723057644110275,
+    "sites_with_crossover": 10,
+    "sites": 10,
+    "reading": "The two families CROSS. Below the crossover the planes ladder has lower functional error than the flat code at matched bits; above it the flat code wins. And the planes family has a FLOOR the flat family does not: at the top of the sweep planes are still 14-28x the flat error, because each additional plane corrects a shrinking residual while another bit of a flat code halves the step everywhere. So planes are a low-bit mechanism with a ceiling, not a cheaper version of the flat code."
+  }
+}

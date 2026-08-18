@@ -1,0 +1,26 @@
+{
+  "g004-early-q2-late-q3": {
+    "token_agreement": 0.00812407680945347,
+    "sequences_exact": 0,
+    "sequences": 32,
+    "median_first_divergence": 0,
+    "never_rejoin": 24,
+    "fallbacks": 0
+  },
+  "g004-early-q3-late-q2": {
+    "token_agreement": 0.0013020833333333333,
+    "sequences_exact": 0,
+    "sequences": 32,
+    "median_first_divergence": 0,
+    "never_rejoin": 32,
+    "fallbacks": 0
+  },
+  "compact-q3attn-r1p2-v1": {
+    "token_agreement": 0.08854166666666667,
+    "sequences_exact": 0,
+    "sequences": 32,
+    "median_first_divergence": 2,
+    "never_rejoin": 13,
+    "fallbacks": 0
+  }
+}
