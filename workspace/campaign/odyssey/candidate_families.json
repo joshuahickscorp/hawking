@@ -1,0 +1,212 @@
+{
+  "schema": "hawking.odyssey.candidate_families.v1",
+  "source_steer": "S004 §61/§16/§17",
+  "_doc": "Machine-readable aggressive representation search space (ODYSSEY_POLICY.aggressive_ladder.search_space_is_data). tools/odyssey_candgen.py expands the grid, applies native/disk/mem/source-pass constraints, and ranks by expected info-gain/cost. No per-candidate LLM.",
+  "_evidence": "HYPOTHESIS (Doctor-risk priors); native-availability INFERRED from mlx_lm affine-grouped; complete_bpw DERIVED (payload + f16 scale/bias per group + correction + metadata codec)",
+  "patient_classes": ["moe", "dense", "hybrid"],
+  "spec_grammar": {
+    "_doc": "Runner --gravity spec strings. Canonical emission omits default suffixes (router=4, meta=raw, correction=0). Parser accepts any suffix order.",
+    "target_by_class": {
+      "moe": "experts",
+      "hybrid": "attn-mlp",
+      "dense": null
+    },
+    "default_router_precision": 4,
+    "default_metadata_codec": "raw",
+    "correction_token_budget": 0.02,
+    "pattern": "^(?:q\\d+-g\\d+(?:-(?:experts|attn-mlp))?|mixed-q\\d+q\\d+(?:-(?:experts|attn-mlp))?|tiers-(?:t\\d+)+(?:-(?:experts|attn-mlp))?|scale-joint-q\\d+-g\\d+(?:-(?:experts|attn-mlp))?)(?:\\+(?:correction|c\\d+(?:\\.\\d+)?|r\\d+|meta-(?:raw|shared|entropy)))*$",
+    "examples": [
+      "q3-g32-experts",
+      "q4-g64",
+      "q4-g64-attn-mlp",
+      "q2-g32-experts",
+      "q2-g64",
+      "q2-g64-attn-mlp",
+      "mixed-q2q3-experts",
+      "q2-g32-experts+correction",
+      "q2-g32-experts+c0.02+r8+meta-entropy",
+      "tiers-t0t1t2-experts",
+      "scale-joint-q2-g64-experts"
+    ]
+  },
+  "native_availability": {
+    "runtime": "mlx_lm.affine_grouped",
+    "_evidence": "INFERRED (mlx_lm.convert bits={2,3,4,8} group={32,64,128}; mixed via per-module quant_predicate). 1-bit, shared/entropy metadata, correction planes, matryoshka tiers, and scale-joint r-search are non-native (Hawking kernel / STRUCTURAL).",
+    "bit_classes": {"1": false, "2": true, "3": true, "4": true, "8": true},
+    "group_sizes": {"32": true, "64": true, "128": true},
+    "router_precision": {"4": true, "8": true},
+    "metadata_codec": {"raw": true, "shared": false, "entropy": false},
+    "correction_budget": {"0": true, "0.02": false, "0.05": false},
+    "forms": {
+      "uniform": true,
+      "mixed": true,
+      "tiers": false,
+      "scale_joint": false,
+      "correction_token": false
+    }
+  },
+  "doctor_risk_by_bits": {
+    "1": 0.82,
+    "2": 0.48,
+    "3": 0.16,
+    "4": 0.07,
+    "8": 0.03
+  },
+  "constraint_defaults": {
+    "mem_budget_bytes": 87617332838,
+    "_mem_budget_note": "0.85 * 96 GiB M3 Ultra (bible §33); generate() may override from policy",
+    "disk_budget_bytes": null,
+    "source_pass_budget": 512,
+    "require_native": false,
+    "max_candidates": 4096
+  },
+  "ranking": {
+    "primary": "family.prior (ascending; conventional anchors first)",
+    "secondary": "expected_info_gain / cost (integer millipoints)",
+    "tiebreak": "spec string",
+    "cost_terms": ["source_passes", "non_native_penalty", "stored_GiB", "moe_active_bytes"],
+    "info_terms": ["family.info_gain_prior", "doctor_risk", "pressure-zone proximity", "untried bonus"]
+  },
+  "families": [
+    {
+      "id": "alt_group",
+      "spec_kind": "quant_grid",
+      "prior": 0,
+      "info_gain_prior": 90,
+      "source_passes": 1.0,
+      "mechanism": "Hold the affine grouped codec fixed and vary group size (and modest bit width). Metadata cost is 16+16 bits per group; group-32 vs group-128 is a complete-bpw / Doctor trade, not a new family.",
+      "conventionality": "CONVENTIONAL",
+      "cheapest_falsifier": "fast-Doctor q3-g32 vs q3-g128 (or q4-g64 vs q4-g32) at counted complete_bpw; if Doctor-equal, smaller groups only buy metadata and lose.",
+      "expected_win": "A conventional CONVENTIONAL_ANCHOR (q4-g64 / q3-g32-experts / q4-g64-attn-mlp) plus a cheap group-size discriminator.",
+      "expected_win_bpw": 0.15,
+      "doctor_risk": 0.12,
+      "applicability": "patient_class in moe,dense,hybrid",
+      "patient_classes": ["moe", "dense", "hybrid"],
+      "allocation_unit": "channel_group",
+      "dimensions": {
+        "bit_classes": [2, 3, 4],
+        "group_sizes": [32, 64, 128]
+      },
+      "pinned_specs": {
+        "moe": ["q3-g32-experts", "q2-g32-experts"],
+        "dense": ["q4-g64", "q2-g64"],
+        "hybrid": ["q4-g64-attn-mlp", "q2-g64-attn-mlp"]
+      }
+    },
+    {
+      "id": "per_expert_mixed_quant",
+      "spec_kind": "quant_grid",
+      "prior": 1,
+      "info_gain_prior": 110,
+      "source_passes": 1.0,
+      "source_passes_suffix": 0.25,
+      "mechanism": "Per-expert (MoE) mixed affine quant: experts at bit_class/group, attention protected, router_precision independent, optional sparse correction budget, metadata codec (raw / shared-across-experts / entropy-coded scales).",
+      "conventionality": "AGGRESSIVE",
+      "cheapest_falsifier": "fast-Doctor q2-g32-experts vs q3-g32-experts; if q2 delta_hits <= -2, do not globally retreat — localize (router / organ / expert) and keep searching allocation.",
+      "expected_win": "Sub-3 complete_bpw on the expert body without a uniform-q2 Doctor collapse; active-bytes follow the selected-expert fraction, not stored density.",
+      "expected_win_bpw": 0.8,
+      "doctor_risk": 0.45,
+      "applicability": "patient_class == moe AND organs.expert > 0",
+      "patient_classes": ["moe"],
+      "allocation_unit": "expert",
+      "dimensions": {
+        "bit_classes": [1, 2, 3, 4],
+        "group_sizes": [32, 64, 128],
+        "router_precision": [4, 8],
+        "correction_budget": [0, 0.02, 0.05],
+        "metadata_codec": ["raw", "shared", "entropy"]
+      }
+    },
+    {
+      "id": "sensitivity_driven_alloc",
+      "spec_kind": "mixed_pair",
+      "prior": 2,
+      "info_gain_prior": 125,
+      "source_passes": 1.5,
+      "mechanism": "q{lo} base with sensitivity-driven promotion to q{hi} on the worst per-organ (and, when present, per-expert) Doctor-delta components. Reuses representation.per_organ_sensitivity; records protected organs. Not ordinary mixed-precision.",
+      "conventionality": "STRUCTURAL",
+      "cheapest_falsifier": "mixed-q2q3-experts vs uniform q2-g32-experts on the same fast-Doctor battery; if mixed does not beat uniform-q2, sensitivity is not an allocation lever on this patient.",
+      "expected_win": "A q2-class stored density with Doctor restored by protecting a small sensitive subset (router / attn / gate) instead of a global bit retreat.",
+      "expected_win_bpw": 0.4,
+      "doctor_risk": 0.28,
+      "applicability": "patient_class in moe,dense,hybrid",
+      "patient_classes": ["moe", "dense", "hybrid"],
+      "allocation_unit": "organ",
+      "dimensions": {
+        "bit_pairs": [[1, 2], [1, 3], [2, 3], [2, 4], [3, 4]],
+        "correction_budget": [0, 0.02]
+      },
+      "pinned_specs": {
+        "moe": ["mixed-q2q3-experts"],
+        "dense": ["mixed-q2q3"],
+        "hybrid": ["mixed-q2q3-attn-mlp"]
+      }
+    },
+    {
+      "id": "base_plus_correction",
+      "spec_kind": "quant_grid",
+      "prior": 3,
+      "info_gain_prior": 95,
+      "source_passes": 1.25,
+      "correction_token": true,
+      "mechanism": "Cheap affine base + sparse/residual/selected-hi-prec correction plane (bible §58/§92). Correction budget is a fraction of weights stored at repair precision; topology (scattered/row/block) is the cheapest-falsifier, not the bit width.",
+      "conventionality": "STRUCTURAL",
+      "cheapest_falsifier": "q2+correction vs plain q2 at matched complete_bpw (correction bytes counted). If Doctor does not recover, the topology is wrong — raise budget only after a topology miss, never as a global retreat.",
+      "expected_win": "Doctor restoration at << +1 nominal bit, lowering active cost without a complete stored sub-1 body.",
+      "expected_win_bpw": 0.35,
+      "doctor_risk": 0.22,
+      "applicability": "patient_class in moe,dense,hybrid",
+      "patient_classes": ["moe", "dense", "hybrid"],
+      "allocation_unit": "correction_tier",
+      "dimensions": {
+        "bit_classes": [1, 2, 3],
+        "group_sizes": [32, 64, 128],
+        "correction_budget": [0.02, 0.05]
+      },
+      "pinned_specs": {
+        "moe": ["q2-g32-experts+correction"],
+        "dense": ["q2-g64+correction"],
+        "hybrid": ["q2-g64-attn-mlp+correction"]
+      }
+    },
+    {
+      "id": "scale_codec_joint",
+      "spec_kind": "scale_joint",
+      "prior": 4,
+      "info_gain_prior": 70,
+      "source_passes": 3.0,
+      "mechanism": "Jointly search group-scale ratio r (absmax r=1, MSE r<1, overscale r>1) against the codec at fixed CODED bits — not absmax or MSE as a codec-blind sidecar. Emits one spec per (bits, group); the r-grid is the family's internal search.",
+      "conventionality": "AGGRESSIVE",
+      "cheapest_falsifier": "r=1 (absmax) vs a 3-point r-grid at matched coded bits on one sensitive organ; if the Pareto is r=1, joint opt is dead for this codec on this patient.",
+      "expected_win": "Same nominal bits, lower complete_bpw via concentrated codes and/or a Doctor gain from a non-absmax scale, counted in complete_bpw.",
+      "expected_win_bpw": 0.2,
+      "doctor_risk": 0.3,
+      "applicability": "patient_class in moe,dense,hybrid",
+      "patient_classes": ["moe", "dense", "hybrid"],
+      "allocation_unit": "channel_group",
+      "dimensions": {
+        "bit_classes": [2, 3, 4],
+        "group_sizes": [32, 64, 128]
+      }
+    },
+    {
+      "id": "matryoshka_tiers",
+      "spec_kind": "tiers",
+      "prior": 5,
+      "info_gain_prior": 65,
+      "source_passes": 2.0,
+      "mechanism": "Nested fidelity tiers T0..T3 (bible §58): cheap base + correction-1 + correction-2 + exact/rare repair. Active path may stop at T0/T1; stored body carries the unused tiers. Counts stored tiers, active tiers, hit rate.",
+      "conventionality": "STRUCTURAL",
+      "cheapest_falsifier": "Decode T0-only vs T0+T1 on the fast-Doctor battery; if T1 never hits (or never restores Doctor), drop the extra stored tier.",
+      "expected_win": "Conditional fidelity: low active-bytes/token with an on-demand repair tier, distinct from a single-shot mixed quant.",
+      "expected_win_bpw": 0.5,
+      "doctor_risk": 0.35,
+      "applicability": "patient_class in moe,dense,hybrid",
+      "patient_classes": ["moe", "dense", "hybrid"],
+      "allocation_unit": "correction_tier",
+      "dimensions": {
+        "tier_sets": ["t0t1", "t0t1t2", "t0t1t2t3", "t1t2t3"]
+      }
+    }
+  ]
+}

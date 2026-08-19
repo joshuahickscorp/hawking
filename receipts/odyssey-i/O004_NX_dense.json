@@ -1,0 +1,87 @@
+{
+  "schema": "odyssey.patient.nx.v1",
+  "oxx": "O004",
+  "mode": "dense",
+  "runtime": "mlx",
+  "runtime_label": "mlx_lm EXTERNAL SPECIMEN \u2014 not Hawking native",
+  "label": "SPECIMEN",
+  "not_hawking_nx_win": true,
+  "not_a_full_rust_runtime": true,
+  "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--mistralai--Mistral-Small-3.1-24B-Instruct-2503/snapshots/68faf511d618ef198fef186659617cfd2eb8e33a",
+  "canonical_snapshot_intact": 10,
+  "full_weight_sweep_bytes_per_token": 48022722560,
+  "stored_bpw": 16.0,
+  "params": 24011361280,
+  "sparsity_lever": false,
+  "note": "dense: every weight is touched per token. NX floor = full stored body. No expert-gather and no fixed-state lever.",
+  "organs_bytes": {
+    "embed": 1342177280,
+    "attn": 4395630592,
+    "router": 0,
+    "expert": 0,
+    "shared_expert": 0,
+    "mlp_dense": 40869298176,
+    "norm": 929792,
+    "lm_head": 1342177280,
+    "other": 72509440
+  },
+  "primitive_design_attempt": {
+    "name": "R-dense-full-sweep",
+    "intent": "Report the dense NX floor. No sparsity to exploit.",
+    "full_weight_sweep_bytes_per_token": 48022722560,
+    "sparsity_lever": false,
+    "not_a_runtime": true,
+    "_label": "DERIVED from MEASURED census",
+    "_section": "\u00a713"
+  },
+  "verdict": "ACCOUNTING_ONLY",
+  "gate": {
+    "decision": "REFUSE",
+    "note": "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.81 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
+    "reasons": [
+      "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant",
+      "OBSERVED: compressor at 1.81 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
+    ],
+    "current_wired_gb": 6.6,
+    "projected_headroom_gb": 80.9,
+    "observed": {
+      "total_gb": 103.079,
+      "wired_gb": 6.6,
+      "free_gb": 20.249,
+      "inactive_gb": 27.259,
+      "compressed_gb": 1.81,
+      "swap_used_mb": 949.31,
+      "workers_resident": 0,
+      "worker_rss_total_gb": 0.0
+    }
+  },
+  "contamination": {
+    "section": "\u00a714",
+    "note": "NX dense is ACCOUNTING of the full-weight sweep. No model load. Not a Hawking NX runtime, not BASE_TRUE_TPS.",
+    "clean_box": {
+      "clean_box_ok": true,
+      "reason": "no live lanes, disk ok, load ok",
+      "snapshot": {
+        "type": "machine_state",
+        "chip": "Apple M3 Ultra",
+        "ncpu": 28,
+        "ram_total_gib": 96.0,
+        "ram_free_gib": 70.8,
+        "disk_free_gib": 45.7,
+        "load_1m": 3.509765625,
+        "active_grok_lanes": []
+      }
+    },
+    "_label": "MEASURED machine note + DERIVED contamination flag"
+  },
+  "labels": {
+    "full_weight_sweep_bytes_per_token": "MEASURED (census safetensors headers)",
+    "stored_bpw": "DERIVED"
+  },
+  "commit": "0849a533fdbb30d2af045d1a60b5a8921770d903",
+  "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+  "out": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O004_NX_dense.json",
+  "_evidence": "MEASURED (census) \u2014 header-only, no weight load",
+  "_label": "DERIVED accounting \u2014 not a Hawking NX win (\u00a715)",
+  "_section": "\u00a720"
+}

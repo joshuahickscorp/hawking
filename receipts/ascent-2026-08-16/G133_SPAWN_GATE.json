@@ -1,0 +1,137 @@
+{
+  "schema": "hawking.nos.worker_spawn_gate.v1",
+  "obligation": "G133 -- memory-pressure gate before spawning worker N",
+  "calibration": {
+    "source": "G131",
+    "baseline_wired_gb": 4.63,
+    "per_worker_wired_gb": 15.59,
+    "measured_max_n": 3,
+    "crashed_at_n": 5,
+    "reserve_gb": 32.0
+  },
+  "why_it_gates_on_WIRED": "wired memory cannot be compressed and cannot be swapped, so exceeding it is a hard crash rather than a slowdown -- which is why n=5 crashed instead of thrashing. A gate watching RSS reads 49.4 GB of 103.08 at n=3 and looks comfortable; a gate watching free pages reads 0.13 GB at the same moment and looks alarming. Both are the wrong number, in opposite directions.",
+  "two_independent_triggers": {
+    "projected": "spawning worker N would leave less than the reserve non-wired",
+    "observed": "swap in use or compressor above its floor -- real pressure NOW, which makes the projection irrelevant. G131 recorded compressed flat at 0.10 GB and swap at 0 across the entire three-worker run, so movement in either is a genuine state change, not noise."
+  },
+  "reserve_is_bracketed_not_derived": "n=3 worked leaving 51.7 GB non-wired; n=5 crashed leaving 20.5 GB. The true boundary lies between and N=4 HAS NOT BEEN TESTED. The reserve of 32 GB sits inside that bracket, and the gate reports UNVALIDATED for any n above the measured maximum rather than implying arithmetic is measurement.",
+  "live": {
+    "workers_resident": 0,
+    "spawn_target": 1,
+    "per_worker_wired_gb": 15.59,
+    "per_worker_source": "G131 calibration (no workers resident to observe)",
+    "current_wired_gb": 4.63,
+    "projected_wired_gb": 20.22,
+    "projected_headroom_gb": 82.9,
+    "reserve_gb": 32.0,
+    "decision": "PERMIT",
+    "unvalidated": false,
+    "note": "within the measured-stable range",
+    "reasons": []
+  },
+  "sweep": [
+    {
+      "workers_resident": 0,
+      "spawn_target": 1,
+      "per_worker_wired_gb": 15.59,
+      "per_worker_source": "G131 calibration (no workers resident to observe)",
+      "current_wired_gb": 4.63,
+      "projected_wired_gb": 20.22,
+      "projected_headroom_gb": 82.9,
+      "reserve_gb": 32.0,
+      "decision": "PERMIT",
+      "unvalidated": false,
+      "note": "within the measured-stable range",
+      "reasons": []
+    },
+    {
+      "workers_resident": 1,
+      "spawn_target": 2,
+      "per_worker_wired_gb": 15.59,
+      "per_worker_source": "observed from 1 resident worker(s)",
+      "current_wired_gb": 20.22,
+      "projected_wired_gb": 35.81,
+      "projected_headroom_gb": 67.3,
+      "reserve_gb": 32.0,
+      "decision": "PERMIT",
+      "unvalidated": false,
+      "note": "within the measured-stable range",
+      "reasons": []
+    },
+    {
+      "workers_resident": 2,
+      "spawn_target": 3,
+      "per_worker_wired_gb": 15.59,
+      "per_worker_source": "observed from 2 resident worker(s)",
+      "current_wired_gb": 35.81,
+      "projected_wired_gb": 51.4,
+      "projected_headroom_gb": 51.7,
+      "reserve_gb": 32.0,
+      "decision": "PERMIT",
+      "unvalidated": false,
+      "note": "within the measured-stable range",
+      "reasons": []
+    },
+    {
+      "workers_resident": 3,
+      "spawn_target": 4,
+      "per_worker_wired_gb": 15.59,
+      "per_worker_source": "observed from 3 resident worker(s)",
+      "current_wired_gb": 51.4,
+      "projected_wired_gb": 66.99,
+      "projected_headroom_gb": 36.1,
+      "reserve_gb": 32.0,
+      "decision": "PERMIT",
+      "unvalidated": true,
+      "note": "PERMITTED BUT UNVALIDATED: n=4 exceeds the measured maximum of 3. The projection is arithmetic, not a measurement, and n=5 is known to crash.",
+      "reasons": []
+    },
+    {
+      "workers_resident": 4,
+      "spawn_target": 5,
+      "per_worker_wired_gb": 15.59,
+      "per_worker_source": "observed from 4 resident worker(s)",
+      "current_wired_gb": 66.99,
+      "projected_wired_gb": 82.58,
+      "projected_headroom_gb": 20.5,
+      "reserve_gb": 32.0,
+      "decision": "REFUSE",
+      "unvalidated": false,
+      "note": "PROJECTED: worker 5 would wire 82.6 GB and leave 20.5 GB non-wired, under the 32 GB reserve",
+      "reasons": [
+        "PROJECTED: worker 5 would wire 82.6 GB and leave 20.5 GB non-wired, under the 32 GB reserve"
+      ]
+    },
+    {
+      "workers_resident": 5,
+      "spawn_target": 6,
+      "per_worker_wired_gb": 15.59,
+      "per_worker_source": "observed from 5 resident worker(s)",
+      "current_wired_gb": 82.58,
+      "projected_wired_gb": 98.17,
+      "projected_headroom_gb": 4.9,
+      "reserve_gb": 32.0,
+      "decision": "REFUSE",
+      "unvalidated": false,
+      "note": "PROJECTED: worker 6 would wire 98.2 GB and leave 4.9 GB non-wired, under the 32 GB reserve",
+      "reasons": [
+        "PROJECTED: worker 6 would wire 98.2 GB and leave 4.9 GB non-wired, under the 32 GB reserve"
+      ]
+    }
+  ],
+  "first_refusal_at_n": 5,
+  "observed_trigger_refuses": true,
+  "measured_now": {
+    "total_gb": 103.079,
+    "wired_gb": 4.627,
+    "free_gb": 50.637,
+    "inactive_gb": 26.679,
+    "compressed_gb": 0.095,
+    "swap_used_mb": 0.0,
+    "workers_resident": 0,
+    "worker_rss_total_gb": 0.0
+  },
+  "commit": "61715b7616788ea00cc8c44be0e5867f0b9863e2",
+  "the_gate_lands_on_the_crash_point_independently": "the reserve was bracketed from headroom (between the 51.7 GB that worked and the 20.5 GB that crashed) WITHOUT reference to the worker count, and the sweep then refuses first at exactly n=5 -- the count the directive independently records as the crash. Two different framings of the same limit agree, which is weak corroboration rather than proof, but it is the kind that would have shown a sign error.",
+  "it_was_watched_refusing_not_only_permitting": "three refusals in one invocation: the projected trigger at n=5 and n=6, and both observed triggers under injected pressure. A gate seen only permitting has not been shown to enforce anything -- the run exits non-zero if it never refuses."
+}

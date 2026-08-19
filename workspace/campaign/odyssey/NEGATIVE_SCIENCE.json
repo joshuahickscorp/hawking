@@ -1,0 +1,187 @@
+{
+  "schema": "hawking.odyssey.negative_science.v1",
+  "_doc": "Killed mechanisms. Query before every expensive hypothesis (bible §19). A new architecture reopens a kill only if it invalidates the old premise.",
+  "_evidence": "INFERRED",
+  "source": [
+    "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+    "h_odyssey.md §19"
+  ],
+  "entries": [
+    {
+      "id": "NS-global-dense-lowrank-qwen38",
+      "mechanism": "global dense low-rank on Qwen3.8",
+      "premise": "a global low-rank factorisation of a dense transformer body transfers to the next body",
+      "killed_by": "Qwen3.8 dense low-rank failure (legacy, retired patient)",
+      "killed_on": ["Qwen3.8-27B (legacy, not an Odyssey patient)"],
+      "verdict": "DEAD on that dense body. Does NOT automatically kill cross-expert low-rank structure in MoE.",
+      "does_not_automatically_kill": "cross-expert low-rank structure in MoE",
+      "reopen_if": "the new architecture invalidates the old premise (bible §19)",
+      "_evidence": "INFERRED (h_odyssey §19)"
+    },
+    {
+      "id": "NS-implementation-bug-killed-by-math",
+      "mechanism": "pure implementation bug killed by mathematics",
+      "premise": "the mathematics of the representation is unchanged",
+      "killed_by": "the algebra, not a patient",
+      "killed_on": [],
+      "verdict": "Stay dead unless the representation changed the mathematics.",
+      "does_not_automatically_kill": null,
+      "reopen_if": "representation changed the mathematics",
+      "_evidence": "INFERRED (h_odyssey §19)"
+    },
+    {
+      "id": "NS-calibration-88-tokens",
+      "mechanism": "routing-frequency allocation calibrated on ~88 tokens",
+      "premise": "a short prompt set is enough to estimate expert frequency",
+      "killed_by": "at 88 tokens the median routing split is only 63.6 percent stable and 26.1 percent of cells never route at all",
+      "killed_on": ["gpt-oss-120b:F0"],
+      "verdict": "the lever is alive, the 88-token calibration is dead; needs ~1000 calibration tokens disjoint from holdout",
+      "does_not_automatically_kill": "routing-frequency allocation itself",
+      "reopen_if": "never at 88; use >= 1000 calibration tokens",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS calibration_88_tokens)"
+    },
+    {
+      "id": "NS-cross-expert-and-cross-layer-tying",
+      "mechanism": "expert templates + deltas in row-normalized space; same-expert-index cross-layer tying",
+      "premise": "experts share a template; same-index experts tie across depth",
+      "killed_by": "raw and row-normalized mean |off-diagonal cosine| agree to 3 sig figs (0.00166 vs 0.00168). Best single shared template explains 0.2513 of 4 experts' energy against an orthogonal null of 0.2500. Same-expert-index cross-layer tying indistinguishable from a different-index control at 1e-7.",
+      "killed_on": ["qwen3-235b-a22b:F1"],
+      "verdict": "DEAD, and the row-norm rescue hypothesis is falsified.",
+      "does_not_automatically_kill": "cross-expert low-rank on a parent that actually has shared structure (see reopen_if)",
+      "reopen_if": "a parent measures row-normalized mean off-diagonal expert cosine >= 0.10",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS cross_expert_and_cross_layer_tying)"
+    },
+    {
+      "id": "NS-entropy-coded-pq-indices",
+      "mechanism": "entropy coding of trained PQ indices",
+      "premise": "Lloyd-optimal indices are compressible",
+      "killed_by": "measured 0.0 to 0.7 percent, not the hoped 10 to 25 percent; Lloyd-optimal indices are near-uniform by construction",
+      "killed_on": ["gpt-oss-120b:F0"],
+      "verdict": "the gain is inside the noise of the byte plan",
+      "does_not_automatically_kill": "entropy coding of NON-Lloyd (biased or stratified) codebooks",
+      "reopen_if": "a future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is <= 0.9 of uniform",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS entropy_coded_pq_indices)"
+    },
+    {
+      "id": "NS-expert-merging-omitted-from-survivors",
+      "mechanism": "reconstruct an omitted MoE expert from a learned combination of surviving experts",
+      "premise": "a cold expert's function lives in a low-dimensional surviving-expert subspace",
+      "killed_by": "median held-out relative error of the BEST single surviving expert is 0.885/0.993/0.995 at L0/L3/L7; a 4-survivor least-squares merge only reaches 0.863/0.988/0.995. ~1.0 means the reconstruction is no better than predicting zero.",
+      "killed_on": ["qwen3-235b-a22b:F1"],
+      "verdict": "DEAD. Upheld under adversarial attack (in-sample contamination ran in the merge's favour).",
+      "does_not_automatically_kill": null,
+      "reopen_if": "a parent measures best-single-survivor reconstruction error <= 0.5 on held-out routed tokens at its own keep fraction",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS expert_merging_omitted_from_survivors)"
+    },
+    {
+      "id": "NS-inter-expert-redundancy",
+      "mechanism": "delta coding / shared low-rank bases / cluster-mean subtraction across experts",
+      "premise": "experts share a low-dimensional component that can be subtracted",
+      "killed_by": "mean pairwise cosine between experts = 1e-4; experts are mutually orthogonal",
+      "killed_on": ["gpt-oss-120b:F0"],
+      "verdict": "dead on arrival: there is no shared component to subtract",
+      "does_not_automatically_kill": "the same lever on a parent that is not orthogonal (bible §19: dense-body failure does not auto-kill MoE shared structure — AND the inverse: this kill does not auto-kill a parent with cosine >= 0.10)",
+      "reopen_if": "a future parent measures mean pairwise expert cosine >= 0.10 on its own weights",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS inter_expert_redundancy)"
+    },
+    {
+      "id": "NS-kronecker-factorisation",
+      "mechanism": "Kronecker / tensor-product factorisation W ~ A (x) B of a single expert tensor",
+      "premise": "the Van Loan spectrum is peaked enough that a low-rank Kronecker captures the organ",
+      "killed_by": "at depth the Van Loan rearrangement spectrum is nearly flat — top Kronecker component holds 0.27 percent of gate energy; rank the 2.5 bpw budget buys captures only 27.2 percent of energy.",
+      "killed_on": ["qwen3-235b-a22b:F1"],
+      "verdict": "DEAD for layers >= 1 at the S64 rungs; LIVE and codec-beating on layer 0 (named exception).",
+      "does_not_automatically_kill": "layer-0 Kronecker (measured 0.0301 vs incumbent 0.2252 rel_error at cheaper complete BPW)",
+      "reopen_if": "any layer whose Van Loan spectrum is not flat; check before assuming depth behaviour transfers to the first block",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS kronecker_factorisation)"
+    },
+    {
+      "id": "NS-large-expert-cache",
+      "mechanism": "aggressive expert cache (64GB cap) for a single lockstep pass",
+      "premise": "a large RAM cache pays because experts reuse across layers in one lockstep pass",
+      "killed_by": "0 evictions at a 64GB cap; RAM 70->18GB free and swap down to 906MB free. A single lockstep pass has zero cross-layer reuse",
+      "killed_on": ["gpt-oss-120b:F0"],
+      "verdict": "correct cap is ~20GB; aggressive RAM only where real reuse exists",
+      "does_not_automatically_kill": "an expert cache on a schedule with MEASURED cross-layer reuse",
+      "reopen_if": "a future parent's schedule has MEASURED cross-layer expert reuse (cache hit rate > 0) instead of a single lockstep pass",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS large_expert_cache)"
+    },
+    {
+      "id": "NS-layer-zero-is-a-different-source",
+      "mechanism": "treating all layers as one coding problem",
+      "premise": "one codec / one rate map is near-optimal across depth",
+      "killed_by": "nothing — this is a POSITIVE entry recording where the campaign found real headroom. Layer 0 is a different source.",
+      "killed_on": ["qwen3-235b-a22b:F1"],
+      "verdict": "LIVE AND CONVERGENT. Do not transfer 'Lane A is closed' to layer 0.",
+      "does_not_automatically_kill": "per-layer codec selection",
+      "reopen_if": "N/A — live. Scope is bounded: layer 0 is 1/94 of that parent (~1 percent of bits). Value is as a diagnostic.",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS layer_zero_is_a_different_source)"
+    },
+    {
+      "id": "NS-post-hoc-coding-of-frozen-weights",
+      "mechanism": "any post-hoc fixed-weight codec improvement at a fixed sub-bit index rate",
+      "premise": "matching the Gaussian D(R) proves the codec has reached the floor",
+      "killed_by": "mid/late layers ARE essentially Gaussian (non-Gaussianity 0.012-0.018 bits), so there the original conclusion survives: down sits 0.059 decades from its true Shannon bound. The Gaussian D(R) is an UPPER bound, not a floor.",
+      "killed_on": ["qwen3-235b-a22b:F1"],
+      "verdict": "NEARLY exhausted, NOT closed. CORRECTED from an earlier overclaim. Layer 0 is the named exception.",
+      "does_not_automatically_kill": "an organ- and layer-specific codec for the first block; any method that CHANGES the source",
+      "reopen_if": "any cell measuring >= 0.5 decades of gap to its OWN Shannon lower bound (measured differential entropy, not Gaussian)",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS post_hoc_coding_of_frozen_weights)"
+    },
+    {
+      "id": "NS-posthoc-scalar-gain",
+      "mechanism": "post-hoc scalar gain correction on a PQ artifact",
+      "premise": "a scalar gain on the reconstruction can recover magnitude the codebook dropped",
+      "killed_by": "optimal gain pinned at exactly 1.0; k-means reconstruction is a conditional mean so the residual is orthogonal to the reconstruction, and cosine is gain-invariant",
+      "killed_on": ["gpt-oss-120b:F0"],
+      "verdict": "algebraically pinned, not merely unhelpful",
+      "does_not_automatically_kill": "gain correction on a NON-conditional-mean quantizer",
+      "reopen_if": "a future parent uses a NON-conditional-mean quantizer whose residual is measurably non-orthogonal to the reconstruction",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS posthoc_scalar_gain)"
+    },
+    {
+      "id": "NS-raw-weight-pq-vq-at-one-bit",
+      "mechanism": "PQ/VQ coding of the RAW weights as the route to one bit or below",
+      "premise": "a higher-rate raw-weight codebook will eventually work",
+      "killed_by": "qwen3-235b:F1 real forward, 6 prompts, 94 layers: A1_1p0 at 1.0075 BPW collapsed 6/6; R2_subhalf at 0.4930 BPW collapsed 6/6",
+      "killed_on": ["qwen3-235b:F1"],
+      "verdict": "the raw-weight PQ/VQ family is dead at about one bit. This kills THAT FAMILY, not the sub-bit program.",
+      "does_not_automatically_kill": "a method that CHANGES the source (QAT, distillation, compressibility training, structured pruning, learned sharing)",
+      "reopen_if": "never on raw weights. A method that changes the source is not this lever and is not blocked by this entry",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS raw_weight_pq_vq_at_one_bit)"
+    },
+    {
+      "id": "NS-row-norm-stratification-premise",
+      "mechanism": "row-norm-stratified codebooks (declared R5_rownorm_strat, never run)",
+      "premise": "94 percent of gate/up rows collapse onto ONE codeword because row norms span 1e-5..0.91",
+      "killed_by": "the PREMISE does not reproduce. Measured single-codeword share is 0.0267 mean and never exceeds 0.047 at the deployed d16 k1024 geometry. The 94 percent figure belonged to a different (k=32) geometry.",
+      "killed_on": ["qwen3-235b-a22b:F1"],
+      "verdict": "the stated pathology is absent; stratification has nothing to fix. Its stronger form (per-row scale normalization) helps only 2.8 percent mean.",
+      "does_not_automatically_kill": "scale-invariant VQ (quantize direction, ship one bf16 scale per row) — alive, small",
+      "reopen_if": "a parent measures single-codeword share >= 0.20 at its own deployed geometry",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS row_norm_stratification_premise)"
+    },
+    {
+      "id": "NS-ternary-factorization",
+      "mechanism": "ternary factorization instead of VQ",
+      "premise": "ternary factors beat VQ at matched rate",
+      "killed_by": "loses to VQ at matched rate",
+      "killed_on": ["gpt-oss-120b:F0"],
+      "verdict": "dominated at every matched rate tested",
+      "does_not_automatically_kill": null,
+      "reopen_if": "a future parent diagnoses a weight distribution where ternary beats VQ at a matched exact rate on a real forward",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS ternary_factorization)"
+    },
+    {
+      "id": "NS-uniform-subbit-allocation",
+      "mechanism": "uniform sub-bit allocation across organs (and its treated variant)",
+      "premise": "organs degrade together, so a uniform rate map is fair",
+      "killed_by": "F0 real forward: both the uniform and the treated artifact collapsed",
+      "killed_on": ["gpt-oss-120b:F0"],
+      "verdict": "superseded by organ inversion (mlp1 gate+up sensitive, mlp2 down tolerant), confirmed by F1 qwen3-235b dominant_failure_organ = gate",
+      "does_not_automatically_kill": "organ-conditioned allocation",
+      "reopen_if": "a future parent measures NO organ sensitivity split (gate and down degrade within 10 percent of each other)",
+      "_evidence": "INFERRED (foundry NEGATIVE_TRANSFER_ATLAS uniform_subbit_allocation)"
+    }
+  ]
+}

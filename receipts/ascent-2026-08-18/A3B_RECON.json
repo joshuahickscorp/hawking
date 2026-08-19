@@ -1,0 +1,23 @@
+{
+ "A3B_baseline": {
+  "battery": "10/12",
+  "refusals": "0/2",
+  "tps_specimen": 29.3
+ },
+ "route_map": {
+  "moe_layers": 48,
+  "experts": 128,
+  "top_k": 8,
+  "avg_layer_route_entropy_bits": 6.09,
+  "max_entropy_bits": 7.0,
+  "pct_mass_top16_experts": 18,
+  "never_routed_experts": 0,
+  "most_popular_expert_share_pct": 1.42
+ },
+ "note": "SPECIMEN mlx_lm baseline+routing on a short prompt set; teacher=abliterated checkpoint. Route stats from ~10 prompts -> indicative, not full corpus.",
+ "CLASSIFICATION": {
+  "uniform_routing": "A3B-SPECIFIC / MOE-SPECIFIC -- entropy 6.09/7.00, no cold experts -> cold-expert compression (S042 \u00a710) does NOT apply to A3B; per-expert uniform codec is fine, no popularity skew to exploit.",
+  "sparse_active_path": "MOE-UNIVERSAL -- 8/128 experts/token ~= 3.6GB active-expert bytes/token vs dense 11.7GB (3.2x less). The lever is a native EXPERT-GATHER that MOVES only active experts, not all 128. mlx does not exploit it (29.3 TPS ~= dense).",
+  "tps_caveat": "29.3 is the mlx SPECIMEN; whether the 3.2x active-byte reduction becomes TPS depends on our runtime (Qwen3.8 finding: we are kernel-bound, not bandwidth-bound -- so a native MoE kernel must be efficient, not just move fewer bytes)."
+ }
+}

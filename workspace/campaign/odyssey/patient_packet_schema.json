@@ -1,0 +1,18 @@
+{
+  "$schema": "odyssey-patient-packet/v1",
+  "_doc": "Standard Odyssey-I patient packet (bible §17). One file per patient: ODYSSEY_PATIENT_Oxx.json. Every field labelled with evidence class (§18): VERIFIED|MEASURED|DERIVED|INFERRED|HYPOTHESIS|SPECULATIVE|REFUTED|STALE|UNKNOWN.",
+  "fields": {
+    "identity": ["oxx","source_repo","revision","content_hashes","tokenizer","source_precision","source_type","license","model_family"],
+    "architecture": ["total_params","active_params","kind(dense|moe|hybrid)","layers","attention","state_ssm","moe_topology","experts","experts_per_tok","shared_experts","modality","context","census_ref"],
+    "doctor": ["capability_vector","controls","long_context_result","coding_reasoning","behavioral_profile","known_weaknesses","blind_spots","fast_doctor_seal_ref","full_doctor_seal_ref"],
+    "tabula": ["status(N/A|baseline-only|profiled)","behavioral_identity","drift_monitor"],
+    "routing": ["entropy","expert_frequency","transitions","co_occurrence","hot_set","cold_set","route_predictability","P(E_t|E_t-1)"],
+    "representation": ["source_bytes","best_stored_bpw_eq","active_bpw_eq","metadata_bytes","corrections","reconstruction","per_organ_sensitivity","per_expert_sensitivity"],
+    "execution": ["token_ns","tps","ttft","prefill","long_context_slope","active_learned_bytes_per_token","dram_per_token","cache","state","route_overhead","baseline_runtime","baseline_tps"],
+    "gravity": ["tried_mechanisms","wins","kills","architecture_specific_findings"],
+    "nx": ["primitive_set","machine_lowering","kernel_bindings","fallback_count","best_preliminary_nx","nx_hash"],
+    "transfer": ["inherited_rules","unchanged","retuned","failed","harmful"],
+    "next": ["highest_information_future_experiments"]
+  },
+  "minimum_to_seal": ["identity","architecture","doctor.fast_doctor_seal_ref","execution.baseline_tps","representation.per_organ_sensitivity","gravity(>=1 build)","nx(>=1 attempt)","transfer","receipt_seal"]
+}

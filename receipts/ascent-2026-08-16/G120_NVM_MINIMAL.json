@@ -1,0 +1,92 @@
+{
+  "schema": "hawking.nos.nvm_minimal.v1",
+  "obligation": "G120 -- NVM minimal: load, bind, run, name the routes",
+  "routes_loaded": 130,
+  "route_kinds": [
+    "EMBED",
+    "GATED_DELTA_RECURRENCE",
+    "GQA_ATTENTION",
+    "LM_HEAD",
+    "MLP_SWIGLU"
+  ],
+  "bindings": {
+    "EMBED": [
+      "qwen_uniform_q4_embedding_lookup",
+      "qwen38_hgravu_embedding_lookup"
+    ],
+    "GATED_DELTA_RECURRENCE": [
+      "qwen38_gated_delta_decode_vi_simd",
+      "qwen80_deltanet_gated_rmsnorm_tg",
+      "qwen38_qkvz_rearrange_conv_l2_f32"
+    ],
+    "GQA_ATTENTION": [
+      "qwen38_gqa_qk_norm_rope_cache_tg",
+      "qwen38_attention_apply_sigmoid_gate",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+    ],
+    "LM_HEAD": [
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "sample_argmax_f32_pass1"
+    ],
+    "MLP_SWIGLU": [
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen80_residual_rmsnorm_tg"
+    ]
+  },
+  "nx_genome_digest": "c61afb5cce7ba294cd4bc3b6c19aeba4f726041fff1fd30bece0a5758a506ddb",
+  "token_identical_via_nvm": true,
+  "tokens_direct": [
+    248068,
+    198,
+    760,
+    1156,
+    4777,
+    6587,
+    728,
+    310,
+    1910,
+    328,
+    5834,
+    1149
+  ],
+  "tokens_via_nvm": [
+    248068,
+    198,
+    760,
+    1156,
+    4777,
+    6587,
+    728,
+    310,
+    1910,
+    328,
+    5834,
+    1149
+  ],
+  "telemetry": {
+    "RPT": 130,
+    "RPS": 4272.204674000445,
+    "decode_token_ms": 30.429253727272727,
+    "tps": 32.8631128769265,
+    "routes_by_kind": {
+      "EMBED": 1,
+      "GATED_DELTA_RECURRENCE": 48,
+      "MLP_SWIGLU": 64,
+      "GQA_ATTENTION": 16,
+      "LM_HEAD": 1
+    },
+    "gemv_us_per_route_kind": {
+      "EMBED": 0.0,
+      "GQA_ATTENTION": 88.34,
+      "GATED_DELTA_RECURRENCE": 97.6,
+      "MLP_SWIGLU": 225.27,
+      "LM_HEAD": 1071.15
+    },
+    "sum_per_route_gemv_ms": 21.586669999999998,
+    "residual_ms": 8.842583727272729,
+    "telemetry_defect_fixed": "a first pass divided TOTAL wall (which includes prefill and setup) by decode steps and reported 88 ms against a measured 30.5 ms decode. Corrected to decode_wall_ns/decode_steps. The per-route column was also a flat division carrying no information; it now uses G108's element census per route kind."
+  },
+  "not_overbuilt": "no conditional or recurrence scheduling machinery exists in this VM. The acceptance forbids it without a consumer, and this campaign refuted every consumer there could be: G058 dynamic precision, G062 attractor compilation, G064 conditional depth, G084 the JIT.",
+  "what_this_VM_does_not_do": "it does not dispatch Metal and does not own the residual stream -- the Rust runtime does both. This binds, orchestrates and records. Claiming otherwise would put a false statement in the ledger, and reimplementing dispatch in a second place is the overbuilding the acceptance forbids.",
+  "commit": "ad7e7db3cde3aa0fe6bfff5260f6c950885bef61"
+}

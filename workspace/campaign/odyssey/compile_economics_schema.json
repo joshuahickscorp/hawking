@@ -1,0 +1,40 @@
+{
+  "$schema": "hawking.odyssey.compile_economics/v1",
+  "_doc": "Compile-economics + detachment-metrics schema (S003 §7-11, S004 §27/§71). Event log: COMPILE_ECONOMICS.jsonl. Derived packet: derive(patient). Campaign fit: ODYSSEY_COST_MODEL.json (UNCERTAINTY required; never a point estimate as fact). Detachment: detachment_metrics(). Evidence class on every number (§18).",
+  "event_log": {
+    "path": "workspace/campaign/odyssey/COMPILE_ECONOMICS.jsonl",
+    "schema": "hawking.odyssey.compile_economics.event.v1",
+    "required": ["schema", "patient", "event", "wall_s", "bytes_scanned", "bytes_transformed", "ts", "_evidence"],
+    "fields": ["patient", "event", "wall_s", "bytes_scanned", "bytes_transformed", "grok_lane", "opus", "ts", "source_bytes", "source_params", "active_params", "complete_bpw", "bpw", "candidate_class", "valid_nx", "cheap_kill", "doctor_kind", "rules_reused", "rules_retuned", "rules_new", "opus_tokens", "cycle", "gpu_s", "cpu_s", "full_source_passes", "sampled_passes", "transform_passes", "verify_passes"]
+  },
+  "compile_economics_packet": {
+    "source": "S003 §7",
+    "fields": ["acquisition_wall", "census_wall", "doctor_baseline_wall", "gravity_analysis_wall", "gravity_search_wall", "gravity_pack_wall", "gravity_verify_wall", "nx_lower_wall", "kernel_probe_wall", "total_gpu_wall", "total_cpu_wall", "grok_lane_count", "grok_wall", "opus_escalations", "opus_wall", "total_patient_wall", "first_valid_nx_wall", "retirement_wall", "source_bytes", "bytes_scanned", "bytes_transformed"]
+  },
+  "normalized": {
+    "source": "S003 §8",
+    "fields": ["gravity_gb_s_scanned", "gravity_gb_s_transformed", "s_per_B_source_param", "s_per_B_active_param", "first_nx_s_per_B_param", "doctor_s_per_B_active", "experiments_per_valid_nx", "grok_lanes_per_patient", "opus_per_patient", "rules_reused", "rules_retuned", "rules_new"],
+    "rule": "ratios that cannot be formed are null — never inf/nan. Do not Goodhart; instrumentation only."
+  },
+  "frontier_depth": {
+    "source": "S004 §27",
+    "fields": ["time_to_first_valid_nx", "time_to_conventional_anchor", "time_to_first_sub3", "time_to_first_sub2_5", "time_to_first_sub2", "time_to_best_frontier", "candidates_to_frontier", "cheap_kills", "doctor_fast_count", "full_doctor_count", "grok_calls_to_frontier"]
+  },
+  "transfer_acceleration": {
+    "source": "S003 §9",
+    "rule": "do not invent expected-from-scratch until enough evidence; until then report rules_reused + new_rule_count + actual_wall"
+  },
+  "cost_model": {
+    "path": "workspace/campaign/odyssey/ODYSSEY_COST_MODEL.json",
+    "schema": "hawking.odyssey.cost_model.v1",
+    "inputs": ["source_bytes", "parameter_count", "active_parameter_count", "tensor_count", "expert_count", "architecture_family", "modality", "representation_passes", "rule_reuse_pct", "doctor_workload", "native_primitives", "source_acquisition_size"],
+    "outputs": ["acquisition_wall", "gravity_wall", "first_nx_wall", "doctor_wall", "patient_wall"],
+    "rule": "status=insufficient data when n_patients<2. Every estimate carries uncertainty + _not_fact + _label INFERRED|UNKNOWN. Never present a point estimate as fact."
+  },
+  "detachment_metrics": {
+    "source": "S004 §71",
+    "fields": ["deterministic_decisions", "total_decisions", "deterministic_fraction", "grok_escalations_per_patient", "opus_escalations_per_patient", "opus_escalations_per_cycle", "patient_wall_per_opus", "patient_wall_per_opus_token", "rules_per_opus_escalation", "nr_nx_candidates_per_opus_escalation", "desired_trend", "desired_trend_flags"],
+    "desired_trend": "deterministic_fraction UP, candidate_throughput UP, grok_novelty_quality UP, opus_dependency DOWN",
+    "rule": "deterministic_decisions/total from RUN_LOG.jsonl if present. Desired-trend flags are policy direction, not an observed slope (need ≥2 snapshots)."
+  }
+}

@@ -1,0 +1,285 @@
+{
+  "schema": "hawking.odyssey.policy.v1",
+  "source_steer": "S004 (anti-complacency + ultra-detachment)",
+  "_doc": "Machine-readable Odyssey-I research policy. The deterministic orchestrator (v2) ENFORCES this; Grok supplies novelty; Opus is a rare interrupt. Prose in the steer; this is the enforceable spec.",
+  "candidate_classes": [
+    "BASELINE",
+    "CONVENTIONAL_ANCHOR",
+    "AGGRESSIVE_QUANT",
+    "STRUCTURAL_GRAVITY",
+    "ACTIVE_NX",
+    "FRONTIER",
+    "FINALIST"
+  ],
+  "conventionality_gate": {
+    "presumptively_conventional_mechanisms": [
+      "uniform-quant",
+      "affine-quant",
+      "symmetric-quant",
+      "per-group-scale-bias",
+      "ordinary-mixed-precision",
+      "gguf-mlx-like-per-weight"
+    ],
+    "nonconventional_requires": "materially exploits model structure, conditional execution, procedural reconstruction, correction hierarchy, tiering, or NX-native execution",
+    "rule": "CONVENTIONAL_ANCHOR != REPRESENTATION_FRONTIER; a Doctor-valid conventional candidate is an anchor, never automatically a frontier."
+  },
+  "representation_ladder": [
+    "SOURCE",
+    "CONVENTIONAL_ANCHOR",
+    "AGGRESSIVE_QUANT_FRONTIER",
+    "STRUCTURAL_GRAVITY_FRONTIER",
+    "ACTIVE_NX_FRONTIER"
+  ],
+  "packet_must_state": "highest ladder level reached + stopping reason",
+  "aggressive_ladder": {
+    "bit_descent": [
+      "q3->q2",
+      "q2->ternary/~1.x",
+      "mixed q1/q2/q3"
+    ],
+    "allocation_units": [
+      "organ",
+      "tensor",
+      "layer",
+      "expert",
+      "expert_family",
+      "channel_group",
+      "correction_tier",
+      "route_conditioned_component"
+    ],
+    "families": [
+      "per-organ/layer/expert/sensitivity-driven bit allocation",
+      "alt group sizes",
+      "shared metadata",
+      "entropy-coded metadata",
+      "scale x codec joint opt",
+      "base+correction (sparse/residual/selected-hi-prec-channels/expert- or route-conditioned/procedural)",
+      "matryoshka tiers T0..T3"
+    ],
+    "search_space_is_data": true,
+    "rule": "after an anchor passes, AUTOMATICALLY attempt at least one credible nonconventional probe; do not assume failed-global-q2 implies every component needs q3 \u2014 search allocation.",
+    "per_component_extreme": {
+      "target": "TOTAL complete_bpw sub-1 / sub-0.2 via HETEROGENEOUS per-component budgets",
+      "component_floors_bpw": [1.0, 0.5, 0.25, 0.1, 0.05, 0.02, 0.01],
+      "note": "the per-component (organ/expert/channel/layer) floor may go to 1/10 (0.1) or 1/100 (0.01) BPW \u2014 or effectively 0 for a component that reduces to a shared codebook index / low-rank factor / dropped-to-constant + sparse correction / pruned-with-repair. Total = weighted roll-up of per-component budgets. A few protected components may stay high; most may collapse near-zero.",
+      "reach_mechanisms": "structural/shared-basis (shared base + delta), latent/generated/procedural, base+correction, prune-to-zero+repair, shared-index/codebook, cross-expert low-rank \u2014 NOT naive per-weight bit reduction (that floors at ~1-2)."
+    },
+    "opportunistic_descent": {
+      "policy": "PUSH EVERY COMPONENT to its floor \u2014 be OPPORTUNISTIC about potential, do not leave a component at a conservative budget if it might tolerate far less. The system is SMART ENOUGH TO STOP: Doctor + false-win gates catch a component that actually breaks, so descend aggressively.",
+      "algorithm": "per component, sensitivity-guided descent (start from sensitivity rank; binary-search / geometric descent the bit budget down toward 0.01) until Doctor/held-out breaks, then step back one + try a repair (correction/protect) at that boundary; keep the lowest Doctor-holding budget. Cheap discriminators first; full Doctor only near the boundary.",
+      "stop": "component floor reached (Doctor holds at lowest tried) OR breakage not repairable cheaply OR expected further gain < cost. Localize + record the boundary either way (failure IS data).",
+      "guardrails": "complete accounting (correction/codebook/repair bytes counted), activation-aware only, Doctor authority, native execution (a component that must expand to dense before compute is not a real sub-0.1 win)."
+    }
+  },
+  "target_pressure_zones_bpw": {
+    "reachable_or_explained": 3.0,
+    "pressure": 2.5,
+    "aggressive": 2.0,
+    "structural_correction_tier": 1.5,
+    "frontier_full_accounting": 1.0,
+    "_note": "research coordinates + anti-complacency pressure, NOT pass thresholds; arch manifest is authority"
+  },
+  "arch_objective": {
+    "dense": "stored-density",
+    "moe": "active-bytes/token",
+    "hybrid_ssm": "state residency",
+    "multimodal": "per-modality organs",
+    "mtp": "tokens/expensive-traversal",
+    "streamed": "residency+IO scheduling"
+  },
+  "failure_policy": {
+    "on_doctor_fail": "cheaply localize (organ/layer/router/attn/expert/scale-metadata; representational vs execution) then generate TARGETED repair protecting smallest responsible component",
+    "anti_retreat": "global precision retreat (X + globally higher bits) is LAST resort; first protect sensitive organ/router/attn/outliers, add sparse correction/residual tier, change grouping/scale-objective/metadata, heterogeneous expert precision, alternate family",
+    "search_around_failures": "q3-pass/q2-fail => probe q2+selective-q3 / q2+correction / alt-group / protected-metadata / expert-subsets / tiered; frontier lives in representation space not integer bit-width"
+  },
+  "moe_policy": {
+    "separate_axes": [
+      "stored_density",
+      "active_execution_density"
+    ],
+    "selected_full_is_selection_not_cost": "top-k/N (e.g. 0.0625) is a 16x SELECTION opportunity, not 1/16 cost",
+    "no_cold_expert_assumption": "measure route distribution first; low cold_expert_fraction => prioritize active-gather / per-expert repr / route-residency / expert-local codecs / metadata-share / route-prefetch / route-correction; keep reopen_if for skewed routing"
+  },
+  "accounting_gates": {
+    "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state; record nominal_bits AND complete_bpw",
+    "no_fake_active_density": "selected/full ratio != active_bpw; measure bytes/token + DRAM traffic",
+    "no_fake_tps": "protected exclusive GPU lane; parallelize cognition, serialize physical timing",
+    "physics_programmatic": "TPS/TOKEN_NS/TTFT/active-bytes/mem/bw/kernel-wall/cache/streaming are MEASURED; models only explain anomalies, never decide 'faster'"
+  },
+  "anti_goodhart": {
+    "bpw": "keep Pareto; push harder != ignore physics",
+    "doctor": "held-out + arch-relevant probes, compare capability pattern not one scalar",
+    "info_count": "novelty of evidence, not receipt count"
+  },
+  "retirement_gate": {
+    "requires": [
+      "conventional_anchor_exists",
+      "best_aggressive_point",
+      "nonconventional_probe_attempted",
+      "frontier_localized",
+      "active_execution_measured_if_relevant",
+      "remaining_positive_EV_evaluated"
+    ],
+    "default_refuse_if": "conventional_anchor_exists AND aggressive_probe_attempted==false AND cheap_credible_mechanisms_remain",
+    "exception": "explicit LOW_INFORMATION_VALUE receipt",
+    "cycle_metric": "PATIENTS_RETIRED_WITHOUT_NONCONVENTIONAL_PROBE desired 0"
+  },
+  "negative_science": {
+    "every_kill_keeps": [
+      "scope",
+      "evidence",
+      "arch_assumptions",
+      "reopen_if"
+    ],
+    "predicates_over_blacklists": "e.g. IF moe AND route_entropy_high THEN deprioritize cold-expert-compression"
+  },
+  "detachment": {
+    "hierarchy": [
+      "deterministic_software",
+      "grok",
+      "local_model",
+      "opus"
+    ],
+    "always_ask": "can this decision be lowered one level? if yes, lower it",
+    "deterministic_owns": "threshold/rule/state-transition/cost-fn/Pareto/search-policy/arch-predicate/Doctor-predicate/retirement-predicate/candidate-gen",
+    "grok": "novelty engine (NOVELTY_PACKET -> fanout: representation/numerical/arch/kernel/adversarial/literature/compression lanes); NOT arithmetic a script can do; also anti-dogma rulebase challenge",
+    "local_models": "repetitive impl/tests/static-analysis/refactor/receipt-compress/candidate-policy-gen; never self-certify science (pass through tests/Doctor/physics/receipts)",
+    "opus_is_interrupt_handler": {
+      "default": "ASLEEP",
+      "wake_only_for": [
+        "irreconcilable high-quality contradiction",
+        "genuinely unprecedented architecture",
+        "suspected systemic Goodhart",
+        "universal rule with project-wide implications",
+        "ontology-change evidence",
+        "strategic model/resource fork requiring user judgment"
+      ],
+      "never_for": [
+        "candidate failed",
+        "BPW target missed",
+        "patient finished",
+        "new patient began",
+        "autotune required",
+        "Grok wave finished",
+        "Doctor passed/failed",
+        "ordinary frontier moved"
+      ],
+      "budget": "track opus_escalations/reason/resolution/became_code per patient; same class twice -> encode to software; three times -> orchestration defect; target OPUS_ESCALATIONS -> 0"
+    },
+    "predeclared_manifest": "canonical source + Doctor bar + stored/active/TPS pressure targets + search class + kernel effort + info budget PER PATIENT; orchestrator never asks Claude 'what target/which repo'",
+    "receipts_are_machine_memory": "next patient needs no old chat; chat=dev-history, receipts+rulebase+packet+transfer-matrix+provenance = machine memory",
+    "memory": {
+      "swap_max_gib": 30,
+      "physical_ram_gib": 96,
+      "reserve_gib": 12,
+      "multi_model": true,
+      "clean_room_only_for": "protected_timing (TPS/TOKEN_NS); ordinary SPECIMEN experiments run concurrently",
+      "rule": "admit MULTIPLE concurrent model experiments while projected swap <= 30 GiB; serialize only same-write_set lanes and protected-timing (clean_room) lanes. tools/odyssey_memgate.py enforces."
+    }
+  },
+  "escalation_order_on_stall": [
+    "deterministic_search",
+    "rule_transfer",
+    "grok_novelty_fanout",
+    "grok_adversarial_review",
+    "opus (only if genuinely necessary)"
+  ],
+  "detachment_metrics": [
+    "deterministic_decisions/total",
+    "grok_escalations/patient",
+    "opus_escalations/patient",
+    "opus_escalations/cycle",
+    "patient_wall/opus_token",
+    "rules/opus_escalation",
+    "nr_nx_candidates/opus_escalation"
+  ],
+  "desired_trend": "deterministic_fraction UP, candidate_throughput UP, grok_novelty_quality UP, opus_dependency DOWN",
+  "compile_economics_frontier_depth": [
+    "time_to_first_valid_nx",
+    "time_to_conventional_anchor",
+    "time_to_first_sub3",
+    "time_to_first_sub2_5",
+    "time_to_first_sub2",
+    "time_to_best_frontier",
+    "candidates_to_frontier",
+    "cheap_kills",
+    "doctor_fast_count",
+    "full_doctor_count",
+    "grok_calls_to_frontier"
+  ],
+  "cycle1_is_training_trace": "capture every deterministic/grok/claude/failed-candidate/retirement/transfer/economics decision; DISTILL into Orchestrator v2 post-Cycle-1 (do NOT prematurely automate unknown science; once observed, automate aggressively)",
+  "orchestrator_v2_mission_post_cycle1": {
+    "trigger": "after Cycle-1 APIs/traces stabilize",
+    "method": "swgrok (large Grok fanout, Opus architects+arbitrates)",
+    "central_question": "what did Opus/Claude do in Cycle-1 that can become code/data/rule/test/state-transition/grok-escalation-policy?",
+    "must_pass": [
+      "claude-free-patient",
+      "grok-only-novelty",
+      "opus=0-patient",
+      "anti-complacency test",
+      "conventionality test",
+      "failure-localization test",
+      "receipt-anti-dogma test",
+      "full-storage-cycle (opus=0)"
+    ]
+  },
+  "prime_directive": "HAWKING (not Claude) autonomously runs Odyssey; every repeated Opus/Grok decision -> code; every measurable fact was never a model decision; Odyssey becomes cheaper as it becomes smarter AND more aggressive as its search becomes cheaper. Build a deterministic scientific engine + a Grok novelty engine + a rare Opus arbiter \u2014 not a safe quantizer, not an Opus-supervised shell.",
+  "gravity_specs": {
+    "q3-g32-experts": {
+      "candidate_class": "CONVENTIONAL_ANCHOR",
+      "conventionality": "conventional",
+      "mechanism": "affine-quant",
+      "nominal_bits": 3,
+      "group_size": 32,
+      "kind": "moe"
+    },
+    "q4-g64": {
+      "candidate_class": "CONVENTIONAL_ANCHOR",
+      "conventionality": "conventional",
+      "mechanism": "uniform-quant",
+      "nominal_bits": 4,
+      "group_size": 64,
+      "kind": "dense"
+    },
+    "q4-g64-attn-mlp": {
+      "candidate_class": "CONVENTIONAL_ANCHOR",
+      "conventionality": "conventional",
+      "mechanism": "ordinary-mixed-precision",
+      "nominal_bits": 4,
+      "group_size": 64,
+      "kind": "hybrid"
+    },
+    "q2-g32-experts": {
+      "candidate_class": "AGGRESSIVE_QUANT",
+      "conventionality": "nonconventional",
+      "mechanism": "affine-quant",
+      "nominal_bits": 2,
+      "group_size": 32,
+      "kind": "moe"
+    },
+    "mixed-q2q3-experts": {
+      "candidate_class": "STRUCTURAL_GRAVITY",
+      "conventionality": "nonconventional",
+      "mechanism": "per-organ/layer/expert/sensitivity-driven bit allocation",
+      "nominal_bits": null,
+      "group_size": 32,
+      "kind": "moe"
+    },
+    "q2-g64": {
+      "candidate_class": "AGGRESSIVE_QUANT",
+      "conventionality": "nonconventional",
+      "mechanism": "uniform-quant",
+      "nominal_bits": 2,
+      "group_size": 64,
+      "kind": "dense"
+    },
+    "q2-g64-attn-mlp": {
+      "candidate_class": "AGGRESSIVE_QUANT",
+      "conventionality": "nonconventional",
+      "mechanism": "ordinary-mixed-precision",
+      "nominal_bits": 2,
+      "group_size": 64,
+      "kind": "hybrid"
+    }
+  }
+}

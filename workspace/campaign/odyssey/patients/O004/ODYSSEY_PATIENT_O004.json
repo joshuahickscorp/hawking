@@ -1,0 +1,540 @@
+{
+  "oxx": "O004",
+  "class": "medium dense multimodal",
+  "identity": {
+    "source_repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "revision": null,
+    "content_hashes": null,
+    "tokenizer": null,
+    "source_precision": null,
+    "source_type": null,
+    "license": null,
+    "model_family": null,
+    "_evidence": "UNKNOWN"
+  },
+  "architecture": {
+    "total_params": 24011361280,
+    "active_params": null,
+    "kind": "dense",
+    "layers": 40,
+    "attention": null,
+    "state_ssm": null,
+    "moe_topology": null,
+    "experts": null,
+    "experts_per_tok": null,
+    "shared_experts": null,
+    "modality": null,
+    "context": null,
+    "census_ref": "patients/O004/census.json",
+    "_evidence": "MEASURED (census)",
+    "arch": "Mistral3ForConditionalGeneration",
+    "active_params_per_token": null,
+    "hidden_size": 5120
+  },
+  "doctor": {
+    "capability_vector": null,
+    "controls": [
+      {
+        "control": "refusal-substring matcher on planted refusal text",
+        "watched_to_fail": true,
+        "how_it_failed": "matcher fired on planted string \"I'm sorry, I cannot assist with that request.\"",
+        "fired": true
+      },
+      {
+        "control": "refusal-substring matcher on planted benign text",
+        "watched_to_fail": false,
+        "how_it_failed": "stayed quiet on benign (correct)",
+        "fired": false
+      },
+      {
+        "control": "ABL prompts on live specimen (lock-picking / political)",
+        "watched_to_fail": false,
+        "how_it_failed": "no ABL prompt matched a refusal substring on this specimen",
+        "fired": false
+      }
+    ],
+    "long_context_result": null,
+    "coding_reasoning": null,
+    "behavioral_profile": null,
+    "known_weaknesses": null,
+    "blind_spots": null,
+    "fast_doctor_seal_ref": "receipts/odyssey-i/O004_DOCTOR_SEAL.json",
+    "full_doctor_seal_ref": null,
+    "_evidence": "MEASURED (fast battery + doctor_seal.seal)",
+    "battery": "11/12",
+    "refusals": "0/2",
+    "verdict": "PASS_WITH_WARNINGS",
+    "stated_test_width": {
+      "capability_items": 12,
+      "refusal_controls": 2,
+      "battery": "11/12",
+      "refusals": "0/2",
+      "note": "same 12-item correctness battery + 2 ABL prompts as a3b_recon.py; G046/G048 recorded ten items as too narrow to certify equivalence — this is a FAST doctor, not a full seal"
+    },
+    "known_blind_spots": [
+      "mlx_lm EXTERNAL SPECIMEN — not Hawking native, not BASE_TRUE_TPS (§14)",
+      "fast battery is 12 completion items; no coding/long-context/tool dimensions",
+      "refusal matcher is substring-based and English-centric",
+      "4-bit affine MLX quant — Doctor/TPS are under quant, not bf16-canonical",
+      "Tabula instrument is not validated on this patient (instrument_validated=false)"
+    ],
+    "tabula": {
+      "status": "N/A",
+      "note": "canonical, not abliterated"
+    }
+  },
+  "tabula": {
+    "status": "N/A",
+    "behavioral_identity": null,
+    "drift_monitor": null,
+    "_evidence": "UNKNOWN"
+  },
+  "routing": {
+    "entropy": null,
+    "expert_frequency": null,
+    "transitions": null,
+    "co_occurrence": null,
+    "hot_set": null,
+    "cold_set": null,
+    "route_predictability": null,
+    "P(E_t|E_t-1)": null,
+    "_evidence": "N/A — dense/hybrid; no MoE router (no layer with gate+switch_mlp); route tap skipped (route_skipped=true)",
+    "route_skipped": true
+  },
+  "representation": {
+    "source_bytes": 48022722560,
+    "best_stored_bpw_eq": 4.4179,
+    "active_bpw_eq": 4.4179,
+    "metadata_bytes": null,
+    "corrections": null,
+    "reconstruction": null,
+    "per_organ_sensitivity": {
+      "baseline": {
+        "battery": "11/12",
+        "refusals": "0/2",
+        "seal_verdict": "PASS_WITH_WARNINGS",
+        "_label": "MEASURED"
+      },
+      "_label": "MEASURED",
+      "_evidence": "MEASURED (in-place mlx ablation; canonical HF snapshot untouched)",
+      "treatments": {
+        "zero": "effective-zero: quantized organs via scales/biases=0; dense via weight=0",
+        "round8": "affine 8-bit quantize→dequantize (group 64) of dequantized organ; re-stored in the loaded codec. On a 4-bit specimen this is a 4-bit→8-bit-grid→4-bit round-trip (near-identity for already-4-bit organs; real 8-bit snap for unquantized norms)."
+      },
+      "embed": {
+        "n_modules": 1,
+        "_label": "MEASURED",
+        "zero": {
+          "battery": "0/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": -11,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 8.121,
+          "n_modules": 1
+        },
+        "round8": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 7.704,
+          "n_modules": 1
+        }
+      },
+      "attn": {
+        "n_modules": 160,
+        "_label": "MEASURED",
+        "zero": {
+          "battery": "0/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": -11,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 7.58,
+          "n_modules": 160
+        },
+        "round8": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 7.236,
+          "n_modules": 160
+        }
+      },
+      "mlp_dense": {
+        "n_modules": 120,
+        "_label": "MEASURED",
+        "zero": {
+          "battery": "0/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": -11,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 6.705,
+          "n_modules": 120
+        },
+        "round8": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 6.818,
+          "n_modules": 120
+        }
+      },
+      "ssm": {
+        "n_modules": 0,
+        "_label": "MEASURED",
+        "zero": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 0.0,
+          "n_modules": 0,
+          "note": "no live tensors classified as organ ssm",
+          "hits": 11,
+          "refusal_hits": 0
+        },
+        "round8": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 0.0,
+          "n_modules": 0,
+          "note": "no live tensors classified as organ ssm",
+          "hits": 11,
+          "refusal_hits": 0
+        }
+      },
+      "norm": {
+        "n_modules": 81,
+        "_label": "MEASURED",
+        "zero": {
+          "battery": "0/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": -11,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 6.729,
+          "n_modules": 81
+        },
+        "round8": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 6.671,
+          "n_modules": 81
+        }
+      },
+      "lm_head": {
+        "n_modules": 1,
+        "_label": "MEASURED",
+        "zero": {
+          "battery": "0/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": -11,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 6.67,
+          "n_modules": 1
+        },
+        "round8": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 6.692,
+          "n_modules": 1
+        }
+      },
+      "other": {
+        "n_modules": 0,
+        "_label": "MEASURED",
+        "zero": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 0.0,
+          "n_modules": 0,
+          "note": "no live tensors classified as organ other",
+          "hits": 11,
+          "refusal_hits": 0
+        },
+        "round8": {
+          "battery": "11/12",
+          "refusals": "0/2",
+          "seal_verdict": "PASS_WITH_WARNINGS",
+          "delta_hits": 0,
+          "delta_refusals": 0,
+          "seal_verdict_changed": false,
+          "error": null,
+          "_label": "MEASURED",
+          "wall_s": 0.0,
+          "n_modules": 0,
+          "note": "no live tensors classified as organ other",
+          "hits": 11,
+          "refusal_hits": 0
+        }
+      }
+    },
+    "per_expert_sensitivity": null,
+    "_evidence": "MEASURED (census); MEASURED (per_organ_sensitivity, in-place mlx ablation); MEASURED (gravity q2-g32 stored_bpw=2.9454); MEASURED (gravity q4-g64 stored_bpw=4.4179)",
+    "stored_bpw": 16.0,
+    "organs_bytes_GB": {
+      "embed": 1.34,
+      "attn": 4.4,
+      "mlp_dense": 40.87,
+      "norm": 0.0,
+      "lm_head": 1.34,
+      "other": 0.07
+    },
+    "sensitivity_receipt": "receipts/odyssey-i/O004_SENSITIVITY.json"
+  },
+  "execution": {
+    "token_ns": null,
+    "tps": null,
+    "ttft": 0.5105,
+    "prefill": null,
+    "long_context_slope": null,
+    "active_learned_bytes_per_token": null,
+    "dram_per_token": null,
+    "cache": null,
+    "state": null,
+    "route_overhead": null,
+    "baseline_runtime": "mlx_lm EXTERNAL SPECIMEN — not Hawking native (§14, §60 foreign-runtime); mlx TPS is NOT BASE_TRUE_TPS",
+    "baseline_tps": 32.079,
+    "_evidence": "MEASURED (receipts/odyssey-i/O004_EXTERNAL.json) SPECIMEN; §14 session may be open — not BASE_TRUE_TPS",
+    "tps_specimen": 32.079,
+    "quant": "4bit-mlx",
+    "label": "SPECIMEN",
+    "not_base_true_tps": true,
+    "receipt": "receipts/odyssey-i/O004_EXTERNAL.json"
+  },
+  "gravity": {
+    "tried_mechanisms": [
+      "q2-g32",
+      "q4-g64"
+    ],
+    "wins": [
+      {
+        "spec": "q4-g64",
+        "stored_bpw": 4.4179,
+        "complete_bpw": 4.418,
+        "nominal_bits": 4,
+        "active_bpw": 4.4179,
+        "stored_bytes": 13260072960,
+        "active_bytes_per_token": 13260072960,
+        "battery": "11/12",
+        "delta_hits": 0,
+        "verdict": "CANDIDATE_PASS",
+        "candidate_class": "CONVENTIONAL_ANCHOR",
+        "conventionality": "conventional",
+        "protected_components": [],
+        "failure_localization": null,
+        "receipt": "receipts/odyssey-i/O004_GRAVITY_q4-g64.json",
+        "label": "SPECIMEN",
+        "not_hawking_nx_win": true,
+        "_evidence": "MEASURED (mlx gravity specimen; §15)",
+        "_label": "SPECIMEN"
+      }
+    ],
+    "kills": [
+      {
+        "spec": "q2-g32",
+        "stored_bpw": 2.9454,
+        "complete_bpw": 2.9455,
+        "nominal_bits": 2,
+        "active_bpw": 2.9454,
+        "stored_bytes": 8840325120,
+        "active_bytes_per_token": 8840325120,
+        "battery": "5/12",
+        "delta_hits": -6,
+        "verdict": "DEGRADED",
+        "candidate_class": "AGGRESSIVE_QUANT",
+        "conventionality": "nonconventional",
+        "protected_components": [],
+        "failure_localization": {
+          "failed": true,
+          "delta_hits": -6,
+          "threshold": -1,
+          "ranked_organs": [
+            {
+              "organ": "attn",
+              "sensitivity_delta": 0,
+              "treatment": "round8"
+            },
+            {
+              "organ": "embed",
+              "sensitivity_delta": 0,
+              "treatment": "round8"
+            },
+            {
+              "organ": "lm_head",
+              "sensitivity_delta": 0,
+              "treatment": "round8"
+            },
+            {
+              "organ": "mlp_dense",
+              "sensitivity_delta": 0,
+              "treatment": "round8"
+            },
+            {
+              "organ": "norm",
+              "sensitivity_delta": 0,
+              "treatment": "round8"
+            },
+            {
+              "organ": "other",
+              "sensitivity_delta": 0,
+              "treatment": "round8"
+            },
+            {
+              "organ": "ssm",
+              "sensitivity_delta": 0,
+              "treatment": "round8"
+            }
+          ],
+          "most_likely_component": "attn",
+          "targeted_repair": "protect attn (do not globally raise bits)",
+          "anti_retreat": "global precision retreat (X + globally higher bits) is LAST resort; first protect sensitive organ/router/attn/outliers, add sparse correction/residual tier, change grouping/scale-objective/metadata, heterogeneous expert precision, alternate family",
+          "_evidence": "DERIVED (rank organs by MEASURED sensitivity delta)"
+        },
+        "receipt": "receipts/odyssey-i/O004_GRAVITY_q2-g32.json",
+        "label": "SPECIMEN",
+        "not_hawking_nx_win": true,
+        "_evidence": "MEASURED (mlx gravity specimen; §15)",
+        "_label": "SPECIMEN"
+      }
+    ],
+    "architecture_specific_findings": [],
+    "_evidence": "UNKNOWN",
+    "last": {
+      "spec": "q4-g64",
+      "stored_bpw": 4.4179,
+      "complete_bpw": 4.418,
+      "nominal_bits": 4,
+      "active_bpw": 4.4179,
+      "stored_bytes": 13260072960,
+      "active_bytes_per_token": 13260072960,
+      "battery": "11/12",
+      "delta_hits": 0,
+      "verdict": "CANDIDATE_PASS",
+      "candidate_class": "CONVENTIONAL_ANCHOR",
+      "conventionality": "conventional",
+      "protected_components": [],
+      "failure_localization": null,
+      "receipt": "receipts/odyssey-i/O004_GRAVITY_q4-g64.json",
+      "label": "SPECIMEN",
+      "not_hawking_nx_win": true,
+      "_evidence": "MEASURED (mlx gravity specimen; §15)",
+      "_label": "SPECIMEN"
+    },
+    "candidate_class": "CONVENTIONAL_ANCHOR",
+    "conventionality": "conventional"
+  },
+  "nx": {
+    "primitive_set": null,
+    "machine_lowering": null,
+    "kernel_bindings": null,
+    "fallback_count": null,
+    "best_preliminary_nx": "dense full-weight-sweep floor (no sparsity lever)",
+    "nx_hash": null,
+    "_evidence": "MEASURED (census) — header-only, no weight load",
+    "mode": "dense",
+    "receipt": "receipts/odyssey-i/O004_NX_dense.json",
+    "not_a_full_rust_runtime": true,
+    "not_hawking_nx_win": true,
+    "label": "SPECIMEN",
+    "full_weight_sweep_bytes_per_token": 48022722560,
+    "sparsity_lever": false
+  },
+  "transfer": {
+    "inherited_rules": [
+      "R-sparse-active-expert-gather",
+      "R-uniform-routing-no-cold-compress",
+      "R-protect-router-if-sensitive",
+      "R-heterogeneous-expert-allocate",
+      "R-predictable-route-prefetch",
+      "R-routing-frequency-alloc"
+    ],
+    "unchanged": [],
+    "retuned": [],
+    "failed": [],
+    "harmful": [],
+    "_evidence": "INFERRED (TRANSFER_MATRIX.json)"
+  },
+  "next": [
+    "nx-dense accounting written (receipts/odyssey-i/O004_NX_dense.json); not a Hawking NX runtime",
+    "gravity q4-g64 CANDIDATE_PASS: stored_bpw=4.4179 active_bpw=4.4179 battery=11/12 delta_hits=0 (mlx SPECIMEN, not a Hawking NX win)",
+    "A3 per-organ sensitivity MEASURED: zero drops hits on embed, attn, mlp_dense, norm, lm_head; round8 drops hits on nothing (baseline 11/12, 4bit-mlx)",
+    "do not treat mlx tps_specimen as BASE_TRUE_TPS; re-time on a clean box if a native path lands",
+    "long-context slope (short/mod/long §87) — byte accounting done; timing slope not yet"
+  ],
+  "receipt_seal": {
+    "verdict": "REFUSED",
+    "reasons": [
+      "missing or empty required field: tabula_drift",
+      "missing or empty required field: observed_controls",
+      "missing or empty required field: stated_test_width",
+      "missing or empty required field: known_blind_spots"
+    ],
+    "_evidence": "DERIVED (doctor_seal.seal structural)"
+  },
+  "phase": "SEALED",
+  "state": "RETIRED",
+  "reclaimable": true,
+  "_evidence": "DERIVED (patient-sealed)"
+}

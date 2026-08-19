@@ -1,0 +1,169 @@
+{
+  "schema": "odyssey.patient.transfer_control.v1",
+  "oxx": "O006",
+  "reference": "O005",
+  "section": "\u00a741",
+  "delta": {
+    "route": {
+      "entropy_avg": 0.0651,
+      "entropy_max": 0.0,
+      "cold_experts": 0,
+      "top16_mass_pct": 0,
+      "most_popular_share": 0.0432,
+      "transition_stability": -0.0055,
+      "adjacent_token_overlap": -0.0055,
+      "p_e_t_given_e_t_minus_1": -0.0051,
+      "tokens_observed": 0
+    },
+    "representation": {
+      "stored_bpw": 0.0,
+      "organs_bytes_GB": {
+        "attn": 0.29,
+        "embed": 0.01,
+        "expert": 0.0,
+        "lm_head": 0.0,
+        "mlp_dense": 0.54,
+        "norm": 0.0,
+        "other": 0.25,
+        "router": 0.0,
+        "shared_expert": 0.0
+      }
+    },
+    "doctor": {
+      "battery": "12/12",
+      "reference_battery": "10/12",
+      "battery_hits": 2,
+      "refusals": "0/2",
+      "reference_refusals": "0/2",
+      "refusals_hits": 0
+    },
+    "_label": "DERIVED (this specimen MEASURED minus reference MEASURED)"
+  },
+  "measured": {
+    "route": {
+      "entropy_avg": 6.2257,
+      "entropy_max": 7.0,
+      "cold_experts": 0,
+      "top16_mass_pct": 18,
+      "most_popular_share": 1.3753,
+      "transition_stability": 0.4025,
+      "p_e_t_given_e_t_minus_1": 0.3877,
+      "uniform_routing": true,
+      "hot_cold_verdict": "uniform routing; no cold experts; MoE-universal sparse path (8/128 active); cold-expert compression does NOT apply",
+      "moe_layers": 48,
+      "experts": 128,
+      "top_k": 8,
+      "tokens_observed": 573
+    },
+    "representation": {
+      "stored_bpw": 16.0,
+      "organs_bytes_GB": {
+        "embed": 0.63,
+        "attn": 2.1,
+        "router": 0.03,
+        "expert": 57.98,
+        "shared_expert": 0.0,
+        "mlp_dense": 0.54,
+        "norm": 0.0,
+        "lm_head": 0.62,
+        "other": 0.25
+      }
+    },
+    "doctor": {
+      "battery": "12/12",
+      "refusals": "0/2"
+    },
+    "_label": "MEASURED"
+  },
+  "reference_measured": {
+    "route": {
+      "entropy_avg": 6.1606,
+      "entropy_max": 7.0,
+      "cold_experts": 0,
+      "top16_mass_pct": 18,
+      "most_popular_share": 1.3321,
+      "transition_stability": 0.408,
+      "p_e_t_given_e_t_minus_1": 0.3928,
+      "uniform_routing": true,
+      "hot_cold_verdict": "uniform routing; no cold experts; MoE-universal sparse path (8/128 active); cold-expert compression does NOT apply",
+      "moe_layers": 48,
+      "experts": 128,
+      "top_k": 8,
+      "tokens_observed": 573
+    },
+    "representation": {
+      "stored_bpw": 16.0,
+      "organs_bytes_GB": {
+        "embed": 0.62,
+        "attn": 1.81,
+        "router": 0.03,
+        "expert": 57.98,
+        "shared_expert": 0.0,
+        "mlp_dense": 0.0,
+        "norm": 0.0,
+        "lm_head": 0.62,
+        "other": 0.0
+      }
+    },
+    "doctor": {
+      "battery": "10/12",
+      "refusals": "0/2"
+    },
+    "receipt": "receipts/odyssey-i/O005_EXTERNAL.json",
+    "_label": "MEASURED (reference receipt + census)"
+  },
+  "transfer_cells": {
+    "R-sparse-active-expert-gather": "TRANSFERRED_UNCHANGED",
+    "R-uniform-routing-no-cold-compress": "TRANSFERRED_UNCHANGED",
+    "R-protect-router-if-sensitive": "NOT_TESTED",
+    "R-heterogeneous-expert-allocate": "NOT_TESTED",
+    "R-predictable-route-prefetch": "PATIENT_SPECIFIC",
+    "R-organ-inversion": "NOT_TESTED",
+    "R-routing-frequency-alloc": "PATIENT_SPECIFIC",
+    "R-layer0-different-source": "NOT_TESTED",
+    "R-affine-grouped-q2-if-native-kernel": "NOT_TESTED"
+  },
+  "transfer_cell_notes": {
+    "R-sparse-active-expert-gather": "language-MoE sparse path 8/128 over 48 layers matches reference (8/128 x 48); MoE-universal gather still applies. Vision tower is not on the active expert path.",
+    "R-uniform-routing-no-cold-compress": "uniform routing holds: entropy 6.23/7.00, cold=0, top16=18% (ref 6.16, cold=0, top16=18%). cold-expert compression does NOT apply.",
+    "R-protect-router-if-sensitive": "router sensitivity not ablated on this run (no --sensitivity). Router organ is 0.03 GB on both siblings (census) but Doctor-sensitivity is UNKNOWN.",
+    "R-heterogeneous-expert-allocate": "per-expert Doctor sensitivity not measured on this run (no --sensitivity)",
+    "R-predictable-route-prefetch": "transitions not peaked enough to prefetch (stability=0.403, P(E_t|E_t-1)=0.388; ref 0.408). same negative as the O005 specimen \u2014 rule conditions not met.",
+    "R-organ-inversion": "gate vs down Doctor-sensitivity not measured on this run",
+    "R-routing-frequency-alloc": "routing near-uniform (entropy 6.23/7.00, top16=18%, cold=0) so frequency allocation is N/A \u2014 same negative as O005 (ref entropy 6.16, top16=18%, uniform=True).",
+    "R-layer0-different-source": "per-layer route entropy is recorded but Shannon-gap / non-Gaussianity of the source is not measured (needs A3-style layer statistics, not a route tap)",
+    "R-affine-grouped-q2-if-native-kernel": "no Doctor-valid q2 and no native Hawking kernel on this specimen (mlx 4-bit is a foreign-runtime SPECIMEN, \u00a760)"
+  },
+  "matrix_status_alias": {
+    "RETUNED": "TRANSFERRED_RETUNED"
+  },
+  "inherited_rules": [
+    "R-sparse-active-expert-gather",
+    "R-uniform-routing-no-cold-compress",
+    "R-predictable-route-prefetch",
+    "R-routing-frequency-alloc"
+  ],
+  "unchanged": [
+    "R-sparse-active-expert-gather",
+    "R-uniform-routing-no-cold-compress"
+  ],
+  "retuned": [],
+  "failed": [],
+  "harmful": [],
+  "patient_specific": [
+    "R-predictable-route-prefetch",
+    "R-routing-frequency-alloc"
+  ],
+  "architecture_specific": [],
+  "not_tested": [
+    "R-protect-router-if-sensitive",
+    "R-heterogeneous-expert-allocate",
+    "R-organ-inversion",
+    "R-layer0-different-source",
+    "R-affine-grouped-q2-if-native-kernel"
+  ],
+  "vision_tower_skipped": true,
+  "language_moe_only": true,
+  "commit": "6cc2402d012fc578650db2fac03facf394de81d5",
+  "_evidence": "MEASURED route/doctor (O006_EXTERNAL vs O005_EXTERNAL); MEASURED organs/stored_bpw (census); DERIVED cells"
+}

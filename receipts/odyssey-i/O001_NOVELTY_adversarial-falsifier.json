@@ -1,0 +1,567 @@
+{
+  "schema": "hawking.odyssey.novelty_lane_report.v1",
+  "oxx": "O001",
+  "lane": "adversarial-falsifier",
+  "arch": "FalconH1ForCausalLM",
+  "kind": "hybrid",
+  "source": "tiiuae/Falcon-H1-7B-Instruct",
+  "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+  "_evidence": "HYPOTHESIS (proposals) + MEASURED (gravity/sensitivity/headers/weight-proxy) + DERIVED (floors)",
+  "not_hawking_nx_win": true,
+  "physics_not_measured": true,
+  "question": "For every live conventional/aggressive point and every novelty hypothesis on this packet: what is the cheapest falsifier, which negative-science entry already kills it, and where is the Goodhart hole?",
+  "params": 7585654880,
+  "pressure_bpw": 2.5,
+  "live_pareto_complete_bpw": 6.5002,
+  "failed_q2_stored_bpw_not_a_win": 5.2611,
+  "remaining_vs_pressure_from_live_anchor_bpw": 4.0002,
+  "packet_primary_delta_used_failed_q2": 2.7611,
+  "NEXT_BOTTLENECK": "Doctor-valid density is 6.5002 because SSM linears are still bf16 (2.782 bpw floor). The q2 mix is dead (0/12 token-loop), so 5.2611 is not a Pareto point. Cheapest remaining Doctor experiment is mixed-q2q4-attn-mlp (protect embed+lm_head). Cheapest remaining density experiment is q4 on SSM in_proj+out_proj only. Do not globally retreat to q3. Do not count failed q2 bytes. Do not claim state-residency as the stored lever (H2 REFUTED at 1557 tokens).",
+  "measured_evidence": {
+    "_label": "MEASURED (safetensors headers, no weight load) + MEASURED (2e6-element bf16 sample proxy; not D(R))",
+    "tensor_bytes": {
+      "mlp.gate": {"params": 1660944384, "bytes": 3321888768, "tensors": 44, "shape": [12288, 3072]},
+      "mlp.up": {"params": 1660944384, "bytes": 3321888768, "tensors": 44, "shape": [12288, 3072]},
+      "mlp.down": {"params": 1660944384, "bytes": 3321888768, "tensors": 44, "shape": [3072, 12288]},
+      "ssm.in_proj": {"params": 902922240, "bytes": 1805844480, "tensors": 44, "shape": [6680, 3072]},
+      "ssm.out_proj": {"params": 415236096, "bytes": 830472192, "tensors": 44, "shape": [3072, 3072]},
+      "attn": {"params": 484442112, "bytes": 968884224, "tensors": 176},
+      "embed": {"params": 399510528, "bytes": 799021056, "tensors": 1, "shape": [130049, 3072]},
+      "lm_head": {"params": 399510528, "bytes": 799021056, "tensors": 1, "shape": [130049, 3072]},
+      "ssm.conv1d": {"params": 788480, "bytes": 1576960, "tensors": 88},
+      "norm": {"params": 273408, "bytes": 546816, "tensors": 89},
+      "ssm.norm": {"params": 135168, "bytes": 270336, "tensors": 44},
+      "ssm.A_log": {"params": 1056, "bytes": 2112, "tensors": 44, "shape": [24]},
+      "ssm.D": {"params": 1056, "bytes": 2112, "tensors": 44, "shape": [24]},
+      "ssm.dt_bias": {"params": 1056, "bytes": 2112, "tensors": 44, "shape": [24]}
+    },
+    "ssm_linear_share_of_ssm_bytes": 0.9993,
+    "ssm_dynamics_bytes": 1853632,
+    "ssm_protected_floor_bpw": 2.7815,
+    "affine_complete_floor": {
+      "q2_g32": 3.0,
+      "q2_g64": 2.5,
+      "q2_g128": 2.25,
+      "q4_g64": 4.5,
+      "note": "payload bits + f16 scale + f16 bias per group. Pressure 2.5 is reachable with affine only if EVERY linear including SSM in/out is q2-g64 (or coarser group) and Doctor holds."
+    },
+    "histogram_non_gaussianity_bits_proxy": {
+      "_note": "KL-like gap of 256-bin z-hist vs Gaussian; NOT decades of D(R). Mass tensors match NS-post-hoc 'essentially Gaussian (0.012-0.018 bits)'.",
+      "mlp.gate_L0_L21_L43": [0.0058, 0.0024, 0.0036],
+      "mlp.down_L0_L21_L43": [0.0309, 0.0104, 0.0226],
+      "ssm.in_proj_L0_L21_L43": [0.0043, 0.0089, 0.0087],
+      "embed": 0.023,
+      "lm_head": 0.038,
+      "ssm.A_log_D_dt_n24": "2.0-3.8 bits but n=24 and scale is not a weight cloud (D mean 10-41)"
+    },
+    "h2_state_vs_kv": {
+      "state_bytes_constant": 70152192,
+      "kv_bytes_per_token": 45056,
+      "crossover_ctx_tokens": 1557.0,
+      "verdict": "REFUTED — state does not dominate at long ctx"
+    }
+  },
+  "ns_query_log": [
+    {
+      "hypothesis": "re-propose q4-g64-attn-mlp as FRONTIER",
+      "ns": "policy.conventionality_gate (ordinary-mixed-precision / affine-quant)",
+      "verdict": "DEAD as frontier; LIVE as CONVENTIONAL_ANCHOR"
+    },
+    {
+      "hypothesis": "count q2-g32-attn-mlp stored_bpw=5.2611 as best density",
+      "ns": "policy.accounting_gates.no_fake_density + anti_goodhart.bpw",
+      "verdict": "DEAD — DEGRADED 0/12 is not a Pareto point"
+    },
+    {
+      "hypothesis": "hit 2.5 bpw while SSM stays bf16",
+      "ns": "NS-implementation-bug-killed-by-math (algebra of the mix)",
+      "verdict": "DEAD — SSM floor 2.7815 > 2.5"
+    },
+    {
+      "hypothesis": "global q3-g32-attn-mlp retreat after q2 fail",
+      "ns": "NS-uniform-subbit-allocation + policy.failure_policy.anti_retreat",
+      "verdict": "DEAD as first repair"
+    },
+    {
+      "hypothesis": "uniform / affine / symmetric / per-group-scale / gguf-mlx-like / alt_group as FRONTIER",
+      "ns": "policy.conventionality_gate",
+      "verdict": "DEAD as frontier"
+    },
+    {
+      "hypothesis": "raw-weight PQ/VQ to ~1 bit",
+      "ns": "NS-raw-weight-pq-vq-at-one-bit",
+      "verdict": "DEAD on raw weights; reopen never on raw weights"
+    },
+    {
+      "hypothesis": "global dense low-rank on MLP body",
+      "ns": "NS-global-dense-lowrank-qwen38",
+      "verdict": "DEAD on a dense body; hybrid MLP is a dense SwiGLU. Does not auto-kill SSM-role split."
+    },
+    {
+      "hypothesis": "Kronecker of mid/late tensors without Van Loan",
+      "ns": "NS-kronecker-factorisation",
+      "verdict": "DEAD at depth until a layer's Van Loan is not flat; layer-0 is the named exception"
+    },
+    {
+      "hypothesis": "entropy-coded Lloyd PQ indices / posthoc scalar gain / ternary factorization / row-norm stratification",
+      "ns": ["NS-entropy-coded-pq-indices", "NS-posthoc-scalar-gain", "NS-ternary-factorization", "NS-row-norm-stratification-premise"],
+      "verdict": "DEAD on their stated premises"
+    },
+    {
+      "hypothesis": "post-hoc better codec / +correction on frozen Gaussian MLP/SSM-linears",
+      "ns": "NS-post-hoc-coding-of-frozen-weights",
+      "verdict": "GATED — mass tensors measure 0.00-0.04 bits non-Gaussianity; reopen_if D(R) gap >= 0.5 decades"
+    },
+    {
+      "hypothesis": "MoE gather / cold-expert / router / routing-frequency / expert-merge / inter-expert / cross-expert tying",
+      "ns": ["TRANSFER_MATRIX ARCHITECTURE_SPECIFIC", "NS-expert-merging-omitted-from-survivors", "NS-inter-expert-redundancy", "NS-cross-expert-and-cross-layer-tying", "NS-large-expert-cache", "NS-calibration-88-tokens"],
+      "verdict": "N/A — O001 has 0 experts. Predicate: IF hybrid AND NOT moe THEN deprioritize all expert-*"
+    },
+    {
+      "hypothesis": "SSM state dominates KV so state-codec is the remaining delta",
+      "ns": null,
+      "verdict": "REFUTED on this patient (H2; crossover 1557). arch_objective=state residency is not the stored 2.5 lever."
+    },
+    {
+      "hypothesis": "treat all 44 layers as one coding problem / celebrate layer-0 as the 2.5 closer",
+      "ns": "NS-layer-zero-is-a-different-source",
+      "verdict": "Premise not reproduced on mass tensors (ng_bits ~0.00-0.03 at L0/L21/L43). Layer-0 attn.o is heavier-tailed (kurt 8.59) — diagnostic, not a density closer."
+    },
+    {
+      "hypothesis": "mixed-q2q4 / SSM-role-split / gate-down inversion",
+      "ns": "NS-uniform-subbit-allocation does NOT kill organ- or tensor-conditioned allocation",
+      "verdict": "ALIVE — cheapest remaining STRUCTURAL probes"
+    }
+  ],
+  "kills": [
+    {
+      "id": "K-anchor-is-not-frontier",
+      "mechanism": "q4-g64-attn-mlp tagged FRONTIER",
+      "scope": "O001 live CONVENTIONAL_ANCHOR; ordinary-mixed-precision attn+mlp(+embed/lm_head) q4-g64, SSM+norm bf16",
+      "evidence": "receipts/odyssey-i/O001_GRAVITY_q4-g64-attn-mlp.json CANDIDATE_PASS battery 10/12 delta_hits=0 stored_bpw=6.5002. policy.conventionality_gate: CONVENTIONAL_ANCHOR != REPRESENTATION_FRONTIER.",
+      "arch_assumptions": "hybrid; mlx SPECIMEN; fast 12-item Doctor",
+      "reopen_if": "never as FRONTIER. Remains the live anchor until a Doctor-valid lower complete_bpw exists.",
+      "cheapest_falsifier": "already passed as anchor. Remaining holes are pattern (same two misses as baseline) and long-ctx, not a new q4 run.",
+      "goodhart_hole": "Name says q4; 2.782 of 6.5002 bpw is still bf16 SSM. 10/12 is the observed ceiling (Jupiter + factorial already fail at baseline). mlx SPECIMEN is not a Hawking NX win."
+    },
+    {
+      "id": "K-failed-q2-is-not-density",
+      "mechanism": "q2-g32-attn-mlp stored_bpw=5.2611 as best_stored / remaining-delta baseline",
+      "scope": "O001 AGGRESSIVE_QUANT specimen, DEGRADED 0/12, complete_bpw=5.2614",
+      "evidence": "receipts/odyssey-i/O001_GRAVITY_q2-g32-attn-mlp.json; packet remaining_target_delta.primary=2.7611 used this failed stored_bpw. policy.accounting_gates.no_fake_density; anti_goodhart.bpw keep Pareto.",
+      "arch_assumptions": "a dead model's bytes are not a live density",
+      "reopen_if": "the same mix is re-run and holds delta_hits>=-1 with a held-out pattern match — then it becomes a live point. Until then 5.2611 is a corpse.",
+      "cheapest_falsifier": "already falsified as a uniform mix (0/12 token-loop). Next is organ-isolated q2, not a re-run.",
+      "goodhart_hole": "best_stored_bpw_eq=5.2611 on the patient packet. Live remaining vs 2.5 is 4.0002 from the q4 anchor, not 2.7611. Localization used 4-bit round8 ranks, not q2 organ ablation — 'protect embed' is HYPOTHESIS."
+    },
+    {
+      "id": "K-ssm-bf16-floor-beats-pressure",
+      "mechanism": "any mix that keeps SSM at bf16 and claims a path to 2.5 complete_bpw",
+      "scope": "O001 current gravity grammar (target=attn-mlp protects ssm+norm)",
+      "evidence": "MEASURED ssm bytes 2638170304; 2638170304*8/7585654880=2.7815 bpw. 2.7815>2.5. NS-implementation-bug-killed-by-math.",
+      "arch_assumptions": "SSM organ stays source bf16",
+      "reopen_if": "SSM linears are quantized or replaced (role-split / procedural / shared-basis). Dynamics-only protect (1.85 MB) does not recreate this floor.",
+      "cheapest_falsifier": "arithmetic — already done. No experiment required to keep this kill dead.",
+      "goodhart_hole": "calling q4-g64-attn-mlp or q2-g32-attn-mlp a 4-bit / 2-bit model."
+    },
+    {
+      "id": "K-global-bit-retreat",
+      "mechanism": "q3-g32-attn-mlp or any global integer bit-width retreat after q2 fail",
+      "scope": "O001 post-q2 repair search",
+      "evidence": "policy.failure_policy.anti_retreat; NS-uniform-subbit-allocation (organs do not degrade together: round8 embed -2, lm_head -1, mlp -1, attn/ssm/norm 0; zero-ablation all load-bearing except attn milder).",
+      "arch_assumptions": "failure is uniform across organs",
+      "reopen_if": "organ-isolated q2 and SSM-role-split and inversion all fail AND expected further structural gain < cost",
+      "cheapest_falsifier": "mixed-q2q4-attn-mlp (this packet P1) before any global q3",
+      "goodhart_hole": "a q3 pass would look like progress while leaving the 2.782 SSM floor untouched and ignoring the token-loop localization."
+    },
+    {
+      "id": "K-conventional-families-as-frontier",
+      "mechanism": "uniform-quant, affine-quant, symmetric-quant, per-group-scale-bias, ordinary-mixed-precision, gguf-mlx-like-per-weight, alt_group",
+      "scope": "O001 novelty / FRONTIER tag",
+      "evidence": "ODYSSEY_POLICY.conventionality_gate.presumptively_conventional_mechanisms",
+      "arch_assumptions": "none — policy gate",
+      "reopen_if": "never as FRONTIER. alt_group remains a cheap conventional discriminator (q4-g32 vs q4-g128) worth at most ~0.15 bpw.",
+      "cheapest_falsifier": "do not run. Info-gain vs remaining 4.0 bpw is too small to be the next spend.",
+      "goodhart_hole": "info_count = receipt count of group-size variants."
+    },
+    {
+      "id": "K-moe-transfer-to-hybrid",
+      "mechanism": "expert-gather, cold-expert compression, router-protect, routing-frequency alloc, expert-merge, inter-expert low-rank, cross-expert/cross-layer tying, large expert cache, 88-token route calibration",
+      "scope": "O001 (hybrid, experts=0, route_skipped=true)",
+      "evidence": "TRANSFER_MATRIX cells O001=ARCHITECTURE_SPECIFIC for all MoE rules. NS-expert-merging, NS-inter-expert-redundancy, NS-cross-expert-and-cross-layer-tying, NS-large-expert-cache, NS-calibration-88-tokens. Predicate: IF hybrid AND NOT moe THEN deprioritize expert-*.",
+      "arch_assumptions": "a mixer that is not a router is not an expert inventory",
+      "reopen_if": "a later Falcon-H1 variant grows a real MoE expert inventory",
+      "cheapest_falsifier": "census organs.expert==0 — already MEASURED. No experiment.",
+      "goodhart_hole": "copying O005 gather/router language onto a 7B hybrid to look like NX progress."
+    },
+    {
+      "id": "K-raw-pq-vq-one-bit",
+      "mechanism": "PQ/VQ of raw weights as the route to ~1 bit",
+      "scope": "O001 frozen weights, all organs",
+      "evidence": "NS-raw-weight-pq-vq-at-one-bit. Mass tensors here are Gaussian (ng_bits 0.00-0.04 MEASURED proxy) — same source class the atlas killed.",
+      "arch_assumptions": "raw frozen weights, no source change",
+      "reopen_if": "never on raw weights. A method that changes the source is a different lever.",
+      "cheapest_falsifier": "already dead in the atlas. Do not spend a Doctor pass.",
+      "goodhart_hole": "sub-1 receipts from a codebook that cannot be executed natively."
+    },
+    {
+      "id": "K-global-dense-lowrank-mlp",
+      "mechanism": "global dense low-rank / shared-template on the MLP body",
+      "scope": "O001 feed_forward.{gate,up,down}_proj (4.983B params, 65.7%)",
+      "evidence": "NS-global-dense-lowrank-qwen38 DEAD on a dense body. Falcon-H1 MLP is a dense SwiGLU, not MoE. does_not_automatically_kill: SSM-role split or a parent that actually has shared structure.",
+      "arch_assumptions": "a global factorisation of a dense transformer body transfers",
+      "reopen_if": "this architecture invalidates the old premise — e.g. measured shared subspace / off-diagonal cosine >= 0.10 on O001 MLP slices",
+      "cheapest_falsifier": "mean pairwise cosine of down_proj (or gate) across a few layers; if << 0.10, stay dead",
+      "goodhart_hole": "low-rank payload without counting factors+indices+reconstruction state as complete_bpw."
+    },
+    {
+      "id": "K-kronecker-without-spectrum",
+      "mechanism": "Kronecker / tensor-product of a mid/late MLP or SSM-linear",
+      "scope": "O001 layers >= 1",
+      "evidence": "NS-kronecker-factorisation DEAD at depth (flat Van Loan). LIVE exception is layer 0 only.",
+      "arch_assumptions": "Van Loan spectrum is peaked",
+      "reopen_if": "any O001 layer whose Van Loan spectrum is not flat",
+      "cheapest_falsifier": "Van Loan on L0 vs L22 vs L43 down_proj and in_proj before any encode",
+      "goodhart_hole": "layer-0 Kronecker (~1/44 of bits) sold as the 2.5 closer."
+    },
+    {
+      "id": "K-lloyd-entropy-ternary-gain-rownorm",
+      "mechanism": "entropy-coded Lloyd PQ indices; post-hoc scalar gain on PQ; ternary factorization vs VQ; row-norm-stratified codebooks",
+      "scope": "O001, any organ",
+      "evidence": "NS-entropy-coded-pq-indices (0.0-0.7% gain); NS-posthoc-scalar-gain (gain pinned at 1.0); NS-ternary-factorization (dominated); NS-row-norm-stratification-premise (94% figure was a different geometry).",
+      "arch_assumptions": "as stated in each NS entry",
+      "reopen_if": "non-Lloyd codebook with index entropy <= 0.9 of uniform; non-conditional-mean quantizer with non-orthogonal residual; a parent where ternary beats VQ at matched rate; single-codeword share >= 0.20 at deployed geometry",
+      "cheapest_falsifier": "do not run. Query NS first — already queried.",
+      "goodhart_hole": "metadata-codec=entropy on Lloyd indices counted as a structural win inside noise of the byte plan."
+    },
+    {
+      "id": "K-posthoc-correction-ungated",
+      "mechanism": "q2-g64-attn-mlp+correction (or any +correction) as the next spend without a Shannon D(R) gate",
+      "scope": "O001 frozen MLP / SSM-linear weights",
+      "evidence": "NS-post-hoc-coding-of-frozen-weights nearly exhausted on Gaussian sources. MEASURED proxy: mlp/ssm-linear ng_bits 0.00-0.04. reopen_if >= 0.5 decades to own Shannon lower bound.",
+      "arch_assumptions": "a better frozen-weight codec has material headroom",
+      "reopen_if": "a cell on THIS patient measures >= 0.5 decades of gap to its own (non-Gaussian) Shannon bound",
+      "cheapest_falsifier": "D(R) on L22 down_proj and L22 in_proj. Histogram proxy is not that measurement — do not overclaim the kill as algebraic.",
+      "goodhart_hole": "running +correction to tick 'nonconventional probe attempted' (info_count = receipt count). Also: correction bytes omitted from complete_bpw."
+    },
+    {
+      "id": "K-h2-state-dominates",
+      "mechanism": "SSM-state codec / state-residency as the remaining stored/active 2.5 lever",
+      "scope": "O001 decode residency",
+      "evidence": "H2 REFUTED. state_bytes=70152192 constant; kv_bytes_per_token=45056; crossover=1557. Patient packet next[] already records this.",
+      "arch_assumptions": "24x128x256 state dominates 2x128 KV at long ctx",
+      "reopen_if": "d_state packing / dtype change moves the crossover, or a short-ctx product where ctx<<1557 is the actual workload",
+      "cheapest_falsifier": "already measured. No new experiment.",
+      "goodhart_hole": "arch_objective=state residency used to excuse a 6.5 stored_bpw. Compressing 70 MB of state cannot close a 4.0 bpw stored gap. mlx tps_specimen=83.5 is not BASE_TRUE_TPS (no_fake_tps)."
+    },
+    {
+      "id": "K-layer0-as-density-closer",
+      "mechanism": "per-layer codec whose expected win is 'layer 0 is a different source so we hit 2.5'",
+      "scope": "O001 44 parallel hybrid layers",
+      "evidence": "NS-layer-zero-is-a-different-source is LIVE as a diagnostic, scoped to ~1% of bits on the atlas parent. O001 mass-tensor ng_bits is flat across L0/L21/L43. Layer-0 attn.o kurtosis 8.59 is the only standout.",
+      "arch_assumptions": "layer 0 is a large fraction of bits and a different source",
+      "reopen_if": "measured Shannon-gap or Doctor-sensitivity of layer 0 >> mid/late on this patient",
+      "cheapest_falsifier": "already sampled. Treat layer-0 attn.o tail as a diagnostic, not a family.",
+      "goodhart_hole": "a layer-0-only codec receipt whose complete_bpw movement is ~1/44 of the body."
+    }
+  ],
+  "live_points": [
+    {
+      "spec": "q4-g64-attn-mlp",
+      "candidate_class": "CONVENTIONAL_ANCHOR",
+      "conventionality": "conventional",
+      "mechanism": "ordinary-mixed-precision",
+      "status": "LIVE_ANCHOR",
+      "complete_bpw": 6.5002,
+      "battery": "10/12",
+      "delta_hits": 0,
+      "cheapest_falsifier": "held-out pattern (already miss Jupiter + factorial at baseline) and a long-ctx / state-accumulation probe. Do not re-run the same mix.",
+      "ns_already_kills_as_frontier": "policy.conventionality_gate",
+      "goodhart_hole": "q4 name vs 2.782 bpw bf16 SSM; 10/12 scalar vs pattern; mlx SPECIMEN vs NX"
+    },
+    {
+      "spec": "q2-g32-attn-mlp",
+      "candidate_class": "AGGRESSIVE_QUANT",
+      "conventionality": "nonconventional (policy gravity_specs) but mechanism=affine-quant — not STRUCTURAL",
+      "mechanism": "affine-quant + ordinary-mixed-precision (SSM+norm protected)",
+      "status": "DEAD_MIX",
+      "complete_bpw": 5.2614,
+      "battery": "0/12",
+      "delta_hits": -10,
+      "cheapest_falsifier": "already dead as a uniform mix. Organ-isolated q2 (P1) is the repair discriminator, not a re-run.",
+      "ns_already_kills": "NS-uniform-subbit-allocation kills treating this as 'need global q3'. no_fake_density kills counting 5.2611 as best stored.",
+      "goodhart_hole": "failed density as remaining-delta baseline; round8 localization as if it were a q2 ablation; token-loop scored as a scalar -10 instead of a token-identity break"
+    }
+  ],
+  "proposals": [
+    {
+      "id": "P1-hybrid-token-identity-protect",
+      "mechanism": "hybrid-token-identity-protect: keep embed+lm_head at live q4, SSM dynamics+norm full, allow q2 only on mlp+attn mass. Localizes the q2 token-loop without a global bit retreat.",
+      "conventionality": "STRUCTURAL",
+      "candidate_class": "STRUCTURAL_GRAVITY",
+      "applicability_class": "hybrid",
+      "runner_spec": "mixed-q2q4-attn-mlp",
+      "info_gain": 9,
+      "cost": 2,
+      "doctor_risk": 0.35,
+      "evidence": "HYPOTHESIS",
+      "_evidence": "HYPOTHESIS",
+      "reopen_if": "organ-isolated q2 on embed-only and on mlp-only both fail to separate the loop; then the collapse is numerical (muP/scale) not token-identity.",
+      "NEXT_BOTTLENECK": "If Doctor returns to 10/12, the remaining stored gap is the 2.782 SSM floor + mlp mass (go to P2/P3). If still 0/12, stop blaming embed and isolate mlp.gate vs mlp.down vs attn.",
+      "ns_query": "NS-uniform-subbit-allocation does NOT kill this (organ-conditioned). NS-raw-weight-pq-vq-at-one-bit N/A. No NS entry already kills token-identity protect.",
+      "goodhart_hole": "A 10/12 scalar match without comparing the two baseline misses and without a loop-vs-factoid pattern check. Also: mixed-q2q4 still leaves SSM bf16, so a pass is not a 2.5 win.",
+      "complete_byte_accounting": {
+        "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state",
+        "payload_bytes_derived": 4288945152,
+        "scales_bytes": "affine f16 per group on mlp+attn (q2-g32) and embed+lm_head (q4-g64); count, do not omit",
+        "biases_bytes": "affine f16 per group, same organs",
+        "tables_bytes": 0,
+        "offsets_bytes": 0,
+        "correction_bytes": 0,
+        "tier_router_metadata_bytes": 0,
+        "alignment_bytes": "safetensors padding, count",
+        "headers_bytes": "~3.4e5 (q2 receipt header_bytes=343917)",
+        "repr_attributable_state_bytes": 70152192,
+        "protected_bf16_bytes": {"ssm": 2638170304, "norm": 546816},
+        "token_identity_q4_bytes_measured_on_q4_mix": {"embed": 224724672, "lm_head": 224724672},
+        "mass_q2_bytes_measured_on_q2_mix": {"mlp_dense": 1868562432, "attn": 181665792},
+        "derived_complete_bytes": 5138394688,
+        "derived_complete_bpw": 5.4185,
+        "delta_vs_dead_q2_bpw": 0.1574,
+        "nominal_bits": {"embed": 4, "lm_head": 4, "mlp": 2, "attn": 2, "ssm": 16, "norm": 16},
+        "_label": "DERIVED from MEASURED organ bytes on the two gravity receipts"
+      },
+      "cheapest_falsifier": "One mlx gravity mixed-q2q4-attn-mlp (or a manual predicate: q2 mlp+attn, q4 embed+lm_head, protect ssm+norm). Same 12-item battery + 2 ABL. Pass = pattern returns to 10/12 with the same two misses, no token-loop. Fail = still 0/12 or a new miss pattern. Cost: one load. Do not also run global q3.",
+      "execution_path": "mlx_lm affine-grouped SPECIMEN (mixed via per-module quant_predicate). Not Hawking native. Foreign-runtime gate §60. Do not time TPS.",
+      "kernel_implications": "No new kernel if mlx predicate can protect embed/lm_head. A Hawking win later needs native mixed affine GEMM plus untouched SSM scan. Wrapper TPS is not that win.",
+      "family_addition": {
+        "schema": "hawking.odyssey.candidate_family.v1",
+        "id": "hybrid_token_identity_protect",
+        "mechanism": "Protect embed+lm_head at q4 (token identity) and keep SSM dynamics+norm full; allow q2 only on mlp/attn mass.",
+        "conventionality": "STRUCTURAL",
+        "cheapest_falsifier": "mixed-q2q4-attn-mlp vs dead q2-g32-attn-mlp on the same fast-Doctor battery; loop vs 10/12 pattern.",
+        "expected_win": "Restore Doctor at ~+0.16 complete_bpw over the dead q2 mix without a global q3 retreat.",
+        "expected_win_bpw": 0.16,
+        "doctor_risk": 0.35,
+        "applicability": "patient_class == hybrid",
+        "runner_spec": "mixed-q2q4-attn-mlp"
+      }
+    },
+    {
+      "id": "P2-ssm-tensor-role-split",
+      "mechanism": "ssm-tensor-role-split: affine-quantize Mamba-2 in_proj+out_proj only (99.94% of SSM bytes MEASURED); freeze A_log, D, dt_bias, conv1d, mamba.norm at bf16 (1.85 MB, non-Gaussian, huge scale).",
+      "conventionality": "STRUCTURAL",
+      "candidate_class": "STRUCTURAL_GRAVITY",
+      "applicability_class": "hybrid",
+      "runner_spec": null,
+      "runner_spec_note": "not matching published grammar; keep as family_addition. Grammar target=attn-mlp currently forces SSM to stay bf16.",
+      "info_gain": 8,
+      "cost": 3,
+      "doctor_risk": 0.18,
+      "evidence": "HYPOTHESIS",
+      "_evidence": "HYPOTHESIS (Doctor) + MEASURED (byte split)",
+      "reopen_if": "q4 SSM linears break fast-Doctor or a 2k-token copy probe; then isolate in_proj vs out_proj, or keep linears at q8 (round8 SSM was delta_hits=0 on the 4-bit specimen).",
+      "NEXT_BOTTLENECK": "Native quantized GEMM into the Mamba-2 scan. Long-ctx state accumulation is the Doctor blind spot of the 12-item battery. After a q4-linear hold, the affine floor toward 2.5 is q2-g64 on those same linears plus mlp descent (P3), not a finer group size.",
+      "ns_query": "NS-uniform-subbit-allocation does NOT kill tensor-role split. NS-global-dense-lowrank does NOT kill this (not a factorisation). NS-post-hoc-coding applies to hoping a fancier codec beats affine on these Gaussian linears — so the first descent is affine q4, not PQ. NS-layer-zero does not make layer-0 SSM a density closer (in_proj is 1/44 of 1.81 GB).",
+      "goodhart_hole": "Calling q8/q4 SSM linears a FRONTIER because the bits moved — the structure is the role split, the bits are still affine-quant. Short-ctx 12-item Doctor will miss SSM drift. Do not count the 70 MB recurrent state as a stored_bpw win (H2 REFUTED).",
+      "complete_byte_accounting": {
+        "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state",
+        "payload_bytes": "q4-g64 in_proj+out_proj payload at 4 bpw = 658,158,336 bytes; remaining organs as on the live q4 mix",
+        "scales_bytes": "f16 per 64 weights on SSM linears (~41.1 MB) plus existing attn/mlp/embed/lm_head scales",
+        "biases_bytes": "f16 per 64 weights on SSM linears (~41.1 MB) plus existing",
+        "tables_bytes": 0,
+        "offsets_bytes": 0,
+        "correction_bytes": 0,
+        "tier_router_metadata_bytes": 0,
+        "alignment_bytes": "safetensors padding, count",
+        "headers_bytes": "count",
+        "repr_attributable_state_bytes": 70152192,
+        "protected_dynamics_bytes_measured": 1853632,
+        "ssm_linear_bytes_bf16_measured": 2636316672,
+        "ssm_linear_q4_g64_complete_derived": 743817696,
+        "derived_complete_bytes_from_q4_mix": 4269156192,
+        "derived_complete_bpw": 4.5017,
+        "delta_vs_live_anchor_bpw": 1.9985,
+        "nominal_bits": {"ssm.in_proj": 4, "ssm.out_proj": 4, "ssm.A_log": 16, "ssm.D": 16, "ssm.dt_bias": 16, "ssm.conv1d": 16, "ssm.norm": 16, "attn_mlp_embed_head": 4, "norm": 16},
+        "_label": "DERIVED from MEASURED headers + affine 4.5 complete on linears"
+      },
+      "cheapest_falsifier": "Header split is already MEASURED (do not re-census). Next: from the live q4-g64-attn-mlp checkpoint, quantize only *.mamba.in_proj and *.mamba.out_proj to affine q4-g64; leave A_log/D/dt_bias/conv1d/norm/mamba.norm. Fast-Doctor + one >=2048-token copy/repeat probe. If delta_hits>=-1 and no loop, the floor is broken. Then — and only then — try q2-g64 on those same two tensors.",
+      "execution_path": "mlx per-module quant_predicate (not in the published gravity grammar). SPECIMEN, not Hawking NX. Do not measure TPS.",
+      "kernel_implications": "Scan kernel stays bf16-state. Only the two large projections change. A later native path needs q4 GEMM fused into the Mamba-2 in_proj split (z,x,B,C,dt = 6680) without dequant-to-bf16 of the full 1.81 GB.",
+      "family_addition": {
+        "schema": "hawking.odyssey.candidate_family.v1",
+        "id": "ssm_role_split",
+        "mechanism": "Quantize Mamba-2 in_proj+out_proj only; keep A_log/D/dt_bias/conv1d/norm at bf16.",
+        "conventionality": "STRUCTURAL",
+        "cheapest_falsifier": "q4 in_proj+out_proj only from the live q4 mix; freeze dynamics; fast-Doctor + 2k-token copy probe.",
+        "expected_win": "6.5002 -> ~4.50 complete_bpw on the live mix.",
+        "expected_win_bpw": 2.0,
+        "doctor_risk": 0.18,
+        "applicability": "patient_class == hybrid",
+        "runner_spec": null
+      }
+    },
+    {
+      "id": "P3-mlp-gate-down-inversion",
+      "mechanism": "mlp-gate-down-inversion: Falcon-H1 MLP is three equal 1.661B-param organs (gate/up/down MEASURED). Descend only down_proj; keep gate/up at the live q4. R-organ-inversion applied to this hybrid, not mixed-q2q3 across attn vs mlp.",
+      "conventionality": "STRUCTURAL",
+      "candidate_class": "STRUCTURAL_GRAVITY",
+      "applicability_class": "hybrid",
+      "runner_spec": "mixed-q2q3-attn-mlp",
+      "runner_spec_note": "closest published grammar; the real discriminator is inside feed_forward (down vs gate vs up), which the runner cannot yet name.",
+      "info_gain": 7,
+      "cost": 2,
+      "doctor_risk": 0.22,
+      "evidence": "HYPOTHESIS",
+      "_evidence": "HYPOTHESIS (Doctor split) + MEASURED (equal mass)",
+      "reopen_if": "gate and down degrade within 10% of each other on this patient (R-organ-inversion reopen_if). Then the family is N/A and mlp must descend as a unit or via a source-changing method.",
+      "NEXT_BOTTLENECK": "If down is tolerant, spend that slack and re-test up separately (up is the other 1.661B). If all three match, inversion is dead here and P1+P2 carry the search.",
+      "ns_query": "NS-uniform-subbit-allocation is the reason this family exists (it superseded uniform sub-bit). R-organ-inversion is NOT_TESTED on O001 (TRANSFER_MATRIX). No NS kill of a gate/down split.",
+      "goodhart_hole": "Running mixed-q2q3-attn-mlp and calling it inversion — that spec mixes attn/mlp, not gate/down. Equal-mass organs make a false 'mixed' receipt look structural. Histogram kurtosis (down L1 = 5.59) is not Doctor sensitivity.",
+      "complete_byte_accounting": {
+        "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state",
+        "payload_bytes": "down_proj at q2; gate+up stay at q4 payload; SSM still bf16 on this step",
+        "scales_bytes": "f16 per group on whichever down group-size is used (prefer g64 so sidecar is 0.5 not 1.0 bpw)",
+        "biases_bytes": "f16 per group on down",
+        "tables_bytes": 0,
+        "offsets_bytes": 0,
+        "correction_bytes": 0,
+        "tier_router_metadata_bytes": 0,
+        "alignment_bytes": "count",
+        "headers_bytes": "count",
+        "repr_attributable_state_bytes": 70152192,
+        "down_params_measured": 1660944384,
+        "save_vs_q4_g64_if_down_q2_g32_bytes": 311427072,
+        "save_vs_q4_g64_if_down_q2_g64_bytes": 415236096,
+        "derived_delta_bpw_g32": 0.3284,
+        "derived_delta_bpw_g64": 0.4379,
+        "nominal_bits": {"mlp.down": 2, "mlp.gate": 4, "mlp.up": 4, "attn": 4, "embed": 4, "lm_head": 4, "ssm": 16},
+        "_label": "DERIVED from MEASURED equal-third MLP split + affine sidecar"
+      },
+      "cheapest_falsifier": "Three one-organ q2 swaps on the live q4 mix: (1) down_proj only, (2) gate_proj only, (3) up_proj only. Same fast-Doctor. Rank delta_hits. If |gate-down|<10% of baseline hits, kill this family on O001. Do not encode all three into one mixed-q2q3-attn-mlp run and call it inversion.",
+      "execution_path": "mlx per-module quant_predicate on feed_forward.down_proj / gate_proj / up_proj. SPECIMEN. Not Hawking NX. Do not measure TPS.",
+      "kernel_implications": "Same affine GEMM as the live mix. No new kernel until a native path wants a per-projection bit map inside SwiGLU.",
+      "family_addition": {
+        "schema": "hawking.odyssey.candidate_family.v1",
+        "id": "mlp_gate_down_inversion",
+        "mechanism": "Equal-mass SwiGLU split: descend only down_proj; keep gate/up at live q4.",
+        "conventionality": "STRUCTURAL",
+        "cheapest_falsifier": "q2 down-only vs q2 gate-only vs q2 up-only on the live q4 mix; 10% degrade rule.",
+        "expected_win": "~0.33-0.44 complete_bpw if down is tolerant.",
+        "expected_win_bpw": 0.4,
+        "doctor_risk": 0.22,
+        "applicability": "patient_class == hybrid AND sensitivity != null",
+        "runner_spec": "mixed-q2q3-attn-mlp"
+      }
+    },
+    {
+      "id": "P4-shannon-gap-gated-correction",
+      "mechanism": "shannon-gap-gated-correction: do not run base+correction as a retirement receipt. Measure D(R) vs each organ's own Shannon lower bound on mlp.down and ssm.in_proj first. Histogram non-Gaussianity on those mass tensors is 0.00-0.04 bits (MEASURED proxy) so NS-post-hoc-coding-of-frozen-weights currently GATES this family.",
+      "conventionality": "STRUCTURAL",
+      "candidate_class": "STRUCTURAL_GRAVITY",
+      "applicability_class": "hybrid",
+      "runner_spec": "q2-g64-attn-mlp+correction",
+      "info_gain": 6,
+      "cost": 1,
+      "doctor_risk": 0.4,
+      "evidence": "HYPOTHESIS",
+      "_evidence": "HYPOTHESIS (D(R) not yet measured) + MEASURED (histogram proxy)",
+      "reopen_if": "a cell on O001 measures >= 0.5 decades of gap to its own (non-Gaussian) Shannon lower bound — then +correction at matched complete_bpw is allowed. Never reopen from a receipt-count need.",
+      "NEXT_BOTTLENECK": "If D(R) stays inside noise, the sub-2.5 path on frozen weights is dead and only source-changing / role-split / token-identity / inversion remain. That is the NS-post-hoc conclusion, not a new codec.",
+      "ns_query": "NS-post-hoc-coding-of-frozen-weights GATES this. NS-raw-weight-pq-vq-at-one-bit kills using PQ as the 1-bit path if the gap is small. NS-posthoc-scalar-gain kills a scalar gain rescue of a conditional-mean codebook. NS-entropy-coded-pq-indices kills Lloyd-index entropy as the sidecar win.",
+      "goodhart_hole": "Spending a Doctor pass on +correction to tick 'nonconventional probe attempted'. Counting correction planes outside complete_bpw. Equating 0.03 bits of histogram non-Gaussianity with 0.5 decades of D(R) in either direction.",
+      "complete_byte_accounting": {
+        "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state",
+        "payload_bytes": "q2 affine payload on attn+mlp(+embed/lm_head) if the gate ever opens",
+        "scales_bytes": "f16 per group",
+        "biases_bytes": "f16 per group",
+        "tables_bytes": "correction index / locator table — count",
+        "offsets_bytes": "correction scatter offsets — count",
+        "correction_bytes": "budget * params * 2 (bf16 repair). Default grammar token 0.02 -> ~0.32 bpw if applied to the whole body; must be scoped to the organ that actually has a Shannon gap",
+        "tier_router_metadata_bytes": 0,
+        "alignment_bytes": "count",
+        "headers_bytes": "count",
+        "repr_attributable_state_bytes": 70152192,
+        "precondition": "D(R) gap >= 0.5 decades on a named organ else DO NOT STORE a correction plane",
+        "nominal_bits": {"base": 2, "correction_if_opened": 16},
+        "_label": "HYPOTHESIS (not to be instantiated until D(R) fires)"
+      },
+      "cheapest_falsifier": "Weight-only D(R) on L22 feed_forward.down_proj.weight and L22 mamba.in_proj.weight (no model load, no Doctor). If gap < 0.5 decades, write a kill receipt and do not run q2-g64-attn-mlp+correction. Histogram proxy already says the source looks Gaussian; D(R) is the actual NS reopen predicate.",
+      "execution_path": "Offline entropy script on memmapped bf16 tensors. No mlx generate. No TPS. If the gate later opens, +correction is a SPECIMEN residual add, still not a Hawking NX win.",
+      "kernel_implications": "None until the gate opens. A live correction plane needs a sparse residual-add epilogue and must be fetched on the active path or it is stored-only theatre.",
+      "family_addition": {
+        "schema": "hawking.odyssey.candidate_family.v1",
+        "id": "shannon_gap_gated_correction",
+        "mechanism": "D(R) gate in front of base+correction; NS-post-hoc-coding applies until >= 0.5 decades.",
+        "conventionality": "STRUCTURAL",
+        "cheapest_falsifier": "D(R) on one mid-layer down_proj and one in_proj; kill the family if gap < 0.5 decades.",
+        "expected_win": "Cheap kill of unguided +correction, or a counted correction win if a real gap exists.",
+        "expected_win_bpw": 0.0,
+        "doctor_risk": 0.4,
+        "applicability": "patient_class == hybrid",
+        "runner_spec": "q2-g64-attn-mlp+correction"
+      }
+    },
+    {
+      "id": "P5-native-hybrid-decode-not-state-dominates",
+      "mechanism": "native-hybrid-decode-not-state-dominates: the NX remaining on O001 is a Hawking-native SSM-scan + GQA decode of a Doctor-valid mix. It is not a state-codec (H2 REFUTED) and not an expert-gather (0 experts). Until that kernel exists, every mlx gravity receipt stays SPECIMEN.",
+      "conventionality": "ACTIVE_NX",
+      "candidate_class": "ACTIVE_NX",
+      "applicability_class": "hybrid",
+      "runner_spec": null,
+      "info_gain": 4,
+      "cost": 7,
+      "doctor_risk": 0.1,
+      "evidence": "HYPOTHESIS",
+      "_evidence": "HYPOTHESIS (kernel) + MEASURED (H2 refuted, nx.primitive_set=null)",
+      "reopen_if": "a native FalconH1 path exists that does not dequant SSM/attn/mlp to dense bf16 before compute. R-affine-grouped-q2-if-native-kernel: Doctor-valid q2 without a native kernel is not a pass.",
+      "NEXT_BOTTLENECK": "Native kernels, not another mlx bit-width. Do not serialize this behind TPS. physics_programmatic: do not measure TPS on this lane.",
+      "ns_query": "NS-large-expert-cache N/A. R-sparse-active-expert-gather is ARCHITECTURE_SPECIFIC on O001. R-affine-grouped-q2-if-native-kernel is the live constraint: no Doctor-valid q2 and no native kernel. no_fake_tps kills mlx 83.5 as a win.",
+      "goodhart_hole": "mlx tps_specimen=83.515 treated as BASE_TRUE_TPS or as a Hawking NX win. State-residency language used to paper over stored 6.5 bpw. Inventing a 4x/8x paper-claim (compiler H1) as a measured kernel gain.",
+      "complete_byte_accounting": {
+        "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state",
+        "payload_bytes": "whatever Doctor-valid mix is lowered — does not invent a new payload",
+        "scales_bytes": "as in the mix",
+        "biases_bytes": "as in the mix",
+        "tables_bytes": 0,
+        "offsets_bytes": 0,
+        "correction_bytes": 0,
+        "tier_router_metadata_bytes": 0,
+        "alignment_bytes": "count",
+        "headers_bytes": "count",
+        "repr_attributable_state_bytes": 70152192,
+        "kv_bytes_per_token_measured": 45056,
+        "state_bytes_constant_measured": 70152192,
+        "crossover_ctx_tokens": 1557.0,
+        "active_bpw_note": "hybrid is dense-path: active_bpw == stored_bpw. selected/full is not a lever. no_fake_active_density.",
+        "nominal_bits": "unchanged by the kernel; NX is execution, not a codec",
+        "_label": "MEASURED residency + HYPOTHESIS kernel"
+      },
+      "cheapest_falsifier": "H2 already falsified 'state dominates'. Remaining cheap check: nx.primitive_set is null on the packet — there is no native path to claim. Do not start a kernel until P1/P2 produce a Doctor-valid mix worth lowering. Do not measure TPS here.",
+      "execution_path": "None today. Future: Hawking-native Mamba-2 scan + GQA attn on the Doctor-valid mix, without a foreign mlx runtime. Label SPECIMEN until that exists.",
+      "kernel_implications": "bible §54: 1.15x / 1.25x / 1.5x only where headroom is obvious; do not invent a 5x or the paper's 4x/8x. Short ctx is state-bound (70 MB vs 23 MB KV at 512); long ctx is KV-bound (2.95 GB KV at 64k). A state-codec kernel is the wrong spend for the stored 2.5 target.",
+      "family_addition": {
+        "schema": "hawking.odyssey.candidate_family.v1",
+        "id": "hybrid_native_decode_not_state_dominates",
+        "mechanism": "Native SSM-scan + GQA decode of a Doctor-valid mix. Not a state-codec. Not expert-gather.",
+        "conventionality": "STRUCTURAL",
+        "cheapest_falsifier": "nx.primitive_set is null; H2 already refuted. Do not time TPS.",
+        "expected_win": "Turns a Doctor-valid mix into a Hawking execution, not a stored_bpw movement.",
+        "expected_win_bpw": 0.0,
+        "doctor_risk": 0.1,
+        "applicability": "patient_class == hybrid",
+        "runner_spec": null
+      }
+    }
+  ],
+  "anti_goodhart": {
+    "bpw": "Live Pareto point is q4-g64-attn-mlp complete ~6.5002. Failed q2 5.2611 is not on the front. Push harder != ignore the 2.782 SSM floor or the affine sidecar (q2-g32 = 3.0 complete, q2-g64 = 2.5 complete).",
+    "doctor": "Compare the capability pattern (10/12 with Jupiter+factorial miss, no token-loop) not the 10/12 scalar. Fast battery is not a full seal. Long-ctx / SSM-accumulation is a known blind spot.",
+    "info_count": "Novelty of evidence: header split, H2 refutation, Gaussian proxy, token-loop localization. Not the number of gravity receipts."
+  },
+  "accounting_gates_applied": {
+    "no_fake_density": "named payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state on every proposal",
+    "no_fake_active_density": "hybrid dense-path: active_bpw == stored_bpw; selected/full is not a cost",
+    "no_fake_tps": "TPS not measured; mlx 83.515 remains SPECIMEN and is not used as a decision"
+  }
+}

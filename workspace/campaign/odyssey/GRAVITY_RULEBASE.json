@@ -1,0 +1,131 @@
+{
+  "schema": "hawking.odyssey.gravity_rulebase.v1",
+  "_doc": "Compiler gravity rules (bible §64). Confidence is a §18 evidence class, not a probability.",
+  "_evidence": "INFERRED",
+  "source": [
+    "tools/foundry/GRAVITY_METHOD_REGISTRY.json",
+    "receipts/ascent-2026-08-18/A3B_RECON.json",
+    "h_odyssey.md §64"
+  ],
+  "rules": [
+    {
+      "id": "R-sparse-active-expert-gather",
+      "conditions": [
+        "kind == moe",
+        "experts_per_tok << experts",
+        "sparse_active_path"
+      ],
+      "then": "candidate native expert-gather (move only active experts, not the full inventory)",
+      "supporting_patients": ["O005"],
+      "negative_patients": [],
+      "confidence": "INFERRED",
+      "reopen_if": "active-byte reduction fails to move TPS because decode is kernel-bound not bandwidth-bound (A3B tps_caveat; Qwen3.8 same pattern)",
+      "physical_rationale": "O005: 8/128 experts/token, 3.353B active of 30.5B (11%). mlx specimen 29.3 TPS is ~dense — gather is the lever, not a smaller codec.",
+      "_evidence": "INFERRED (A3B_RECON CLASSIFICATION.sparse_active_path = MOE-UNIVERSAL; census MEASURED on O005)"
+    },
+    {
+      "id": "R-uniform-routing-no-cold-compress",
+      "conditions": [
+        "near-uniform routing",
+        "never_routed_experts == 0",
+        "route entropy close to max"
+      ],
+      "then": "cold-expert compression N/A; per-expert uniform codec is ok",
+      "supporting_patients": ["O005"],
+      "negative_patients": [],
+      "confidence": "MEASURED",
+      "reopen_if": "a patient shows cold experts, popularity skew, or entropy << max (then routing-frequency allocation may apply)",
+      "physical_rationale": "A3B entropy 6.09/7.00 bits, 0 never-routed, top expert 1.42% share, top-16 mass 18%. No skew to exploit.",
+      "_evidence": "MEASURED (A3B_RECON route_map specimen, short prompt set; A1 still required for a full corpus)"
+    },
+    {
+      "id": "R-protect-router-if-sensitive",
+      "conditions": ["router sensitivity high"],
+      "then": "protect router precision",
+      "supporting_patients": [],
+      "negative_patients": [],
+      "confidence": "HYPOTHESIS",
+      "reopen_if": "router ablation stays Doctor-stable after aggressive quant",
+      "physical_rationale": "bible §64 example. O005 router is 0.03 GB and gates all expert selection — cheap to keep precise, expensive if it is wrong.",
+      "_evidence": "HYPOTHESIS (bible §64; O005 router bytes MEASURED, sensitivity UNKNOWN — A3)"
+    },
+    {
+      "id": "R-heterogeneous-expert-allocate",
+      "conditions": ["expert sensitivities heterogeneous"],
+      "then": "per-expert allocate",
+      "supporting_patients": [],
+      "negative_patients": [],
+      "confidence": "HYPOTHESIS",
+      "reopen_if": "per-expert Doctor sensitivity is flat across the inventory",
+      "physical_rationale": "bible §64. Distinct from organ_inversion (gate vs down): this is expert-index heterogeneity inside the same organ.",
+      "_evidence": "HYPOTHESIS (bible §64; O005 per-expert sensitivity UNKNOWN — A3)"
+    },
+    {
+      "id": "R-predictable-route-prefetch",
+      "conditions": [
+        "route transition predictable",
+        "P(E_t | E_{t-1}) peaked"
+      ],
+      "then": "candidate prefetch of the next hot expert set",
+      "supporting_patients": [],
+      "negative_patients": [],
+      "confidence": "HYPOTHESIS",
+      "reopen_if": "transitions are near-uniform (A1 on O005 may confirm or kill)",
+      "physical_rationale": "bible §64 / §57. Frequency being uniform does not imply transitions are memoryless.",
+      "_evidence": "HYPOTHESIS (bible §64; O005 P(E_t|E_t-1) UNKNOWN — A1)"
+    },
+    {
+      "id": "R-organ-inversion",
+      "conditions": ["mlp1 gate+up more Doctor-sensitive than mlp2 down"],
+      "then": "allocate bits to gate/up first, spend slack on down",
+      "supporting_patients": [],
+      "negative_patients": [],
+      "confidence": "INFERRED",
+      "reopen_if": "a parent measures NO organ sensitivity split (gate and down degrade within 10 percent of each other)",
+      "physical_rationale": "Foundry V1/V2 organ_inversion: F0 gpt-oss-120b real forward; F1 qwen3-235b dominant_failure_organ=gate.",
+      "_evidence": "INFERRED (GRAVITY_METHOD_REGISTRY organ_inversion; not yet measured on Odyssey patients)"
+    },
+    {
+      "id": "R-routing-frequency-alloc",
+      "conditions": [
+        "routing frequency measured on >=1000 tokens",
+        "calibration corpus disjoint from scored holdout",
+        "routing is NOT near-uniform"
+      ],
+      "then": "allocate rate by measured expert routing frequency",
+      "supporting_patients": [],
+      "negative_patients": ["O005"],
+      "confidence": "HYPOTHESIS",
+      "reopen_if": "near-uniform routing (then this rule is N/A — see R-uniform-routing-no-cold-compress). Never reopen the 88-token calibration.",
+      "physical_rationale": "Foundry prior is alive, but 88-token calibration is dead (median split 63.6% stable, 26.1% of cells never route). O005 specimen is near-uniform so this rule is currently negative on O005.",
+      "_evidence": "HYPOTHESIS (registry alive; atlas killed 88-token calibration; O005 specimen argues N/A)"
+    },
+    {
+      "id": "R-layer0-different-source",
+      "conditions": [
+        "layer-0 non-Gaussianity or Shannon-gap >> mid/late layers"
+      ],
+      "then": "do not treat all layers as one coding problem; per-layer codec selector",
+      "supporting_patients": [],
+      "negative_patients": [],
+      "confidence": "INFERRED",
+      "reopen_if": "patient measures flat layer-wise source statistics",
+      "physical_rationale": "qwen3-235b layer 0 is a different source. post_attention_layernorm gamma^2 anisotropy predicts it data-free.",
+      "_evidence": "INFERRED (NEGATIVE_TRANSFER_ATLAS layer_zero_is_a_different_source; not Odyssey-measured)"
+    },
+    {
+      "id": "R-affine-grouped-q2-if-native-kernel",
+      "conditions": [
+        "affine grouped q2 is Doctor-valid",
+        "native decode kernel exists"
+      ],
+      "then": "candidate pass",
+      "supporting_patients": [],
+      "negative_patients": [],
+      "confidence": "HYPOTHESIS",
+      "reopen_if": "Doctor-valid q2 without a native kernel (foreign-runtime gate) or a native kernel that is not Doctor-valid",
+      "physical_rationale": "bible §64 example. Wrapper TPS is not a Hawking win (§60 foreign-runtime).",
+      "_evidence": "HYPOTHESIS (bible §64)"
+    }
+  ]
+}

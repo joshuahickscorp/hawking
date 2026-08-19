@@ -1,0 +1,453 @@
+{
+  "schema": "hawking.odyssey.novelty_lane_report.v1",
+  "oxx": "O001",
+  "lane": "arch",
+  "arch": "FalconH1ForCausalLM",
+  "kind": "hybrid",
+  "source": "tiiuae/Falcon-H1-7B-Instruct",
+  "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+  "_evidence": "HYPOTHESIS",
+  "not_hawking_nx_win": true,
+  "not_base_true_tps": true,
+  "physics_not_measured": true,
+  "question": "What architecture-conditioned lever (stored vs active vs state residency vs per-modality organs) is the real remaining delta, and which NONCONVENTIONAL mechanism attacks that axis?",
+  "question_answer": {
+    "real_remaining_delta": "TWO axes, not one. (1) STORED density: the 2.7611 bpw hole vs pressure=2.5 is almost entirely the gravity recipe protecting the whole Mamba-2 organ at bf16, of which 99.93% is ordinary Linear GEMM (in_proj+out_proj). (2) STATE RESIDENCY (the hybrid arch_objective): H2 is REFUTED — SSM state is 70.15 MB O(1); KV is 45056 B/tok and dominates past 1557 tokens; at the advertised 262144 ctx KV is 11.81 GB. Active is not a separate lever (stored==active; no MoE sparse path). Per-modality N/A (text-only).",
+    "not_the_lever": [
+      "another integer bit-width on attn+mlp (q2-g32-attn-mlp already DEGRADED 0/12; localization pointed at embed, which is a 0.16 bpw tail, not a 2.76 bpw hole)",
+      "compressing the 70 MB SSM recurrent state (0.074 bpw; cannot close 2.76)",
+      "MoE gather / cold-expert / selected-full (O001 has 0 experts; R-sparse-active-expert-gather is ARCHITECTURE_SPECIFIC here)",
+      "reviving H2 (SSM-state-dominates-KV-at-long-ctx) — REFUTED by MEASURED crossover 1557"
+    ],
+    "nonconventional_attacks": [
+      "ssm-linear-vs-structured-split (STRUCTURAL) attacks stored axis",
+      "ssm-primary-attn-as-correction-residency (ACTIVE_NX) attacks state-residency axis",
+      "ssm-proj-activation-aware-lowrank (STRUCTURAL) attacks stored SSM-GEMM after the split, without transferring NS-global-dense-lowrank-qwen38 onto this source"
+    ]
+  },
+  "patient_facts": {
+    "mixer": "PARALLEL Attention || Mamba-2 SSM per layer (SA_M), then MLP; attn_layer_indices=null; all 44 layers",
+    "params": 7585654880,
+    "layers": 44,
+    "hidden": 3072,
+    "tie_word_embeddings": false,
+    "context": 262144,
+    "conventional_anchor": {
+      "spec": "q4-g64-attn-mlp",
+      "class": "CONVENTIONAL_ANCHOR",
+      "complete_bpw": 6.5002,
+      "stored_bytes": 6163508800,
+      "battery": "10/12",
+      "delta_hits": 0,
+      "predicate": "attn+mlp+embed+lm_head → q4-g64; SSM/conv/norm full bf16",
+      "_evidence": "MEASURED (receipts/odyssey-i/O001_GRAVITY_q4-g64-attn-mlp.json)"
+    },
+    "aggressive_failure": {
+      "spec": "q2-g32-attn-mlp",
+      "class": "AGGRESSIVE_QUANT",
+      "complete_bpw": 5.2614,
+      "stored_bpw": 5.2611,
+      "active_bpw": 5.2611,
+      "battery": "0/12",
+      "delta_hits": -10,
+      "protected": ["ssm", "norm"],
+      "most_likely_component_from_round8": "embed",
+      "_evidence": "MEASURED (receipts/odyssey-i/O001_GRAVITY_q2-g32-attn-mlp.json)",
+      "round8_caveat": "failure_localization ranked round8 deltas on a 4-bit specimen; already-4-bit organs are near-identity under that treatment. ssm was UNQUANTIZED so its round8 Δ0 is a real 8-bit snap of bf16 Mamba weights (Doctor-neutral). Do not read 'protect embed' as the 2.76 bpw explanation."
+    },
+    "remaining_target_delta": {
+      "stored_bpw": 5.2611,
+      "pressure_bpw": 2.5,
+      "primary": 2.7611,
+      "large": true
+    }
+  },
+  "axis_accounting": {
+    "_evidence_weights": "MEASURED (safetensors headers, no weight load; snapshot 41e72f27)",
+    "_evidence_state": "DERIVED (O001_EXTERNAL.ssm_accounting from live mlx FalconH1Mixer/Attention dims; not allocated)",
+    "source_bytes": 15171309760,
+    "source_bpw": 16.0,
+    "organs_source_bytes": {
+      "mlp_dense": 9965666304,
+      "ssm": 2638170304,
+      "attn": 968884224,
+      "embed": 799021056,
+      "lm_head": 799021056,
+      "norm": 546816
+    },
+    "ssm_suborgans_measured": {
+      "in_proj.weight": {"params": 902922240, "bytes": 1805844480, "n": 44, "shape_per_layer": [6680, 3072]},
+      "out_proj.weight": {"params": 415236096, "bytes": 830472192, "n": 44, "shape_per_layer": [3072, 3072]},
+      "conv1d.weight": {"params": 630784, "bytes": 1261568, "n": 44, "shape_per_layer": [3584, 1, 4]},
+      "conv1d.bias": {"params": 157696, "bytes": 315392, "n": 44, "shape_per_layer": [3584]},
+      "mamba.norm.weight": {"params": 135168, "bytes": 270336, "n": 44, "shape_per_layer": [3072]},
+      "A_log": {"params": 1056, "bytes": 2112, "n": 44, "shape_per_layer": [24]},
+      "D": {"params": 1056, "bytes": 2112, "n": 44, "shape_per_layer": [24]},
+      "dt_bias": {"params": 1056, "bytes": 2112, "n": 44, "shape_per_layer": [24]}
+    },
+    "ssm_gemm_linear": {"params": 1318158336, "bytes": 2636316672, "fraction_of_ssm_bytes": 0.999297},
+    "ssm_structured_recurrence": {"params": 926816, "bytes": 1853632, "fraction_of_ssm_bytes": 0.000703, "note": "A_log/D/dt_bias are per-head length-24 vectors (6.3 KB total); conv1d 1.58 MB; mamba.norm 0.27 MB"},
+    "q2_g32_attn_mlp_weight_complete": {
+      "payload_bytes": 4204975808,
+      "scales_bytes": 391643520,
+      "biases_bytes": 391958912,
+      "tables_bytes": 0,
+      "offsets_bytes": 0,
+      "correction_bytes": 0,
+      "tier_router_metadata_bytes": 0,
+      "alignment_bytes": 0,
+      "headers_bytes": 343917,
+      "repr_attributable_state_bytes_not_in_gravity_complete": {"ssm_state": 70152192, "kv_per_token": 45056},
+      "complete_bytes": 4988922157,
+      "complete_bpw": 5.2614,
+      "ssm_still_bf16_bytes": 2638170304,
+      "ssm_fraction_of_q2_artifact": 0.5288
+    },
+    "q2_contribution_bpw_by_organ": {
+      "ssm_bf16": 2.7824,
+      "mlp_dense_q2": 1.9709,
+      "attn_q2": 0.1916,
+      "embed_q2": 0.1580,
+      "lm_head_q2": 0.1580,
+      "norm_bf16": 0.0006
+    },
+    "state_residency": {
+      "ssm_state_bytes_constant": 70152192,
+      "kv_bytes_per_token": 45056,
+      "crossover_ctx_tokens": 1557.0,
+      "h2_verdict": "REFUTED",
+      "rows": [
+        {"ctx": 512, "ssm_state": 70152192, "kv": 23068672, "state_dominates": true},
+        {"ctx": 1557, "ssm_state": 70152192, "kv": 70152192, "state_dominates": false},
+        {"ctx": 4096, "ssm_state": 70152192, "kv": 184549376, "state_dominates": false},
+        {"ctx": 65536, "ssm_state": 70152192, "kv": 2952790016, "state_dominates": false},
+        {"ctx": 262144, "ssm_state": 70152192, "kv": 11811160064, "state_dominates": false}
+      ]
+    },
+    "active_axis": {
+      "stored_equals_active": true,
+      "reason": "dense-path hybrid; every token touches all weights; experts=0",
+      "selected_full": null
+    },
+    "per_modality": {"applicable": false, "modality": "text"}
+  },
+  "ns_queries": [
+    {
+      "id": "NS-global-dense-lowrank-qwen38",
+      "queried_for": "ssm-proj-activation-aware-lowrank",
+      "verdict": "DEAD on that dense transformer body. Does NOT automatically kill a different source.",
+      "applies_here": false,
+      "why": "Premise is global low-rank of a dense transformer body transferring to the next body. O001 is a parallel hybrid; the proposed source is Mamba-2 in_proj [6680,3072] / out_proj [3072,3072], not the Qwen3.8 MLP body. Do NOT transfer this kill onto SSM GEMM without an SVD energy measurement. Do NOT reopen it on mlp_dense either — that is still the killed premise.",
+      "reopen_if": "the new architecture invalidates the old premise (bible §19); cheapest gate is SVD energy of in_proj vs mlp down_proj"
+    },
+    {
+      "id": "NS-inter-expert-redundancy",
+      "queried_for": "any shared-basis / delta-across-copies",
+      "verdict": "DEAD on gpt-oss-120b experts (cosine 1e-4).",
+      "applies_here": false,
+      "why": "O001 has 0 experts. Kill does not auto-kill a parent with cosine >= 0.10, and does not apply to SSM GEMM or embed/lm_head until those cosines are measured.",
+      "reopen_if": "mean pairwise cosine >= 0.10 on the actual tensors"
+    },
+    {
+      "id": "NS-expert-merging-omitted-from-survivors",
+      "queried_for": "drop-and-reconstruct mixer paths",
+      "verdict": "DEAD on qwen3-235b experts.",
+      "applies_here": false,
+      "why": "No experts. Layerwise attention-skip is a different premise (conditional execution of a parallel mixer), not omitted-expert reconstruction.",
+      "reopen_if": "N/A on this architecture"
+    },
+    {
+      "id": "NS-cross-expert-and-cross-layer-tying",
+      "queried_for": "tie A_log across layers; tie embed to lm_head",
+      "verdict": "DEAD for same-index expert tying on qwen3-235b.",
+      "applies_here": false,
+      "why": "MoE-specific premise. embed vs lm_head tying is a different hypothesis (tie_word_embeddings=false, identical [130049,3072] shapes). Cross-layer A_log tying is untested; A_log is 24 floats/layer so the byte win is 2 KB — ignore as a stored lever.",
+      "reopen_if": "row-normalized mean off-diagonal cosine >= 0.10 on the tensors actually being tied"
+    },
+    {
+      "id": "NS-uniform-subbit-allocation",
+      "queried_for": "treat organ ssm as one codec",
+      "verdict": "DEAD. Organs do not degrade together.",
+      "applies_here": true,
+      "why": "SUPPORTS the split. Protecting 'ssm' as one blob is the uniform-allocation error inside the hybrid recipe. round8 Δ0 on ssm vs round8 Δ-2 on embed already splits; the MEASURED 99.93/0.07 GEMM-vs-structured split is a stronger organ inversion than gate-vs-down.",
+      "reopen_if": "a parent measures NO organ sensitivity split"
+    },
+    {
+      "id": "NS-kronecker-factorisation",
+      "queried_for": "Kronecker of in_proj",
+      "verdict": "DEAD at depth; LIVE on layer 0 of that parent.",
+      "applies_here": "not proposed",
+      "why": "Do not spend this lane on Kronecker. If P3 SVD is peaked only at layer 0, that is the named exception, not a new Kronecker campaign.",
+      "reopen_if": "Van Loan spectrum not flat"
+    },
+    {
+      "id": "NS-raw-weight-pq-vq-at-one-bit",
+      "queried_for": "sub-1 via raw PQ on SSM GEMM",
+      "verdict": "DEAD at ~1 bit on raw weights.",
+      "applies_here": "not proposed",
+      "why": "P3 is activation-aware low-rank (changes the executable source to U,V factors), not raw-weight PQ.",
+      "reopen_if": "never on raw weights"
+    },
+    {
+      "id": "NS-large-expert-cache",
+      "queried_for": "resident expert-style cache of mixer paths",
+      "verdict": "DEAD for single lockstep MoE pass.",
+      "applies_here": false,
+      "why": "No experts. SSM state is already O(1) resident; the cache question here is KV, not experts.",
+      "reopen_if": "N/A"
+    }
+  ],
+  "rejected_as_conventional_or_already_in_grid": [
+    {
+      "mechanism": "uniform/affine qN on attn-mlp (q4-g64-attn-mlp, q2-g32-attn-mlp, q2-g64-attn-mlp)",
+      "why": "CONVENTIONAL_ANCHOR or AGGRESSIVE_QUANT already tried. CONVENTIONAL_ANCHOR != REPRESENTATION_FRONTIER."
+    },
+    {
+      "mechanism": "mixed-q2q3-attn-mlp / protect embed (sensitivity_driven_alloc)",
+      "why": "Already a STRUCTURAL family in candidate_families.json (pinned hybrid mixed-q2q3-attn-mlp). Localization 'protect embed' is that family, not a new frontier. Embed+lm_head at q2 are 0.316 bpw combined — cannot close 2.76."
+    },
+    {
+      "mechanism": "q2-g64-attn-mlp+correction (base_plus_correction)",
+      "why": "Already in the grid. Do not re-tag as FRONTIER."
+    },
+    {
+      "mechanism": "quantize SSM uniformly to q4 as ordinary mixed-precision",
+      "why": "Presumptively conventional (ordinary-mixed-precision applied to a previously excluded organ). The STRUCTURAL claim is the GEMM-vs-structured split, not the integer width."
+    }
+  ],
+  "gravity_rules_on_this_patient": {
+    "R-sparse-active-expert-gather": "ARCHITECTURE_SPECIFIC (no expert path)",
+    "R-uniform-routing-no-cold-compress": "ARCHITECTURE_SPECIFIC",
+    "R-protect-router-if-sensitive": "ARCHITECTURE_SPECIFIC (no router)",
+    "R-organ-inversion": "NOT_TESTED (mlp gate/up/down are equal 1.661B each; SSM GEMM-vs-structured is the hybrid analogue and is MEASURED as a byte split, not yet Doctor-split)",
+    "R-layer0-different-source": "NOT_TESTED",
+    "H2": "REFUTED (crossover 1557 tokens)"
+  },
+  "proposals": [
+    {
+      "id": "P1",
+      "mechanism": "ssm-linear-vs-structured-split",
+      "conventionality": "STRUCTURAL",
+      "candidate_class": "STRUCTURAL_GRAVITY",
+      "applicability_class": "hybrid",
+      "info_gain": 9,
+      "cost": 2,
+      "doctor_risk": 0.22,
+      "_evidence": "HYPOTHESIS",
+      "NEXT_BOTTLENECK": "After SSM GEMM leaves bf16, mlp_dense still contributes ~1.97 bpw of the q2 artifact (~3.00 complete organ-bpw on 4.983B params). That is a dense-body representation problem (aa-lowrank / base+correction), not another hybrid-recipe bug. Native decode must GEMV in_proj/out_proj in the quantized codec without expanding to bf16. Grammar currently has no ssmproj target — runner cannot express this until candgen/runner grow a hybrid target; until then this stays a family_addition.",
+      "reopen_if": "MEASURED in_proj+out_proj q4 (structured A/D/dt/conv/norm held bf16) drops fast-Doctor delta_hits <= -2 versus q4-g64-attn-mlp. Then the protection of Linear maps was capability, not a recipe bug; fall back to P3 SVD before any q2 on SSM GEMM.",
+      "runner_spec": null,
+      "runner_spec_proposed": "q2-g32-attn-mlp-ssmproj (grammar extension: target attn-mlp-ssmproj = quantize attn+mlp+embed+lm_head+mamba.in_proj+mamba.out_proj; protect A_log, D, dt_bias, conv1d, mamba.norm, rms norms). Not in the published runner grammar.",
+      "one_line": "The hybrid gravity target *-attn-mlp protects 2.638 GB of Mamba-2 because of the mixer name; 2.636 GB of that is ordinary Linear in_proj/out_proj. Split the organ; keep ~1.85 MB of structured recurrence at bf16; allocate the Linear maps like mlp.",
+      "complete_byte_accounting": {
+        "method": "no_fake_density: payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state. Gravity complete_bpw today is weights-only; state is reported separately and is NOT mixed into the 5.2614 comparison.",
+        "basis_artifact": "q2-g32-attn-mlp MEASURED complete_bytes=4988922157 complete_bpw=5.2614",
+        "params": 7585654880,
+        "ssm_gemm_params": 1318158336,
+        "ssm_structured_params": 926816,
+        "payload_bytes": {
+          "keep_q2_attn_mlp_embed_lm_head_payload": 4204975808,
+          "ssm_gemm_q2_g32_payload_derived": 329539584,
+          "ssm_structured_bf16_payload_measured": 1853632,
+          "note": "q2 payload 2 bits = 0.25 B/param on SSM GEMM; structured stays bf16 (2 B/param). Current artifact already includes SSM as bf16 payload inside live bytes, not inside the 4.205 GB quantized payload."
+        },
+        "scales_bytes": {
+          "existing_q2_scales": 391643520,
+          "ssm_gemm_q2_g32_f16_per_group32_derived": 82384896,
+          "ssm_structured": 0
+        },
+        "biases_bytes": {
+          "existing_q2_biases": 391958912,
+          "ssm_gemm_q2_g32_f16_per_group32_derived": 82384896,
+          "ssm_structured": 0
+        },
+        "tables_bytes": 0,
+        "offsets_bytes": 0,
+        "correction_bytes": 0,
+        "tier_router_metadata_bytes": 0,
+        "alignment_bytes": 0,
+        "headers_bytes": 343917,
+        "repr_attributable_state_bytes": {
+          "ssm_state_constant": 70152192,
+          "kv_bytes_per_token": 45056,
+          "counted_in_stored_complete_bpw": false,
+          "reason": "gravity receipts did not fold state into complete_bpw; folding 70 MB would add 0.074 bpw and still would not close 2.76. Report state on the residency axis (P2)."
+        },
+        "derived_q2_ssmproj_weight_complete_bytes": 2846914861,
+        "derived_q2_ssmproj_weight_complete_bpw": 3.0022,
+        "derived_save_vs_q2_attn_mlp_bpw": 2.2592,
+        "derived_q4_ssmproj_on_q4_anchor_complete_bpw": 4.502,
+        "still_short_of_pressure_2_5_bpw": 0.5022,
+        "shortfall_owner": "mlp_dense (still ~1.97 bpw contribution at q2-g32)",
+        "_evidence": "DERIVED from MEASURED organ bytes and MEASURED q2-g32 bytes/param=0.375 on mlp_dense; Doctor of the split is HYPOTHESIS"
+      },
+      "cheapest_falsifier": "Disk-only sub-organ census is already MEASURED (this receipt). Cheapest Doctor falsifier: one mlx quant_predicate that includes mamba.in_proj and mamba.out_proj in the q4-g64 set while excluding A_log, D, dt_bias, conv1d, mamba.norm; fast-Doctor vs receipts/odyssey-i/O001_GRAVITY_q4-g64-attn-mlp.json (10/12, Δ0). Pass (delta_hits>=-1) => the *-attn-mlp protection of Linear maps is a recipe bug. Fail => stop; do not q2 the GEMM. Do not globally raise bits. Do not treat this as mixed-q2q3-attn-mlp.",
+      "execution_path": "SPECIMEN path: mlx affine-grouped quant_predicate over named modules (no Hawking NX). Native path (not claimed): GEMV/Q-GEMV of in_proj and out_proj in the same codec as mlp; selective-scan consumes B,C,dt,x from in_proj output and A,D,dt_bias,conv at source precision. Expanding SSM GEMM to bf16 before the scan is a fake density win. Label SPECIMEN until a Hawking scan kernel exists.",
+      "kernel_implications": "Hawking needs a Mamba-2 decode that (1) keeps A/D/dt/conv as tiny high-prec constants in SRAM/registers (6.3 KB + 1.58 MB), (2) streams quantized in_proj/out_proj, (3) never materializes a length-L convolutional kernel. Relative kernel target is bandwidth on the 2.64 GB Linear maps, not scan FLOPs. Not a Hawking NX win from a SPECIMEN quant_predicate.",
+      "family_addition": {
+        "schema": "hawking.odyssey.candidate_family.v1",
+        "id": "ssm_linear_vs_structured",
+        "spec_kind": "quant_grid",
+        "prior": 6,
+        "info_gain_prior": 135,
+        "source_passes": 1.0,
+        "mechanism": "Split hybrid organ ssm into structured recurrence {A_log, D, dt_bias, conv1d, mamba.norm} held at source precision (~1.85 MB MEASURED) and Linear maps {in_proj, out_proj} (2.636 GB MEASURED, 99.93% of the organ) allocated like mlp. The *-attn-mlp gravity target is a false organ boundary, not a measured capability floor. Not uniform-quant of 'ssm'.",
+        "conventionality": "STRUCTURAL",
+        "cheapest_falsifier": "q4-g64 on mamba.in_proj+out_proj only, structured SSM held bf16, fast-Doctor vs q4-g64-attn-mlp; delta_hits<=-2 kills the recipe-bug hypothesis.",
+        "expected_win": "Move stored complete_bpw from 5.2614 (q2-attn-mlp, SSM bf16) to ~3.00 (q2 on SSM GEMM too) or from 6.5002 to ~4.50 (q4 on SSM GEMM). Closes most of the 2.76 hole without touching mlp. Remaining ~0.50 to pressure=2.5 is mlp_dense.",
+        "expected_win_bpw": 2.26,
+        "doctor_risk": 0.22,
+        "applicability": "patient_class == hybrid",
+        "patient_classes": ["hybrid"],
+        "allocation_unit": "organ",
+        "runner_spec": null,
+        "dimensions": {"bit_classes": [], "group_sizes": []}
+      }
+    },
+    {
+      "id": "P2",
+      "mechanism": "ssm-primary-attn-as-correction-residency",
+      "conventionality": "ACTIVE_NX",
+      "candidate_class": "ACTIVE_NX",
+      "applicability_class": "hybrid",
+      "info_gain": 8,
+      "cost": 4,
+      "doctor_risk": 0.4,
+      "_evidence": "HYPOTHESIS",
+      "NEXT_BOTTLENECK": "The 12-item fast battery is short-ctx and cannot certify long-ctx residency. Need a 4k+/64k needle or recall probe, still SPECIMEN, not BASE_TRUE_TPS. Native Hawking hybrid decode that can omit or window KV while keeping the O(1) SSM state. Full attention skip is already weak (attn zero Δ-5).",
+      "reopen_if": "A 4k+ held-out recall probe dies under sliding-window KV at w=crossover=1557 with full SSM state (delta_hits<=-2 vs full KV). Then attention is a long-range resident this mixer actually uses, and the NX is KV-codec / GQA-already-tiny, not windowing. Per-layer attn skip reopens only if a layer sample shows delta_hits=0 when that layer's self_attn is zeroed.",
+      "runner_spec": null,
+      "one_line": "Parallel mixer pays BOTH 70 MB O(1) SSM state AND linear KV (45 KB/tok). H2 REFUTED: KV dominates past 1557 tokens and is 11.81 GB at 262k. Hybrid NX is SSM-primary decode with attention as a sliding/low-prec correction, analogous to MoE gather — a selection of path residency, not 1/N cost of the weight body.",
+      "complete_byte_accounting": {
+        "method": "no_fake_density. This proposal does NOT reduce stored weight complete_bpw. Claiming a stored-bpw win from windowed KV is a fake-density. The counted object is repr-attributable-state.",
+        "payload_bytes": "unchanged vs chosen weight artifact (q4-g64-attn-mlp 6.164 GB or q2 4.989 GB)",
+        "scales_bytes": "unchanged",
+        "biases_bytes": "unchanged",
+        "tables_bytes": 0,
+        "offsets_bytes": 0,
+        "correction_bytes": {
+          "attention_as_correction": "KV window or low-prec KV is the correction stream, not a weight residual",
+          "full_kv_at_262144_bytes": 11811160064,
+          "window_kv_at_w1557_bytes": 70152192,
+          "int8_kv_at_262144_bytes": 5905580032,
+          "int4_kv_at_262144_bytes": 2952790016
+        },
+        "tier_router_metadata_bytes": "window index / layer-skip bitmask; <<1 MB",
+        "alignment_bytes": 0,
+        "headers_bytes": 0,
+        "repr_attributable_state_bytes": {
+          "ssm_state_constant_bf16": 70152192,
+          "kv_full_262144_bf16": 11811160064,
+          "kv_window_1557_bf16": 70152192,
+          "total_state_full_262144": 11881312256,
+          "total_state_window_1557": 140304384,
+          "state_bpw_full_262144_if_folded": 12.526,
+          "state_bpw_window_1557_if_folded": 0.148
+        },
+        "stored_weight_complete_bpw": "unchanged (still 5.2614 or 6.5002). Do not report 0.148 as complete_bpw.",
+        "active_bytes_per_token_decode": {
+          "weights": "all (no expert gather)",
+          "state_read_full": "kv 45056 + ssm update 70MB resident",
+          "state_read_window": "kv 45056 within window + ssm update"
+        },
+        "_evidence": "DERIVED from MEASURED kv_bytes_per_token and ssm_state_bytes_constant; Doctor of windowing is HYPOTHESIS"
+      },
+      "cheapest_falsifier": "Two cheap steps, short then long. (1) Zero self_attn on a 4-layer sample {0,11,22,43} independently on the 4-bit EXTERNAL specimen; if every sample is delta_hits=0, schedule a full per-layer scan; if every sample drops hits, layer-skip is dead and skip to (2). (2) Sliding-window KV w=1557 (crossover) with full SSM state; fast-Doctor (expect hold — prompts are short) PLUS one 4096-token recall/needle item. If the 4k probe fails, windowing is dead as a free NX. Do not use mlx TPS as evidence. Do not call a windowed SPECIMEN a Hawking NX win.",
+      "execution_path": "SPECIMEN: mlx KV cache crop / attention mask window on the existing 4-bit load (no weight re-quant). Native path (not claimed): hybrid decode kernel that residences SSM state always and materializes KV only for a window or for layers not on the skip mask. Analogous to MoE selected/full: the 262k KV is a SELECTION opportunity, not a 1/N stored-weight discount. Expanding windowed KV to full-length before attention is a fake residency win.",
+      "kernel_implications": "Needs a decode kernel with (a) persistent SSM state (already the Mamba-2 scan), (b) optional KV ring buffer of width w, (c) per-layer attn skip bitmask. Gain is DRAM for ctx>>1557, not stored_bpw. Bible §54 relative targets (1.15x/1.25x/1.5x) apply only if decode is bandwidth-bound on KV; if it is kernel-bound on scan+GEMV, windowing will not move wall time. Physics is programmatic — do not estimate TPS here.",
+      "family_addition": {
+        "schema": "hawking.odyssey.candidate_family.v1",
+        "id": "ssm_primary_attn_correction",
+        "spec_kind": "quant_grid",
+        "prior": 7,
+        "info_gain_prior": 115,
+        "source_passes": 1.5,
+        "mechanism": "SSM-primary decode with attention as a sliding-window or low-prec correction. Parallel mixer currently residences both O(1) 70.15 MB SSM state and linear KV (45 KB/tok). H2 REFUTED: KV dominates past 1557 tokens. This is path-residency selection (hybrid analogue of MoE gather), not a stored-weight codec. Full attn skip is already disfavoured (zero-ablation Δ-5).",
+        "conventionality": "STRUCTURAL",
+        "cheapest_falsifier": "Sliding-window KV w=1557 + full SSM on the 4-bit specimen; 4k recall probe. Fail => windowing dead; try per-layer skip only if a 4-layer sample is Doctor-neutral.",
+        "expected_win": "No stored_bpw change. Repr-attributable-state at 262k ctx from 11.88 GB to ~0.14 GB (SSM 70 MB + window KV 70 MB). Distinct from weight-quant families.",
+        "expected_win_bpw": 0.0,
+        "doctor_risk": 0.4,
+        "applicability": "patient_class == hybrid",
+        "patient_classes": ["hybrid"],
+        "allocation_unit": "layer",
+        "runner_spec": null,
+        "dimensions": {"bit_classes": [], "group_sizes": []}
+      }
+    },
+    {
+      "id": "P3",
+      "mechanism": "ssm-proj-activation-aware-lowrank",
+      "conventionality": "STRUCTURAL",
+      "candidate_class": "STRUCTURAL_GRAVITY",
+      "applicability_class": "hybrid",
+      "info_gain": 7,
+      "cost": 3,
+      "doctor_risk": 0.38,
+      "_evidence": "HYPOTHESIS",
+      "NEXT_BOTTLENECK": "Data-free SVD is the gate. If spectra are as flat as the Qwen3.8 dense body, this dies cheaply and NS-global-dense-lowrank's premise is upheld on this source too. If peaked, native path is skinny GEMV y=(xV)Uᵀ never materializing W (GLM 0.167 precedent). Do not apply this to mlp_dense without a separate SVD — that is the killed global-dense transfer.",
+      "reopen_if": "Layer-0 and a mid layer (22) in_proj/out_proj SVD: cumulative energy at r=128 < 0.50 (or not materially more peaked than mlp down_proj on the same layer). Then low-rank is the wrong source change for these maps.",
+      "runner_spec": null,
+      "one_line": "After P1 splits the organ, in_proj (6680×3072) and out_proj (3072×3072) may be a different source than the transformer MLP (they emit z,x,B,C,dt for a diagonal-A SSM). Activation-aware low-rank is a source change, not raw-weight PQ, so NS-raw-weight-pq-vq-at-one-bit does not apply; NS-global-dense-lowrank-qwen38 does not auto-kill.",
+      "complete_byte_accounting": {
+        "method": "no_fake_density. Factors U,V + their scales + activation calibration stats + any residual correction + reconstruction workspace if the kernel expands. A low-rank encode that GEMMs a materialized W is a fake sub-1.",
+        "example_r128_in_proj_out_proj_per_layer": {
+          "in_proj_U": {"shape": [6680, 128], "params": 854784},
+          "in_proj_V": {"shape": [3072, 128], "params": 393216},
+          "out_proj_U": {"shape": [3072, 128], "params": 393216},
+          "out_proj_V": {"shape": [3072, 128], "params": 393216},
+          "params_per_layer": 2034432,
+          "params_44_layers": 89515008
+        },
+        "payload_bytes_if_bf16_factors": 179030016,
+        "payload_bytes_if_q4_g64_factors_derived": 50352192,
+        "scales_bytes_q4_g64_derived": 3147136,
+        "biases_bytes_q4_g64_derived": 3147136,
+        "tables_bytes": 0,
+        "offsets_bytes": 0,
+        "correction_bytes": {
+          "sparse_residual_budget_0.02_of_ssm_gemm": 52726333,
+          "note": "charge any residual; 0 until a residual is actually stored"
+        },
+        "tier_router_metadata_bytes": 0,
+        "alignment_bytes": 0,
+        "headers_bytes": 343917,
+        "repr_attributable_state_bytes": {
+          "ssm_state": 70152192,
+          "lowrank_workspace_if_expanded": "FORBIDDEN: if the kernel writes a 2.64 GB W, charge 2.64 GB and the proposal is dead"
+        },
+        "derived_ssm_gemm_complete_bytes_q4_factors_no_residual": 56646464,
+        "derived_ssm_gemm_complete_bpw_contribution": 0.0597,
+        "vs_ssm_bf16_contribution_bpw": 2.7824,
+        "vs_ssm_q2_gemm_contribution_bpw": 0.5214,
+        "whole_model_complete_bpw_if_rest_stays_q2_attn_mlp": {
+          "note": "q2 artifact minus SSM bf16 plus structured bf16 plus q4 factors: HYPOTHESIS range ~2.55-2.70 if Doctor holds — UNKNOWN until SVD+Doctor. Do not publish as a win.",
+          "unknown": true
+        },
+        "_evidence": "DERIVED arithmetic on MEASURED shapes; quality UNKNOWN until SVD+Doctor"
+      },
+      "cheapest_falsifier": "Data-free SVD energy on four tensors: layer 0 in_proj, layer 0 out_proj, layer 22 in_proj, layer 22 mlp down_proj (control). Kill if r=128 cumulative energy on in_proj is not >= 0.10 above the down_proj control, or is < 0.50 absolute. No Doctor, no mlx convert, no TPS. Only if that gate passes, encode r∈{64,128} against REAL activations (not gaussian proxy — Qwen3.8 proxy trap) and fast-Doctor.",
+      "execution_path": "Native: y=(xV)Uᵀ skinny GEMV, scan unchanged. SPECIMEN: materializing W to run mlx is allowed only as a quality probe and must charge the expansion in the receipt (not a density win). GLM activation-aware 0.167 BPW is the prior; transfer is HYPOTHESIS.",
+      "kernel_implications": "Skinny GEMV (d=3072 × r=128) plus a 128×6680 map, not a 3072×6680 GEMM. If r is not << min(6680,3072) the kernel is a loss. LUT/QTIP decode is Type-1 dead on Apple GPU (SUB1_SYNTHESIS) — do not route this through a large codebook. Not a Hawking NX win until the skinny path exists.",
+      "family_addition": {
+        "schema": "hawking.odyssey.candidate_family.v1",
+        "id": "ssm_proj_aa_lowrank",
+        "spec_kind": "quant_grid",
+        "prior": 8,
+        "info_gain_prior": 100,
+        "source_passes": 2.0,
+        "mechanism": "Activation-aware low-rank on Mamba-2 in_proj/out_proj only (source change to U,V; never raw-weight PQ). NS-global-dense-lowrank-qwen38 does not auto-kill this source; SVD vs mlp down_proj is the gate. Residual correction charged if stored.",
+        "conventionality": "STRUCTURAL",
+        "cheapest_falsifier": "SVD energy r=128 on layer-0/22 in_proj vs mlp down_proj control; kill if not peaked relative to control.",
+        "expected_win": "If spectra peak, SSM GEMM contribution from 2.78 bpw (bf16) toward ~0.06-0.5 complete with factors+scales, without claiming a whole-model sub-1. Doctor-unknown.",
+        "expected_win_bpw": 2.2,
+        "doctor_risk": 0.38,
+        "applicability": "patient_class == hybrid",
+        "patient_classes": ["hybrid"],
+        "allocation_unit": "organ",
+        "runner_spec": null,
+        "dimensions": {"bit_classes": [], "group_sizes": []}
+      }
+    }
+  ]
+}

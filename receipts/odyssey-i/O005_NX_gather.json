@@ -1,0 +1,442 @@
+{
+  "schema": "odyssey.patient.nx.v1",
+  "oxx": "O005",
+  "mode": "gather",
+  "runtime": "mlx",
+  "runtime_label": "mlx_lm EXTERNAL SPECIMEN \u2014 not Hawking native",
+  "label": "SPECIMEN",
+  "not_hawking_nx_win": true,
+  "not_a_full_rust_runtime": true,
+  "quant": "4bit-mlx",
+  "quant_fidelity_caveat": "4-bit affine MLX quantization (group 64; qwen3_moe.quant_predicate keeps router gates at 8-bit). Battery/route/TPS are SPECIMEN under quant \u2014 not bf16-canonical Doctor. Canonical HF snapshot was not modified or deleted.",
+  "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B/snapshots/ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+  "weights_loaded": "/Users/scammermike/.cache/mlx/odyssey/O005-Qwen3-30B-A3B-4bit",
+  "canonical_snapshot_intact": 16,
+  "topk": 8,
+  "n_experts": 128,
+  "frac_topk_over_n": 0.0625,
+  "tokens_observed": 93,
+  "full_expert_body_bytes": 57982058496,
+  "selected_expert_bytes_per_token": 3623878656,
+  "shared_expert_bytes": 0,
+  "ratio_selected_over_full": 0.0625,
+  "dense_mlp_equivalent": {
+    "formula": "n_layers * 3 * hidden * intermediate_size * 2 (bf16 SwiGLU)",
+    "n_layers": 48,
+    "hidden_size": 2048,
+    "intermediate_size": 6144,
+    "params": 1811939328,
+    "bytes_bf16": 3623878656,
+    "census_mlp_dense_bytes": 0,
+    "used_bytes": 3623878656,
+    "_label": "DERIVED from MEASURED census config",
+    "_section": "\u00a718"
+  },
+  "ratio_selected_over_dense_mlp": 1.0,
+  "formula": "selected = topk/n_experts * expert_body_bytes + shared_expert_bytes",
+  "census_expert_body_bytes": 57982058496,
+  "specimen_expert_bytes": 0,
+  "specimen_selected_bytes_per_token": 0,
+  "specimen_live_nbytes": 860090368,
+  "mlx_execution": {
+    "switch_mlp_class": "SwitchGLU",
+    "proj_class": "QuantizedSwitchLinear",
+    "mlx_gathers_selected_experts": true,
+    "mlx_densely_computes_all_experts": false,
+    "primitive": "mx.gather_qmm",
+    "full_expert_body_resident": true,
+    "source_has_gather_qmm": true,
+    "source_has_gather_mm": true,
+    "note": "mlx SwitchGLU/SwitchLinear indexes selected experts via gather_mm/gather_qmm (a gather compute). The FULL expert body stays resident in the weight tree. The NX lever is reducing MOVEMENT/RESIDENCY to selected-expert bytes \u2014 mlx does not drop unselected experts from RAM.",
+    "_label": "MEASURED (live class if loaded) + INFERRED (source inspect)",
+    "_section": "\u00a713"
+  },
+  "route": {
+    "moe_layers": 48,
+    "experts": 128,
+    "top_k": 8,
+    "tokens_observed": 93,
+    "entropy_avg": 5.3648,
+    "entropy_max": 7.0,
+    "cold_experts": 0,
+    "top16_mass_pct": 23,
+    "most_popular_share": 1.8733,
+    "most_popular_share_unit": "percent_of_all_selections",
+    "transition_stability": 0.4119,
+    "adjacent_token_overlap": 0.4119,
+    "p_e_t_given_e_t_minus_1": 0.3708,
+    "transition_events": 4416,
+    "cross_layer_cooccurrence": 0.0653,
+    "cross_layer_jaccard": 0.0357,
+    "hot_set": [
+      10,
+      49,
+      40,
+      109,
+      79,
+      96,
+      73,
+      83,
+      3,
+      115,
+      114,
+      46,
+      6,
+      8,
+      18,
+      91
+    ],
+    "cold_set": [],
+    "hot_cold_verdict": "mildly peaked: entropy 5.36/7.00, top16=23%, most-pop=1.8733%",
+    "uniform_routing": false,
+    "per_layer": [
+      {
+        "layer": 0,
+        "entropy_bits": 6.1253,
+        "cold": 40,
+        "tokens": 93
+      },
+      {
+        "layer": 1,
+        "entropy_bits": 6.0216,
+        "cold": 33,
+        "tokens": 93
+      },
+      {
+        "layer": 2,
+        "entropy_bits": 5.5925,
+        "cold": 55,
+        "tokens": 93
+      },
+      {
+        "layer": 3,
+        "entropy_bits": 5.6608,
+        "cold": 49,
+        "tokens": 93
+      },
+      {
+        "layer": 4,
+        "entropy_bits": 5.4657,
+        "cold": 56,
+        "tokens": 93
+      },
+      {
+        "layer": 5,
+        "entropy_bits": 5.4235,
+        "cold": 48,
+        "tokens": 93
+      },
+      {
+        "layer": 6,
+        "entropy_bits": 5.0625,
+        "cold": 69,
+        "tokens": 93
+      },
+      {
+        "layer": 7,
+        "entropy_bits": 4.9766,
+        "cold": 68,
+        "tokens": 93
+      },
+      {
+        "layer": 8,
+        "entropy_bits": 5.1862,
+        "cold": 55,
+        "tokens": 93
+      },
+      {
+        "layer": 9,
+        "entropy_bits": 5.1464,
+        "cold": 59,
+        "tokens": 93
+      },
+      {
+        "layer": 10,
+        "entropy_bits": 5.6247,
+        "cold": 50,
+        "tokens": 93
+      },
+      {
+        "layer": 11,
+        "entropy_bits": 5.5047,
+        "cold": 54,
+        "tokens": 93
+      },
+      {
+        "layer": 12,
+        "entropy_bits": 5.423,
+        "cold": 57,
+        "tokens": 93
+      },
+      {
+        "layer": 13,
+        "entropy_bits": 5.3953,
+        "cold": 53,
+        "tokens": 93
+      },
+      {
+        "layer": 14,
+        "entropy_bits": 5.5023,
+        "cold": 52,
+        "tokens": 93
+      },
+      {
+        "layer": 15,
+        "entropy_bits": 5.0741,
+        "cold": 63,
+        "tokens": 93
+      },
+      {
+        "layer": 16,
+        "entropy_bits": 5.347,
+        "cold": 49,
+        "tokens": 93
+      },
+      {
+        "layer": 17,
+        "entropy_bits": 5.4341,
+        "cold": 52,
+        "tokens": 93
+      },
+      {
+        "layer": 18,
+        "entropy_bits": 4.9591,
+        "cold": 67,
+        "tokens": 93
+      },
+      {
+        "layer": 19,
+        "entropy_bits": 4.8517,
+        "cold": 74,
+        "tokens": 93
+      },
+      {
+        "layer": 20,
+        "entropy_bits": 5.2015,
+        "cold": 60,
+        "tokens": 93
+      },
+      {
+        "layer": 21,
+        "entropy_bits": 5.1127,
+        "cold": 66,
+        "tokens": 93
+      },
+      {
+        "layer": 22,
+        "entropy_bits": 5.5054,
+        "cold": 55,
+        "tokens": 93
+      },
+      {
+        "layer": 23,
+        "entropy_bits": 5.4562,
+        "cold": 51,
+        "tokens": 93
+      },
+      {
+        "layer": 24,
+        "entropy_bits": 5.2971,
+        "cold": 57,
+        "tokens": 93
+      },
+      {
+        "layer": 25,
+        "entropy_bits": 5.2372,
+        "cold": 53,
+        "tokens": 93
+      },
+      {
+        "layer": 26,
+        "entropy_bits": 5.5292,
+        "cold": 55,
+        "tokens": 93
+      },
+      {
+        "layer": 27,
+        "entropy_bits": 5.1831,
+        "cold": 60,
+        "tokens": 93
+      },
+      {
+        "layer": 28,
+        "entropy_bits": 5.5544,
+        "cold": 50,
+        "tokens": 93
+      },
+      {
+        "layer": 29,
+        "entropy_bits": 5.4432,
+        "cold": 57,
+        "tokens": 93
+      },
+      {
+        "layer": 30,
+        "entropy_bits": 5.2267,
+        "cold": 63,
+        "tokens": 93
+      },
+      {
+        "layer": 31,
+        "entropy_bits": 5.0137,
+        "cold": 63,
+        "tokens": 93
+      },
+      {
+        "layer": 32,
+        "entropy_bits": 5.1321,
+        "cold": 61,
+        "tokens": 93
+      },
+      {
+        "layer": 33,
+        "entropy_bits": 5.1269,
+        "cold": 61,
+        "tokens": 93
+      },
+      {
+        "layer": 34,
+        "entropy_bits": 5.4754,
+        "cold": 56,
+        "tokens": 93
+      },
+      {
+        "layer": 35,
+        "entropy_bits": 5.4949,
+        "cold": 51,
+        "tokens": 93
+      },
+      {
+        "layer": 36,
+        "entropy_bits": 5.4277,
+        "cold": 53,
+        "tokens": 93
+      },
+      {
+        "layer": 37,
+        "entropy_bits": 5.3888,
+        "cold": 55,
+        "tokens": 93
+      },
+      {
+        "layer": 38,
+        "entropy_bits": 5.4232,
+        "cold": 51,
+        "tokens": 93
+      },
+      {
+        "layer": 39,
+        "entropy_bits": 5.3041,
+        "cold": 53,
+        "tokens": 93
+      },
+      {
+        "layer": 40,
+        "entropy_bits": 5.441,
+        "cold": 52,
+        "tokens": 93
+      },
+      {
+        "layer": 41,
+        "entropy_bits": 5.5795,
+        "cold": 55,
+        "tokens": 93
+      },
+      {
+        "layer": 42,
+        "entropy_bits": 5.4845,
+        "cold": 60,
+        "tokens": 93
+      },
+      {
+        "layer": 43,
+        "entropy_bits": 5.2898,
+        "cold": 60,
+        "tokens": 93
+      },
+      {
+        "layer": 44,
+        "entropy_bits": 5.2848,
+        "cold": 59,
+        "tokens": 93
+      },
+      {
+        "layer": 45,
+        "entropy_bits": 5.3046,
+        "cold": 63,
+        "tokens": 93
+      },
+      {
+        "layer": 46,
+        "entropy_bits": 5.3318,
+        "cold": 61,
+        "tokens": 93
+      },
+      {
+        "layer": 47,
+        "entropy_bits": 5.4848,
+        "cold": 59,
+        "tokens": 93
+      }
+    ]
+  },
+  "primitive_design_attempt": {
+    "name": "R-sparse-active-expert-gather",
+    "intent": "Move only top-k (plus shared) expert bodies per token; keep the full expert file as the stored body. Accounting + design note, not a runtime.",
+    "selected_expert_bytes_per_token": 3623878656,
+    "full_expert_body_bytes": 57982058496,
+    "ratio_selected_over_full": 0.0625,
+    "dense_mlp_equivalent_bytes": 3623878656,
+    "ratio_selected_over_dense_mlp": 1.0,
+    "mlx_status": "mlx SwitchGLU/SwitchLinear indexes selected experts via gather_mm/gather_qmm (a gather compute). The FULL expert body stays resident in the weight tree. The NX lever is reducing MOVEMENT/RESIDENCY to selected-expert bytes \u2014 mlx does not drop unselected experts from RAM.",
+    "hawking_nx_gap": "Resident set is still the full expert body. NX would stage only selected-expert bytes into the working set (packed expert cache / grouped-GEMM). Not implemented here.",
+    "not_a_runtime": true,
+    "_label": "DERIVED (census bytes) + INFERRED (design)",
+    "_section": "\u00a713"
+  },
+  "verdict": "ACCOUNTING_ONLY",
+  "gate": {
+    "decision": "REFUSE",
+    "note": "OBSERVED: swap already in use (957 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.11 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
+    "reasons": [
+      "OBSERVED: swap already in use (957 MB) -- the machine is under real pressure now, projection is irrelevant",
+      "OBSERVED: compressor at 1.11 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
+    ],
+    "current_wired_gb": 6.02,
+    "projected_headroom_gb": 81.5,
+    "observed": {
+      "total_gb": 103.079,
+      "wired_gb": 6.019,
+      "free_gb": 52.676,
+      "inactive_gb": 22.546,
+      "compressed_gb": 1.114,
+      "swap_used_mb": 957.31,
+      "workers_resident": 0,
+      "worker_rss_total_gb": 0.0
+    }
+  },
+  "contamination": {
+    "section": "\u00a714",
+    "note": "NX gather is ACCOUNTING + a minimal primitive-design attempt. Not a Hawking NX runtime, not BASE_TRUE_TPS.",
+    "clean_box": {
+      "clean_box_ok": null,
+      "reason": "machine_state unavailable: ModuleNotFoundError: No module named 'tools.agentos'",
+      "snapshot": null
+    },
+    "_label": "MEASURED machine note + DERIVED contamination flag"
+  },
+  "labels": {
+    "full_expert_body_bytes": "MEASURED (census safetensors headers, bf16)",
+    "selected_expert_bytes_per_token": "DERIVED (topk/n_experts \u00d7 MEASURED expert bytes)",
+    "ratio_selected_over_full": "DERIVED",
+    "dense_mlp_equivalent": "DERIVED from MEASURED census config",
+    "tokens_observed": "MEASURED",
+    "mlx_execution": "MEASURED (live class if loaded) + INFERRED (source inspect)"
+  },
+  "commit": "6cc2402d012fc578650db2fac03facf394de81d5",
+  "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+  "out": "/Users/scammermike/.claude-grok/worktrees/odyssey-runner-gravity-nx-20260819-131415/receipts/odyssey-i/O005_NX_gather.json",
+  "_evidence": "DERIVED from MEASURED census organ bytes + MEASURED live switch_mlp inspect",
+  "_label": "DERIVED accounting \u2014 not a Hawking NX win (\u00a715)",
+  "_section": "\u00a720"
+}

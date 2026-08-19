@@ -1,0 +1,50 @@
+{
+  "schema": "hawking.odyssey.harvest.v2",
+  "task": "odyssey-o001-sensitivity-map-20260819-022549",
+  "slug": "odyssey-o001-sensitivity-map",
+  "classification": "DATA-ONLY",
+  "action": "MERGE+COMPLETE (copy data, drop tools/, mark VERIFIED, complete, grok-run cleanup)",
+  "verdict": "VERIFIED",
+  "reason": "ok",
+  "files": [
+    "receipts/odyssey-i/O001_SENSITIVITY.json",
+    "tools/odyssey_patient_runner.py",
+    "workspace/campaign/odyssey/patients/O001/ODYSSEY_PATIENT_O001.json"
+  ],
+  "copied": [],
+  "dropped": [
+    "tools/odyssey_patient_runner.py"
+  ],
+  "matching_receipts": [
+    "receipts/odyssey-i/O001_SENSITIVITY.json"
+  ],
+  "template": "sensitivity-map",
+  "oxx": "O001",
+  "worktree": null,
+  "report": "/Users/scammermike/.claude-grok/tasks/odyssey-o001-sensitivity-map-20260819-022549/grok-report.md",
+  "cleanup": true,
+  "command": "harvest",
+  "inputs": {
+    "task_dir": "/Users/scammermike/.claude-grok/tasks/odyssey-o001-sensitivity-map-20260819-022549",
+    "worktree": null
+  },
+  "outputs": {
+    "copied": [],
+    "dropped": [
+      "tools/odyssey_patient_runner.py"
+    ],
+    "verdict": "VERIFIED"
+  },
+  "controls": [
+    "never auto-merge CODE",
+    "cleanup only DATA-ONLY",
+    "drop tools/ diffs on known data-producing templates"
+  ],
+  "assumptions": [
+    "DATA-ONLY = known data-producing template + matching RECEIPT_PATTERN",
+    "tools/*.py diffs on those templates are noise, not a deliverable",
+    "CODE = unknown template with a non-data path, or known template with no receipt"
+  ],
+  "reopen_if": "worktree still holds uncopied data files",
+  "_evidence": "DERIVED (harvester classification)"
+}

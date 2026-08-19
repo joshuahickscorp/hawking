@@ -1,0 +1,32 @@
+{
+  "schema": "hawking.nos.kv_residency.v1",
+  "obligation": "G137 -- KV/state bytes at 131k measured and driven below the weight artifact",
+  "started": "2026-08-18T17:00:15.137391+00:00",
+  "architecture": {
+    "n_layers": 64,
+    "full_attention_interval": 4,
+    "n_full_attention": 16,
+    "n_kv_heads": 4,
+    "head_dim": 256
+  },
+  "control_two_derivations_agree": true,
+  "kv_bytes_per_token_f32": 131072,
+  "kv_f32_gb_at_context": 17.18,
+  "matches_ledger_17_18": true,
+  "kv_q8_gb_at_context": 4.295,
+  "weight_artifact_gb": 11.25,
+  "reduction_below_artifact_reachable": true,
+  "reduction_mechanism": "q8 KV halves the growing cache to below the weight artifact; the q8-kv path is already landed bit-identical (+1.6/2.1/2.5% TPS on short context) so this is a taken win, not a projection",
+  "the_hybrid_insight": "only 16 of 64 layers grow with context. The 48 linear-attention layers hold a FIXED 0.153 GB state regardless of context length, so at long context the growing memory is 4x smaller than a uniform-64-layer accounting would claim. This is why KV overtakes the weight artifact only past ~86k tokens, not ~21k.",
+  "linear_state": {
+    "n_linear_layers": 48,
+    "recurrent_elems_per_layer": 786432,
+    "conv_elems_per_layer": 8192,
+    "bytes_per_layer": 3178496,
+    "total_fixed_bytes": 152567808,
+    "grows_with_context": false
+  },
+  "context": 131072,
+  "commit": "2079bc19389e0d958d49db6c21007a043f7711f2",
+  "ended": "2026-08-18T17:00:15.150624+00:00"
+}

@@ -1,0 +1,47 @@
+{
+  "model_dir": "/Users/scammermike/.cache/huggingface/hub/models--mistralai--Mistral-Small-3.1-24B-Instruct-2503/snapshots/68faf511d618ef198fef186659617cfd2eb8e33a",
+  "arch": "Mistral3ForConditionalGeneration",
+  "model_type": "mistral3",
+  "config": {
+    "num_hidden_layers": 40,
+    "hidden_size": 5120,
+    "intermediate_size": 32768,
+    "num_attention_heads": 32,
+    "num_key_value_heads": 8,
+    "head_dim": 128,
+    "vocab_size": 131072,
+    "max_position_embeddings": 131072,
+    "rope_theta": 1000000000.0,
+    "torch_dtype": "bfloat16"
+  },
+  "tensor_count": 585,
+  "shard_count": 10,
+  "total_params": 24011361280,
+  "total_bytes": 48022722560,
+  "stored_bpw": 16.0,
+  "is_moe": false,
+  "active_params_per_token": null,
+  "active_bytes_per_token": null,
+  "organs_params": {
+    "embed": 671088640,
+    "attn": 2197815296,
+    "router": 0,
+    "expert": 0,
+    "shared_expert": 0,
+    "mlp_dense": 20434649088,
+    "norm": 464896,
+    "lm_head": 671088640,
+    "other": 36254720
+  },
+  "organs_bytes": {
+    "embed": 1342177280,
+    "attn": 4395630592,
+    "router": 0,
+    "expert": 0,
+    "shared_expert": 0,
+    "mlp_dense": 40869298176,
+    "norm": 929792,
+    "lm_head": 1342177280,
+    "other": 72509440
+  }
+}

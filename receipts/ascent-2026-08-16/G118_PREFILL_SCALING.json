@@ -1,0 +1,62 @@
+{
+  "schema": "hawking.nos.prefill_scaling.v1",
+  "obligation": "G118 -- prefill scaling with TTFT",
+  "measured_points": [
+    {
+      "prompt_len": 31,
+      "prefill_ms_per_token": 32.827,
+      "total_prefill_s": 1.017637
+    },
+    {
+      "prompt_len": 348,
+      "prefill_ms_per_token": 31.631,
+      "total_prefill_s": 11.007588
+    },
+    {
+      "prompt_len": 688,
+      "prefill_ms_per_token": 32.552,
+      "total_prefill_s": 22.395775999999998
+    },
+    {
+      "prompt_len": 2641,
+      "prefill_ms_per_token": 39.042,
+      "total_prefill_s": 103.10992200000001
+    }
+  ],
+  "ttft_measured": {
+    "348": 11.15,
+    "2641": 103.252
+  },
+  "PREFILL_IS_QUADRATIC_NOT_LINEAR": {
+    "model": "per-token = base + (N/2) * slope, because each prefill step attends over the prefix built so far, so the mean context during a prefill of N tokens is N/2",
+    "base_ms": 31.453647699937132,
+    "slope_us_per_context_token": 5.521795685141028,
+    "residuals_ms": [
+      1.2877644669431803,
+      -0.7834401491516729,
+      -0.8011454156256477,
+      0.29682109783414035
+    ],
+    "independent_corroboration": "G060 measured the DECODE context slope at 6.971 us per context token on a completely different experiment. This prefill fit gives 5.5218 us. Same mechanism, arrived at from prefill instead of decode."
+  },
+  "THIS_CORRECTS_G117": {
+    "g117_assumed": "prefill per-token flat at 32.552 ms, total linear in N",
+    "why_it_looked_flat": "G117's four points spanned 11 to 688 tokens, where the quadratic term is only 0.04-2.4 ms of a ~31 ms base -- inside the noise. The 2641-token point makes it visible at 8.5 ms.",
+    "corrected_totals_s": {
+      "512": 16.828020426410617,
+      "4096": 175.154320437682,
+      "32768": 3995.1646131908687,
+      "131072": 51554.55627707542
+    },
+    "linear_totals_s": {
+      "512": 16.666624,
+      "4096": 133.332992,
+      "32768": 1066.663936,
+      "131072": 4266.655744
+    },
+    "error_at_32k_x": 3.745476413286058,
+    "statement": "G117 projected a 32k prompt at 17.8 minutes on a linear model. The quadratic fit gives 66.6 MINUTES -- 3.7x worse. At 131k it is 14.3 HOURS."
+  },
+  "why_32k_was_not_measured": "The fit predicts 67 minutes of prefill for a single 32k run. Four points spanning 85x already pin the model with residuals under 1.2 ms, and the slope independently matches G060's decode measurement, so the marginal value of an 80-minute run is low. Stated as a choice rather than presented as measured.",
+  "commit": "87ee085eac8cf39dac78ecce831ddc7fe2fae3df"
+}

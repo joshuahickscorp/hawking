@@ -1,0 +1,55 @@
+{
+  "schema": "hawking.odyssey.harvest.v2",
+  "task": "odyssey-o006-transfer-control-20260819-131420",
+  "slug": "odyssey-o006-transfer-control",
+  "classification": "DATA-ONLY",
+  "action": "MERGE+COMPLETE (copy data, drop tools/, mark VERIFIED, complete, grok-run cleanup)",
+  "verdict": "VERIFIED",
+  "reason": "ok",
+  "files": [
+    "receipts/odyssey-i/O006_DOCTOR_SEAL.json",
+    "receipts/odyssey-i/O006_EXTERNAL.json",
+    "receipts/odyssey-i/O006_TRANSFER.json",
+    "tools/odyssey_patient_runner.py",
+    "workspace/campaign/odyssey/TRANSFER_MATRIX.json",
+    "workspace/campaign/odyssey/patients/O006/ODYSSEY_PATIENT_O006.json"
+  ],
+  "copied": [],
+  "dropped": [
+    "tools/odyssey_patient_runner.py",
+    "workspace/campaign/odyssey/TRANSFER_MATRIX.json"
+  ],
+  "matching_receipts": [
+    "receipts/odyssey-i/O006_TRANSFER.json"
+  ],
+  "template": "transfer-control",
+  "oxx": "O006",
+  "worktree": null,
+  "report": "/Users/scammermike/.claude-grok/tasks/odyssey-o006-transfer-control-20260819-131420/grok-report.md",
+  "cleanup": true,
+  "command": "harvest",
+  "inputs": {
+    "task_dir": "/Users/scammermike/.claude-grok/tasks/odyssey-o006-transfer-control-20260819-131420",
+    "worktree": null
+  },
+  "outputs": {
+    "copied": [],
+    "dropped": [
+      "tools/odyssey_patient_runner.py",
+      "workspace/campaign/odyssey/TRANSFER_MATRIX.json"
+    ],
+    "verdict": "VERIFIED"
+  },
+  "controls": [
+    "never auto-merge CODE",
+    "cleanup only DATA-ONLY",
+    "drop tools/ diffs on known data-producing templates"
+  ],
+  "assumptions": [
+    "DATA-ONLY = known data-producing template + matching RECEIPT_PATTERN",
+    "tools/*.py diffs on those templates are noise, not a deliverable",
+    "CODE = unknown template with a non-data path, or known template with no receipt"
+  ],
+  "reopen_if": "worktree still holds uncopied data files",
+  "_evidence": "DERIVED (harvester classification)"
+}

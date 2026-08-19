@@ -1,0 +1,357 @@
+{
+  "schema": "hawking.nos.greedy_divergence.v1",
+  "obligation": "G130 -- greedy divergence with controls, as a seal DIAGNOSTIC",
+  "reference": "uniform-q4-v1",
+  "candidate": "g032-chanscale-a025-compact",
+  "tokens": 96,
+  "prompts": 16,
+  "null_control": {
+    "prompts": 16,
+    "prompts_diverging": 0,
+    "mean_divergence_rate": 0.0,
+    "earliest_divergence": null,
+    "median_first_divergence": null,
+    "recovered": 0,
+    "control_token_mismatches": 0,
+    "per_prompt": [
+      {
+        "prompt": 0,
+        "len_ref": 48,
+        "len_cand": 48,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 1,
+        "len_ref": 34,
+        "len_cand": 34,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 2,
+        "len_ref": 40,
+        "len_cand": 40,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 3,
+        "len_ref": 39,
+        "len_cand": 39,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 4,
+        "len_ref": 39,
+        "len_cand": 39,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 5,
+        "len_ref": 40,
+        "len_cand": 40,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 6,
+        "len_ref": 39,
+        "len_cand": 39,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 7,
+        "len_ref": 39,
+        "len_cand": 39,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 8,
+        "len_ref": 51,
+        "len_cand": 51,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 9,
+        "len_ref": 7,
+        "len_cand": 7,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 10,
+        "len_ref": 8,
+        "len_cand": 8,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 11,
+        "len_ref": 7,
+        "len_cand": 7,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 12,
+        "len_ref": 33,
+        "len_cand": 33,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 13,
+        "len_ref": 34,
+        "len_cand": 34,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 14,
+        "len_ref": 34,
+        "len_cand": 34,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 15,
+        "len_ref": 35,
+        "len_cand": 35,
+        "first_divergence": null,
+        "divergent_positions": 0,
+        "divergence_rate": 0.0,
+        "recovered_after": null,
+        "control_token_mismatches": 0
+      }
+    ]
+  },
+  "candidate_vs_reference": {
+    "prompts": 16,
+    "prompts_diverging": 16,
+    "mean_divergence_rate": 0.8164550442462594,
+    "earliest_divergence": 1,
+    "median_first_divergence": 4,
+    "recovered": 3,
+    "control_token_mismatches": 13,
+    "per_prompt": [
+      {
+        "prompt": 0,
+        "len_ref": 48,
+        "len_cand": 38,
+        "first_divergence": 4,
+        "divergent_positions": 31,
+        "divergence_rate": 0.8157894736842105,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 1,
+        "len_ref": 34,
+        "len_cand": 38,
+        "first_divergence": 4,
+        "divergent_positions": 29,
+        "divergence_rate": 0.8529411764705882,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 2,
+        "len_ref": 40,
+        "len_cand": 40,
+        "first_divergence": 4,
+        "divergent_positions": 29,
+        "divergence_rate": 0.725,
+        "recovered_after": 30,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 3,
+        "len_ref": 39,
+        "len_cand": 40,
+        "first_divergence": 4,
+        "divergent_positions": 35,
+        "divergence_rate": 0.8974358974358975,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 4,
+        "len_ref": 39,
+        "len_cand": 40,
+        "first_divergence": 4,
+        "divergent_positions": 35,
+        "divergence_rate": 0.8974358974358975,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 5,
+        "len_ref": 40,
+        "len_cand": 40,
+        "first_divergence": 4,
+        "divergent_positions": 29,
+        "divergence_rate": 0.725,
+        "recovered_after": 30,
+        "control_token_mismatches": 0
+      },
+      {
+        "prompt": 6,
+        "len_ref": 39,
+        "len_cand": 40,
+        "first_divergence": 4,
+        "divergent_positions": 35,
+        "divergence_rate": 0.8974358974358975,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 7,
+        "len_ref": 39,
+        "len_cand": 40,
+        "first_divergence": 4,
+        "divergent_positions": 35,
+        "divergence_rate": 0.8974358974358975,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 8,
+        "len_ref": 51,
+        "len_cand": 60,
+        "first_divergence": 8,
+        "divergent_positions": 43,
+        "divergence_rate": 0.8431372549019608,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 9,
+        "len_ref": 7,
+        "len_cand": 60,
+        "first_divergence": 1,
+        "divergent_positions": 6,
+        "divergence_rate": 0.8571428571428571,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 10,
+        "len_ref": 8,
+        "len_cand": 62,
+        "first_divergence": 1,
+        "divergent_positions": 7,
+        "divergence_rate": 0.875,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 11,
+        "len_ref": 7,
+        "len_cand": 60,
+        "first_divergence": 1,
+        "divergent_positions": 6,
+        "divergence_rate": 0.8571428571428571,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 12,
+        "len_ref": 33,
+        "len_cand": 34,
+        "first_divergence": 4,
+        "divergent_positions": 27,
+        "divergence_rate": 0.8181818181818182,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 13,
+        "len_ref": 34,
+        "len_cand": 35,
+        "first_divergence": 4,
+        "divergent_positions": 28,
+        "divergence_rate": 0.8235294117647058,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 14,
+        "len_ref": 34,
+        "len_cand": 35,
+        "first_divergence": 4,
+        "divergent_positions": 28,
+        "divergence_rate": 0.8235294117647058,
+        "recovered_after": null,
+        "control_token_mismatches": 1
+      },
+      {
+        "prompt": 15,
+        "len_ref": 35,
+        "len_cand": 35,
+        "first_divergence": 12,
+        "divergent_positions": 16,
+        "divergence_rate": 0.45714285714285713,
+        "recovered_after": 16,
+        "control_token_mismatches": 0
+      }
+    ]
+  },
+  "null_reads_zero": true,
+  "it_is_a_diagnostic_not_a_verdict": "G004 measured greedy divergence ranking candidates OPPOSITELY to capability, so a candidate that diverges early may be better. This describes HOW a candidate departs, never whether it is worse.",
+  "not_delivered": "top-k overlap and logit margins. Both need per-step LOGITS and the harness exposes token ids only. First divergence, divergence rate, recovery and control-token changes come from the token streams and are delivered.",
+  "commit": "1897ee227c23c258c0edc39360465f03bece67a1",
+  "the_G004_law_shown_directly": "g032 diverges from G0 on 16/16 prompts, at a mean rate of 0.816 with median first divergence at token 4 -- 81.6% of positions differ. Yet G076 scored it EQUAL OR BETTER than G0 on every capability dimension and G126/G128 put both at 0.98. A candidate can rewrite four fifths of its output and be equally capable, which is exactly why G004 recorded divergence ranking candidates OPPOSITELY to capability, and why this is a diagnostic.",
+  "the_control_token_signal_connects_to_truncation": "13 control-token mismatches across 16 prompts. g032 handles im_start/im_end differently from G0, and that is the same artifact G076 measured truncating twice as often and G100 measured needing 1.59x the tokens per task. Three instruments, one behaviour: this candidate manages its own turn boundaries differently.",
+  "recovery_is_rare": "only 3 of 16 diverging prompts re-converge and stay converged. Once greedy decoding forks it mostly stays forked, which is why 'first divergence token' is the informative number and 'divergence rate' is largely a function of where the fork happened."
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "hawking.nos.battery_controls.v1",
+  "obligation": "G127 -- the battery must REJECT a known-bad artifact",
+  "results": {
+    "uniform-q4-v1 (reference)": {
+      "n": 60,
+      "correct": 57,
+      "truncated": 2,
+      "score_on_scored": 0.9827586206896551
+    },
+    "mixed-q4down-v1 (known bad)": {
+      "n": 60,
+      "correct": 0,
+      "truncated": 60,
+      "score_on_scored": 0.0
+    },
+    "corrupted-l40down-v1 (deliberate)": {
+      "n": 60,
+      "correct": 0,
+      "truncated": 60,
+      "score_on_scored": 0.0
+    }
+  },
+  "the_gap": "G0 scores 0.98 on 58 scored items. BOTH known-bads score 0.00 with 60 of 60 truncated -- a total separation on every one of the ten categories. A battery that passes everything is a broken battery; this one rejects both.",
+  "the_deliberate_corruption": {
+    "method": "hardlinked every one of the 1,108 tensor files from uniform-q4-v1, then damaged ONE: 23,746 bytes XORed across the code region of layer 40's mlp.down_proj, 47,349,800 bytes. The header was left intact deliberately so the artifact LOADS and is then wrong -- a file that fails to parse tests the loader, not the battery.",
+    "fraction_of_artifact_damaged": 1.6608271844842612e-06,
+    "finding": "0.00017% of the artifact's bytes, in ONE tensor of 1,108, takes the model from 0.98 to 0.00. That is a fragility result as much as a control: there is no graceful degradation here."
+  },
+  "BOTH_FAIL_THE_SAME_WAY_AND_IT_IS_NOT_BY_ANSWERING_WRONGLY": "Neither bad artifact gets items wrong. Both TRUNCATE on 60 of 60 -- they never close a think block. So the battery's discriminating signal is TERMINATION, not correctness, which is the same signature G076 found at 53 items and G076's known-bad showed at 100% truncation. A score-only battery would have reported '0.00 correct' and missed that the failure mode is non-termination.",
+  "consequence_for_G126s_ceiling": "G126 recorded that G0 aces nine of ten categories and that widening item count did not widen resolution. These controls show the battery is not blind -- it separates a broken artifact totally. What it cannot do is rank two HEALTHY artifacts, and these two results bound the instrument from the other side: it is a rejection test, not a ranking test.",
+  "harness_limit_hit_on_the_way": "the first corrupted run failed with 'GQA position 1024 exceeds max_seq_len 1024' on a long-context item -- a harness limit, not corruption, and the artifact had already loaded and generated. Re-run at 2048. Recorded because a failure that looks like the artifact but is the harness is exactly the confusion this campaign keeps finding.",
+  "commit": "1940d4f63c20ba086796e7282f2a12379d6c384d"
+}

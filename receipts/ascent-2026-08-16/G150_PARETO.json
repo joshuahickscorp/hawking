@@ -1,0 +1,62 @@
+{
+  "schema": "hawking.nos.pareto_table.v1",
+  "obligation": "G150 -- Pareto table per candidate, regenerated not hand-edited",
+  "started": "2026-08-18T17:00:15.137124+00:00",
+  "axes": [
+    "effective_bpw",
+    "tps",
+    "token_ns",
+    "dram_bytes_per_token",
+    "resident_ram_gb",
+    "nr_bytes",
+    "nx_bytes",
+    "doctor",
+    "tabula_drift"
+  ],
+  "candidates": [
+    "uniform-q4-v1",
+    "mixed-q3mlp-v1",
+    "mixed-q3mlp-q3attn-v1"
+  ],
+  "table": {
+    "uniform-q4-v1": {
+      "effective_bpw": null,
+      "tps": null,
+      "token_ns": 37518910,
+      "dram_bytes_per_token": null,
+      "resident_ram_gb": null,
+      "nr_bytes": 14308518399,
+      "nx_bytes": null,
+      "doctor": null,
+      "tabula_drift": null
+    },
+    "mixed-q3mlp-v1": {
+      "effective_bpw": null,
+      "tps": null,
+      "token_ns": null,
+      "dram_bytes_per_token": null,
+      "resident_ram_gb": null,
+      "nr_bytes": 13963923935,
+      "nx_bytes": null,
+      "doctor": null,
+      "tabula_drift": null
+    },
+    "mixed-q3mlp-q3attn-v1": {
+      "effective_bpw": null,
+      "tps": null,
+      "token_ns": null,
+      "dram_bytes_per_token": null,
+      "resident_ram_gb": null,
+      "nr_bytes": 16904476304,
+      "nx_bytes": null,
+      "doctor": null,
+      "tabula_drift": null
+    }
+  },
+  "committed_copy": "receipts/ascent-2026-08-16/G150_PARETO_TABLE.json",
+  "control_regenerate_byte_identical": true,
+  "control_diff_against_committed_stable": true,
+  "honest_note": "cells are null where no receipt records that axis for that candidate; nulls are not filled from a different candidate. DRAM/token and NX size are null pending G142 and a committed NX -- the table shows what is measured and what still owes, which is the point of publishing it.",
+  "commit": "2079bc19389e0d958d49db6c21007a043f7711f2",
+  "ended": "2026-08-18T17:00:15.334142+00:00"
+}

@@ -1,0 +1,322 @@
+{
+  "schema": "odyssey.patient.nx.v1",
+  "oxx": "O003",
+  "mode": "gather",
+  "runtime": "mlx",
+  "runtime_label": "mlx_lm EXTERNAL SPECIMEN \u2014 not Hawking native",
+  "label": "SPECIMEN",
+  "not_hawking_nx_win": true,
+  "not_a_full_rust_runtime": true,
+  "quant": "4bit-mlx",
+  "quant_fidelity_caveat": "4-bit affine MLX quantization (group 64). Battery/route/TPS are SPECIMEN under quant \u2014 not bf16-canonical Doctor. Canonical HF snapshot was not modified or deleted. mlx_lm.kimi_vl.sanitize drops vision_tower + multi_modal_projector; language-MoE router only (DeepSeek-V3 sigmoid/noaux_tc, 6/64 + 2 shared).",
+  "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+  "weights_loaded": "/Users/scammermike/.cache/mlx/odyssey/O003-Kimi-VL-A3B-Instruct-4bit",
+  "canonical_snapshot_intact": 7,
+  "topk": 6,
+  "n_experts": 64,
+  "frac_topk_over_n": 0.09375,
+  "tokens_observed": 91,
+  "full_expert_body_bytes": 29689380864,
+  "selected_expert_bytes_per_token": 3598712832,
+  "shared_expert_bytes": 899678208,
+  "ratio_selected_over_full": 0.121212,
+  "dense_mlp_equivalent": {
+    "formula": "n_layers * 3 * hidden * intermediate_size * 2 (bf16 SwiGLU)",
+    "n_layers": 27,
+    "hidden_size": 2048,
+    "intermediate_size": 11264,
+    "params": 1868562432,
+    "bytes_bf16": 3737124864,
+    "census_mlp_dense_bytes": 674193120,
+    "used_bytes": 674193120,
+    "_label": "DERIVED from MEASURED census config",
+    "_section": "\u00a718"
+  },
+  "ratio_selected_over_dense_mlp": 5.337807,
+  "formula": "selected = topk/n_experts * expert_body_bytes + shared_expert_bytes",
+  "census_expert_body_bytes": 28789702656,
+  "specimen_expert_bytes": 0,
+  "specimen_selected_bytes_per_token": 0,
+  "specimen_live_nbytes": 625687552,
+  "mlx_execution": {
+    "switch_mlp_class": "SwitchGLU",
+    "proj_class": "QuantizedSwitchLinear",
+    "mlx_gathers_selected_experts": true,
+    "mlx_densely_computes_all_experts": false,
+    "primitive": "mx.gather_qmm",
+    "full_expert_body_resident": true,
+    "source_has_gather_qmm": true,
+    "source_has_gather_mm": true,
+    "note": "mlx SwitchGLU/SwitchLinear indexes selected experts via gather_mm/gather_qmm (a gather compute). The FULL expert body stays resident in the weight tree. The NX lever is reducing MOVEMENT/RESIDENCY to selected-expert bytes \u2014 mlx does not drop unselected experts from RAM.",
+    "_label": "MEASURED (live class if loaded) + INFERRED (source inspect)",
+    "_section": "\u00a713"
+  },
+  "route": {
+    "moe_layers": 26,
+    "experts": 64,
+    "top_k": 6,
+    "tokens_observed": 91,
+    "entropy_avg": 4.8318,
+    "entropy_max": 6.0,
+    "cold_experts": 0,
+    "top16_mass_pct": 34,
+    "most_popular_share": 3.2263,
+    "most_popular_share_unit": "percent_of_all_selections",
+    "transition_stability": 0.4049,
+    "adjacent_token_overlap": 0.4049,
+    "p_e_t_given_e_t_minus_1": 0.3819,
+    "transition_events": 2340,
+    "cross_layer_cooccurrence": 0.0963,
+    "cross_layer_jaccard": 0.0546,
+    "hot_set": [
+      15,
+      60,
+      58,
+      41,
+      63,
+      61,
+      49,
+      37,
+      25,
+      3,
+      53,
+      8,
+      48,
+      5,
+      1,
+      14
+    ],
+    "cold_set": [],
+    "hot_cold_verdict": "mildly peaked: entropy 4.83/6.00, top16=34%, most-pop=3.2263%",
+    "uniform_routing": false,
+    "per_layer": [
+      {
+        "layer": 1,
+        "entropy_bits": 5.139,
+        "cold": 12,
+        "tokens": 91
+      },
+      {
+        "layer": 2,
+        "entropy_bits": 4.8492,
+        "cold": 14,
+        "tokens": 91
+      },
+      {
+        "layer": 3,
+        "entropy_bits": 4.9548,
+        "cold": 18,
+        "tokens": 91
+      },
+      {
+        "layer": 4,
+        "entropy_bits": 5.0123,
+        "cold": 12,
+        "tokens": 91
+      },
+      {
+        "layer": 5,
+        "entropy_bits": 5.1208,
+        "cold": 14,
+        "tokens": 91
+      },
+      {
+        "layer": 6,
+        "entropy_bits": 4.6446,
+        "cold": 19,
+        "tokens": 91
+      },
+      {
+        "layer": 7,
+        "entropy_bits": 4.881,
+        "cold": 14,
+        "tokens": 91
+      },
+      {
+        "layer": 8,
+        "entropy_bits": 5.0453,
+        "cold": 14,
+        "tokens": 91
+      },
+      {
+        "layer": 9,
+        "entropy_bits": 4.8437,
+        "cold": 17,
+        "tokens": 91
+      },
+      {
+        "layer": 10,
+        "entropy_bits": 4.8929,
+        "cold": 17,
+        "tokens": 91
+      },
+      {
+        "layer": 11,
+        "entropy_bits": 4.6211,
+        "cold": 19,
+        "tokens": 91
+      },
+      {
+        "layer": 12,
+        "entropy_bits": 4.9101,
+        "cold": 16,
+        "tokens": 91
+      },
+      {
+        "layer": 13,
+        "entropy_bits": 4.9495,
+        "cold": 14,
+        "tokens": 91
+      },
+      {
+        "layer": 14,
+        "entropy_bits": 4.8942,
+        "cold": 16,
+        "tokens": 91
+      },
+      {
+        "layer": 15,
+        "entropy_bits": 4.6173,
+        "cold": 24,
+        "tokens": 91
+      },
+      {
+        "layer": 16,
+        "entropy_bits": 4.772,
+        "cold": 20,
+        "tokens": 91
+      },
+      {
+        "layer": 17,
+        "entropy_bits": 4.7631,
+        "cold": 18,
+        "tokens": 91
+      },
+      {
+        "layer": 18,
+        "entropy_bits": 4.7901,
+        "cold": 17,
+        "tokens": 91
+      },
+      {
+        "layer": 19,
+        "entropy_bits": 4.7819,
+        "cold": 20,
+        "tokens": 91
+      },
+      {
+        "layer": 20,
+        "entropy_bits": 4.9209,
+        "cold": 19,
+        "tokens": 91
+      },
+      {
+        "layer": 21,
+        "entropy_bits": 4.8512,
+        "cold": 15,
+        "tokens": 91
+      },
+      {
+        "layer": 22,
+        "entropy_bits": 4.5474,
+        "cold": 17,
+        "tokens": 91
+      },
+      {
+        "layer": 23,
+        "entropy_bits": 4.7998,
+        "cold": 13,
+        "tokens": 91
+      },
+      {
+        "layer": 24,
+        "entropy_bits": 4.6857,
+        "cold": 14,
+        "tokens": 91
+      },
+      {
+        "layer": 25,
+        "entropy_bits": 4.7263,
+        "cold": 16,
+        "tokens": 91
+      },
+      {
+        "layer": 26,
+        "entropy_bits": 4.612,
+        "cold": 17,
+        "tokens": 91
+      }
+    ]
+  },
+  "primitive_design_attempt": {
+    "name": "R-sparse-active-expert-gather",
+    "intent": "Move only top-k (plus shared) expert bodies per token; keep the full expert file as the stored body. Accounting + design note, not a runtime.",
+    "selected_expert_bytes_per_token": 3598712832,
+    "full_expert_body_bytes": 29689380864,
+    "ratio_selected_over_full": 0.121212,
+    "dense_mlp_equivalent_bytes": 674193120,
+    "ratio_selected_over_dense_mlp": 5.337807,
+    "mlx_status": "mlx SwitchGLU/SwitchLinear indexes selected experts via gather_mm/gather_qmm (a gather compute). The FULL expert body stays resident in the weight tree. The NX lever is reducing MOVEMENT/RESIDENCY to selected-expert bytes \u2014 mlx does not drop unselected experts from RAM.",
+    "hawking_nx_gap": "Resident set is still the full expert body. NX would stage only selected-expert bytes into the working set (packed expert cache / grouped-GEMM). Not implemented here.",
+    "not_a_runtime": true,
+    "_label": "DERIVED (census bytes) + INFERRED (design)",
+    "_section": "\u00a713"
+  },
+  "verdict": "ACCOUNTING_ONLY",
+  "gate": {
+    "decision": "REFUSE",
+    "note": "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.83 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
+    "reasons": [
+      "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant",
+      "OBSERVED: compressor at 1.83 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
+    ],
+    "current_wired_gb": 6.64,
+    "projected_headroom_gb": 80.8,
+    "observed": {
+      "total_gb": 103.079,
+      "wired_gb": 6.641,
+      "free_gb": 53.651,
+      "inactive_gb": 16.289,
+      "compressed_gb": 1.834,
+      "swap_used_mb": 949.31,
+      "workers_resident": 0,
+      "worker_rss_total_gb": 0.0
+    }
+  },
+  "contamination": {
+    "section": "\u00a714",
+    "note": "NX gather is ACCOUNTING + a minimal primitive-design attempt. Not a Hawking NX runtime, not BASE_TRUE_TPS.",
+    "clean_box": {
+      "clean_box_ok": false,
+      "reason": "2 live lane(s) may contend GPU/memory: ['odyssey-o003-novelty-adversarial-falsifier-20260819-190403', 'odyssey-o003-novelty-arch-20260819-190424']",
+      "snapshot": {
+        "type": "machine_state",
+        "chip": "Apple M3 Ultra",
+        "ncpu": 28,
+        "ram_total_gib": 96.0,
+        "ram_free_gib": 51.8,
+        "disk_free_gib": 51.9,
+        "load_1m": 6.18359375,
+        "active_grok_lanes": [
+          "odyssey-o003-novelty-adversarial-falsifier-20260819-190403",
+          "odyssey-o003-novelty-arch-20260819-190424"
+        ]
+      }
+    },
+    "_label": "MEASURED machine note + DERIVED contamination flag"
+  },
+  "labels": {
+    "full_expert_body_bytes": "MEASURED (census safetensors headers, bf16)",
+    "selected_expert_bytes_per_token": "DERIVED (topk/n_experts \u00d7 MEASURED expert bytes)",
+    "ratio_selected_over_full": "DERIVED",
+    "dense_mlp_equivalent": "DERIVED from MEASURED census config",
+    "tokens_observed": "MEASURED",
+    "mlx_execution": "MEASURED (live class if loaded) + INFERRED (source inspect)"
+  },
+  "commit": "2ffba3f07566dd368d178e519d784d9cd2f88544",
+  "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+  "out": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O003_NX_gather.json",
+  "_evidence": "DERIVED from MEASURED census organ bytes + MEASURED live switch_mlp inspect",
+  "_label": "DERIVED accounting \u2014 not a Hawking NX win (\u00a715)",
+  "_section": "\u00a720"
+}

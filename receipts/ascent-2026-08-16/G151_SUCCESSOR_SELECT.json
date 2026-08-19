@@ -1,0 +1,51 @@
+{
+  "schema": "hawking.nos.successor_select.v1",
+  "obligation": "G151 -- successor selection implemented as CODE, not prose",
+  "started": "2026-08-18T17:00:15.136958+00:00",
+  "hard_gate": [
+    "doctor_pass",
+    "provenance_valid",
+    "native_path",
+    "no_hidden_fallback"
+  ],
+  "rules": [
+    "hard gate before any score",
+    "no BPW-alone promotion",
+    "no silent T regression -- DEVELOP not PROMOTE unless explicitly allowed"
+  ],
+  "unit_test": {
+    "passed": true,
+    "cases": [
+      {
+        "claim": "smaller BPW but slower must NOT promote",
+        "ok": true,
+        "result": "DEVELOP"
+      },
+      {
+        "claim": "native T win must promote",
+        "ok": true,
+        "result": "PROMOTE"
+      },
+      {
+        "claim": "smaller BPW at equal T may promote",
+        "ok": true,
+        "result": "PROMOTE"
+      },
+      {
+        "claim": "tiny BPW that fails Doctor must be refused at the gate",
+        "ok": true,
+        "result": "REFUSED"
+      },
+      {
+        "claim": "explicit T trade is allowed to promote",
+        "ok": true,
+        "result": "PROMOTE"
+      }
+    ]
+  },
+  "refuses_bpw_alone": true,
+  "refuses_silent_t_trade": true,
+  "gate_beats_any_number": true,
+  "commit": "2079bc19389e0d958d49db6c21007a043f7711f2",
+  "ended": "2026-08-18T17:00:15.150809+00:00"
+}

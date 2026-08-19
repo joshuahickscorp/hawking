@@ -1,0 +1,88 @@
+{
+  "schema": "hawking.nos.cost_vector_t.v1",
+  "obligation": "G125 -- cost vector extended to (B, M, F, L, R, T)",
+  "axes": {
+    "B": "stored bits per weight, complete",
+    "M": "DRAM bytes per token",
+    "F": "physical flops per token",
+    "L": "ns per token, measured on device",
+    "R": "resident bytes at the harness sequence length",
+    "T": "Tabula drift, x the parent, from G123"
+  },
+  "candidates": {
+    "uniform-q4-v1": {
+      "candidate": "uniform-q4-v1",
+      "B_bits_per_weight": 4.255955,
+      "M_dram_bytes_per_token": 14297694680,
+      "F_flops_per_token": 51244849016,
+      "L_ns_per_token": 30549917,
+      "L_tps": 32.73,
+      "R_resident_bytes": 14314471896,
+      "T_tabula_drift_x": 28.63,
+      "T_provisional": true,
+      "T_basis": "q4_group64 measured on the abliterated full_attention_out at L63 (G123). PROVISIONAL: that instrument's ladder misses the recorded 11-12/25-27/64-67 by a constant 2.5x."
+    },
+    "compact-q3attn-r1p2-v1": {
+      "candidate": "compact-q3attn-r1p2-v1",
+      "B_bits_per_weight": 3.344821,
+      "M_dram_bytes_per_token": 11245158827,
+      "F_flops_per_token": 51244849016,
+      "L_ns_per_token": 33586042,
+      "L_tps": 29.77,
+      "R_resident_bytes": 11261936043,
+      "T_tabula_drift_x": 67.55,
+      "T_provisional": true,
+      "T_basis": "q3_group64 measured on the abliterated full_attention_out at L63 (G123). PROVISIONAL: that instrument's ladder misses the recorded 11-12/25-27/64-67 by a constant 2.5x."
+    },
+    "g032-chanscale-a025-compact": {
+      "candidate": "g032-chanscale-a025-compact",
+      "B_bits_per_weight": 3.344826,
+      "M_dram_bytes_per_token": 11245158827,
+      "F_flops_per_token": 51244849016,
+      "L_ns_per_token": 33593042,
+      "L_tps": 29.77,
+      "R_resident_bytes": 11261936043,
+      "T_tabula_drift_x": 67.55,
+      "T_provisional": true,
+      "T_basis": "q3_group64 measured on the abliterated full_attention_out at L63 (G123). PROVISIONAL: that instrument's ladder misses the recorded 11-12/25-27/64-67 by a constant 2.5x."
+    }
+  },
+  "comparisons": [
+    {
+      "from": "uniform-q4-v1",
+      "to": "compact-q3attn-r1p2-v1",
+      "verdict": "REFUSED",
+      "notes": [
+        "B 4.255955 -> 3.344821 (-0.911134)",
+        "T 28.63x -> 67.55x (+38.92)",
+        "L 30.550 -> 33.586 ms (+3.036)",
+        "B IMPROVES AND T REGRESSES. This comparison is refused, not weighted: a weighting would let a large enough B win purchase a T regression at some exchange rate, and no such rate has ever been established between bits and patient identity."
+      ]
+    },
+    {
+      "from": "uniform-q4-v1",
+      "to": "g032-chanscale-a025-compact",
+      "verdict": "REFUSED",
+      "notes": [
+        "B 4.255955 -> 3.344826 (-0.911129)",
+        "T 28.63x -> 67.55x (+38.92)",
+        "L 30.550 -> 33.593 ms (+3.043)",
+        "B IMPROVES AND T REGRESSES. This comparison is refused, not weighted: a weighting would let a large enough B win purchase a T regression at some exchange rate, and no such rate has ever been established between bits and patient identity."
+      ]
+    },
+    {
+      "from": "uniform-q4-v1",
+      "to": "CONSTRUCTED: half the bits, 1% worse T",
+      "verdict": "REFUSED",
+      "notes": [
+        "B 4.255955 -> 2.127978 (-2.127978)",
+        "T 28.63x -> 28.92x (+0.29)",
+        "L 30.550 -> 30.550 ms (+0.000)",
+        "B IMPROVES AND T REGRESSES. This comparison is refused, not weighted: a weighting would let a large enough B win purchase a T regression at some exchange rate, and no such rate has ever been established between bits and patient identity."
+      ]
+    }
+  ],
+  "the_rule": "a candidate that improves B while worsening T is REFUSED, not weighted. A weighting would let a large enough B win purchase a T regression at some exchange rate, and no such rate has ever been established between bits and patient identity.",
+  "T_is_provisional": "G123 recovers the direction with a 200x null separation but its ladder misses the recorded values by a constant 2.5x. Every T here carries the flag; a provisional number that does not announce itself is worse than a null.",
+  "commit": "5d99d3248fba8e2cc6b443056e72828482a21da6"
+}

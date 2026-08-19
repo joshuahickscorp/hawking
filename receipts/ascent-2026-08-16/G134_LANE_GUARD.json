@@ -1,0 +1,102 @@
+{
+  "schema": "hawking.nos.gpu_lane_guard.v1",
+  "obligation": "G134 -- protected GPU timing lane enforced MECHANICALLY",
+  "why_the_old_lane_was_convention": "an advisory lock only protects callers who choose to call it. G131 ran three concurrent workers by invoking the greedy binary directly, never consulting the lock, and nothing refused. That is the proof, and it is a measurement of this repo rather than an opinion about it.",
+  "pre_existing_lock": {
+    "present": true,
+    "bytes": 704,
+    "uses_flock": false,
+    "uses_mkdir_lock": true,
+    "callers_must_opt_in": true,
+    "bypassable_by_direct_invocation": true,
+    "proof_of_bypass": "G131 ran three concurrent workers by invoking the greedy binary directly; the lock was never consulted and nothing refused",
+    "comment_mentions_flock_but_code_does_not": true,
+    "mechanism": "atomic mkdir with a stale-pid reaper, 5400s deadline, trap-based release"
+  },
+  "what_is_being_protected": "G131 measured three resident workers inflating per-worker decode from 30.34 to 76.23 ms/token, 2.51x. A candidate timed under load looks 2.5x worse than it is; two candidates timed under DIFFERENT load rank arbitrarily. That is not a degraded measurement, it is a measurement of something else.",
+  "mechanism": "a contention witness is taken BEFORE and AFTER the timed region. Both halves are load-bearing: before-only misses a worker that spawns mid-run, after-only misses one that exits mid-run. A timing not clean at both ends is VOID, and the verdict travels in the receipt -- so the number cannot be cited later without the citation announcing itself.",
+  "honest_limit": "this does not stop anyone running the binary by hand. It stops the resulting number from passing as evidence. Enforcement is at the evidence layer, which is the layer that actually binds in this campaign, because a ledger entry requires a receipt.",
+  "steps": [
+    {
+      "label": "clean-lane",
+      "verdict": "VALID",
+      "witness_before": {
+        "count": 0,
+        "pids": [],
+        "rss_gb": 0.0,
+        "clean": true
+      },
+      "witness_after": {
+        "count": 0,
+        "pids": [],
+        "rss_gb": 0.0,
+        "clean": true
+      },
+      "wall_s": 1.01,
+      "why": "no other GPU worker resident at either end of the timed region"
+    },
+    {
+      "label": "contended-lane",
+      "verdict": "VOID",
+      "witness_before": {
+        "count": 1,
+        "pids": [
+          38648
+        ],
+        "rss_gb": 4.7,
+        "clean": false
+      },
+      "witness_after": {
+        "count": 1,
+        "pids": [
+          38648
+        ],
+        "rss_gb": 9.4,
+        "clean": false
+      },
+      "wall_s": 1.01,
+      "why": "1 worker(s) resident throughout, holding 4.7 GB -- G131 measured this inflating per-worker decode 30.34 -> 76.23 ms/token, 2.51x"
+    },
+    {
+      "label": "worker-exits-midway",
+      "verdict": "VOID",
+      "witness_before": {
+        "count": 1,
+        "pids": [
+          38648
+        ],
+        "rss_gb": 9.53,
+        "clean": false
+      },
+      "witness_after": {
+        "count": 0,
+        "pids": [],
+        "rss_gb": 0.0,
+        "clean": true
+      },
+      "wall_s": 1.609,
+      "why": "a worker EXITED during the timed region (1 resident at the start, none at the end) -- the after-witness alone would have passed this"
+    },
+    {
+      "label": "clean-again",
+      "verdict": "VALID",
+      "witness_before": {
+        "count": 0,
+        "pids": [],
+        "rss_gb": 0.0,
+        "clean": true
+      },
+      "witness_after": {
+        "count": 0,
+        "pids": [],
+        "rss_gb": 0.0,
+        "clean": true
+      },
+      "wall_s": 1.01,
+      "why": "no other GPU worker resident at either end of the timed region"
+    }
+  ],
+  "watched_refusing": true,
+  "commit": "68d10995cc9cf9959839ab68e4ed13c3a97db814",
+  "inspector_corrected": "the first run of this inspector reported uses_flock=True by matching the word inside the comment 'Swap for flock if lane count grows'. The lock is mkdir-atomic. The inspector now strips comment lines before matching, because a comment is not an implementation fact -- and a tool built to stop a claim passing without evidence had itself just read a comment as evidence."
+}

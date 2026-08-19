@@ -1,0 +1,35 @@
+{
+  "mixed-q3mlp-q3attn-v1": {
+    "doctor": null,
+    "dram_bytes_per_token": null,
+    "effective_bpw": null,
+    "nr_bytes": 16904476304,
+    "nx_bytes": null,
+    "resident_ram_gb": null,
+    "tabula_drift": null,
+    "token_ns": null,
+    "tps": null
+  },
+  "mixed-q3mlp-v1": {
+    "doctor": null,
+    "dram_bytes_per_token": null,
+    "effective_bpw": null,
+    "nr_bytes": 13963923935,
+    "nx_bytes": null,
+    "resident_ram_gb": null,
+    "tabula_drift": null,
+    "token_ns": null,
+    "tps": null
+  },
+  "uniform-q4-v1": {
+    "doctor": null,
+    "dram_bytes_per_token": null,
+    "effective_bpw": null,
+    "nr_bytes": 14308518399,
+    "nx_bytes": null,
+    "resident_ram_gb": null,
+    "tabula_drift": null,
+    "token_ns": 37518910,
+    "tps": null
+  }
+}

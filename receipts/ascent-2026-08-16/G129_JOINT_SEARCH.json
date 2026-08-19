@@ -1,0 +1,243 @@
+{
+  "schema": "hawking.nos.joint_scale_codec_search.v1",
+  "obligation": "G129 -- joint search at FIXED CODED BITS; reproduce the absmax law",
+  "bits": 3,
+  "group": 64,
+  "alphas": [
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95,
+    1.0
+  ],
+  "sites": [
+    {
+      "organ": "mlp.gate_proj",
+      "layer": 63,
+      "sweep": [
+        {
+          "alpha": 0.6,
+          "weight_mse": 7.902457798887127e-06,
+          "symbol_entropy": 2.833438308505256,
+          "coded_bits_per_elem": 3.083438308505256,
+          "output_rel_fro": 0.11583578651274819
+        },
+        {
+          "alpha": 0.65,
+          "weight_mse": 7.298870634320805e-06,
+          "symbol_entropy": 2.774362795443824,
+          "coded_bits_per_elem": 3.024362795443824,
+          "output_rel_fro": 0.10121719691605804
+        },
+        {
+          "alpha": 0.7,
+          "weight_mse": 7.188859947006318e-06,
+          "symbol_entropy": 2.7098398206893695,
+          "coded_bits_per_elem": 2.9598398206893695,
+          "output_rel_fro": 0.09216657194179274
+        },
+        {
+          "alpha": 0.75,
+          "weight_mse": 7.466755499307045e-06,
+          "symbol_entropy": 2.6426864316543175,
+          "coded_bits_per_elem": 2.8926864316543175,
+          "output_rel_fro": 0.08939237137676678
+        },
+        {
+          "alpha": 0.8,
+          "weight_mse": 8.057621440592439e-06,
+          "symbol_entropy": 2.574690823712384,
+          "coded_bits_per_elem": 2.824690823712384,
+          "output_rel_fro": 0.0901630688755327
+        },
+        {
+          "alpha": 0.85,
+          "weight_mse": 8.904332124824028e-06,
+          "symbol_entropy": 2.5068137708409113,
+          "coded_bits_per_elem": 2.7568137708409113,
+          "output_rel_fro": 0.09300875785286108
+        },
+        {
+          "alpha": 0.9,
+          "weight_mse": 9.68726002798833e-06,
+          "symbol_entropy": 2.4179707012922016,
+          "coded_bits_per_elem": 2.6679707012922016,
+          "output_rel_fro": 0.09818983168927096
+        },
+        {
+          "alpha": 0.95,
+          "weight_mse": 1.0634414766583607e-05,
+          "symbol_entropy": 2.3580677171814246,
+          "coded_bits_per_elem": 2.6080677171814246,
+          "output_rel_fro": 0.10270943546458283
+        },
+        {
+          "alpha": 1.0,
+          "weight_mse": 1.1763947069630858e-05,
+          "symbol_entropy": 2.2998499931436114,
+          "coded_bits_per_elem": 2.5498499931436114,
+          "output_rel_fro": 0.1083671405259885
+        }
+      ],
+      "absmax": {
+        "alpha": 1.0,
+        "weight_mse": 1.1763947069630858e-05,
+        "symbol_entropy": 2.2998499931436114,
+        "coded_bits_per_elem": 2.5498499931436114,
+        "output_rel_fro": 0.1083671405259885
+      },
+      "mse_optimal": {
+        "alpha": 0.7,
+        "weight_mse": 7.188859947006318e-06,
+        "symbol_entropy": 2.7098398206893695,
+        "coded_bits_per_elem": 2.9598398206893695,
+        "output_rel_fro": 0.09216657194179274
+      },
+      "output_optimal": {
+        "alpha": 0.75,
+        "weight_mse": 7.466755499307045e-06,
+        "symbol_entropy": 2.6426864316543175,
+        "coded_bits_per_elem": 2.8926864316543175,
+        "output_rel_fro": 0.08939237137676678
+      },
+      "pareto_front_alphas": [
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95,
+        1.0
+      ]
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "layer": 63,
+      "sweep": [
+        {
+          "alpha": 0.6,
+          "weight_mse": 1.0418767857518176e-05,
+          "symbol_entropy": 2.8016167969294137,
+          "coded_bits_per_elem": 3.0516167969294137,
+          "output_rel_fro": 0.14998870667836595
+        },
+        {
+          "alpha": 0.65,
+          "weight_mse": 9.764206532750588e-06,
+          "symbol_entropy": 2.739075342593832,
+          "coded_bits_per_elem": 2.989075342593832,
+          "output_rel_fro": 0.13698398251739016
+        },
+        {
+          "alpha": 0.7,
+          "weight_mse": 9.712839100590775e-06,
+          "symbol_entropy": 2.6721929905961956,
+          "coded_bits_per_elem": 2.9221929905961956,
+          "output_rel_fro": 0.12734905799488408
+        },
+        {
+          "alpha": 0.75,
+          "weight_mse": 1.0143798633379324e-05,
+          "symbol_entropy": 2.6033466161002883,
+          "coded_bits_per_elem": 2.8533466161002883,
+          "output_rel_fro": 0.12324875340038065
+        },
+        {
+          "alpha": 0.8,
+          "weight_mse": 1.096853949198642e-05,
+          "symbol_entropy": 2.5341618089525975,
+          "coded_bits_per_elem": 2.7841618089525975,
+          "output_rel_fro": 0.12366916311852355
+        },
+        {
+          "alpha": 0.85,
+          "weight_mse": 1.2120767661467497e-05,
+          "symbol_entropy": 2.465635682009123,
+          "coded_bits_per_elem": 2.715635682009123,
+          "output_rel_fro": 0.12767513004731584
+        },
+        {
+          "alpha": 0.9,
+          "weight_mse": 1.3173771043831053e-05,
+          "symbol_entropy": 2.3769718938978945,
+          "coded_bits_per_elem": 2.6269718938978945,
+          "output_rel_fro": 0.13073398725580984
+        },
+        {
+          "alpha": 0.95,
+          "weight_mse": 1.4432941473949033e-05,
+          "symbol_entropy": 2.316390471053178,
+          "coded_bits_per_elem": 2.566390471053178,
+          "output_rel_fro": 0.13488160714223552
+        },
+        {
+          "alpha": 1.0,
+          "weight_mse": 1.5924670250035562e-05,
+          "symbol_entropy": 2.257965018820724,
+          "coded_bits_per_elem": 2.507965018820724,
+          "output_rel_fro": 0.14186227629341122
+        }
+      ],
+      "absmax": {
+        "alpha": 1.0,
+        "weight_mse": 1.5924670250035562e-05,
+        "symbol_entropy": 2.257965018820724,
+        "coded_bits_per_elem": 2.507965018820724,
+        "output_rel_fro": 0.14186227629341122
+      },
+      "mse_optimal": {
+        "alpha": 0.7,
+        "weight_mse": 9.712839100590775e-06,
+        "symbol_entropy": 2.6721929905961956,
+        "coded_bits_per_elem": 2.9221929905961956,
+        "output_rel_fro": 0.12734905799488408
+      },
+      "output_optimal": {
+        "alpha": 0.75,
+        "weight_mse": 1.0143798633379324e-05,
+        "symbol_entropy": 2.6033466161002883,
+        "coded_bits_per_elem": 2.8533466161002883,
+        "output_rel_fro": 0.12324875340038065
+      },
+      "pareto_front_alphas": [
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95,
+        1.0
+      ]
+    }
+  ],
+  "law_check": [
+    {
+      "organ": "mlp.gate_proj",
+      "mse_wins_weight_mse": true,
+      "mse_costs_coded_bits": 0.4099898275457581,
+      "mse_pays_in_bits": true,
+      "absmax_output": 0.1083671405259885,
+      "mse_output": 0.09216657194179274,
+      "absmax_beats_mse_on_output": false
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "mse_wins_weight_mse": true,
+      "mse_costs_coded_bits": 0.41422797177547155,
+      "mse_pays_in_bits": true,
+      "absmax_output": 0.14186227629341122,
+      "mse_output": 0.12734905799488408,
+      "absmax_beats_mse_on_output": false
+    }
+  ],
+  "commit": "3217594d6662b293342989e43b77da952f188633",
+  "law_verdict": {
+    "half_that_REPRODUCES": "MSE-optimal scaling raises code entropy exactly as the directive says. On gate_proj the weight-MSE optimum sits at alpha 0.70 with entropy 2.7098 against absmax's 2.2998 -- it pays +0.4100 coded bits/elem, and +0.4142 on q_proj. The mechanism is confirmed: a finer step spreads the symbol histogram and codes worse.",
+    "half_that_DOES_NOT": "Absmax does NOT win. On output error absmax scores 0.10837 against the MSE optimum's 0.09217 -- MSE is 15% BETTER in function space, and 11% better on q_proj. The directive's framing ('absmax cruder numerically but codes better, therefore preferred') holds only on the bits axis; on the axis Doctor cares about it is the worse choice at its own operating point.",
+    "the_search_found_something_neither": "The OUTPUT optimum is alpha 0.75 on BOTH organs -- distinct from absmax (1.00) and from the weight-MSE optimum (0.70), one grid step apart and consistent across two organs. It scores 0.08939 against absmax's 0.10837, 18% better, for 0.34 more coded bits. THE WEIGHT-MSE OPTIMUM IS NOT THE OUTPUT OPTIMUM, which is the deeper form of the law the directive was reaching for.",
+    "on_FIXED_CODED_BITS": "The acceptance asks for a search at fixed coded bits, and that comparison is degenerate in this sweep: only alpha 1.00 reaches 2.55 b/elem, so at the tightest budget absmax is the only option and 'wins' by being alone. The honest comparison is the (coded bits, output error) Pareto front, and alpha 0.75-0.80 sits on it while the weight-MSE optimum does not.",
+    "reproduced_not_assumed": "this is a SEARCH result: nine scale values swept per organ, each scored on weight MSE, symbol entropy, coded bits and real-activation output error. The law was not assumed anywhere in the code."
+  }
+}

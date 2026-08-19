@@ -1,0 +1,56 @@
+{
+  "schema": "hawking.odyssey.harvest.v2",
+  "task": "odyssey-o001-novelty-arch-20260819-183223",
+  "slug": "odyssey-o001-novelty-arch",
+  "classification": "DATA-ONLY",
+  "action": "MERGE+COMPLETE (copy data, drop tools/, mark VERIFIED, complete, grok-run cleanup)",
+  "verdict": "VERIFIED",
+  "reason": "ok",
+  "files": [
+    "receipts/odyssey-i/O001_NOVELTY_arch.json",
+    "workspace/campaign/odyssey/candidate_families.json",
+    "workspace/campaign/odyssey/contracts/auto/o001_novelty-arch.md"
+  ],
+  "copied": [
+    "receipts/odyssey-i/O001_NOVELTY_arch.json"
+  ],
+  "dropped": [
+    "workspace/campaign/odyssey/candidate_families.json",
+    "workspace/campaign/odyssey/contracts/auto/o001_novelty-arch.md"
+  ],
+  "matching_receipts": [
+    "receipts/odyssey-i/O001_NOVELTY_arch.json"
+  ],
+  "template": "novelty-arch",
+  "oxx": "O001",
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/odyssey-o001-novelty-arch-20260819-183223",
+  "report": "/Users/scammermike/.claude-grok/tasks/odyssey-o001-novelty-arch-20260819-183223/grok-report.md",
+  "cleanup": true,
+  "command": "harvest",
+  "inputs": {
+    "task_dir": "/Users/scammermike/.claude-grok/tasks/odyssey-o001-novelty-arch-20260819-183223",
+    "worktree": "/Users/scammermike/.claude-grok/worktrees/odyssey-o001-novelty-arch-20260819-183223"
+  },
+  "outputs": {
+    "copied": [
+      "receipts/odyssey-i/O001_NOVELTY_arch.json"
+    ],
+    "dropped": [
+      "workspace/campaign/odyssey/candidate_families.json",
+      "workspace/campaign/odyssey/contracts/auto/o001_novelty-arch.md"
+    ],
+    "verdict": "VERIFIED"
+  },
+  "controls": [
+    "never auto-merge CODE",
+    "cleanup only DATA-ONLY",
+    "drop tools/ diffs on known data-producing templates"
+  ],
+  "assumptions": [
+    "DATA-ONLY = known data-producing template + matching RECEIPT_PATTERN",
+    "tools/*.py diffs on those templates are noise, not a deliverable",
+    "CODE = unknown template with a non-data path, or known template with no receipt"
+  ],
+  "reopen_if": "worktree still holds uncopied data files",
+  "_evidence": "DERIVED (harvester classification)"
+}

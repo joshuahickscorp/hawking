@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.odyssey.cost_model.v1",
+  "source_steer": [
+    "S003 §7-11",
+    "S004 §27",
+    "S004 §71"
+  ],
+  "policy_ref": "workspace/campaign/odyssey/ODYSSEY_POLICY.json",
+  "n_patients": 0,
+  "patients": [],
+  "status": "insufficient data",
+  "estimates": {},
+  "per_input_feature": {},
+  "frontier_depth_summary": {},
+  "cycle2_prediction_then_reality": [],
+  "uncertainty": "insufficient patients — do not treat any number as a fact",
+  "_label": "UNKNOWN",
+  "_not_fact": true,
+  "_evidence": "UNKNOWN",
+  "warning": "Estimates carry UNCERTAINTY and must not be treated as measurements or facts (bible §18; S003 §10). A point estimate is never the answer.",
+  "reason": "need ≥2 patients of compile-economics data; Cycle-1 trains the ETA model (S003 §10). Refusing to emit a point estimate."
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.nos.flops_per_token.v1",
+  "obligation": "G143 -- physical FLOPs/token measured per candidate, with roofline position",
+  "started": "2026-08-18T17:00:15.137398+00:00",
+  "active_text_params": 26895998464,
+  "vision_params_inactive": 460730096,
+  "flops_per_token": 53791996928,
+  "flops_per_token_gflop": 53.79,
+  "measured_token_ns": 30336726.0,
+  "token_ms": 30.337,
+  "achieved_gflops": 1773.2,
+  "compute_peak_gflops": 8979.0,
+  "roofline_position_frac_of_compute_peak": 0.1975,
+  "bandwidth_reconciliation": {
+    "artifact_bytes_moved_per_token": 13000000000.0,
+    "bandwidth_peak_gbps": 598.3,
+    "weight_move_ms": 21.728,
+    "weight_move_frac_of_token": 0.7162
+  },
+  "verdict_bound_by": "BANDWIDTH",
+  "control_internal_consistency": "achieved 1773 GFLOP/s is below the 8979.0 peak (frac 0.197 <= 1) AND weight movement at the measured bandwidth explains 72% of the token on its own. Both must hold for the bandwidth-bound verdict; a compute-bound token would show the opposite.",
+  "why_this_matters": "a kernel at 20% of the compute roof cannot be sped up by cutting FLOPs -- the lever is bytes moved per token, which is the density x kernel co-design front. This is the measured justification for attacking DRAM traffic, not arithmetic.",
+  "commit": "2079bc19389e0d958d49db6c21007a043f7711f2",
+  "ended": "2026-08-18T17:00:15.152335+00:00"
+}

@@ -1,0 +1,83 @@
+{
+  "schema": "hawking.nos.hide_plan_swap.v1",
+  "obligation": "G121 -- kernel selection and residency as DATA",
+  "plans": [
+    "spec/plans/default.plan.json",
+    "spec/plans/serial-family.plan.json"
+  ],
+  "results": [
+    {
+      "plan": "default",
+      "applied": {
+        "HAWKING_QWEN38_RECON_FUSE": "1",
+        "HAWKING_DN_VI_SIMD": "1",
+        "HAWKING_ARGMAX_TWO_PASS": "0",
+        "HAWKING_RMSNORM_TG": "256",
+        "HAWKING_DN_RMSNORM_TG": "256"
+      },
+      "dispatches": 964,
+      "tokens": [
+        248068,
+        198,
+        760,
+        1156,
+        4777,
+        6587,
+        728,
+        310,
+        1910,
+        328,
+        5834,
+        1149
+      ],
+      "token_ms": 32.079167,
+      "tps": 31.17287927083643,
+      "residency_is_data": false
+    },
+    {
+      "plan": "serial-family",
+      "applied": {
+        "HAWKING_QWEN38_RECON_FUSE": "0",
+        "HAWKING_DN_VI_SIMD": "1",
+        "HAWKING_ARGMAX_TWO_PASS": "0",
+        "HAWKING_RMSNORM_TG": "256",
+        "HAWKING_DN_RMSNORM_TG": "512"
+      },
+      "dispatches": 964,
+      "tokens": [
+        248068,
+        198,
+        760,
+        1156,
+        4777,
+        6587,
+        728,
+        310,
+        1910,
+        328,
+        5834,
+        1149
+      ],
+      "token_ms": 32.007084,
+      "tps": 31.24308356237638,
+      "residency_is_data": false
+    }
+  ],
+  "no_recompilation": true,
+  "dispatch_census_changed": false,
+  "tokens_identical": true,
+  "commit": "3ffc6fa107a814ab8db98c36a040f5a57d98363b",
+  "what_IS_data_today": "KERNEL SELECTION. spec/plans/*.plan.json is read by tools/hide_plan.py and applied to the runtime with NO RECOMPILATION -- the binary is untouched between the two runs. Swapping default.plan.json for serial-family.plan.json flips HAWKING_QWEN38_RECON_FUSE from 1 to 0 and HAWKING_DN_RMSNORM_TG from 256 to 512, and generation stays token-identical.",
+  "what_is_NOT_data": "RESIDENCY. The plan file carries a residency section and it is DECLARATIVE ONLY -- the file says so in its own is_this_actually_data field. G085 measured the artifact at 13.9% of RAM with the pressure crossover 5.2x beyond the model's maximum context, so the runtime hardcodes unified memory and exposes no knob to change it. A plan file whose residency half looks authoritative while being inert would be worse than one that admits it.",
+  "THE_VERIFY_IS_NOT_MET": {
+    "asked": "swap plan file, show DIFFERENT DISPATCH CENSUS, same tokens",
+    "got": "964 dispatches under both plans; tokens identical",
+    "why": "Every knob the runtime exposes is a kernel SWAP at constant count, not a plan change that adds or removes dispatches. G107 measured the same thing independently -- RECON_FUSE=0 selects different kernel family NAMES at a constant 964. A census that does not move is exactly what a same-count swap should produce.",
+    "and_a_second_limit_worth_stating": "the runtime reports a dispatch COUNT but not per-dispatch NAMES, so this cannot independently prove different kernels ran. The evidence that RECON_FUSE selects a different family is the SOURCE (its comment states it selects the G023 serial family names), not the telemetry. Source-verified is weaker than measured and is labelled as such."
+  },
+  "exact_missing_input": [
+    "a plan dimension that changes the dispatch COUNT -- a real fusion or a route-level change, which G112 and G107 both found absent",
+    "per-dispatch kernel-name telemetry, so a swap can be proven rather than inferred",
+    "a residency knob, which G085 shows would be moot on this machine anyway"
+  ]
+}

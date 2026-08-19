@@ -1,0 +1,144 @@
+{
+  "schema": "hawking.nos.tabula_drift.v1",
+  "obligation": "G123 -- Tabula drift instrument, reproducible for any candidate",
+  "manifest": {
+    "target_kinds": [
+      "full_attention_out",
+      "linear_attention_out",
+      "mlp_down"
+    ],
+    "scale": 1.0,
+    "norm_preserve": true,
+    "modified_tensor_count": 80
+  },
+  "method": "W' = (I - v v^T) W means v^T W' = 0, so the removed direction is a LEFT NULL VECTOR of every abliterated tensor and is recoverable from the artifact alone, with no access to the base model.",
+  "per_layer": [
+    {
+      "layer": 27,
+      "shape": [
+        5120,
+        6144
+      ],
+      "smallest_eig": 2.6485167937006998e-05,
+      "largest_eig": 47.01660989591894,
+      "eig_ratio": 5.633151347074456e-07,
+      "residual_v_dot_W": 0.005583559162914753,
+      "frobenius": 87.38265228271484
+    },
+    {
+      "layer": 47,
+      "shape": [
+        5120,
+        6144
+      ],
+      "smallest_eig": 2.6728340821774383e-05,
+      "largest_eig": 38.083671925941516,
+      "eig_ratio": 7.018320311589439e-07,
+      "residual_v_dot_W": 0.005669565871357918,
+      "frobenius": 92.18805694580078
+    },
+    {
+      "layer": 63,
+      "shape": [
+        5120,
+        6144
+      ],
+      "smallest_eig": 3.015019762297931e-05,
+      "largest_eig": 51.94799535215953,
+      "eig_ratio": 5.80391936562494e-07,
+      "residual_v_dot_W": 0.005949852056801319,
+      "frobenius": 100.39266967773438
+    }
+  ],
+  "agreement": [
+    {
+      "a": 27,
+      "b": 47,
+      "abs_cos": 0.9982864260673523,
+      "null_abs_cos": 0.0049047889187932014
+    },
+    {
+      "a": 27,
+      "b": 63,
+      "abs_cos": 0.9983404874801636,
+      "null_abs_cos": 0.0049047889187932014
+    },
+    {
+      "a": 47,
+      "b": 63,
+      "abs_cos": 0.9984397292137146,
+      "null_abs_cos": 0.003541045356541872
+    }
+  ],
+  "null_control": {
+    "kind": "random unit direction",
+    "seed": 123
+  },
+  "drift_ladder": [
+    {
+      "codec": "q4_group64",
+      "drift_x": 28.626876463786783,
+      "recorded_range": [
+        11,
+        12
+      ],
+      "reproduces_recorded": false,
+      "offset_vs_recorded_midpoint": 2.489293605546677
+    },
+    {
+      "codec": "q3_group64",
+      "drift_x": 67.55251997329584,
+      "recorded_range": [
+        25,
+        27
+      ],
+      "reproduces_recorded": false,
+      "offset_vs_recorded_midpoint": 2.5981738451267633
+    },
+    {
+      "codec": "q2_group64",
+      "drift_x": 162.0766646257544,
+      "recorded_range": [
+        64,
+        67
+      ],
+      "reproduces_recorded": false,
+      "offset_vs_recorded_midpoint": 2.4744528950496854
+    }
+  ],
+  "drift_layer": 63,
+  "drift_kind": "full_attention_out",
+  "commit": "56a01c155befe77f749d1a2e988d160d462b0da9",
+  "verdict": {
+    "recovery_WORKS": "The smallest/largest eigenvalue ratio is 5.6e-7 to 7.0e-7 -- a genuine near-null direction, not a numerical artefact. And it is SHARED: the direction recovered independently from layers 27, 47 and 63 agrees at |cos| 0.9983-0.9984 against a random-unit null of 0.0035-0.0049. That is a 200x separation from the null, so the artifact really does carry one removed direction and it is recoverable with no access to the base model.",
+    "agreement_is_LOWER_than_recorded": "The directive records agreement at |cos| 0.99992-0.99994. This instrument measures 0.9983-0.9984 -- the same conclusion, but measurably noisier, so the recovery here is not identical to whatever Tabula did. Stated rather than rounded into agreement.",
+    "THE_LADDER_DOES_NOT_REPRODUCE_AND_THE_MISS_IS_A_CONSTANT": {
+      "measured": {
+        "q4_group64": 28.626876463786783,
+        "q3_group64": 67.55251997329584,
+        "q2_group64": 162.0766646257544
+      },
+      "recorded_midpoints": {
+        "q4_group64": 11.5,
+        "q3_group64": 26.0,
+        "q2_group64": 65.5
+      },
+      "offsets": {
+        "q4_group64": 2.489293605546677,
+        "q3_group64": 2.5981738451267633,
+        "q2_group64": 2.4744528950496854
+      },
+      "offset_spread": 1.049999315131272,
+      "rung_ratios_mine": [
+        2.3597586714970564,
+        2.399268964204812
+      ],
+      "rung_ratios_recorded": [
+        2.260869565217391,
+        2.519230769230769
+      ],
+      "reading": "Every rung is high by 2.47-2.60x -- a spread of only 1.050 across a 5.7x range of drift. The SHAPE reproduces (rung-to-rung ratios 2.36/2.40 against 2.26/2.52); the SCALE does not. A near-constant multiplicative offset across all three rungs is diagnostic of a NORMALISATION difference, not a broken measurement: this instrument normalises by ||v^T W'|| on ONE tensor at ONE layer, and whatever produced the recorded ladder must have used a different denominator -- plausibly pooled across the 80 modified tensors."
+    },
+    "status": "BLOCKED. The acceptance requires reproducing the recorded 11-12 / 25-27 / 64-67 ladder and this does not. The instrument is built, self-consistent and strongly controlled, and the constant offset names where the discrepancy lives, but a ladder that misses by 2.5x is not a reproduction and must not be recorded as one."
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "schema": "hawking.nos.parallel_closure_proof.v1",
+  "obligation": "G135 -- ledger acceleration proven by genuinely overlapping closure",
+  "closed_together": [
+    "G137",
+    "G143",
+    "G148",
+    "G150",
+    "G151"
+  ],
+  "lanes": {
+    "G137": [
+      "2026-08-18T17:00:15.096307+00:00",
+      "2026-08-18T17:00:15.178744+00:00",
+      45583
+    ],
+    "G143": [
+      "2026-08-18T17:00:15.095351+00:00",
+      "2026-08-18T17:00:15.178276+00:00",
+      45582
+    ],
+    "G148": [
+      "2026-08-18T17:00:15.096369+00:00",
+      "2026-08-18T17:00:45.793729+00:00",
+      45581
+    ],
+    "G150": [
+      "2026-08-18T17:00:15.095965+00:00",
+      "2026-08-18T17:00:15.371938+00:00",
+      45585
+    ],
+    "G151": [
+      "2026-08-18T17:00:15.095998+00:00",
+      "2026-08-18T17:00:15.178039+00:00",
+      45584
+    ]
+  },
+  "peak_simultaneous_lanes": 5,
+  "overlapping_pairs": [
+    [
+      "G137",
+      "G143",
+      0.082
+    ],
+    [
+      "G137",
+      "G148",
+      0.082
+    ],
+    [
+      "G137",
+      "G150",
+      0.082
+    ],
+    [
+      "G137",
+      "G151",
+      0.082
+    ],
+    [
+      "G143",
+      "G148",
+      0.082
+    ],
+    [
+      "G143",
+      "G150",
+      0.082
+    ],
+    [
+      "G143",
+      "G151",
+      0.082
+    ],
+    [
+      "G148",
+      "G150",
+      0.276
+    ],
+    [
+      "G148",
+      "G151",
+      0.082
+    ],
+    [
+      "G150",
+      "G151",
+      0.082
+    ]
+  ],
+  "pairs_total": 10,
+  "all_controls_pass": true,
+  "long_pole": "G148 full-hashed the 51 GB bf16 parent, 30.7 s, overlapping every other lane's entire evidence-gathering",
+  "why_this_is_not_three_fast_serial_completions": "the four arithmetic/unit-test lanes finished in ~0.08-0.28 s but all four started simultaneously with G148 and each ran entirely inside G148's 30.7 s window; peak concurrency was 5 distinct PIDs, and every one of the 10 pairs has positive wall-time overlap",
+  "gpu_lane_untouched": "all five lanes are CPU-only and produce no GPU timing, so G134's protected lane was never contended -- serialize physical evidence, parallelize cognition",
+  "commit": "2079bc19389e0d958d49db6c21007a043f7711f2"
+}

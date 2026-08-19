@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.odyssey.harvest.v2",
+  "task": "odyssey-o005-sensitivity-map-20260819-015644",
+  "slug": "odyssey-o005-sensitivity-map",
+  "classification": "CODE",
+  "action": "REVIEW (do not merge, do not cleanup)",
+  "verdict": "REVIEW",
+  "reason": "ok",
+  "files": [
+    "receipts/odyssey-i/O005_SENSITIVITY.json",
+    "tools/odyssey_patient_runner.py",
+    "workspace/campaign/odyssey/patients/O005/ODYSSEY_PATIENT_O005.json"
+  ],
+  "copied": [],
+  "oxx": "O005",
+  "worktree": null,
+  "report": "/Users/scammermike/.claude-grok/tasks/odyssey-o005-sensitivity-map-20260819-015644/grok-report.md",
+  "cleanup": false,
+  "command": "harvest",
+  "inputs": {
+    "task_dir": "/Users/scammermike/.claude-grok/tasks/odyssey-o005-sensitivity-map-20260819-015644",
+    "worktree": null
+  },
+  "outputs": {
+    "copied": [],
+    "verdict": "REVIEW"
+  },
+  "controls": [
+    "never auto-merge CODE",
+    "cleanup only DATA-ONLY"
+  ],
+  "assumptions": [
+    "DATA-ONLY = receipts/ or workspace/campaign/odyssey/patients/*/*.json",
+    "CODE = any tools/ path, *.py, or other non-data path"
+  ],
+  "reopen_if": "worktree still holds uncopied data files",
+  "_evidence": "DERIVED (harvester classification)"
+}

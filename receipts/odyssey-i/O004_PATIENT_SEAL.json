@@ -1,0 +1,26 @@
+{
+  "schema": "hawking.odyssey.patient_seal.v1",
+  "oxx": "O004",
+  "status": "VERIFIED",
+  "phase": "SEALED",
+  "state": "RETIRED",
+  "sealed_mechanisms": [
+    "external-science",
+    "sensitivity-map",
+    "gravity-dense",
+    "gravity-aggressive-dense",
+    "nx-dense"
+  ],
+  "receipt_refs": [
+    "receipts/odyssey-i/O004_EXTERNAL.json",
+    "receipts/odyssey-i/O004_SENSITIVITY.json",
+    "receipts/odyssey-i/O004_GRAVITY_q4-g64.json",
+    "receipts/odyssey-i/O004_GRAVITY_q2-g32.json",
+    "receipts/odyssey-i/O004_NX_dense.json"
+  ],
+  "source_revision": "0849a533fdbb30d2af045d1a60b5a8921770d903",
+  "reclaimable": true,
+  "completed_at": "2026-08-19T23:40:48Z",
+  "weights_deleted": false,
+  "_evidence": "DERIVED (patient-sealed from terminal completions)"
+}
