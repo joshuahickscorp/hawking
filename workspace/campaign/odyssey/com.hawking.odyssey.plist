@@ -9,13 +9,15 @@
 		<string>/bin/bash</string>
 		<string>/Users/scammermike/Downloads/hawking/tools/odyssey_driver.sh</string>
 	</array>
-	<key>StartInterval</key>
-	<integer>900</integer>
+	<key>KeepAlive</key>
+	<true/>
 	<key>RunAtLoad</key>
-	<false/>
+	<true/>
 	<key>ProcessType</key>
 	<string>Background</string>
 	<key>AbandonProcessGroup</key>
 	<true/>
+	<key>ThrottleInterval</key>
+	<integer>20</integer>
 </dict>
 </plist>

@@ -27,13 +27,8 @@
     "complete_bpw": 3.9556,
     "live_bpw": 3.9555,
     "disk_tensors": {
-      "stored_bytes": 15362682880,
-      "tensor_count": 1351,
-      "dtypes": {
-        "BF16": 965,
-        "U32": 386
-      },
-      "_label": "MEASURED (safetensors headers, no weight load)"
+      "tensor_bytes": 15362682880,
+      "repr_bytes": 15363123128
     },
     "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state; record nominal_bits AND complete_bpw",
     "_label": "MEASURED (live nbytes + safetensors headers)",
@@ -109,13 +104,8 @@
     "lm_head": 175030272
   },
   "disk_tensors": {
-    "stored_bytes": 15362682880,
-    "tensor_count": 1351,
-    "dtypes": {
-      "BF16": 965,
-      "U32": 386
-    },
-    "_label": "MEASURED (safetensors headers, no weight load)"
+    "tensor_bytes": 15362682880,
+    "repr_bytes": 15363123128
   },
   "live_nbytes": 15362682880,
   "battery": "10/12",
@@ -262,26 +252,26 @@
     ],
     "planted_refusal_fired": true,
     "planted_benign_quiet": true,
-    "wall_s": 9.364,
+    "wall_s": 18.788,
     "error": null,
     "_label": "MEASURED"
   },
   "gate": {
     "decision": "REFUSE",
-    "note": "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.27 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
+    "note": "OBSERVED: swap already in use (2114 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 0.21 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
     "reasons": [
-      "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant",
-      "OBSERVED: compressor at 1.27 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
+      "OBSERVED: swap already in use (2114 MB) -- the machine is under real pressure now, projection is irrelevant",
+      "OBSERVED: compressor at 0.21 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
     ],
-    "current_wired_gb": 6.65,
-    "projected_headroom_gb": 80.8,
+    "current_wired_gb": 14.62,
+    "projected_headroom_gb": 72.9,
     "observed": {
       "total_gb": 103.079,
-      "wired_gb": 6.647,
-      "free_gb": 13.188,
-      "inactive_gb": 55.465,
-      "compressed_gb": 1.272,
-      "swap_used_mb": 949.31,
+      "wired_gb": 14.621,
+      "free_gb": 63.67,
+      "inactive_gb": 8.094,
+      "compressed_gb": 0.212,
+      "swap_used_mb": 2114.0,
       "workers_resident": 0,
       "worker_rss_total_gb": 0.0
     }
@@ -297,9 +287,9 @@
         "chip": "Apple M3 Ultra",
         "ncpu": 28,
         "ram_total_gib": 96.0,
-        "ram_free_gib": 44.7,
-        "disk_free_gib": 28.6,
-        "load_1m": 4.52392578125,
+        "ram_free_gib": 51.7,
+        "disk_free_gib": 66.8,
+        "load_1m": 7.9814453125,
         "active_grok_lanes": []
       }
     },
@@ -318,7 +308,7 @@
     "verdict": "DERIVED",
     "failure_localization": "DERIVED (rank organs by MEASURED sensitivity delta)"
   },
-  "commit": "fa71c47b044dd47722706dda1de10d6dcf4613f2",
+  "commit": "518afd3543eceeaa4b9c7d34e2bb48ef24a7535c",
   "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
   "out": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O006_GRAVITY_q3-g32-experts.json",
   "_label": "MEASURED specimen under mlx quant \u2014 not a Hawking NX win (\u00a715)",

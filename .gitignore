@@ -177,3 +177,4 @@ workspace/campaign/records/ascension-sandbox/physical/**/source-bf16-capture-res
 # build output: cargo writes to workspace/ops/build/rust (see .cargo/config.toml).
 # target-parallel/ was committed build output and served stale binaries; never track it again.
 target-parallel/
+workspace/campaign/odyssey/.resident.lock/

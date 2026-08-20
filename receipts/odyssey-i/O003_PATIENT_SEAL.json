@@ -20,9 +20,9 @@
     "receipts/odyssey-i/O003_GRAVITY_q2-g64-experts.json",
     "receipts/odyssey-i/O003_NX_gather.json"
   ],
-  "source_revision": "c4a5d1231a60ad8080aa21dfdf580e9abf7a40b0",
+  "source_revision": "f5a98657525160fdef52ffdb9cdcaf8bb6f79d98",
   "reclaimable": true,
-  "completed_at": "2026-08-19T23:09:35Z",
+  "completed_at": "2026-08-20T00:53:52Z",
   "weights_deleted": false,
   "_evidence": "DERIVED (patient-sealed from terminal completions)"
 }

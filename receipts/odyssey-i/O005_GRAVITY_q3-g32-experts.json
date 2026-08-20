@@ -10,6 +10,37 @@
   "quant": "mlx-q3-g32-experts",
   "quant_fidelity_caveat": "MoE mix: experts\u21923-bit group32; attention/router/embed/lm_head\u21924-bit group64; norms full (no to_quantized / predicate False). Battery is SPECIMEN under this mlx mix \u2014 not bf16-canonical Doctor, not a Hawking NX win (\u00a715). Canonical HF snapshot was not modified or deleted.",
   "predicate": "MoE mix: experts\u21923-bit group32; attention/router/embed/lm_head\u21924-bit group64; norms full (no to_quantized / predicate False)",
+  "candidate_class": "CONVENTIONAL_ANCHOR",
+  "conventionality": "conventional",
+  "conventionality_mechanism": "affine-quant",
+  "nominal_bits": 3,
+  "complete_bpw": 4.0254,
+  "accounting": {
+    "payload_bytes": 11642499072,
+    "scales_bytes": 1860091904,
+    "biases_bytes": 1860091904,
+    "metadata_bytes": 0,
+    "header_bytes": 387738,
+    "live_bytes": 15362682880,
+    "disk_tensor_bytes": 15362682880,
+    "complete_bytes": 15363070618,
+    "complete_bpw": 4.0254,
+    "live_bpw": 4.0253,
+    "disk_tensors": {
+      "stored_bytes": 15362682880,
+      "tensor_count": 1351,
+      "dtypes": {
+        "BF16": 965,
+        "U32": 386
+      },
+      "_label": "MEASURED (safetensors headers, no weight load)"
+    },
+    "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state; record nominal_bits AND complete_bpw",
+    "_label": "MEASURED (live nbytes + safetensors headers)",
+    "_evidence": "MEASURED (complete_bpw = payload+scales+biases+metadata+headers)"
+  },
+  "protected_components": [],
+  "failure_localization": null,
   "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B/snapshots/ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
   "weights_loaded": "/Users/scammermike/.cache/mlx/odyssey/O005-gravity-q3-g32-experts",
   "canonical_snapshot_intact": 16,
@@ -181,26 +212,26 @@
     ],
     "planted_refusal_fired": true,
     "planted_benign_quiet": true,
-    "wall_s": 3.987,
+    "wall_s": 15.72,
     "error": null,
     "_label": "MEASURED"
   },
   "gate": {
     "decision": "REFUSE",
-    "note": "OBSERVED: swap already in use (957 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.11 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
+    "note": "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.80 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
     "reasons": [
-      "OBSERVED: swap already in use (957 MB) -- the machine is under real pressure now, projection is irrelevant",
-      "OBSERVED: compressor at 1.11 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
+      "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant",
+      "OBSERVED: compressor at 1.80 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
     ],
-    "current_wired_gb": 6.02,
-    "projected_headroom_gb": 81.5,
+    "current_wired_gb": 18.13,
+    "projected_headroom_gb": 69.4,
     "observed": {
       "total_gb": 103.079,
-      "wired_gb": 6.019,
-      "free_gb": 35.454,
-      "inactive_gb": 39.741,
-      "compressed_gb": 1.114,
-      "swap_used_mb": 957.31,
+      "wired_gb": 18.134,
+      "free_gb": 19.635,
+      "inactive_gb": 34.469,
+      "compressed_gb": 1.802,
+      "swap_used_mb": 949.31,
       "workers_resident": 0,
       "worker_rss_total_gb": 0.0
     }
@@ -209,24 +240,37 @@
     "section": "\u00a714",
     "note": "mlx gravity SPECIMEN. Not BASE_TRUE_TPS. Not a Hawking NX win (\u00a715). One candidate spec, not a sweep. Canonical HF snapshot untouched.",
     "clean_box": {
-      "clean_box_ok": null,
-      "reason": "machine_state unavailable: ModuleNotFoundError: No module named 'tools.agentos'",
-      "snapshot": null
+      "clean_box_ok": false,
+      "reason": "disk_free 12.8 GiB < floor 15.0",
+      "snapshot": {
+        "type": "machine_state",
+        "chip": "Apple M3 Ultra",
+        "ncpu": 28,
+        "ram_total_gib": 96.0,
+        "ram_free_gib": 57.9,
+        "disk_free_gib": 12.8,
+        "load_1m": 7.556640625,
+        "active_grok_lanes": []
+      }
     },
     "_label": "MEASURED machine note + DERIVED contamination flag"
   },
   "labels": {
     "stored_bytes": "MEASURED",
     "stored_bpw": "DERIVED (MEASURED bytes * 8 / census params)",
+    "complete_bpw": "MEASURED (payload+scales+biases+metadata+headers) * 8 / params",
+    "nominal_bits": "DERIVED (ODYSSEY_POLICY.gravity_specs)",
+    "candidate_class": "DERIVED (ODYSSEY_POLICY.gravity_specs; deterministic)",
     "active_bytes_per_token": "DERIVED (census active-param split \u00d7 MEASURED organ bytes)",
     "active_bpw": "DERIVED",
     "battery": "MEASURED",
     "delta_hits": "DERIVED (this MEASURED minus EXTERNAL MEASURED)",
-    "verdict": "DERIVED"
+    "verdict": "DERIVED",
+    "failure_localization": "DERIVED (rank organs by MEASURED sensitivity delta)"
   },
-  "commit": "6cc2402d012fc578650db2fac03facf394de81d5",
+  "commit": "698eefb719e79b96a22f5374c10af9cc728d3b81",
   "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
-  "out": "/Users/scammermike/.claude-grok/worktrees/odyssey-runner-gravity-nx-20260819-131415/receipts/odyssey-i/O005_GRAVITY_q3-g32-experts.json",
+  "out": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O005_GRAVITY_q3-g32-experts.json",
   "_label": "MEASURED specimen under mlx quant \u2014 not a Hawking NX win (\u00a715)",
   "_section": "\u00a719"
 }

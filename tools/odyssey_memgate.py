@@ -32,11 +32,23 @@ POLICY_PATH = ROOT / "workspace/campaign/odyssey/ODYSSEY_POLICY.json"
 
 # M3 Ultra sealed constants. SWAP_MAX_GIB is the default; policy may override
 # the *effective* cap via detachment.memory without rewriting this constant.
+def _env_f(name: str, default: float) -> float:
+    """Env override for a tunable, clamped to sane bounds by the caller."""
+    try:
+        v = os.environ.get(name)
+        return float(v) if v is not None and v != "" else default
+    except (TypeError, ValueError):
+        return default
+
+
 PHYSICAL_RAM_GIB = 96.0
-RESERVE_GIB = 12.0  # OS / Metal / build headroom
+# Reserves are env-tunable so the driver can drive the box harder into the
+# (user-set) swap budget for full utilization, while the safe defaults hold for
+# tests and ad-hoc runs. SWAP_MAX_GIB stays the HARD cap — the real guard.
+RESERVE_GIB = _env_f("ODYSSEY_RESERVE_GIB", 12.0)  # OS / Metal / build headroom
 SWAP_MAX_GIB = 30
 DEFAULT_EST_GIB = 16.0  # typical 4-bit MoE if the caller does not know
-FREE_RAM_RESERVE_GIB = 2.0  # refuse when the box is already page-starved
+FREE_RAM_RESERVE_GIB = _env_f("ODYSSEY_FREE_RAM_RESERVE_GIB", 2.0)  # page-starve floor
 _CAPACITY_HARD_CAP = 256
 _OBS_KEYS = (
     "free_ram_gib",

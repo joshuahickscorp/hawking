@@ -1,0 +1,11 @@
+{
+  "schema": "hawking.odyssey.acquire.v1",
+  "oxx": "O003",
+  "action": "reclaim-weights",
+  "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375",
+  "bytes": 32823063084,
+  "at": "2026-08-20T00:54:13Z",
+  "source_revision": "f5a98657525160fdef52ffdb9cdcaf8bb6f79d98",
+  "dry_run": false,
+  "_evidence": "MEASURED (reclaim of RETIRED patient weights)"
+}

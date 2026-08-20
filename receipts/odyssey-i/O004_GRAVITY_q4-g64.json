@@ -211,25 +211,25 @@
     ],
     "planted_refusal_fired": true,
     "planted_benign_quiet": true,
-    "wall_s": 12.25,
+    "wall_s": 15.067,
     "error": null,
     "_label": "MEASURED"
   },
   "gate": {
     "decision": "REFUSE",
-    "note": "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.83 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
+    "note": "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.80 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
     "reasons": [
       "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant",
-      "OBSERVED: compressor at 1.83 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
+      "OBSERVED: compressor at 1.80 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
     ],
-    "current_wired_gb": 6.34,
-    "projected_headroom_gb": 81.1,
+    "current_wired_gb": 18.13,
+    "projected_headroom_gb": 69.4,
     "observed": {
       "total_gb": 103.079,
-      "wired_gb": 6.34,
-      "free_gb": 25.308,
-      "inactive_gb": 13.889,
-      "compressed_gb": 1.83,
+      "wired_gb": 18.134,
+      "free_gb": 19.64,
+      "inactive_gb": 34.469,
+      "compressed_gb": 1.802,
       "swap_used_mb": 949.31,
       "workers_resident": 0,
       "worker_rss_total_gb": 0.0
@@ -240,19 +240,16 @@
     "note": "mlx gravity SPECIMEN. Not BASE_TRUE_TPS. Not a Hawking NX win (\u00a715). One candidate spec, not a sweep. Canonical HF snapshot untouched.",
     "clean_box": {
       "clean_box_ok": false,
-      "reason": "2 live lane(s) may contend GPU/memory: ['odyssey-o003-novelty-adversarial-falsifier-20260819-190403', 'odyssey-o003-novelty-arch-20260819-190424']",
+      "reason": "disk_free 11.2 GiB < floor 15.0",
       "snapshot": {
         "type": "machine_state",
         "chip": "Apple M3 Ultra",
         "ncpu": 28,
         "ram_total_gib": 96.0,
-        "ram_free_gib": 58.1,
-        "disk_free_gib": 45.8,
-        "load_1m": 5.26611328125,
-        "active_grok_lanes": [
-          "odyssey-o003-novelty-adversarial-falsifier-20260819-190403",
-          "odyssey-o003-novelty-arch-20260819-190424"
-        ]
+        "ram_free_gib": 46.4,
+        "disk_free_gib": 11.2,
+        "load_1m": 7.25048828125,
+        "active_grok_lanes": []
       }
     },
     "_label": "MEASURED machine note + DERIVED contamination flag"
@@ -270,7 +267,7 @@
     "verdict": "DERIVED",
     "failure_localization": "DERIVED (rank organs by MEASURED sensitivity delta)"
   },
-  "commit": "aed4c3fe316ab5c7d1c852a473935b6b7e1ad446",
+  "commit": "698eefb719e79b96a22f5374c10af9cc728d3b81",
   "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
   "out": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O004_GRAVITY_q4-g64.json",
   "_label": "MEASURED specimen under mlx quant \u2014 not a Hawking NX win (\u00a715)",

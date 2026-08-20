@@ -1,0 +1,11 @@
+{
+  "schema": "hawking.odyssey.acquire.v1",
+  "oxx": "O001",
+  "action": "reclaim-weights",
+  "path": "/Users/scammermike/.cache/huggingface/hub/models--tiiuae--Falcon-H1-7B-Instruct",
+  "bytes": 15182220675,
+  "at": "2026-08-20T00:53:26Z",
+  "source_revision": "f5a98657525160fdef52ffdb9cdcaf8bb6f79d98",
+  "dry_run": false,
+  "_evidence": "MEASURED (reclaim of RETIRED patient weights)"
+}

@@ -27,13 +27,8 @@
     "complete_bpw": 3.0226,
     "live_bpw": 3.0225,
     "disk_tensors": {
-      "stored_bytes": 11738804224,
-      "tensor_count": 1351,
-      "dtypes": {
-        "BF16": 965,
-        "U32": 386
-      },
-      "_label": "MEASURED (safetensors headers, no weight load)"
+      "tensor_bytes": 11738804224,
+      "repr_bytes": 11739244290
     },
     "no_fake_density": "complete_bpw counts payload+scales+biases+tables+offsets+correction+tier/router-metadata+alignment+headers+repr-attributable-state; record nominal_bits AND complete_bpw",
     "_label": "MEASURED (live nbytes + safetensors headers)",
@@ -109,13 +104,8 @@
     "lm_head": 175030272
   },
   "disk_tensors": {
-    "stored_bytes": 11738804224,
-    "tensor_count": 1351,
-    "dtypes": {
-      "BF16": 965,
-      "U32": 386
-    },
-    "_label": "MEASURED (safetensors headers, no weight load)"
+    "tensor_bytes": 11738804224,
+    "repr_bytes": 11739244290
   },
   "live_nbytes": 11738804224,
   "battery": "10/12",
@@ -262,26 +252,26 @@
     ],
     "planted_refusal_fired": true,
     "planted_benign_quiet": true,
-    "wall_s": 20.81,
+    "wall_s": 19.78,
     "error": null,
     "_label": "MEASURED"
   },
   "gate": {
     "decision": "REFUSE",
-    "note": "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 1.07 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
+    "note": "OBSERVED: swap already in use (420 MB) -- the machine is under real pressure now, projection is irrelevant; OBSERVED: compressor at 2.01 GB, above its 0.1 GB floor -- memory is being reclaimed under duress",
     "reasons": [
-      "OBSERVED: swap already in use (949 MB) -- the machine is under real pressure now, projection is irrelevant",
-      "OBSERVED: compressor at 1.07 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
+      "OBSERVED: swap already in use (420 MB) -- the machine is under real pressure now, projection is irrelevant",
+      "OBSERVED: compressor at 2.01 GB, above its 0.1 GB floor -- memory is being reclaimed under duress"
     ],
-    "current_wired_gb": 7.16,
-    "projected_headroom_gb": 80.3,
+    "current_wired_gb": 19.69,
+    "projected_headroom_gb": 67.8,
     "observed": {
       "total_gb": 103.079,
-      "wired_gb": 7.162,
-      "free_gb": 25.396,
-      "inactive_gb": 49.639,
-      "compressed_gb": 1.073,
-      "swap_used_mb": 949.31,
+      "wired_gb": 19.693,
+      "free_gb": 31.539,
+      "inactive_gb": 19.096,
+      "compressed_gb": 2.008,
+      "swap_used_mb": 419.75,
       "workers_resident": 0,
       "worker_rss_total_gb": 0.0
     }
@@ -290,19 +280,17 @@
     "section": "\u00a714",
     "note": "mlx gravity SPECIMEN. Not BASE_TRUE_TPS. Not a Hawking NX win (\u00a715). One candidate spec, not a sweep. Canonical HF snapshot untouched.",
     "clean_box": {
-      "clean_box_ok": false,
-      "reason": "1 live lane(s) may contend GPU/memory: ['odyssey-o001-novelty-arch-20260819-183223']",
+      "clean_box_ok": true,
+      "reason": "no live lanes, disk ok, load ok",
       "snapshot": {
         "type": "machine_state",
         "chip": "Apple M3 Ultra",
         "ncpu": 28,
         "ram_total_gib": 96.0,
-        "ram_free_gib": 52.5,
-        "disk_free_gib": 25.5,
-        "load_1m": 5.9755859375,
-        "active_grok_lanes": [
-          "odyssey-o001-novelty-arch-20260819-183223"
-        ]
+        "ram_free_gib": 47.4,
+        "disk_free_gib": 68.1,
+        "load_1m": 10.67822265625,
+        "active_grok_lanes": []
       }
     },
     "_label": "MEASURED machine note + DERIVED contamination flag"
@@ -320,7 +308,7 @@
     "verdict": "DERIVED",
     "failure_localization": "DERIVED (rank organs by MEASURED sensitivity delta)"
   },
-  "commit": "fa71c47b044dd47722706dda1de10d6dcf4613f2",
+  "commit": "aafadf9e19cfc4866c0e518bbf99df96a4741c43",
   "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
   "out": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i/O006_GRAVITY_q2-g32-experts.json",
   "_label": "MEASURED specimen under mlx quant \u2014 not a Hawking NX win (\u00a715)",
