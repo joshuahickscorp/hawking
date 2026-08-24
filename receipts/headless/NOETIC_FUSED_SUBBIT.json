@@ -1,0 +1,1836 @@
+{
+  "schema": "hawking.headless.noetic_fused_subbit.v1",
+  "generated_at": "2026-08-24T01:05:37Z",
+  "git_head": "97d62c4e6411c26a4cad72923713c0cd7129455e",
+  "question": "Why is affine2 g64 slower than q4, and does the 2-bit affine MLP on a fused operator graph cross the boundary?",
+  "did_not_load_second_27b": true,
+  "did_not_write_under_models": true,
+  "parent_params": 26895998464,
+  "q4_incumbent": {
+    "complete_physical_bpw": 4.252735126866492,
+    "decode_tok_s": 33.716875920652136,
+    "dispatches_per_token": 964
+  },
+  "affine2_unfused_half": {
+    "complete_ebpw": 3.139300850311054,
+    "storage_bpw": 3.139300850311054,
+    "affine_tensor_storage_bpw": 2.5,
+    "n_affine": 192,
+    "unfused_tok_s": 26.83964318075738,
+    "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+    "census": {
+      "tensors": 755,
+      "binary": 0,
+      "residual": 0,
+      "hgravs": 0,
+      "uniform": 0,
+      "affine": 192,
+      "q4": 210,
+      "f32": 353,
+      "refused": 0,
+      "expanded_to_q4": 0,
+      "expanded_to_float_gemv": 0
+    },
+    "source": "/Users/scammermike/.claude-grok/worktrees/g012combo-20260823-203345/receipts/headless/AFFINE2_G64_LSFIT.json",
+    "q4_incumbent_complete_physical_bpw": 4.252735126866492
+  },
+  "representation": {
+    "codec": "HGRAVF01 affine_q2_group64 LS (w = q * scale + bias, q in {0,1,2,3})",
+    "n_affine": 192,
+    "complete_ebpw": 3.139300850311054,
+    "q4_incumbent_complete_physical_bpw": 4.252735126866492,
+    "not_the_incumbent": true
+  },
+  "operator_graph": {
+    "fused": true,
+    "default": "off \u2014 production graph stays 964 unless apply_fusion / env",
+    "dispatches_per_token_before": 964,
+    "dispatches_per_token_after": 756,
+    "not_the_source": true
+  },
+  "enable": {
+    "default": "off",
+    "HAWKING_QWEN38_FUSE_MLP": "pair | swiglu",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1"
+  },
+  "counting_method": "TokenCommandBuffer.dispatch_count: one kernel launch = one dispatch. Same counter as production_dispatches_per_token / generate_greedy timing.dispatches.",
+  "dispatches_per_token": {
+    "before": 964,
+    "after": 756,
+    "measured_before": 964,
+    "measured_after": 756,
+    "incumbent_unfused": 964,
+    "theoretical": {
+      "unfused": 964,
+      "mlp_pair": 900,
+      "mlp_swiglu": 836,
+      "mlp_swiglu_qkv_dn": 756
+    },
+    "command_buffers": 1
+  },
+  "decode_tok_s": {
+    "incumbent": 33.716875920652136,
+    "affine2_unfused_prior": 26.83964318075738,
+    "before": {
+      "tok_s_reps": [
+        32.95804498220763,
+        32.72840627264867
+      ],
+      "tok_s_mean": 32.843225627428154,
+      "tok_s_min": 32.72840627264867,
+      "tok_s_max": 32.95804498220763,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "n_new_tokens": 16,
+      "dispatches_last_step_reps": [
+        964,
+        964
+      ],
+      "dense_w_materialized": 0,
+      "expanded_to_q4": 0,
+      "expanded_to_float_gemv": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      }
+    },
+    "after": {
+      "tok_s_reps": [
+        34.767237183044685,
+        34.97957578715349
+      ],
+      "tok_s_mean": 34.87340648509909,
+      "tok_s_min": 34.767237183044685,
+      "tok_s_max": 34.97957578715349,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "n_new_tokens": 16,
+      "dispatches_last_step_reps": [
+        756,
+        756
+      ],
+      "dense_w_materialized": 0,
+      "expanded_to_q4": 0,
+      "expanded_to_float_gemv": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      }
+    },
+    "after_mlp_pair": {
+      "tok_s_reps": [
+        34.36751557133706,
+        34.101443104187254
+      ],
+      "tok_s_mean": 34.23447933776215,
+      "tok_s_min": 34.101443104187254,
+      "tok_s_max": 34.36751557133706,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "n_new_tokens": 16,
+      "dispatches_last_step_reps": [
+        900,
+        900
+      ],
+      "dense_w_materialized": 0,
+      "expanded_to_q4": 0,
+      "expanded_to_float_gemv": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      }
+    },
+    "after_mlp_swiglu": {
+      "tok_s_reps": [
+        34.31533002344284,
+        34.64892074606139
+      ],
+      "tok_s_mean": 34.482125384752116,
+      "tok_s_min": 34.31533002344284,
+      "tok_s_max": 34.64892074606139,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "n_new_tokens": 16,
+      "dispatches_last_step_reps": [
+        836,
+        836
+      ],
+      "dense_w_materialized": 0,
+      "expanded_to_q4": 0,
+      "expanded_to_float_gemv": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      }
+    },
+    "after_mlp_swiglu_qkv_dn": {
+      "tok_s_reps": [
+        34.767237183044685,
+        34.97957578715349
+      ],
+      "tok_s_mean": 34.87340648509909,
+      "tok_s_min": 34.767237183044685,
+      "tok_s_max": 34.97957578715349,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "n_new_tokens": 16,
+      "dispatches_last_step_reps": [
+        756,
+        756
+      ],
+      "dense_w_materialized": 0,
+      "expanded_to_q4": 0,
+      "expanded_to_float_gemv": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      }
+    }
+  },
+  "verbatim": {
+    "prompt": "Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.",
+    "prompt_ids": [
+      248045,
+      846,
+      198,
+      814,
+      20139,
+      11,
+      303,
+      18541,
+      58655,
+      321,
+      506,
+      2984,
+      11,
+      1204,
+      264,
+      18826,
+      10263,
+      264,
+      364,
+      58621,
+      1083,
+      6557,
+      9714,
+      321,
+      1179,
+      1083,
+      5484,
+      1970,
+      13,
+      248046,
+      198,
+      248045,
+      74455,
+      198
+    ],
+    "before": {
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ]
+    },
+    "after": {
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ]
+    }
+  },
+  "parity": {
+    "mlp_gate_up_swiglu": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 252625,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 253708,
+      "fusion": "gate_up_swiglu",
+      "layer": 0,
+      "max_abs_diff": 2.9802322387695312e-08,
+      "max_abs_diff_act": 1.3969838619232178e-09,
+      "max_abs_diff_gate": 2.9802322387695312e-08,
+      "max_abs_diff_up": 2.9802322387695312e-08,
+      "unfused_dispatches": 3,
+      "unfused_gpu_ns": 291374
+    },
+    "gqa_qkv": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 116833,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 116833,
+      "fusion": "gqa_qkv",
+      "layer": 3,
+      "max_abs_diff": 0.0,
+      "max_abs_diff_act": 0.0,
+      "max_abs_diff_gate": 0.0,
+      "max_abs_diff_up": 0.0,
+      "unfused_dispatches": 3,
+      "unfused_gpu_ns": 136708
+    },
+    "dn_qkvz_ba": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 131875,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 131875,
+      "fusion": "dn_qkvz_ba",
+      "layer": 0,
+      "max_abs_diff": 0.0,
+      "max_abs_diff_act": 0.0,
+      "max_abs_diff_gate": 0.0,
+      "max_abs_diff_up": 0.0,
+      "unfused_dispatches": 2,
+      "unfused_gpu_ns": 140250
+    },
+    "max_abs_diff": 2.9802322387695312e-08,
+    "fused_kernel_against": "unfused affine2 geo_tpr64 matvec + gk_swiglu_f32"
+  },
+  "dense_parent": {
+    "dense_w_materialized": 0,
+    "expanded_to_q4": 0,
+    "expanded_to_float_gemv": 0,
+    "note": "fused affine2 kernels consume packed 2-bit codes in-register; no parent W is written"
+  },
+  "why_affine2_g64_was_slower": {
+    "status": "measured",
+    "fixable_kernel_problem": true,
+    "why": "Q4 geo_tpr64 uses compile-time group 64 so col/64 is a shift. The affine2 G0 path previously took group_size as a bind-time parameter, putting a non-constant integer divide on every 8-wide tile. That is a kernel problem, not a property of 2-bit. The production affine2 geo kernel now specializes 32 vs 64 to shifts. The extra bias term (w = q*scale + bias) remains; it is the same per element at g32 and g64. On the gate shape, runtime-div was 1.37x the specialized g64 body.",
+    "per_dispatch": [
+      {
+        "shape": [
+          17408,
+          5120
+        ],
+        "label": "gate_up",
+        "q4_g64_gpu_ns": 134125.0,
+        "affine2_g32_specialized_gpu_ns": 144083.0,
+        "affine2_g64_specialized_gpu_ns": 142999.0,
+        "affine2_g64_runtime_div_gpu_ns": 195583.0,
+        "affine2_g64_specialized_vs_q4": 1.0661621621621622,
+        "runtime_div_vs_specialized": 1.3677228512087498
+      },
+      {
+        "shape": [
+          5120,
+          17408
+        ],
+        "label": "down",
+        "q4_g64_gpu_ns": 142708.0,
+        "affine2_g32_specialized_gpu_ns": 153916.0,
+        "affine2_g64_specialized_gpu_ns": 151833.0,
+        "affine2_g64_runtime_div_gpu_ns": 206750.0,
+        "affine2_g64_specialized_vs_q4": 1.0639417551924208,
+        "runtime_div_vs_specialized": 1.3616934395026115
+      }
+    ],
+    "kernel_cost": {
+      "affine_shader_compile_s": 0.042065375,
+      "method": "MTLCommandBuffer GPUEndTime-GPUStartTime after wait; synthetic packed codes, no dense W",
+      "note": "affine2 standalone shader uses f32 scale+bias; q4 geo uses f16 scale. Same occupancy (geo_tpr64 tg128). Production mixed affine2 uses f16; live_affine2_gate_matvec is that path.",
+      "q4_shader_compile_s": 0.155475083,
+      "runtime_div_is_the_old_g64_body": true,
+      "shapes": [
+        {
+          "affine2_g32_specialized": {
+            "body_bpw": 3.0,
+            "group_size": 32,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "payload_bytes": 44564480,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 144083,
+              "gpu_ns_reps": [
+                144083,
+                143708,
+                143041,
+                148958,
+                144333,
+                143541,
+                143750,
+                147875
+              ],
+              "reps": 8,
+              "wait_ns_median": 353125,
+              "wait_ns_reps": [
+                339750,
+                353125,
+                361541,
+                1081542,
+                347667,
+                343583,
+                341834,
+                1100833
+              ],
+              "warmup": 4
+            }
+          },
+          "affine2_g64_runtime_div": {
+            "body_bpw": 2.5,
+            "group_size": 64,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128_runtime_div",
+            "payload_bytes": 33423360,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 195583,
+              "gpu_ns_reps": [
+                278416,
+                195583,
+                194874,
+                194458,
+                195250,
+                195500,
+                196374,
+                268749
+              ],
+              "reps": 8,
+              "wait_ns_median": 427916,
+              "wait_ns_reps": [
+                478291,
+                404708,
+                417042,
+                382167,
+                416875,
+                427916,
+                479291,
+                535583
+              ],
+              "warmup": 4
+            }
+          },
+          "affine2_g64_specialized": {
+            "body_bpw": 2.5,
+            "group_size": 64,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "payload_bytes": 33423360,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 142999,
+              "gpu_ns_reps": [
+                142999,
+                143375,
+                143375,
+                143375,
+                142791,
+                142499,
+                142666,
+                142958
+              ],
+              "reps": 8,
+              "wait_ns_median": 375458,
+              "wait_ns_reps": [
+                375458,
+                379666,
+                384375,
+                653708,
+                342875,
+                351917,
+                374291,
+                337875
+              ],
+              "warmup": 4
+            }
+          },
+          "label": "gate_up",
+          "q4_g64_geo_tpr64": {
+            "body_bpw": 4.25,
+            "group_size": 64,
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "payload_bytes": 47349760,
+            "timing": {
+              "gpu_ns_median": 134125,
+              "gpu_ns_reps": [
+                132999,
+                134250,
+                133583,
+                134333,
+                134124,
+                134125,
+                134125,
+                132958
+              ],
+              "reps": 8,
+              "wait_ns_median": 340084,
+              "wait_ns_reps": [
+                340084,
+                331125,
+                333750,
+                346917,
+                322250,
+                312166,
+                356375,
+                348541
+              ],
+              "warmup": 4
+            }
+          },
+          "shape": [
+            17408,
+            5120
+          ],
+          "why_this_shape": "production MLP GEMV; gate/up is 17408x5120, down is 5120x17408"
+        },
+        {
+          "affine2_g32_specialized": {
+            "body_bpw": 3.0,
+            "group_size": 32,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "payload_bytes": 44564480,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 153916,
+              "gpu_ns_reps": [
+                153708,
+                153250,
+                153874,
+                154125,
+                153458,
+                153916,
+                170249,
+                156583
+              ],
+              "reps": 8,
+              "wait_ns_median": 390375,
+              "wait_ns_reps": [
+                390375,
+                572042,
+                396667,
+                392791,
+                373708,
+                360667,
+                371125,
+                362083
+              ],
+              "warmup": 4
+            }
+          },
+          "affine2_g64_runtime_div": {
+            "body_bpw": 2.5,
+            "group_size": 64,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128_runtime_div",
+            "payload_bytes": 33423360,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 206750,
+              "gpu_ns_reps": [
+                207166,
+                206750,
+                206500,
+                206666,
+                206875,
+                206625,
+                206500,
+                206791
+              ],
+              "reps": 8,
+              "wait_ns_median": 438834,
+              "wait_ns_reps": [
+                447583,
+                438834,
+                405167,
+                413500,
+                436541,
+                442583,
+                702167,
+                436958
+              ],
+              "warmup": 4
+            }
+          },
+          "affine2_g64_specialized": {
+            "body_bpw": 2.5,
+            "group_size": 64,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "payload_bytes": 33423360,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 151833,
+              "gpu_ns_reps": [
+                151250,
+                151541,
+                151541,
+                153166,
+                151500,
+                151833,
+                151874,
+                151999
+              ],
+              "reps": 8,
+              "wait_ns_median": 389334,
+              "wait_ns_reps": [
+                349917,
+                388084,
+                392375,
+                393875,
+                384334,
+                391958,
+                389334,
+                388791
+              ],
+              "warmup": 4
+            }
+          },
+          "label": "down",
+          "q4_g64_geo_tpr64": {
+            "body_bpw": 4.25,
+            "group_size": 64,
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "payload_bytes": 47349760,
+            "timing": {
+              "gpu_ns_median": 142708,
+              "gpu_ns_reps": [
+                141750,
+                142708,
+                144833,
+                146083,
+                144249,
+                141500,
+                142041,
+                140791
+              ],
+              "reps": 8,
+              "wait_ns_median": 367334,
+              "wait_ns_reps": [
+                311125,
+                395917,
+                367334,
+                376041,
+                445708,
+                347500,
+                324292,
+                356292
+              ],
+              "warmup": 4
+            }
+          },
+          "shape": [
+            5120,
+            17408
+          ],
+          "why_this_shape": "production MLP GEMV; gate/up is 17408x5120, down is 5120x17408"
+        }
+      ],
+      "specialized_uses_compile_time_shift": true
+    }
+  },
+  "live_affine2_gate_matvec": {
+    "gpu_ns_median": 142625,
+    "gpu_ns_reps": [
+      141249,
+      141416,
+      142083,
+      143124,
+      142874,
+      142625
+    ],
+    "group_size": 64,
+    "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+    "note": "live HGRAVF01 gate_proj layer 0 on the mixed catalog; production bind",
+    "ok": true,
+    "shape": [
+      17408,
+      5120
+    ],
+    "tensor": "language_model.model.layers.0.mlp.gate_proj.weight"
+  },
+  "configs_tried": [
+    {
+      "id": "unfused affine2 g64",
+      "tok_s_mean": 32.843225627428154,
+      "tok_s_reps": [
+        32.95804498220763,
+        32.72840627264867
+      ],
+      "dispatches_last_step_reps": [
+        964,
+        964
+      ],
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "n_new_tokens": 16,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      },
+      "vs_incumbent_tok_s": -0.8736502932239816,
+      "lost_to_incumbent": true
+    },
+    {
+      "id": "affine2 + mlp pair",
+      "tok_s_mean": 34.23447933776215,
+      "tok_s_reps": [
+        34.36751557133706,
+        34.101443104187254
+      ],
+      "dispatches_last_step_reps": [
+        900,
+        900
+      ],
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "n_new_tokens": 16,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      },
+      "vs_incumbent_tok_s": 0.517603417110017,
+      "lost_to_incumbent": false
+    },
+    {
+      "id": "affine2 + mlp swiglu",
+      "tok_s_mean": 34.482125384752116,
+      "tok_s_reps": [
+        34.31533002344284,
+        34.64892074606139
+      ],
+      "dispatches_last_step_reps": [
+        836,
+        836
+      ],
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "n_new_tokens": 16,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      },
+      "vs_incumbent_tok_s": 0.7652494640999805,
+      "lost_to_incumbent": false
+    },
+    {
+      "id": "affine2 + mlp swiglu + qkv + dn",
+      "tok_s_mean": 34.87340648509909,
+      "tok_s_reps": [
+        34.767237183044685,
+        34.97957578715349
+      ],
+      "dispatches_last_step_reps": [
+        756,
+        756
+      ],
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "n_new_tokens": 16,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 15,
+        "n_new_tokens": 16
+      },
+      "vs_incumbent_tok_s": 1.1565305644469532,
+      "lost_to_incumbent": false
+    }
+  ],
+  "fusions_attempted": [
+    "affine2 gate_up_pair (same-row dual geo_tpr64, still a SwiGLU dispatch)",
+    "affine2 gate_up_swiglu (same-row dual + silu(g)*up in-register)",
+    "gqa_qkv concat geo_tpr64 (3 q4 matvecs -> 1, 16 GQA layers)",
+    "dn_qkvz_ba concat geo_tpr64 (2 q4 matvecs -> 1, 48 DeltaNet layers)"
+  ],
+  "kernels": [
+    "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+    "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128",
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+  ],
+  "shader_evidence": {
+    "shader_present": true,
+    "shader_path": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "kernel_needles": {
+      "qwen_affine_q2_group32_matvec_geo_tpr64_tg128": 45607,
+      "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128": 49974,
+      "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128": 52300,
+      "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128": 169538,
+      "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128": 172025
+    },
+    "all_kernels_declared": true,
+    "wired_in_encode_dense_mlp_mixed": true,
+    "wired_in_encode_gqa_mixed": true,
+    "wired_in_encode_deltanet_mixed": true,
+    "production_964_untouched": true,
+    "specialized_g64_shift": true,
+    "runtime_div_kept_as_diagnostic": true,
+    "does_not_write_dense_w": true
+  },
+  "gpu": {
+    "ok": true,
+    "exit_code": 0,
+    "wall_s": 14.517975875001866,
+    "binary": null,
+    "stderr_tail": "kernel cost: affine2 vs q4 geo_tpr64 on the same shape\nkernel cost: compile affine2 standalone shader\nkernel cost: compile q4 geo shader\nkernel cost: shape 17408x5120 (gate_up)\nkernel cost: shape 5120x17408 (down)\nqwen38 fused subbit: open /Users/scammermike/.claude-grok/worktrees/g012aff64-20260823-182619/artifacts/qwen38-affine2-g64-lsfit/mix_all_mlp_affine_g64_ls max_seq=128\nqwen38-decode opening mixed HQ38M20 + 755 catalog tensors (no reconstruct-to-Q4)\nqwen38-decode mixed upload 0/755\nqwen38-decode mixed upload 50/755\nqwen38-decode mixed upload 100/755\nqwen38-decode mixed upload 150/755\nqwen38-decode mixed upload 200/755\nqwen38-decode mixed upload 250/755\nqwen38-decode mixed upload 300/755\nqwen38-decode mixed upload 350/755\nqwen38-decode mixed upload 400/755\nqwen38-decode mixed upload 450/755\nqwen38-decode mixed upload 500/755\nqwen38-decode mixed upload 550/755\nqwen38-decode mixed upload 600/755\nqwen38-decode mixed upload 650/755\nqwen38-decode mixed upload 700/755\nqwen38-decode mixed upload 750/755\nqwen38-decode mixed census: tensors=755 binary=0 residual=0 hgravs=0 uniform=0 affine=192 q4=210 f32=353 refused=0 expanded_to_q4=0 expanded_to_float_gemv=0\nqwen38-decode mixed bind: K-complete; recon_fuse=ON uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes when cols>2048 (256-col tiles; this model K in {5120,6144}); cols<=2048 stay on tg256; recon_fuse=0 walks every column via gk_matvec_binary\nqwen38-decode mixed bind: HGRAVF01 affine2 qwen_affine_q2_group32_matvec_geo_tpr64_tg128 group=64 (scale+bias, 4 codes/byte)\nsession open 1.996s\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\nparity: MLP gate+up+swiglu layer 0 (affine2 if mixed)\n  unfused=3 pair=1 swiglu=1 max_abs gate=0.000000029802322 up=0.000000029802322 act=0.0000000013969839\nparity: GQA QKV layer 3\n  unfused=3 fused=1 max_abs q=0 k=0 v=0\nparity: DeltaNet qkvz+ba layer 0\n  unfused=2 fused=1 max_abs qkvz=0 ba=0\ndispatch probe: unfused\ndispatch probe: mlp pair\ndispatch probe: mlp swiglu\ndispatch probe: mlp swiglu + qkv + dn\ndecode unfused (affine2, no fusion) reps=2\n  rep 0: tok/s=Some(32.95804498220763) dispatches=Some(964) new=16 text=\"<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler\"\n  rep 1: tok/s=Some(32.72840627264867) dispatches=Some(964) new=16 text=\"<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler\"\ndecode mlp pair reps=2\n  rep 0: tok/s=Some(34.36751557133706) dispatches=Some(900) new=16 text=\"<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler\"\n  rep 1: tok/s=Some(34.101443104187254) dispatches=Some(900) new=16 text=\"<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler\"\ndecode mlp swiglu reps=2\n  rep 0: tok/s=Some(34.31533002344284) dispatches=Some(836) new=16 text=\"<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler\"\n  rep 1: tok/s=Some(34.64892074606139) dispatches=Some(836) new=16 text=\"<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler\"\ndecode mlp swiglu + qkv + dn reps=2\n  rep 0: tok/s=Some(34.767237183044685) dispatches=Some(756) new=16 text=\"<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler\"\n  rep 1: tok/s=Some(34.97957578715349) dispatches=Some(756) new=16 text=\"<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler\"\nwrote /Users/scammermike/.claude-grok/worktrees/g012combo-20260823-203345/receipts/headless/_fused_subbit_raw.json\n"
+  },
+  "cargo_build": null,
+  "gpu_ran": true,
+  "dispatch_probes": [
+    {
+      "id": "unfused",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 47194208,
+        "matches_theoretical": true,
+        "measured": 964,
+        "mlp_fusion": "off",
+        "sampled": 8678,
+        "theoretical": 964,
+        "wait_ns": 95400542
+      }
+    },
+    {
+      "id": "mlp_pair",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 27824666,
+        "matches_theoretical": true,
+        "measured": 900,
+        "mlp_fusion": "pair",
+        "sampled": 8678,
+        "theoretical": 900,
+        "wait_ns": 28145000
+      }
+    },
+    {
+      "id": "mlp_swiglu",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 27646583,
+        "matches_theoretical": true,
+        "measured": 836,
+        "mlp_fusion": "swiglu",
+        "sampled": 8678,
+        "theoretical": 836,
+        "wait_ns": 27926875
+      }
+    },
+    {
+      "id": "mlp_swiglu_qkv_dn",
+      "probe": {
+        "fuse_dn_inproj": true,
+        "fuse_gqa_qkv": true,
+        "gpu_ns": 27119916,
+        "matches_theoretical": true,
+        "measured": 756,
+        "mlp_fusion": "swiglu",
+        "sampled": 8678,
+        "theoretical": 756,
+        "wait_ns": 27377958
+      }
+    }
+  ],
+  "raw_example": {
+    "artifact_root": "/Users/scammermike/.claude-grok/worktrees/g012aff64-20260823-182619/artifacts/qwen38-affine2-g64-lsfit/mix_all_mlp_affine_g64_ls",
+    "counting": {
+      "after_mlp_pair": 900,
+      "after_mlp_swiglu": 836,
+      "after_mlp_swiglu_qkv_dn": 756,
+      "before": 964,
+      "command_buffers": 1,
+      "method": "TokenCommandBuffer.dispatch_count, one kernel launch = one dispatch, same as production_dispatches_per_token"
+    },
+    "decode": {
+      "mlp_pair": {
+        "decode_wall_ns_reps": [
+          436458666,
+          439864083
+        ],
+        "dense_w_materialized": 0,
+        "dispatches_last_step_reps": [
+          900,
+          900
+        ],
+        "expanded_to_float_gemv": 0,
+        "expanded_to_q4": 0,
+        "fallbacks_reps": [
+          0,
+          0
+        ],
+        "generated_text_all_reps": [
+          "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+          "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "median_gpu_ns_per_token_reps": [
+          28061833,
+          28087250
+        ],
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "new_token_ids_all_reps": [
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            18541,
+            9546,
+            323,
+            15673,
+            314,
+            1204,
+            264,
+            18826
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            18541,
+            9546,
+            323,
+            15673,
+            314,
+            1204,
+            264,
+            18826
+          ]
+        ],
+        "reps": 2,
+        "tok_s_max": 34.36751557133706,
+        "tok_s_mean": 34.23447933776215,
+        "tok_s_min": 34.101443104187254,
+        "tok_s_reps": [
+          34.36751557133706,
+          34.101443104187254
+        ]
+      },
+      "mlp_swiglu": {
+        "decode_wall_ns_reps": [
+          437122417,
+          432913917
+        ],
+        "dense_w_materialized": 0,
+        "dispatches_last_step_reps": [
+          836,
+          836
+        ],
+        "expanded_to_float_gemv": 0,
+        "expanded_to_q4": 0,
+        "fallbacks_reps": [
+          0,
+          0
+        ],
+        "generated_text_all_reps": [
+          "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+          "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "median_gpu_ns_per_token_reps": [
+          27889166,
+          27853374
+        ],
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "new_token_ids_all_reps": [
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            18541,
+            9546,
+            323,
+            15673,
+            314,
+            1204,
+            264,
+            18826
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            18541,
+            9546,
+            323,
+            15673,
+            314,
+            1204,
+            264,
+            18826
+          ]
+        ],
+        "reps": 2,
+        "tok_s_max": 34.64892074606139,
+        "tok_s_mean": 34.482125384752116,
+        "tok_s_min": 34.31533002344284,
+        "tok_s_reps": [
+          34.31533002344284,
+          34.64892074606139
+        ]
+      },
+      "mlp_swiglu_qkv_dn": {
+        "decode_wall_ns_reps": [
+          431440667,
+          428821667
+        ],
+        "dense_w_materialized": 0,
+        "dispatches_last_step_reps": [
+          756,
+          756
+        ],
+        "expanded_to_float_gemv": 0,
+        "expanded_to_q4": 0,
+        "fallbacks_reps": [
+          0,
+          0
+        ],
+        "generated_text_all_reps": [
+          "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+          "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "median_gpu_ns_per_token_reps": [
+          27550625,
+          27441250
+        ],
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "new_token_ids_all_reps": [
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            18541,
+            9546,
+            323,
+            15673,
+            314,
+            1204,
+            264,
+            18826
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            18541,
+            9546,
+            323,
+            15673,
+            314,
+            1204,
+            264,
+            18826
+          ]
+        ],
+        "reps": 2,
+        "tok_s_max": 34.97957578715349,
+        "tok_s_mean": 34.87340648509909,
+        "tok_s_min": 34.767237183044685,
+        "tok_s_reps": [
+          34.767237183044685,
+          34.97957578715349
+        ]
+      },
+      "unfused": {
+        "decode_wall_ns_reps": [
+          455124083,
+          458317459
+        ],
+        "dense_w_materialized": 0,
+        "dispatches_last_step_reps": [
+          964,
+          964
+        ],
+        "expanded_to_float_gemv": 0,
+        "expanded_to_q4": 0,
+        "fallbacks_reps": [
+          0,
+          0
+        ],
+        "generated_text_all_reps": [
+          "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+          "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "median_gpu_ns_per_token_reps": [
+          29064999,
+          29041000
+        ],
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "new_token_ids_all_reps": [
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            18541,
+            9546,
+            323,
+            15673,
+            314,
+            1204,
+            264,
+            18826
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            18541,
+            9546,
+            323,
+            15673,
+            314,
+            1204,
+            264,
+            18826
+          ]
+        ],
+        "reps": 2,
+        "tok_s_max": 32.95804498220763,
+        "tok_s_mean": 32.843225627428154,
+        "tok_s_min": 32.72840627264867,
+        "tok_s_reps": [
+          32.95804498220763,
+          32.72840627264867
+        ]
+      }
+    },
+    "dense_w_materialized": 0,
+    "did_not_load_second_27b": true,
+    "did_not_write_under_models": true,
+    "dispatch_probes": [
+      {
+        "id": "unfused",
+        "probe": {
+          "fuse_dn_inproj": false,
+          "fuse_gqa_qkv": false,
+          "gpu_ns": 47194208,
+          "matches_theoretical": true,
+          "measured": 964,
+          "mlp_fusion": "off",
+          "sampled": 8678,
+          "theoretical": 964,
+          "wait_ns": 95400542
+        }
+      },
+      {
+        "id": "mlp_pair",
+        "probe": {
+          "fuse_dn_inproj": false,
+          "fuse_gqa_qkv": false,
+          "gpu_ns": 27824666,
+          "matches_theoretical": true,
+          "measured": 900,
+          "mlp_fusion": "pair",
+          "sampled": 8678,
+          "theoretical": 900,
+          "wait_ns": 28145000
+        }
+      },
+      {
+        "id": "mlp_swiglu",
+        "probe": {
+          "fuse_dn_inproj": false,
+          "fuse_gqa_qkv": false,
+          "gpu_ns": 27646583,
+          "matches_theoretical": true,
+          "measured": 836,
+          "mlp_fusion": "swiglu",
+          "sampled": 8678,
+          "theoretical": 836,
+          "wait_ns": 27926875
+        }
+      },
+      {
+        "id": "mlp_swiglu_qkv_dn",
+        "probe": {
+          "fuse_dn_inproj": true,
+          "fuse_gqa_qkv": true,
+          "gpu_ns": 27119916,
+          "matches_theoretical": true,
+          "measured": 756,
+          "mlp_fusion": "swiglu",
+          "sampled": 8678,
+          "theoretical": 756,
+          "wait_ns": 27377958
+        }
+      }
+    ],
+    "expanded_to_float_gemv": 0,
+    "expanded_to_q4": 0,
+    "fusions_attempted": [
+      "affine2 gate_up_pair (same-row dual geo_tpr64, still a SwiGLU dispatch)",
+      "affine2 gate_up_swiglu (same-row dual + silu(g)*up in-register)",
+      "gqa_qkv concat geo_tpr64 (3 q4 matvecs -> 1, 16 GQA layers)",
+      "dn_qkvz_ba concat geo_tpr64 (2 q4 matvecs -> 1, 48 DeltaNet layers)"
+    ],
+    "generated_at": "unix:1787533057",
+    "git_head": "97d62c4e6411c26a4cad72923713c0cd7129455e",
+    "kernel_cost": {
+      "affine_shader_compile_s": 0.042065375,
+      "method": "MTLCommandBuffer GPUEndTime-GPUStartTime after wait; synthetic packed codes, no dense W",
+      "note": "affine2 standalone shader uses f32 scale+bias; q4 geo uses f16 scale. Same occupancy (geo_tpr64 tg128). Production mixed affine2 uses f16; live_affine2_gate_matvec is that path.",
+      "q4_shader_compile_s": 0.155475083,
+      "runtime_div_is_the_old_g64_body": true,
+      "shapes": [
+        {
+          "affine2_g32_specialized": {
+            "body_bpw": 3.0,
+            "group_size": 32,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "payload_bytes": 44564480,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 144083,
+              "gpu_ns_reps": [
+                144083,
+                143708,
+                143041,
+                148958,
+                144333,
+                143541,
+                143750,
+                147875
+              ],
+              "reps": 8,
+              "wait_ns_median": 353125,
+              "wait_ns_reps": [
+                339750,
+                353125,
+                361541,
+                1081542,
+                347667,
+                343583,
+                341834,
+                1100833
+              ],
+              "warmup": 4
+            }
+          },
+          "affine2_g64_runtime_div": {
+            "body_bpw": 2.5,
+            "group_size": 64,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128_runtime_div",
+            "payload_bytes": 33423360,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 195583,
+              "gpu_ns_reps": [
+                278416,
+                195583,
+                194874,
+                194458,
+                195250,
+                195500,
+                196374,
+                268749
+              ],
+              "reps": 8,
+              "wait_ns_median": 427916,
+              "wait_ns_reps": [
+                478291,
+                404708,
+                417042,
+                382167,
+                416875,
+                427916,
+                479291,
+                535583
+              ],
+              "warmup": 4
+            }
+          },
+          "affine2_g64_specialized": {
+            "body_bpw": 2.5,
+            "group_size": 64,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "payload_bytes": 33423360,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 142999,
+              "gpu_ns_reps": [
+                142999,
+                143375,
+                143375,
+                143375,
+                142791,
+                142499,
+                142666,
+                142958
+              ],
+              "reps": 8,
+              "wait_ns_median": 375458,
+              "wait_ns_reps": [
+                375458,
+                379666,
+                384375,
+                653708,
+                342875,
+                351917,
+                374291,
+                337875
+              ],
+              "warmup": 4
+            }
+          },
+          "label": "gate_up",
+          "q4_g64_geo_tpr64": {
+            "body_bpw": 4.25,
+            "group_size": 64,
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "payload_bytes": 47349760,
+            "timing": {
+              "gpu_ns_median": 134125,
+              "gpu_ns_reps": [
+                132999,
+                134250,
+                133583,
+                134333,
+                134124,
+                134125,
+                134125,
+                132958
+              ],
+              "reps": 8,
+              "wait_ns_median": 340084,
+              "wait_ns_reps": [
+                340084,
+                331125,
+                333750,
+                346917,
+                322250,
+                312166,
+                356375,
+                348541
+              ],
+              "warmup": 4
+            }
+          },
+          "shape": [
+            17408,
+            5120
+          ],
+          "why_this_shape": "production MLP GEMV; gate/up is 17408x5120, down is 5120x17408"
+        },
+        {
+          "affine2_g32_specialized": {
+            "body_bpw": 3.0,
+            "group_size": 32,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "payload_bytes": 44564480,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 153916,
+              "gpu_ns_reps": [
+                153708,
+                153250,
+                153874,
+                154125,
+                153458,
+                153916,
+                170249,
+                156583
+              ],
+              "reps": 8,
+              "wait_ns_median": 390375,
+              "wait_ns_reps": [
+                390375,
+                572042,
+                396667,
+                392791,
+                373708,
+                360667,
+                371125,
+                362083
+              ],
+              "warmup": 4
+            }
+          },
+          "affine2_g64_runtime_div": {
+            "body_bpw": 2.5,
+            "group_size": 64,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128_runtime_div",
+            "payload_bytes": 33423360,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 206750,
+              "gpu_ns_reps": [
+                207166,
+                206750,
+                206500,
+                206666,
+                206875,
+                206625,
+                206500,
+                206791
+              ],
+              "reps": 8,
+              "wait_ns_median": 438834,
+              "wait_ns_reps": [
+                447583,
+                438834,
+                405167,
+                413500,
+                436541,
+                442583,
+                702167,
+                436958
+              ],
+              "warmup": 4
+            }
+          },
+          "affine2_g64_specialized": {
+            "body_bpw": 2.5,
+            "group_size": 64,
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "payload_bytes": 33423360,
+            "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+            "timing": {
+              "gpu_ns_median": 151833,
+              "gpu_ns_reps": [
+                151250,
+                151541,
+                151541,
+                153166,
+                151500,
+                151833,
+                151874,
+                151999
+              ],
+              "reps": 8,
+              "wait_ns_median": 389334,
+              "wait_ns_reps": [
+                349917,
+                388084,
+                392375,
+                393875,
+                384334,
+                391958,
+                389334,
+                388791
+              ],
+              "warmup": 4
+            }
+          },
+          "label": "down",
+          "q4_g64_geo_tpr64": {
+            "body_bpw": 4.25,
+            "group_size": 64,
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "payload_bytes": 47349760,
+            "timing": {
+              "gpu_ns_median": 142708,
+              "gpu_ns_reps": [
+                141750,
+                142708,
+                144833,
+                146083,
+                144249,
+                141500,
+                142041,
+                140791
+              ],
+              "reps": 8,
+              "wait_ns_median": 367334,
+              "wait_ns_reps": [
+                311125,
+                395917,
+                367334,
+                376041,
+                445708,
+                347500,
+                324292,
+                356292
+              ],
+              "warmup": 4
+            }
+          },
+          "shape": [
+            5120,
+            17408
+          ],
+          "why_this_shape": "production MLP GEMV; gate/up is 17408x5120, down is 5120x17408"
+        }
+      ],
+      "specialized_uses_compile_time_shift": true
+    },
+    "kernels": [
+      "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128",
+      "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+    ],
+    "live_affine2_gate_matvec": {
+      "gpu_ns_median": 142625,
+      "gpu_ns_reps": [
+        141249,
+        141416,
+        142083,
+        143124,
+        142874,
+        142625
+      ],
+      "group_size": 64,
+      "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "note": "live HGRAVF01 gate_proj layer 0 on the mixed catalog; production bind",
+      "ok": true,
+      "shape": [
+        17408,
+        5120
+      ],
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight"
+    },
+    "max_new_tokens": 16,
+    "parity": {
+      "dn_qkvz_ba": {
+        "dense_w_materialized": 0,
+        "fused_dispatches": 1,
+        "fused_pair_dispatches": 1,
+        "fused_pair_gpu_ns": 131875,
+        "fused_swiglu_dispatches": 1,
+        "fused_swiglu_gpu_ns": 131875,
+        "fusion": "dn_qkvz_ba",
+        "layer": 0,
+        "max_abs_diff": 0.0,
+        "max_abs_diff_act": 0.0,
+        "max_abs_diff_gate": 0.0,
+        "max_abs_diff_up": 0.0,
+        "unfused_dispatches": 2,
+        "unfused_gpu_ns": 140250
+      },
+      "gqa_qkv": {
+        "dense_w_materialized": 0,
+        "fused_dispatches": 1,
+        "fused_pair_dispatches": 1,
+        "fused_pair_gpu_ns": 116833,
+        "fused_swiglu_dispatches": 1,
+        "fused_swiglu_gpu_ns": 116833,
+        "fusion": "gqa_qkv",
+        "layer": 3,
+        "max_abs_diff": 0.0,
+        "max_abs_diff_act": 0.0,
+        "max_abs_diff_gate": 0.0,
+        "max_abs_diff_up": 0.0,
+        "unfused_dispatches": 3,
+        "unfused_gpu_ns": 136708
+      },
+      "mlp_gate_up_swiglu": {
+        "dense_w_materialized": 0,
+        "fused_dispatches": 1,
+        "fused_pair_dispatches": 1,
+        "fused_pair_gpu_ns": 252625,
+        "fused_swiglu_dispatches": 1,
+        "fused_swiglu_gpu_ns": 253708,
+        "fusion": "gate_up_swiglu",
+        "layer": 0,
+        "max_abs_diff": 2.9802322387695312e-08,
+        "max_abs_diff_act": 1.3969838619232178e-09,
+        "max_abs_diff_gate": 2.9802322387695312e-08,
+        "max_abs_diff_up": 2.9802322387695312e-08,
+        "unfused_dispatches": 3,
+        "unfused_gpu_ns": 291374
+      }
+    },
+    "prompt": "Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.",
+    "prompt_ids": [
+      248045,
+      846,
+      198,
+      814,
+      20139,
+      11,
+      303,
+      18541,
+      58655,
+      321,
+      506,
+      2984,
+      11,
+      1204,
+      264,
+      18826,
+      10263,
+      264,
+      364,
+      58621,
+      1083,
+      6557,
+      9714,
+      321,
+      1179,
+      1083,
+      5484,
+      1970,
+      13,
+      248046,
+      198,
+      248045,
+      74455,
+      198
+    ],
+    "question": "Why is affine2 g64 slower than q4, and does fusing it on the affine2 MLP path cross the boundary?",
+    "rendered_prompt": "<|im_start|>user\nExplain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.<|im_end|>\n<|im_start|>assistant\n",
+    "schema": "hawking.headless.noetic_fused_subbit.v1",
+    "session_open_s": 1.9960821659999999,
+    "skip_decode": false,
+    "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+  },
+  "verdict": "complete EBPW 3.1393 beside incumbent 4.2527; dispatches 964 -> 756 (incumbent unfused 964); decode tok/s 34.873 vs incumbent 33.717 (faster); 16 tokens verbatim; mlp fused-vs-unfused max_abs_diff=2.9802322387695312e-08; affine2 slowness was a fixable kernel problem (runtime group divide)"
+}

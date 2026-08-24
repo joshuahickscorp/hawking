@@ -59,10 +59,25 @@ def main():
     ap.add_argument("--artifact", default="uniform-q4-v1")
     ap.add_argument("--tokens", type=int, default=16)
     ap.add_argument("--out", type=pathlib.Path)
+    ap.add_argument("--nr", help="load this Genesis.nr; the NVM then selects the NX that lowers it")
+    ap.add_argument("--nx", help="load this Genesis.m3ultra.nx (must lower --nr if both given)")
     a = ap.parse_args()
 
     graph = json.loads((R / "G106_ROUTE_GRAPH.json").read_text())
-    nx = json.loads((R / "G104_NX_SEAL.json").read_text())
+    # NVM STEP: load NX (the patient's if given, else the reference seal), and if an NR is named,
+    # SELECT it only when the NX content-binds to that exact NR (lowers_nr.sha == the NR's sha).
+    nx = json.loads(pathlib.Path(a.nx).read_text()) if a.nx else json.loads((R / "G104_NX_SEAL.json").read_text())
+    if a.nr:
+        import hashlib
+        nr_sha = hashlib.sha256(pathlib.Path(a.nr).read_bytes()).hexdigest()
+        ln = nx.get("lowers_nr")
+        if not ln:
+            print("REFUSED -- NX names no NR it lowers; cannot select it for this NR"); return 1
+        if ln["nr_content_sha256"] != nr_sha:
+            print(f"REFUSED -- NX lowers a different NR: NX has {ln['nr_content_sha256'][:16]}, "
+                  f"--nr is {nr_sha[:16]}"); return 1
+        print(f"NVM: loaded NR {a.nr} (sha {nr_sha[:16]}) @ {ln['nr_complete_bits_per_weight']} bpw; "
+              f"selected NX that lowers it")
     nodes = graph["genesis_route_graph"]["nodes"]
     dispatched = set(nx["kernel_binding"]["dispatched"])
     print(f"NVM: loaded {len(nodes)} routes, NX genome {nx['compiled_for_machine_genome']['genome_digest'][:16]}")

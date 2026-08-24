@@ -71,8 +71,75 @@ def validate(doc):
     return (not bad), bad
 
 
+def serialize_catalog(name, root):
+    """Build the NR for a mixed catalog artifact (patient family) from PACK_REPORT.json.
+    Content-addressed: the catalog's sha256 binds this NR to the exact on-disk representation."""
+    import hashlib
+    rep = json.loads((root / "PACK_REPORT.json").read_text())
+    cat = root / "catalog.hq38m20"
+    cat_sha = hashlib.sha256(cat.read_bytes()).hexdigest() if cat.is_file() else None
+    return {
+        "nr_version": "1.0.0",
+        "nr_kind": "hawking.nos.noetic_representation",
+        "semantic_provenance": {
+            "parent_model": "Qwen3.8-27B (Genesis patient, abliterated)",
+            "parent_revision": pathlib.Path(rep.get("source_bf16", "unknown")).name,
+            "parameter_count": rep.get("source_weight_elements"),
+            "catalog_content_sha256": cat_sha,
+            "pack_schema": rep.get("schema"),
+            "patient_note": "abliterated parent; Tabula drift is a Doctor axis and is NOT recorded "
+                            "here because NR states what the representation IS, not how it scored",
+        },
+        "representation": {
+            "tensors": {
+                "count": rep.get("tensor_count"),
+                "encoded_count": rep.get("encoded_tensors"),
+                "copied_count": rep.get("copied_tensors"),
+                "payload_bytes": rep.get("tensor_payload_bytes"),
+                "codec_families": [
+                    {"family": "grouped_absmax", "bits": 3, "group": 64,
+                     "applies_to": "mlp_and_attention_encoded_tensors",
+                     "count": rep.get("encoded_tensors"),
+                     "organ_bits_per_weight": {"mlp": rep.get("mlp_physical_bpw"),
+                                               "non_mlp": rep.get("nonmlp_physical_bpw")}},
+                    {"family": "grouped_absmax", "bits": 4, "group": 64,
+                     "applies_to": "endpoints_and_copied_tensors",
+                     "count": rep.get("copied_tensors")},
+                ],
+                "complete_bits_per_weight": rep.get("complete_physical_bpw"),
+            },
+            "entropy_streams": [],
+            "shared_structures": [],
+            "generated_structures": [],
+            "latent_codes": [],
+            "correction_planes": [],
+            "exact_islands": [],
+            "route_graph": None,
+            "absent_sections_are_measured_not_unfilled": (
+                "empty for the same reasons as the uniform NR: G035/G062 refuted sharing, "
+                "G042 records GENERATED and CORRECTION at 0, G043 records ROUTING_FLOPS at 0 "
+                "for this dense model, and no packer emits an entropy stream yet (the ~2.5 BPW "
+                "rANS ladder was refuted on-disk, session f5169750)."),
+        },
+        "kernel_requirements": [
+            {"requires": "grouped_absmax_decoder", "bits": 3, "group": 64,
+             "note": "the mixed q3 MLP/attention decoder family; naming a specific kernel, "
+                     "threadgroup geometry or device here would make this NX, not NR"},
+            {"requires": "grouped_absmax_decoder", "bits": 4, "group": 64,
+             "note": "the q4 endpoints/copied decoder family"},
+            {"requires": "gated_delta_recurrence",
+             "note": "the DeltaNet mixer family the representation assumes; no implementation named"},
+        ],
+    }
+
+
 def serialize(name):
     root = RUNS / name
+    # Two on-disk artifact formats: the uniform-q4 manifest.json, and the mixed
+    # catalog (PACK_REPORT.json + catalog.hq38m20 + segments/). NR must represent
+    # either; it states what the representation IS, never how one machine runs it.
+    if not (root / "manifest.json").is_file() and (root / "PACK_REPORT.json").is_file():
+        return serialize_catalog(name, root)
     man = json.loads((root / "manifest.json").read_text())
     tensors = man.get("tensors", {})
     if isinstance(tensors, dict):

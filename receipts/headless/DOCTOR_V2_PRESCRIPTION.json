@@ -1,0 +1,1893 @@
+{
+  "schema": "hawking.headless.doctor_v2_prescription.v1",
+  "generated_at": "2026-08-24T06:04:07Z",
+  "git_head": "1abd178a3c0eec8ec39731c171f4e220ff8749a4",
+  "python": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+  "what_this_is": "Doctor v2 prescription: what physical computation each ORGAN should perform, ranked by expected verified gain per experiment cost. Not bits per tensor.",
+  "question": "what physical computation should this ORGAN perform",
+  "rejected_question": "how many bits should this tensor get",
+  "qualified_parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+  "capture": {
+    "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/phaseB/capture_diverse2",
+    "site": "post_attn_norm",
+    "n_tokens_file": 11269,
+    "n_fit_used": 512,
+    "n_hold_used": 256,
+    "split_rule": "last 3 prompts/family = hold",
+    "families": [
+      "prose",
+      "code",
+      "math",
+      "multilingual",
+      "instruction",
+      "dialogue"
+    ],
+    "not_gaussian": true,
+    "gaussian_proxy_used": false,
+    "not_llama_server": true,
+    "source_note": "Phase-B capture_diverse2: real BF16 parent MLX full-model forward. Hold never used in any fit (grouped RTN and weight SVD take no X; share-probe SVD is of W, scored on hold X)."
+  },
+  "live_27b_policy": {
+    "did_not_load_second_27b": true,
+    "did_not_contact_llama_server": true,
+    "tensors_streamed_one_at_a_time_from_parent_shards": true,
+    "note": "A native run measured 3.986 tok/s with two model servers resident against 33.47 with one. This process loads individual safetensor slices of the qualified parent and never constructs a second model."
+  },
+  "prior_science": {
+    "attention_floor": {
+      "decision": "ORGAN_FLOOR_DID_NOT_MOVE_BELOW_4.125",
+      "organ_floor_moved_below_4.125": false,
+      "gqa_gated_at_q4": true,
+      "note": "ATTENTION_FLOOR_REFIT: the GQA organ floor did NOT move below 4.125. Hessian-optimal grouped absmax is a 2.9% g64\u2192g128 save, not a new bit regime. Composed GQA at Q3 fails the 0.990 bar."
+    },
+    "composition": {
+      "binary_g1024_bpw": 1.015625,
+      "binary_g1024_survives_L0_down_proj_4layer": true,
+      "lowrank_rank512_bpw": 2.070588235294118,
+      "lowrank_fails_at_higher_bpw_than_binary": true,
+      "operator_class_beats_bit_count": true,
+      "note": "NOETIC_COMPOSITION: binary grouped-1024 at 1.015625 bpw SURVIVES the L0 down_proj 4-layer chain; pure rank-512 at 2.0706 bpw FAILS. The cheaper operator lives; the more expensive low-rank operator dies."
+    },
+    "dense_subbit": {
+      "decision": "NO-GO",
+      "note": "DENSE_SUBBIT_TRANSFER: GLM's 0.167 bpw activation-aware low-rank does not transfer to dense Qwen3.8 organs (worst hold cosine 0.327 at rank 41)."
+    },
+    "g034": {
+      "lowrank_over_flat_q3_error": 2.9322886686304153,
+      "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.93x the output error of flat q3 on every tensor tested. It reduces operations to 0.203x dense, but the acceptance requires bytes AND operations WITH function preserved.",
+      "note": "G034: at identical 3.25 bits, low-rank is 2.93x the output error of flat q3."
+    },
+    "g035": {
+      "shared_beats_independent_any_pair": false,
+      "corrected_verdict": "AXIS-DEPENDENT, which the original refutation did not distinguish. Sharing the COLUMN space (the contraction axis) LOSES on 3/3 pairs. Sharing the ROW space (the output axis) WINS, and wins 9x more for adjacent layers than distant ones. The blanket 'REFUTED AT MATCHED BITS' was drawn from the column basis alone and is too broad.",
+      "note": "G035: shared_beats_independent=false on the column axis 3/3. Row-axis sharing won, 9x more for adjacent than far, but at ~1.03 bpw in the dead zone against coherent q3."
+    },
+    "q80": {
+      "gate_proj_pairwise_cosine_mean": 0.004142791032791138,
+      "note": "Qwen3-80B MoE experts measured mutually orthogonal at cosine 0.004. This parent is dense (zero expert routes); the prior still forbids assuming a shared expert basis."
+    },
+    "lesson": "Attention and MLP need DIFFERENT prescriptions. A Doctor that emits one policy for both has not used the evidence.",
+    "sources": {
+      "composition": "disk:receipts/headless/NOETIC_COMPOSITION.json",
+      "attention_floor": "disk:receipts/headless/ATTENTION_FLOOR_REFIT.json",
+      "dense_subbit": "disk:receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+      "organ_census": "disk:receipts/headless/NOETIC_ORGAN_CENSUS.json",
+      "route_ledger": "disk:receipts/headless/NOETIC_ROUTE_LEDGER.json",
+      "g034": "disk:receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json",
+      "g035": "disk:receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json",
+      "q80": "disk:receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json"
+    }
+  },
+  "organs": [
+    {
+      "organ_id": "qwen38.L0.mlp",
+      "kind": "mlp_swiglu",
+      "layer": 0,
+      "parent_tensors": [
+        "model.language_model.layers.0.mlp.gate_proj.weight",
+        "model.language_model.layers.0.mlp.up_proj.weight",
+        "model.language_model.layers.0.mlp.down_proj.weight"
+      ],
+      "real_organ_of_qualified_parent": true,
+      "measured_functional_sensitivity": {
+        "site": "L0 SwiGLU on real post_attn_norm capture (correct residual point for MLP)",
+        "n_hold": 256,
+        "n_fit": 512,
+        "gaussian_proxy_used": false,
+        "identity": {
+          "cosine": 1.0,
+          "cosine_null": 0.604944109916687,
+          "cosine_minus_null": 0.395055890083313,
+          "rel_fro": 0.0,
+          "rel_fro_null": 0.8395689129829407,
+          "gain": 1.0,
+          "gain_null": 9.875997420749627e-06,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 1.0,
+          "scale_aware_null": 0.3286364110266068,
+          "scale_aware_minus_null": 0.6713635889733932,
+          "skill_vs_mean_null": 1.0,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 5120
+        },
+        "scaled_0p01_W": {
+          "cosine": 0.9629655480384827,
+          "cosine_null": 0.604944109916687,
+          "cosine_minus_null": 0.35802143812179565,
+          "rel_fro": 0.999998927116394,
+          "rel_fro_null": 0.8395689129829407,
+          "gain": 7.954665761644719e-07,
+          "gain_null": 9.875997420749627e-06,
+          "scale_ratio": 1.0450839928268013e-06,
+          "scale_match": 1.0450839928268013e-06,
+          "scale_aware": 1.0063798798987064e-06,
+          "scale_aware_null": 0.3286364110266068,
+          "scale_aware_minus_null": -0.3286354046467269,
+          "skill_vs_mean_null": -0.41868828160215976,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 5120
+        },
+        "zero_organ": {
+          "cosine": null,
+          "cosine_null": 0.604944109916687,
+          "cosine_minus_null": null,
+          "rel_fro": 1.0,
+          "rel_fro_null": 0.8395689129829407,
+          "gain": 0.0,
+          "gain_null": 9.875997420749627e-06,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": null,
+          "scale_aware_null": 0.3286364110266068,
+          "scale_aware_minus_null": null,
+          "skill_vs_mean_null": -0.4186910526951033,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 5120
+        },
+        "zero_down_proj_only": {
+          "cosine": null,
+          "cosine_null": 0.604944109916687,
+          "cosine_minus_null": null,
+          "rel_fro": 1.0,
+          "rel_fro_null": 0.8395689129829407,
+          "gain": 0.0,
+          "gain_null": 9.875997420749627e-06,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": null,
+          "scale_aware_null": 0.3286364110266068,
+          "scale_aware_minus_null": null,
+          "skill_vs_mean_null": -0.4186910526951033,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 5120
+        },
+        "zero_gate_proj_only": {
+          "cosine": null,
+          "cosine_null": 0.604944109916687,
+          "cosine_minus_null": null,
+          "rel_fro": 1.0,
+          "rel_fro_null": 0.8395689129829407,
+          "gain": 0.0,
+          "gain_null": 9.875997420749627e-06,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": null,
+          "scale_aware_null": 0.3286364110266068,
+          "scale_aware_minus_null": null,
+          "skill_vs_mean_null": -0.4186910526951033,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 5120
+        },
+        "scale_trap_rejected": true,
+        "scale_trap_note": "SwiGLU is not a linear map: 0.01*W does not score cosine 1 on the organ output (silu(0.01 g)*(0.01 u) \u2260 0.01 silu(g)*u). Gain still collapses. The linear-map exhibit (cosine\u22481, gain\u22480.01) is on GQA q_proj.",
+        "function_lost_zero_organ": 1.0,
+        "most_sensitive_member": "down_proj",
+        "null": "constant-mean of Y_true on the same rows"
+      },
+      "discovered_shared_structure": {
+        "priors": {
+          "g035_shared_beats_independent": false,
+          "g035_note": "G035: shared_beats_independent=false on the column axis 3/3. Row-axis sharing won, 9x more for adjacent than far, but at ~1.03 bpw in the dead zone against coherent q3.",
+          "q80_expert_cosine": 0.004142791032791138,
+          "q80_note": "Qwen3-80B MoE experts measured mutually orthogonal at cosine 0.004. This parent is dense (zero expert routes); the prior still forbids assuming a shared expert basis."
+        },
+        "this_parent": {
+          "adjacent_L0_L1_gate_proj": {
+            "rank_independent": 48,
+            "rank_shared_column": 54,
+            "rank_shared_row": 78,
+            "independent": {
+              "mean_rel_fro": 0.8911808729171753,
+              "mean_cosine": 0.4388042539358139
+            },
+            "shared_column": {
+              "mean_rel_fro": 0.9055273830890656,
+              "mean_cosine": 0.4129720628261566,
+              "shared_beats_independent": false
+            },
+            "shared_row": {
+              "mean_rel_fro": 0.9033718109130859,
+              "mean_cosine": 0.41397909820079803,
+              "shared_beats_independent": false
+            },
+            "mean_direction_cosine": 0.23461806774139404,
+            "finding": "NONE",
+            "finding_note": "Neither shared column nor shared row beats independent SVD at matched rank on this pair. A finding of no shared structure is a result.",
+            "error_space": "function space Y=X@W.T on real captured X, not weight cosine",
+            "gaussian_proxy_used": false
+          },
+          "far_L0_L31_gate_proj": {
+            "rank_independent": 48,
+            "rank_shared_column": 54,
+            "rank_shared_row": 78,
+            "independent": {
+              "mean_rel_fro": 0.8007104992866516,
+              "mean_cosine": 0.5614220798015594
+            },
+            "shared_column": {
+              "mean_rel_fro": 0.8200958669185638,
+              "mean_cosine": 0.5342471897602081,
+              "shared_beats_independent": false
+            },
+            "shared_row": {
+              "mean_rel_fro": 0.818222850561142,
+              "mean_cosine": 0.5415756851434708,
+              "shared_beats_independent": false
+            },
+            "mean_direction_cosine": -0.059844981878995895,
+            "finding": "NONE",
+            "finding_note": "Neither shared column nor shared row beats independent SVD at matched rank on this pair. A finding of no shared structure is a result.",
+            "error_space": "function space Y=X@W.T on real captured X, not weight cosine",
+            "gaussian_proxy_used": false
+          }
+        },
+        "finding": "NONE",
+        "shipping_conclusion": "NONE for a shared-basis MLP representation on this dense parent. Column sharing lost or did not pay; any row-axis win sits inside the low-rank operator G034 already refuted at usable bits. Q80 experts were orthogonal (cosine 0.004); this parent has zero expert routes.",
+        "gaussian_proxy_used": false
+      },
+      "candidates": [
+        {
+          "id": "flat_q3_g64",
+          "physical_computation": "in-register grouped-absmax q3 matvec, group 64. Same kernel family as shipping Q4; first coherent low-bpw point on this MLP (3.25 bpw).",
+          "family": "grouped_absmax",
+          "role": "coherent_low_bpw_prior",
+          "bytes": {
+            "per_tensor": [
+              {
+                "bits": 3,
+                "group": 64,
+                "n_groups": 1392640,
+                "scale_bits": 16,
+                "storage_bits": 289669120,
+                "storage_bytes": 36208640.0,
+                "storage_bpw": 3.25,
+                "fused_active_bits": 289669120,
+                "fused_active_bytes": 36208640.0,
+                "fused_active_bpw": 3.25,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 3,
+                "group": 64,
+                "n_groups": 1392640,
+                "scale_bits": 16,
+                "storage_bits": 289669120,
+                "storage_bytes": 36208640.0,
+                "storage_bpw": 3.25,
+                "fused_active_bits": 289669120,
+                "fused_active_bytes": 36208640.0,
+                "fused_active_bpw": 3.25,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 3,
+                "group": 64,
+                "n_groups": 1392640,
+                "scale_bits": 16,
+                "storage_bits": 289669120,
+                "storage_bytes": 36208640.0,
+                "storage_bpw": 3.25,
+                "fused_active_bits": 289669120,
+                "fused_active_bytes": 36208640.0,
+                "fused_active_bpw": 3.25,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              }
+            ],
+            "storage_bytes": 108625920.0,
+            "fused_active_bytes": 108625920.0,
+            "decoded_f16_active_bytes": 534773760.0,
+            "storage_bpw": 3.25,
+            "fused_active_bpw": 3.25,
+            "decoded_f16_active_bpw": 16.0,
+            "numel": 267386880,
+            "executable_bytes": {
+              "materialized": true,
+              "written_to_disk": false,
+              "reason_not_on_disk": "payload is tens of MB; receipt carries sha256 + layout",
+              "n_bytes": 108626062,
+              "sha256": "dcc3d8208f88955b3f5744cd272bebbeee4746c01e4b5fbb6e331ee307989e14",
+              "magic": "DOCV2PK1",
+              "layout": "concat(per tensor: u16 name_len, name, DOCV2PK1, bits/rank u8, group/rank u32, rows, cols, n_groups, scale_nbytes, code_nbytes, f16 scales, packed codes)  \u2014 low-rank stores f16 U*s and V instead of codes"
+            }
+          },
+          "quality": {
+            "cosine": 0.9844896197319031,
+            "cosine_null": 0.604944109916687,
+            "cosine_minus_null": 0.37954550981521606,
+            "rel_fro": 0.17545364797115326,
+            "rel_fro_null": 0.8395689129829407,
+            "gain": 0.8866415619850159,
+            "gain_null": 9.875997420749627e-06,
+            "scale_ratio": 1.0330174942647523,
+            "scale_match": 0.968037816931404,
+            "scale_aware": 0.9530231822768995,
+            "scale_aware_null": 0.3286364110266068,
+            "scale_aware_minus_null": 0.6243867712502927,
+            "skill_vs_mean_null": 0.9563272143880688,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 5120
+          },
+          "survives_mlp_rule": true,
+          "p_verify": {
+            "p": 0.85,
+            "basis": "composition schedule q3 grouped-64 SURVIVES L0 down_proj 4-layer chain; mlp_3p25 first coherent low-bpw"
+          },
+          "experiment_cost": {
+            "local_eval_s": 8.0,
+            "kernel_s": 12.0,
+            "compose_chain_s": 30.0,
+            "generate_s": 90.0,
+            "total_s": 140.0,
+            "unit": "seconds of remaining experiment",
+            "note": "Generate cost is a wall-time estimate for a native run that does NOT spawn a second 27B; it reuses the gravity catalog already on disk."
+          },
+          "route_cost": {
+            "discrete_expert_routes_per_token": 0,
+            "moe_router_bytes": 0,
+            "note": "qwen38 is dense; zero expert routes is a count, not a missing measurement"
+          },
+          "estimated_dram": {
+            "weight_storage_bytes": 108625920.0,
+            "state_bytes": 0.0,
+            "scratch_bytes": 139264.0,
+            "estimated_dram_bytes": 108765184.0,
+            "note": "dense MLP has no KV/expert cache; DRAM is packed weights plus SwiGLU scratch"
+          },
+          "expected_token_ns": {
+            "gemv_ns": 12123391.647058822,
+            "fixed_ns": 1004197.5322722804,
+            "expected_token_ns": 13127589.179331103,
+            "active_bytes_ratio_vs_incumbent": 0.7647058823529411,
+            "model": "gemv_ns scales with fused active bytes; silu/softmax/kv do not",
+            "null": "incumbent uniform-q4-v1 isolated family GPU ns from QWEN38_TOKEN_NS_LEDGER"
+          },
+          "bytes_saved_vs_incumbent": 33423360.0,
+          "expected_verified_gain_bytes": 28409856.0,
+          "gain_per_experiment_cost": 202927.54285714286,
+          "rank": 1
+        },
+        {
+          "id": "binary_g1024",
+          "physical_computation": "per-group sign-code matvec (alpha * sign(W), group 1024). Not a 1-bit absmax \u2014 that codec is the zero tensor. Operator class, not bit count: this 1.0156 bpw code SURVIVED the chain that rank-512 at 2.0706 bpw FAILED.",
+          "family": "grouped_absmax",
+          "role": "composition_survivor",
+          "bytes": {
+            "per_tensor": [
+              {
+                "bits": 1,
+                "group": 1024,
+                "n_groups": 87040,
+                "scale_bits": 16,
+                "storage_bits": 90521600,
+                "storage_bytes": 11315200.0,
+                "storage_bpw": 1.015625,
+                "fused_active_bits": 90521600,
+                "fused_active_bytes": 11315200.0,
+                "fused_active_bpw": 1.015625,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 1,
+                "group": 1024,
+                "n_groups": 87040,
+                "scale_bits": 16,
+                "storage_bits": 90521600,
+                "storage_bytes": 11315200.0,
+                "storage_bpw": 1.015625,
+                "fused_active_bits": 90521600,
+                "fused_active_bytes": 11315200.0,
+                "fused_active_bpw": 1.015625,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 1,
+                "group": 1024,
+                "n_groups": 87040,
+                "scale_bits": 16,
+                "storage_bits": 90521600,
+                "storage_bytes": 11315200.0,
+                "storage_bpw": 1.015625,
+                "fused_active_bits": 90521600,
+                "fused_active_bytes": 11315200.0,
+                "fused_active_bpw": 1.015625,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              }
+            ],
+            "storage_bytes": 33945600.0,
+            "fused_active_bytes": 33945600.0,
+            "decoded_f16_active_bytes": 534773760.0,
+            "storage_bpw": 1.015625,
+            "fused_active_bpw": 1.015625,
+            "decoded_f16_active_bpw": 16.0,
+            "numel": 267386880,
+            "executable_bytes": {
+              "materialized": true,
+              "written_to_disk": false,
+              "reason_not_on_disk": "payload is tens of MB; receipt carries sha256 + layout",
+              "n_bytes": 33945742,
+              "sha256": "9b9c6db30a61aaa7f9ba48f3a50536b0f7384295b3ee78f727f202fcc6f9f157",
+              "magic": "DOCV2PK1",
+              "layout": "concat(per tensor: u16 name_len, name, DOCV2PK1, bits/rank u8, group/rank u32, rows, cols, n_groups, scale_nbytes, code_nbytes, f16 scales, packed codes)  \u2014 low-rank stores f16 U*s and V instead of codes"
+            }
+          },
+          "quality": {
+            "cosine": 0.8556772470474243,
+            "cosine_null": 0.604944109916687,
+            "cosine_minus_null": 0.2507331371307373,
+            "rel_fro": 0.7473167181015015,
+            "rel_fro_null": 0.8395689129829407,
+            "gain": 0.1507473587989807,
+            "gain_null": 9.875997420749627e-06,
+            "scale_ratio": 0.31229777848372314,
+            "scale_match": 0.31229777848372314,
+            "scale_aware": 0.26722610335197855,
+            "scale_aware_null": 0.3286364110266068,
+            "scale_aware_minus_null": -0.06141030767462824,
+            "skill_vs_mean_null": 0.20768695024594985,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 5120
+          },
+          "survives_mlp_rule": false,
+          "p_verify": {
+            "p": 0.25,
+            "basis": "composition: binary g1024 SURVIVES L0 down_proj chain; not yet a 64-layer generate"
+          },
+          "experiment_cost": {
+            "local_eval_s": 8.0,
+            "kernel_s": 12.0,
+            "compose_chain_s": 45.0,
+            "generate_s": 90.0,
+            "total_s": 155.0,
+            "unit": "seconds of remaining experiment",
+            "note": "Generate cost is a wall-time estimate for a native run that does NOT spawn a second 27B; it reuses the gravity catalog already on disk."
+          },
+          "route_cost": {
+            "discrete_expert_routes_per_token": 0,
+            "moe_router_bytes": 0,
+            "note": "qwen38 is dense; zero expert routes is a count, not a missing measurement"
+          },
+          "estimated_dram": {
+            "weight_storage_bytes": 33945600.0,
+            "state_bytes": 0.0,
+            "scratch_bytes": 139264.0,
+            "estimated_dram_bytes": 34084864.0,
+            "note": "dense MLP has no KV/expert cache; DRAM is packed weights plus SwiGLU scratch"
+          },
+          "expected_token_ns": {
+            "gemv_ns": 3788559.8897058824,
+            "fixed_ns": 1004197.5322722804,
+            "expected_token_ns": 4792757.421978163,
+            "active_bytes_ratio_vs_incumbent": 0.23897058823529413,
+            "model": "gemv_ns scales with fused active bytes; silu/softmax/kv do not",
+            "null": "incumbent uniform-q4-v1 isolated family GPU ns from QWEN38_TOKEN_NS_LEDGER"
+          },
+          "bytes_saved_vs_incumbent": 108103680.0,
+          "expected_verified_gain_bytes": 27025920.0,
+          "gain_per_experiment_cost": 174360.7741935484,
+          "rank": 2
+        },
+        {
+          "id": "lowrank_f16_matched_q3",
+          "physical_computation": "two f16 GEMMs, W \u2248 (U s) V, rank set so storage BPW matches flat q3. G034: 2.93x the output error of flat q3 at identical bits. Included as a competing candidate so the ranking can reject it.",
+          "family": "lowrank",
+          "role": "matched_bit_refutation_control",
+          "bytes": {
+            "per_tensor": [
+              {
+                "rank": 804,
+                "n_weights": 89128960,
+                "factor_elems": 18112512,
+                "storage_bits": 289800192,
+                "storage_bytes": 36225024.0,
+                "storage_bpw": 3.251470588235294,
+                "fused_active_bits": 289800192,
+                "fused_active_bytes": 36225024.0,
+                "fused_active_bpw": 3.251470588235294,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = two f16 GEMMs (U,V). decoded_f16_active = 16 if W is rebuilt dense. G034: at matched 3.25 bpw this operator was 2.93x the output error of flat q3."
+              },
+              {
+                "rank": 804,
+                "n_weights": 89128960,
+                "factor_elems": 18112512,
+                "storage_bits": 289800192,
+                "storage_bytes": 36225024.0,
+                "storage_bpw": 3.251470588235294,
+                "fused_active_bits": 289800192,
+                "fused_active_bytes": 36225024.0,
+                "fused_active_bpw": 3.251470588235294,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = two f16 GEMMs (U,V). decoded_f16_active = 16 if W is rebuilt dense. G034: at matched 3.25 bpw this operator was 2.93x the output error of flat q3."
+              },
+              {
+                "rank": 804,
+                "n_weights": 89128960,
+                "factor_elems": 18112512,
+                "storage_bits": 289800192,
+                "storage_bytes": 36225024.0,
+                "storage_bpw": 3.251470588235294,
+                "fused_active_bits": 289800192,
+                "fused_active_bytes": 36225024.0,
+                "fused_active_bpw": 3.251470588235294,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = two f16 GEMMs (U,V). decoded_f16_active = 16 if W is rebuilt dense. G034: at matched 3.25 bpw this operator was 2.93x the output error of flat q3."
+              }
+            ],
+            "storage_bytes": 108675072.0,
+            "fused_active_bytes": 108675072.0,
+            "decoded_f16_active_bytes": 534773760.0,
+            "storage_bpw": 3.251470588235294,
+            "fused_active_bpw": 3.251470588235294,
+            "decoded_f16_active_bpw": 16.0,
+            "numel": 267386880,
+            "executable_bytes": {
+              "materialized": true,
+              "written_to_disk": false,
+              "reason_not_on_disk": "payload is tens of MB; receipt carries sha256 + layout",
+              "n_bytes": 108675214,
+              "sha256": "a72849079c38a3811cf4b310dde7eccda8d59b51b39dff9422cf81ce1367573a",
+              "magic": "DOCV2PK1",
+              "layout": "concat(per tensor: u16 name_len, name, DOCV2PK1, bits/rank u8, group/rank u32, rows, cols, n_groups, scale_nbytes, code_nbytes, f16 scales, packed codes)  \u2014 low-rank stores f16 U*s and V instead of codes"
+            }
+          },
+          "quality": {
+            "cosine": 0.7044433355331421,
+            "cosine_null": 0.604944109916687,
+            "cosine_minus_null": 0.09949922561645508,
+            "rel_fro": 0.7708246111869812,
+            "rel_fro_null": 0.8395689129829407,
+            "gain": 0.20225442945957184,
+            "gain_null": 9.875997420749627e-06,
+            "scale_ratio": 0.4118700828167757,
+            "scale_match": 0.4118700828167757,
+            "scale_aware": 0.29013913494576093,
+            "scale_aware_null": 0.3286364110266068,
+            "scale_aware_minus_null": -0.038497276080845855,
+            "skill_vs_mean_null": 0.15705715779465335,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 5120
+          },
+          "survives_mlp_rule": false,
+          "p_verify": {
+            "p": 0.05,
+            "basis": "G034 REFUTED (2.93x q3 error); composition rank-512 FAILS at 2.0706 bpw; local survival does not overturn a matched-bit refutation"
+          },
+          "experiment_cost": {
+            "local_eval_s": 8.0,
+            "kernel_s": 280.0,
+            "compose_chain_s": 60.0,
+            "generate_s": 90.0,
+            "total_s": 438.0,
+            "unit": "seconds of remaining experiment",
+            "note": "Generate cost is a wall-time estimate for a native run that does NOT spawn a second 27B; it reuses the gravity catalog already on disk."
+          },
+          "route_cost": {
+            "discrete_expert_routes_per_token": 0,
+            "moe_router_bytes": 0,
+            "note": "qwen38 is dense; zero expert routes is a count, not a missing measurement"
+          },
+          "estimated_dram": {
+            "weight_storage_bytes": 108675072.0,
+            "state_bytes": 0.0,
+            "scratch_bytes": 139264.0,
+            "estimated_dram_bytes": 108814336.0,
+            "note": "dense MLP has no KV/expert cache; DRAM is packed weights plus SwiGLU scratch"
+          },
+          "expected_token_ns": {
+            "gemv_ns": 12128877.344636677,
+            "fixed_ns": 1004197.5322722804,
+            "expected_token_ns": 13133074.876908958,
+            "active_bytes_ratio_vs_incumbent": 0.7650519031141868,
+            "model": "gemv_ns scales with fused active bytes; silu/softmax/kv do not",
+            "null": "incumbent uniform-q4-v1 isolated family GPU ns from QWEN38_TOKEN_NS_LEDGER"
+          },
+          "bytes_saved_vs_incumbent": 33374208.0,
+          "expected_verified_gain_bytes": 1668710.4000000001,
+          "gain_per_experiment_cost": 3809.8410958904115,
+          "rank": 3
+        },
+        {
+          "id": "incumbent_q4_g64",
+          "physical_computation": "in-register grouped-absmax q4 matvec, group 64, f16 scales (shipping HGRAVU01 / HQ30UQ4). Three independent GEMVs + SiLU+mul.",
+          "family": "grouped_absmax",
+          "role": "incumbent_shipping",
+          "bytes": {
+            "per_tensor": [
+              {
+                "bits": 4,
+                "group": 64,
+                "n_groups": 1392640,
+                "scale_bits": 16,
+                "storage_bits": 378798080,
+                "storage_bytes": 47349760.0,
+                "storage_bpw": 4.25,
+                "fused_active_bits": 378798080,
+                "fused_active_bytes": 47349760.0,
+                "fused_active_bpw": 4.25,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 4,
+                "group": 64,
+                "n_groups": 1392640,
+                "scale_bits": 16,
+                "storage_bits": 378798080,
+                "storage_bytes": 47349760.0,
+                "storage_bpw": 4.25,
+                "fused_active_bits": 378798080,
+                "fused_active_bytes": 47349760.0,
+                "fused_active_bpw": 4.25,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 4,
+                "group": 64,
+                "n_groups": 1392640,
+                "scale_bits": 16,
+                "storage_bits": 378798080,
+                "storage_bytes": 47349760.0,
+                "storage_bpw": 4.25,
+                "fused_active_bits": 378798080,
+                "fused_active_bytes": 47349760.0,
+                "fused_active_bpw": 4.25,
+                "decoded_f16_active_bits": 1426063360,
+                "decoded_f16_active_bytes": 178257920.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 89128960,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              }
+            ],
+            "storage_bytes": 142049280.0,
+            "fused_active_bytes": 142049280.0,
+            "decoded_f16_active_bytes": 534773760.0,
+            "storage_bpw": 4.25,
+            "fused_active_bpw": 4.25,
+            "decoded_f16_active_bpw": 16.0,
+            "numel": 267386880,
+            "executable_bytes": {
+              "materialized": true,
+              "written_to_disk": false,
+              "reason_not_on_disk": "payload is tens of MB; receipt carries sha256 + layout",
+              "n_bytes": 142049422,
+              "sha256": "fbd3b6d29024636ad1fcda71fc2c107db785fed1336d3dbb53a028f45be3faf4",
+              "magic": "DOCV2PK1",
+              "layout": "concat(per tensor: u16 name_len, name, DOCV2PK1, bits/rank u8, group/rank u32, rows, cols, n_groups, scale_nbytes, code_nbytes, f16 scales, packed codes)  \u2014 low-rank stores f16 U*s and V instead of codes"
+            }
+          },
+          "quality": {
+            "cosine": 0.9970709085464478,
+            "cosine_null": 0.604944109916687,
+            "cosine_minus_null": 0.39212679862976074,
+            "rel_fro": 0.07386243343353271,
+            "rel_fro_null": 0.8395689129829407,
+            "gain": 0.9569376111030579,
+            "gain_null": 9.875997420749627e-06,
+            "scale_ratio": 1.0034164181895315,
+            "scale_match": 0.9965952139833473,
+            "scale_aware": 0.9936760954594176,
+            "scale_aware_null": 0.3286364110266068,
+            "scale_aware_minus_null": 0.6650396844328108,
+            "skill_vs_mean_null": 0.9922601371535134,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 5120
+          },
+          "survives_mlp_rule": true,
+          "p_verify": {
+            "p": 1.0,
+            "basis": "already shipping on this parent (uniform-q4-v1)"
+          },
+          "experiment_cost": {
+            "local_eval_s": 8.0,
+            "kernel_s": 12.0,
+            "compose_chain_s": 0.0,
+            "generate_s": 0.0,
+            "total_s": 20.0,
+            "unit": "seconds of remaining experiment",
+            "note": "Generate cost is a wall-time estimate for a native run that does NOT spawn a second 27B; it reuses the gravity catalog already on disk."
+          },
+          "route_cost": {
+            "discrete_expert_routes_per_token": 0,
+            "moe_router_bytes": 0,
+            "note": "qwen38 is dense; zero expert routes is a count, not a missing measurement"
+          },
+          "estimated_dram": {
+            "weight_storage_bytes": 142049280.0,
+            "state_bytes": 0.0,
+            "scratch_bytes": 139264.0,
+            "estimated_dram_bytes": 142188544.0,
+            "note": "dense MLP has no KV/expert cache; DRAM is packed weights plus SwiGLU scratch"
+          },
+          "expected_token_ns": {
+            "gemv_ns": 15853666.0,
+            "fixed_ns": 1004197.5322722804,
+            "expected_token_ns": 16857863.53227228,
+            "active_bytes_ratio_vs_incumbent": 1.0,
+            "model": "gemv_ns scales with fused active bytes; silu/softmax/kv do not",
+            "null": "incumbent uniform-q4-v1 isolated family GPU ns from QWEN38_TOKEN_NS_LEDGER"
+          },
+          "bytes_saved_vs_incumbent": 0.0,
+          "expected_verified_gain_bytes": 0.0,
+          "gain_per_experiment_cost": 0.0,
+          "rank": 4
+        }
+      ],
+      "ranking": [
+        {
+          "rank": 1,
+          "id": "flat_q3_g64",
+          "gain_per_experiment_cost": 202927.54285714286,
+          "expected_verified_gain_bytes": 28409856.0,
+          "bytes_saved_vs_incumbent": 33423360.0,
+          "p_verify": 0.85,
+          "experiment_cost_s": 140.0,
+          "hold_cosine": 0.9844896197319031
+        },
+        {
+          "rank": 2,
+          "id": "binary_g1024",
+          "gain_per_experiment_cost": 174360.7741935484,
+          "expected_verified_gain_bytes": 27025920.0,
+          "bytes_saved_vs_incumbent": 108103680.0,
+          "p_verify": 0.25,
+          "experiment_cost_s": 155.0,
+          "hold_cosine": 0.8556772470474243
+        },
+        {
+          "rank": 3,
+          "id": "lowrank_f16_matched_q3",
+          "gain_per_experiment_cost": 3809.8410958904115,
+          "expected_verified_gain_bytes": 1668710.4000000001,
+          "bytes_saved_vs_incumbent": 33374208.0,
+          "p_verify": 0.05,
+          "experiment_cost_s": 438.0,
+          "hold_cosine": 0.7044433355331421
+        },
+        {
+          "rank": 4,
+          "id": "incumbent_q4_g64",
+          "gain_per_experiment_cost": 0.0,
+          "expected_verified_gain_bytes": 0.0,
+          "bytes_saved_vs_incumbent": 0.0,
+          "p_verify": 1.0,
+          "experiment_cost_s": 20.0,
+          "hold_cosine": 0.9970709085464478
+        }
+      ],
+      "ranking_rule": {
+        "sorts_by": "expected_verified_gain_per_experiment_cost",
+        "gain": "P(verify) * storage_bytes_saved vs shipping q4 g64",
+        "cost": "seconds of remaining kernel+compose+generate work",
+        "quality_alone_order": [
+          "incumbent_q4_g64",
+          "flat_q3_g64",
+          "binary_g1024",
+          "lowrank_f16_matched_q3"
+        ],
+        "gain_per_cost_order": [
+          "flat_q3_g64",
+          "binary_g1024",
+          "lowrank_f16_matched_q3",
+          "incumbent_q4_g64"
+        ],
+        "quality_order_coincided": false,
+        "why_not_a_wishlist": "A wishlist would put highest hold cosine first. Binary is allowed to outrank q3 despite worse cosine because composition already showed the operator surviving at 4x fewer bits, so expected verified bytes per second of remaining work is higher."
+      },
+      "prescription": {
+        "physical_computation": "in-register grouped-absmax q3 matvec, group 64. Same kernel family as shipping Q4; first coherent low-bpw point on this MLP (3.25 bpw).",
+        "candidate_id": "flat_q3_g64",
+        "do_not": "do not replace the SwiGLU map with a matched-bit low-rank factorization",
+        "reason": "top-ranked by expected verified gain/cost is flat_q3_g64. low-rank/q3 error ratio on this hold = 4.3933233654606845. Composition: binary 1.0156 bpw lives where rank-512 at 2.0706 bpw dies."
+      },
+      "lowrank_vs_q3_rel_fro": 4.3933233654606845,
+      "incumbent_storage_bytes": 142049280.0,
+      "token_ns_incumbent": {
+        "gemv_ns": 15853666.0,
+        "fixed_ns": 1004197.5322722804,
+        "ns_per_token": 16857863.53227228,
+        "source": "QWEN38_TOKEN_NS_LEDGER isolated mlp_matvecs_64 + dense_swiglu component"
+      }
+    },
+    {
+      "organ_id": "qwen38.L3.attention_gqa",
+      "kind": "attention_gqa",
+      "layer": 3,
+      "parent_tensors": [
+        "model.language_model.layers.3.self_attn.q_proj.weight",
+        "model.language_model.layers.3.self_attn.k_proj.weight",
+        "model.language_model.layers.3.self_attn.v_proj.weight",
+        "model.language_model.layers.3.self_attn.o_proj.weight",
+        "model.language_model.layers.3.self_attn.q_norm.weight",
+        "model.language_model.layers.3.self_attn.k_norm.weight"
+      ],
+      "real_organ_of_qualified_parent": true,
+      "measured_functional_sensitivity": {
+        "site": "L3 GQA. in-proj X is post_attn_norm (WRONG residual point, same honesty class as ATTENTION_FLOOR_REFIT \u2014 real, not Gaussian). o_proj X is real-derived GQA-repeat(v)*sigmoid(q_gate). Composed GQA uses hold-prompt sequences from the same capture.",
+        "site_is_attention_in_proj_input": false,
+        "site_caveat": "post_attn_norm is MLP input. Known-invalid class is Gaussian-proxy; this is not that.",
+        "n_hold": 256,
+        "n_composed_tokens": 315,
+        "gaussian_proxy_used": false,
+        "q_proj_identity": {
+          "cosine": 1.0,
+          "cosine_null": 0.46076804399490356,
+          "cosine_minus_null": 0.5392319560050964,
+          "rel_fro": 0.0,
+          "rel_fro_null": 0.8948313593864441,
+          "gain": 1.0,
+          "gain_null": 4.7143581468844786e-05,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 1.0,
+          "scale_aware_null": 0.2056888301640005,
+          "scale_aware_minus_null": 0.7943111698359995,
+          "skill_vs_mean_null": 1.0,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 12288
+        },
+        "q_proj_scaled_0p01_W": {
+          "cosine": 1.0,
+          "cosine_null": 0.46076804399490356,
+          "cosine_minus_null": 0.5392319560050964,
+          "rel_fro": 0.9900002479553223,
+          "rel_fro_null": 0.8948313593864441,
+          "gain": 0.009999990463256836,
+          "gain_null": 4.7143581468844786e-05,
+          "scale_ratio": 0.009999999636426485,
+          "scale_match": 0.009999999636426485,
+          "scale_aware": 0.009999999636426485,
+          "scale_aware_null": 0.2056888301640005,
+          "scale_aware_minus_null": -0.19568883052757402,
+          "skill_vs_mean_null": -0.22401848504978616,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 12288
+        },
+        "q_proj_zero": {
+          "cosine": null,
+          "cosine_null": 0.46076804399490356,
+          "cosine_minus_null": null,
+          "rel_fro": 1.0,
+          "rel_fro_null": 0.8948313593864441,
+          "gain": 0.0,
+          "gain_null": 4.7143581468844786e-05,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": null,
+          "scale_aware_null": 0.2056888301640005,
+          "scale_aware_minus_null": null,
+          "skill_vs_mean_null": -0.24887109772971305,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 12288
+        },
+        "o_proj_identity_on_derived_X": {
+          "cosine": 1.0,
+          "cosine_null": 0.2490607649087906,
+          "cosine_minus_null": 0.7509392350912094,
+          "rel_fro": 0.0,
+          "rel_fro_null": 0.9685711860656738,
+          "gain": 1.0,
+          "gain_null": 5.2632298320531845e-05,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 1.0,
+          "scale_aware_null": 0.06195087106837247,
+          "scale_aware_minus_null": 0.9380491289316275,
+          "skill_vs_mean_null": 1.0,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 256,
+          "n_cols": 5120
+        },
+        "composed_identity": {
+          "cosine": 1.0,
+          "cosine_null": 0.5939339995384216,
+          "cosine_minus_null": 0.40606600046157837,
+          "rel_fro": 0.0,
+          "rel_fro_null": 0.8174020051956177,
+          "gain": 1.0,
+          "gain_null": 8.288308890769258e-05,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 1.0,
+          "scale_aware_null": 0.34214579017214075,
+          "scale_aware_minus_null": 0.6578542098278592,
+          "skill_vs_mean_null": 1.0,
+          "null_kind": "constant-mean of Y_true on the same rows",
+          "n_rows": 315,
+          "n_cols": 5120,
+          "n_tokens": 315,
+          "n_prompts": 6
+        },
+        "scale_trap_rejected": true,
+        "function_lost_zero_q": 1.0,
+        "null": "constant-mean of Y_true on the same rows"
+      },
+      "discovered_shared_structure": {
+        "priors": {
+          "g035_shared_beats_independent": false,
+          "attention_floor_hadamard_does_not_unlock_q3": true
+        },
+        "this_parent": {
+          "adjacent_GQA_L3_L7_q_proj": {
+            "rank_independent": 48,
+            "rank_shared_column": 56,
+            "rank_shared_row": 74,
+            "independent": {
+              "mean_rel_fro": 0.7928027510643005,
+              "mean_cosine": 0.6027008593082428
+            },
+            "shared_column": {
+              "mean_rel_fro": 0.7987973690032959,
+              "mean_cosine": 0.5956664085388184,
+              "shared_beats_independent": false
+            },
+            "shared_row": {
+              "mean_rel_fro": 0.8057876825332642,
+              "mean_cosine": 0.583541750907898,
+              "shared_beats_independent": false
+            },
+            "mean_direction_cosine": 0.4579107463359833,
+            "finding": "NONE",
+            "finding_note": "Neither shared column nor shared row beats independent SVD at matched rank on this pair. A finding of no shared structure is a result.",
+            "error_space": "function space Y=X@W.T on real captured X, not weight cosine",
+            "gaussian_proxy_used": false
+          }
+        },
+        "finding": "NONE",
+        "shipping_conclusion": "NONE that would move GQA off grouped-absmax Q4. Sharing a basis across GQA layers does not beat independent low-rank enough to clear the 0.990 bar the floor sits on, and low-rank itself does not clear that bar.",
+        "gaussian_proxy_used": false,
+        "site_caveat": "share probe uses post_attn_norm, same real-not-Gaussian class"
+      },
+      "candidates": [
+        {
+          "id": "q4_g128",
+          "physical_computation": "same grouped-absmax q4 matvec with group 128 (4.125 bpw). This is the recorded attention floor: a 2.9% scale-overhead save, not a new bit regime. Hessian-optimal scales make the mass HEALTHY; composed GQA still gated at Q4.",
+          "family": "grouped_absmax",
+          "role": "recorded_floor_4.125",
+          "bytes": {
+            "per_tensor": [
+              {
+                "bits": 4,
+                "group": 128,
+                "n_groups": 491520,
+                "scale_bits": 16,
+                "storage_bits": 259522560,
+                "storage_bytes": 32440320.0,
+                "storage_bpw": 4.125,
+                "fused_active_bits": 259522560,
+                "fused_active_bytes": 32440320.0,
+                "fused_active_bpw": 4.125,
+                "decoded_f16_active_bits": 1006632960,
+                "decoded_f16_active_bytes": 125829120.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 62914560,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 4,
+                "group": 128,
+                "n_groups": 40960,
+                "scale_bits": 16,
+                "storage_bits": 21626880,
+                "storage_bytes": 2703360.0,
+                "storage_bpw": 4.125,
+                "fused_active_bits": 21626880,
+                "fused_active_bytes": 2703360.0,
+                "fused_active_bpw": 4.125,
+                "decoded_f16_active_bits": 83886080,
+                "decoded_f16_active_bytes": 10485760.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 5242880,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 4,
+                "group": 128,
+                "n_groups": 40960,
+                "scale_bits": 16,
+                "storage_bits": 21626880,
+                "storage_bytes": 2703360.0,
+                "storage_bpw": 4.125,
+                "fused_active_bits": 21626880,
+                "fused_active_bytes": 2703360.0,
+                "fused_active_bpw": 4.125,
+                "decoded_f16_active_bits": 83886080,
+                "decoded_f16_active_bytes": 10485760.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 5242880,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 4,
+                "group": 128,
+                "n_groups": 245760,
+                "scale_bits": 16,
+                "storage_bits": 129761280,
+                "storage_bytes": 16220160.0,
+                "storage_bpw": 4.125,
+                "fused_active_bits": 129761280,
+                "fused_active_bytes": 16220160.0,
+                "fused_active_bpw": 4.125,
+                "decoded_f16_active_bits": 503316480,
+                "decoded_f16_active_bytes": 62914560.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 31457280,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              }
+            ],
+            "storage_bytes": 54067200.0,
+            "fused_active_bytes": 54067200.0,
+            "decoded_f16_active_bytes": 209715200.0,
+            "storage_bpw": 4.125,
+            "fused_active_bpw": 4.125,
+            "decoded_f16_active_bpw": 16.0,
+            "numel": 104857600,
+            "executable_bytes": {
+              "materialized": true,
+              "written_to_disk": false,
+              "reason_not_on_disk": "payload is tens of MB; receipt carries sha256 + layout",
+              "n_bytes": 54067404,
+              "sha256": "3b79dc50486616b6ce7ff9cfd5be093acc23b303cf3ad247430568d7681ecc42",
+              "magic": "DOCV2PK1",
+              "layout": "concat(per tensor: u16 name_len, name, DOCV2PK1, bits/rank u8, group/rank u32, rows, cols, n_groups, scale_nbytes, code_nbytes, f16 scales, packed codes)  \u2014 low-rank stores f16 U*s and V instead of codes"
+            }
+          },
+          "quality": {
+            "cosine": 0.9910082817077637,
+            "cosine_null": 0.5939339995384216,
+            "cosine_minus_null": 0.39707428216934204,
+            "rel_fro": 0.1277187168598175,
+            "rel_fro_null": 0.8174020051956177,
+            "gain": 0.8615821599960327,
+            "gain_null": 8.288308890769258e-05,
+            "scale_ratio": 1.0211488170102252,
+            "scale_match": 0.9792891920766791,
+            "scale_aware": 0.9704836995348939,
+            "scale_aware_null": 0.34214579017214075,
+            "scale_aware_minus_null": 0.6283379093627531,
+            "skill_vs_mean_null": 0.9755860693575517,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 315,
+            "n_cols": 5120,
+            "n_tokens": 315,
+            "n_prompts": 6
+          },
+          "quality_q_proj_local": {
+            "cosine": 0.9958770871162415,
+            "cosine_null": 0.46076804399490356,
+            "cosine_minus_null": 0.5351090431213379,
+            "rel_fro": 0.09308778494596481,
+            "rel_fro_null": 0.8948313593864441,
+            "gain": 0.9517417550086975,
+            "gain_null": 4.7143581468844786e-05,
+            "scale_ratio": 1.0051397337439656,
+            "scale_match": 0.9948865480376335,
+            "scale_aware": 0.9907847174708512,
+            "scale_aware_null": 0.2056888301640005,
+            "scale_aware_minus_null": 0.7850958873068506,
+            "skill_vs_mean_null": 0.9891781195053356,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 12288
+          },
+          "quality_o_proj_derived": {
+            "cosine": 0.9958005547523499,
+            "cosine_null": 0.2490607649087906,
+            "cosine_minus_null": 0.7467397898435593,
+            "rel_fro": 0.09012363106012344,
+            "rel_fro_null": 0.9685711860656738,
+            "gain": 0.9574121832847595,
+            "gain_null": 5.2632298320531845e-05,
+            "scale_ratio": 1.0054901860047563,
+            "scale_match": 0.9945397915552303,
+            "scale_aware": 0.9903632761539848,
+            "scale_aware_null": 0.06195087106837247,
+            "scale_aware_minus_null": 0.9284124050856123,
+            "skill_vs_mean_null": 0.9913420631097597,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 5120
+          },
+          "healthy_q4_bar_local": true,
+          "healthy_q4_bar_composed": true,
+          "p_verify": {
+            "p": 0.9,
+            "basis": "ATTENTION_FLOOR_REFIT: 4.125 is the organ floor; Hessian makes the g128 mass HEALTHY. Not a new bit regime. Local composed cosine on post_attn_norm is not the 0.990 gate."
+          },
+          "experiment_cost": {
+            "local_eval_s": 8.0,
+            "kernel_s": 12.0,
+            "compose_chain_s": 15.0,
+            "generate_s": 40.0,
+            "total_s": 75.0,
+            "unit": "seconds of remaining experiment",
+            "note": "Generate cost is a wall-time estimate for a native run that does NOT spawn a second 27B; it reuses the gravity catalog already on disk."
+          },
+          "route_cost": {
+            "discrete_gqa_grouping_choices_per_token": 0,
+            "gqa_grouping_table_bytes": 0,
+            "continuous_sigmoid_gates_per_gqa_layer": 24,
+            "note": "grouping is kv_h = h/6, identical every token. Not a router."
+          },
+          "estimated_dram": {
+            "weight_storage_bytes": 54067200.0,
+            "state_bytes_one_pos": 131072.0,
+            "state_bytes_at_2048": 268435456.0,
+            "scratch_bytes": 24576.0,
+            "estimated_dram_bytes": 322502656.0,
+            "note": "KV state is activation memory; bit-width of W does not shrink it. 16 GQA layers \u00d7 4 kv heads \u00d7 256 \u00d7 2 (k,v) \u00d7 2 bytes = 131072 B/token."
+          },
+          "expected_token_ns": {
+            "gemv_ns": 1838900.7352941176,
+            "fixed_ns": 2981135.7102658837,
+            "expected_token_ns": 4820036.445560001,
+            "active_bytes_ratio_vs_incumbent": 0.9705882352941176,
+            "model": "gemv_ns scales with fused active bytes; silu/softmax/kv do not",
+            "null": "incumbent uniform-q4-v1 isolated family GPU ns from QWEN38_TOKEN_NS_LEDGER"
+          },
+          "bytes_saved_vs_incumbent": 1638400.0,
+          "expected_verified_gain_bytes": 1474560.0,
+          "gain_per_experiment_cost": 19660.8,
+          "rank": 1
+        },
+        {
+          "id": "q3_g64",
+          "physical_computation": "grouped-absmax q3 g64. The MLP's coherent point. Composed GQA fails the 0.990 bar here \u2014 attention is not MLP.",
+          "family": "grouped_absmax",
+          "role": "mlp_policy_negative_control",
+          "bytes": {
+            "per_tensor": [
+              {
+                "bits": 3,
+                "group": 64,
+                "n_groups": 983040,
+                "scale_bits": 16,
+                "storage_bits": 204472320,
+                "storage_bytes": 25559040.0,
+                "storage_bpw": 3.25,
+                "fused_active_bits": 204472320,
+                "fused_active_bytes": 25559040.0,
+                "fused_active_bpw": 3.25,
+                "decoded_f16_active_bits": 1006632960,
+                "decoded_f16_active_bytes": 125829120.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 62914560,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 3,
+                "group": 64,
+                "n_groups": 81920,
+                "scale_bits": 16,
+                "storage_bits": 17039360,
+                "storage_bytes": 2129920.0,
+                "storage_bpw": 3.25,
+                "fused_active_bits": 17039360,
+                "fused_active_bytes": 2129920.0,
+                "fused_active_bpw": 3.25,
+                "decoded_f16_active_bits": 83886080,
+                "decoded_f16_active_bytes": 10485760.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 5242880,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 3,
+                "group": 64,
+                "n_groups": 81920,
+                "scale_bits": 16,
+                "storage_bits": 17039360,
+                "storage_bytes": 2129920.0,
+                "storage_bpw": 3.25,
+                "fused_active_bits": 17039360,
+                "fused_active_bytes": 2129920.0,
+                "fused_active_bpw": 3.25,
+                "decoded_f16_active_bits": 83886080,
+                "decoded_f16_active_bytes": 10485760.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 5242880,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 3,
+                "group": 64,
+                "n_groups": 491520,
+                "scale_bits": 16,
+                "storage_bits": 102236160,
+                "storage_bytes": 12779520.0,
+                "storage_bpw": 3.25,
+                "fused_active_bits": 102236160,
+                "fused_active_bytes": 12779520.0,
+                "fused_active_bpw": 3.25,
+                "decoded_f16_active_bits": 503316480,
+                "decoded_f16_active_bytes": 62914560.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 31457280,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              }
+            ],
+            "storage_bytes": 42598400.0,
+            "fused_active_bytes": 42598400.0,
+            "decoded_f16_active_bytes": 209715200.0,
+            "storage_bpw": 3.25,
+            "fused_active_bpw": 3.25,
+            "decoded_f16_active_bpw": 16.0,
+            "numel": 104857600,
+            "executable_bytes": {
+              "materialized": true,
+              "written_to_disk": false,
+              "reason_not_on_disk": "payload is tens of MB; receipt carries sha256 + layout",
+              "n_bytes": 42598604,
+              "sha256": "ae394042b93a6f491c2715ab458aed255db9703008f2fad2f1edb43cbba07d10",
+              "magic": "DOCV2PK1",
+              "layout": "concat(per tensor: u16 name_len, name, DOCV2PK1, bits/rank u8, group/rank u32, rows, cols, n_groups, scale_nbytes, code_nbytes, f16 scales, packed codes)  \u2014 low-rank stores f16 U*s and V instead of codes"
+            }
+          },
+          "quality": {
+            "cosine": 0.9621399641036987,
+            "cosine_null": 0.5939339995384216,
+            "cosine_minus_null": 0.3682059645652771,
+            "rel_fro": 0.2652367651462555,
+            "rel_fro_null": 0.8174020051956177,
+            "gain": 0.6905553936958313,
+            "gain_null": 8.288308890769258e-05,
+            "scale_ratio": 1.0172006090112586,
+            "scale_match": 0.9830902490040996,
+            "scale_aware": 0.9458704168875006,
+            "scale_aware_null": 0.34214579017214075,
+            "scale_aware_minus_null": 0.6037246267153599,
+            "skill_vs_mean_null": 0.894707885177485,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 315,
+            "n_cols": 5120,
+            "n_tokens": 315,
+            "n_prompts": 6
+          },
+          "quality_q_proj_local": {
+            "cosine": 0.9820264577865601,
+            "cosine_null": 0.46076804399490356,
+            "cosine_minus_null": 0.5212584137916565,
+            "rel_fro": 0.1970427930355072,
+            "rel_fro_null": 0.8948313593864441,
+            "gain": 0.8760223984718323,
+            "gain_null": 4.7143581468844786e-05,
+            "scale_ratio": 1.0222064885559339,
+            "scale_match": 0.9782759268263843,
+            "scale_aware": 0.9606928431591782,
+            "scale_aware_null": 0.2056888301640005,
+            "scale_aware_minus_null": 0.7550040129951777,
+            "skill_vs_mean_null": 0.9515115171359342,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 12288
+          },
+          "quality_o_proj_derived": {
+            "cosine": 0.9805975556373596,
+            "cosine_null": 0.2490607649087906,
+            "cosine_minus_null": 0.731536790728569,
+            "rel_fro": 0.1957862675189972,
+            "rel_fro_null": 0.9685711860656738,
+            "gain": 0.8851881623268127,
+            "gain_null": 5.2632298320531845e-05,
+            "scale_ratio": 1.0127490451446097,
+            "scale_match": 0.9874114468873291,
+            "scale_aware": 0.9682532512260634,
+            "scale_aware_null": 0.06195087106837247,
+            "scale_aware_minus_null": 0.9063023801576909,
+            "skill_vs_mean_null": 0.9591397106990699,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 5120
+          },
+          "healthy_q4_bar_local": false,
+          "healthy_q4_bar_composed": false,
+          "p_verify": {
+            "p": 0.08,
+            "basis": "composed GQA at Q3 fails the 0.990 bar (ATTENTION_FLOOR_REFIT). A local GPTQ exception on L3 o_proj did not inherit. This harness's composed score sits on the wrong residual point and is not allowed to raise P(verify)."
+          },
+          "experiment_cost": {
+            "local_eval_s": 8.0,
+            "kernel_s": 12.0,
+            "compose_chain_s": 30.0,
+            "generate_s": 90.0,
+            "total_s": 140.0,
+            "unit": "seconds of remaining experiment",
+            "note": "Generate cost is a wall-time estimate for a native run that does NOT spawn a second 27B; it reuses the gravity catalog already on disk."
+          },
+          "route_cost": {
+            "discrete_gqa_grouping_choices_per_token": 0,
+            "gqa_grouping_table_bytes": 0,
+            "continuous_sigmoid_gates_per_gqa_layer": 24,
+            "note": "grouping is kv_h = h/6, identical every token. Not a router."
+          },
+          "estimated_dram": {
+            "weight_storage_bytes": 42598400.0,
+            "state_bytes_one_pos": 131072.0,
+            "state_bytes_at_2048": 268435456.0,
+            "scratch_bytes": 24576.0,
+            "estimated_dram_bytes": 311033856.0,
+            "note": "KV state is activation memory; bit-width of W does not shrink it. 16 GQA layers \u00d7 4 kv heads \u00d7 256 \u00d7 2 (k,v) \u00d7 2 bytes = 131072 B/token."
+          },
+          "expected_token_ns": {
+            "gemv_ns": 1448830.882352941,
+            "fixed_ns": 2981135.7102658837,
+            "expected_token_ns": 4429966.592618825,
+            "active_bytes_ratio_vs_incumbent": 0.7647058823529411,
+            "model": "gemv_ns scales with fused active bytes; silu/softmax/kv do not",
+            "null": "incumbent uniform-q4-v1 isolated family GPU ns from QWEN38_TOKEN_NS_LEDGER"
+          },
+          "bytes_saved_vs_incumbent": 13107200.0,
+          "expected_verified_gain_bytes": 1048576.0,
+          "gain_per_experiment_cost": 7489.828571428571,
+          "rank": 2
+        },
+        {
+          "id": "lowrank_f16_matched_q4",
+          "physical_computation": "two f16 GEMMs at storage BPW matching q4 g128. HGRAVS01: 0 clears of the 0.990 bar at ranks that beat Q4 on bits.",
+          "family": "lowrank",
+          "role": "sub_q4_lowrank_negative_control",
+          "bytes": {
+            "per_tensor": [
+              {
+                "rank": 932,
+                "n_weights": 62914560,
+                "factor_elems": 16224256,
+                "storage_bits": 259588096,
+                "storage_bytes": 32448512.0,
+                "storage_bpw": 4.126041666666667,
+                "fused_active_bits": 259588096,
+                "fused_active_bytes": 32448512.0,
+                "fused_active_bpw": 4.126041666666667,
+                "decoded_f16_active_bits": 1006632960,
+                "decoded_f16_active_bytes": 125829120.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 62914560,
+                "note": "fused_active = two f16 GEMMs (U,V). decoded_f16_active = 16 if W is rebuilt dense. G034: at matched 3.25 bpw this operator was 2.93x the output error of flat q3."
+              },
+              {
+                "rank": 220,
+                "n_weights": 5242880,
+                "factor_elems": 1351680,
+                "storage_bits": 21626880,
+                "storage_bytes": 2703360.0,
+                "storage_bpw": 4.125,
+                "fused_active_bits": 21626880,
+                "fused_active_bytes": 2703360.0,
+                "fused_active_bpw": 4.125,
+                "decoded_f16_active_bits": 83886080,
+                "decoded_f16_active_bytes": 10485760.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 5242880,
+                "note": "fused_active = two f16 GEMMs (U,V). decoded_f16_active = 16 if W is rebuilt dense. G034: at matched 3.25 bpw this operator was 2.93x the output error of flat q3."
+              },
+              {
+                "rank": 220,
+                "n_weights": 5242880,
+                "factor_elems": 1351680,
+                "storage_bits": 21626880,
+                "storage_bytes": 2703360.0,
+                "storage_bpw": 4.125,
+                "fused_active_bits": 21626880,
+                "fused_active_bytes": 2703360.0,
+                "fused_active_bpw": 4.125,
+                "decoded_f16_active_bits": 83886080,
+                "decoded_f16_active_bytes": 10485760.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 5242880,
+                "note": "fused_active = two f16 GEMMs (U,V). decoded_f16_active = 16 if W is rebuilt dense. G034: at matched 3.25 bpw this operator was 2.93x the output error of flat q3."
+              },
+              {
+                "rank": 720,
+                "n_weights": 31457280,
+                "factor_elems": 8110080,
+                "storage_bits": 129761280,
+                "storage_bytes": 16220160.0,
+                "storage_bpw": 4.125,
+                "fused_active_bits": 129761280,
+                "fused_active_bytes": 16220160.0,
+                "fused_active_bpw": 4.125,
+                "decoded_f16_active_bits": 503316480,
+                "decoded_f16_active_bytes": 62914560.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 31457280,
+                "note": "fused_active = two f16 GEMMs (U,V). decoded_f16_active = 16 if W is rebuilt dense. G034: at matched 3.25 bpw this operator was 2.93x the output error of flat q3."
+              }
+            ],
+            "storage_bytes": 54075392.0,
+            "fused_active_bytes": 54075392.0,
+            "decoded_f16_active_bytes": 209715200.0,
+            "storage_bpw": 4.125625,
+            "fused_active_bpw": 4.125625,
+            "decoded_f16_active_bpw": 16.0,
+            "numel": 104857600,
+            "executable_bytes": {
+              "materialized": true,
+              "written_to_disk": false,
+              "reason_not_on_disk": "payload is tens of MB; receipt carries sha256 + layout",
+              "n_bytes": 54075596,
+              "sha256": "9cce3508790ea576f21aedb0f94f35b3a9a041cf765aff4246672ea44db7b79a",
+              "magic": "DOCV2PK1",
+              "layout": "concat(per tensor: u16 name_len, name, DOCV2PK1, bits/rank u8, group/rank u32, rows, cols, n_groups, scale_nbytes, code_nbytes, f16 scales, packed codes)  \u2014 low-rank stores f16 U*s and V instead of codes"
+            }
+          },
+          "quality": {
+            "cosine": 0.5752580761909485,
+            "cosine_null": 0.5939339995384216,
+            "cosine_minus_null": -0.018675923347473145,
+            "rel_fro": 0.8251206874847412,
+            "rel_fro_null": 0.8174020051956177,
+            "gain": 0.1952628642320633,
+            "gain_null": 8.288308890769258e-05,
+            "scale_ratio": 0.5340326248040906,
+            "scale_match": 0.5340326248040906,
+            "scale_aware": 0.3072065803680038,
+            "scale_aware_null": 0.34214579017214075,
+            "scale_aware_minus_null": -0.03493920980413695,
+            "skill_vs_mean_null": -0.018975596283822727,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 315,
+            "n_cols": 5120,
+            "n_tokens": 315,
+            "n_prompts": 6
+          },
+          "quality_q_proj_local": {
+            "cosine": 0.8528885841369629,
+            "cosine_null": 0.46076804399490356,
+            "cosine_minus_null": 0.3921205401420593,
+            "rel_fro": 0.5350592136383057,
+            "rel_fro_null": 0.8948313593864441,
+            "gain": 0.513687252998352,
+            "gain_null": 4.7143581468844786e-05,
+            "scale_ratio": 0.8448145432508346,
+            "scale_match": 0.8448145432508346,
+            "scale_aware": 0.7205326796515193,
+            "scale_aware_null": 0.2056888301640005,
+            "scale_aware_minus_null": 0.5148438494875188,
+            "skill_vs_mean_null": 0.642462818462396,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 12288
+          },
+          "quality_o_proj_derived": {
+            "cosine": 0.8186638355255127,
+            "cosine_null": 0.2490607649087906,
+            "cosine_minus_null": 0.5696030706167221,
+            "rel_fro": 0.5582498908042908,
+            "rel_fro_null": 0.9685711860656738,
+            "gain": 0.5902795791625977,
+            "gain_null": 5.2632298320531845e-05,
+            "scale_ratio": 0.8236763429229809,
+            "scale_match": 0.8236763429229809,
+            "scale_aware": 0.674314034128955,
+            "scale_aware_null": 0.06195087106837247,
+            "scale_aware_minus_null": 0.6123631630605825,
+            "skill_vs_mean_null": 0.6678041770714056,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 5120
+          },
+          "healthy_q4_bar_local": false,
+          "healthy_q4_bar_composed": false,
+          "p_verify": {
+            "p": 0.02,
+            "basis": "HGRAVS01 recorded 0 clears of 0.99 at ranks whose BPW beats Q4; dense-subbit NO-GO"
+          },
+          "experiment_cost": {
+            "local_eval_s": 8.0,
+            "kernel_s": 280.0,
+            "compose_chain_s": 60.0,
+            "generate_s": 90.0,
+            "total_s": 438.0,
+            "unit": "seconds of remaining experiment",
+            "note": "Generate cost is a wall-time estimate for a native run that does NOT spawn a second 27B; it reuses the gravity catalog already on disk."
+          },
+          "route_cost": {
+            "discrete_gqa_grouping_choices_per_token": 0,
+            "gqa_grouping_table_bytes": 0,
+            "continuous_sigmoid_gates_per_gqa_layer": 24,
+            "note": "grouping is kv_h = h/6, identical every token. Not a router."
+          },
+          "estimated_dram": {
+            "weight_storage_bytes": 54075392.0,
+            "state_bytes_one_pos": 131072.0,
+            "state_bytes_at_2048": 268435456.0,
+            "scratch_bytes": 24576.0,
+            "estimated_dram_bytes": 322510848.0,
+            "note": "KV state is activation memory; bit-width of W does not shrink it. 16 GQA layers \u00d7 4 kv heads \u00d7 256 \u00d7 2 (k,v) \u00d7 2 bytes = 131072 B/token."
+          },
+          "expected_token_ns": {
+            "gemv_ns": 1839179.356617647,
+            "fixed_ns": 2981135.7102658837,
+            "expected_token_ns": 4820315.0668835305,
+            "active_bytes_ratio_vs_incumbent": 0.970735294117647,
+            "model": "gemv_ns scales with fused active bytes; silu/softmax/kv do not",
+            "null": "incumbent uniform-q4-v1 isolated family GPU ns from QWEN38_TOKEN_NS_LEDGER"
+          },
+          "bytes_saved_vs_incumbent": 1630208.0,
+          "expected_verified_gain_bytes": 32604.16,
+          "gain_per_experiment_cost": 74.43872146118721,
+          "rank": 3
+        },
+        {
+          "id": "incumbent_q4_g64",
+          "physical_computation": "in-register grouped-absmax q4 g64 matvec on q/k/v/o, then GQA softmax attention (24q/4kv, RoPE 64, sigmoid gate). Shipping kernel family.",
+          "family": "grouped_absmax",
+          "role": "incumbent_shipping",
+          "bytes": {
+            "per_tensor": [
+              {
+                "bits": 4,
+                "group": 64,
+                "n_groups": 983040,
+                "scale_bits": 16,
+                "storage_bits": 267386880,
+                "storage_bytes": 33423360.0,
+                "storage_bpw": 4.25,
+                "fused_active_bits": 267386880,
+                "fused_active_bytes": 33423360.0,
+                "fused_active_bpw": 4.25,
+                "decoded_f16_active_bits": 1006632960,
+                "decoded_f16_active_bytes": 125829120.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 62914560,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 4,
+                "group": 64,
+                "n_groups": 81920,
+                "scale_bits": 16,
+                "storage_bits": 22282240,
+                "storage_bytes": 2785280.0,
+                "storage_bpw": 4.25,
+                "fused_active_bits": 22282240,
+                "fused_active_bytes": 2785280.0,
+                "fused_active_bpw": 4.25,
+                "decoded_f16_active_bits": 83886080,
+                "decoded_f16_active_bytes": 10485760.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 5242880,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 4,
+                "group": 64,
+                "n_groups": 81920,
+                "scale_bits": 16,
+                "storage_bits": 22282240,
+                "storage_bytes": 2785280.0,
+                "storage_bpw": 4.25,
+                "fused_active_bits": 22282240,
+                "fused_active_bytes": 2785280.0,
+                "fused_active_bpw": 4.25,
+                "decoded_f16_active_bits": 83886080,
+                "decoded_f16_active_bytes": 10485760.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 5242880,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              },
+              {
+                "bits": 4,
+                "group": 64,
+                "n_groups": 491520,
+                "scale_bits": 16,
+                "storage_bits": 133693440,
+                "storage_bytes": 16711680.0,
+                "storage_bpw": 4.25,
+                "fused_active_bits": 133693440,
+                "fused_active_bytes": 16711680.0,
+                "fused_active_bpw": 4.25,
+                "decoded_f16_active_bits": 503316480,
+                "decoded_f16_active_bytes": 62914560.0,
+                "decoded_f16_active_bpw": 16.0,
+                "orig_numel": 31457280,
+                "note": "fused_active = storage for in-register grouped matvec (HGRAVU01 family). decoded_f16_active = 16 b/elem if the kernel materializes W. Report both."
+              }
+            ],
+            "storage_bytes": 55705600.0,
+            "fused_active_bytes": 55705600.0,
+            "decoded_f16_active_bytes": 209715200.0,
+            "storage_bpw": 4.25,
+            "fused_active_bpw": 4.25,
+            "decoded_f16_active_bpw": 16.0,
+            "numel": 104857600,
+            "executable_bytes": {
+              "materialized": true,
+              "written_to_disk": false,
+              "reason_not_on_disk": "payload is tens of MB; receipt carries sha256 + layout",
+              "n_bytes": 55705804,
+              "sha256": "7aaddc829f95c5be15f7f3939afd1f0d1ee6a562bff237ada3ddd0e3eb1a7452",
+              "magic": "DOCV2PK1",
+              "layout": "concat(per tensor: u16 name_len, name, DOCV2PK1, bits/rank u8, group/rank u32, rows, cols, n_groups, scale_nbytes, code_nbytes, f16 scales, packed codes)  \u2014 low-rank stores f16 U*s and V instead of codes"
+            }
+          },
+          "quality": {
+            "cosine": 0.9927121996879578,
+            "cosine_null": 0.5939339995384216,
+            "cosine_minus_null": 0.39877820014953613,
+            "rel_fro": 0.11223606765270233,
+            "rel_fro_null": 0.8174020051956177,
+            "gain": 0.8774948120117188,
+            "gain_null": 8.288308890769258e-05,
+            "scale_ratio": 1.0069858356202719,
+            "scale_match": 0.9930626277220982,
+            "scale_aware": 0.9858253855939076,
+            "scale_aware_null": 0.34214579017214075,
+            "scale_aware_minus_null": 0.6436795954217669,
+            "skill_vs_mean_null": 0.9811464468705169,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 315,
+            "n_cols": 5120,
+            "n_tokens": 315,
+            "n_prompts": 6
+          },
+          "quality_q_proj_local": {
+            "cosine": 0.9965982437133789,
+            "cosine_null": 0.46076804399490356,
+            "cosine_minus_null": 0.5358301997184753,
+            "rel_fro": 0.08452051132917404,
+            "rel_fro_null": 0.8948313593864441,
+            "gain": 0.9569651484489441,
+            "gain_null": 4.7143581468844786e-05,
+            "scale_ratio": 1.0044063817267241,
+            "scale_match": 0.9956129492933439,
+            "scale_aware": 0.9922261166840439,
+            "scale_aware_null": 0.2056888301640005,
+            "scale_aware_minus_null": 0.7865372865200434,
+            "skill_vs_mean_null": 0.9910784207290327,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 12288
+          },
+          "quality_o_proj_derived": {
+            "cosine": 0.996492862701416,
+            "cosine_null": 0.2490607649087906,
+            "cosine_minus_null": 0.7474320977926254,
+            "rel_fro": 0.08236145228147507,
+            "rel_fro_null": 0.9685711860656738,
+            "gain": 0.9616254568099976,
+            "gain_null": 5.2632298320531845e-05,
+            "scale_ratio": 1.0040809325174698,
+            "scale_match": 0.9959356538050793,
+            "scale_aware": 0.9924427707266299,
+            "scale_aware_null": 0.06195087106837247,
+            "scale_aware_minus_null": 0.9304918996582574,
+            "skill_vs_mean_null": 0.9927692235022506,
+            "null_kind": "constant-mean of Y_true on the same rows",
+            "n_rows": 256,
+            "n_cols": 5120
+          },
+          "healthy_q4_bar_local": true,
+          "healthy_q4_bar_composed": true,
+          "p_verify": {
+            "p": 1.0,
+            "basis": "shipping HGRAVU01 q4 g64 at 4.25 bpw"
+          },
+          "experiment_cost": {
+            "local_eval_s": 8.0,
+            "kernel_s": 12.0,
+            "compose_chain_s": 0.0,
+            "generate_s": 0.0,
+            "total_s": 20.0,
+            "unit": "seconds of remaining experiment",
+            "note": "Generate cost is a wall-time estimate for a native run that does NOT spawn a second 27B; it reuses the gravity catalog already on disk."
+          },
+          "route_cost": {
+            "discrete_gqa_grouping_choices_per_token": 0,
+            "gqa_grouping_table_bytes": 0,
+            "continuous_sigmoid_gates_per_gqa_layer": 24,
+            "note": "grouping is kv_h = h/6, identical every token. Not a router."
+          },
+          "estimated_dram": {
+            "weight_storage_bytes": 55705600.0,
+            "state_bytes_one_pos": 131072.0,
+            "state_bytes_at_2048": 268435456.0,
+            "scratch_bytes": 24576.0,
+            "estimated_dram_bytes": 324141056.0,
+            "note": "KV state is activation memory; bit-width of W does not shrink it. 16 GQA layers \u00d7 4 kv heads \u00d7 256 \u00d7 2 (k,v) \u00d7 2 bytes = 131072 B/token."
+          },
+          "expected_token_ns": {
+            "gemv_ns": 1894625.0,
+            "fixed_ns": 2981135.7102658837,
+            "expected_token_ns": 4875760.710265884,
+            "active_bytes_ratio_vs_incumbent": 1.0,
+            "model": "gemv_ns scales with fused active bytes; silu/softmax/kv do not",
+            "null": "incumbent uniform-q4-v1 isolated family GPU ns from QWEN38_TOKEN_NS_LEDGER"
+          },
+          "bytes_saved_vs_incumbent": 0.0,
+          "expected_verified_gain_bytes": 0.0,
+          "gain_per_experiment_cost": 0.0,
+          "rank": 4
+        }
+      ],
+      "ranking": [
+        {
+          "rank": 1,
+          "id": "q4_g128",
+          "gain_per_experiment_cost": 19660.8,
+          "expected_verified_gain_bytes": 1474560.0,
+          "bytes_saved_vs_incumbent": 1638400.0,
+          "p_verify": 0.9,
+          "experiment_cost_s": 75.0,
+          "hold_cosine": 0.9910082817077637
+        },
+        {
+          "rank": 2,
+          "id": "q3_g64",
+          "gain_per_experiment_cost": 7489.828571428571,
+          "expected_verified_gain_bytes": 1048576.0,
+          "bytes_saved_vs_incumbent": 13107200.0,
+          "p_verify": 0.08,
+          "experiment_cost_s": 140.0,
+          "hold_cosine": 0.9621399641036987
+        },
+        {
+          "rank": 3,
+          "id": "lowrank_f16_matched_q4",
+          "gain_per_experiment_cost": 74.43872146118721,
+          "expected_verified_gain_bytes": 32604.16,
+          "bytes_saved_vs_incumbent": 1630208.0,
+          "p_verify": 0.02,
+          "experiment_cost_s": 438.0,
+          "hold_cosine": 0.5752580761909485
+        },
+        {
+          "rank": 4,
+          "id": "incumbent_q4_g64",
+          "gain_per_experiment_cost": 0.0,
+          "expected_verified_gain_bytes": 0.0,
+          "bytes_saved_vs_incumbent": 0.0,
+          "p_verify": 1.0,
+          "experiment_cost_s": 20.0,
+          "hold_cosine": 0.9927121996879578
+        }
+      ],
+      "ranking_rule": {
+        "sorts_by": "expected_verified_gain_per_experiment_cost",
+        "gain": "P(verify) * storage_bytes_saved vs shipping q4 g64",
+        "cost": "seconds of remaining kernel+compose+generate work",
+        "quality_alone_order": [
+          "incumbent_q4_g64",
+          "q4_g128",
+          "q3_g64",
+          "lowrank_f16_matched_q4"
+        ],
+        "gain_per_cost_order": [
+          "q4_g128",
+          "q3_g64",
+          "lowrank_f16_matched_q4",
+          "incumbent_q4_g64"
+        ],
+        "quality_order_coincided": false,
+        "why_not_a_wishlist": "Q3 would win a bits-saved wishlist and lose a quality wishlist. Expected verified gain kills it: composed GQA fails 0.990, so P(verify) is ~0.08 and the expected bytes are near zero. q4 g128 is a 2.9% save with high P \u2014 that is an experiment, not a wish."
+      },
+      "prescription": {
+        "physical_computation": "same grouped-absmax q4 matvec with group 128 (4.125 bpw). This is the recorded attention floor: a 2.9% scale-overhead save, not a new bit regime. Hessian-optimal scales make the mass HEALTHY; composed GQA still gated at Q4.",
+        "candidate_id": "q4_g128",
+        "do_not": "do not apply the MLP binary/q3 policy to GQA; the attention floor did not move below 4.125",
+        "reason": "ATTENTION_FLOOR_REFIT: organ_floor_moved_below_4.125=false. Composed GQA at Q3 fails 0.990. The physical computation stays grouped-absmax Q4 in-register matvec; the only live experiment is g64\u2192g128 scale overhead."
+      },
+      "incumbent_storage_bytes": 55705600.0,
+      "token_ns_incumbent": {
+        "gemv_ns": 1894625.0,
+        "fixed_ns": 2981135.7102658837,
+        "ns_per_token": 4875760.710265884,
+        "source": "QWEN38_TOKEN_NS_LEDGER gqa_full_probe + gqa component + kv_state"
+      }
+    }
+  ],
+  "organs_need_different_prescriptions": true,
+  "prescriptions_differ": true,
+  "route_ledger_cited": {
+    "discrete_expert_routes_per_token": 0,
+    "gqa_grouping_table_bytes": 0,
+    "source": "disk:receipts/headless/NOETIC_ROUTE_LEDGER.json"
+  },
+  "token_ns_ledger": "/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+  "accounting_discipline": {
+    "storage_and_active_reported_separately": true,
+    "null_stated_for_every_quality_number": true,
+    "cosine_is_not_the_gate": true
+  },
+  "what_i_watched_fail": [
+    {
+      "what": "Gaussian proxy X",
+      "result": "NOT USED",
+      "why": "every prior sub-bit negative that used Gaussian proxies was an artifact of the proxy"
+    },
+    {
+      "what": "one bits-per-tensor policy for attention and MLP",
+      "result": "REJECTED",
+      "why": "attention floor stays at 4.125; MLP binary at 1.0156 survives where low-rank at 2.07 dies"
+    },
+    {
+      "what": "shared column basis as a free lunch",
+      "result": "G035 shared_beats_independent=false; re-measured on this parent",
+      "why": "sharing has already been refuted once; NONE is a real finding"
+    },
+    {
+      "what": "ranking by hold cosine alone",
+      "result": "NOT THE PRESCRIPTION",
+      "why": "a quality ranking is a wishlist; this ranks expected verified bytes per experiment second"
+    },
+    {
+      "what": "loading a second 27B",
+      "result": "NOT DONE",
+      "why": "live_27b_policy; occupancy is not free"
+    }
+  ],
+  "wall_s": 83.65583979200164,
+  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/DOCTOR_V2_PRESCRIPTION.json"
+}

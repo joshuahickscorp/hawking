@@ -1,0 +1,1236 @@
+{
+  "schema": "hawking.headless.noetic_mlx_anatomy.v1",
+  "generated_at": "2026-08-23T19:33:13Z",
+  "commit": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "question": "Why is MLX faster, and which of that can a native Gravity operator have?",
+  "answer": "MLX 4-bit is the live conventional control at 35.51 tok/s vs llama.cpp Q5_K 24.12 (1.472\u00d7) and vs native uniform-q4 32.73. The recorded 1.215 bytes ratio includes 921460192 B of vision that decode does not stream; fair language-only is 1.291\u00d7 fewer bytes than llama and STILL leaves a kernel/runtime remainder. Native already stores fewer bytes than MLX (absmax vs affine) and already fuses in_proj, and is still slower because geo_tpr64_tg128 gets 75% of the 595.9 GB/s roof while MLX qmv_fast gets 86% on more bytes. 10 advantages are AVAILABLE_TO_NATIVE (qmv_fast geometry, async overlap, concurrent gate/up, wired_limit, fused fast primitives). 5 are FRAMEWORK_SPECIFIC (general compiler, 162 MB metallib, Python tracer, logsumexp, vision-on-disk). Framework overhead is real and small; dropping it without porting qmv_fast will not beat 35.51. Hitting MLX GB/s on native's smaller active bytes projects 37.6 tok/s.",
+  "dense_reconstruction_law": {
+    "oracle_ok": "representation \u2192 reconstruct dense W \u2192 ordinary GEMM may exist as a labelled correctness oracle",
+    "production_forbidden": "a production operator must be native or fused and must never materialise the parent dense matrix",
+    "mlx_decode_obeys": true,
+    "native_decode_obeys": true,
+    "mlx_oracle_kernels_in_metallib": 54
+  },
+  "anchors_not_rederived": {
+    "native_tps": 32.73,
+    "native_ms_per_token": 30.606,
+    "roof_gb_s": 595.9,
+    "unified_memory_bytes": 103079215104,
+    "gpu_cores": 60,
+    "parameter_count": 26895998464,
+    "bpw": 4.253,
+    "native_dispatches": 964,
+    "native_command_buffers": 1,
+    "native_artifact_bytes": 14297933604,
+    "native_active_bytes": 13622264240,
+    "gemv_gflop": 51.24,
+    "two_server_tps": 3.986,
+    "one_server_tps": 33.47,
+    "mlx_tps": 35.51,
+    "llama_tps": 24.12,
+    "speed_ratio": 1.472,
+    "bytes_ratio_gpu_attack": 1.215,
+    "llama_gguf_bytes": 19535701280
+  },
+  "machine": {
+    "sysctl": {
+      "mem_bytes": 103079215104,
+      "cpu": "Apple M3 Ultra",
+      "ncpu": 28,
+      "hw_model": "Mac15,14",
+      "gpu_cores": 60,
+      "chipset": "Apple M3 Ultra",
+      "metal_reported": "Supported"
+    },
+    "prior_chipset": "Apple M3 Ultra",
+    "prior_gpu_cores": 60,
+    "prior_unified": 103079215104,
+    "prior_roof": 595.9,
+    "sysctl_mem_matches_anchor": true,
+    "sysctl_gpu_cores_match": true
+  },
+  "versions": {
+    "mlx": "0.32.0",
+    "mlx_lm": "0.31.3",
+    "mlx_python": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python",
+    "metallib_bytes": 162449848,
+    "libmlx_bytes": 21697440,
+    "native_decode_binary_bytes": 6305936,
+    "native_decode_binary_path": "/Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy"
+  },
+  "occupancy": {
+    "llama_health_url": "http://127.0.0.1:52484/health",
+    "llama_up": true,
+    "llama_health": {
+      "status": "ok"
+    },
+    "llama_health_error": null,
+    "llama_props_error": null,
+    "model_alias": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "n_ctx": 16384,
+    "total_slots": 2,
+    "gguf_on_disk": false,
+    "gguf_bytes": null,
+    "refuse_load_27b": true,
+    "refuse_reason": "llama-server is answering on 52484. Loading the MLX 27B alongside it is forbidden (occupancy collapse 33.47 \u2192 3.986 tok/s, receipts/headless/HCLI_SELF_OPT_ITERATION_2.json and NOETIC_ROUTE_LEDGER.json).",
+    "two_server_tps": {
+      "value": 3.986,
+      "status": "PRIOR_MEASURED",
+      "source": "receipts/headless/HCLI_SELF_OPT_ITERATION_2.json priors_bound_the_prize.two_server_tps"
+    },
+    "one_server_tps": {
+      "value": 33.47,
+      "status": "PRIOR_MEASURED",
+      "source": "receipts/headless/HCLI_SELF_OPT_ITERATION_2.json priors_bound_the_prize.one_server_tps"
+    }
+  },
+  "metal_probe": {
+    "attempted": true,
+    "exit_code": 0,
+    "stdout_tail": "{\"mlx_imported\": true, \"metal_is_available\": true, \"device_info\": null, \"device_info_error\": \"RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.\", \"tiny_eval_ok\": false, \"tiny_eval_error\": \"RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.\", \"error\": null}\n",
+    "stderr_tail": "Exception ignored in atexit callback: <nanobind.nb_func object at 0x105bce460>\nRuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.\n",
+    "parsed": {
+      "mlx_imported": true,
+      "metal_is_available": true,
+      "device_info": null,
+      "device_info_error": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.",
+      "tiny_eval_ok": false,
+      "tiny_eval_error": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.",
+      "error": null
+    },
+    "mlx_imported": true,
+    "metal_is_available_flag": true,
+    "tiny_eval_ok": false,
+    "gpu_usable": false,
+    "device_info": null,
+    "device_info_error": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.",
+    "tiny_eval_error": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.",
+    "error": "RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.",
+    "note": "mx.metal.is_available() can be True while mx.device_info()/mx.eval still raise [metal::load_device] No Metal device available. gpu_usable is tiny_eval_ok, not the is_available flag."
+  },
+  "did_not_load_27b": true,
+  "did_not_spawn_second_server": true,
+  "artifact": {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit",
+    "huihui_preferred_path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit",
+    "huihui_present": false,
+    "dir": {
+      "present": true,
+      "bytes": 16081497073,
+      "n_files": 16,
+      "by_ext": {
+        ".safetensors": 16054541349,
+        ".json": 26946772,
+        ".jinja": 8952
+      }
+    },
+    "config_quantization": {
+      "group_size": 64,
+      "bits": 4,
+      "mode": "affine"
+    },
+    "config_dtype": "bfloat16",
+    "index_metadata": {
+      "total_size": 16054262240
+    },
+    "safetensors": {
+      "n_files": 3,
+      "file_bytes": [
+        5343268662,
+        5354185130,
+        5357087557
+      ],
+      "n_tensors": 2180,
+      "payload_bytes": 16054262240,
+      "header_bytes": 279109,
+      "by_bucket": {
+        "language": {
+          "n": 1847,
+          "bytes": 15132802048
+        },
+        "vision": {
+          "n": 333,
+          "bytes": 921460192
+        }
+      },
+      "by_role": {
+        "language:biases": {
+          "n": 498,
+          "bytes": 840417280
+        },
+        "language:scales": {
+          "n": 498,
+          "bytes": 840417280
+        },
+        "language:weight": {
+          "n": 755,
+          "bytes": 13451958272
+        },
+        "language:other": {
+          "n": 96,
+          "bytes": 9216
+        },
+        "vision:other": {
+          "n": 166,
+          "bytes": 691936
+        },
+        "vision:weight": {
+          "n": 167,
+          "bytes": 920768256
+        }
+      },
+      "by_organ_language": {
+        "embed": {
+          "n": 3,
+          "bytes": 715161600
+        },
+        "norm": {
+          "n": 129,
+          "bytes": 1320960
+        },
+        "linear_attn": {
+          "n": 912,
+          "bytes": 3131495424
+        },
+        "mlp": {
+          "n": 576,
+          "bytes": 9625927680
+        },
+        "self_attn": {
+          "n": 224,
+          "bytes": 943734784
+        },
+        "lm_head": {
+          "n": 3,
+          "bytes": 715161600
+        }
+      },
+      "by_dtype": {
+        "language:BF16": {
+          "n": 1349,
+          "bytes": 1686125568
+        },
+        "language:U32": {
+          "n": 498,
+          "bytes": 13446676480
+        },
+        "vision:BF16": {
+          "n": 333,
+          "bytes": 921460192
+        }
+      },
+      "language_bytes": 15132802048,
+      "vision_bytes": 921460192,
+      "vision_tensors": 333,
+      "embed_table_bytes": 715161600,
+      "embed_row_bytes": 2880,
+      "active_language_bytes": 14417643328,
+      "u32_quantized_modules": 498,
+      "l0_gate_proj": [
+        {
+          "name": "language_model.model.layers.0.mlp.gate_proj.biases",
+          "dtype": "BF16",
+          "shape": [
+            17408,
+            80
+          ],
+          "bytes": 2785280,
+          "file": "model-00001-of-00003.safetensors"
+        },
+        {
+          "name": "language_model.model.layers.0.mlp.gate_proj.scales",
+          "dtype": "BF16",
+          "shape": [
+            17408,
+            80
+          ],
+          "bytes": 2785280,
+          "file": "model-00001-of-00003.safetensors"
+        },
+        {
+          "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+          "dtype": "U32",
+          "shape": [
+            17408,
+            640
+          ],
+          "bytes": 44564480,
+          "file": "model-00001-of-00003.safetensors"
+        }
+      ],
+      "affine_bytes_per_group": 36,
+      "absmax_bytes_per_group": 34,
+      "affine_over_absmax": 1.0588235294117647
+    },
+    "quantization": {
+      "mode": "affine",
+      "bits": 4,
+      "group_size": 64,
+      "law": "affine Q4 group-64 is scale+bias per group, executed as qmv_fast, not reconstruct-then-GEMM"
+    }
+  },
+  "metallib": {
+    "present": true,
+    "path": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx/lib/mlx.metallib",
+    "bytes": 162449848,
+    "n_idents": 36611,
+    "family_counts": {
+      "affine_qmv_fast": 108,
+      "affine_qmv": 108,
+      "affine_qmv_wide": 432,
+      "affine_qmm": 756,
+      "affine_dequantize": 54,
+      "rms": 3,
+      "rope": 18,
+      "sdpa_vector": 42,
+      "steel_gemm": 1224,
+      "gemv": 752,
+      "conv": 0
+    },
+    "decode_relevant_names": [
+      "affine_gather_qmm_n_bfloat16_t_gs_64_b_4",
+      "affine_gather_qmm_n_float16_t_gs_64_b_4",
+      "affine_gather_qmm_n_float_gs_64_b_4",
+      "affine_gather_qmm_rhs_nax_nn_bfloat16_t_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2",
+      "affine_gather_qmm_rhs_nax_nn_float16_t_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2",
+      "affine_gather_qmm_rhs_nax_nn_float_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2",
+      "affine_gather_qmm_rhs_nax_nt_bfloat16_t_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2",
+      "affine_gather_qmm_rhs_nax_nt_float16_t_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2",
+      "affine_gather_qmm_rhs_nax_nt_float_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2",
+      "affine_gather_qmm_rhs_nn_bfloat16_t_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2",
+      "affine_gather_qmm_rhs_nn_float16_t_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2",
+      "affine_gather_qmm_rhs_nn_float_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2",
+      "affine_gather_qmm_rhs_nt_bfloat16_t_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2",
+      "affine_gather_qmm_rhs_nt_float16_t_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2",
+      "affine_gather_qmm_rhs_nt_float_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2",
+      "affine_gather_qmm_t_bfloat16_t_gs_64_b_4_alN_false",
+      "affine_gather_qmm_t_bfloat16_t_gs_64_b_4_alN_true",
+      "affine_gather_qmm_t_float16_t_gs_64_b_4_alN_false",
+      "affine_gather_qmm_t_float16_t_gs_64_b_4_alN_true",
+      "affine_gather_qmm_t_float_gs_64_b_4_alN_false",
+      "affine_gather_qmm_t_float_gs_64_b_4_alN_true",
+      "affine_gather_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false",
+      "affine_gather_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true",
+      "affine_gather_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false",
+      "affine_gather_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true",
+      "affine_gather_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false",
+      "affine_gather_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true",
+      "affine_gather_qmv_bfloat16_t_gs_64_b_4",
+      "affine_gather_qmv_fast_bfloat16_t_gs_64_b_4",
+      "affine_gather_qmv_fast_float16_t_gs_64_b_4",
+      "affine_gather_qmv_fast_float_gs_64_b_4",
+      "affine_gather_qmv_float16_t_gs_64_b_4",
+      "affine_gather_qmv_float_gs_64_b_4",
+      "affine_qmm_n_bfloat16_t_gs_64_b_4_batch_0",
+      "affine_qmm_n_bfloat16_t_gs_64_b_4_batch_1",
+      "affine_qmm_n_float16_t_gs_64_b_4_batch_0",
+      "affine_qmm_n_float16_t_gs_64_b_4_batch_1",
+      "affine_qmm_n_float_gs_64_b_4_batch_0",
+      "affine_qmm_n_float_gs_64_b_4_batch_1",
+      "affine_qmm_n_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_0",
+      "affine_qmm_n_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_1",
+      "affine_qmm_n_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_0",
+      "affine_qmm_n_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_1",
+      "affine_qmm_n_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_0",
+      "affine_qmm_n_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_1",
+      "affine_qmm_t_bfloat16_t_gs_64_b_4_alN_false_batch_0",
+      "affine_qmm_t_bfloat16_t_gs_64_b_4_alN_false_batch_1",
+      "affine_qmm_t_bfloat16_t_gs_64_b_4_alN_true_batch_0",
+      "affine_qmm_t_bfloat16_t_gs_64_b_4_alN_true_batch_1",
+      "affine_qmm_t_float16_t_gs_64_b_4_alN_false_batch_0",
+      "affine_qmm_t_float16_t_gs_64_b_4_alN_false_batch_1",
+      "affine_qmm_t_float16_t_gs_64_b_4_alN_true_batch_0",
+      "affine_qmm_t_float16_t_gs_64_b_4_alN_true_batch_1",
+      "affine_qmm_t_float_gs_64_b_4_alN_false_batch_0",
+      "affine_qmm_t_float_gs_64_b_4_alN_false_batch_1",
+      "affine_qmm_t_float_gs_64_b_4_alN_true_batch_0",
+      "affine_qmm_t_float_gs_64_b_4_alN_true_batch_1",
+      "affine_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_0",
+      "affine_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_1",
+      "affine_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_0",
+      "affine_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_1",
+      "affine_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_0",
+      "affine_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_1",
+      "affine_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_0",
+      "affine_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_1",
+      "affine_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_0",
+      "affine_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_1",
+      "affine_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_0",
+      "affine_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_1",
+      "affine_qmm_t_splitk_bfloat16_t_gs_64_b_4_alN_false",
+      "affine_qmm_t_splitk_bfloat16_t_gs_64_b_4_alN_true",
+      "affine_qmm_t_splitk_float16_t_gs_64_b_4_alN_false",
+      "affine_qmm_t_splitk_float16_t_gs_64_b_4_alN_true",
+      "affine_qmm_t_splitk_float_gs_64_b_4_alN_false",
+      "affine_qmm_t_splitk_float_gs_64_b_4_alN_true",
+      "affine_qmv_bfloat16_t_gs_64_b_4_batch_0",
+      "affine_qmv_bfloat16_t_gs_64_b_4_batch_1",
+      "affine_qmv_fast_bfloat16_t_gs_64_b_4_batch_0",
+      "affine_qmv_fast_bfloat16_t_gs_64_b_4_batch_1",
+      "affine_qmv_fast_float16_t_gs_64_b_4_batch_0",
+      "affine_qmv_fast_float16_t_gs_64_b_4_batch_1",
+      "affine_qmv_fast_float_gs_64_b_4_batch_0",
+      "affine_qmv_fast_float_gs_64_b_4_batch_1",
+      "affine_qmv_float16_t_gs_64_b_4_batch_0",
+      "affine_qmv_float16_t_gs_64_b_4_batch_1",
+      "affine_qmv_float_gs_64_b_4_batch_0",
+      "affine_qmv_float_gs_64_b_4_batch_1",
+      "affine_qmv_quad_bfloat16_t_gs_64_b_4_d_128_batch_0",
+      "affine_qmv_quad_bfloat16_t_gs_64_b_4_d_128_batch_1",
+      "affine_qmv_quad_bfloat16_t_gs_64_b_4_d_64_batch_0",
+      "affine_qmv_quad_bfloat16_t_gs_64_b_4_d_64_batch_1",
+      "affine_qmv_quad_float16_t_gs_64_b_4_d_128_batch_0",
+      "affine_qmv_quad_float16_t_gs_64_b_4_d_128_batch_1",
+      "affine_qmv_quad_float16_t_gs_64_b_4_d_64_batch_0",
+      "affine_qmv_quad_float16_t_gs_64_b_4_d_64_batch_1",
+      "affine_qmv_quad_float_gs_64_b_4_d_128_batch_0",
+      "affine_qmv_quad_float_gs_64_b_4_d_128_batch_1",
+      "affine_qmv_quad_float_gs_64_b_4_d_64_batch_0",
+      "affine_qmv_quad_float_gs_64_b_4_d_64_batch_1",
+      "affine_qmv_wide_bfloat16_t_gs_64_b_4_nv_2_kl_8_batch_0",
+      "affine_qmv_wide_bfloat16_t_gs_64_b_4_nv_2_kl_8_batch_1",
+      "affine_qmv_wide_bfloat16_t_gs_64_b_4_nv_3_kl_8_batch_0",
+      "affine_qmv_wide_bfloat16_t_gs_64_b_4_nv_3_kl_8_batch_1",
+      "affine_qmv_wide_bfloat16_t_gs_64_b_4_nv_4_kl_8_batch_0",
+      "affine_qmv_wide_bfloat16_t_gs_64_b_4_nv_4_kl_8_batch_1",
+      "affine_qmv_wide_bfloat16_t_gs_64_b_4_nv_5_kl_8_batch_0",
+      "affine_qmv_wide_bfloat16_t_gs_64_b_4_nv_5_kl_8_batch_1",
+      "affine_qmv_wide_float16_t_gs_64_b_4_nv_2_kl_8_batch_0",
+      "affine_qmv_wide_float16_t_gs_64_b_4_nv_2_kl_8_batch_1",
+      "affine_qmv_wide_float16_t_gs_64_b_4_nv_3_kl_8_batch_0",
+      "affine_qmv_wide_float16_t_gs_64_b_4_nv_3_kl_8_batch_1",
+      "affine_qmv_wide_float16_t_gs_64_b_4_nv_4_kl_8_batch_0",
+      "affine_qmv_wide_float16_t_gs_64_b_4_nv_4_kl_8_batch_1",
+      "affine_qmv_wide_float16_t_gs_64_b_4_nv_5_kl_8_batch_0",
+      "affine_qmv_wide_float16_t_gs_64_b_4_nv_5_kl_8_batch_1",
+      "affine_qmv_wide_float_gs_64_b_4_nv_2_kl_8_batch_0",
+      "affine_qmv_wide_float_gs_64_b_4_nv_2_kl_8_batch_1",
+      "affine_qmv_wide_float_gs_64_b_4_nv_3_kl_8_batch_0",
+      "affine_qmv_wide_float_gs_64_b_4_nv_3_kl_8_batch_1",
+      "affine_qmv_wide_float_gs_64_b_4_nv_4_kl_8_batch_0",
+      "affine_qmv_wide_float_gs_64_b_4_nv_4_kl_8_batch_1",
+      "affine_qmv_wide_float_gs_64_b_4_nv_5_kl_8_batch_0",
+      "affine_qmv_wide_float_gs_64_b_4_nv_5_kl_8_batch_1",
+      "global_ctorsaffine_gather_qmm_n_bfloat16_t_gs_64_b_4llvm",
+      "global_ctorsaffine_gather_qmm_n_float16_t_gs_64_b_4llvm",
+      "global_ctorsaffine_gather_qmm_n_float_gs_64_b_4llvm",
+      "global_ctorsaffine_gather_qmm_t_bfloat16_t_gs_64_b_4_alN_falsellvm",
+      "global_ctorsaffine_gather_qmm_t_bfloat16_t_gs_64_b_4_alN_truellvm",
+      "global_ctorsaffine_gather_qmm_t_float16_t_gs_64_b_4_alN_falsellvm",
+      "global_ctorsaffine_gather_qmm_t_float16_t_gs_64_b_4_alN_truellvm",
+      "global_ctorsaffine_gather_qmm_t_float_gs_64_b_4_alN_falsellvm",
+      "global_ctorsaffine_gather_qmm_t_float_gs_64_b_4_alN_truellvm",
+      "global_ctorsaffine_gather_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_falsellvm",
+      "global_ctorsaffine_gather_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_truellvm",
+      "global_ctorsaffine_gather_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_falsellvm",
+      "global_ctorsaffine_gather_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_truellvm",
+      "global_ctorsaffine_gather_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_falsellvm",
+      "global_ctorsaffine_gather_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_truellvm",
+      "global_ctorsaffine_gather_qmv_bfloat16_t_gs_64_b_4llvm",
+      "global_ctorsaffine_gather_qmv_fast_bfloat16_t_gs_64_b_4llvm",
+      "global_ctorsaffine_gather_qmv_fast_float16_t_gs_64_b_4llvm",
+      "global_ctorsaffine_gather_qmv_fast_float_gs_64_b_4llvm",
+      "global_ctorsaffine_gather_qmv_float16_t_gs_64_b_4llvm",
+      "global_ctorsaffine_gather_qmv_float_gs_64_b_4llvm",
+      "global_ctorsaffine_qmm_n_bfloat16_t_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmm_n_bfloat16_t_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmm_n_float16_t_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmm_n_float16_t_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmm_n_float_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmm_n_float_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmm_n_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_0llvm",
+      "global_ctorsaffine_qmm_n_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_1llvm",
+      "global_ctorsaffine_qmm_n_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_0llvm",
+      "global_ctorsaffine_qmm_n_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_1llvm",
+      "global_ctorsaffine_qmm_n_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_0llvm",
+      "global_ctorsaffine_qmm_n_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_batch_1llvm",
+      "global_ctorsaffine_qmm_t_bfloat16_t_gs_64_b_4_alN_false_batch_0llvm",
+      "global_ctorsaffine_qmm_t_bfloat16_t_gs_64_b_4_alN_false_batch_1llvm",
+      "global_ctorsaffine_qmm_t_bfloat16_t_gs_64_b_4_alN_true_batch_0llvm",
+      "global_ctorsaffine_qmm_t_bfloat16_t_gs_64_b_4_alN_true_batch_1llvm",
+      "global_ctorsaffine_qmm_t_float16_t_gs_64_b_4_alN_false_batch_0llvm",
+      "global_ctorsaffine_qmm_t_float16_t_gs_64_b_4_alN_false_batch_1llvm",
+      "global_ctorsaffine_qmm_t_float16_t_gs_64_b_4_alN_true_batch_0llvm",
+      "global_ctorsaffine_qmm_t_float16_t_gs_64_b_4_alN_true_batch_1llvm",
+      "global_ctorsaffine_qmm_t_float_gs_64_b_4_alN_false_batch_0llvm",
+      "global_ctorsaffine_qmm_t_float_gs_64_b_4_alN_false_batch_1llvm",
+      "global_ctorsaffine_qmm_t_float_gs_64_b_4_alN_true_batch_0llvm",
+      "global_ctorsaffine_qmm_t_float_gs_64_b_4_alN_true_batch_1llvm",
+      "global_ctorsaffine_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_0llvm",
+      "global_ctorsaffine_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_1llvm",
+      "global_ctorsaffine_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_0llvm",
+      "global_ctorsaffine_qmm_t_nax_bfloat16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_1llvm",
+      "global_ctorsaffine_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_0llvm",
+      "global_ctorsaffine_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_1llvm",
+      "global_ctorsaffine_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_0llvm",
+      "global_ctorsaffine_qmm_t_nax_float16_t_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_1llvm",
+      "global_ctorsaffine_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_0llvm",
+      "global_ctorsaffine_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_false_batch_1llvm",
+      "global_ctorsaffine_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_0llvm",
+      "global_ctorsaffine_qmm_t_nax_float_gs_64_b_4_bm64_bn64_bk64_wm2_wn2_alN_true_batch_1llvm",
+      "global_ctorsaffine_qmm_t_splitk_bfloat16_t_gs_64_b_4_alN_falsellvm",
+      "global_ctorsaffine_qmm_t_splitk_bfloat16_t_gs_64_b_4_alN_truellvm",
+      "global_ctorsaffine_qmm_t_splitk_float16_t_gs_64_b_4_alN_falsellvm",
+      "global_ctorsaffine_qmm_t_splitk_float16_t_gs_64_b_4_alN_truellvm",
+      "global_ctorsaffine_qmm_t_splitk_float_gs_64_b_4_alN_falsellvm",
+      "global_ctorsaffine_qmm_t_splitk_float_gs_64_b_4_alN_truellvm",
+      "global_ctorsaffine_qmv_bfloat16_t_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmv_bfloat16_t_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmv_fast_bfloat16_t_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmv_fast_bfloat16_t_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmv_fast_float16_t_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmv_fast_float16_t_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmv_fast_float_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmv_fast_float_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmv_float16_t_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmv_float16_t_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmv_float_gs_64_b_4_batch_0llvm",
+      "global_ctorsaffine_qmv_float_gs_64_b_4_batch_1llvm",
+      "global_ctorsaffine_qmv_quad_bfloat16_t_gs_64_b_4_d_128_batch_0llvm",
+      "global_ctorsaffine_qmv_quad_bfloat16_t_gs_64_b_4_d_128_batch_1llvm",
+      "global_ctorsaffine_qmv_quad_bfloat16_t_gs_64_b_4_d_64_batch_0llvm",
+      "global_ctorsaffine_qmv_quad_bfloat16_t_gs_64_b_4_d_64_batch_1llvm",
+      "global_ctorsaffine_qmv_quad_float16_t_gs_64_b_4_d_128_batch_0llvm",
+      "global_ctorsaffine_qmv_quad_float16_t_gs_64_b_4_d_128_batch_1llvm",
+      "global_ctorsaffine_qmv_quad_float16_t_gs_64_b_4_d_64_batch_0llvm",
+      "global_ctorsaffine_qmv_quad_float16_t_gs_64_b_4_d_64_batch_1llvm",
+      "global_ctorsaffine_qmv_quad_float_gs_64_b_4_d_128_batch_0llvm",
+      "global_ctorsaffine_qmv_quad_float_gs_64_b_4_d_128_batch_1llvm",
+      "global_ctorsaffine_qmv_quad_float_gs_64_b_4_d_64_batch_0llvm",
+      "global_ctorsaffine_qmv_quad_float_gs_64_b_4_d_64_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_bfloat16_t_gs_64_b_4_nv_2_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_bfloat16_t_gs_64_b_4_nv_2_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_bfloat16_t_gs_64_b_4_nv_3_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_bfloat16_t_gs_64_b_4_nv_3_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_bfloat16_t_gs_64_b_4_nv_4_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_bfloat16_t_gs_64_b_4_nv_4_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_bfloat16_t_gs_64_b_4_nv_5_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_bfloat16_t_gs_64_b_4_nv_5_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_float16_t_gs_64_b_4_nv_2_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_float16_t_gs_64_b_4_nv_2_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_float16_t_gs_64_b_4_nv_3_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_float16_t_gs_64_b_4_nv_3_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_float16_t_gs_64_b_4_nv_4_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_float16_t_gs_64_b_4_nv_4_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_float16_t_gs_64_b_4_nv_5_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_float16_t_gs_64_b_4_nv_5_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_float_gs_64_b_4_nv_2_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_float_gs_64_b_4_nv_2_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_float_gs_64_b_4_nv_3_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_float_gs_64_b_4_nv_3_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_float_gs_64_b_4_nv_4_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_float_gs_64_b_4_nv_4_kl_8_batch_1llvm",
+      "global_ctorsaffine_qmv_wide_float_gs_64_b_4_nv_5_kl_8_batch_0llvm",
+      "global_ctorsaffine_qmv_wide_float_gs_64_b_4_nv_5_kl_8_batch_1llvm",
+      "metalaffine_gather_qmm_rhs_nax_nn_bfloat16_t_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nax_nn_float16_t_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nax_nn_float_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nax_nt_bfloat16_t_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nax_nt_float16_t_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nax_nt_float_gs_64_b_4_bm_64_bn_64_bk_64_wm_2_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nn_bfloat16_t_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nn_float16_t_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nn_float_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nt_bfloat16_t_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nt_float16_t_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2llvm",
+      "metalaffine_gather_qmm_rhs_nt_float_gs_64_b_4_bm_16_bn_32_bk_32_wm_1_wn_2llvm",
+      "rms_loopedbfloat16",
+      "rms_loopedfloat16",
+      "rms_loopedfloat32",
+      "rmsbfloat16",
+      "rmsfloat16",
+      "rmsfloat32",
+      "rope_single_bfloat16",
+      "rope_single_float16",
+      "rope_single_float32",
+      "sdpa_vector_2pass_1_bfloat16_t_256_256",
+      "sdpa_vector_2pass_1_float16_t_256_256",
+      "sdpa_vector_2pass_1_float_256_256",
+      "sdpa_vector_2pass_2_bfloat16_t_256",
+      "sdpa_vector_2pass_2_float16_t_256",
+      "sdpa_vector_2pass_2_float_256",
+      "sdpa_vector_bfloat16_t_256_256",
+      "sdpa_vector_float16_t_256_256",
+      "sdpa_vector_float_256_256"
+    ],
+    "qmv_fast_gs64_b4": [
+      "affine_qmv_fast_bfloat16_t_gs_64_b_4_batch_0",
+      "affine_qmv_fast_bfloat16_t_gs_64_b_4_batch_1",
+      "affine_qmv_fast_float16_t_gs_64_b_4_batch_0",
+      "affine_qmv_fast_float16_t_gs_64_b_4_batch_1",
+      "affine_qmv_fast_float_gs_64_b_4_batch_0",
+      "affine_qmv_fast_float_gs_64_b_4_batch_1"
+    ],
+    "has_affine_dequantize": true,
+    "n_affine_dequantize": 54,
+    "note": "Names extracted with strings(1) from the shipped mlx.metallib. This is the compiled kernel catalog, not documentation. gated_delta_step is JIT via mx.fast.metal_kernel and is NOT in this metallib."
+  },
+  "source": {
+    "files_read": {
+      "qwen3_5": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx_lm/models/qwen3_5.py",
+      "qwen3_next": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx_lm/models/qwen3_next.py",
+      "gated_delta": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx_lm/models/gated_delta.py",
+      "activations": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx_lm/models/activations.py",
+      "generate": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx_lm/generate.py",
+      "quantized_linear": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx/nn/layers/quantized.py",
+      "rms": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx/nn/layers/normalization.py",
+      "quantized_h": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx/include/mlx/backend/metal/kernels/quantized.h"
+    },
+    "quantized_linear_uses_quantized_matmul": true,
+    "quantized_linear_call_uses_dequantize": false,
+    "embed_dequantizes_one_row": true,
+    "generate_wraps_step_in_mx_compile": false,
+    "generate_async_eval_mentions": 4,
+    "generate_wired_limit_mentions": 4,
+    "generate_logsumexp_mentions": 3,
+    "nn_rmsnorm_is_mx_fast": true,
+    "sdpa_is_mx_fast": true,
+    "rope_is_mx_fast": true,
+    "swiglu_is_mx_compile": true,
+    "compute_g_is_mx_compile": true,
+    "silu_is_mx_compile": true,
+    "qmv_fast_geometry": {
+      "num_simdgroups": 2,
+      "results_per_simdgroup": 4,
+      "rows_per_threadgroup": 8,
+      "threads_per_threadgroup": 64,
+      "k_block_for_q4": 512,
+      "x_reuse_rows": 4,
+      "source": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx/include/mlx/backend/metal/kernels/quantized.h",
+      "symbol": "qmv_fast_impl",
+      "evidence": "quantized.h qmv_fast_impl: constexpr num_simdgroups=2, results_per_simdgroup=4; one simdgroup accumulates 4 output rows sharing a loaded x_thread; affine_qmv_fast is the [[kernel]] wrapper. bits=4 pack_factor=8, packs_per_thread=2 \u2192 values_per_thread=16, block_size=512.",
+      "reconstructs_dense": false,
+      "why_not_dense": "qdot() FMA-accumulates from packed uint8/uint16 codes and (scale,bias) in registers. No (rows\u00d7cols) W is written. affine_dequantize_* kernels exist in the metallib for the convert/oracle path; QuantizedLinear.__call__ does not use them."
+    },
+    "graph_inventory_method": "Counted nn.Linear / mx.fast / mx.compile / mx.fast.metal_kernel sites in the installed qwen3_5 + qwen3_next + gated_delta + generate sources, times the 48 linear + 16 GQA layer split from config.json. Views are omitted. This is a SOURCE_COUNTED lower bound, not a GPU capture of command-buffer ops.",
+    "linear_layer_template": {
+      "qmv": 5,
+      "rms_fast": 4,
+      "conv1d": 1,
+      "silu_compiled": 1,
+      "compute_g_compiled": 1,
+      "gated_delta_kernel": 1,
+      "gated_norm_rms": 1,
+      "gated_norm_swiglu_uncompiled": 1,
+      "residual": 2,
+      "mlp_qmv": 3,
+      "mlp_swiglu_compiled": 1,
+      "sigmoid_beta": 1
+    },
+    "gqa_layer_template": {
+      "qmv": 4,
+      "rms_fast": 4,
+      "rope_fast": 2,
+      "sdpa_vector": 1,
+      "sigmoid_gate": 1,
+      "residual": 2,
+      "mlp_qmv": 3,
+      "mlp_swiglu_compiled": 1
+    },
+    "terminal_template": {
+      "embed_row_dequant": 1,
+      "final_rms": 1,
+      "lm_head_qmv": 1,
+      "logsumexp": 1,
+      "argmax_or_sampler": 1
+    },
+    "qmv_dispatches_per_token": 497,
+    "native_gemv_dispatches_per_token": 401,
+    "extra_qmv_vs_native": 96,
+    "why_extra_qmv": "Native fuses in_proj_qkvz (one 16384\u00d75120) and in_proj_ba (one 96\u00d75120). MLX qwen3_5.GatedDeltaNet splits those into in_proj_qkv + in_proj_z and in_proj_b + in_proj_a: +2 quantized_matmul per linear layer \u00d7 48 = +96 GEMVs. Same bytes, more launches. Native already has this fusion.",
+    "source_counted_named_op_sites": {
+      "argmax_or_sampler": 1,
+      "compute_g_compiled": 48,
+      "conv1d": 48,
+      "embed_row_dequant": 1,
+      "final_rms": 1,
+      "gated_delta_kernel": 48,
+      "gated_norm_rms": 48,
+      "gated_norm_swiglu_uncompiled": 48,
+      "lm_head_qmv": 1,
+      "logsumexp": 1,
+      "mlp_qmv": 192,
+      "mlp_swiglu_compiled": 64,
+      "qmv": 304,
+      "residual": 128,
+      "rms_fast": 256,
+      "rope_fast": 32,
+      "sdpa_vector": 16,
+      "sigmoid_beta": 48,
+      "sigmoid_gate": 16,
+      "silu_compiled": 48
+    },
+    "source_counted_named_op_site_sum": 1349,
+    "source_counted_named_op_site_sum_is_not_a_gpu_counter": true,
+    "gpu_observed_dispatches": {
+      "value": null,
+      "status": "NULL",
+      "null_reason": "mx.metal.is_available()=True but mx.eval of a 4-float vector raised 'RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.'. This sandbox cannot open a Metal device, so there is no GPU capture of dispatches or command buffers on the 4-bit artifact. Independently, llama-server is resident on 52484 so a 27B MLX generate is forbidden (occupancy 33.47 \u2192 3.986 tok/s). Kernel NAMES are OBSERVED_BINARY from mlx.metallib; quantized_matmul COUNT (497) is SOURCE_COUNTED from qwen3_5.py \u00d7 config.json layer split."
+    },
+    "gpu_observed_command_buffers": {
+      "value": null,
+      "status": "NULL",
+      "null_reason": "mx.metal.is_available()=True but mx.eval of a 4-float vector raised 'RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.'. This sandbox cannot open a Metal device, so there is no GPU capture of dispatches or command buffers on the 4-bit artifact. Independently, llama-server is resident on 52484 so a 27B MLX generate is forbidden (occupancy 33.47 \u2192 3.986 tok/s). Kernel NAMES are OBSERVED_BINARY from mlx.metallib; quantized_matmul COUNT (497) is SOURCE_COUNTED from qwen3_5.py \u00d7 config.json layer split. Native production shape is 1 CB / 964 dispatches (qwen38_token_ns_ledger.rs). MLX CommandEncoder batches until MLX_MAX_OPS_PER_BUFFER / MLX_MAX_MB_PER_BUFFER; the compiled default is inside libmlx.dylib and was not decoded."
+    },
+    "lazy_eval": {
+      "present": true,
+      "evidence": "mlx/include/mlx/transforms.h exposes eval / async_eval. Arrays are lazy; generate.py calls mx.async_eval(next_y, next_logprobs) BEFORE y.item(), overlapping token t+1 GPU work with token t CPU sample.",
+      "generate_does_not_compile_the_step": true
+    },
+    "fusion_sites": [
+      {
+        "what": "mx.fast.rms_norm",
+        "where": "mlx.nn.RMSNorm + GatedDeltaNet q/k + RMSNormGated",
+        "kind": "hand-written fused kernel"
+      },
+      {
+        "what": "mx.fast.scaled_dot_product_attention / sdpa_vector_*_256",
+        "where": "mlx_lm.models.base.scaled_dot_product_attention for GQA decode",
+        "kind": "hand-written fused kernel, vector (decode) path, head_dim=256 in metallib"
+      },
+      {
+        "what": "mx.fast.rope / rope_single_*",
+        "where": "Qwen3NextAttention via initialize_rope",
+        "kind": "hand-written fused kernel"
+      },
+      {
+        "what": "mx.compile swiglu",
+        "where": "mlx_lm.models.activations.swiglu used by Qwen3NextMLP",
+        "kind": "graph-compiler fused elementwise (silu*x)"
+      },
+      {
+        "what": "mx.compile compute_g",
+        "where": "gated_delta.compute_g: exp(-exp(A_log)*softplus(a+dt_bias))",
+        "kind": "graph-compiler fused elementwise"
+      },
+      {
+        "what": "mx.compile silu",
+        "where": "mlx.nn.silu, used on conv1d output",
+        "kind": "graph-compiler fused elementwise"
+      },
+      {
+        "what": "gated_delta_step mx.fast.metal_kernel",
+        "where": "gated_delta._make_gated_delta_kernel, JIT, not in mlx.metallib",
+        "kind": "hand-written fused recurrent state op"
+      },
+      {
+        "what": "affine_qmv_fast",
+        "where": "QuantizedLinear \u2192 mx.quantized_matmul, M=1 decode",
+        "kind": "hand-written fused dequant+GEMV, reconstructs_dense=NO"
+      }
+    ],
+    "unfused_on_purpose": [
+      "generate._step is NOT wrapped in mx.compile (searched generate.py)",
+      "RMSNormGated._precise_swiglu is a separate f32 silu*x, not the compiled swiglu",
+      "DeltaNet in_proj is four QuantizedLinears, not a fused qkvz/ba",
+      "residual adds are ordinary mx.add",
+      "logsumexp over vocab every token even for greedy (temp=0 sampler is argmax AFTER logsumexp)"
+    ]
+  },
+  "native_kernel": {
+    "file": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "present": true,
+    "threads_per_row": 64,
+    "rows_per_threadgroup": 2,
+    "threads_per_threadgroup": 128,
+    "k_step": 512,
+    "x_reuse_rows": 1,
+    "codec": "grouped-absmax Q4 group-64 (32 code + 2 fp16 scale, no bias)",
+    "activation_dtype": "f32",
+    "comment_in_source": "Geometry-sweep winner for Q4 gate [512, 2048]: 64 threads/row, 128-thread TG, 2 rows/TG. Packed decode stays in registers.",
+    "reconstructs_dense": false,
+    "dispatches_per_token": 401,
+    "total_dispatches_per_token": 964,
+    "command_buffers": 1,
+    "wired_limit_in_decode_rs": true,
+    "async_overlap_in_decode_rs": true
+  },
+  "controls": {
+    "gpu_attack": {
+      "mlx_tps": 35.506,
+      "llama_tps": 24.118578993622144,
+      "mlx_over_llama": 1.472,
+      "bytes_ratio_llama_over_mlx": 1.215,
+      "reading": "MLX moves 1.215x fewer bytes but runs 1.472x faster, so roughly 21% of the gain is kernel/dispatch efficiency rather than density.",
+      "confound": "The two arms are DIFFERENT abliterations of the same base model (huihui-ai leaves the first 15 layers unablated; PocketAiHub projects layers 24-63). Architecture and per-token weight-streaming shape are identical, so the SPEED comparison is valid. Any quality claim across these arms would be confounded and must not be made from this receipt."
+    },
+    "runtime_ab": {
+      "mlx_tps_median": 35.513,
+      "llama_tps_median": 24.048867298350245,
+      "mlx_bytes": 15153237112,
+      "llama_bytes": 19535701280,
+      "mlx_over_llama": 1.477,
+      "bytes_ratio_llama_over_mlx": 1.289,
+      "mlx_model": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit",
+      "llama_model": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf"
+    },
+    "performance_ledger_mlx": {
+      "complete_token_wall_ns": 28158702,
+      "confound_declared": null,
+      "context": 8192,
+      "decode_tps": 35.513,
+      "generation": "runtime-ab-mlx",
+      "id": "14768031836fa8fd",
+      "lineage": "huihui-ai",
+      "measured_by": "tools/headless/runtime_ab.py",
+      "measurement_reps": 3,
+      "measurement_spread_pct": 0.1,
+      "model_bytes": 15153237112,
+      "model_identity": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit",
+      "quantization": "4bit",
+      "recorded_at": "2026-08-22T23:23:57Z",
+      "runtime_build": "mlx",
+      "source_sha": "bd16d1fac37302fd40079c81406872d9857fbade",
+      "workers_decoding": 1,
+      "workers_resident": 1
+    },
+    "performance_ledger_llama": {
+      "complete_token_wall_ns": 41582000,
+      "confound_declared": null,
+      "context": 8192,
+      "decode_tps": 24.048867298350245,
+      "generation": "runtime-ab-llama_cpp",
+      "id": "180288cf2ab6e019",
+      "lineage": "huihui-ai",
+      "measured_by": "tools/headless/runtime_ab.py",
+      "measurement_reps": 3,
+      "measurement_spread_pct": 0.2,
+      "model_bytes": 19535701280,
+      "model_identity": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+      "quantization": "Q5_K",
+      "recorded_at": "2026-08-22T23:23:57Z",
+      "runtime_build": "version: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64",
+      "source_sha": "bd16d1fac37302fd40079c81406872d9857fbade",
+      "workers_decoding": 1,
+      "workers_resident": 1
+    },
+    "native_qwen38": {
+      "tps": 32.73,
+      "ms_per_token": 30.606,
+      "gpu_ns": 29204250,
+      "wall_ns": 30388625,
+      "source": "campaign brief + receipts/headless/QWEN38_GRAVITY_NATIVE.json median run1 gpu/wall"
+    }
+  },
+  "speed_account": {
+    "headline": {
+      "mlx_tps": {
+        "value": 35.51,
+        "status": "PRIOR_MEASURED",
+        "source": "GPU_ATTACK.json runtime_axis / RUNTIME_AB.json median 35.513"
+      },
+      "llama_tps": {
+        "value": 24.12,
+        "status": "PRIOR_MEASURED",
+        "source": "GPU_ATTACK.json / campaign brief; ARCHIVED \u2014 GGUF is off disk, llama-server still maps it"
+      },
+      "speed_ratio": {
+        "value": 1.472,
+        "status": "PRIOR_MEASURED",
+        "source": "GPU_ATTACK.json runtime_axis.mlx_over_llama=1.472"
+      },
+      "bytes_ratio_recorded": {
+        "value": 1.215,
+        "status": "PRIOR_MEASURED",
+        "source": "GPU_ATTACK.json runtime_axis.bytes_ratio_llama_over_mlx=1.215"
+      }
+    },
+    "bytes_this_process": {
+      "llama_gguf_bytes_prior": {
+        "value": 19535701280,
+        "status": "PRIOR_MEASURED",
+        "source": "PERFORMANCE_LEDGER.jsonl runtime-ab-llama_cpp model_bytes; GGUF not on disk"
+      },
+      "mlx_safetensors_payload_bytes": {
+        "value": 16054262240,
+        "status": "MEASURED",
+        "method": "sum of safetensors data_offsets"
+      },
+      "mlx_language_bytes": {
+        "value": 15132802048,
+        "status": "MEASURED"
+      },
+      "mlx_vision_bytes": {
+        "value": 921460192,
+        "status": "MEASURED"
+      },
+      "mlx_active_language_bytes": {
+        "value": 14417643328,
+        "status": "MEASURED"
+      },
+      "ratio_llama_over_mlx_index": {
+        "value": 1.2168545018111028,
+        "status": "MEASURED",
+        "formula": "19535701280 / safetensors_payload"
+      },
+      "ratio_llama_over_mlx_language": {
+        "value": 1.290950692279881,
+        "status": "MEASURED",
+        "formula": "19535701280 / language_payload"
+      },
+      "ratio_llama_over_mlx_active_language": {
+        "value": 1.3549857515243424,
+        "status": "MEASURED"
+      },
+      "runtime_ab_bytes_ratio": {
+        "value": 1.289,
+        "status": "PRIOR_MEASURED",
+        "source": "RUNTIME_AB.json comparison.bytes_ratio_llama_over_mlx (1.289) \u2014 different walk, huihui path"
+      }
+    },
+    "decomposition": {
+      "using_recorded_1_215_includes_vision": {
+        "bytes_explain": 1.215,
+        "remaining_kernel_runtime": 1.211522633744856,
+        "reading": "GPU_ATTACK's 1.215 is llama_bytes / mlx_safetensors_total including 921 MB of vision that sanitize drops. It overstates MLX's byte win and therefore understates the kernel/runtime share. Quoted because the campaign brief names it; not because it is the fair decode ratio."
+      },
+      "using_language_payload_fair_for_text_decode": {
+        "bytes_explain": 1.290950692279881,
+        "remaining_kernel_runtime": 1.1402449441352227,
+        "reading": "Text decode streams language tensors only. Fair byte ratio is 1.291 if mlx_lang and llama_b. Speed 1.472 / that leaves 1.140\u00d7 as kernel/runtime. MLX still wins after bytes are taken out."
+      }
+    },
+    "implied_GB_s": {
+      "roof": {
+        "value": 595.9,
+        "status": "PRIOR_MEASURED",
+        "source": "campaign brief"
+      },
+      "llama_on_gguf_bytes": 471.20111487360003,
+      "mlx_on_index_bytes_unfair": 570.0868521424001,
+      "mlx_on_language_bytes": 537.36580072448,
+      "mlx_on_active_language_bytes": 511.97051457727997,
+      "native_on_active_bytes": 445.85670857519995,
+      "identity": "GB/s = bytes_per_token * tok/s / 1e9 (weight-stream identity, not a GPU counter)"
+    },
+    "confound": "GPU_ATTACK confound_declared: different abliterations of the same Qwen3.8-27B base (huihui vs PocketAiHub). Architecture and per-token weight-streaming shape match, so SPEED is comparable. Quality is not.",
+    "not_the_cause": [
+      "Storage compression vs native: MLX language is LARGER than native uniform-q4 (15132802048 vs 14297933604) because affine stores group biases. MLX is faster anyway. A candidate that only lowers executable bytes is incomplete.",
+      "Fewer GEMVs: MLX issues 497 quantized_matmul vs native 401.",
+      "Dense reconstruction: both in-register. affine_dequantize_* in the metallib is the oracle/convert path.",
+      "Apple unified-memory magic: both are Metal on the same M3 Ultra."
+    ]
+  },
+  "advantages": [
+    {
+      "advantage": "affine_qmv_fast geometry (8 rows/TG, 4-row x-reuse, pre-scaled qdot)",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "This is a Metal kernel, not a framework service. Native already has a fused in-register Q4 GEMV (geo_tpr64_tg128: 2 rows/TG, 64 threads/row, x_reuse=1). Porting qmv_fast's 8-row TG and 4-row x_thread reuse is a shader change.",
+      "decode_effect": "Primary candidate for the roof-utilization gap (native ~75% of 595.9 GB/s on active bytes vs MLX ~90% on language-active bytes).",
+      "evidence": "mlx quantized.h qmv_fast_impl vs crates/hawking-core/shaders/qwen_uniform_q4.metal:183"
+    },
+    {
+      "advantage": "in-register dequant + FMA (no dense W)",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "Native already does this (reconstructs_dense=NO on all 38 bound kernels). MLX QuantizedLinear.__call__ is mx.quantized_matmul, same law. Not a gap.",
+      "decode_effect": "Neither runtime reconstructs dense W on the decode path.",
+      "evidence": "QuantizedLinear.__call__ + kernel census dispatched_reconstructs_dense.NO=38"
+    },
+    {
+      "advantage": "mx.fast fused primitives (rms_norm, rope, sdpa_vector, gated_delta_step)",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "These are ordinary Metal kernels. Native already has fused RMS, RoPE, mha_decode_f32, gated_delta. Matching MLX here is bind/tune work, not a new representation.",
+      "decode_effect": "Reduces non-GEMV dispatches. GEMV still dominates bytes.",
+      "evidence": "mlx.nn.RMSNorm \u2192 mx.fast.rms_norm; mlx_lm.models.base sdpa; gated_delta metal_kernel"
+    },
+    {
+      "advantage": "elementwise compile (swiglu, silu, compute_g)",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "The *compiler* is FRAMEWORK_SPECIFIC. The *fused kernels it emits* are hand-writable. Native already has gk_swiglu_f32. compute_g can be one kernel.",
+      "decode_effect": "Small vs GEMV. Do not confuse this with the 1.472x.",
+      "evidence": "mlx_lm.models.activations.swiglu @mx.compile; mlx.nn.silu @mx.compile"
+    },
+    {
+      "advantage": "lazy eval + one-graph CommandEncoder batching",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "Native already encodes 964 dispatches into 1 command buffer. The MLX lazy tracer is framework-specific; the effect (don't submit 964 CBs) is already taken.",
+      "decode_effect": "Native production_command_buffers=1. Not the gap.",
+      "evidence": "qwen38_token_ns_ledger.rs production_dispatches_per_token=964, 1 CB; mlx device.h CommandEncoder"
+    },
+    {
+      "advantage": "async_eval overlap of token t+1 GPU with token t CPU",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "generate.py mx.async_eval(next_y) before y.item(). Native decode.rs has no async overlap (string 'async' absent). Metal command-buffer enqueue without waiting on the CPU sample is available to a specialised executable.",
+      "decode_effect": "Native wall-gpu gap is 1.184 ms/token (30388625 vs 29204250 ns). Hiding that is ~4% of native wall, not the whole MLX lead.",
+      "evidence": "mlx_lm/generate.py async_eval; QWEN38_GRAVITY_NATIVE.json run1 gpu vs wall"
+    },
+    {
+      "advantage": "set_wired_limit(recommendedMaxWorkingSetSize)",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "mlx_lm.generate.wired_limit calls mx.set_wired_limit. Native decode.rs does not. MTLDevice wired-limit is a public Metal API.",
+      "decode_effect": "Avoids eviction on a 14\u201316 GB resident. MACHINE_GENOME already measured recommendedMaxWorkingSetSize=77.76 GiB, so eviction is not the current limiter, but the call is still the right default.",
+      "evidence": "generate.py wired_limit; receipts/headless/MACHINE_GENOME.json gpu_gate"
+    },
+    {
+      "advantage": "bf16 activations on the Q4 GEMV",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "config.json text_config.dtype=bfloat16; affine_qmv_fast_bfloat16_t_gs_64_b_4 is in the metallib. Native GEMV writes/reads f32 activations. Switching the native activation pipeline to fp16/bf16 is a kernel+workspace change, not a framework privilege. Quality must be re-gated; this campaign does not skip that.",
+      "decode_effect": "Activation DRAM is ~0.2 GB/token vs ~13\u201314 GB weights. Secondary.",
+      "evidence": "metallib affine_qmv_fast_bfloat16_t_gs_64_b_4_*; config.json dtype"
+    },
+    {
+      "advantage": "concurrent encoding of independent GEMVs (gate vs up)",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "CommandEncoder::start_concurrent() is a Metal encoder flag. Native can issue independent dispatches without barriers. MLX's graph walker uses it automatically; a specialised executable can do the same by not inserting barriers between gate_proj and up_proj.",
+      "decode_effect": "Latency hiding on two 47 MB Q4 GEMVs that share x. Available.",
+      "evidence": "mlx/include/mlx/backend/metal/device.h ConcurrentContext"
+    },
+    {
+      "advantage": "general mx.compile graph capture",
+      "class": "FRAMEWORK_SPECIFIC",
+      "why": "A general compiler that traces Python, simplifies, and JIT-fuses arbitrary elementwise DAGs is the framework. generate.py does not even wrap _step in mx.compile. We do not need a compiler to write the fused kernels we already know we need.",
+      "decode_effect": "Not the 35.51. Local @mx.compile on swiglu/compute_g is the part that matters and is AVAILABLE as handwritten kernels.",
+      "evidence": "compile.h CompileMode; generate.py has no mx.compile(_step)"
+    },
+    {
+      "advantage": "162 MB general metallib / Python / dtype-generic kernel catalog",
+      "class": "FRAMEWORK_SPECIFIC",
+      "why": "A specialised executable ships the kernels it dispatches. Native already embeds a compiled Metal library in a 6.3 MB binary. Paying for qmm/steel/fft/sort/dequantize oracles is generality.",
+      "decode_effect": "Resident bytes, not per-token DRAM. Not the 1.472x.",
+      "evidence": "mlx.metallib 162449848 B; native decode binary 6305936 B"
+    },
+    {
+      "advantage": "lazy Python graph tracer and array runtime",
+      "class": "FRAMEWORK_SPECIFIC",
+      "why": "The tracer, refcount, donation, and dtype/shape checks are the framework. A specialised executable builds one TokenCommandBuffer. Native already does.",
+      "decode_effect": "CPU overhead. Native wall-gpu 1.18 ms. MLX hides some of it with async_eval (AVAILABLE) rather than by being Python (SPECIFIC).",
+      "evidence": "transforms.h eval/async_eval; native 1 CB encode path"
+    },
+    {
+      "advantage": "logsumexp + logprobs every greedy token",
+      "class": "FRAMEWORK_SPECIFIC",
+      "why": "generate.py always does logits - logsumexp even when sampler is argmax. A specialised greedy path (native sample_argmax_f32) skips it. Vocab=248320 is noise next to 14 GB weights.",
+      "decode_effect": "Negative for MLX (overhead we do not need), not an advantage.",
+      "evidence": "generate.py:420 logprobs = logits - mx.logsumexp(...)"
+    },
+    {
+      "advantage": "vision tensors in the 4-bit directory",
+      "class": "FRAMEWORK_SPECIFIC",
+      "why": "mlx-vlm converted the full multimodal checkpoint. qwen3_5.Model.sanitize drops vision_tower. Those 921 MB do not stream at text decode. They inflated GPU_ATTACK's 1.215 bytes ratio.",
+      "decode_effect": "Do not credit MLX with a byte win it does not take on the decode path.",
+      "evidence": "config language_model_only=false; sanitize skips vision; 333 vision tensors"
+    },
+    {
+      "advantage": "unified-memory 'native-ness'",
+      "class": "AVAILABLE_TO_NATIVE",
+      "why": "Both runtimes are Metal on the same unified memory. Apple-framework membership is not a memory model. Native already allocates MTLBuffers in the same pool.",
+      "decode_effect": "Zero. This is not why 35.51 > 32.73.",
+      "evidence": "Both use MTL; MACHINE_GENOME recommendedMaxWorkingSetSize measured"
+    }
+  ],
+  "n_AVAILABLE_TO_NATIVE": 10,
+  "n_FRAMEWORK_SPECIFIC": 5,
+  "overhead": [
+    {
+      "item": "mlx.metallib general kernel catalog",
+      "bytes": 162449848,
+      "status": "MEASURED",
+      "per_token": false,
+      "vs_native": 6305936,
+      "note": "162 MB of specialised qmv/qmm/steel/fft/dequantize variants. Decode uses a handful (affine_qmv_fast gs_64_b_4, rms, rope_single, sdpa_vector_256, plus JIT gated_delta). Native ships a 6.3 MB example binary with the compiled library embedded."
+    },
+    {
+      "item": "libmlx.dylib + core.so",
+      "bytes": 23178248,
+      "status": "MEASURED",
+      "per_token": false,
+      "parts": {
+        "libmlx.dylib": 21697440,
+        "core.so": 1480808
+      },
+      "note": "General runtime. Native is the 6.3 MB decode binary."
+    },
+    {
+      "item": "vision tensors on disk (not loaded, not streamed)",
+      "bytes": 921460192,
+      "status": "MEASURED",
+      "per_token": false,
+      "n_tensors": 333,
+      "note": "qwen3_5.sanitize drops vision_tower. Inflated GPU_ATTACK 1.215 ratio."
+    },
+    {
+      "item": "affine per-group bias (vs native absmax)",
+      "bytes": 840417280,
+      "status": "MEASURED",
+      "per_token": true,
+      "note": "840,417,280 B of bf16 group biases streamed every token. Native grouped-absmax has scale only (34 B/group vs 36). This is overhead MLX pays, and native already does not. MLX is still faster, so the kernel mapping beats this tax."
+    },
+    {
+      "item": "extra GEMV launches from unfused in_proj",
+      "count": 96,
+      "status": "SOURCE_COUNTED",
+      "per_token": true,
+      "note": "+96 quantized_matmul launches/token (same bytes). Launch overhead inside one CB is microseconds, not milliseconds. Native already fused these."
+    },
+    {
+      "item": "logsumexp over vocab every greedy token",
+      "elements": 248320,
+      "status": "SOURCE_COUNTED",
+      "per_token": true,
+      "note": "248,320-wide reduction + subtract, then argmax. Native sample_argmax_f32 is one kernel. Bytes ~1 MB \u2014 not the 1.472x."
+    },
+    {
+      "item": "Python generate_step tracer",
+      "bytes": null,
+      "status": "NULL",
+      "null_reason": "No GPU timestamp for Python vs Metal in this process.",
+      "per_token": true,
+      "note": "Native wall-gpu gap is 1.184 ms/token (PRIOR QWEN38_GRAVITY_NATIVE run1). That is an upper bound on 'CPU around the GPU' for the specialised path. MLX async_eval is designed to hide the equivalent."
+    }
+  ],
+  "how_to_beat": {
+    "match_35_51": [
+      {
+        "step": "Port qmv_fast threadgroup map onto grouped-absmax Q4",
+        "class": "AVAILABLE_TO_NATIVE",
+        "detail": "8 rows/TG, 64 threads, 4-row x_thread reuse, 512-wide K block, pre-scaled qdot. Keep absmax (no bias) so we do not take MLX's 840 MB tax. reconstructs_dense must stay NO."
+      },
+      {
+        "step": "Overlap sample with the next token's command buffer",
+        "class": "AVAILABLE_TO_NATIVE",
+        "detail": "Native gpu 29.204 ms vs wall 30.389 ms. Enqueue token t+1 before reading argmax of t. That is mlx.async_eval. Worth ~1.2 ms if fully hidden."
+      },
+      {
+        "step": "Issue gate_proj and up_proj without a barrier",
+        "class": "AVAILABLE_TO_NATIVE",
+        "detail": "Independent GEMVs sharing x. Metal concurrent encode."
+      },
+      {
+        "step": "setWiredLimit to recommendedMaxWorkingSetSize",
+        "class": "AVAILABLE_TO_NATIVE",
+        "detail": "mlx_lm.wired_limit. Cheap, correct, not the limiter at 77.76 GiB headroom."
+      }
+    ],
+    "beat_35_51": [
+      {
+        "step": "Keep fused in_proj_qkvz / in_proj_ba (already ahead of MLX)",
+        "class": "AVAILABLE_TO_NATIVE_ALREADY_OURS",
+        "detail": "96 fewer GEMV launches than MLX on the same bytes."
+      },
+      {
+        "step": "Keep grouped-absmax (34 B/group vs affine 36)",
+        "class": "AVAILABLE_TO_NATIVE_ALREADY_OURS",
+        "detail": "Language-active MLX 14417643328 B vs native active 13622264240 B (ratio 1.0584). Native already moves fewer bytes. Hitting MLX GB/s on those bytes projects 37.58 tok/s."
+      },
+      {
+        "step": "Keep greedy argmax; do not pay logsumexp",
+        "class": "AVAILABLE_TO_NATIVE_ALREADY_OURS",
+        "detail": "generate.py always builds logprobs."
+      },
+      {
+        "step": "Do not reconstruct dense W to 'catch up'",
+        "class": "LAW",
+        "detail": "representation \u2192 reconstruct dense W \u2192 ordinary GEMM is an oracle, not a production implementation. MLX does not do this on decode. Neither must we."
+      },
+      {
+        "step": "Do not reopen MLP distillation or G-SHARE as the speed lever",
+        "class": "PRIOR_NEGATIVE",
+        "detail": "MLP function distillation is NO-GO (+0.4206 held-out gap vs q3 at 72% of its active bytes). G035 G-SHARE shared_beats_independent=false. The MLX lead is a kernel/runtime lead on the same Q4 GEMV work."
+      }
+    ],
+    "arithmetic": {
+      "native_tps": {
+        "value": 32.73,
+        "status": "PRIOR_MEASURED",
+        "source": "campaign brief / G105"
+      },
+      "mlx_tps": {
+        "value": 35.51,
+        "status": "PRIOR_MEASURED",
+        "source": "RUNTIME_AB.json decode_tps_median 35.513, GPU_ATTACK 35.506"
+      },
+      "gap_tps": 2.780000000000001,
+      "gap_fraction": 0.0849373663305836,
+      "native_active_bytes": {
+        "value": 13622264240,
+        "status": "PRIOR_MEASURED",
+        "source": "NOETIC_KERNEL_CENSUS production_token.active_budget_bytes_constant"
+      },
+      "mlx_active_language_bytes": {
+        "value": 14417643328,
+        "status": "MEASURED",
+        "method": "safetensors language payload \u2212 embed table + one row"
+      },
+      "mlx_language_bytes": {
+        "value": 15132802048,
+        "status": "MEASURED",
+        "method": "safetensors language tensor payloads"
+      },
+      "native_implied_GB_s_on_active": 445.85670857519995,
+      "mlx_implied_GB_s_on_active_language": 511.97051457727997,
+      "roof_GB_s": {
+        "value": 595.9,
+        "status": "PRIOR_MEASURED",
+        "source": "campaign brief"
+      },
+      "native_pct_of_roof": 74.82072639288471,
+      "mlx_pct_of_roof": 85.9155084036382,
+      "tps_if_native_hits_mlx_GB_s_on_native_bytes": 37.583363936954434,
+      "note": "Implied GB/s = bytes_per_token \u00d7 tok/s / 1e9. This is an accounting identity from a PRIOR tok/s and a MEASURED byte count, not a new GPU counter. It is the right identity for a weight-streaming decode."
+    }
+  },
+  "what_i_watched_fail": [
+    {
+      "what": "Live GPU capture of MLX 4-bit decode (dispatches, kernel names from a counter, CB count)",
+      "result": "NULL",
+      "why": "mx.metal.is_available()=True but mx.eval of a 4-float vector failed: 'RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.'. device_info failed: 'RuntimeError: [metal::load_device] No Metal device available. This typically occurs in headless, sandboxed, or virtualized macOS sessions where the GPU is not accessible.'. system_profiler reports Apple M3 Ultra / Metal Supported \u2014 the GPU exists; this sandbox cannot open a Metal device. Independently, llama-server is resident on 52484 (alias=Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf), so even a working GPU must not load a second 27B (occupancy 33.47 \u2192 3.986 tok/s). Kernel NAMES observed from mlx.metallib; launch COUNTS on the 4-bit artifact are source-counted, not GPU-counted."
+    },
+    {
+      "what": "Load ~/models/qwen3.8-27b-abliterated-mlx-huihui-4bit (RUNTIME_AB preferred path)",
+      "result": "MISSING",
+      "why": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit is not on disk. The live 4-bit artifact is /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit (PocketAiHub / mlx-vlm convert). SPEED comparison across abliterations is the GPU_ATTACK confound; this process did not pretend they are the same weights."
+    },
+    {
+      "what": "Re-measure llama.cpp Q5_K tok/s",
+      "result": "NOT ATTEMPTED",
+      "why": "GGUF is off disk (ARCHIVED). llama-server on 52484 still maps /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf, but a generate would occupy the GPU and is the thing occupancy forbids stacking with. Cited 24.12 / 35.51 as PRIOR_MEASURED."
+    },
+    {
+      "what": "Treat GPU_ATTACK 1.215 as the decode-byte ratio",
+      "result": "REFUTED as a decode identity",
+      "why": "safetensors payload 16054262240 / llama 19535701280 \u2248 1.2169, which is the 1.215. That payload includes 921460192 B vision (333 tensors) that qwen3_5.sanitize drops. Fair text-decode ratio uses language bytes. Recording both, quoting 1.215 as the campaign number with the defect named."
+    },
+    {
+      "what": "Attribute the 1.472x to 'MLX is Apple's framework' without opening the kernel",
+      "result": "FAILS as an explanation",
+      "why": "qmv_fast_impl is 8 rows/TG with 4-row x reuse. Native geo_tpr64 is 2 rows/TG with x_reuse=1. That is a shader. Unified memory is shared. The framework also pays 162 MB metallib, Python, logsumexp, affine biases, +96 GEMVs \u2014 and still wins. The win is the kernel map + async overlap, which are AVAILABLE_TO_NATIVE."
+    },
+    {
+      "what": "Assume generate.py mx.compile's the whole decode step",
+      "result": "FALSE",
+      "why": "generate.py has async_eval and wired_limit and logsumexp. It does not wrap _step in mx.compile (generate_wraps_step_in_mx_compile=False). Fusion on the hot path is mx.fast.* plus local @mx.compile on swiglu/silu/compute_g."
+    },
+    {
+      "what": "Assume fewer bytes is why MLX beats native 32.73",
+      "result": "FALSE",
+      "why": "MLX language payload 15132802048 B vs native artifact 14297933604 B. Affine biases alone are 840417280 B. Native already stores less. Source and executable both do 964 dispatches and 51.24 GFLOP of GEMV. A bytes-only candidate is incomplete \u2014 that is the campaign constraint, and MLX is the existence proof that execution can differ at matched work."
+    },
+    {
+      "what": "Spawn a tiny MLX graph to observe fusion without the 27B",
+      "result": "BLOCKED",
+      "why": "mx.eval of four ones() already raises [metal::load_device]. A fusion microbench would hit the same wall. Not an occupancy issue \u2014 the sandbox cannot create a Metal device. Occupancy separately forbids a 27B generate."
+    },
+    {
+      "what": "ps(1) for resident decoders",
+      "result": "BLOCKED",
+      "why": "sandbox: ps: Operation not permitted. Occupancy inferred from llama /health on 52484 instead."
+    },
+    {
+      "what": "MLP distillation / G-SHARE / 0.5 local BPW without health / cosine-only",
+      "result": "NOT REDISCOVERED",
+      "why": "Prior science: 223 components <0.5 local BPW with ZERO healthy; Q80 storage BPW 0.6462 vs ACTIVE 2.518; G035 shared_beats_independent=false; GLM 0.167 expert BPW trap; HGRAVS01 0.13 on down_proj ONLY; MLP distillation NO-GO +0.4206 held-out gap; cosine blind to 0.01*W. This lane is runtime anatomy, not a new representation search."
+    }
+  ],
+  "self_check": {
+    "did_not_load_27b": true,
+    "metal_not_required_for_receipt": true,
+    "language_bytes_measured": true,
+    "qmv_fast_names_observed": true,
+    "quantized_matmul_not_dequant_gemm": true,
+    "generate_step_not_mx_compiled": true,
+    "sysctl_mem_matches": true
+  },
+  "written_to": "/Users/scammermike/.claude-grok/worktrees/d3mlxanatomy-20260823-151650/receipts/headless/NOETIC_MLX_ANATOMY.json"
+}

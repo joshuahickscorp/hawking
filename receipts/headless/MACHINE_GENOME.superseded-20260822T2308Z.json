@@ -1,0 +1,839 @@
+{
+ "schema": "hawking.headless.machine_genome.v1",
+ "generated_at": "2026-08-22T23:08:30Z",
+ "reprofile_command": "python3 tools/headless/machine_probe.py --ctx 8192 --max-runtimes 6 --n-predict 96 --reps 3",
+ "machine": {
+  "hw_model": "Mac15,14",
+  "cpu": "Apple M3 Ultra",
+  "ncpu": 28,
+  "mem_bytes": 103079215104
+ },
+ "runtime_identity": {
+  "llama_server": "/opt/homebrew/bin/llama-server",
+  "llama_version": "version: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64",
+  "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+  "model_size_bytes": 19535701280,
+  "ctx": 8192,
+  "n_predict_per_decode": 96,
+  "decode_flags": "temperature=0 ignore_eos=true cache_prompt=false -np 1"
+ },
+ "RESIDENT_RUNTIME_LIMIT": 6,
+ "resident_limit_reason": "reached --max-runtimes",
+ "resident_gate_params": {
+  "reserve_gib": 8.0,
+  "swap_ceiling_gib": 2.0
+ },
+ "admission": [
+  {
+   "index": 0,
+   "pid": 13574,
+   "port": 54085,
+   "load_s": 3.03,
+   "rss_bytes": 20552843264,
+   "marginal_free_ram_cost_bytes": 10624745472,
+   "marginal_free_ram_cost_gib": 9.895,
+   "free_after_gib": 47.914,
+   "swap_growth_gib": 0.0,
+   "compressed_gib": 0.876,
+   "free_pct_after": 72.0,
+   "warm_decode_tps": 25.545720453181083
+  },
+  {
+   "index": 1,
+   "pid": 13586,
+   "port": 54094,
+   "load_s": 1.51,
+   "rss_bytes": 20555350016,
+   "marginal_free_ram_cost_bytes": 2075983872,
+   "marginal_free_ram_cost_gib": 1.933,
+   "free_after_gib": 45.98,
+   "swap_growth_gib": 0.0,
+   "compressed_gib": 0.876,
+   "free_pct_after": 70.0,
+   "warm_decode_tps": 25.361480349608005
+  },
+  {
+   "index": 2,
+   "pid": 13597,
+   "port": 54100,
+   "load_s": 1.51,
+   "rss_bytes": 20551335936,
+   "marginal_free_ram_cost_bytes": 1304920064,
+   "marginal_free_ram_cost_gib": 1.215,
+   "free_after_gib": 44.765,
+   "swap_growth_gib": 0.0,
+   "compressed_gib": 0.876,
+   "free_pct_after": 69.0,
+   "warm_decode_tps": 25.414373416565404
+  },
+  {
+   "index": 3,
+   "pid": 13609,
+   "port": 54104,
+   "load_s": 1.51,
+   "rss_bytes": 20553826304,
+   "marginal_free_ram_cost_bytes": 1933803520,
+   "marginal_free_ram_cost_gib": 1.801,
+   "free_after_gib": 42.964,
+   "swap_growth_gib": 0.0,
+   "compressed_gib": 0.876,
+   "free_pct_after": 69.0,
+   "warm_decode_tps": 25.477788145822117
+  },
+  {
+   "index": 4,
+   "pid": 13628,
+   "port": 54110,
+   "load_s": 10.56,
+   "rss_bytes": 20566425600,
+   "marginal_free_ram_cost_bytes": 1630093312,
+   "marginal_free_ram_cost_gib": 1.518,
+   "free_after_gib": 41.446,
+   "swap_growth_gib": 0.0,
+   "compressed_gib": 0.873,
+   "free_pct_after": 68.0,
+   "warm_decode_tps": 25.175916718067494
+  },
+  {
+   "index": 5,
+   "pid": 13670,
+   "port": 54126,
+   "load_s": 10.55,
+   "rss_bytes": 20567588864,
+   "marginal_free_ram_cost_bytes": 1680359424,
+   "marginal_free_ram_cost_gib": 1.565,
+   "free_after_gib": 39.88,
+   "swap_growth_gib": 0.0,
+   "compressed_gib": 0.872,
+   "free_pct_after": 71.0,
+   "warm_decode_tps": null
+  }
+ ],
+ "ACTIVE_DECODE_LIMIT": 1,
+ "active_decode_reason": "k=2 gained only 20.2% over k=1, within the 29.3% noise floor -> saturated",
+ "measurement_noise_floor_pct": 29.3,
+ "single_decoder_tps": 21.14,
+ "best_aggregate_tps": 25.402,
+ "aggregate_scaling_vs_1": 1.2016,
+ "concurrency_curve": [
+  {
+   "k": 1,
+   "aggregate_tps_min": 21.07,
+   "aggregate_tps_median": 21.14,
+   "aggregate_tps_max": 21.31,
+   "spread_pct": 1.1,
+   "reps": [
+    {
+     "k": 1,
+     "batch_wall_s": 4.556,
+     "ok_count": 1,
+     "total_tokens": 96,
+     "aggregate_tps": 21.07,
+     "per_runtime_tps": [
+      24.263667205606524
+     ],
+     "per_runtime_wall_s": [
+      4.556
+     ],
+     "failures": [],
+     "rep": 0,
+     "mem": {
+      "free_gib": 39.17,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 1,
+     "batch_wall_s": 4.505,
+     "ok_count": 1,
+     "total_tokens": 96,
+     "aggregate_tps": 21.31,
+     "per_runtime_tps": [
+      24.26336671399708
+     ],
+     "per_runtime_wall_s": [
+      4.505
+     ],
+     "failures": [],
+     "rep": 1,
+     "mem": {
+      "free_gib": 38.88,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 1,
+     "batch_wall_s": 4.541,
+     "ok_count": 1,
+     "total_tokens": 96,
+     "aggregate_tps": 21.14,
+     "per_runtime_tps": [
+      24.01529774466335
+     ],
+     "per_runtime_wall_s": [
+      4.541
+     ],
+     "failures": [],
+     "rep": 2,
+     "mem": {
+      "free_gib": 38.96,
+      "swap_gib": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "k": 2,
+   "aggregate_tps_min": 24.435,
+   "aggregate_tps_median": 25.402,
+   "aggregate_tps_max": 25.505,
+   "spread_pct": 4.4,
+   "reps": [
+    {
+     "k": 2,
+     "batch_wall_s": 7.559,
+     "ok_count": 2,
+     "total_tokens": 192,
+     "aggregate_tps": 25.402,
+     "per_runtime_tps": [
+      14.496633836321227,
+      14.507493271394397
+     ],
+     "per_runtime_wall_s": [
+      7.554,
+      7.558
+     ],
+     "failures": [],
+     "rep": 0,
+     "mem": {
+      "free_gib": 38.27,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 2,
+     "batch_wall_s": 7.858,
+     "ok_count": 2,
+     "total_tokens": 192,
+     "aggregate_tps": 24.435,
+     "per_runtime_tps": [
+      13.873872910410476,
+      14.028208974722045
+     ],
+     "per_runtime_wall_s": [
+      7.857,
+      7.781
+     ],
+     "failures": [],
+     "rep": 1,
+     "mem": {
+      "free_gib": 38.47,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 2,
+     "batch_wall_s": 7.528,
+     "ok_count": 2,
+     "total_tokens": 192,
+     "aggregate_tps": 25.505,
+     "per_runtime_tps": [
+      14.575252102518071,
+      14.566036796843541
+     ],
+     "per_runtime_wall_s": [
+      7.527,
+      7.528
+     ],
+     "failures": [],
+     "rep": 2,
+     "mem": {
+      "free_gib": 38.56,
+      "swap_gib": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "k": 3,
+   "aggregate_tps_min": 22.74,
+   "aggregate_tps_median": 25.146,
+   "aggregate_tps_max": 25.256,
+   "spread_pct": 11.1,
+   "reps": [
+    {
+     "k": 3,
+     "batch_wall_s": 8.443,
+     "ok_count": 2,
+     "total_tokens": 192,
+     "aggregate_tps": 22.74,
+     "per_runtime_tps": [
+      13.931081199918852,
+      null,
+      13.953810851151935
+     ],
+     "per_runtime_wall_s": [
+      8.243,
+      2.082,
+      8.443
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 2.082
+      }
+     ],
+     "rep": 0,
+     "mem": {
+      "free_gib": 38.08,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 3,
+     "batch_wall_s": 7.602,
+     "ok_count": 2,
+     "total_tokens": 192,
+     "aggregate_tps": 25.256,
+     "per_runtime_tps": [
+      14.658509409770538,
+      null,
+      14.35133748485635
+     ],
+     "per_runtime_wall_s": [
+      7.602,
+      0.003,
+      7.492
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.003
+      }
+     ],
+     "rep": 1,
+     "mem": {
+      "free_gib": 38.29,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 3,
+     "batch_wall_s": 7.635,
+     "ok_count": 2,
+     "total_tokens": 192,
+     "aggregate_tps": 25.146,
+     "per_runtime_tps": [
+      14.152149166010904,
+      null,
+      14.752229392249639
+     ],
+     "per_runtime_wall_s": [
+      7.478,
+      0.001,
+      7.635
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.001
+      }
+     ],
+     "rep": 2,
+     "mem": {
+      "free_gib": 38.44,
+      "swap_gib": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "k": 4,
+   "aggregate_tps_min": 18.491,
+   "aggregate_tps_median": 19.973,
+   "aggregate_tps_max": 20.051,
+   "spread_pct": 8.4,
+   "reps": [
+    {
+     "k": 4,
+     "batch_wall_s": 14.363,
+     "ok_count": 3,
+     "total_tokens": 288,
+     "aggregate_tps": 20.051,
+     "per_runtime_tps": [
+      7.5083172210842,
+      null,
+      7.356366371873055,
+      7.578007894863351
+     ],
+     "per_runtime_wall_s": [
+      14.192,
+      0.001,
+      14.363,
+      14.102
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.001
+      }
+     ],
+     "rep": 0,
+     "mem": {
+      "free_gib": 38.0,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 4,
+     "batch_wall_s": 15.575,
+     "ok_count": 3,
+     "total_tokens": 288,
+     "aggregate_tps": 18.491,
+     "per_runtime_tps": [
+      7.085126017822635,
+      null,
+      6.676967744125243,
+      6.8430291096042986
+     ],
+     "per_runtime_wall_s": [
+      14.909,
+      0.001,
+      15.574,
+      15.5
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.001
+      }
+     ],
+     "rep": 1,
+     "mem": {
+      "free_gib": 37.99,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 4,
+     "batch_wall_s": 14.419,
+     "ok_count": 3,
+     "total_tokens": 288,
+     "aggregate_tps": 19.973,
+     "per_runtime_tps": [
+      7.487758684513116,
+      null,
+      8.117215980938072,
+      7.444540499696171
+     ],
+     "per_runtime_wall_s": [
+      14.419,
+      0.001,
+      13.063,
+      14.117
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.001
+      }
+     ],
+     "rep": 2,
+     "mem": {
+      "free_gib": 37.74,
+      "swap_gib": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "k": 5,
+   "aggregate_tps_min": 17.318,
+   "aggregate_tps_median": 19.39,
+   "aggregate_tps_max": 19.718,
+   "spread_pct": 13.9,
+   "reps": [
+    {
+     "k": 5,
+     "batch_wall_s": 16.63,
+     "ok_count": 3,
+     "total_tokens": 288,
+     "aggregate_tps": 17.318,
+     "per_runtime_tps": [
+      6.760919042713022,
+      null,
+      6.761970536826501,
+      null,
+      6.534768268608383
+     ],
+     "per_runtime_wall_s": [
+      15.584,
+      0.002,
+      16.626,
+      4.004,
+      16.629
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 4.004
+      }
+     ],
+     "rep": 0,
+     "mem": {
+      "free_gib": 37.79,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 5,
+     "batch_wall_s": 14.606,
+     "ok_count": 3,
+     "total_tokens": 288,
+     "aggregate_tps": 19.718,
+     "per_runtime_tps": [
+      7.572640554519225,
+      null,
+      7.471947507078114,
+      null,
+      7.747058538711084
+     ],
+     "per_runtime_wall_s": [
+      14.447,
+      0.001,
+      14.605,
+      0.004,
+      13.609
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.001
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.004
+      }
+     ],
+     "rep": 1,
+     "mem": {
+      "free_gib": 37.9,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 5,
+     "batch_wall_s": 14.853,
+     "ok_count": 3,
+     "total_tokens": 288,
+     "aggregate_tps": 19.39,
+     "per_runtime_tps": [
+      7.1697003087676245,
+      null,
+      7.360941464413299,
+      null,
+      7.317077074660023
+     ],
+     "per_runtime_wall_s": [
+      14.853,
+      0.002,
+      14.416,
+      0.001,
+      14.502
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.001
+      }
+     ],
+     "rep": 2,
+     "mem": {
+      "free_gib": 37.73,
+      "swap_gib": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "k": 6,
+   "aggregate_tps_min": 15.516,
+   "aggregate_tps_median": 19.121,
+   "aggregate_tps_max": 20.066,
+   "spread_pct": 29.3,
+   "reps": [
+    {
+     "k": 6,
+     "batch_wall_s": 14.352,
+     "ok_count": 3,
+     "total_tokens": 288,
+     "aggregate_tps": 20.066,
+     "per_runtime_tps": [
+      8.550096081704718,
+      null,
+      7.429601622439255,
+      null,
+      7.542138754140812,
+      null
+     ],
+     "per_runtime_wall_s": [
+      12.572,
+      0.002,
+      14.352,
+      0.002,
+      14.155,
+      0.004
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.004
+      }
+     ],
+     "rep": 0,
+     "mem": {
+      "free_gib": 38.01,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 6,
+     "batch_wall_s": 15.062,
+     "ok_count": 3,
+     "total_tokens": 288,
+     "aggregate_tps": 19.121,
+     "per_runtime_tps": [
+      7.541114391321308,
+      null,
+      6.868066516938047,
+      null,
+      7.038949366417569,
+      null
+     ],
+     "per_runtime_wall_s": [
+      14.526,
+      0.002,
+      14.898,
+      0.002,
+      15.061,
+      0.002
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      }
+     ],
+     "rep": 1,
+     "mem": {
+      "free_gib": 37.63,
+      "swap_gib": 0.0
+     }
+    },
+    {
+     "k": 6,
+     "batch_wall_s": 12.375,
+     "ok_count": 2,
+     "total_tokens": 192,
+     "aggregate_tps": 15.516,
+     "per_runtime_tps": [
+      null,
+      null,
+      8.995183641359029,
+      null,
+      8.738605109262148,
+      null
+     ],
+     "per_runtime_wall_s": [
+      9.281,
+      0.002,
+      12.074,
+      0.002,
+      12.374,
+      0.001
+     ],
+     "failures": [
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 9.281
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.002
+      },
+      {
+       "ok": false,
+       "error": "HTTPError: HTTP Error 500: Internal Server Error",
+       "wall_s": 0.001
+      }
+     ],
+     "rep": 2,
+     "mem": {
+      "free_gib": 37.59,
+      "swap_gib": 0.0
+     }
+    }
+   ]
+  }
+ ],
+ "foreign_load_at_start": {
+  "count": 0,
+  "processes": [],
+  "any_actively_decoding": false
+ },
+ "foreign_load_at_end": {
+  "count": 6,
+  "processes": [
+   {
+    "pid": 13574,
+    "etime": "03:59",
+    "pcpu": 11.1,
+    "rss_bytes": 20554186752,
+    "port": 54085,
+    "slots_total": 1,
+    "slots_processing": 0,
+    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54085 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
+   },
+   {
+    "pid": 13586,
+    "etime": "03:55",
+    "pcpu": 16.0,
+    "rss_bytes": 20556546048,
+    "port": 54094,
+    "slots_total": 1,
+    "slots_processing": 0,
+    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54094 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
+   },
+   {
+    "pid": 13597,
+    "etime": "03:52",
+    "pcpu": 27.7,
+    "rss_bytes": 20552515584,
+    "port": 54100,
+    "slots_total": 1,
+    "slots_processing": 0,
+    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54100 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
+   },
+   {
+    "pid": 13609,
+    "etime": "03:49",
+    "pcpu": 10.8,
+    "rss_bytes": 20555055104,
+    "port": 54104,
+    "slots_total": 1,
+    "slots_processing": 0,
+    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54104 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
+   },
+   {
+    "pid": 13628,
+    "etime": "03:47",
+    "pcpu": 28.2,
+    "rss_bytes": 20567064576,
+    "port": 54110,
+    "slots_total": 1,
+    "slots_processing": 0,
+    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54110 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
+   },
+   {
+    "pid": 13670,
+    "etime": "03:34",
+    "pcpu": 16.0,
+    "rss_bytes": 20567916544,
+    "port": 54126,
+    "slots_total": 1,
+    "slots_processing": 0,
+    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54126 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
+   }
+  ],
+  "any_actively_decoding": false
+ },
+ "memory_start": {
+  "total_bytes": 103079215104,
+  "free_bytes": 62071685120,
+  "wired_bytes": 6565675008,
+  "compressed_bytes": 940523520,
+  "file_backed_bytes": 54572318720,
+  "anonymous_bytes": 16632823808,
+  "swapins": 0,
+  "swapouts": 0,
+  "swap_used_bytes": 0,
+  "free_pct": 92.0,
+  "at": "2026-08-22T23:04:41Z"
+ },
+ "memory_end": {
+  "total_bytes": 103079215104,
+  "free_bytes": 41264463872,
+  "wired_bytes": 29014949888,
+  "compressed_bytes": 930742272,
+  "file_backed_bytes": 41257664512,
+  "anonymous_bytes": 25466765312,
+  "swapins": 0,
+  "swapouts": 0,
+  "swap_used_bytes": 0,
+  "free_pct": 70.0,
+  "at": "2026-08-22T23:08:40Z"
+ },
+ "caveats": [
+  "llama.cpp mmaps weights, so runtimes of the same model share file-backed pages; marginal_free_ram_cost is the true admission cost, RSS is not.",
+  "aggregate_tps is tokens over the whole batch wall, so a straggler is charged against the batch rather than hidden by per-call averaging.",
+  "ACTIVE_DECODE_LIMIT is judged against the worst observed within-k spread, so a gain smaller than the harness's own jitter is not counted as real."
+ ],
+ "SUPERSEDED": {
+  "at": "2026-08-22T23:09:39Z",
+  "reason": "This run admitted 6 runtimes on a free-RAM gate and the GPU ran out of Metal working set. Both headline numbers are therefore artifacts, not measurements.",
+  "what_is_wrong": [
+   "RESIDENT_RUNTIME_LIMIT=6 is above the machine's real capacity. With 6 resident, runtime-1 and runtime-5 logged kIOGPUCommandBufferCallbackErrorOutOfMemory and the concurrency curve degraded to ok=2/3 at k=3, ok=3/4 at k=4, ok=3/5 at k=5. The Metal working set is 77.76 GiB against 19.79 GiB per runtime, so the true ceiling is 3-4.",
+   "ACTIVE_DECODE_LIMIT=1 was derived from a 29.3% noise floor. That floor is large only because failing streams inflated the spread. 'k=2 gained 20.2%, within the noise' is an OOM artifact \u2014 the clean-room topology probe measured k=2 at 1.2083x with a 0.1% spread."
+  ],
+  "corrected_by": "receipts/headless/GPU_MEMORY_GATE.json and a re-run of machine_probe.py with the Metal working set as the first admission gate"
+ }
+}

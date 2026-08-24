@@ -1,0 +1,187 @@
+{
+ "schema": "hawking.headless.structured_output_probe.v1",
+ "generated_at": "2026-08-22T22:52:27Z",
+ "hypothesis": "HCLI's 'Model did not return a valid structured JSON object' is max_tokens exhaustion by Qwen3 reasoning under unconstrained decoding, not a model capability limit.",
+ "model": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+ "llama_server_version": "version: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64",
+ "user_source": ".haider/bootstrap-director-v6/runs/20260822-143859-epoch-00007/mission.md",
+ "params": {
+  "ctx": 32768,
+  "max_tokens": 6500,
+  "temperature": 0.15,
+  "reps": 2,
+  "design": "alternating paired"
+ },
+ "summary": {
+  "no_think": {
+   "n": 2,
+   "valid_json_rate": 1.0,
+   "wall_s_min": 6.46,
+   "wall_s_median": 31.62,
+   "wall_s_max": 31.62,
+   "completion_tokens_median": 145,
+   "finish_reasons": [
+    "stop"
+   ],
+   "any_think_block": false
+  },
+  "schema": {
+   "n": 2,
+   "valid_json_rate": 0.0,
+   "wall_s_min": 310.95,
+   "wall_s_median": 365.07,
+   "wall_s_max": 365.07,
+   "completion_tokens_median": 6500,
+   "finish_reasons": [
+    "length"
+   ],
+   "any_think_block": false
+  },
+  "schema_nothink": {
+   "n": 2,
+   "valid_json_rate": 1.0,
+   "wall_s_min": 6.38,
+   "wall_s_median": 11.92,
+   "wall_s_max": 11.92,
+   "completion_tokens_median": 163,
+   "finish_reasons": [
+    "stop"
+   ],
+   "any_think_block": false
+  },
+  "baseline": {
+   "n": 2,
+   "valid_json_rate": 0.0,
+   "wall_s_min": 286.29,
+   "wall_s_median": 361.46,
+   "wall_s_max": 361.46,
+   "completion_tokens_median": 6500,
+   "finish_reasons": [
+    "length"
+   ],
+   "any_think_block": false
+  }
+ },
+ "runs": [
+  {
+   "arm": "baseline",
+   "ok": false,
+   "wall_s": 361.46,
+   "finish_reason": "length",
+   "completion_tokens": 6500,
+   "prompt_tokens": 7257,
+   "tok_per_s": 17.98,
+   "had_think_block": false,
+   "reasoning_content_len": 25940,
+   "content_len": 0,
+   "parsed_kind": null,
+   "content_head": "",
+   "rep": 0
+  },
+  {
+   "arm": "no_think",
+   "ok": true,
+   "wall_s": 31.62,
+   "finish_reason": "stop",
+   "completion_tokens": 110,
+   "prompt_tokens": 7221,
+   "tok_per_s": 3.48,
+   "had_think_block": false,
+   "reasoning_content_len": 0,
+   "content_len": 524,
+   "parsed_kind": "answer",
+   "content_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"Cross-review of hcli_foundation: disk state is authority and no deterministic evidence was supplied. The milestone remains PENDING because the r",
+   "rep": 0
+  },
+  {
+   "arm": "schema",
+   "ok": false,
+   "wall_s": 310.95,
+   "finish_reason": "length",
+   "completion_tokens": 6500,
+   "prompt_tokens": 7257,
+   "tok_per_s": 20.9,
+   "had_think_block": false,
+   "reasoning_content_len": 25795,
+   "content_len": 0,
+   "parsed_kind": null,
+   "content_head": "",
+   "rep": 0
+  },
+  {
+   "arm": "schema_nothink",
+   "ok": true,
+   "wall_s": 6.38,
+   "finish_reason": "stop",
+   "completion_tokens": 142,
+   "prompt_tokens": 7221,
+   "tok_per_s": 22.25,
+   "had_think_block": false,
+   "reasoning_content_len": 0,
+   "content_len": 648,
+   "parsed_kind": "answer",
+   "content_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"hcli_foundation is PENDING because the acceptance receipt is missing. The worker-equilibrium profile confirms active_decode_limit=2 and resident",
+   "rep": 0
+  },
+  {
+   "arm": "baseline",
+   "ok": false,
+   "wall_s": 286.29,
+   "finish_reason": "length",
+   "completion_tokens": 6500,
+   "prompt_tokens": 7257,
+   "tok_per_s": 22.7,
+   "had_think_block": false,
+   "reasoning_content_len": 25717,
+   "content_len": 0,
+   "parsed_kind": null,
+   "content_head": "",
+   "rep": 1
+  },
+  {
+   "arm": "no_think",
+   "ok": true,
+   "wall_s": 6.46,
+   "finish_reason": "stop",
+   "completion_tokens": 145,
+   "prompt_tokens": 7221,
+   "tok_per_s": 22.45,
+   "had_think_block": false,
+   "reasoning_content_len": 0,
+   "content_len": 647,
+   "parsed_kind": "answer",
+   "content_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"hcli_foundation is PENDING because the acceptance receipt is missing. The worker-equilibrium profile confirms active_decode_limit=2 and resident",
+   "rep": 1
+  },
+  {
+   "arm": "schema",
+   "ok": false,
+   "wall_s": 365.07,
+   "finish_reason": "length",
+   "completion_tokens": 6500,
+   "prompt_tokens": 7257,
+   "tok_per_s": 17.81,
+   "had_think_block": false,
+   "reasoning_content_len": 25315,
+   "content_len": 0,
+   "parsed_kind": null,
+   "content_head": "",
+   "rep": 1
+  },
+  {
+   "arm": "schema_nothink",
+   "ok": true,
+   "wall_s": 11.92,
+   "finish_reason": "stop",
+   "completion_tokens": 163,
+   "prompt_tokens": 7221,
+   "tok_per_s": 13.68,
+   "had_think_block": false,
+   "reasoning_content_len": 0,
+   "content_len": 745,
+   "parsed_kind": "answer",
+   "content_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"hcli_foundation is PENDING with no deterministic evidence on disk. The bootstrap quasi-HCLI is scaffolding; the real foundation requires a publi",
+   "rep": 1
+  }
+ ]
+}

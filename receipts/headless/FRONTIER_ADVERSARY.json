@@ -1,0 +1,823 @@
+{
+  "schema": "hawking.headless.frontier_adversary.v1",
+  "obligation": "N014 \u2014 ADVERSARY: attack the frontier claims, do not merely question them",
+  "generated_at": "2026-08-24T03:34:03Z",
+  "git_head": "eb3525e36a999ac581e89fb948d2d9e4cfffdbaf",
+  "elapsed_s": 6.154,
+  "did_not_load_second_27b": true,
+  "did_not_modify_parent_a": true,
+  "did_not_write_ascent_or_campaign": true,
+  "law": "A refutation is the valuable outcome. If a claim survives, the attack that was executed is named. Answering the six questions without running them does not satisfy this.",
+  "questions": [
+    {
+      "id": "hidden_bytes",
+      "question": "Plant a payload and confirm the accountant catches it. Try a hide it has NOT seen \u2014 integer-coded weights.",
+      "ran": true,
+      "commands": [
+        "python3 -c 'packed 2-bit affine codes -> account_tree content mode'",
+        "noetic_information_accounting.run_canary()  # 5/5 still caught"
+      ],
+      "known_five": {
+        "COUNTED": 5,
+        "MISSED": 0,
+        "statuses": [
+          "COUNTED",
+          "COUNTED",
+          "COUNTED",
+          "COUNTED",
+          "COUNTED"
+        ]
+      },
+      "new_hides": {
+        "integer_coded_metallib": {
+          "attempt": 6,
+          "name": "integer_coded_metallib",
+          "hide": "packed 2-bit affine codes inside a .metallib booked as MACHINE_SPECIFIC",
+          "where": "nx/learned_q2.metallib",
+          "payload_bytes": 1024,
+          "mode": "content",
+          "status": "MISSED",
+          "delta": {
+            "MODEL_SPECIFIC_BYTES": 0,
+            "SHARED_RUNTIME_BYTES": 0,
+            "MACHINE_SPECIFIC_BYTES": 1046,
+            "GENERATED_CACHE_BYTES": 0,
+            "TEMPORARY_BYTES": 0,
+            "RESIDENT_BYTES": 1046,
+            "ACTIVE_BYTES": 0
+          },
+          "why": "MODEL_SPECIFIC grew by 0 B, not the planted 1,024 B. Largest other growth: MACHINE_SPECIFIC_BYTES 1,046 B"
+        },
+        "integer_coded_machine_sidecar": {
+          "attempt": 7,
+          "name": "integer_coded_machine_sidecar",
+          "hide": "packed 2-bit codes as nx/*.u8 so path_role books MACHINE_SPECIFIC",
+          "where": "nx/learned_q.u8",
+          "payload_bytes": 1024,
+          "mode": "content",
+          "status": "MISSED",
+          "delta": {
+            "MODEL_SPECIFIC_BYTES": 0,
+            "SHARED_RUNTIME_BYTES": 0,
+            "MACHINE_SPECIFIC_BYTES": 1024,
+            "GENERATED_CACHE_BYTES": 0,
+            "TEMPORARY_BYTES": 0,
+            "RESIDENT_BYTES": 1024,
+            "ACTIVE_BYTES": 0
+          },
+          "why": "MODEL_SPECIFIC grew by 0 B, not the planted 1,024 B. Largest other growth: MACHINE_SPECIFIC_BYTES 1,024 B"
+        },
+        "geometry_codebook_n30": {
+          "attempt": 8,
+          "name": "geometry_shaped_u8_codebook_n30",
+          "hide": "learned integer codebook encoded as valid threadgroup sizes (n=30, cap 64 is the JSON walker's explicit hole)",
+          "where": "nx/machine_genome.json",
+          "payload_bytes": 120,
+          "mode": "content",
+          "status": "MISSED",
+          "delta": {
+            "MODEL_SPECIFIC_BYTES": 0,
+            "SHARED_RUNTIME_BYTES": 0,
+            "MACHINE_SPECIFIC_BYTES": 357,
+            "GENERATED_CACHE_BYTES": 0,
+            "TEMPORARY_BYTES": 0,
+            "RESIDENT_BYTES": 357,
+            "ACTIVE_BYTES": 0
+          },
+          "why": "MODEL_SPECIFIC grew by 0 B, not the planted 120 B. Largest other growth: MACHINE_SPECIFIC_BYTES 357 B"
+        },
+        "geometry_codebook_n66": {
+          "attempt": 9,
+          "name": "geometry_shaped_u8_codebook_n66",
+          "hide": "learned integer codebook encoded as valid threadgroup sizes (n=66, cap 64 is the JSON walker's explicit hole)",
+          "where": "nx/machine_genome.json",
+          "payload_bytes": 264,
+          "mode": "content",
+          "status": "COUNTED",
+          "delta": {
+            "MODEL_SPECIFIC_BYTES": 264,
+            "SHARED_RUNTIME_BYTES": 0,
+            "MACHINE_SPECIFIC_BYTES": 483,
+            "GENERATED_CACHE_BYTES": 0,
+            "TEMPORARY_BYTES": 0,
+            "RESIDENT_BYTES": 747,
+            "ACTIVE_BYTES": 264
+          },
+          "why": "MODEL_SPECIFIC grew by 264 B against a planted 264 B parent-derived payload"
+        }
+      },
+      "f32_scanner_on_integer_codes": 0,
+      "named_gap_confirmed": [
+        "integer_coded_metallib",
+        "integer_coded_machine_sidecar",
+        "geometry_shaped_u8_codebook_n30"
+      ],
+      "verdict": "REFUTED",
+      "why": "The accountant still catches the original 5/5 plants, including .metallib f32 ({'COUNTED': 5, 'MISSED': 0, 'statuses': ['COUNTED', 'COUNTED', 'COUNTED', 'COUNTED', 'COUNTED']}). Packed 2-bit affine codes in a .metallib booked MISSED: MODEL_SPECIFIC grew by 0 B against a planted 1024 B, parked in MACHINE_SPECIFIC. embedded_weightlike_bytes scored 0 on the integer payload. Short geometry-shaped integer lists (n=30) MISSED; n=66 (over the walker's 64 cap) COUNTED. Integer-coded weights remain an open hide. PARENT_A's 3.1393 EBPW is an artifact-tree sum, not a completeness proof against this hide."
+    },
+    {
+      "id": "hidden_parent",
+      "question": "Does anything open the bf16 parent at inference?",
+      "ran": true,
+      "commands": [
+        "rg safetensors /Users/scammermike/.claude-grok/worktrees/n014adv-20260823-231618/crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "ast walk of noetic_parent_a.py / noetic_fused_subbit.py for open(.safetensors)",
+        "DYLD_INSERT_LIBRARIES=noetic_openlog.dylib fused_subbit --artifact-root ~/noetic/NOETIC_PARENT_A"
+      ],
+      "source_hits": [],
+      "python_opens": [],
+      "prior_zero_parent": {
+        "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+        "is_parent_a": false,
+        "n_parent_weight_opens": 0,
+        "verdict": "PASS",
+        "negative_control_caught": true
+      },
+      "live": {
+        "ran": true,
+        "argv": [
+          "/Users/scammermike/.claude-grok/worktrees/n001seal-20260823-223440/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_fused_subbit",
+          "--artifact-root",
+          "/Users/scammermike/noetic/NOETIC_PARENT_A",
+          "--tokenizer",
+          "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+          "--prompt",
+          "What is the capital of France? Answer with only the city name.",
+          "--max-new-tokens",
+          "48",
+          "--max-seq-len",
+          "128",
+          "--reps",
+          "1",
+          "--skip-kernel-cost",
+          "--out",
+          "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/frontier-openlog-7p8adg_s/live.json"
+        ],
+        "binary": "/Users/scammermike/.claude-grok/worktrees/n001seal-20260823-223440/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_fused_subbit",
+        "exit_code": 2,
+        "timed_out": false,
+        "elapsed_s": 0.376,
+        "dylib_loaded": true,
+        "generated_text": null,
+        "new_token_ids": null,
+        "n_new_tokens": 0,
+        "n_parent_weight_opens": 0,
+        "parent_weight_paths": [],
+        "parent_tokenizer_paths": [
+          "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+        ],
+        "n_file_open_events": 16,
+        "stderr_head": "INTERPOSE_CTOR\nqwen38 fused subbit: open /Users/scammermike/noetic/NOETIC_PARENT_A max_seq=128\nqwen38-decode opening mixed HQ38M20 + 755 catalog tensors (no reconstruct-to-Q4)\nascension_qwen38_fused_subbit: metal: no Metal-capable GPU\n",
+        "stdout_head": "",
+        "observation": {
+          "n_events": 16,
+          "n_unique": 11,
+          "parent_weight": [],
+          "parent_tokenizer": [
+            "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+          ],
+          "parent_config": []
+        }
+      },
+      "did_not_load_second_27b": true,
+      "did_not_modify_parent_a": true,
+      "verdict": "SURVIVED",
+      "why": "Decode sources do not open .safetensors. Python packers do not open() a safetensors path. The prior complete DYLD run on the q4 incumbent reported n_parent_weight_opens=0 and the SourceBF16 negative control was caught (True). This lane also launched fused_subbit against PARENT_A under DYLD (exit=2 events=16 parent_weight_opens=0 tokenizer=['/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json']). Metal refused ('no Metal-capable GPU') before a token was emitted; a truncated prefix is INCONCLUSIVE for the sealed parent, not a PASS. No parent .safetensors appeared in the 16 opens that did happen."
+    },
+    {
+      "id": "reconstructed_dense_state",
+      "question": "Are the zero counters real, or is a dense tensor materialized somewhere the counters do not watch?",
+      "ran": true,
+      "commands": [
+        "rg dense_w_materialized crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "rg affine2_group32_dequant crates/hawking-core",
+        "numpy affine2 reconstruct vs fused allocation probe (64x256, not 27B)"
+      ],
+      "decoder": {
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "present": true,
+        "literal_zero": 3,
+        "print_zero": 0,
+        "json_zero": 0,
+        "increments": 0,
+        "non_zero_assigns": [],
+        "mentions_dequant_kernel": false,
+        "bytes": 288160
+      },
+      "greedy_example": {
+        "path": "crates/hawking-core/examples/ascension_qwen38_hybrid_greedy.rs",
+        "present": true,
+        "literal_zero": 0,
+        "print_zero": 2,
+        "json_zero": 2,
+        "increments": 0,
+        "non_zero_assigns": [],
+        "mentions_dequant_kernel": false,
+        "bytes": 30355
+      },
+      "fused_example": {
+        "path": "crates/hawking-core/examples/ascension_qwen38_fused_subbit.rs",
+        "present": true,
+        "literal_zero": 0,
+        "print_zero": 0,
+        "json_zero": 2,
+        "increments": 0,
+        "non_zero_assigns": [],
+        "mentions_dequant_kernel": false,
+        "bytes": 30391
+      },
+      "metal": {
+        "dequant_kernel_present": true,
+        "gemv_claims_in_register": true,
+        "dequant_kernel_referenced_from_decode": false,
+        "dequant_kernel_only_in_parity_example": true
+      },
+      "census_format_string_hardcodes_zeros": true,
+      "numpy_probe": {
+        "rows": 64,
+        "cols": 256,
+        "parent_numel": 16384,
+        "reconstruct_peak_numel": 16384,
+        "fused_peak_numel": 4096,
+        "reconstruct_zero_dense": false,
+        "fused_zero_dense": true,
+        "max_abs_diff": 1.430511474609375e-06,
+        "detector_ok": true
+      },
+      "verdict": "REFUTED",
+      "why": "DENSE_W_MATERIALIZED / dense_w_materialized / expanded_to_q4 / expanded_to_float_gemv on the Qwen38 production path are literals. qwen38_hybrid_decode.rs increments=0 literal_zero=3; greedy prints DENSE_W_MATERIALIZED: 0 (2 times). MixedCatalogCensus comments that expanded_to_q4 stays zero 'so a later reader cannot miss a forbidden fallback' \u2014 and the eprintln format string writes '=0' rather than the field. The instrument cannot catch a dense reconstruction. The Metal GEMV shader does in-register dequant and affine2_group32_dequant is only fetched by affine2_parity.rs, not the decode session; a numpy reconstruct-vs-fused probe at 64x256 still shows reconstruct peak 16384 (parent 16384) vs fused peak 4096. Kernel comments are not a counter. PARENT_A's dense_w_materialized=0 is not evidence."
+    },
+    {
+      "id": "wrong_benchmark_path",
+      "question": "Does the measured path actually execute the changed kernel? Supply a BAD control.",
+      "ran": true,
+      "commands": [
+        "theoretical_after('swiglu', True, True) vs +64 dummy dispatches",
+        "recompute GPU_LEDGER implied GB/s = ACTIVE_BYTES / GPU_NS with 2x GPU_NS bad control",
+        "one_body_not_n_copies(four_copies) must reject",
+        "read fused_subbit runtime_div gpu_ns vs specialized"
+      ],
+      "law_missing_bad_control": [
+        "NOETIC_DISPATCH_FUSION",
+        "GPU_LEDGER",
+        "NOETIC_MULTISESSION",
+        "AFFINE2_G64_LSFIT",
+        "AFFINE2_NATIVE_MLP",
+        "NOETIC_Q3_MLP_Q4_ATTN"
+      ],
+      "dispatch_fusion_bad_control": {
+        "unfused": 964,
+        "full_fusion": 756,
+        "mlp_swiglu_only": 836,
+        "full_plus_dummy_per_layer": 820,
+        "dummy_is_worse": true,
+        "fused_subbit_mlp_pair_dispatches": 900,
+        "fused_subbit_mlp_pair_tok_s": 34.23447933776215,
+        "fused_subbit_full_tok_s": 34.87340648509909,
+        "pair_is_worse_than_full": true,
+        "runtime_div_gpu_ns": 195583.0,
+        "specialized_gpu_ns": 142999.0,
+        "runtime_div_is_slower": true
+      },
+      "gpu_ledger_bad_control": {
+        "formula": "ACTIVE_BYTES_PER_TOKEN / (GPU_NS * 1e-9) / 1e9",
+        "active_bytes": 13622266960,
+        "gpu_ns": 29049999,
+        "implied_gb_s": 468.92486846557205,
+        "noop_same_gpu_ns_implied_gb_s": 468.92486846557205,
+        "bad_2x_gpu_ns_implied_gb_s": 234.46243423278602,
+        "formula_blind_to_bytes_moved": true,
+        "DRAM_READ_BYTES_kind": "ABSENT",
+        "dram_absent": true
+      },
+      "multisession_bad_control": {
+        "four_copies_bytes": 58750614544,
+        "one_body_bytes": 15264070672,
+        "four_copies_rejected": true,
+        "measured_c4_accepted_as_one_body": true
+      },
+      "verdict": "REFUTED",
+      "why": "Causal law still finds 6/8 GPU claims missing a bad_control (['NOETIC_DISPATCH_FUSION', 'GPU_LEDGER', 'NOETIC_MULTISESSION', 'AFFINE2_G64_LSFIT', 'AFFINE2_NATIVE_MLP', 'NOETIC_Q3_MLP_Q4_ATTN']). Supplied: (1) dummy-per-layer fusion 756 -> 820 dispatches, worse; fused_subbit already measured mlp_pair at 900 disp / 34.23447933776215 tok/s vs full 34.87340648509909 and runtime_div 195583.0 ns vs specialized 142999.0 ns. (2) GPU ledger 468.9 GB/s recomputed 468.925; a no-op that did not move weights would report the same 468.925 because DRAM_READ_BYTES is ABSENT. A 2x-slower bad kernel would report 234.462 GB/s \u2014 the formula tracks time, not bytes moved. (3) four copies of the body are rejected by one_body_not_n_copies. Dispatch 964->756 still shows the graph changed shape. The bandwidth-bound label is not a measured DRAM counter."
+    },
+    {
+      "id": "cache_artifact",
+      "question": "Are the tok/s numbers page-cache or warm-state artifacts? A single Metal run is page-cache confounded.",
+      "ran": true,
+      "commands": [
+        "read NOETIC_PARENT_A reproduction.decode_tok_s",
+        "read GPU_LEDGER.fields.OS_PAGE_CACHE_COLD_GPU_NS",
+        "mincore mmap of NOETIC_PARENT_A catalog + largest segments (read-only, no purge)"
+      ],
+      "parent_a": {
+        "recorded_tok_s": 34.87340648509909,
+        "measured_tok_s": 33.995555100584056,
+        "recorded_band": [
+          34.767237183044685,
+          34.97957578715349
+        ],
+        "inside_recorded_band": false,
+        "delta": -0.8778513845150329,
+        "n_reps_in_seal_process": 2,
+        "n_process_runs": 1,
+        "honest_note": "measured 33.995555 tok/s vs recorded mean 34.873406 (original reps band [34.767237, 34.979576]); delta -0.877851 tok/s. Byte-identical reconstruction; tok/s is a wall-clock number and moved."
+      },
+      "gpu_ledger": {
+        "OS_PAGE_CACHE_COLD_GPU_NS_kind": "ABSENT",
+        "absent_reason": "A true disk-cold run requires dropping the kernel page cache (purge / posix_fadvise). This session cannot sudo purge. Three sequential processes share the ~14 GiB artifact page cache. Graph-cold first-step GPU (pipeline first-touch in a fresh process) IS measured separately as COLD_FIRST_STEP_GPU_NS.",
+        "warm_n_process_runs": 3,
+        "warm_tps_median": 32.921585261243315
+      },
+      "dispatch_fusion": {
+        "after_tok_s_mean": 35.67011507580202,
+        "n_reps": 3,
+        "n_process_runs_named": false
+      },
+      "mincore": [
+        {
+          "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+          "bytes": 224553,
+          "pages": 14,
+          "resident": 14,
+          "frac": 1.0,
+          "pagesize": 16384
+        },
+        {
+          "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/segments/7cf1b122be1f8265ad64c83b9a9f1c065e1e780bea0fd1c74ac4598596cb3c69.hq30uq4",
+          "bytes": 67108864,
+          "pages": 4096,
+          "resident": 4096,
+          "frac": 1.0,
+          "pagesize": 16384
+        },
+        {
+          "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/segments/9a327c6eaaee2b1b171f349900068f722121a57c1a481679dc1fd3e521b5da9a.hq30uq4",
+          "bytes": 67108864,
+          "pages": 4096,
+          "resident": 4096,
+          "frac": 1.0,
+          "pagesize": 16384
+        },
+        {
+          "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/segments/a36aa9c7c14ae2df57a47bd6a5dbb44695e91c0af368a780395be9d246a691cb.hq30uq4",
+          "bytes": 44564520,
+          "pages": 2721,
+          "resident": 2721,
+          "frac": 1.0,
+          "pagesize": 16384
+        },
+        {
+          "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/segments/85151de11f27888d3d3fb3cf9511c4deff2d21bafcea3bb7de5ce29bede61a37.hq30uq4",
+          "bytes": 44564520,
+          "pages": 2721,
+          "resident": 2721,
+          "frac": 1.0,
+          "pagesize": 16384
+        }
+      ],
+      "did_not_purge": true,
+      "did_not_modify_parent_a": true,
+      "verdict": "REFUTED",
+      "why": "Sealed PARENT_A quotes 34.873 tok/s; the seal's own remesure is 33.996 (delta -0.8778513845150329), outside the original band [34.767, 34.980]. n_reps=2 in one process. GPU_LEDGER.OS_PAGE_CACHE_COLD_GPU_NS is ABSENT because sudo purge was not run; three sequential processes share the ~14 GiB page cache. Dispatch fusion's +5.8% is 3 in-process reps, also unpurged. mincore on the sealed parent (read-only) reports the current cache footprint; this is the confound, not a cold number."
+    },
+    {
+      "id": "capability_collapse",
+      "question": "No capability suite has been run on ANY candidate. Does the leader lose something a 16-token sample cannot see?",
+      "ran": true,
+      "commands": [
+        "capability_suite.SUITE predicates over PARENT_A's sealed 16-token sample",
+        "glob receipts/headless/CAPABILITY_*.json",
+        "optional live fused_subbit fact-capital on PARENT_A"
+      ],
+      "sealed_sample": {
+        "n_tokens": 16,
+        "ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "think_preamble": true,
+        "text_head": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "suite": {
+          "n_items": 11,
+          "n_pass": 0,
+          "n_fail": 11,
+          "items": [
+            {
+              "id": "fact-capital",
+              "axis": "knowledge",
+              "pass": false,
+              "why": "expected all of ('paris',)"
+            },
+            {
+              "id": "fact-arith",
+              "axis": "reasoning",
+              "pass": false,
+              "why": "expected 323 among the numbers emitted, got []"
+            },
+            {
+              "id": "fact-multistep",
+              "axis": "reasoning",
+              "pass": false,
+              "why": "expected 21 among the numbers emitted, got []"
+            },
+            {
+              "id": "json-answer",
+              "axis": "structured_output",
+              "pass": false,
+              "why": "no parseable JSON object in the reply"
+            },
+            {
+              "id": "json-kind-correct",
+              "axis": "structured_output",
+              "pass": false,
+              "why": "no parseable JSON object in the reply"
+            },
+            {
+              "id": "json-no-prose",
+              "axis": "structured_output",
+              "pass": false,
+              "why": "no parseable JSON object in the reply"
+            },
+            {
+              "id": "mutation-anchor-exact",
+              "axis": "mutation",
+              "pass": false,
+              "why": "no parseable JSON object in the reply"
+            },
+            {
+              "id": "mutation-refuses-invention",
+              "axis": "mutation",
+              "pass": false,
+              "why": "no parseable JSON object in the reply"
+            },
+            {
+              "id": "code-compiles",
+              "axis": "coding",
+              "pass": false,
+              "why": "no python code block in the reply"
+            },
+            {
+              "id": "code-self-correct",
+              "axis": "self_correction",
+              "pass": false,
+              "why": "no python code block in the reply"
+            },
+            {
+              "id": "no-think-leak",
+              "axis": "hygiene",
+              "pass": false,
+              "why": "reply contained forbidden ['<think>']"
+            }
+          ],
+          "text_head": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+        }
+      },
+      "capability_receipts": [
+        {
+          "file": "CAPABILITY_llamacpp-q5k.json",
+          "label": "llamacpp-q5k",
+          "backend": "llama",
+          "overall": {
+            "passed": 40,
+            "total": 43,
+            "rate": 0.9302
+          },
+          "is_parent_a": false
+        },
+        {
+          "file": "CAPABILITY_mlx-4bit.json",
+          "label": "mlx-4bit",
+          "backend": "mlx",
+          "overall": {
+            "passed": 35,
+            "total": 43,
+            "rate": 0.814
+          },
+          "is_parent_a": false
+        }
+      ],
+      "parent_a_capability_suite_ran": false,
+      "q5k_control": {
+        "file": "CAPABILITY_llamacpp-q5k.json",
+        "label": "llamacpp-q5k",
+        "backend": "llama",
+        "overall": {
+          "passed": 40,
+          "total": 43,
+          "rate": 0.9302
+        },
+        "is_parent_a": false
+      },
+      "live_fact_capital": null,
+      "live_text_head": null,
+      "verdict": "REFUTED",
+      "why": "PARENT_A's capability_evidence is 16 greedy tokens of a compiler-prose prompt starting <think>. Scoring that sample against the Doctor suite yields 0/11 passes \u2014 it cannot emit Paris, 323, a mutation JSON, or compiling code. CAPABILITY receipts on disk: ['CAPABILITY_llamacpp-q5k.json', 'CAPABILITY_mlx-4bit.json']. None target NOETIC_PARENT_A. llama.cpp Q5_K on the same machine scored {'passed': 40, 'total': 43, 'rate': 0.9302} on the suite (Paris in 2 completion tokens). A 16-token <think> preamble cannot see that loss. Live suite item was not obtained this run; the sealed sample already fails every item."
+    }
+  ],
+  "claims": [
+    {
+      "id": "NOETIC_PARENT_A",
+      "claim": "3.1393 EBPW, 756 dispatches, 34.873 tok/s, sealed closure 7921a6a27e0561343c1b54b740ef0c552bff7c939117487c88d2e6b4d4de5adb",
+      "ran": true,
+      "attacks_run": [
+        "integer-coded hide against the accountant",
+        "reseal of ~/noetic/NOETIC_PARENT_A (read-only merkle)",
+        "reproduction tok/s vs recorded band",
+        "hardcoded dense_w_materialized=0 in the decoder that printed the counter",
+        "capability_suite predicates on the sealed 16-token sample"
+      ],
+      "evidence": {
+        "complete_ebpw": 3.139300850311054,
+        "dispatches_fused": 756,
+        "recorded_tok_s": 34.87340648509909,
+        "measured_tok_s": 33.995555100584056,
+        "tok_s_inside_band": false,
+        "closure_sha256_receipt": "7921a6a27e0561343c1b54b740ef0c552bff7c939117487c88d2e6b4d4de5adb",
+        "closure_sha256_live": "7921a6a27e0561343c1b54b740ef0c552bff7c939117487c88d2e6b4d4de5adb",
+        "closure_match": true,
+        "n_affine_live": 192
+      },
+      "verdict": "REFUTED",
+      "why": "Byte closure reseals to 7921a6a27e0561343c1b54b740ef0c552bff7c939117487c88d2e6b4d4de5adb (match=True, n_affine=192). EBPW 3.139300850311054 and 756 dispatches reproduced. The quoted 34.873 tok/s does not: measured 33.995555100584056 outside [34.767237183044685, 34.97957578715349]. dense_w_materialized=0 is a literal. Integer-coded weights hide from the accountant that blesses the EBPW. Capability is 16 tokens of <think>, not a suite. A sealed parent whose headline tok/s already missed its own reproduction is not a sealed speed number."
+    },
+    {
+      "id": "dispatch_fusion",
+      "claim": "964 -> 756 with token ids IDENTICAL, +5.8% tok/s",
+      "ran": true,
+      "attacks_run": [
+        "recompute theoretical_after and a +64 dummy-dispatch worse graph",
+        "compare fused_subbit mlp_pair (900) vs full (756) tok/s",
+        "runtime_div vs specialized gpu_ns",
+        "token-id identity from the fusion receipt"
+      ],
+      "evidence": {
+        "before_dispatches": 964,
+        "after_dispatches": 756,
+        "ids_identical": true,
+        "before_tok_s": 33.716875920652136,
+        "after_tok_s": 35.67011507580202,
+        "pct": 5.793060898484657,
+        "bad_control_dummy_dispatches": 820,
+        "runtime_div_slower": true,
+        "pair_worse_than_full": true
+      },
+      "verdict": "SURVIVED",
+      "why": "Token ids match (16 ids). Dispatches 964->756. tok/s 33.717->35.670 (5.79%). A dummy-per-layer graph is 820 dispatches (worse). fused_subbit already ran worse fusion arms (mlp_pair 900 disp, runtime_div slower than specialized) and they scored worse. The fusion receipt itself still lacks a named bad_control field, which is why the causal law marked it incomplete; the attacks that were executed did not invert 964->756 or the identical ids."
+    },
+    {
+      "id": "GPU_ledger",
+      "claim": "incumbent is BANDWIDTH-bound: 468.9 GB/s, 67% of ceiling, GPU 95.6% of wall",
+      "ran": true,
+      "attacks_run": [
+        "recompute ACTIVE_BYTES/GPU_NS",
+        "no-op control: same GPU_NS still reports 468.9",
+        "bad control: 2x GPU_NS halves implied GB/s",
+        "confirm DRAM_READ_BYTES ABSENT"
+      ],
+      "evidence": {
+        "recomputed_gb_s": 468.92486846557205,
+        "receipt_gb_s": 468.9248684655721,
+        "pct_of_700": 66.98926692365315,
+        "gpu_as_fraction_of_wall": 0.956372018917533,
+        "DRAM_READ_BYTES": "ABSENT",
+        "noop_same_implied_gb_s": true,
+        "bad_2x_gpu_ns_gb_s": 234.46243423278602
+      },
+      "verdict": "REFUTED",
+      "why": "Recomputed implied GB/s 468.925 matches the receipt. That identity is ACTIVE_BYTES (manifest payload) / GPU_NS, not a DRAM counter (DRAM_READ_BYTES=ABSENT). A kernel that did not stream the weights would still report 468.9 at the same GPU_NS. GPU busy-fraction 0.956372018917533 is measured (GPUEnd-GPUStart)/complete-wall and does overturn the Q80 51% idle story. The bandwidth-bound *label* is not a physical bytes-moved measurement."
+    },
+    {
+      "id": "multisession",
+      "claim": "one shared body, Metal c4/c1 = 1.0398; ceiling 1.32x",
+      "ran": true,
+      "attacks_run": [
+        "one_body_not_n_copies(four copies) must reject",
+        "recompute metal_c4_over_c1 from the live receipt",
+        "confirm operator microbatch 1.00x (weight stream not amortised)"
+      ],
+      "evidence": {
+        "shared_body": "PASS",
+        "metal_c4_over_c1": 1.0398112881180026,
+        "concurrent_independent_c4": 1.3234949804103806,
+        "four_copies_rejected": true,
+        "one_body_formula_accepts_measured_c4": true,
+        "weights_ptr_shared": true
+      },
+      "verdict": "SURVIVED",
+      "why": "Four full copies are rejected by the one-body predicate (copies=58750614544, one=15264070672). Measured c4/c1 Metal 1.0398112881180026 is ~1.04, not 4. Concurrent-independent c=4 is 1.3234949804103806. Operator microbatch of lm_head is 1.00x in the same receipt \u2014 the weight stream is not amortised, which is why 1.32x is a ceiling rather than a win. No page-cache-cold of the c=4 run was added; the one-body pointer evidence (weights_ptr_shared, distinct KV pointers) is independent of tok/s and survived the four-copy bad control."
+    },
+    {
+      "id": "organ_floors",
+      "claim": "deltanet 4.125 / gqa 4.25 / embedding 4.125, implying a whole-model floor of 2.9398 EBPW",
+      "ran": true,
+      "attacks_run": [
+        "recompute weighted EBPW from NOETIC_ORGAN_CENSUS element counts",
+        "apply lm_head 3.25 from ORGAN_FRONTIERS instead of embed 4.125 on output"
+      ],
+      "evidence": {
+        "floors_storage_bpw": {
+          "deltanet": 4.125,
+          "gqa": 4.25,
+          "embedding_output": 4.125
+        },
+        "mlp_survive_bpw": 2.25,
+        "quoted_whole_model": 2.9398,
+        "recomputed_mlp225_output4125": 2.9397934504581626,
+        "recomputed_mlp225_lmhead325": 2.8984312351275423,
+        "quoted_matches_output_at_embed_floor": true,
+        "lm_head_survives_q3_in_organ_receipt": true,
+        "embedding_output_do_not_quote_one_number": true
+      },
+      "verdict": "REFUTED",
+      "why": "The 2.9398 figure is exactly MLP@2.25 + DeltaNet@4.125 + GQA@4.25 + embed@4.125 + output@4.125 = 2.939793. ORGAN_FRONTIERS says lm_head mix survives q3 (3.25) and 'embed gather vs lm_head stream \u2014 do not quote one number'. Charging the output organ (1.271e9 weights, almost entirely lm_head) at the embed-table rare-token floor is the illegal transfer. With lm_head at 3.25 the mix is 2.898431, not 2.9398. The three per-organ floors themselves were not inverted; the implication that forces a whole-model floor of 2.9398 is."
+    },
+    {
+      "id": "onebit_families",
+      "claim": "ternary survives at 1.85; routed codebook has the best error but is UNHEALTHY per tensor",
+      "ran": true,
+      "attacks_run": [
+        "re-apply local_survives := gain>=0.5 AND rel_fro<=0.5 AND cosine>null on every tensor in the receipt"
+      ],
+      "evidence": {
+        "null_cosine": 0.40992871175209683,
+        "families": [
+          {
+            "family_id": "B2",
+            "name": "binary_plus_per_group_scale",
+            "storage_bpw": 2.0,
+            "mean_rel_fro": 0.436910646657149,
+            "mean_gain": 0.6154634952545166,
+            "n_unhealthy": 2,
+            "unhealthy": [
+              {
+                "organ": "up_proj",
+                "rel_fro": 0.5291030406951904,
+                "gain": 0.5663954019546509,
+                "survives": false
+              },
+              {
+                "organ": "down_proj",
+                "rel_fro": 0.5486552119255066,
+                "gain": 0.6216980814933777,
+                "survives": false
+              }
+            ],
+            "family_survives_reapplied_rule": false
+          },
+          {
+            "family_id": "B3",
+            "name": "ternary_5in8_plus_scale",
+            "storage_bpw": 1.85,
+            "mean_rel_fro": 0.3209715361396472,
+            "mean_gain": 0.7376269300778707,
+            "n_unhealthy": 0,
+            "unhealthy": [],
+            "family_survives_reapplied_rule": true
+          },
+          {
+            "family_id": "B4",
+            "name": "binary_shared_basis_across_layers",
+            "storage_bpw": 2.0,
+            "mean_rel_fro": 0.5280907601118088,
+            "mean_gain": 0.49919335916638374,
+            "n_unhealthy": 3,
+            "unhealthy": [
+              {
+                "organ": "gate_proj",
+                "rel_fro": 0.8843731880187988,
+                "gain": 0.08467095345258713,
+                "survives": false
+              },
+              {
+                "organ": "up_proj",
+                "rel_fro": 0.8932489156723022,
+                "gain": 0.09680572152137756,
+                "survives": false
+              },
+              {
+                "organ": "down_proj",
+                "rel_fro": 0.5535595417022705,
+                "gain": 0.3150266110897064,
+                "survives": false
+              }
+            ],
+            "family_survives_reapplied_rule": false
+          },
+          {
+            "family_id": "B6",
+            "name": "routed_codebook_pq",
+            "storage_bpw": 2.0001838235294116,
+            "mean_rel_fro": 0.2772121379772822,
+            "mean_gain": 0.5054689645767212,
+            "n_unhealthy": 2,
+            "unhealthy": [
+              {
+                "organ": "down_proj",
+                "rel_fro": 0.3966327905654907,
+                "gain": 0.39474835991859436,
+                "survives": false
+              },
+              {
+                "organ": "down_proj",
+                "rel_fro": 0.31384968757629395,
+                "gain": 0.3247744143009186,
+                "survives": false
+              }
+            ],
+            "family_survives_reapplied_rule": false
+          },
+          {
+            "family_id": "B8",
+            "name": "generated_walsh_coefficients",
+            "storage_bpw": 2.0,
+            "mean_rel_fro": 0.7680452267328898,
+            "mean_gain": 0.24833336720863977,
+            "n_unhealthy": 6,
+            "unhealthy": [
+              {
+                "organ": "gate_proj",
+                "rel_fro": 0.8228763341903687,
+                "gain": 0.162491574883461,
+                "survives": false
+              },
+              {
+                "organ": "gate_proj",
+                "rel_fro": 0.6706879734992981,
+                "gain": 0.2518782913684845,
+                "survives": false
+              },
+              {
+                "organ": "up_proj",
+                "rel_fro": 0.8326566219329834,
+                "gain": 0.166472926735878,
+                "survives": false
+              },
+              {
+                "organ": "up_proj",
+                "rel_fro": 0.8747442364692688,
+                "gain": 0.23672322928905487,
+                "survives": false
+              },
+              {
+                "organ": "down_proj",
+                "rel_fro": 0.5029743313789368,
+                "gain": 0.3929995596408844,
+                "survives": false
+              },
+              {
+                "organ": "down_proj",
+                "rel_fro": 0.9043318629264832,
+                "gain": 0.2794346213340759,
+                "survives": false
+              }
+            ],
+            "family_survives_reapplied_rule": false
+          }
+        ],
+        "receipt_best_survivor": "B3",
+        "receipt_ranked": [
+          "B6",
+          "B3",
+          "B2",
+          "B4",
+          "B8"
+        ]
+      },
+      "verdict": "SURVIVED",
+      "why": "Re-applied the published survival rule to the six tensors of each family. B3 ternary@1.85: family_survives=True n_unhealthy=0. B6 routed codebook: best mean_rel_fro=0.2772121379772822 but n_unhealthy=2 (down_proj gain 0.395 and 0.325, both < 0.5). The claim already named this; the attack that was executed reproduced it rather than inverting it."
+    }
+  ],
+  "counts": {
+    "questions": 6,
+    "questions_ran": 6,
+    "questions_refuted": 5,
+    "claims": 6,
+    "claims_ran": 6,
+    "claims_refuted": 3,
+    "claims_survived": 3
+  },
+  "at_least_one_claim_physically_refuted": true,
+  "refuted_claim_ids": [
+    "NOETIC_PARENT_A",
+    "GPU_ledger",
+    "organ_floors"
+  ],
+  "survived_claim_ids": [
+    "dispatch_fusion",
+    "multisession",
+    "onebit_families"
+  ]
+}

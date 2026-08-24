@@ -29,7 +29,7 @@ from gravity_container import build, verify                                     
 from gravity_compact_artifact import parse                                       # noqa: E402
 
 RUNS = "workspace/campaign/records/runs/qwen38-27b"
-PIN = "workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json"
+PIN = "hawking-experiments/superwave/g1/GRAVITY1_SOURCE_PIN.json"
 DECODE = "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
 CODEC_UNIFORM = 3
 
@@ -204,7 +204,7 @@ def main():
                    sort_keys=True).encode()).hexdigest()
 
     fails = verify(body)
-    out = a.out or os.path.join("workspace/superwave/g1", f"{a.artifact}.container.json")
+    out = a.out or os.path.join("hawking-experiments/superwave/g1", f"{a.artifact}.container.json")
     json.dump(body, open(out, "w"), indent=2)
     print(f"\nsealed -> {out}")
     print(f"  sections {len(body)}  kernels referenced by decode: {len(body['kernels'])}")

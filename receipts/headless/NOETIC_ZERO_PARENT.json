@@ -1,0 +1,226 @@
+{
+  "schema": "hawking.headless.noetic_zero_parent.v1",
+  "generated_at": "2026-08-24T06:04:30Z",
+  "git_head": "1abd178a3c0eec8ec39731c171f4e220ff8749a4",
+  "elapsed_s": 4.958,
+  "claim": "Production Noetic inference does not load parent weights.",
+  "observation_method": "DYLD interpose of open/openat/open$NOCANCEL/fopen (tools/headless/noetic_openlog.c) on the live process. Successful opens are resolved via F_GETPATH so openat relative names still name the file. Every recorded path is an observed open(), not a walk of the loader source.",
+  "parent_bf16": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+  "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+  "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+  "decode_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+  "decode_binary_identity": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+    "size": 6324880,
+    "mtime_unix": 1787519802,
+    "sha256_head_1m": "991ad38bce945e9cab61e29f5777b5775529352d8159208d94ebdd48c4dc814a",
+    "from_this_repo": true,
+    "not_vestigial_hawking_copy": true
+  },
+  "did_not_load_second_27b": true,
+  "did_not_modify_models": true,
+  "distinctions": {
+    "parent_weights_at_inference": {
+      "is_the_violation": true,
+      "observed": false,
+      "paths": [],
+      "note": "A .safetensors / .bin / .gguf / .pt under the parent bf16 directory. This is the claim under test."
+    },
+    "parent_config_or_tokenizer": {
+      "is_the_violation": false,
+      "observed": true,
+      "tokenizer_paths": [
+        "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+      ],
+      "config_paths": [],
+      "note": "Prior work found the parent tokenizer.json in use for tokenization. Confirmed by observed open() of that file. Tokenizer dependency, not a weight dependency."
+    },
+    "parent_at_compile_time": {
+      "is_the_violation": false,
+      "observed": false,
+      "note": "This harness records runtime opens of the decode process. The binary is built from this repo via cargo; cargo is not given the parent path. Compile-time reads of the parent would not be a runtime dependency."
+    }
+  },
+  "production_run": {
+    "verdict": "PASS",
+    "found": [
+      "parent tokenizer.json (tokenizer dependency, not a weight dependency)"
+    ],
+    "n_parent_weight_opens": 0,
+    "parent_weight_paths": [],
+    "parent_tokenizer_paths": [
+      "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+    ],
+    "parent_config_paths": [],
+    "live_native_decode": {
+      "why": "ascension_qwen38_hybrid_greedy built from THIS repo is production Noetic inference. A PASS requires the process to run to completion, emit at least one token, and show the 755 catalog tensor reads. A truncated prefix (MetalContext::new dying first) is INCONCLUSIVE, not evidence.",
+      "argv": [
+        "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+        "--artifact-root",
+        "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+        "--tokenizer",
+        "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+        "--prompt",
+        "Hi",
+        "--max-new-tokens",
+        "1",
+        "--max-seq-len",
+        "32"
+      ],
+      "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_s": 4.065,
+      "dylib_loaded": true,
+      "saw_tokenizer_encode": true,
+      "saw_catalog_count": true,
+      "catalog_count": 755,
+      "saw_upload_progress": true,
+      "last_upload_index": 750,
+      "metal_refused": false,
+      "generated_text": "<think>",
+      "new_token_ids": [
+        248068
+      ],
+      "n_new_tokens": 1,
+      "fallbacks": 0,
+      "n_parent_weight_opens": 0,
+      "n_artifact_tensor_opens": 755,
+      "n_file_open_events": 804,
+      "complete": true,
+      "truncation": null,
+      "stderr_head": "INTERPOSE_CTOR\nqwen38 prompt tokens=9 text=\"<|im_start|>user\\nHi<|im_end|>\\n<|im_start|>assistant\\n\"\nqwen38-decode opening Metal + 755 catalog tensors\nqwen38-decode upload 0/755\nqwen38-decode upload 50/755\nqwen38-decode upload 100/755\nqwen38-decode upload 150/755\nqwen38-decode upload 200/755\nqwen38-decode upload 250/755\nqwen38-decode upload 300/755\nqwen38-decode upload 350/755\nqwen38-decode upload 400/755\nqwen38-decode upload 450/755\nqwen38-decode upload 500/755\nqwen38-decode upload 550/755\nqwen38-decode upload 600/755\nqwen38-decode upload 650/755\nqwen38-decode upload 700/755\nqwen38-decode upload 750/755\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\n",
+      "stdout_head": "GENERATED_TEXT_VERBATIM: <think>\nFALLBACKS: 0\nDENSE_W_MATERIALIZED: 0\nPROMPT_LEN: 9\nNEW_TOKENS: [248068]\ngenerated_token_ids=[248068]\nGPU_NS_PER_STEP: [63506916, 28652875, 28525583, 28674249, 28422166, 28671250, 28676250, 28545916, 28386416]\nWAIT_NS_PER_STEP: [115609334, 29012584, 28902333, 29360250, 28780417, 29069958, 29040708, 28871916, 28801500]\nMEDIAN_GPU_NS_PER_TOKEN: Some(28652875)\nWALL_NS: 356661542\nPREFILL_WALL_NS: 356660083\nDECODE_WALL_NS: 84\nFIRST_STEP_WALL_NS: 117865042\nSTEADY_DECODE_WALL_NS_PER_TOKEN: None\n",
+      "observation": {
+        "n_events": 804,
+        "n_unique": 784,
+        "parent_weight": [],
+        "parent_tokenizer": [
+          "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+        ],
+        "parent_config": [],
+        "parent_other": [],
+        "n_not_parent": 783,
+        "n_artifact_tensor": 755,
+        "n_artifact_other": 1,
+        "artifact_other": [
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/manifest.json"
+        ],
+        "artifact_tensor_head": [
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/7cf1b122be1f8265ad64c83b9a9f1c065e1e780bea0fd1c74ac4598596cb3c69.hq30uq4",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/b562b986ad0a175dff2803bfe05a6582e815edf279aa777207d81f32556d9630.f32v2",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2.f32v2",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/634c88ebf503dfbd5c65998144d94e8e0000ae780b2a250588c61819ce94c982.hq30uq4",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/6ef2a12f6e0acacc946fa5ca1aeaedd2214e4b492856acb175a0c7f995665446.hq30uq4",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/a3290e055bc5a212b6cab08cb24386d56f69536ce5c6865974814b83cae4caff.hq30uq4",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/8eb544723d8aa37bd4289e07d202c172707586758ae4c78cd055f31fa989a922.f32v2",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/e24110ded742e05e820234740ad50c5746cf3ff4ac5a49d102b61919a2350b14.f32v2"
+        ],
+        "artifact_tensor_tail": [
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/10aef132cf4bdc1bbf08f86f323547f7c716e015a9903ffc772d33a370c78c08.hq30uq4",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/7d3ecc40ab0503eedac6bfd0723bb078139ad654e80848d19a957a944a28908d.f32v2",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/6b9cbbde6a84e1577279266902aea383db9cc7c490c372f9db461d60ce63b389.f32v2",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/a7b155c57369b6fa10aaae920b26e34251bfc8968a673fe1d25eea1c7f86d9e4.hq30uq4",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/0c71a6bd474f15271cb3965c16ee5a623c171bf75ad477186369cc9de8ff88b3.hq30uq4",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/9094abfae6128b19fa9470a76fbcab24139fbf064376ffde83e48df7ea797e5a.hq30uq4",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/efed180eb167fad870f6cf3a45d10da59f78aea6a4907d3f6a87701a1c590e98.f32v2",
+          "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors/9a327c6eaaee2b1b171f349900068f722121a57c1a481679dc1fd3e521b5da9a.hq30uq4"
+        ],
+        "unique_paths_fingerprint": "b77c74f15f7e26e9c7e5ec414fa9d540bfbae31dad411cfd2e2ae07a56c5f107"
+      }
+    }
+  },
+  "negative_control": {
+    "what": "Composition harness teacher scoring: noetic_composition.SourceBF16.load of model.language_model.layers.0.input_layernorm.weight. That path legitimately opens a parent safetensors shard. The detector must flag it. A detector that cannot catch this cannot certify the clean case either.",
+    "via": "noetic_composition.SourceBF16",
+    "tensor": "model.language_model.layers.0.input_layernorm.weight",
+    "did_not_load_27b": true,
+    "teacher_load": {
+      "ok": true,
+      "tensor": "model.language_model.layers.0.input_layernorm.weight",
+      "shape": [
+        5120
+      ],
+      "mean": -0.03336528688669205,
+      "via": "noetic_composition.SourceBF16.load"
+    },
+    "exit_code": 0,
+    "elapsed_s": 0.569,
+    "dylib_loaded": true,
+    "parent_weight_opens": [
+      "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00001-of-00018.safetensors"
+    ],
+    "parent_tokenizer_opens": [],
+    "parent_config_opens": [
+      "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model.safetensors.index.json"
+    ],
+    "detector_caught": true,
+    "n_file_open_events": 1304,
+    "verdict": "PASS",
+    "observation": {
+      "n_events": 1304,
+      "n_unique": 1283,
+      "parent_weight": [
+        "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00001-of-00018.safetensors"
+      ],
+      "parent_tokenizer": [],
+      "parent_config": [
+        "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model.safetensors.index.json"
+      ],
+      "parent_other": [],
+      "n_not_parent": 1281,
+      "n_artifact_tensor": 0,
+      "n_artifact_other": 0,
+      "artifact_other": [],
+      "artifact_tensor_head": [],
+      "artifact_tensor_tail": [],
+      "unique_paths_fingerprint": "18afe868ebf93ca2671d785f0455b99bd255648f80b31067ee2b8642770d246a"
+    }
+  },
+  "detector": {
+    "method": "DYLD_INSERT_LIBRARIES + syscall-backed open/openat interpose + F_GETPATH",
+    "source": "tools/headless/noetic_openlog.c",
+    "dylib_loaded_on_production_and_control": true,
+    "weight_suffixes": [
+      ".bin",
+      ".ckpt",
+      ".gguf",
+      ".h5",
+      ".msgpack",
+      ".npy",
+      ".npz",
+      ".onnx",
+      ".ot",
+      ".pb",
+      ".pkl",
+      ".pt",
+      ".pth",
+      ".safetensors",
+      ".weights"
+    ],
+    "tokenizer_names": [
+      "added_tokens.json",
+      "merges.txt",
+      "sentencepiece.bpe.model",
+      "special_tokens_map.json",
+      "spiece.model",
+      "tokenizer.json",
+      "tokenizer.model",
+      "tokenizer_config.json",
+      "vocab.json"
+    ],
+    "config_names": [
+      "chat_template.jinja",
+      "config.json",
+      "configuration.json",
+      "crc32.txt",
+      "generation_config.json",
+      "model.safetensors.index.json",
+      "preprocessor_config.json",
+      "video_preprocessor_config.json"
+    ],
+    "control_result": "caught"
+  },
+  "verdict": "PASS",
+  "pass_rule": "PASS iff (1) the native decode built from THIS repo ran to completion (exit 0, at least one emitted token, 755 observed catalog tensor opens), (2) that complete run opened no parent weight file, (3) the composition teacher-scoring control DID open a parent weight file and the detector flagged it, (4) the interpose loaded on both runs. A truncated run (Metal refused, timeout, zero tokens, or missing catalog reads) is INCONCLUSIVE, never PASS."
+}

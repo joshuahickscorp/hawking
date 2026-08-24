@@ -4,6 +4,7 @@
 //! admit 3/2/1/0 depending on measured pressure.
 
 use std::collections::BTreeSet;
+use std::time::Instant;
 
 use super::dag::{HaiderDag, NodeId, NodeStatus};
 use super::memgate::MemGate;
@@ -78,16 +79,19 @@ pub struct EvidencePacket {
 #[derive(Clone, Debug)]
 pub struct Lane {
     pub id: LaneId,
-    pub role: LaneRole,
+    pub role: Option<LaneRole>,
     pub node: Option<NodeId>,
     pub session: Option<String>,
     pub status: LaneStatus,
+    pub started_at: Option<Instant>,
+    pub last_elapsed_ms: u64,
 }
 
 impl Lane {
     /// One line of the compact UI: `A  ARCH        THINKING`.
     pub fn render_line(&self, letter: char) -> String {
-        format!("{letter}  {:<12}{}", self.role.short(), self.status.label())
+        let role = self.role.map(|r| r.short()).unwrap_or("GENERIC");
+        format!("{letter}  {:<12}{}", role, self.status.label())
     }
 }
 
@@ -95,21 +99,27 @@ impl Lane {
 #[derive(Clone, Debug)]
 pub struct LaneScheduler {
     pub lanes: Vec<Lane>,
+    pub last_admission_reason: Option<String>,
 }
 
 impl LaneScheduler {
     pub fn new(ceiling: usize) -> Self {
-        let roles = [LaneRole::Architect, LaneRole::Implementer, LaneRole::Adversary];
-        let lanes = (0..ceiling.min(3).max(1))
+        let count = ceiling.min(3).max(1);
+        let lanes = (0..count)
             .map(|i| Lane {
                 id: LaneId(format!("{}", char::from(b'A' + i as u8))),
-                role: roles[i],
+                role: None,
                 node: None,
                 session: None,
                 status: LaneStatus::Idle,
+                started_at: None,
+                last_elapsed_ms: 0,
             })
             .collect();
-        Self { lanes }
+        Self {
+            lanes,
+            last_admission_reason: None,
+        }
     }
 
     pub fn admitted_count(&self) -> usize {
@@ -119,48 +129,65 @@ impl LaneScheduler {
             .count()
     }
 
+    pub fn lane_latencies_ms(&self) -> Vec<u64> {
+        self.lanes.iter().map(|l| l.last_elapsed_ms).collect()
+    }
+
     /// Admit as many ready nodes as the MemGate allows, assigning them to idle
-    /// lanes with compatible roles. Returns the admitted node ids.
+    /// lanes. Returns the admitted node ids.
     pub fn admit(&mut self, dag: &mut HaiderDag, gate: &dyn MemGate) -> Vec<NodeId> {
         let ready = dag.ready_nodes();
         if ready.is_empty() {
             return Vec::new();
         }
         let decision = gate.admit(ready.len());
-        let ceiling = gate.ceiling();
+        let limit = decision.admitted_lanes.min(gate.ceiling());
         let mut admitted = Vec::new();
         let mut taken = BTreeSet::new();
+
+        let active: Vec<NodeId> = self
+            .lanes
+            .iter()
+            .filter(|l| matches!(l.status, LaneStatus::Thinking | LaneStatus::Testing))
+            .filter_map(|l| l.node.clone())
+            .collect();
+
         for node_id in ready {
-            if admitted.len() >= decision.admitted_lanes.min(ceiling) {
+            if admitted.len() >= limit {
                 break;
             }
             let node = match dag.get(&node_id) {
                 Some(n) => n,
                 None => continue,
             };
-            let lane_idx = self
-                .lanes
+
+            let compatible = active
                 .iter()
-                .position(|l| l.status == LaneStatus::Idle && l.role == node.role)
-                .and_then(|idx| {
-                    let ok = admitted
-                        .iter()
-                        .all(|other| dag.can_run_concurrently(other, &node_id));
-                    if ok {
-                        Some(idx)
-                    } else {
-                        None
-                    }
-                });
+                .all(|other| dag.can_run_concurrently(other, &node_id))
+                && admitted
+                    .iter()
+                    .all(|other| dag.can_run_concurrently(other, &node_id));
+            if !compatible {
+                continue;
+            }
+
+            let lane_idx = self.lanes.iter().position(|l| l.status == LaneStatus::Idle);
             if let Some(idx) = lane_idx {
                 if let Some(lane) = self.lanes.get_mut(idx) {
+                    lane.role = Some(node.role);
                     lane.node = Some(node_id.clone());
                     lane.status = LaneStatus::Thinking;
+                    lane.started_at = Some(Instant::now());
+                    lane.last_elapsed_ms = 0;
+                }
+                if let Some(n) = dag.get_mut(&node_id) {
+                    n.status = NodeStatus::Running;
                 }
                 taken.insert(node_id.clone());
                 admitted.push(node_id);
             }
         }
+
         // Any ready node not admitted is queued (MemGate refused) — do not fail.
         for node_id in &ready {
             if !taken.contains(node_id) {
@@ -169,6 +196,42 @@ impl LaneScheduler {
                 }
             }
         }
+
+        self.last_admission_reason = Some(decision.reason);
         admitted
+    }
+
+    pub fn complete_lane(&mut self, node: &NodeId) {
+        self.finish_lane(node, LaneStatus::Done);
+    }
+
+    pub fn fail_lane(&mut self, node: &NodeId) {
+        self.finish_lane(node, LaneStatus::Failed);
+    }
+
+    pub fn complete_lane_by_label(&mut self, label: &str) {
+        if let Some(node) = self
+            .lanes
+            .iter()
+            .find(|l| l.id.0 == label)
+            .and_then(|l| l.node.clone())
+        {
+            self.complete_lane(&node);
+        }
+    }
+
+    fn finish_lane(&mut self, node: &NodeId, status: LaneStatus) {
+        if let Some(lane) = self
+            .lanes
+            .iter_mut()
+            .find(|l| l.node.as_ref() == Some(node))
+        {
+            if let Some(start) = lane.started_at.take() {
+                lane.last_elapsed_ms = start.elapsed().as_millis() as u64;
+            }
+            lane.status = status;
+            lane.node = None;
+            lane.role = None;
+        }
     }
 }

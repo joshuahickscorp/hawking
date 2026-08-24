@@ -1,0 +1,90 @@
+{
+  "gate": "TRUST_THRESHOLD",
+  "source": "steer S002",
+  "generated_at": "2026-08-23T08:48:30Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "conditions": [
+    {
+      "condition": "1. root context authority works",
+      "met": true,
+      "why": "HCLI_CONTEXT_AUTHORITY.json: result=PASS"
+    },
+    {
+      "condition": "2. durable Goal/DAG/WorkUnit identity works",
+      "met": true,
+      "why": "HCLI_RESTART_RESUME.json: result=PASS"
+    },
+    {
+      "condition": "3. dependency scheduling works",
+      "met": true,
+      "why": "MAX_DEPENDENCY_AND_ISOLATION.json: result=PASS"
+    },
+    {
+      "condition": "4. bounded repair/retry behaviour exists",
+      "met": true,
+      "why": "REPAIR_HOMEOSTASIS.json: result=PASS"
+    },
+    {
+      "condition": "5. verifier authority is non-vacuous",
+      "met": true,
+      "why": "AGENTOS_VERIFIER_AUTHORITY.json: result=PASS"
+    },
+    {
+      "condition": "6. shared mutation is single-writer",
+      "met": true,
+      "why": "AGENTOS_SINGLE_WRITER.json: result=PASS"
+    },
+    {
+      "condition": "7. Grok lifecycle is durable and reconcilable",
+      "met": true,
+      "why": "AGENTOS_GROK_WORKUNITS.json: result=PASS"
+    },
+    {
+      "condition": "8. local Qwen execution is measured",
+      "met": true,
+      "why": "measured equilibrium 4 concurrent decodes at 1.264x a single decoder"
+    },
+    {
+      "condition": "9. mixed backend failure is isolated",
+      "met": true,
+      "why": "MAX_DEPENDENCY_AND_ISOLATION.json: result=PASS"
+    },
+    {
+      "condition": "10. checkpoint/restart is coherent",
+      "met": true,
+      "why": "HCLI_RESTART_RESUME.json: result=PASS"
+    },
+    {
+      "condition": "11. steering is durable",
+      "met": true,
+      "why": "HCLI_RESTART_RESUME.json: result=PASS"
+    },
+    {
+      "condition": "12. status exposes meaningful physical state",
+      "met": true,
+      "why": "HCLI_STATUS_OBSERVABILITY.json: result=PASS"
+    },
+    {
+      "condition": "13. MAX has a measured useful equilibrium",
+      "met": true,
+      "why": "useful equilibrium c=4 from rungs [(1, 299.42), (2, 419.05), (4, 638.74), (8, 646.86)]; 1 rung(s) rejected for insufficient gain"
+    },
+    {
+      "condition": "14. no known P0/P1 defect can explode work or manufacture VERIFIED state",
+      "met": true,
+      "why": "9 green, 0 red, 0 inconclusive"
+    }
+  ],
+  "supporting": [
+    {
+      "condition": "long-context root ingress crossed 24K through the canonical path",
+      "met": true,
+      "why": "42046 server-counted prompt tokens through the canonical path"
+    }
+  ],
+  "met": 14,
+  "total": 14,
+  "unmet": [],
+  "result": "PASS",
+  "meaning": "PASS means the substrate is trustworthy enough to begin self-supplement and self-optimization. It does NOT mean the substrate is finished; anything beyond these 14 is input to the optimization loop rather than a prerequisite for it."
+}

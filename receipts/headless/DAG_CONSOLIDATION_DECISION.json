@@ -1,0 +1,132 @@
+{
+  "schema": "hawking.headless.dag_consolidation_decision.v1",
+  "obligation": "S006 DAG consolidation + governor gaps",
+  "generated_at": "2026-08-23T01:30:00Z",
+  "canonical_implementation": {
+    "chosen": "tools/haider/hcli/workunit.py + dag_store.py + scheduler.py",
+    "why": "workunit.py::is_ready/identify_ready/transition_status/assign_ready is the richer, scheduler-used implementation: valid-transition state machine, repair-aware readiness (_has_live_repair, repairs-may-proceed-from-failed), retry budget, and (in assign_ready, not is_ready) resource-class admission plus the MUTATION crash-safe lock. dag_store.py is the durable atomic writer. goal.py::WorkUnitDAG remains as GoalCompiler IR — a thin wrapper over that canonical logic, not a second DAG.",
+    "not_chosen": "goal.py::WorkUnitDAG as an independent implementation. Its naive 'all dependencies completed' check and direct wu.status writes are deleted.",
+    "third_abstraction_added": false,
+    "ledger_relationship": "Ledger (ledger.py) still sits ABOVE both. It answers 'is the overall goal satisfied?' (obligation VERIFIED). WorkUnitDAG/scheduler answer 'what task is dependency-ready to run?'. They were not merged."
+  },
+  "identity_space": {
+    "workunit_ids": "WorkUnitDAG and the scheduler share one identity space: WorkUnit.id on the same WorkUnit dataclass. GoalCompiler currently mints 'implement'/'validate'; a caller that copies those units into Scheduler.units keeps the same ids. No translation layer between compiler IR and the scheduler DAG.",
+    "obligation_ids": "Ledger obligations use G001-style ids. That is a different identity space from WorkUnit.id. No automatic mapping exists. Steering events use their own UUID ids and are cited in obligation text. A translation layer remains between obligations and WorkUnits.",
+    "summary": "WorkUnitDAG and scheduler: shared WorkUnit.id. Ledger: separate G-ids. Translation layer remains between those two spaces."
+  },
+  "goal_py_changes": [
+    "WorkUnitDAG.get_ready_units() now returns identify_ready(self.units) instead of a naive pending/ready + all-deps-completed loop. Pending units with satisfied deps are transitioned to ready; failed units with a live repair are not re-readied; repair units depending on a failed original become ready.",
+    "WorkUnitDAG.mark_completed()/mark_failed() no longer assign wu.status directly. They walk the legal transition_status path (pending->ready->running->completed/failed, etc.) so GoalCompiler/engine callers that skip an explicit running step still go through the canonical state machine. Invalid transitions raise InvalidTransitionError (never silent).",
+    "Added WorkUnitDAG.from_dict, save (DagStore atomic writer), and from_workspace. These are adapters, not a new DAG.",
+    "WorkUnitDAG was not removed; GoalCompiler and engine.py still use it as compiler IR (engine.py is out of this lane's write scope)."
+  ],
+  "governor_gaps_closed": {
+    "outcomes": {
+      "gap": "ledger.py only distinguished GOAL_MET / GOAL_NOT_MET / EMPTY_LEDGER vs the hook's five outcomes.",
+      "closed_how": "Ledger.outcome(budget_exceeded=False) returns GOAL_MET | GOAL_NOT_MET | TERMINAL_BLOCKER | SAFETY_DISARM | ENFORCEMENT_FAILURE. Ledger.terminal_blocker is parsed from a top-level `terminal_blocker: <text>` line (same regex as the hook). TERMINAL_BLOCKER requires that field AND every unresolved obligation status==BLOCKED, and is explicitly not GOAL_MET. SAFETY_DISARM is caller-requested via budget_exceeded (Ledger has no wall-clock or turn count). ENFORCEMENT_FAILURE is empty (and a missing/unreadable file still raises on parse — the caller maps that). assert_may_complete() dispatches to TerminalBlockerError / SafetyDisarmError / EnforcementFailureError / GoalNotMetError. The older .status property still returns EMPTY_LEDGER / GOAL_MET / GOAL_NOT_MET so existing callers (including hcli_agentos_ledger_test.py check 5) keep working."
+    },
+    "watchdog": {
+      "gap": "single JSON fingerprint of obligation fields and a flat count; no dual-hash, no 4-tier ladder.",
+      "closed_how": "Replaced _fingerprint with sha256(full ledger markdown) and sha256(lines matching /evidence:/i). Stalled requires BOTH to match the previous check; any change resets the counter to 0. watchdog_tier() returns 0 or 1-4; watchdog_message() quotes the hook WATCHDOG strings (L1 reconsider, L2 MANDATORY REPLAN, L3 CHANGE STRATEGY OR ESCALATE, L4+ ROOT CAUSE OR BLOCKER PROOF). consecutive_no_progress_count() is unchanged for existing tests."
+    }
+  },
+  "d4_six_tests": {
+    "1_persisted_dag_survives_restart": {
+      "before": "FAIL 1 persisted DAG survives restart: ready={'implement'} impl.status='pending' reloaded_impl='pending' snaps_equal=True reloaded_deps=['implement']",
+      "after": "ok   1 persisted DAG survives restart",
+      "why_failed": "WorkUnitDAG.get_ready_units() returned implement without transitioning pending->ready, so the persisted snapshot stored status=pending."
+    },
+    "2_dependencies_survive_restart": {
+      "before": "FAIL 2 dependencies survive restart: ready_before={'a'} ready_after={'b'} a.status='completed' b.status='pending' b.deps=['a']",
+      "after": "ok   2 dependencies survive restart",
+      "why_failed": "After completing a, get_ready_units returned b but left b.status='pending' (naive check does not call transition_status). identify_ready transitions b to ready."
+    },
+    "3_completed_workunits_are_not_replayed": {
+      "before": "FAIL 3 completed WorkUnits are not replayed: second_raised=False (no exception) reloaded_a='completed' ready={'b'} canonical={'b'}",
+      "after": "ok   3 completed WorkUnits are not replayed",
+      "why_failed": "mark_completed wrote status='completed' directly, so a second mark_completed on an already-completed unit was silently accepted (the completed->completed transition the scheduler would refuse)."
+    },
+    "4_blocked_workunits_remain_blocked": {
+      "before": "FAIL 4 blocked WorkUnits remain blocked: blocked.status='BLOCKED' orig.status='failed' ready=set() canonical={'orig.repair.1'}",
+      "after": "ok   4 blocked WorkUnits remain blocked",
+      "why_failed": "Naive get_ready_units required dep.status=='completed', so a repair unit depending on a failed original was not readied. BLOCKED-status unit was correctly omitted even before the fix; the consolidation failure was disagreement with identify_ready (canonical={'orig.repair.1'} vs dag=set())."
+    },
+    "5_steering_updates_existing_ledger": {
+      "before": "FAIL 5 steering updates the correct existing ledger: apply_ok=False (AttributeError: 'Ledger' object has no attribute 'apply_constraint') amended=False cites=False after_ids=['G001', 'G002', 'G003'] before_ids=['G001', 'G002', 'G003'] file_len=3",
+      "after": "ok   5 steering updates the correct existing ledger",
+      "why_failed": "Ledger.apply_constraint did not exist. SteeringQueue.apply_constraint mutates the in-memory ledger but does not write GOAL.md, so a re-parse of the same path saw no amendment."
+    },
+    "6_no_semantic_drift_after_reload": {
+      "before": "FAIL 6 no semantic drift after reload: first_eq_src=True second_eq_first=True third_eq_second=True blocker=None blocker3=None statuses=['PENDING', 'BLOCKED', 'VERIFIED']",
+      "after": "ok   6 no semantic drift after reload",
+      "why_failed": "Byte-identical write->reload->write already held (preamble preserved terminal_blocker as opaque text). The semantic gap was that Ledger.terminal_blocker was not a parsed field (getattr returned None), so the hook's TERMINAL_BLOCKER line could not participate in outcome()."
+    }
+  },
+  "pytest": {
+    "before": "169 passed, 1 skipped in ~4.4s (tools/haider/hcli/tests). Contract claimed 170 passing; the skip is the live grok-run audit in test_grok_bridge.py.",
+    "after": "197 passed, 1 skipped in 4.84s. Count did not decrease.",
+    "protected": "pytest tools/headless/hcli_dag_consolidation_test.py -q -> 1 passed; python3 tools/headless/hcli_dag_consolidation_test.py -> all 6 ok. hcli_agentos_ledger_test.py still passes (empty ledger .status remains EMPTY_LEDGER; mixed assert_may_complete still GoalNotMetError)."
+  },
+  "hook_quotes_used": {
+    "file": "~/.claude/hooks/ultragoal-stop.mjs",
+    "TERMINAL_BLOCKER_regex": {
+      "lines": "46",
+      "quote": "const TERMINAL_BLOCKER = /^[ \\t]*terminal_blocker:[ \\t]*(.+)$/im"
+    },
+    "ENFORCEMENT_FAILURE_empty": {
+      "lines": "306-311",
+      "quote": "A ledger with no obligations is a broken ledger, not a finished goal. Treating \"nothing to check\" as completion is the cheapest possible fake completion. ... An empty ledger is not a satisfied goal."
+    },
+    "GOAL_MET": {
+      "lines": "316-322",
+      "quote": "if (unresolved.length === 0) { ... systemMessage: `GOAL_MET — ${label}: all ${obligations.length} obligations VERIFIED in ${ledger}`."
+    },
+    "TERMINAL_BLOCKER_rule": {
+      "lines": "324-335",
+      "quote": "ULTRA CORE §11: a terminal blocker may stop execution but is never completion. Deliberately expensive to claim — EVERY unresolved obligation must be marked BLOCKED, so partial work cannot exit through this door. ... `TERMINAL_BLOCKER — ${label}: ${verified}/${obligations.length} VERIFIED, ${unresolved.length} BLOCKED on: ${blocker}. This is NOT GOAL_MET.`"
+    },
+    "SAFETY_DISARM": {
+      "lines": "337-348",
+      "quote": "if (expired || blocks > maxBlocks) { ... `SAFETY_DISARM — ${label}: ${expired ? 'goal expired' : `hit self-imposed cap of ${maxBlocks} blocks`}. ... This is NOT completion.`"
+    },
+    "dual_hash": {
+      "lines": "350-355",
+      "quote": "const ledgerHash = sha(text); const evidenceHash = sha(text.split('\\n').filter((l) => /evidence:/i.test(l)).join('\\n')); const stalled = ledgerHash === state.lastLedgerHash && evidenceHash === state.lastEvidenceHash; const noProgress = stalled ? (state.noProgressBlocks || 0) + 1 : 0;"
+    },
+    "WATCHDOG": {
+      "lines": "357-370",
+      "quotes": {
+        "1": "WATCHDOG L1 — no material change since the last block. Reconsider the hypothesis before acting again.",
+        "2": "WATCHDOG L2 — MANDATORY REPLAN. Two blocks with no material change. Do not retry the same approach. State what you now believe is wrong, change the hypothesis or the method, and record the change in the ledger.",
+        "3": "WATCHDOG L3 — CHANGE STRATEGY OR ESCALATE. Three blocks with no material change. Escalate the verification tier, change abstraction level, or escalate this obligation per the capability governor. Persistence means refusing to abandon the goal, not refusing to abandon a failing strategy.",
+        "4": "WATCHDOG L4 — ROOT CAUSE OR BLOCKER PROOF. Repeated no-progress blocks after escalation. Stop retrying. Either establish the root cause with evidence, or prove a terminal blocker per ULTRA CORE §11 and record it in the ledger as `terminal_blocker:` with every remaining obligation marked `status: BLOCKED`."
+      }
+    }
+  },
+  "contract_mismatches_vs_real_code": [
+    {
+      "claim": "this repo currently has 170 passing tests",
+      "reality": "169 passed, 1 skipped (live grok-run audit). Command: pytest tools/haider/hcli/tests -q -rs. Output: SKIPPED [1] ... live grok-run audit spends a real Grok session; this lane uses GROK_DRYRUN=1. 169 passed, 1 skipped.",
+      "action": "Did not treat the skip as a failure. After changes: 197 passed, 1 skipped."
+    },
+    {
+      "claim": "workunit.py::is_ready()/identify_ready() is strictly richer: resource-class admission, the MUTATION crash-safe lock, and repair-aware readiness",
+      "reality": "Repair-aware readiness is in is_ready. Resource-class admission and the MUTATION lock are in assign_ready(), not is_ready/identify_ready. WorkUnitDAG.get_ready_units() now uses identify_ready; assignment remains the Scheduler's job (engine.py out of scope).",
+      "command": "Read tools/haider/hcli/workunit.py: is_ready (lines 100-114) has no resource_class check; assign_ready (129-181) calls can_admit and mutation_lock.acquire."
+    },
+    {
+      "claim": "Ledger.apply_constraint (both already exist from a prior lane)",
+      "reality": "apply_constraint lived only on SteeringQueue, mutated memory, and did not persist GOAL.md. Ledger.apply_constraint was added this lane (delegates to SteeringQueue._amend_ledger / queue.apply_constraint, then Ledger.save() when a parse path is known).",
+      "command": "Pre-fix: AttributeError: 'Ledger' object has no attribute 'apply_constraint' (D4 test 5)."
+    },
+    {
+      "claim": "modify tools/haider/hcli/tests/test_hcli_goal.py (if it exists)",
+      "reality": "tools/haider/hcli/tests/test_hcli_goal.py does not exist. The engine dependency assertion lives in tests/test_parallel_engine.py::test_scheduler_honors_dependencies (out of write scope). It still passes because mark_completed walks pending/ready -> running -> completed via transition_status.",
+      "command": "python3 -m pytest tools/haider/hcli/tests/test_parallel_engine.py::TestParallelEngine::test_scheduler_honors_dependencies -q -> passed"
+    },
+    {
+      "claim": "Blocked WorkUnits remain blocked (WorkUnit status BLOCKED)",
+      "reality": "WORKUNIT_STATUSES = (pending, ready, running, completed, failed). BLOCKED is a ledger obligation status. Test 4 persists a raw status string 'BLOCKED' which WorkUnit.from_dict round-trips and identify_ready does not re-ready. Failed+live-repair is the scheduler's real 'blocked from retry' case and is what disagreed with naive get_ready_units."
+    }
+  ]
+}

@@ -1,0 +1,927 @@
+{
+  "schema": "hawking.headless.hcli_self_opt.iteration.v1",
+  "iteration": 1,
+  "goal": "Lift GPU_DECODE _call_model serialization without narrowing the execute_workunit worker lock.",
+  "baseline_pytest": {
+    "expected": "417 passed, 1 skipped",
+    "observed": "416 passed, 2 skipped",
+    "deviation": "one extra skip: tests/test_mlx_backend.py::test_supports_against_installed_binary — installed mlx_lm.server --help does not list chat-template kwargs (Metal-less session or older binary). The other skip is the always-skipped live grok-run audit. Suite otherwise green.",
+    "suite_green": true
+  },
+  "grok_run": null,
+  "priors_bound_the_prize": {
+    "active_decode_limit": 2,
+    "active_decode_limit_source": "receipts/headless/MACHINE_GENOME.json",
+    "aggregate_at_four_slot_decoders": 1.2161,
+    "aggregate_at_four_source": "receipts/headless/DECODE_TOPOLOGY.json summary.slot.4.scaling_vs_1",
+    "contract_envelope_near": 1.26,
+    "note": "Serialised model calls are a real ceiling; lifting them is worth well under 2x."
+  },
+  "mission": {
+    "id": "c7ac385f-6f2e-4624-b2e5-a0ab14b4180a",
+    "phase": "completed",
+    "accepted_count": 10
+  },
+  "workunits": [
+    {
+      "id": "sense",
+      "role": "sense",
+      "status": "completed",
+      "resource_class": "CPU_HEAVY",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage sense --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   sense: observed_max_gpu_decode=2 max_concurrent_model_calls=1 spread=0.3563s llama=ok slots=2\n"
+      },
+      "dependencies": []
+    },
+    {
+      "id": "bottleneck",
+      "role": "bottleneck",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage bottleneck --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   bottleneck: lock at executors.py:277-299 agrees with peak=1 / decode=2\n"
+      },
+      "dependencies": [
+        "sense"
+      ]
+    },
+    {
+      "id": "hypotheses",
+      "role": "hypotheses",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage hypotheses --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   hypotheses: 4 candidates, locations resolve\n"
+      },
+      "dependencies": [
+        "bottleneck"
+      ]
+    },
+    {
+      "id": "screen",
+      "role": "screen",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage screen --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   screen: survived=['H2_pass_explicit'] rejected=['H1_narrow_lock', 'H3_thread_local_patches', 'H4_clone_engine']\n"
+      },
+      "dependencies": [
+        "hypotheses"
+      ]
+    },
+    {
+      "id": "mutate",
+      "role": "mutate",
+      "status": "completed",
+      "resource_class": "MUTATION",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage mutate --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   mutate: applied via Engine.execute status=unverified receipt=/Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/.hcli/receipts/e8921d8c-145e-4906-afd7-9a8580f2e1c5.json engine=2e6d1f76cce3->a648edaaa1ed\n"
+      },
+      "dependencies": [
+        "screen"
+      ]
+    },
+    {
+      "id": "gate.correctness",
+      "role": "gate.correctness",
+      "status": "completed",
+      "resource_class": "TEST",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage gate.correctness --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   gate.correctness: exit=0 passed=416 skipped=2 wall=129.3s\n"
+      },
+      "dependencies": [
+        "mutate"
+      ]
+    },
+    {
+      "id": "gate.perf",
+      "role": "gate.perf",
+      "status": "completed",
+      "resource_class": "CPU_HEAVY",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage gate.perf --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   gate.perf: alternating=True original_median=1 mutated_median=2 spread_mutated=0 improved=True\n"
+      },
+      "dependencies": [
+        "gate.correctness"
+      ]
+    },
+    {
+      "id": "decide",
+      "role": "decide",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage decide --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   decide: promote — Both gates passed and paired overlap improved (original median peak=1 mutated median peak=2).\n"
+      },
+      "dependencies": [
+        "gate.perf"
+      ]
+    },
+    {
+      "id": "priors",
+      "role": "priors",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage priors --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   priors: hardware envelope unchanged (limit=2, four-decoder aggregate=1.2161); software-lock prior cites sense peak=1 perf mutated median=2\n"
+      },
+      "dependencies": [
+        "decide"
+      ]
+    },
+    {
+      "id": "next",
+      "role": "next",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage next --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+        "output": "ok   next: Iteration 2: now that _call_model overlaps (median peak 2), spend the next iteration on actually using llama-server's 2 slots / ACTIVE_DECODE_LIMIT=2 for real completions, bounded by the 1.2161x four-decoder aggregate. (citing gate.perf.mutated.median=2)\n"
+      },
+      "dependencies": [
+        "priors"
+      ]
+    }
+  ],
+  "stages": {
+    "sense": {
+      "llama_server": {
+        "port": 52484,
+        "health": "ok",
+        "total_slots": 2,
+        "error": null,
+        "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf"
+      },
+      "probe": {
+        "ok": true,
+        "mission_status": "completed",
+        "mission_id": "70e40a00-9714-45fa-9717-6ba17d198bb8",
+        "accepted": 2,
+        "observed_max_gpu_decode": 2,
+        "max_concurrent_model_calls": 1,
+        "enter_spread_s": 0.3563471670058789,
+        "enters": [
+          {
+            "thread": "hcli-wu-g0",
+            "t_rel_s": 0.0,
+            "peak_during": 1
+          },
+          {
+            "thread": "hcli-wu-g1",
+            "t_rel_s": 0.3563471670058789,
+            "peak_during": 1
+          }
+        ],
+        "wall_s": 0.7514979999978095,
+        "delay_s": 0.35,
+        "active_decode_limit": 2,
+        "active_decode_limit_source": "env:ACTIVE_DECODE_LIMIT",
+        "units": {
+          "g0": {
+            "status": "completed",
+            "verification": {
+              "ok": true,
+              "exit_code": 0,
+              "command": "python3 -c \"import pathlib,sys; sys.exit(0 if pathlib.Path('.').exists() else 1)\"",
+              "output": "",
+              "acceptance_source": "workunit_verifier"
+            },
+            "attempts": 1
+          },
+          "g1": {
+            "status": "completed",
+            "verification": {
+              "ok": true,
+              "exit_code": 0,
+              "command": "python3 -c \"import pathlib,sys; sys.exit(0 if pathlib.Path('.').exists() else 1)\"",
+              "output": "",
+              "acceptance_source": "workunit_verifier"
+            },
+            "attempts": 1
+          }
+        },
+        "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-probe-he_h90fv"
+      },
+      "max_concurrent_model_calls": 1,
+      "observed_max_gpu_decode": 2,
+      "enter_spread_s": 0.3563471670058789,
+      "delay_s": 0.35,
+      "stage_ok": true
+    },
+    "bottleneck": {
+      "name": "execute_workunit holds a process-wide lock across Engine.execute, so _call_model cannot overlap even when two GPU_DECODE units are running. The lock exists because execute_workunit monkeypatches self._gather_evidence and self.goal_compiler.compile on the SHARED engine instance.",
+      "location": "tools/haider/hcli/executors.py:277-299",
+      "resolved": {
+        "ok": true,
+        "spec": "tools/haider/hcli/executors.py:277-299",
+        "path": "tools/haider/hcli/executors.py",
+        "start": 277,
+        "end": 299,
+        "n_lines": 377,
+        "snippet": [
+          "    lock = getattr(self, \"_hcli_worker_lock\", None)",
+          "    if lock is None:",
+          "        lock = threading.Lock()",
+          "        self._hcli_worker_lock = lock",
+          "",
+          "    with lock:",
+          "        orig_gather = self._gather_evidence",
+          "        orig_compile = self.goal_compiler.compile",
+          "",
+          "        def _gather(_prompt: str) -> List[Dict[str, Any]]:",
+          "            return evidence",
+          "",
+          "        def _compile(_text: str) -> Dict[str, Any]:",
+          "            return compiled",
+          "",
+          "        self._gather_evidence = _gather",
+          "        self.goal_compiler.compile = _compile",
+          "        try:",
+          "            return self.execute(prompt)",
+          "        finally:",
+          "            self._gather_evidence = orig_gather",
+          "            self.goal_compiler.compile = orig_compile",
+          ""
+        ]
+      },
+      "agrees_with_sense": true,
+      "sense_max_concurrent_model_calls": 1,
+      "sense_observed_max_gpu_decode": 2,
+      "contradiction": null,
+      "stage_ok": true
+    },
+    "hypotheses": {
+      "candidates": [
+        {
+          "id": "H1_narrow_lock",
+          "title": "Narrow the worker lock so it covers only the monkeypatch assignment, not the HTTP call",
+          "location": "tools/haider/hcli/executors.py:277-299",
+          "change": "Keep the patch of _gather_evidence / compile, but release _hcli_worker_lock before self.execute(prompt) / _call_model.",
+          "resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/executors.py:277-299",
+            "path": "tools/haider/hcli/executors.py",
+            "start": 277,
+            "end": 299,
+            "n_lines": 377,
+            "snippet": [
+              "    lock = getattr(self, \"_hcli_worker_lock\", None)",
+              "    if lock is None:",
+              "        lock = threading.Lock()",
+              "        self._hcli_worker_lock = lock",
+              "",
+              "    with lock:",
+              "        orig_gather = self._gather_evidence",
+              "        orig_compile = self.goal_compiler.compile",
+              "",
+              "        def _gather(_prompt: str) -> List[Dict[str, Any]]:",
+              "            return evidence",
+              "",
+              "        def _compile(_text: str) -> Dict[str, Any]:",
+              "            return compiled",
+              "",
+              "        self._gather_evidence = _gather",
+              "        self.goal_compiler.compile = _compile",
+              "        try:",
+              "            return self.execute(prompt)",
+              "        finally:",
+              "            self._gather_evidence = orig_gather",
+              "            self.goal_compiler.compile = orig_compile",
+              ""
+            ]
+          }
+        },
+        {
+          "id": "H2_pass_explicit",
+          "title": "Pass evidence and compiled into Engine.execute so execute_workunit does not patch shared state",
+          "location": "tools/haider/hcli/engine.py:419-460",
+          "secondary_location": "tools/haider/hcli/executors.py:262-298",
+          "change": "Add optional evidence= and compiled= kwargs to Engine.execute; have execute_workunit call execute(prompt, evidence=..., compiled=...) and delete the shared-state monkeypatch and its lock.",
+          "resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/engine.py:419-460",
+            "path": "tools/haider/hcli/engine.py",
+            "start": 419,
+            "end": 460,
+            "n_lines": 3313,
+            "snippet": [
+              "    def execute(",
+              "        self,",
+              "        prompt: str,",
+              "    ) -> Dict[str, Any]:",
+              "        prompt = (prompt or \"\").strip()",
+              "",
+              "        if not prompt:",
+              "            return {",
+              "                \"kind\": \"answer\",",
+              "                \"content\": \"\",",
+              "                \"operations\": [],",
+              "                \"tests\": [],",
+              "                \"status\": \"completed\",",
+              "            }",
+              "",
+              "        goal_id = str(uuid.uuid4())",
+              "        self._active_goal_id = goal_id",
+              "        self._model_calls = []",
+              "        self._last_call_plan = {}",
+              "        self._reset_evidence_efficiency()",
+              "",
+              "        started = datetime.now(timezone.utc)",
+              "",
+              "        self._emit(",
+              "            \"goal_started\",",
+              "            {",
+              "                \"goal_id\": goal_id,",
+              "                \"text\": prompt,",
+              "            },",
+              "        )",
+              "",
+              "        evidence: List[Dict[str, Any]] = list()",
+              "        try:",
+              "            if self._cancelled:",
+              "                return self._cancel_result(goal_id, evidence)",
+              "",
+              "            evidence = self._gather_evidence(prompt)",
+              "",
+              "            try:",
+              "                compiled = self.goal_compiler.compile(prompt)",
+              "            except Exception:",
+              "                compiled = {}"
+            ]
+          },
+          "secondary_resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/executors.py:262-298",
+            "path": "tools/haider/hcli/executors.py",
+            "start": 262,
+            "end": 298,
+            "n_lines": 377,
+            "snippet": [
+              "def execute_workunit(self: Any, wu: Any, context: Optional[Dict[str, Any]]) -> Dict[str, Any]:",
+              "    \"\"\"Run one WorkUnit from a compiled packet. Does not compile a new root goal.\"\"\"",
+              "    del wu  # identity lives on the packet / context; Engine.execute keys off prompt",
+              "    context = context or {}",
+              "    prompt = str(context.get(\"prompt\") or \"\").strip()",
+              "    if not prompt:",
+              "        raise EngineError(\"worker path requires execute_workunit\")",
+              "    if \"GOAL:\" in prompt:",
+              "        raise EngineError(\"worker packet must not contain GOAL:\")",
+              "    paths = [str(item) for item in (context.get(\"evidence_paths\") or [])]",
+              "    compiled = context.get(\"compiled\")",
+              "    if not isinstance(compiled, dict):",
+              "        compiled = {}",
+              "    evidence = gather_evidence_paths(self, paths)",
+              "",
+              "    lock = getattr(self, \"_hcli_worker_lock\", None)",
+              "    if lock is None:",
+              "        lock = threading.Lock()",
+              "        self._hcli_worker_lock = lock",
+              "",
+              "    with lock:",
+              "        orig_gather = self._gather_evidence",
+              "        orig_compile = self.goal_compiler.compile",
+              "",
+              "        def _gather(_prompt: str) -> List[Dict[str, Any]]:",
+              "            return evidence",
+              "",
+              "        def _compile(_text: str) -> Dict[str, Any]:",
+              "            return compiled",
+              "",
+              "        self._gather_evidence = _gather",
+              "        self.goal_compiler.compile = _compile",
+              "        try:",
+              "            return self.execute(prompt)",
+              "        finally:",
+              "            self._gather_evidence = orig_gather",
+              "            self.goal_compiler.compile = orig_compile"
+            ]
+          }
+        },
+        {
+          "id": "H3_thread_local_patches",
+          "title": "Keep the monkeypatch but store gather/compile on thread-local state",
+          "location": "tools/haider/hcli/executors.py:282-293",
+          "change": "Replace instance attributes with threading.local() so two workers can patch without a process lock.",
+          "resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/executors.py:282-293",
+            "path": "tools/haider/hcli/executors.py",
+            "start": 282,
+            "end": 293,
+            "n_lines": 377,
+            "snippet": [
+              "    with lock:",
+              "        orig_gather = self._gather_evidence",
+              "        orig_compile = self.goal_compiler.compile",
+              "",
+              "        def _gather(_prompt: str) -> List[Dict[str, Any]]:",
+              "            return evidence",
+              "",
+              "        def _compile(_text: str) -> Dict[str, Any]:",
+              "            return compiled",
+              "",
+              "        self._gather_evidence = _gather",
+              "        self.goal_compiler.compile = _compile"
+            ]
+          }
+        },
+        {
+          "id": "H4_clone_engine",
+          "title": "Clone Engine per WorkUnit so patches are private",
+          "location": "tools/haider/hcli/mission.py:679-704",
+          "change": "Give each GPU_DECODE worker its own Engine (or a shallow copy) so monkeypatches cannot clobber a sibling.",
+          "resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/mission.py:679-704",
+            "path": "tools/haider/hcli/mission.py",
+            "start": 679,
+            "end": 704,
+            "n_lines": 1066,
+            "snippet": [
+              "    def _run_unit(self, wu: WorkUnit) -> Dict[str, Any]:",
+              "        context = self._unit_context(wu)",
+              "        with self._lock:",
+              "            self._last_contexts[wu.id] = context",
+              "        if self._cancel.is_set():",
+              "            return {\"cancelled\": True, \"validation\": {\"ok\": False, \"reason\": \"cancelled\"}}",
+              "        raw: Any",
+              "        from .executors import (",
+              "            WorkUnitExecutor,",
+              "            dispatch_workunit,",
+              "            select_backend_name,",
+              "        )",
+              "",
+              "        backend = select_backend_name(wu)",
+              "        wu.assigned_backend = backend",
+              "        if backend != \"qwen\":",
+              "            executor = WorkUnitExecutor(",
+              "                self.workspace,",
+              "                engine=self.engine,",
+              "            )",
+              "            raw = executor.execute(wu, context)",
+              "        else:",
+              "            # dispatch_workunit binds Engine.execute_workunit when absent and",
+              "            # REFUSES to fall through to Engine.execute(prompt). The old",
+              "            # fallthrough is what sent the whole root goal to every worker.",
+              "            raw = dispatch_workunit(self.engine, wu, context)"
+            ]
+          }
+        }
+      ],
+      "count": 4,
+      "stage_ok": true
+    },
+    "screen": {
+      "verdicts": [
+        {
+          "id": "H1_narrow_lock",
+          "verdict": "REJECTED",
+          "reason": "Correctness, not speed. execute_workunit patches self._gather_evidence and self.goal_compiler.compile on the SHARED engine. The lock must span the HTTP call because the patches have to stay in place for the duration of execute(). Narrowing it lets one worker's evidence reach another worker's prompt. Cheap disproof: two threads assign then 'HTTP' outside the lock; leaked=True results={'hcli-wu-g1': 'EVIDENCE_G1', 'hcli-wu-g0': 'EVIDENCE_G1'}.",
+          "leak_demo": {
+            "leaked": true,
+            "results": {
+              "hcli-wu-g1": "EVIDENCE_G1",
+              "hcli-wu-g0": "EVIDENCE_G1"
+            },
+            "reason": "Patches live on the shared engine instance. Releasing the lock before _call_model lets worker B overwrite worker A's _gather_evidence / compile for the HTTP that is still in flight, so A's prompt is built from B's evidence."
+          }
+        },
+        {
+          "id": "H2_pass_explicit",
+          "verdict": "SURVIVE",
+          "reason": "Removes the NEED for shared-state patching. Engine.execute already takes evidence/compiled internally; exposing them as kwargs lets execute_workunit pass a worker packet without touching instance attributes. Cheap check: anchors unique, scratch apply+py_compile ok=True (compiled), applicable=applicable.",
+          "scratch_apply_ok": true,
+          "scratch_detail": "compiled",
+          "applicable": "applicable"
+        },
+        {
+          "id": "H3_thread_local_patches",
+          "verdict": "REJECTED",
+          "reason": "Still patches. threading.local hides the shared-state bug instead of deleting it, and goal_compiler.compile is a bound method on a shared GoalCompiler — TLS on the engine instance does not make the compiler itself re-entrant. Band-aid; screened out in favour of H2."
+        },
+        {
+          "id": "H4_clone_engine",
+          "verdict": "REJECTED",
+          "reason": "A per-worker Engine clone would make patches private but duplicates runtime_provider / model_client / event bus identity and still uses monkeypatching. Heavier than H2 for the same prize, which is bounded well under 2x."
+        }
+      ],
+      "rejected_count": 3,
+      "survived": [
+        "H2_pass_explicit"
+      ],
+      "stage_ok": true
+    },
+    "mutate": {
+      "path": "Engine.execute mutation path",
+      "already_applied": false,
+      "applicable": "applicable",
+      "files_before": {
+        "engine.py": "2e6d1f76cce37a86b41e0a4e51fb61d7e255a7ae59334ec9e60399d1fdc0b06a",
+        "executors.py": "2af8178380e7f9aa3da455172358fb188703a2c801cb0c93279ee8a04c8c0e5f"
+      },
+      "applied": true,
+      "blocked": null,
+      "engine_receipt": {
+        "path": "/Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/.hcli/receipts/e8921d8c-145e-4906-afd7-9a8580f2e1c5.json",
+        "status": "unverified",
+        "rolled_back": false,
+        "kind": "mutation",
+        "validation": {
+          "checks": [
+            {
+              "exit_code": 0,
+              "kind": "py_compile",
+              "path": "tools/haider/hcli/engine.py",
+              "stderr": "",
+              "stdout": ""
+            },
+            {
+              "exit_code": 0,
+              "kind": "py_compile",
+              "path": "tools/haider/hcli/executors.py",
+              "stderr": "",
+              "stdout": ""
+            }
+          ],
+          "files": [
+            {
+              "changed": true,
+              "path": "tools/haider/hcli/engine.py",
+              "sha256_after": "a648edaaa1ed0dfe69f1afa6a855afc036c2122e6f8add7bd9a9bd4325dc2090",
+              "sha256_before": "2e6d1f76cce37a86b41e0a4e51fb61d7e255a7ae59334ec9e60399d1fdc0b06a"
+            },
+            {
+              "changed": true,
+              "path": "tools/haider/hcli/executors.py",
+              "sha256_after": "2b319013598ff613fdb5c68d8c3daa9f9bf524acc2487302a6dbad4ac6af1000",
+              "sha256_before": "2af8178380e7f9aa3da455172358fb188703a2c801cb0c93279ee8a04c8c0e5f"
+            }
+          ],
+          "ok": false,
+          "reason": "NO_EVIDENCE",
+          "red_before_green": null,
+          "red_before_green_advisory": true,
+          "red_before_green_reason": "pre_mutation_pass_not_run"
+        },
+        "files": [
+          {
+            "changed": true,
+            "path": "tools/haider/hcli/engine.py",
+            "sha256_after": "a648edaaa1ed0dfe69f1afa6a855afc036c2122e6f8add7bd9a9bd4325dc2090",
+            "sha256_before": "2e6d1f76cce37a86b41e0a4e51fb61d7e255a7ae59334ec9e60399d1fdc0b06a"
+          },
+          {
+            "changed": true,
+            "path": "tools/haider/hcli/executors.py",
+            "sha256_after": "2b319013598ff613fdb5c68d8c3daa9f9bf524acc2487302a6dbad4ac6af1000",
+            "sha256_before": "2af8178380e7f9aa3da455172358fb188703a2c801cb0c93279ee8a04c8c0e5f"
+          }
+        ]
+      },
+      "engine_result_status": "unverified",
+      "rolled_back": false,
+      "operations": [
+        {
+          "op": "replace",
+          "path": "tools/haider/hcli/engine.py",
+          "old_text": "    def execute(\n        self,\n        prompt: str,\n    ) -> Dict[str, Any]:",
+          "new_text": "    def execute(\n        self,\n        prompt: str,\n        evidence: Optional[List[Dict[str, Any]]] = None,\n        compiled: Any = None,\n    ) -> Dict[str, Any]:"
+        },
+        {
+          "op": "replace",
+          "path": "tools/haider/hcli/engine.py",
+          "old_text": "        evidence: List[Dict[str, Any]] = list()\n        try:\n            if self._cancelled:\n                return self._cancel_result(goal_id, evidence)\n\n            evidence = self._gather_evidence(prompt)\n\n            try:\n                compiled = self.goal_compiler.compile(prompt)\n            except Exception:\n                compiled = {}",
+          "new_text": "        supplied_evidence = evidence\n        supplied_compiled = compiled\n        evidence: List[Dict[str, Any]] = list()\n        try:\n            if self._cancelled:\n                return self._cancel_result(goal_id, evidence)\n\n            if supplied_evidence is None:\n                evidence = self._gather_evidence(prompt)\n            else:\n                evidence = list(supplied_evidence)\n\n            if supplied_compiled is None:\n                try:\n                    compiled = self.goal_compiler.compile(prompt)\n                except Exception:\n                    compiled = {}\n            else:\n                compiled = supplied_compiled"
+        },
+        {
+          "op": "replace",
+          "path": "tools/haider/hcli/executors.py",
+          "old_text": "    lock = getattr(self, \"_hcli_worker_lock\", None)\n    if lock is None:\n        lock = threading.Lock()\n        self._hcli_worker_lock = lock\n\n    with lock:\n        orig_gather = self._gather_evidence\n        orig_compile = self.goal_compiler.compile\n\n        def _gather(_prompt: str) -> List[Dict[str, Any]]:\n            return evidence\n\n        def _compile(_text: str) -> Dict[str, Any]:\n            return compiled\n\n        self._gather_evidence = _gather\n        self.goal_compiler.compile = _compile\n        try:\n            return self.execute(prompt)\n        finally:\n            self._gather_evidence = orig_gather\n            self.goal_compiler.compile = orig_compile",
+          "new_text": "    return self.execute(prompt, evidence=evidence, compiled=compiled)"
+        }
+      ],
+      "engine_error": null,
+      "validation": null,
+      "engine_receipt_path": "/Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/.hcli/receipts/e8921d8c-145e-4906-afd7-9a8580f2e1c5.json",
+      "files_after": {
+        "engine.py": "a648edaaa1ed0dfe69f1afa6a855afc036c2122e6f8add7bd9a9bd4325dc2090",
+        "executors.py": "2b319013598ff613fdb5c68d8c3daa9f9bf524acc2487302a6dbad4ac6af1000"
+      },
+      "snap_original": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/snap/original",
+      "snap_mutated": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/snap/mutated",
+      "stage_ok": true
+    },
+    "gate.correctness": {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-m",
+        "pytest",
+        "tools/haider/hcli/tests",
+        "-q"
+      ],
+      "exit_code": 0,
+      "passed_gate": true,
+      "wall_s": 129.31068000000232,
+      "output_tail": "........................................................................ [ 17%]\n........................................................................ [ 34%]\n.........................s.............................................. [ 51%]\n.....................s.................................................. [ 68%]\n........................................................................ [ 86%]\n..........................................................               [100%]\n416 passed, 2 skipped in 129.14s (0:02:09)\n\n",
+      "passed": 416,
+      "skipped": 2,
+      "stage_ok": true
+    },
+    "gate.perf": {
+      "alternating": true,
+      "order": [
+        "mutated",
+        "original",
+        "mutated",
+        "original"
+      ],
+      "trials": [
+        {
+          "i": 0,
+          "condition": "mutated",
+          "max_concurrent_model_calls": 2,
+          "observed_max_gpu_decode": 2,
+          "enter_spread_s": 0.0002267500021844171,
+          "wall_s": 0.39592270799766993,
+          "ok": true,
+          "mission_status": "completed"
+        },
+        {
+          "i": 1,
+          "condition": "original",
+          "max_concurrent_model_calls": 1,
+          "observed_max_gpu_decode": 2,
+          "enter_spread_s": 0.36061800000607036,
+          "wall_s": 0.7562918339972384,
+          "ok": true,
+          "mission_status": "completed"
+        },
+        {
+          "i": 2,
+          "condition": "mutated",
+          "max_concurrent_model_calls": 2,
+          "observed_max_gpu_decode": 2,
+          "enter_spread_s": 0.00021241699869278818,
+          "wall_s": 0.3994796669940115,
+          "ok": true,
+          "mission_status": "completed"
+        },
+        {
+          "i": 3,
+          "condition": "original",
+          "max_concurrent_model_calls": 1,
+          "observed_max_gpu_decode": 2,
+          "enter_spread_s": 0.36057241699745646,
+          "wall_s": 0.7584012500010431,
+          "ok": true,
+          "mission_status": "completed"
+        }
+      ],
+      "mutated": {
+        "n": 2,
+        "values": [
+          2,
+          2
+        ],
+        "min": 2,
+        "max": 2,
+        "median": 2,
+        "spread": 0
+      },
+      "original": {
+        "n": 2,
+        "values": [
+          1,
+          1
+        ],
+        "min": 1,
+        "max": 1,
+        "median": 1,
+        "spread": 0
+      },
+      "sense_peak": 1,
+      "overlap_improved": true,
+      "spread_mutated": 0,
+      "spread_original": 0,
+      "stage_ok": true
+    },
+    "decide": {
+      "decision": "promote",
+      "reason": "Both gates passed and paired overlap improved (original median peak=1 mutated median peak=2).",
+      "correctness_ok": true,
+      "overlap_improved": true,
+      "mutation_applied": true,
+      "counterfactual_refuse_on_failing_gate": {
+        "if_correctness_failed": "REFUSED",
+        "if_perf_overlap_unimproved": "REFUSED",
+        "predicate": "promote IFF mutation.applied AND gate.correctness.passed_gate AND gate.perf.overlap_improved; else reject",
+        "would_refuse_on_failing_gate": true
+      },
+      "restored_original": false,
+      "refuse_if": {
+        "correctness_failed": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "overlap_did_not_improve": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "mutation_not_applied": {
+          "triggered": false,
+          "effect": "REFUSED"
+        }
+      },
+      "stage_ok": true
+    },
+    "priors": {
+      "unchanged_hardware_envelope": {
+        "active_decode_limit": 2,
+        "source": "receipts/headless/MACHINE_GENOME.json ACTIVE_DECODE_LIMIT",
+        "aggregate_at_four_slot_decoders": 1.2161,
+        "source_four": "receipts/headless/DECODE_TOPOLOGY.json summary.slot.4.scaling_vs_1",
+        "contract_envelope": 1.26,
+        "genome_aggregate_scaling_vs_1": 1.1934,
+        "note": "Serialised model calls are a real ceiling; lifting them is worth well under 2x. These numbers did not change this run."
+      },
+      "updated": {
+        "software_lock_serialises_call_model": {
+          "before": true,
+          "after": false,
+          "citing": {
+            "sense_max_concurrent_model_calls": 1,
+            "gate_perf_mutated_median_peak": 2,
+            "gate_perf_original_median_peak": 1,
+            "decision": "promote"
+          }
+        }
+      },
+      "citing": {
+        "sense_max_concurrent_model_calls": 1,
+        "gate_perf_mutated_median_peak": 2,
+        "gate_perf_original_median_peak": 1,
+        "decision": "promote"
+      },
+      "stage_ok": true
+    },
+    "next": {
+      "target": "Iteration 2: now that _call_model overlaps (median peak 2), spend the next iteration on actually using llama-server's 2 slots / ACTIVE_DECODE_LIMIT=2 for real completions, bounded by the 1.2161x four-decoder aggregate.",
+      "citation": {
+        "field": "gate.perf.mutated.median",
+        "value": 2
+      },
+      "llama_total_slots": 2,
+      "stage_ok": true
+    }
+  },
+  "mutation_receipt": {
+    "path": "/Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/.hcli/receipts/e8921d8c-145e-4906-afd7-9a8580f2e1c5.json",
+    "status": "unverified",
+    "rolled_back": false,
+    "kind": "mutation",
+    "validation": {
+      "checks": [
+        {
+          "exit_code": 0,
+          "kind": "py_compile",
+          "path": "tools/haider/hcli/engine.py",
+          "stderr": "",
+          "stdout": ""
+        },
+        {
+          "exit_code": 0,
+          "kind": "py_compile",
+          "path": "tools/haider/hcli/executors.py",
+          "stderr": "",
+          "stdout": ""
+        }
+      ],
+      "files": [
+        {
+          "changed": true,
+          "path": "tools/haider/hcli/engine.py",
+          "sha256_after": "a648edaaa1ed0dfe69f1afa6a855afc036c2122e6f8add7bd9a9bd4325dc2090",
+          "sha256_before": "2e6d1f76cce37a86b41e0a4e51fb61d7e255a7ae59334ec9e60399d1fdc0b06a"
+        },
+        {
+          "changed": true,
+          "path": "tools/haider/hcli/executors.py",
+          "sha256_after": "2b319013598ff613fdb5c68d8c3daa9f9bf524acc2487302a6dbad4ac6af1000",
+          "sha256_before": "2af8178380e7f9aa3da455172358fb188703a2c801cb0c93279ee8a04c8c0e5f"
+        }
+      ],
+      "ok": false,
+      "reason": "NO_EVIDENCE",
+      "red_before_green": null,
+      "red_before_green_advisory": true,
+      "red_before_green_reason": "pre_mutation_pass_not_run"
+    },
+    "files": [
+      {
+        "changed": true,
+        "path": "tools/haider/hcli/engine.py",
+        "sha256_after": "a648edaaa1ed0dfe69f1afa6a855afc036c2122e6f8add7bd9a9bd4325dc2090",
+        "sha256_before": "2e6d1f76cce37a86b41e0a4e51fb61d7e255a7ae59334ec9e60399d1fdc0b06a"
+      },
+      {
+        "changed": true,
+        "path": "tools/haider/hcli/executors.py",
+        "sha256_after": "2b319013598ff613fdb5c68d8c3daa9f9bf524acc2487302a6dbad4ac6af1000",
+        "sha256_before": "2af8178380e7f9aa3da455172358fb188703a2c801cb0c93279ee8a04c8c0e5f"
+      }
+    ]
+  },
+  "decision": "promote",
+  "decision_reason": "Both gates passed and paired overlap improved (original median peak=1 mutated median peak=2).",
+  "watched_fail": [
+    {
+      "title": "Baseline pytest was 416 passed, 2 skipped, not 417/1",
+      "detail": "one extra skip: tests/test_mlx_backend.py::test_supports_against_installed_binary — installed mlx_lm.server --help does not list chat-template kwargs (Metal-less session or older binary). The other skip is the always-skipped live grok-run audit. Suite otherwise green."
+    },
+    {
+      "title": "grok-run is not on PATH",
+      "detail": "GrokBridge refuses rather than inventing a task id. Every loop stage is cpu-backed so the DAG does not depend on grok-run."
+    },
+    {
+      "title": "Default HCLI_CPU_TIMEOUT=120 is below the suite wall",
+      "detail": "gate.correctness runs python3 -m pytest tools/haider/hcli/tests which took ~130s on this box. The loop sets HCLI_CPU_TIMEOUT=600 so the WorkUnit verifier is not killed mid-suite."
+    },
+    {
+      "title": "GPU_DECODE admitted 2 workers but _call_model stayed serial",
+      "detail": "observed_max_gpu_decode=2 max_concurrent_model_calls=1 enter_spread_s=0.3563471670058789"
+    },
+    {
+      "title": "narrow the lock leaks evidence (cheap disproof)",
+      "detail": "{\"hcli-wu-g1\": \"EVIDENCE_G1\", \"hcli-wu-g0\": \"EVIDENCE_G1\"}"
+    }
+  ],
+  "mission_result": {
+    "status": "completed",
+    "reason": null,
+    "cancelled": false,
+    "mission_id": "c7ac385f-6f2e-4624-b2e5-a0ab14b4180a",
+    "accepted": 10,
+    "no_progress_warning": null
+  },
+  "mission_wall_s": 134.01605208299588,
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas"
+}

@@ -1,0 +1,533 @@
+{
+  "schema": "hawking.headless.noetic_information_accounting.v1",
+  "generated_at": "2026-08-24T03:02:07Z",
+  "commit": "2eaa878f70cf0ab83c8b21d2ffb21e60c2cc7ba7",
+  "why": "A representation search that reports EBPW is dishonest if supporting structures escape the accounting. Seven buckets over the sealed uniform-q4-v1 artifact, then a canary that hides parent-derived bytes in excluded buckets.",
+  "anchors_not_rederived": {
+    "artifact": "uniform-q4-v1",
+    "parameter_count": 26895998464,
+    "payload_bytes": 14297694680,
+    "on_disk_bytes": 14297933604,
+    "tps": 32.73,
+    "token_ms": 30.606,
+    "battery": "28/30",
+    "machine": {
+      "chipset": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "unified_memory_bytes": 103079215104,
+      "metal_family": "Metal 4",
+      "measured_roof_gb_s": 595.9
+    },
+    "kernel_binding": {
+      "dispatched": 38,
+      "declared": 554
+    },
+    "content_addressing_defect": "64-hex filenames look like content addresses and are not",
+    "byte_reproducibility_NOT_met": true,
+    "g105_rolling_digest": "89e780555634f28aaf86d03108407f29da254af61404a92d2ca750e00b3fa812"
+  },
+  "definitions": {
+    "MODEL_SPECIFIC_BYTES": "bytes whose information is derived from the parent. Tensor payloads, the manifest, leftover files under the artifact root, learned literals/constants wherever they sit, non-regenerable 'caches', and PRNG expansions of learned seeds.",
+    "SHARED_RUNTIME_BYTES": "host decode + shader files that contain a dispatched kernel. Amortisable across models of this architecture, but must appear. Declared-but-unbound shaders are reported separately and are not in the bucket.",
+    "MACHINE_SPECIFIC_BYTES": "the sealed NX genome (G105): compiled_for_machine_genome, kernel_binding, threadgroup_geometry, residency_plan, cache_plan, scheduling. Plus compiled GPU blobs, which this accountant currently trusts as machine-only \u2014 the canary miss.",
+    "GENERATED_CACHE_BYTES": "runtime-allocated state implied by the NX residency plan: DeltaNet recurrent+conv state (context-independent) plus GQA KV at ctx=8192. Zero on disk in this artifact (G042 GENERATED_BPW_EQUIVALENT is 0). A file under cache/ that cannot be regenerated from a declared seed is NOT this bucket.",
+    "TEMPORARY_BYTES": "qwen38_workspace_bytes activation scratch. Independent of seq_len. Traffic (G042 CACHE_BPW, ~108 GB/token of f32 activations) is not storage and is not charged here.",
+    "RESIDENT_BYTES": "occupancy of the provenance partition when the NX is loaded at ctx=8192. G085: all weights in unified memory; no SSD tier.",
+    "ACTIVE_BYTES": "bytes addressed to produce one token on the weight path: payload minus the embed TABLE plus one embed ROW (G042). MLP is not conditional (G088), so average==worst on weights."
+  },
+  "artifact_accounting": {
+    "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "identity": {
+      "tensor_files_on_disk": 755,
+      "manifest_tensor_count": 755,
+      "missing": [],
+      "size_mismatches": [],
+      "extra_files_in_tensors": 0,
+      "payload_bytes_sum": 14297694680,
+      "payload_matches_manifest": true,
+      "payload_matches_g105": true,
+      "q4_tensors": 402,
+      "f32_tensors": 353,
+      "codec_families": [
+        {
+          "family": "grouped_absmax",
+          "bits": 4,
+          "group": 64,
+          "applies_to": "q4_tensors",
+          "count": 402
+        },
+        {
+          "family": "raw_f32",
+          "applies_to": "f32_tensors",
+          "count": 353
+        }
+      ],
+      "g105_digest_checks_under_1miB": {
+        "n": 401,
+        "matches": 240,
+        "mismatches": 161,
+        "mismatch_classes": {
+          "f32:20488": 129,
+          "f32:1032": 32
+        },
+        "filename_equals_sha256": 0,
+        "content_addressing_defect_confirmed": true,
+        "sample_matching": [
+          {
+            "artifact": "6ef2a12f6e0acacc946fa5ca1aeaedd2214e4b492856acb175a0c7f995665446.hq30uq4",
+            "name": "language_model.model.layers.0.linear_attn.in_proj_ba.weight",
+            "bytes": 261160,
+            "sha256": "e47bac45ec7ac361ad8ea934e525ffca13563d21ec5b7fdd082246822fa049e5",
+            "matches_g105": true,
+            "filename_is_content_sha256": false
+          },
+          {
+            "artifact": "8eb544723d8aa37bd4289e07d202c172707586758ae4c78cd055f31fa989a922.f32v2",
+            "name": "language_model.model.layers.0.linear_attn.conv1d.weight",
+            "bytes": 163848,
+            "sha256": "f2d274da7cadb11d01b5a8382db91c2c1342a507b90c307f2891592de3975985",
+            "matches_g105": true,
+            "filename_is_content_sha256": false
+          },
+          {
+            "artifact": "e24110ded742e05e820234740ad50c5746cf3ff4ac5a49d102b61919a2350b14.f32v2",
+            "name": "language_model.model.layers.0.linear_attn.A_log",
+            "bytes": 200,
+            "sha256": "6e5bbfbbe022eb9dea4640f6b02059222181855159a4c548a9ba80e195d67c71",
+            "matches_g105": true,
+            "filename_is_content_sha256": false
+          },
+          {
+            "artifact": "6a93026c32cb4cbc7b07cc41d298096e8e24715e2772e48d5d8c28ca6617a815.f32v2",
+            "name": "language_model.model.layers.0.linear_attn.dt_bias",
+            "bytes": 200,
+            "sha256": "90a3f091649ff048614400b9e82bafd87401f80f95fc0fa860d29fea14f79638",
+            "matches_g105": true,
+            "filename_is_content_sha256": false
+          }
+        ],
+        "sample_mismatch": [
+          {
+            "artifact": "b562b986ad0a175dff2803bfe05a6582e815edf279aa777207d81f32556d9630.f32v2",
+            "name": "language_model.model.layers.0.input_layernorm.weight",
+            "bytes": 20488,
+            "sha256": "501519842a4cb9c542eea58188d48aa1a9326ead30566857149b9123c5c0582e",
+            "matches_g105": false,
+            "filename_is_content_sha256": false
+          },
+          {
+            "artifact": "a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2.f32v2",
+            "name": "language_model.model.layers.0.post_attention_layernorm.weight",
+            "bytes": 20488,
+            "sha256": "62d6915c59a84052ee9a6bb0d3fdaed345e1124029ebd5942ba5552c3d9d9d63",
+            "matches_g105": false,
+            "filename_is_content_sha256": false
+          },
+          {
+            "artifact": "e56c97fb7ba5f24772b2d91bc1cf3aea88a186e54b79bcec5ed424add15a3ba6.f32v2",
+            "name": "language_model.model.layers.1.input_layernorm.weight",
+            "bytes": 20488,
+            "sha256": "7118bc1b97074e808ffc48079e510eb15f45c98eb5bd23a38193ac4843ffbe0c",
+            "matches_g105": false,
+            "filename_is_content_sha256": false
+          },
+          {
+            "artifact": "bcdc10868b8ef17328a818d77525c29499eeee774dcb0741342e7b1339a91399.f32v2",
+            "name": "language_model.model.layers.1.post_attention_layernorm.weight",
+            "bytes": 20488,
+            "sha256": "5a3b23820c99c6800dd1255fd002cba8ea770dee9893f5550da65be164c2bdb7",
+            "matches_g105": false,
+            "filename_is_content_sha256": false
+          }
+        ]
+      }
+    },
+    "on_disk_files": 756,
+    "on_disk_bytes": 14297933604,
+    "manifest_bytes": 238924,
+    "other_artifact_bytes": 0,
+    "embed": {
+      "name": "language_model.model.embed_tokens.weight",
+      "table_bytes": 675430440,
+      "row_bytes": 2720,
+      "rows": 248320
+    },
+    "hidden_learned_constants_in_bound_shaders": [],
+    "kernel_census": {
+      "present": true,
+      "declared_kernel_void_names": 568,
+      "g105_declared": 554,
+      "declared_matches_g105": false,
+      "bound_files": [
+        {
+          "file": "q80_mixed_decode.metal",
+          "bytes": 91049,
+          "kernels": [
+            "q80_binary_group_csr_matvec_bytes",
+            "q80_binary_group_csr_matvec_tg256",
+            "q80_binary_group_matvec_simd_bytes",
+            "q80_binary_group_matvec_tg256",
+            "q80_hgravs01_factor_matvec_simd",
+            "q80_hgravs01_factor_matvec_simd3",
+            "q80_sparse_q1_apply_csr",
+            "q80_uniform8_matvec_simd_bytes",
+            "q80_uniform8_matvec_tg256",
+            "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
+            "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128"
+          ]
+        },
+        {
+          "file": "qwen38_device_activations.metal",
+          "bytes": 24599,
+          "kernels": [
+            "qwen38_attention_apply_sigmoid_gate",
+            "qwen38_f32_stream_probe",
+            "qwen38_fuse_split_ba_f32",
+            "qwen38_fuse_split_qkvz_f32",
+            "qwen38_gated_delta_decode_vi",
+            "qwen38_gated_delta_decode_vi_simd",
+            "qwen38_gqa_qk_norm_rope_cache_f32",
+            "qwen38_gqa_qk_norm_rope_cache_tg",
+            "qwen38_hgravu_embedding_lookup",
+            "qwen38_qkvz_rearrange_conv_l2_f32"
+          ]
+        },
+        {
+          "file": "qwen80_device_activations.metal",
+          "bytes": 23379,
+          "kernels": [
+            "qwen80_ba_to_decay_beta_f32",
+            "qwen80_deltanet_gated_rmsnorm_f32",
+            "qwen80_deltanet_gated_rmsnorm_tg",
+            "qwen80_gated_delta_decode_tg",
+            "qwen80_residual_rmsnorm_f32",
+            "qwen80_residual_rmsnorm_tg"
+          ]
+        },
+        {
+          "file": "qwen_uniform_q4.metal",
+          "bytes": 84374,
+          "kernels": [
+            "qwen_uniform_q4_embedding_lookup",
+            "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+            "qwen_uniform_q4_group64_matvec",
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+            "qwen_uniform_q4_group64_matvec_vecgroup",
+            "qwen_uniform_q4_group64_matvec_vecgroup_r4",
+            "qwen_uniform_q4_group64_matvec_vecgroup_x64"
+          ]
+        },
+        {
+          "file": "sample.metal",
+          "bytes": 16579,
+          "kernels": [
+            "sample_argmax_f32_pass1",
+            "sample_argmax_f32_pass2"
+          ]
+        }
+      ],
+      "bound_file_bytes": 239980,
+      "all_shader_bytes": 1546185,
+      "unbound_shader_bytes": 1306205,
+      "unbound_file_count": 37,
+      "dispatched_names_missing_from_shaders": [],
+      "decode_rs_bytes": 288193
+    },
+    "nx_bytes": 3098,
+    "workspace": {
+      "1": {
+        "max_seq_len": 1,
+        "activation_bytes": 1691396,
+        "deltanet_state_bytes": 156893184,
+        "gqa_kv_bytes": 131072,
+        "kv_bytes_per_position": 131072,
+        "total_bytes": 158715652
+      },
+      "128": {
+        "max_seq_len": 128,
+        "activation_bytes": 1691396,
+        "deltanet_state_bytes": 156893184,
+        "gqa_kv_bytes": 16777216,
+        "kv_bytes_per_position": 131072,
+        "total_bytes": 175361796
+      },
+      "8192": {
+        "max_seq_len": 8192,
+        "activation_bytes": 1691396,
+        "deltanet_state_bytes": 156893184,
+        "gqa_kv_bytes": 1073741824,
+        "kv_bytes_per_position": 131072,
+        "total_bytes": 1232326404
+      },
+      "131072": {
+        "max_seq_len": 131072,
+        "activation_bytes": 1691396,
+        "deltanet_state_bytes": 156893184,
+        "gqa_kv_bytes": 17179869184,
+        "kv_bytes_per_position": 131072,
+        "total_bytes": 17338453764
+      }
+    },
+    "headline_ctx": 8192,
+    "buckets": {
+      "MODEL_SPECIFIC_BYTES": 14297933604,
+      "SHARED_RUNTIME_BYTES": 528173,
+      "MACHINE_SPECIFIC_BYTES": 3098,
+      "GENERATED_CACHE_BYTES": 1230635008,
+      "TEMPORARY_BYTES": 1691396,
+      "RESIDENT_BYTES": 15530791279,
+      "ACTIVE_BYTES": 13622266960
+    },
+    "partition_sum": 15530791279,
+    "naive_seven_sum": 44683849518,
+    "bpw": {
+      "model_specific": 4.252806192902674,
+      "payload_only": 4.252735126866492,
+      "on_disk_artifact": 4.252806192902674,
+      "complete_with_runtime_not_amortised": 4.252964215219848,
+      "resident_at_ctx": 4.619509864945239,
+      "active_per_token": 4.05183454430465
+    },
+    "anchors_confirmed": {
+      "payload_bytes": true,
+      "on_disk_bytes": true,
+      "tensor_count": true,
+      "file_count": true,
+      "q4_f32": true,
+      "kv_per_position": true
+    }
+  },
+  "canary": {
+    "rule": "COUNTED iff MODEL_SPECIFIC grew by >= 90% of the planted parent-derived payload. Bytes that merely appear in SHARED / MACHINE / GENERATED / TEMP do not count as caught: those are the buckets a dishonest EBPW excludes or amortises.",
+    "isolated": [
+      {
+        "attempt": 1,
+        "name": "source_literal",
+        "hide": "learned tensor written into a source file as a literal array",
+        "where": "runtime/baked_bias.py",
+        "payload_bytes": 128,
+        "content": "COUNTED",
+        "path_only": "MISSED",
+        "content_why": "MODEL_SPECIFIC grew by 128 B against a planted 128 B parent-derived payload",
+        "path_why": "MODEL_SPECIFIC grew by 0 B, not the planted 128 B. Largest other growth: SHARED_RUNTIME_BYTES 398 B",
+        "content_delta": {
+          "MODEL_SPECIFIC_BYTES": 128,
+          "SHARED_RUNTIME_BYTES": 270,
+          "MACHINE_SPECIFIC_BYTES": 0,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 398,
+          "ACTIVE_BYTES": 128
+        },
+        "path_delta": {
+          "MODEL_SPECIFIC_BYTES": 0,
+          "SHARED_RUNTIME_BYTES": 398,
+          "MACHINE_SPECIFIC_BYTES": 0,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 398,
+          "ACTIVE_BYTES": 0
+        }
+      },
+      {
+        "attempt": 2,
+        "name": "metal_constant",
+        "hide": "learned constant baked into a Metal shader",
+        "where": "runtime/learned.metal",
+        "payload_bytes": 256,
+        "content": "COUNTED",
+        "path_only": "MISSED",
+        "content_why": "MODEL_SPECIFIC grew by 256 B against a planted 256 B parent-derived payload",
+        "path_why": "MODEL_SPECIFIC grew by 0 B, not the planted 256 B. Largest other growth: SHARED_RUNTIME_BYTES 946 B",
+        "content_delta": {
+          "MODEL_SPECIFIC_BYTES": 256,
+          "SHARED_RUNTIME_BYTES": 690,
+          "MACHINE_SPECIFIC_BYTES": 0,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 946,
+          "ACTIVE_BYTES": 256
+        },
+        "path_delta": {
+          "MODEL_SPECIFIC_BYTES": 0,
+          "SHARED_RUNTIME_BYTES": 946,
+          "MACHINE_SPECIFIC_BYTES": 0,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 946,
+          "ACTIVE_BYTES": 0
+        }
+      },
+      {
+        "attempt": 3,
+        "name": "required_cache_lut",
+        "hide": "lookup table shipped as a cache that is actually required for correctness",
+        "where": "cache/correction_lut.bin",
+        "payload_bytes": 1024,
+        "content": "COUNTED",
+        "path_only": "MISSED",
+        "content_why": "MODEL_SPECIFIC grew by 1,058 B against a planted 1,024 B parent-derived payload",
+        "path_why": "MODEL_SPECIFIC grew by 34 B, not the planted 1,024 B. Largest other growth: GENERATED_CACHE_BYTES 1,024 B",
+        "content_delta": {
+          "MODEL_SPECIFIC_BYTES": 1058,
+          "SHARED_RUNTIME_BYTES": 0,
+          "MACHINE_SPECIFIC_BYTES": 0,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 1058,
+          "ACTIVE_BYTES": 1058
+        },
+        "path_delta": {
+          "MODEL_SPECIFIC_BYTES": 34,
+          "SHARED_RUNTIME_BYTES": 0,
+          "MACHINE_SPECIFIC_BYTES": 0,
+          "GENERATED_CACHE_BYTES": 1024,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 1058,
+          "ACTIVE_BYTES": 34
+        }
+      },
+      {
+        "attempt": 4,
+        "name": "machine_specific_metallib",
+        "hide": "model information moved into a compiled GPU binary so it books as MACHINE_SPECIFIC",
+        "where": "nx/qwen_uniform_q4_group64.metallib",
+        "payload_bytes": 512,
+        "content": "COUNTED",
+        "path_only": "MISSED",
+        "content_why": "MODEL_SPECIFIC grew by 512 B against a planted 512 B parent-derived payload",
+        "path_why": "MODEL_SPECIFIC grew by 0 B, not the planted 512 B. Largest other growth: MACHINE_SPECIFIC_BYTES 530 B",
+        "content_delta": {
+          "MODEL_SPECIFIC_BYTES": 512,
+          "SHARED_RUNTIME_BYTES": 0,
+          "MACHINE_SPECIFIC_BYTES": 18,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 530,
+          "ACTIVE_BYTES": 512
+        },
+        "path_delta": {
+          "MODEL_SPECIFIC_BYTES": 0,
+          "SHARED_RUNTIME_BYTES": 0,
+          "MACHINE_SPECIFIC_BYTES": 530,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 530,
+          "ACTIVE_BYTES": 0
+        }
+      },
+      {
+        "attempt": 5,
+        "name": "generated_state_seed",
+        "hide": "a generated-state seed that regenerates a large tensor at load",
+        "where": "seeds/up_proj.seed + seeds/up_proj.recipe.json",
+        "payload_bytes": 16384,
+        "content": "COUNTED",
+        "path_only": "MISSED",
+        "content_why": "MODEL_SPECIFIC grew by 16,481 B against a planted 16,384 B parent-derived payload",
+        "path_why": "MODEL_SPECIFIC grew by 105 B, not the planted 16,384 B. Largest other growth: SHARED_RUNTIME_BYTES 0 B",
+        "content_delta": {
+          "MODEL_SPECIFIC_BYTES": 16481,
+          "SHARED_RUNTIME_BYTES": 0,
+          "MACHINE_SPECIFIC_BYTES": 0,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 16481,
+          "ACTIVE_BYTES": 16481
+        },
+        "path_delta": {
+          "MODEL_SPECIFIC_BYTES": 105,
+          "SHARED_RUNTIME_BYTES": 0,
+          "MACHINE_SPECIFIC_BYTES": 0,
+          "GENERATED_CACHE_BYTES": 0,
+          "TEMPORARY_BYTES": 0,
+          "RESIDENT_BYTES": 105,
+          "ACTIVE_BYTES": 105
+        }
+      }
+    ],
+    "content_tally": {
+      "COUNTED": 5,
+      "MISSED": 0,
+      "statuses": [
+        "COUNTED",
+        "COUNTED",
+        "COUNTED",
+        "COUNTED",
+        "COUNTED"
+      ]
+    },
+    "path_tally": {
+      "COUNTED": 0,
+      "MISSED": 5,
+      "statuses": [
+        "MISSED",
+        "MISSED",
+        "MISSED",
+        "MISSED",
+        "MISSED"
+      ]
+    },
+    "combined_content_buckets": {
+      "MODEL_SPECIFIC_BYTES": 18927,
+      "SHARED_RUNTIME_BYTES": 1110,
+      "MACHINE_SPECIFIC_BYTES": 494,
+      "GENERATED_CACHE_BYTES": 0,
+      "TEMPORARY_BYTES": 0,
+      "RESIDENT_BYTES": 20531,
+      "ACTIVE_BYTES": 18927
+    },
+    "completeness": "caught the five plants; geometry-shaped integer codes would still miss."
+  },
+  "artifact_untouched": {
+    "verified": true,
+    "method": "lstat walk: relpath + size + mtime_ns + inode, plus sha256 of manifest.json. No writes under the artifact. Canary used tempfile. Did not re-hash the 14 GB payload; hashed every tensor < 1 MiB against G105_TENSOR_DIGESTS and summed sizes of all 755.",
+    "before": {
+      "root": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+      "file_count": 756,
+      "total_bytes": 14297933604,
+      "meta_digest": "93cdab9fb2defb443f6c1da887795abe2f8062da49f49c85c4284f676470b197",
+      "manifest_sha256": "6b923c6315439439f942fe0cd5dcdf22f05823b18b2873f876c2397aa964a7e7",
+      "mtime_ns_min": 1787445023955331439,
+      "mtime_ns_max": 1787446551908639201
+    },
+    "after": {
+      "root": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+      "file_count": 756,
+      "total_bytes": 14297933604,
+      "meta_digest": "93cdab9fb2defb443f6c1da887795abe2f8062da49f49c85c4284f676470b197",
+      "manifest_sha256": "6b923c6315439439f942fe0cd5dcdf22f05823b18b2873f876c2397aa964a7e7",
+      "mtime_ns_min": 1787445023955331439,
+      "mtime_ns_max": 1787446551908639201
+    }
+  },
+  "what_i_watched_fail": {
+    "path_only_classifier": "runtime\u2192SHARED, nx/.metallib\u2192MACHINE, cache\u2192GENERATED, seeds at file size, no source scan. Missed all five hides. The bytes did not disappear; they sat in buckets a representation search excludes.",
+    "content_aware_remaining_hole": "compiled GPU binary (.metallib) with a learned f32 table after a plausible MTLB header. Booked as MACHINE_SPECIFIC. Smallest fix: charge compiled GPU blobs to MODEL_SPECIFIC unless reproduced from scanned shader source.",
+    "would_also_miss": "a learned u8 codebook encoded as a sequence of valid threadgroup sizes inside NX geometry. The JSON walker allows short power-of-two integer lists as geometry by design."
+  },
+  "g105_defects_not_rederived": {
+    "content_addressing_defect_found_and_fixed_forward": {
+      "found": "The tensor store uses 64-hex filenames that LOOK like content addresses and are not. Across 12 randomly sampled tensors, ZERO have a filename equal to the sha256 of their contents, and none match the sha256 of the payload after the header, of the scales, of the codes, of the bf16 source as f32, or of the bf16 source raw. The manifest records no sha256, hash or digest field for any tensor.",
+      "why_it_matters": "G105's verify says 'rebuild from recipe, compare digests'. There were no digests to compare. G096's verify assumes content-addressed inputs. A substituted or corrupted tensor would not have been detected by name.",
+      "fixed_forward": "This seal now records a real sha256 for all 755 tensor files and a rolling digest over them, so a future rebuild has an anchor to compare against. That does NOT make the existing artifact reproducible -- it makes it VERIFIABLE from here on.",
+      "tensor_digests_recorded": 755,
+      "artifact_rolling_digest": "89e780555634f28aaf86d03108407f29da254af61404a92d2ca750e00b3fa812",
+      "bytes_hashed": 14297694680
+    },
+    "byte_reproducibility_NOT_met": {
+      "why": "Reproducing the NR half from the raw parent needs the ENCODER's exact rounding rule and its fusion recipe, and neither is recorded in the artifact. The manifest declares fused_in_proj_layers, so some tensors (in_proj_ba) do not exist in the parent at all and are derived -- the recipe for that derivation is not written down anywhere in the artifact.",
+      "missing_input": [
+        "the encoder's scale rule and rounding mode as a recorded parameter, not inferred",
+        "the in_proj fusion recipe",
+        "a re-pack run to compare against the digests now recorded"
+      ]
+    }
+  },
+  "baseline_suite": {
+    "claimed": "464 passed, 1 skipped",
+    "ran": "not in this sparse worktree. tools/haider is DENIED and not materialized; git apply of tree-state.patch failed with 'tools/haider/hcli/*.py: No such file or directory'. pytest tools/headless collection errors with ModuleNotFoundError: hcli. Non-haider scripts storage_manager_test and performance_ledger_test passed. rollback_integrity_test needs hcli and failed to import."
+  }
+}

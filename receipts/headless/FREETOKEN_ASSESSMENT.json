@@ -1,0 +1,92 @@
+{
+ "schema": "hawking.headless.freetoken_assessment.v1",
+ "obligation": "G007 \u2014 operator steer: 'look into freetoken a new project see if that can be incorporated into the process could help speed'",
+ "generated_at": "2026-08-22T22:36:33Z",
+ "identified_as": {
+  "name": "FreeToken",
+  "subtitle": "Efficient Edge-Native MoE Serving with Bandwidth-Adaptive Execution",
+  "arxiv": "2608.16157",
+  "arxiv_url": "https://arxiv.org/abs/2608.16157",
+  "repo": "https://github.com/FlashML-org/FreeToken",
+  "license": "Apache-2.0",
+  "found_locally": false,
+  "local_search": "find ~ -maxdepth 4 -iname '*freetoken*' -> no matches. Not on this machine."
+ },
+ "what_it_is": "An edge-native serving system that treats a personal machine as a unified elastic inference platform rather than a small GPU. Co-designs model layout/loading, expert residency, CPU-GPU execution, agentic state reuse and runtime memory management. Claims 35B on a laptop, 284B on a gaming desktop, 753B GLM-5.2 on one workstation GPU.",
+ "mechanisms_of_interest": [
+  "bandwidth-adaptive CPU-GPU co-execution (does not commit to a fixed offload strategy)",
+  "full-layer double-buffered prefill streaming",
+  "global LRU expert caching",
+  "FTW fast weight format",
+  "semantic anchor checkpoints for recurrent state and KV caches, so agentic context edits (tool calls, thinking blocks) avoid redundant context recomputation",
+  "elastic runtime VRAM reallocation between expert cache and KV without engine restart"
+ ],
+ "applicability_to_this_machine": {
+  "verdict": "REJECT as a runtime dependency",
+  "blocking_reasons": [
+   "HARDWARE: evaluated and documented on NVIDIA GPUs only (8GB laptop GPU, gaming desktop, workstation GPU; install docs name RTX 30/40/50). Apple Silicon, Metal and unified memory are not mentioned in the abstract, the paper page, or the repo README. This box is an M3 Ultra with 96 GiB unified memory and no CUDA device.",
+   "PLATFORM: desktop installers are Windows and Linux only.",
+   "ARCHITECTURE: the system is built around Mixture-of-Experts residency and expert caching. Hawking's current bootstrap parent, Qwen3.8-27B-abliterated, is DENSE, so the expert-residency and LRU-expert-cache machinery \u2014 the core of the paper \u2014 has nothing to act on even if the hardware matched."
+  ],
+  "not_blocking": "The license (Apache-2.0) permits adoption; the obstacle is purely technical fit."
+ },
+ "what_to_adopt_instead": [
+  {
+   "idea": "semantic anchor checkpoints for agentic KV reuse",
+   "why": "Directly addresses the dominant measured cost in HCLI today. A production HCLI mission prompt is 7257 tokens and llama-server reports n_prompt_tokens_cache=0 \u2014 every WorkUnit re-prefills the whole mission from scratch. Anchoring the stable prefix and prefilling only the changed suffix is the same idea FreeToken describes, and directive section 6 already requires it (content-addressed prefix cache, deepest exact prefix restore, changed-suffix prefill).",
+   "status": "adopt as HCLI native design, not as a dependency"
+  },
+  {
+   "idea": "bandwidth-adaptive execution rather than a fixed offload/parallelism policy",
+   "why": "Matches the directive's RESIDENT_RUNTIME_LIMIT vs ACTIVE_DECODE_LIMIT split: the right concurrency is measured on the machine at hand, not assumed.",
+   "status": "adopt as MachineProbe/MemGate policy"
+  }
+ ],
+ "revisit_if": [
+  "FreeToken ships a Metal/MPS backend (watch the repo's backend list)",
+  "Hawking's production parent becomes an MoE model AND a Metal backend exists"
+ ],
+ "sources": [
+  "https://arxiv.org/abs/2608.16157",
+  "https://github.com/FlashML-org/FreeToken",
+  "https://huggingface.co/papers/2608.16157"
+ ],
+ "machine_at_assessment": {
+  "hw_model": "Mac15,14",
+  "cpu": "Apple M3 Ultra",
+  "mem_bytes": 103079215104,
+  "cuda_devices": "none (no nvidia-smi on PATH)"
+ },
+ "operator_steers": [
+  {
+   "id": "S001",
+   "at": "2026-08-22T23:24:00Z",
+   "kind": "knowledge",
+   "text": "see if freetoken metal replication could be helpful nateively and when time comes ^",
+   "interpretation": "Do not depend on FreeToken; replicate its winning mechanisms on Metal inside Hawking, when the schedule reaches that point. This sharpens rather than changes the verdict already recorded here (REJECT as a dependency, ADOPT the ideas natively).",
+   "concrete_candidates_for_native_metal_replication": [
+    {
+     "mechanism": "semantic anchor checkpoints for agentic KV reuse",
+     "hawking_evidence": "MEASURED on this box 2026-08-22: the same 7257-token mission prompt took 31.62 s cold and 6.46 s warm through the identical no_think arm \u2014 ~25 s of pure prefill recovered by prefix reuse alone. Production HCLI runs with n_prompt_tokens_cache=0, so it pays that 25 s on every WorkUnit.",
+     "priority": "high \u2014 largest measured non-decode lever after the reasoning-budget fix"
+    },
+    {
+     "mechanism": "bandwidth-adaptive execution instead of a fixed parallelism policy",
+     "hawking_evidence": "RESIDENT_RUNTIME_LIMIT vs ACTIVE_DECODE_LIMIT measured separately by tools/headless/machine_probe.py",
+     "priority": "high"
+    },
+    {
+     "mechanism": "full-layer double-buffered prefill streaming",
+     "hawking_evidence": "unmeasured here; relevant only once prefill is the dominant residual",
+     "priority": "deferred"
+    },
+    {
+     "mechanism": "global LRU expert caching / FTW weight format",
+     "hawking_evidence": "not applicable while the production parent is dense",
+     "priority": "not applicable"
+    }
+   ],
+   "sequencing": "Deferred behind the completion order: HCLI foundation and acceptance integrity first (directive section 28 A-C), then the runtime bridge. A native Metal KV-anchor plane is G017/G018 work, not now."
+  }
+ ]
+}

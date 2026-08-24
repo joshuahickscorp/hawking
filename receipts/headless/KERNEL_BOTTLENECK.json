@@ -1,0 +1,1270 @@
+{
+ "schema": "hawking.headless.kernel_bottleneck.v1",
+ "generated_at": "2026-08-24T07:14:31Z",
+ "git_head": "7703d50237aacee45fb1643da5e40d3ac255a588",
+ "elapsed_s": 0.16679720900719985,
+ "obligation": "N024 \u2014 KERNEL BOTTLENECK ATTACK: close the gap from 356.7 toward the 778.8 roof",
+ "roof_gb_s": 778.8,
+ "bar_gb_s": 775.0,
+ "spec_peak_gb_s": 819.0,
+ "prior_not_rederived": {
+  "n017_dram_roof_gb_s": 778.8,
+  "n018_production_decode_gb_s": 356.7,
+  "n018_load_only_gate_proj_gb_s": 968.8,
+  "parent_active_bytes_per_token": 9878901136,
+  "parent_dispatches_per_token": 756,
+  "did_not_retry": [
+   "qmvfast",
+   "wide64",
+   "tgx"
+  ]
+ },
+ "did_not_load_second_27b": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_write_ascent_or_campaign": true,
+ "parent_immutable": {
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "outside_worktree": true,
+  "catalog_present": true
+ },
+ "levers": [
+  {
+   "id": "tgsb",
+   "what": "stage per-group scale/bias stream in threadgroup memory once, not reloaded per output tile",
+   "targets": "non-load"
+  },
+  {
+   "id": "pipe",
+   "what": "hoist affine2 unpack off the critical byte path (decode ahead / software pipeline, vectorized x)",
+   "targets": "non-load"
+  },
+  {
+   "id": "splitk4",
+   "what": "4-way split-K over the reduction so accumulation latency overlaps loads (TG 256, 2 rows; not tgx)",
+   "targets": "non-load"
+  },
+  {
+   "id": "accfuse",
+   "what": "fuse scale/bias application into the accumulate: scale*sum(q x)+bias*sum(x)",
+   "targets": "non-load"
+  }
+ ],
+ "controls": {
+  "no_op": "tpr64 incumbent geometry (unchanged kernel family)",
+  "deliberately_bad": "runtime_div (bind-time group_size integer divide, measured 1.37x defect)",
+  "load_only": "qmvfast_addr_probe (skip FMA; confirms the wall is not DRAM load)",
+  "reps": 7,
+  "report": "min/median/max; overlapping ranges are NOT SEPARATED"
+ },
+ "kernel_autopsy": {
+  "exit_code": 0,
+  "ok": true,
+  "any_new_kernel_defective": false,
+  "stdout_tail": "files 43  kernels 622  {'DEFECTIVE': 89, 'SUSPECT': 450, 'CLEAR': 83}\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::q2f_group64_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group64_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE bandwidth_roof.metal::roof_seq_simd8x8  runtime_integer_divide -> tpg\n  DEFECTIVE common.metal::rope_q_f32_inplace  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_q_interleaved_concat  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_f32_batched_multiseq  runtime_integer_divide -> per_slot\n  DEFECTIVE common.metal::rope_qk_f32_batched_multiseq  runtime_integer_divide -> q_per_slot\n  DEFECTIVE common.metal::embed_lookup_f32_batched  runtime_integer_divide -> hidden\n  DEFECTIVE common.metal::rope_qk_f32_b1_bias  runtime_integer_divide -> pairs_per_head\nreceipt: /Users/scammermike/.claude-grok/worktrees/n024bottleneck-20260824-025522/receipts/headless/KERNEL_COMPETENCE.json\n",
+  "stderr_tail": "",
+  "new_kernels": [
+   {
+    "file": "affine2_group32_matvec.metal",
+    "kernel": "affine2_group64_matvec_tgsb_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "er(mem_flags::mem_threadgroup);\n        if (row < rows) {\n            const uint sb_base = team"
+     }
+    ]
+   },
+   {
+    "file": "affine2_group32_matvec.metal",
+    "kernel": "affine2_group64_matvec_pipe_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   },
+   {
+    "file": "affine2_group32_matvec.metal",
+    "kernel": "affine2_group64_matvec_splitk4_tg256",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   },
+   {
+    "file": "affine2_group32_matvec.metal",
+    "kernel": "affine2_group64_matvec_accfuse_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   },
+   {
+    "file": "q80_mixed_decode.metal",
+    "kernel": "qwen_affine_q2_group64_matvec_tgsb_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "er(mem_flags::mem_threadgroup);\n        if (row < rows) {\n            const uint sb_base = team"
+     }
+    ]
+   },
+   {
+    "file": "q80_mixed_decode.metal",
+    "kernel": "qwen_affine_q2_group64_matvec_pipe_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   },
+   {
+    "file": "q80_mixed_decode.metal",
+    "kernel": "qwen_affine_q2_group64_matvec_splitk4_tg256",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   },
+   {
+    "file": "q80_mixed_decode.metal",
+    "kernel": "qwen_affine_q2_group64_matvec_accfuse_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   },
+   {
+    "file": "q80_mixed_decode.metal",
+    "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgsb_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "er(mem_flags::mem_threadgroup);\n        if (row < rows) {\n            const uint sb_base = team"
+     }
+    ]
+   },
+   {
+    "file": "q80_mixed_decode.metal",
+    "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   },
+   {
+    "file": "q80_mixed_decode.metal",
+    "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_splitk4_tg256",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   },
+   {
+    "file": "q80_mixed_decode.metal",
+    "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_accfuse_tpr64_tg128",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "row",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+     }
+    ]
+   }
+  ],
+  "missing": []
+ },
+ "shader_evidence": {
+  "mixed_present": true,
+  "standalone_present": true,
+  "production_kernels": {
+   "qwen_affine_q2_group64_matvec_tgsb_tpr64_tg128": true,
+   "qwen_affine_q2_group64_matvec_pipe_tpr64_tg128": true,
+   "qwen_affine_q2_group64_matvec_splitk4_tg256": true,
+   "qwen_affine_q2_group64_matvec_accfuse_tpr64_tg128": true,
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgsb_tpr64_tg128": true,
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128": true,
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_splitk4_tg256": true,
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_accfuse_tpr64_tg128": true,
+   "qwen_affine_q2_group32_matvec_geo_tpr64_tg128": true,
+   "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div": true
+  },
+  "isolated_kernels": {
+   "affine2_group64_matvec_geo_tpr64_tg128": true,
+   "affine2_group64_matvec_geo_tpr64_tg128_runtime_div": true,
+   "affine2_group64_matvec_tgsb_tpr64_tg128": true,
+   "affine2_group64_matvec_pipe_tpr64_tg128": true,
+   "affine2_group64_matvec_splitk4_tg256": true,
+   "affine2_group64_matvec_accfuse_tpr64_tg128": true,
+   "affine2_group64_matvec_qmvfast_r8tg64_addr_probe": true
+  },
+  "wired_launch": true,
+  "wired_fused": true,
+  "incumbent_untouched": true,
+  "bad_control_kept": true,
+  "n018_tiles_kept_not_retried_as_levers": true,
+  "no_dense_w": true
+ },
+ "compile": {
+  "returncode": 0,
+  "skipped": true,
+  "bin_present": true,
+  "note": "reused existing raw; cargo not re-invoked"
+ },
+ "run": null,
+ "isolated_gemv": {
+  "kind": "MEASURED",
+  "parity": [
+   {
+    "dense_w_materialized": 0,
+    "id": "tpr64",
+    "kernel": "affine2_group64_matvec_geo_tpr64_tg128",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "runtime_div",
+    "kernel": "affine2_group64_matvec_geo_tpr64_tg128_runtime_div",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "tgsb",
+    "kernel": "affine2_group64_matvec_tgsb_tpr64_tg128",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "pipe",
+    "kernel": "affine2_group64_matvec_pipe_tpr64_tg128",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "splitk4",
+    "kernel": "affine2_group64_matvec_splitk4_tg256",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "accfuse",
+    "kernel": "affine2_group64_matvec_accfuse_tpr64_tg128",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   }
+  ],
+  "parity_all_ok": true,
+  "occupancy": [
+   {
+    "id": "tpr64",
+    "kernel": "affine2_group64_matvec_geo_tpr64_tg128",
+    "max_total_threads_per_threadgroup": 1024,
+    "registers_exposed": false,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "thread_execution_width": 32
+   },
+   {
+    "id": "runtime_div",
+    "kernel": "affine2_group64_matvec_geo_tpr64_tg128_runtime_div",
+    "max_total_threads_per_threadgroup": 1024,
+    "registers_exposed": false,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "thread_execution_width": 32
+   },
+   {
+    "id": "tgsb",
+    "kernel": "affine2_group64_matvec_tgsb_tpr64_tg128",
+    "max_total_threads_per_threadgroup": 1024,
+    "registers_exposed": false,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "thread_execution_width": 32
+   },
+   {
+    "id": "pipe",
+    "kernel": "affine2_group64_matvec_pipe_tpr64_tg128",
+    "max_total_threads_per_threadgroup": 1024,
+    "registers_exposed": false,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "thread_execution_width": 32
+   },
+   {
+    "id": "splitk4",
+    "kernel": "affine2_group64_matvec_splitk4_tg256",
+    "max_total_threads_per_threadgroup": 1024,
+    "registers_exposed": false,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "thread_execution_width": 32
+   },
+   {
+    "id": "accfuse",
+    "kernel": "affine2_group64_matvec_accfuse_tpr64_tg128",
+    "max_total_threads_per_threadgroup": 1024,
+    "registers_exposed": false,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "thread_execution_width": 32
+   },
+   {
+    "id": "qmvfast_addr_probe",
+    "kernel": "affine2_group64_matvec_qmvfast_r8tg64_addr_probe",
+    "max_total_threads_per_threadgroup": 1024,
+    "registers_exposed": false,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "thread_execution_width": 32
+   }
+  ],
+  "shapes": [
+   {
+    "label": "mlp.gate_proj",
+    "rows": 17408,
+    "cols": 5120,
+    "weight_payload_bytes": 27852800,
+    "arms": {
+     "tpr64": {
+      "role": "no_op_control",
+      "lever": null,
+      "kernel": "affine2_group64_matvec_geo_tpr64_tg128",
+      "gpu_ns_min": 140124,
+      "gpu_ns_median": 140916,
+      "gpu_ns_max": 141249,
+      "gpu_ns_reps": [
+       140958,
+       140916,
+       140791,
+       140499,
+       140124,
+       141249,
+       140916
+      ],
+      "weight_gb_s_median": 197.65534077038802,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "runtime_div": {
+      "role": "deliberately_bad_control",
+      "lever": null,
+      "kernel": "affine2_group64_matvec_geo_tpr64_tg128_runtime_div",
+      "gpu_ns_min": 196208,
+      "gpu_ns_median": 197208,
+      "gpu_ns_max": 312125,
+      "gpu_ns_reps": [
+       196208,
+       312125,
+       196374,
+       196749,
+       229625,
+       221958,
+       197208
+      ],
+      "weight_gb_s_median": 141.2356496693846,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "tgsb": {
+      "role": "lever",
+      "lever": "threadgroup-staged scale/bias once per TG; tpr64 occupancy",
+      "kernel": "affine2_group64_matvec_tgsb_tpr64_tg128",
+      "gpu_ns_min": 156958,
+      "gpu_ns_median": 157708,
+      "gpu_ns_max": 157875,
+      "gpu_ns_reps": [
+       157833,
+       157749,
+       157875,
+       157333,
+       156958,
+       157708,
+       157500
+      ],
+      "weight_gb_s_median": 176.60993735257566,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "pipe": {
+      "role": "lever",
+      "lever": "software-pipeline next unpack + vectorized x; tpr64 occupancy",
+      "kernel": "affine2_group64_matvec_pipe_tpr64_tg128",
+      "gpu_ns_min": 158750,
+      "gpu_ns_median": 158958,
+      "gpu_ns_max": 159250,
+      "gpu_ns_reps": [
+       158875,
+       158875,
+       158958,
+       159250,
+       159249,
+       158750,
+       159041
+      ],
+      "weight_gb_s_median": 175.22112759345237,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "splitk4": {
+      "role": "lever",
+      "lever": "4-way split-K, TG 256, 2 rows, stride 1024 (not tgx)",
+      "kernel": "affine2_group64_matvec_splitk4_tg256",
+      "gpu_ns_min": 138875,
+      "gpu_ns_median": 140916,
+      "gpu_ns_max": 141625,
+      "gpu_ns_reps": [
+       138875,
+       138958,
+       139249,
+       141625,
+       141374,
+       141249,
+       140916
+      ],
+      "weight_gb_s_median": 197.65534077038802,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "accfuse": {
+      "role": "lever",
+      "lever": "fuse scale/bias into acc: scale*sum(q x)+bias*sum(x)",
+      "kernel": "affine2_group64_matvec_accfuse_tpr64_tg128",
+      "gpu_ns_min": 123624,
+      "gpu_ns_median": 142458,
+      "gpu_ns_max": 143541,
+      "gpu_ns_reps": [
+       141875,
+       142458,
+       142166,
+       143541,
+       142874,
+       142999,
+       123624
+      ],
+      "weight_gb_s_median": 195.51587134453663,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "qmvfast_addr_probe": {
+      "role": "load_only_ceiling",
+      "lever": "N018 load-only ceiling; skip (q*scale+bias)*x",
+      "kernel": "affine2_group64_matvec_qmvfast_r8tg64_addr_probe",
+      "gpu_ns_min": 42833,
+      "gpu_ns_median": 69291,
+      "gpu_ns_max": 70124,
+      "gpu_ns_reps": [
+       43541,
+       43208,
+       42833,
+       69500,
+       70124,
+       69958,
+       69291
+      ],
+      "weight_gb_s_median": 401.96850961885383,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     }
+    },
+    "separation": {
+     "tgsb_vs_tpr64": {
+      "separated": true,
+      "faster": false
+     },
+     "pipe_vs_tpr64": {
+      "separated": true,
+      "faster": false
+     },
+     "splitk4_vs_tpr64": {
+      "separated": false,
+      "faster": false
+     },
+     "accfuse_vs_tpr64": {
+      "separated": false,
+      "faster": false
+     }
+    }
+   },
+   {
+    "label": "mlp.down_proj",
+    "rows": 5120,
+    "cols": 17408,
+    "weight_payload_bytes": 27852800,
+    "arms": {
+     "tpr64": {
+      "role": "no_op_control",
+      "lever": null,
+      "kernel": "affine2_group64_matvec_geo_tpr64_tg128",
+      "gpu_ns_min": 147875,
+      "gpu_ns_median": 149375,
+      "gpu_ns_max": 286541,
+      "gpu_ns_reps": [
+       152000,
+       148708,
+       147875,
+       148416,
+       149375,
+       152041,
+       286541
+      ],
+      "weight_gb_s_median": 186.46225941422594,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "runtime_div": {
+      "role": "deliberately_bad_control",
+      "lever": null,
+      "kernel": "affine2_group64_matvec_geo_tpr64_tg128_runtime_div",
+      "gpu_ns_min": 181500,
+      "gpu_ns_median": 206500,
+      "gpu_ns_max": 216041,
+      "gpu_ns_reps": [
+       216041,
+       212874,
+       215000,
+       206500,
+       181500,
+       205416,
+       205500
+      ],
+      "weight_gb_s_median": 134.88038740920098,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "tgsb": {
+      "role": "lever",
+      "lever": "threadgroup-staged scale/bias once per TG; tpr64 occupancy",
+      "kernel": "affine2_group64_matvec_tgsb_tpr64_tg128",
+      "gpu_ns_min": 160458,
+      "gpu_ns_median": 160875,
+      "gpu_ns_max": 163250,
+      "gpu_ns_reps": [
+       160666,
+       162500,
+       163250,
+       160458,
+       160875,
+       161791,
+       160666
+      ],
+      "weight_gb_s_median": 173.13317793317793,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "pipe": {
+      "role": "lever",
+      "lever": "software-pipeline next unpack + vectorized x; tpr64 occupancy",
+      "kernel": "affine2_group64_matvec_pipe_tpr64_tg128",
+      "gpu_ns_min": 142749,
+      "gpu_ns_median": 146333,
+      "gpu_ns_max": 170791,
+      "gpu_ns_reps": [
+       146333,
+       142749,
+       143500,
+       144249,
+       165499,
+       167374,
+       170791
+      ],
+      "weight_gb_s_median": 190.33847457511294,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "splitk4": {
+      "role": "lever",
+      "lever": "4-way split-K, TG 256, 2 rows, stride 1024 (not tgx)",
+      "kernel": "affine2_group64_matvec_splitk4_tg256",
+      "gpu_ns_min": 124833,
+      "gpu_ns_median": 143541,
+      "gpu_ns_max": 144624,
+      "gpu_ns_reps": [
+       143375,
+       143124,
+       143541,
+       143666,
+       144624,
+       143875,
+       124833
+      ],
+      "weight_gb_s_median": 194.04072703966114,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "accfuse": {
+      "role": "lever",
+      "lever": "fuse scale/bias into acc: scale*sum(q x)+bias*sum(x)",
+      "kernel": "affine2_group64_matvec_accfuse_tpr64_tg128",
+      "gpu_ns_min": 128500,
+      "gpu_ns_median": 147458,
+      "gpu_ns_max": 150249,
+      "gpu_ns_reps": [
+       128833,
+       129791,
+       128500,
+       147458,
+       149125,
+       148499,
+       150249
+      ],
+      "weight_gb_s_median": 188.88632695411576,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "qmvfast_addr_probe": {
+      "role": "load_only_ceiling",
+      "lever": "N018 load-only ceiling; skip (q*scale+bias)*x",
+      "kernel": "affine2_group64_matvec_qmvfast_r8tg64_addr_probe",
+      "gpu_ns_min": 88625,
+      "gpu_ns_median": 95125,
+      "gpu_ns_max": 96374,
+      "gpu_ns_reps": [
+       96374,
+       95125,
+       96333,
+       95041,
+       94666,
+       95874,
+       88625
+      ],
+      "weight_gb_s_median": 292.80210249671484,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     }
+    },
+    "separation": {
+     "tgsb_vs_tpr64": {
+      "separated": false,
+      "faster": false
+     },
+     "pipe_vs_tpr64": {
+      "separated": false,
+      "faster": true
+     },
+     "splitk4_vs_tpr64": {
+      "separated": true,
+      "faster": true
+     },
+     "accfuse_vs_tpr64": {
+      "separated": false,
+      "faster": true
+     }
+    }
+   }
+  ],
+  "dense_w_materialized": 0
+ },
+ "production_decode": {
+  "kind": "MEASURED",
+  "active_bytes_per_token": 9878901136,
+  "did_not_mutate_parent": true,
+  "did_not_load_second_27b": true,
+  "fusion": "parent (mlp swiglu + gqa qkv + dn inproj)",
+  "arms": {
+   "tpr64": {
+    "role": "no_op_control",
+    "gpu_ns_min": 27721624,
+    "gpu_ns_median": 27811291,
+    "gpu_ns_max": 27857624,
+    "gpu_ns_reps": [
+     27801000.0,
+     27721624.0,
+     27811125.0,
+     27811291.0,
+     27857624.0,
+     27820750.0,
+     27839083.0
+    ],
+    "achieved_gb_s_median": 355.2118862802881,
+    "tok_s_reps": [
+     34.47029455838762,
+     34.46234202014407,
+     34.44935193580577,
+     34.452417999776955,
+     34.496143996876725,
+     34.52141006114713,
+     34.45165313386592
+    ],
+    "tok_s_median": 34.46234202014407,
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "runtime_div": {
+    "role": "deliberately_bad_control",
+    "gpu_ns_min": 29857666,
+    "gpu_ns_median": 29877374,
+    "gpu_ns_max": 29907083,
+    "gpu_ns_reps": [
+     29857666.0,
+     29907083.0,
+     29865250.0,
+     29869208.0,
+     29889583.0,
+     29878791.0,
+     29877374.0
+    ],
+    "achieved_gb_s_median": 330.6482402369097,
+    "tok_s_reps": [
+     32.2035147401187,
+     32.17579709214752,
+     32.2344375052941,
+     32.23010867436139,
+     32.25440554861787,
+     32.16148496008358,
+     32.28233701522354
+    ],
+    "tok_s_median": 32.23010867436139,
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "tgsb": {
+    "role": "lever",
+    "gpu_ns_min": 36427624,
+    "gpu_ns_median": 36500291,
+    "gpu_ns_max": 36533041,
+    "gpu_ns_reps": [
+     36492249.0,
+     36533041.0,
+     36500291.0,
+     36434458.0,
+     36427624.0,
+     36521000.0,
+     36530666.0
+    ],
+    "achieved_gb_s_median": 270.6526678376345,
+    "tok_s_reps": [
+     26.521069906212762,
+     26.501825313218447,
+     26.546415322327583,
+     26.57767676150144,
+     26.55622421649552,
+     26.485309019320553,
+     26.51691286091116
+    ],
+    "tok_s_median": 26.521069906212762,
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "pipe": {
+    "role": "lever",
+    "gpu_ns_min": 29105916,
+    "gpu_ns_median": 29153208,
+    "gpu_ns_max": 29165624,
+    "gpu_ns_reps": [
+     29154749.0,
+     29105916.0,
+     29153208.0,
+     29131624.0,
+     29165624.0,
+     29139874.0,
+     29157208.0
+    ],
+    "achieved_gb_s_median": 338.86154607753633,
+    "tok_s_reps": [
+     32.98024927642103,
+     33.03425709940816,
+     32.99051300395079,
+     32.93532211504736,
+     32.94906790414755,
+     33.0415640605868,
+     33.00318233185635
+    ],
+    "tok_s_median": 32.99051300395079,
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "splitk4": {
+    "role": "lever",
+    "gpu_ns_min": 27374625,
+    "gpu_ns_median": 27463249,
+    "gpu_ns_max": 27500583,
+    "gpu_ns_reps": [
+     27455124.0,
+     27393500.0,
+     27374625.0,
+     27493916.0,
+     27500583.0,
+     27463249.0,
+     27477375.0
+    ],
+    "achieved_gb_s_median": 359.71348968943914,
+    "tok_s_reps": [
+     34.98921748947699,
+     34.98078243265106,
+     34.93715242992263,
+     34.92802396073621,
+     34.891946909576646,
+     34.86431585742534,
+     34.928678037882534
+    ],
+    "tok_s_median": 34.928678037882534,
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "accfuse": {
+    "role": "lever",
+    "gpu_ns_min": 27586416,
+    "gpu_ns_median": 27728416,
+    "gpu_ns_max": 27870916,
+    "gpu_ns_reps": [
+     27728416.0,
+     27860125.0,
+     27681749.0,
+     27586416.0,
+     27679583.0,
+     27870916.0,
+     27834041.0
+    ],
+    "achieved_gb_s_median": 356.2735475405447,
+    "tok_s_reps": [
+     34.55362994267562,
+     34.606736258890685,
+     34.87557650984561,
+     34.56403702643433,
+     34.38322180195534,
+     34.364576078589494,
+     34.552167411737706
+    ],
+    "tok_s_median": 34.55362994267562,
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   }
+  },
+  "before": {
+   "id": "tpr64",
+   "role": "no_op_control",
+   "achieved_gb_s": 355.2118862802881,
+   "tok_s_median": 34.46234202014407,
+   "gpu_ns_median": 27811291,
+   "token_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    6587,
+    264,
+    11346,
+    11,
+    18541,
+    9546,
+    323,
+    15673,
+    314,
+    1204,
+    264,
+    18826
+   ]
+  },
+  "after": {
+   "id": "splitk4",
+   "achieved_gb_s": 359.71348968943914,
+   "tok_s_median": 34.928678037882534,
+   "gpu_ns_median": 27463249,
+   "token_ids_unchanged": true,
+   "kept_incumbent_tpr64": false,
+   "note": null
+  },
+  "deliberately_bad_control": {
+   "role": "deliberately_bad_control",
+   "gpu_ns_min": 29857666,
+   "gpu_ns_median": 29877374,
+   "gpu_ns_max": 29907083,
+   "gpu_ns_reps": [
+    29857666.0,
+    29907083.0,
+    29865250.0,
+    29869208.0,
+    29889583.0,
+    29878791.0,
+    29877374.0
+   ],
+   "achieved_gb_s_median": 330.6482402369097,
+   "tok_s_reps": [
+    32.2035147401187,
+    32.17579709214752,
+    32.2344375052941,
+    32.23010867436139,
+    32.25440554861787,
+    32.16148496008358,
+    32.28233701522354
+   ],
+   "tok_s_median": 32.23010867436139,
+   "token_ids_unchanged_vs_tpr64": true,
+   "token_ids_stable_across_reps": true,
+   "new_token_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    6587,
+    264,
+    11346,
+    11,
+    18541,
+    9546,
+    323,
+    15673,
+    314,
+    1204,
+    264,
+    18826
+   ],
+   "dispatches_last_step_reps": [
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756
+   ],
+   "fallbacks_reps": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "n_reps": 7,
+   "dense_w_materialized": 0
+  },
+  "separation": {
+   "tgsb": {
+    "separated_from_tpr64": true
+   },
+   "pipe": {
+    "separated_from_tpr64": true
+   },
+   "splitk4": {
+    "separated_from_tpr64": true
+   },
+   "accfuse": {
+    "separated_from_tpr64": false,
+    "note": "NOT SEPARATED: gpu_ns ranges overlap; do not quote a mean delta"
+   }
+  },
+  "bar_gb_s": 775.0,
+  "roof_gb_s": 778.8,
+  "spec_peak_gb_s": 819.0,
+  "reached_bar": false,
+  "gap_to_roof_gb_s": 419.0865103105608,
+  "n018_anchor_gb_s": 356.7,
+  "gap_closed_gb_s_vs_n018": 3.0134896894391545,
+  "fraction_of_356p7_to_778p8_closed": 0.007139279055766772,
+  "dense_w_materialized": 0
+ },
+ "before_gb_s": 355.2118862802881,
+ "after_gb_s": 359.71348968943914,
+ "how_much_of_356p7_to_778p8_closed": 0.007139279055766772,
+ "what_still_blocks": "Production decode path 359.7 GB/s (remeasured tpr64 355.2 GB/s, N018 anchor 356.7 GB/s) roof 778.8 GB/s, bar 775 GB/s. tpr64 tok/s median 34.46. winner splitk4 tok/s median 34.93. Of the 356.7\u2192778.8 gap (422.1 GB/s), this run closed +3.0 GB/s (0.7%). Remainder to the 778.8 roof is 419.1 GB/s. This-run isolated load-only addr-probe on gate_proj is 402.0 GB/s; N018's load-only ceiling (not re-derived) is 968.8 GB/s. N018 proved the isolated load-only affine2 mix can exceed the 778.8 DRAM roof (968.8 GB/s), so the remaining gap is non-load work: fused scale/bias/accumulate on the critical path, occupancy/register pressure (toolchain does not expose register count; maxTotalThreadsPerThreadgroup=1024 on every arm), and the rest of the token graph (attention, DeltaNet, Q4 remainder, 756-class dispatch ceremony). split-K closed a slice of the accumulate-latency piece; staging scale/bias and software-pipelining unpack did not.",
+ "dense_w_materialized": 0,
+ "answer": "Production decode path 359.7 GB/s (remeasured tpr64 355.2 GB/s, N018 anchor 356.7 GB/s) roof 778.8 GB/s, bar 775 GB/s. tpr64 tok/s median 34.46. winner splitk4 tok/s median 34.93. Of the 356.7\u2192778.8 gap (422.1 GB/s), this run closed +3.0 GB/s (0.7%). Remainder to the 778.8 roof is 419.1 GB/s. This-run isolated load-only addr-probe on gate_proj is 402.0 GB/s; N018's load-only ceiling (not re-derived) is 968.8 GB/s. N018 proved the isolated load-only affine2 mix can exceed the 778.8 DRAM roof (968.8 GB/s), so the remaining gap is non-load work: fused scale/bias/accumulate on the critical path, occupancy/register pressure (toolchain does not expose register count; maxTotalThreadsPerThreadgroup=1024 on every arm), and the rest of the token graph (attention, DeltaNet, Q4 remainder, 756-class dispatch ceremony). split-K closed a slice of the accumulate-latency piece; staging scale/bias and software-pipelining unpack did not."
+}

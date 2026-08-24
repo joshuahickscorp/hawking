@@ -1,7 +1,7 @@
 # Stage-2 Kimi Streaming Distill Plan
 
 **Status:** PLAN ONLY — no streaming, no model consumption, no runtime edits in this lane.  
-**Seal companion:** `workspace/campaign/evidence/models/frankenstein/STAGE2_KIMI_STREAMING_DISTILL_PLAN.json`  
+**Seal companion:** `hawking-experiments/frankenstein/data/STAGE2_KIMI_STREAMING_DISTILL_PLAN.json`  
 **Depends on:** Stage-1 Proto seal (DeepSeek-V4-Flash body + GLM math inheritance sealed)  
 **Produces:** Final Frankenstein = DeepSeek + GLM + Kimi strategic inheritance
 
@@ -330,7 +330,7 @@ then scale.
 
 ## 11. References (local + cards)
 
-- Local fusion: `workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_FUSION_OPERATION.json`  
+- Local fusion: `hawking-experiments/frankenstein/data/FRANKENSTEIN_FUSION_OPERATION.json`  
 - Pilot schedule: `.../FRANKENSTEIN_DIRECT_STREAMING_SCHEDULE_PILOT.json`  
 - Kimi admission: `workspace/campaign/evidence/models/kimi-k3/KIMI_K3_SOURCE_ADMISSION.json`  
 - DSV admission: `workspace/campaign/evidence/models/deepseek-v4/DEEPSEEK_V4_FLASH_SOURCE_ADMISSION.json`  

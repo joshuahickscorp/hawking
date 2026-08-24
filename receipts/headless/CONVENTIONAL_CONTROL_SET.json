@@ -1,0 +1,914 @@
+{
+  "schema": "hawking.headless.conventional_control_set.v1",
+  "generated_at": "2026-08-23T21:04:18Z",
+  "commit": "053e292c7bede20701ed4e67840daf65f29ccca5",
+  "why": "Noetic candidates are only meaningful against a conventional control. MLX 4-bit is the LIVE control, measured now. llama.cpp Q5_K is the ARCHIVED control: the GGUF is gone, the numbers survive as science.",
+  "machine": {
+    "mem_bytes": 103079215104,
+    "cpu": "Apple M3 Ultra",
+    "ncpu": 28,
+    "hw_model": "Mac15,14"
+  },
+  "occupancy": {
+    "llama_up": false,
+    "health": [
+      {
+        "port": 52484,
+        "ok": false,
+        "body": null,
+        "error": "URLError: <urlopen error [Errno 61] Connection refused>"
+      },
+      {
+        "port": 8080,
+        "ok": false,
+        "body": null,
+        "error": "URLError: <urlopen error [Errno 61] Connection refused>"
+      },
+      {
+        "port": 51999,
+        "ok": false,
+        "body": null,
+        "error": "URLError: <urlopen error [Errno 61] Connection refused>"
+      },
+      {
+        "port": 54559,
+        "ok": false,
+        "body": null,
+        "error": "URLError: <urlopen error [Errno 61] Connection refused>"
+      },
+      {
+        "port": 54568,
+        "ok": false,
+        "body": null,
+        "error": "URLError: <urlopen error [Errno 61] Connection refused>"
+      },
+      {
+        "port": 54574,
+        "ok": false,
+        "body": null,
+        "error": "URLError: <urlopen error [Errno 61] Connection refused>"
+      }
+    ],
+    "ollama_models": [],
+    "ollama_error": null,
+    "llama_or_mlx_listen": [],
+    "resident_ps": [],
+    "gguf_on_disk": false,
+    "gguf_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "refuse_load_27b": false,
+    "refuse_reason": null
+  },
+  "live": {
+    "runtime": "mlx",
+    "status": "LIVE",
+    "artifact": {
+      "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit",
+      "bytes": 16081497073,
+      "n_files": 16,
+      "quant": {
+        "group_size": 64,
+        "bits": 4,
+        "mode": "affine"
+      },
+      "lineage": "PocketAiHub",
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
+      "preferred_huihui_present": false,
+      "note": "on-disk MLX abliterated 4-bit; huihui-lineage directory is absent so the live arm is the PocketAiHub conversion at ~/models/qwen3.8-27b-abliterated-mlx/4bit"
+    },
+    "metal": {
+      "attempted": true,
+      "gpu_usable": true,
+      "mlx_python": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python",
+      "mlx_python_present": true,
+      "command": [
+        "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python",
+        "/Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py",
+        "--mlx-worker",
+        "metal"
+      ],
+      "mlx_imported": true,
+      "metal_is_available_flag": true,
+      "tiny_eval_ok": true,
+      "device_info": {
+        "device_name": "Apple M3 Ultra",
+        "max_recommended_working_set_size": 83494174720,
+        "memory_size": 103079215104,
+        "architecture": "applegpu_g15d",
+        "max_buffer_length": 62620631040,
+        "resource_limit": 499000
+      },
+      "device_info_error": null,
+      "tiny_eval_error": null,
+      "cpu_tiny_eval_ok": null,
+      "cpu_tiny_eval_error": null,
+      "mlx_version": "0.32.0",
+      "mlx_lm_version": "0.31.3",
+      "error": null,
+      "note": "mx.metal.is_available() can be True while mx.device_info()/mx.eval still raise [metal::load_device] No Metal device available. gpu_usable is tiny_eval_ok, not the is_available flag.",
+      "spawn": {
+        "ok": true,
+        "returncode": 0,
+        "stderr_tail": ""
+      }
+    },
+    "metrics": {
+      "startup": {
+        "status": "MEASURED",
+        "value": 1.32945,
+        "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker load --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit   (\u00d73 sequential processes; measure-process load is cold rep 0)",
+        "unit": "s",
+        "repetitions": [
+          1.3313,
+          1.3276
+        ],
+        "n": 2,
+        "min": 1.3276,
+        "max": 1.3313,
+        "median": 1.32945,
+        "spread_pct": 0.279,
+        "spread_definition": "100 * (max - min) / min over repetitions; a single Metal run is page-cache confounded",
+        "cold": 1.2442,
+        "warm_repetitions": [
+          1.3313,
+          1.3276
+        ],
+        "cold_and_warm_stated_separately": true,
+        "warm_median": 1.32945,
+        "warm_min": 1.3276,
+        "warm_max": 1.3313,
+        "warm_n": 2,
+        "warm_spread_pct": 0.279,
+        "headline_is": "value/repetitions/spread are WARM (after the first sample). cold is the first sample this harness run.",
+        "all_load_s": [
+          1.2442,
+          1.3313,
+          1.3276
+        ],
+        "note": "cold is the first process this harness run (disk + GPU upload, Metal compile may overlap). warm is each subsequent process after the GPU was freed \u2014 page-cache confounded relative to cold."
+      },
+      "prefill": {
+        "status": "MEASURED",
+        "value": 309.94407089207584,
+        "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker measure --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit --n-predict 192 --reps 3 --tool-tokens 96 --prefill-tokens 512 --batch-tokens 32 --batch-sizes 1,2,4",
+        "unit": "tok/s",
+        "repetitions": [
+          309.66322385717905,
+          310.2249179269727
+        ],
+        "n": 2,
+        "min": 309.66322385717905,
+        "max": 310.2249179269727,
+        "median": 309.94407089207584,
+        "spread_pct": 0.181,
+        "spread_definition": "100 * (max - min) / min over repetitions; a single Metal run is page-cache confounded",
+        "cold": 310.6944895418622,
+        "warm_repetitions": [
+          309.66322385717905,
+          310.2249179269727
+        ],
+        "cold_and_warm_stated_separately": true,
+        "warm_median": 309.94407089207584,
+        "warm_min": 309.66322385717905,
+        "warm_max": 310.2249179269727,
+        "warm_n": 2,
+        "warm_spread_pct": 0.181,
+        "headline_is": "value/repetitions/spread are WARM (after the first sample). cold is the first sample this harness run.",
+        "prompt_tokens": 512,
+        "generation_tokens_during_prefill_run": 8,
+        "short_prompt_prefill_tps_from_decode_reps": [
+          129.21937781813133,
+          127.45476194752008,
+          129.3607848276528
+        ],
+        "all_repetitions": [
+          310.6944895418622,
+          309.66322385717905,
+          310.2249179269727
+        ]
+      },
+      "decode_tps": {
+        "status": "MEASURED",
+        "value": 38.05867772872637,
+        "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker measure --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit --n-predict 192 --reps 3 --tool-tokens 96 --prefill-tokens 512 --batch-tokens 32 --batch-sizes 1,2,4",
+        "unit": "tok/s",
+        "repetitions": [
+          38.12333072371982,
+          38.00758938149443,
+          38.05867772872637
+        ],
+        "n": 3,
+        "min": 38.00758938149443,
+        "max": 38.12333072371982,
+        "median": 38.05867772872637,
+        "spread_pct": 0.305,
+        "spread_definition": "100 * (max - min) / min over repetitions; a single Metal run is page-cache confounded",
+        "cold": 38.11925139328907,
+        "warm_repetitions": [
+          38.12333072371982,
+          38.00758938149443,
+          38.05867772872637
+        ],
+        "cold_and_warm_stated_separately": true,
+        "warm_median": 38.05867772872637,
+        "warm_min": 38.00758938149443,
+        "warm_max": 38.12333072371982,
+        "warm_n": 3,
+        "warm_spread_pct": 0.305,
+        "headline_is": "value/repetitions/spread are WARM (after the first sample). cold is the first sample this harness run.",
+        "n_predict": 192,
+        "generation_tokens": [
+          192,
+          192,
+          192
+        ],
+        "finish_reasons": [
+          "length",
+          "length",
+          "length"
+        ],
+        "prompt": "runtime_ab DECODE_PROMPT, enable_thinking=false, ignore_eos",
+        "warmup": "no discarded warmup; the first n_predict generate after load is recorded as cold (Metal compile). The next --reps generates are warm.",
+        "cold_run": {
+          "prompt_tokens": 38,
+          "prompt_tps": 125.65767034240017,
+          "generation_tokens": 192,
+          "generation_tps": 38.11925139328907,
+          "peak_memory_gb": 15.459237358,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 5.5757,
+          "rep": "cold"
+        }
+      },
+      "context_limit": {
+        "status": "MEASURED",
+        "value": 262144,
+        "command": "python3 -c \"import json; print(json.load(open('/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit/config.json'))['text_config']['max_position_embeddings'])\"",
+        "unit": "tokens",
+        "kind": "architectural_max_from_config_json",
+        "empirical_prefill_at_tokens": 512,
+        "empirical_prefill_ok": true,
+        "runnable_262144": {
+          "status": "ABSENT",
+          "value": null,
+          "reason": "probing the architectural 262144-token ceiling would allocate KV for this 27B at that length; that is an admission sweep, not a control-set decode. Config max is recorded; empirical prefill is 512 tokens and succeeded."
+        }
+      },
+      "concurrency": {
+        "status": "MEASURED",
+        "value": {
+          "batch_1_generation_tps_median": 35.60180521841724,
+          "batch_2_generation_tps_median": 63.47437268864147,
+          "batch_4_generation_tps_median": 88.11512259274488,
+          "batch_4_over_batch_1": 2.475
+        },
+        "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker measure --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit --n-predict 192 --reps 3 --tool-tokens 96 --prefill-tokens 512 --batch-tokens 32 --batch-sizes 1,2,4",
+        "unit": "tok/s per batch_generate call (aggregate over the batch)",
+        "by_batch_size": {
+          "1": {
+            "status": "MEASURED",
+            "value": 35.60180521841724,
+            "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker measure --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit --n-predict 192 --reps 3 --tool-tokens 96 --prefill-tokens 512 --batch-tokens 32 --batch-sizes 1,2,4",
+            "unit": "tok/s",
+            "repetitions": [
+              35.95627978424229,
+              35.24733065259219
+            ],
+            "n": 2,
+            "min": 35.24733065259219,
+            "max": 35.95627978424229,
+            "median": 35.60180521841724,
+            "spread_pct": 2.011,
+            "spread_definition": "100 * (max - min) / min over repetitions; a single Metal run is page-cache confounded",
+            "cold": 35.222626866521786,
+            "warm_repetitions": [
+              35.95627978424229,
+              35.24733065259219
+            ],
+            "cold_and_warm_stated_separately": true,
+            "warm_median": 35.60180521841724,
+            "warm_min": 35.24733065259219,
+            "warm_max": 35.95627978424229,
+            "warm_n": 2,
+            "warm_spread_pct": 2.011,
+            "headline_is": "value/repetitions/spread are WARM (after the first sample). cold is the first sample this harness run.",
+            "batch_size": 1,
+            "max_tokens": 32,
+            "all_repetitions": [
+              35.222626866521786,
+              35.95627978424229,
+              35.24733065259219
+            ],
+            "what": "1 sequences in one mlx_lm.batch_generate against the already-loaded 27B; not a second process"
+          },
+          "2": {
+            "status": "MEASURED",
+            "value": 63.47437268864147,
+            "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker measure --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit --n-predict 192 --reps 3 --tool-tokens 96 --prefill-tokens 512 --batch-tokens 32 --batch-sizes 1,2,4",
+            "unit": "tok/s",
+            "repetitions": [
+              62.996267372837224,
+              63.95247800444572
+            ],
+            "n": 2,
+            "min": 62.996267372837224,
+            "max": 63.95247800444572,
+            "median": 63.47437268864147,
+            "spread_pct": 1.518,
+            "spread_definition": "100 * (max - min) / min over repetitions; a single Metal run is page-cache confounded",
+            "cold": 62.92741263399125,
+            "warm_repetitions": [
+              62.996267372837224,
+              63.95247800444572
+            ],
+            "cold_and_warm_stated_separately": true,
+            "warm_median": 63.47437268864147,
+            "warm_min": 62.996267372837224,
+            "warm_max": 63.95247800444572,
+            "warm_n": 2,
+            "warm_spread_pct": 1.518,
+            "headline_is": "value/repetitions/spread are WARM (after the first sample). cold is the first sample this harness run.",
+            "batch_size": 2,
+            "max_tokens": 32,
+            "all_repetitions": [
+              62.92741263399125,
+              62.996267372837224,
+              63.95247800444572
+            ],
+            "what": "2 sequences in one mlx_lm.batch_generate against the already-loaded 27B; not a second process"
+          },
+          "4": {
+            "status": "MEASURED",
+            "value": 88.11512259274488,
+            "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker measure --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit --n-predict 192 --reps 3 --tool-tokens 96 --prefill-tokens 512 --batch-tokens 32 --batch-sizes 1,2,4",
+            "unit": "tok/s",
+            "repetitions": [
+              88.30054578656022,
+              87.92969939892953
+            ],
+            "n": 2,
+            "min": 87.92969939892953,
+            "max": 88.30054578656022,
+            "median": 88.11512259274488,
+            "spread_pct": 0.422,
+            "spread_definition": "100 * (max - min) / min over repetitions; a single Metal run is page-cache confounded",
+            "cold": 88.16054139094473,
+            "warm_repetitions": [
+              88.30054578656022,
+              87.92969939892953
+            ],
+            "cold_and_warm_stated_separately": true,
+            "warm_median": 88.11512259274488,
+            "warm_min": 87.92969939892953,
+            "warm_max": 88.30054578656022,
+            "warm_n": 2,
+            "warm_spread_pct": 0.422,
+            "headline_is": "value/repetitions/spread are WARM (after the first sample). cold is the first sample this harness run.",
+            "batch_size": 4,
+            "max_tokens": 32,
+            "all_repetitions": [
+              88.16054139094473,
+              88.30054578656022,
+              87.92969939892953
+            ],
+            "what": "4 sequences in one mlx_lm.batch_generate against the already-loaded 27B; not a second process"
+          }
+        },
+        "did_not_load_second_27b": true
+      },
+      "peak_memory": {
+        "status": "MEASURED",
+        "value": 18.206123076,
+        "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker measure --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit --n-predict 192 --reps 3 --tool-tokens 96 --prefill-tokens 512 --batch-tokens 32 --batch-sizes 1,2,4",
+        "unit": "GB (mlx peak_memory)",
+        "repetitions": [
+          15.133588508,
+          15.459237358,
+          15.459293292,
+          16.388723818,
+          18.206123076,
+          16.28512953,
+          16.28512953
+        ],
+        "n": 7,
+        "min": 15.133588508,
+        "max": 18.206123076,
+        "median": 16.28512953,
+        "spread_pct": 20.303,
+        "spread_definition": "100 * (max - min) / min over repetitions; a single Metal run is page-cache confounded",
+        "phase_peaks_gb": {
+          "after_load": 15.133588508,
+          "cold_decode": 15.459237358,
+          "decode_warm": 15.459293292,
+          "prefill": 16.388723818,
+          "tool_shaped": 18.206123076,
+          "batch_generate": 16.28512953,
+          "end": 16.28512953
+        },
+        "note": "value is the MAX over phases, not the median. repetitions are the per-phase peaks (load, decode, prefill, tool, batch). stream_generate GenerationResponse.peak_memory is already GB; mx.get_peak_memory() after load is divided by 1e9."
+      },
+      "tool_shaped_tps": {
+        "status": "MEASURED",
+        "value": 37.06579205086213,
+        "command": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.claude-grok/worktrees/g024mlxgate-20260823-164713/tools/headless/conventional_control_set.py --mlx-worker measure --model /Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit --n-predict 192 --reps 3 --tool-tokens 96 --prefill-tokens 512 --batch-tokens 32 --batch-sizes 1,2,4",
+        "unit": "tok/s",
+        "repetitions": [
+          37.2283367555239,
+          36.90324734620035
+        ],
+        "n": 2,
+        "min": 36.90324734620035,
+        "max": 37.2283367555239,
+        "median": 37.06579205086213,
+        "spread_pct": 0.881,
+        "spread_definition": "100 * (max - min) / min over repetitions; a single Metal run is page-cache confounded",
+        "cold": 36.77986415309431,
+        "warm_repetitions": [
+          37.2283367555239,
+          36.90324734620035
+        ],
+        "cold_and_warm_stated_separately": true,
+        "warm_median": 37.06579205086213,
+        "warm_min": 36.90324734620035,
+        "warm_max": 37.2283367555239,
+        "warm_n": 2,
+        "warm_spread_pct": 0.881,
+        "headline_is": "value/repetitions/spread are WARM (after the first sample). cold is the first sample this harness run.",
+        "prompt": "tool-shaped JSON mutation over a file-sized calc.py context, enable_thinking=false, EOS honoured",
+        "max_tokens": 96,
+        "all_repetitions": [
+          36.77986415309431,
+          37.2283367555239,
+          36.90324734620035
+        ],
+        "generation_tokens_repetitions": [
+          96,
+          96,
+          96
+        ],
+        "prompt_tokens_repetitions": [
+          2534,
+          2534,
+          2534
+        ],
+        "note": "generation_tps of a structured-JSON tool call, EOS honoured \u2014 not the ARCHIVED complete-call tok/s in STRUCTURED_OUTPUT_PROBE.json (that one had ~7257 prompt tokens and mixed cold 31.6s / warm 6.5s prefix cache). Do not ratio these two numbers."
+      }
+    },
+    "raw": {
+      "load_s_in_measure_process": 1.2442,
+      "cold_decode_run": {
+        "prompt_tokens": 38,
+        "prompt_tps": 125.65767034240017,
+        "generation_tokens": 192,
+        "generation_tps": 38.11925139328907,
+        "peak_memory_gb": 15.459237358,
+        "finish_reason": "length",
+        "error": null,
+        "wall_s": 5.5757,
+        "rep": "cold"
+      },
+      "decode_runs": [
+        {
+          "prompt_tokens": 38,
+          "prompt_tps": 129.21937781813133,
+          "generation_tokens": 192,
+          "generation_tps": 38.12333072371982,
+          "peak_memory_gb": 15.459276908,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 5.4613,
+          "rep": 0
+        },
+        {
+          "prompt_tokens": 38,
+          "prompt_tps": 127.45476194752008,
+          "generation_tokens": 192,
+          "generation_tps": 38.00758938149443,
+          "peak_memory_gb": 15.459276908,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 5.4837,
+          "rep": 1
+        },
+        {
+          "prompt_tokens": 38,
+          "prompt_tps": 129.3607848276528,
+          "generation_tokens": 192,
+          "generation_tps": 38.05867772872637,
+          "peak_memory_gb": 15.459293292,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 5.4924,
+          "rep": 2
+        }
+      ],
+      "prefill_runs": [
+        {
+          "prompt_tokens": 512,
+          "prompt_tps": 310.6944895418622,
+          "generation_tokens": 8,
+          "generation_tps": 41.51141333007273,
+          "peak_memory_gb": 16.388723818,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 1.9965,
+          "rep": 0
+        },
+        {
+          "prompt_tokens": 512,
+          "prompt_tps": 309.66322385717905,
+          "generation_tokens": 8,
+          "generation_tps": 41.5421663070928,
+          "peak_memory_gb": 16.388723818,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 2.008,
+          "rep": 1
+        },
+        {
+          "prompt_tokens": 512,
+          "prompt_tps": 310.2249179269727,
+          "generation_tokens": 8,
+          "generation_tps": 43.07237976967738,
+          "peak_memory_gb": 16.388723818,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 1.9942,
+          "rep": 2
+        }
+      ],
+      "tool_runs": [
+        {
+          "prompt_tokens": 2534,
+          "prompt_tps": 316.9150979104825,
+          "generation_tokens": 96,
+          "generation_tps": 36.77986415309431,
+          "peak_memory_gb": 18.206123076,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 10.7562,
+          "rep": 0
+        },
+        {
+          "prompt_tokens": 2534,
+          "prompt_tps": 317.283437737808,
+          "generation_tokens": 96,
+          "generation_tps": 37.2283367555239,
+          "peak_memory_gb": 18.206123076,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 10.7196,
+          "rep": 1
+        },
+        {
+          "prompt_tokens": 2534,
+          "prompt_tps": 316.9032672945897,
+          "generation_tokens": 96,
+          "generation_tps": 36.90324734620035,
+          "peak_memory_gb": 18.206123076,
+          "finish_reason": "length",
+          "error": null,
+          "wall_s": 10.7465,
+          "rep": 2
+        }
+      ],
+      "batch_runs": {
+        "1": [
+          {
+            "rep": 0,
+            "batch_size": 1,
+            "prompt_tps": 149.86954520662326,
+            "generation_tps": 35.222626866521786,
+            "generation_tokens": 32,
+            "generation_time": 0.9085069129359908,
+            "peak_memory_gb": 15.459274743,
+            "wall_s": 1.1569,
+            "error": null
+          },
+          {
+            "rep": 1,
+            "batch_size": 1,
+            "prompt_tps": 150.27715209340298,
+            "generation_tps": 35.95627978424229,
+            "generation_tokens": 32,
+            "generation_time": 0.8899697129963897,
+            "peak_memory_gb": 15.459291088,
+            "wall_s": 1.1374,
+            "error": null
+          },
+          {
+            "rep": 2,
+            "batch_size": 1,
+            "prompt_tps": 150.14342347580813,
+            "generation_tps": 35.24733065259219,
+            "generation_tokens": 32,
+            "generation_time": 0.9078701679682126,
+            "peak_memory_gb": 15.459274704,
+            "wall_s": 1.1555,
+            "error": null
+          }
+        ],
+        "2": [
+          {
+            "rep": 0,
+            "batch_size": 2,
+            "prompt_tps": 210.88151045162363,
+            "generation_tps": 62.92741263399125,
+            "generation_tokens": 64,
+            "generation_time": 1.0170448350108927,
+            "peak_memory_gb": 15.736129074,
+            "wall_s": 1.3692,
+            "error": null
+          },
+          {
+            "rep": 1,
+            "batch_size": 2,
+            "prompt_tps": 211.80927314485623,
+            "generation_tps": 62.996267372837224,
+            "generation_tokens": 64,
+            "generation_time": 1.0159332079347223,
+            "peak_memory_gb": 15.736279294,
+            "wall_s": 1.3666,
+            "error": null
+          },
+          {
+            "rep": 2,
+            "batch_size": 2,
+            "prompt_tps": 211.87123093147486,
+            "generation_tps": 63.95247800444572,
+            "generation_tokens": 64,
+            "generation_time": 1.0007430829427904,
+            "peak_memory_gb": 15.736280606,
+            "wall_s": 1.3513,
+            "error": null
+          }
+        ],
+        "4": [
+          {
+            "rep": 0,
+            "batch_size": 4,
+            "prompt_tps": 271.3807050218944,
+            "generation_tps": 88.16054139094473,
+            "generation_tokens": 128,
+            "generation_time": 1.4518967100302689,
+            "peak_memory_gb": 16.284876666,
+            "wall_s": 1.9984,
+            "error": null
+          },
+          {
+            "rep": 1,
+            "batch_size": 4,
+            "prompt_tps": 272.54910178139886,
+            "generation_tps": 88.30054578656022,
+            "generation_tokens": 128,
+            "generation_time": 1.4495946639945032,
+            "peak_memory_gb": 16.285080378,
+            "wall_s": 1.9939,
+            "error": null
+          },
+          {
+            "rep": 2,
+            "batch_size": 4,
+            "prompt_tps": 272.6450238551857,
+            "generation_tps": 87.92969939892953,
+            "generation_tokens": 128,
+            "generation_time": 1.455708376975963,
+            "peak_memory_gb": 16.28512953,
+            "wall_s": 2.0002,
+            "error": null
+          }
+        ]
+      }
+    },
+    "versions": {
+      "mlx": "0.32.0",
+      "mlx_lm": "0.31.3",
+      "mlx_python": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python"
+    },
+    "params": {
+      "n_predict": 192,
+      "reps": 3,
+      "prefill_tokens": 512,
+      "tool_tokens": 96,
+      "batch_sizes": [
+        1,
+        2,
+        4
+      ],
+      "batch_tokens": 32,
+      "temperature": 0.0
+    }
+  },
+  "archived": {
+    "runtime": "llama.cpp",
+    "status": "ARCHIVED",
+    "artifact": {
+      "status": "ARCHIVED",
+      "present": false,
+      "path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+      "last_known_bytes": 19535701280,
+      "last_known_gib": 18.19,
+      "quant": "Q5_K",
+      "lineage": "huihui-ai",
+      "runtime": "llama.cpp",
+      "llama_version": "version: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64",
+      "registry_identity": "5821251efd19c3089f86f8cc88c6ee2a7f4957e89a6a0a72642ff839911b2bae",
+      "note": "the Q5_K GGUF artifact is GONE; these numbers survive as archived science and must not be required to re-run"
+    },
+    "metrics": {
+      "startup": {
+        "status": "ARCHIVED",
+        "value": 1.51,
+        "source_receipt": "receipts/headless/MACHINE_GENOME.json",
+        "unit": "s",
+        "command": "python3 tools/headless/machine_probe.py --ctx 8192 --max-runtimes 3 --n-predict 96 --reps 3",
+        "repetitions": [
+          3.03,
+          1.51,
+          1.51
+        ],
+        "n": 3,
+        "min": 1.51,
+        "max": 3.03,
+        "median": 1.51,
+        "spread_pct": 100.662,
+        "note": "three sequential llama-server process starts; first load is cold, later loads are page-cached \u2014 that spread is the confound",
+        "generated_at": "2026-08-22T23:13:28Z"
+      },
+      "prefill": {
+        "status": "ARCHIVED",
+        "value": 82.68641811977446,
+        "source_receipt": "receipts/headless/RUNTIME_AB.json",
+        "unit": "tok/s",
+        "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port <free> -c 8192 -ngl 999 --host 127.0.0.1 -np 1 ; POST /completion {prompt, n_predict:192, temperature:0.0, ignore_eos:true, cache_prompt:false}  (tools/headless/runtime_ab.py)",
+        "repetitions": [
+          82.63359627767431,
+          83.12684837343139,
+          82.68641811977446
+        ],
+        "n": 3,
+        "min": 82.63359627767431,
+        "max": 83.12684837343139,
+        "median": 82.68641811977446,
+        "spread_pct": 0.597,
+        "generated_at": "2026-08-22T23:21:40Z"
+      },
+      "decode_tps": {
+        "status": "ARCHIVED",
+        "value": 24.048867298350245,
+        "source_receipt": "receipts/headless/RUNTIME_AB.json",
+        "unit": "tok/s",
+        "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port <free> -c 8192 -ngl 999 --host 127.0.0.1 -np 1 ; POST /completion {prompt, n_predict:192, temperature:0.0, ignore_eos:true, cache_prompt:false}  (tools/headless/runtime_ab.py)",
+        "repetitions": [
+          24.074229878551783,
+          24.029231560192976,
+          24.048867298350245
+        ],
+        "n": 3,
+        "min": 24.029231560192976,
+        "max": 24.074229878551783,
+        "median": 24.048867298350245,
+        "spread_pct": 0.2,
+        "spread_definition": "100 * (max - min) / min over the three /completion reps",
+        "generated_at": "2026-08-22T23:21:40Z",
+        "llama_version": "version: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64",
+        "artifact_present": false
+      },
+      "context_limit": {
+        "status": "ARCHIVED",
+        "value": 262144,
+        "source_receipt": "receipts/headless/LONG_CONTEXT_RUNTIME_CAPABILITY.json",
+        "unit": "tokens",
+        "command": "llama-server --ctx-size 500000 (no explicit --parallel; kv-unified, slots share the window)",
+        "empirical_request_prompt_tokens": 29982,
+        "empirical_request_ok": true,
+        "machine_genome_probe_ctx": 8192,
+        "note": "per-slot n_ctx 262144 on llama-server --ctx-size 500000. A 29982-token request completed. The GGUF is gone, so this is not re-measured today.",
+        "generated_at": "2026-08-23T03:49:32Z"
+      },
+      "concurrency": {
+        "status": "ARCHIVED",
+        "value": {
+          "slot_k1_aggregate_tps_median": 22.818,
+          "slot_k4_aggregate_tps_median": 27.749,
+          "slot_k4_scaling_vs_1": 1.2161,
+          "slot_k4_spread_pct": 0.1,
+          "slot_k6_aggregate_tps_median": 31.541,
+          "one_mlx_stream_beat_four_llama_slots": true,
+          "mlx_single_stream_tps_cited": 35.506,
+          "note": "ONE MLX decoder (35.506 tok/s, GPU_ATTACK.json) beat FOUR concurrent llama.cpp slot decoders (27.749 tok/s aggregate). Best llama.cpp topology was slot k=6 at 31.541 tok/s, still below one MLX stream."
+        },
+        "source_receipt": "receipts/headless/DECODE_TOPOLOGY.json",
+        "command": "python3 tools/headless/decode_topology_probe.py --per-slot-ctx 4096 --n-predict 128 --reps 3 --streams 1,2,4,6,8",
+        "generated_at": "2026-08-22T23:19:43Z",
+        "also_cited": "receipts/headless/GPU_ATTACK.json"
+      },
+      "peak_memory": {
+        "status": "ARCHIVED",
+        "value": 20553433088,
+        "source_receipt": "receipts/headless/MACHINE_GENOME.json",
+        "unit": "bytes_rss",
+        "command": "python3 tools/headless/machine_probe.py --ctx 8192 --max-runtimes 3 --n-predict 96 --reps 3",
+        "repetitions": [
+          20553433088,
+          20559577088,
+          20552007680
+        ],
+        "n": 3,
+        "min": 20552007680,
+        "max": 20559577088,
+        "median": 20553433088,
+        "spread_pct": 0.037,
+        "gib": 19.142,
+        "generated_at": "2026-08-22T23:13:28Z"
+      },
+      "tool_shaped_tps": {
+        "status": "ARCHIVED",
+        "value": 12.965,
+        "source_receipt": "receipts/headless/STRUCTURED_OUTPUT_PROBE.json",
+        "unit": "complete_call_tok_per_s",
+        "command": "llama-server with HCLI structured-output payload (~7221 prompt tokens, chat_template_kwargs.enable_thinking=false); tools/headless/structured_output_probe.py arm=no_think",
+        "repetitions": [
+          3.48,
+          22.45
+        ],
+        "n": 2,
+        "min": 3.48,
+        "max": 22.45,
+        "median": 12.965,
+        "spread_pct": 545.115,
+        "wall_s_repetitions": [
+          31.62,
+          6.46
+        ],
+        "note": "complete-call tok/s of a tool-shaped HCLI JSON payload, NOT isolated decode tok/s: the first rep is cold (31.62s / 3.48 tok/s), the second is warm prefix (6.46s / 22.45 tok/s). Spread is that cache confound.",
+        "generated_at": "2026-08-22T22:52:27Z"
+      }
+    },
+    "headline_vs_mlx": {
+      "status": "ARCHIVED",
+      "value": {
+        "mlx_4bit_tps": 35.506,
+        "llama_q5k_tps": 24.118578993622144,
+        "speed_ratio": 1.472,
+        "bytes_ratio_llama_over_mlx": 1.215,
+        "one_mlx_beat_four_llama_slots": true
+      },
+      "source_receipt": "receipts/headless/GPU_ATTACK.json",
+      "command": "tools/headless/write_gpu_attack.py reading DECODE_TOPOLOGY.json and RUNTIME_AB.json as they stood when GPU_ATTACK.json was sealed",
+      "reading": "MLX moves 1.215x fewer bytes but runs 1.472x faster, so roughly 21% of the gain is kernel/dispatch efficiency rather than density.",
+      "generated_at": "2026-08-22T23:20:19Z",
+      "note": "ARCHIVED headline. The 1.215 bytes ratio is the PocketAiHub MLX 4-bit vs huihui Q5_K GGUF comparison; lineage-matched RUNTIME_AB.json later measured 1.477x on a 1.289 bytes ratio against the now-deleted huihui MLX 4-bit directory. Neither figure is a live measurement today."
+    },
+    "source_receipts": [
+      "receipts/headless/RUNTIME_AB.json",
+      "receipts/headless/GPU_ATTACK.json",
+      "receipts/headless/MACHINE_GENOME.json",
+      "receipts/headless/DECODE_TOPOLOGY.json",
+      "receipts/headless/STRUCTURED_OUTPUT_PROBE.json",
+      "receipts/headless/LONG_CONTEXT_RUNTIME_CAPABILITY.json",
+      "receipts/headless/MODEL_REGISTRY.json"
+    ]
+  },
+  "comparison": {
+    "live_mlx_over_archived_llama": {
+      "status": "MEASURED",
+      "value": 1.5826,
+      "command": "live.decode_tps.median / archived.decode_tps.median",
+      "unit": "ratio tok/s",
+      "live_mlx_decode_tps": 38.05867772872637,
+      "archived_llama_decode_tps": 24.048867298350245,
+      "bytes_ratio_llama_over_mlx": 1.215,
+      "note": "numerator is MEASURED today; denominator is ARCHIVED. Do not quote this as a two-arm measurement taken in the same session."
+    },
+    "historical_headline": {
+      "status": "ARCHIVED",
+      "value": {
+        "mlx_4bit_tps": 35.506,
+        "llama_q5k_tps": 24.118578993622144,
+        "speed_ratio": 1.472,
+        "bytes_ratio_llama_over_mlx": 1.215,
+        "one_mlx_beat_four_llama_slots": true
+      },
+      "source_receipt": "receipts/headless/GPU_ATTACK.json",
+      "command": "tools/headless/write_gpu_attack.py reading DECODE_TOPOLOGY.json and RUNTIME_AB.json as they stood when GPU_ATTACK.json was sealed",
+      "reading": "MLX moves 1.215x fewer bytes but runs 1.472x faster, so roughly 21% of the gain is kernel/dispatch efficiency rather than density.",
+      "generated_at": "2026-08-22T23:20:19Z",
+      "note": "ARCHIVED headline. The 1.215 bytes ratio is the PocketAiHub MLX 4-bit vs huihui Q5_K GGUF comparison; lineage-matched RUNTIME_AB.json later measured 1.477x on a 1.289 bytes ratio against the now-deleted huihui MLX 4-bit directory. Neither figure is a live measurement today."
+    }
+  },
+  "discipline": {
+    "every_live_number_has_command_and_spread": true,
+    "every_archived_number_labelled_ARCHIVED": true,
+    "absent_never_written_as_zero": true,
+    "did_not_load_second_27b": true,
+    "gguf_not_required_to_exist": true
+  },
+  "reproduce": "python3 tools/headless/conventional_control_set.py --reps 3 --n-predict 192",
+  "self_check": {
+    "ok": true,
+    "problems": []
+  }
+}

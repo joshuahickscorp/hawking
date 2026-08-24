@@ -1,0 +1,2172 @@
+{
+  "schema": "hawking.headless.ramanujan_disband.v1",
+  "status": "CAMPAIGN_RETIRED_EVIDENCE_RETAINED",
+  "generated_at": "2026-08-23T18:49:10Z",
+  "operator_instruction": "disband ramanujan that is an old idea keep the information we may need",
+  "git": {
+    "head": "10c2c5c1660b7ee51f108e84f307a10971c197a3",
+    "branch": "grok/w2rama-20260823-143525",
+    "ramanujan_tree": "191cc9b8618f0ecc8930ef14fa8138fb2cc09d76",
+    "HEAD_subject": "Migrate HCLI control plane and headless campaign into the main tree"
+  },
+  "what_it_was": {
+    "one_sentence": "Ramanujan is a fail-closed, non-authorizing local scaffold for a future mathematical research system: freeze a giant Hawking/Gravity Director, train a small formal system against it, verify everything, and search — blocked on Hawking completion by design.",
+    "goal": "Define the Hawking/Ramanujan split before it is executed, so the split is a mechanical step rather than a design decision taken while tired at the end of a long campaign.",
+    "doctrine": "Freeze the giant, train the small, verify everything, search aggressively, escalate model size only after data, retrieval and search saturate. No paid APIs, no cloud training. Acquisition is a one-time mirroring step; after it, the system runs disconnected.",
+    "period": {
+      "first_commit": {
+        "hash": "19e3e7f2f93c0af94b836acad75a342fe893ea38",
+        "at": "2026-07-26T23:04:52-04:00",
+        "subject": "Ramanujan governance made runnable, and the cognition register with kill conditions"
+      },
+      "last_commit_touching_tree": {
+        "hash": "a883c0d9c350605860640d47f92f41dcf0aeae2d",
+        "at": "2026-08-05T15:26:55-04:00",
+        "subject": "verifier-expert-iteration-20260805-151323"
+      },
+      "n_commits_touching_ramanujan": 32,
+      "disband_date": "2026-08-23",
+      "idle_after": "The tree sat while Hawking / Odyssey-i / HCLI continued on odyssey-i."
+    },
+    "mechanism": {
+      "authority": "NON_PRODUCTION_AUTHORITY; RAMANUJAN_RESEARCH_AUTHORIZED stays false; no flip path",
+      "stores": [
+        "problem",
+        "claim",
+        "proof_state",
+        "counterexample",
+        "prior_art",
+        "strategy",
+        "graveyard"
+      ],
+      "roles": {
+        "source_catalogue": "odyssey/roles/ROLES.json",
+        "generators": [
+          "director",
+          "conjecturer",
+          "skeptic",
+          "formalizer",
+          "prover",
+          "computationalist",
+          "cartographer",
+          "librarian",
+          "economist",
+          "adversary"
+        ],
+        "promoters": [
+          "tribunal",
+          "verifier"
+        ],
+        "structural_property": "every generator has may_promote=false; RoleCapability.derive is the only construction path; no grant/add API",
+        "store_wiring": "RoleSession gates every store write through require(capability); promotion goes through require_promote()"
+      },
+      "qualification": [
+        "Q0 offline reproducibility = PROVEN",
+        "Q1 frozen split integrity = PROVEN_OFFLINE",
+        "Q2 independent rediscovery = DEFINED_PENDING_OWNER_D8_SELECTION",
+        "Q3 frontier-variant reach = DEFINED_PENDING_OWNER_D9_SELECTION",
+        "Q4 formalization fidelity = DEFINED_CONTROLLER_SCAFFOLD_READY",
+        "Q5 proof verification = DEFINED_CONTROLLER_SCAFFOLD_READY",
+        "Q6 governed research execution = DEFINED_CONTROLLER_SCAFFOLD_READY"
+      ],
+      "data": "D1-D4, D6, D7 generated locally from pinned Mathlib; D5/D8/D9 pending owner license",
+      "small_system": "retriever, formalizer, prover, repair, value — CPU, fixture-scale, two of five converged",
+      "odyssey_control_plane": "ramanujan/scaffold/research/odyssey.py — fixture-only T0-T12/F0-F12/Q0-Q12",
+      "restream": "fail-closed launcher + green-light state machine that cannot self-promote",
+      "entrypoints": [
+        "ramanujan/scaffold/guards/status.py",
+        "ramanujan/scaffold/guards/restream_guard.py",
+        "ramanujan/scaffold/guards/toolchain_selftest.py",
+        "ramanujan/scaffold/research/odyssey.py",
+        "ramanujan/scaffold/guards/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh"
+      ]
+    },
+    "paths": {
+      "readme": "ramanujan/README.md",
+      "gate": "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
+      "layout": "ramanujan/layout.py",
+      "handoff": "workspace/campaign/evidence/systems/ramanujan/RAMANUJAN_HANDOFF_CONTRACT.json",
+      "dependency_doc": "ramanujan/docs/HAWKING_DEPENDENCY.md"
+    },
+    "relation_to_current_line": {
+      "Hawking": "Owns substrate, runtime, Gravity codec, kernels, HIDE, Fabric. Ramanujan consumes Hawking contracts and is blocked until HAWKING_EVOLUTION_COMPLETE. The giant never moves.",
+      "Gravity": "The .gravity codec stays in Hawking (crates/hawking-core gravity_*). Ramanujan binds artifacts by content hash and refuses to copy them. ramanujan.odyssey --proto-gravity-plan emits a future render *contract* with eight required gates (source admission, DeepSeek-V4 Gravity adapter + dtype parity, condense receipt, teacher arbitration, route-aware rollout retention, Lean/exact math retention, checkpoint tournament, owner render window). It will not write a .gravity file. All .gravity artifacts were deleted 2026-07-29 with no receipt.",
+      "Doctor": "Zero Doctor code lives under ramanujan/. Doctor is Hawking's adversarial screen for Gravity representations (tools/gravity_doctor_gate.py: observed vs probed cosine; later doctor6 / odyssey-i O00*_DOCTOR_SEAL.json). Ramanujan cannot consume a pack that fails Doctor; Doctor is a dependency, not a child.",
+      "Odyssey": "Three layers. (1) tools/odyssey contamination/economics/lattice — the machinery Ramanujan actually imports for freeze and D5 no-leak. (2) ramanujan.odyssey — a compact fixture control plane that refuses research authority. (3) branch odyssey-i — the current Hawking resident campaign, not a Ramanujan launch. f1c55a302 corrected 'Odyssey is missing' to 'Odyssey exists and refuses'.",
+      "Noetic": "No path in HEAD contains the string 'noetic'. If Noetic names the cognition/doctrine half of the Hawking split, that half is ramanujan/ as a scaffold — cognition register, YOU-research controller, verification lattice, Tribunal. It is not a separate campaign tree in this repository."
+    },
+    "proto_future_not_run": {
+      "student": "deepseek-ai/DeepSeek-V4-Flash @ 60d8d70770c6776ff598c94bb586a859a38244f1 (284B total / 13B active)",
+      "teachers_sequential": [
+        "DeepSeek-V4-Pro structured planning",
+        "GLM Math critique/repair",
+        "Kimi K3 independent alternatives"
+      ],
+      "rule": "admit data only if all three teachers bind the same formal statement; mix verifier-dispositioned traces, never weights"
+    },
+    "current_status": {
+      "gate": "BLOCKED_ON_HAWKING_COMPLETION",
+      "governance": "GOVERNANCE_SURFACE_COMPLETE_ON_FIXTURES",
+      "green_light": "OWNER_GATE_READY",
+      "research_authorized": false,
+      "production_authority": false,
+      "q0": "PROVEN",
+      "toolchain_selftest": "TOOLCHAIN_INCOMPLETE"
+    }
+  },
+  "inventory": {
+    "summary": {
+      "root": "ramanujan",
+      "on_disk_regular_files": 109,
+      "on_disk_symlinks": 1,
+      "on_disk_entries": 110,
+      "total_bytes": 27151650,
+      "tree_sha256": "73fa3145dcd27a5894aabf5b122f83adbd5ac5b687f5f287d670c7525f60174a",
+      "git_ls_tree_count": 110,
+      "git_tree": "191cc9b8618f0ecc8930ef14fa8138fb2cc09d76",
+      "by_class": {
+        "CODE": {
+          "count": 20,
+          "bytes": 219565
+        },
+        "CORPUS": {
+          "count": 6,
+          "bytes": 24913098
+        },
+        "CORPUS_MEMBERSHIP": {
+          "count": 1,
+          "bytes": 1268802
+        },
+        "DOC": {
+          "count": 3,
+          "bytes": 6272
+        },
+        "FIXTURE": {
+          "count": 3,
+          "bytes": 8637
+        },
+        "GOVERNANCE": {
+          "count": 10,
+          "bytes": 54275
+        },
+        "GUARD": {
+          "count": 4,
+          "bytes": 78011
+        },
+        "OTHER": {
+          "count": 1,
+          "bytes": 15
+        },
+        "Q0_HARNESS": {
+          "count": 12,
+          "bytes": 22528
+        },
+        "RECEIPT": {
+          "count": 10,
+          "bytes": 64650
+        },
+        "RECORD": {
+          "count": 8,
+          "bytes": 58962
+        },
+        "RESEARCH": {
+          "count": 14,
+          "bytes": 261924
+        },
+        "TEST": {
+          "count": 12,
+          "bytes": 143992
+        },
+        "TRAIN": {
+          "count": 6,
+          "bytes": 50919
+        }
+      }
+    },
+    "largest": [
+      {
+        "path": "ramanujan/scaffold/data/corpora/d2_state_transitions.jsonl",
+        "kind": "file",
+        "bytes": 9445889,
+        "sha256": "e440324abf65c1e695b91998c54d37b96c04e3913a764aa01eb6ea90d36bfff2",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d1_proof_traces.jsonl",
+        "kind": "file",
+        "bytes": 7356989,
+        "sha256": "0a894193db95b1c921755e21afcd23a6c43b020c7c79de023e63520f78bac98c",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d3_premise_pairs.jsonl",
+        "kind": "file",
+        "bytes": 6268853,
+        "sha256": "841ae8e754f2017bcbee282ebdaa4dc7b53a22a8dc97ebeeace78ca4786eb183",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d4_repair_pairs.jsonl",
+        "kind": "file",
+        "bytes": 1495454,
+        "sha256": "28fac8334a84065ab62c249af5f153491d2a607dd15040f5d9e9164ffb352070",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/MEMBERSHIP_MANIFEST.json",
+        "kind": "file",
+        "bytes": 1268802,
+        "sha256": "36059fb95459c80d50c25a967ced2f6f52a411dc975f2c66181561dcbcadcb29",
+        "class": "CORPUS_MEMBERSHIP"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d6_counterexamples.jsonl",
+        "kind": "file",
+        "bytes": 279320,
+        "sha256": "99a2eedf44f3c219e7fc6efcb20ff30e24e0a5101a1bedf7bab6c5d0ab3ce203",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/research/odyssey.py",
+        "kind": "file",
+        "bytes": 136261,
+        "sha256": "6faeda2e5c347408b0abae83cb70239eaa7406b97538a20190c2d5828df60da3",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d7_tool_use_traces.jsonl",
+        "kind": "file",
+        "bytes": 66593,
+        "sha256": "0e8ea9698ac246c859c35f22d9ec04fea44f5381b2fd8e0f5bcb5c0cd5b8ff78",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/guards/restream_guard.py",
+        "kind": "file",
+        "bytes": 54250,
+        "sha256": "dcebb9722b9b6930562cec0ec57b108e01b986726b9ad6f572b99870070db610",
+        "class": "GUARD"
+      },
+      {
+        "path": "ramanujan/scaffold/data/pipeline/extractors.py",
+        "kind": "file",
+        "bytes": 37789,
+        "sha256": "a5bdf9843d12acea33548e03d92d62e30a70a284dd116c1309d102122ea14368",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/research/you_research.py",
+        "kind": "file",
+        "bytes": 36900,
+        "sha256": "39cee2419a4e590004e29cc233ba16c2bc886f221c5b51e9f3afbf2aaba06d6a",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/train/train_components.py",
+        "kind": "file",
+        "bytes": 35220,
+        "sha256": "34ccd809641fe1d1735d58df76a9f569a2a59c9adb448e938ef1622cb83e8c85",
+        "class": "TRAIN"
+      }
+    ],
+    "files": [
+      {
+        "path": "ramanujan/README.md",
+        "kind": "file",
+        "bytes": 3956,
+        "sha256": "2a92a7ceb53abb03fd210338366efe4c89a437ec534abba73c0e60e44b7d301e",
+        "class": "DOC"
+      },
+      {
+        "path": "ramanujan/__init__.py",
+        "kind": "file",
+        "bytes": 694,
+        "sha256": "093c2014f9efa4f48f916aeefd92571ab297a04dc32943c70d81d58d46a086e9",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/container/BUILD_RECEIPT.json",
+        "kind": "file",
+        "bytes": 418,
+        "sha256": "87b46b64be275ff78e8c6370837f28c4160cb71a8ed2c9907b68119e7bc102a6",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/Dockerfile",
+        "kind": "file",
+        "bytes": 6111,
+        "sha256": "8e54b0a307a017f1edb725cdd0970d8aae2a488723b9affd3521c6ee40d24e5b",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/README.md",
+        "kind": "file",
+        "bytes": 2111,
+        "sha256": "03acb307951ed9cca4566c56c9021fb9db539cd29dc7cb13072633486eb32d86",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/REPLAY_RECEIPT.json",
+        "kind": "file",
+        "bytes": 696,
+        "sha256": "e9a617c30e39b4f3952c9eb01be6f287da57a2935e0baa99f5131019e65e0ae6",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/build.sh",
+        "kind": "file",
+        "bytes": 1918,
+        "sha256": "ad5951b29a4b3634fa9dbd9a68c7bd8eaf0b6039125bab757e8b11beb0d9cdb7",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/capsules/two_plus_two.capsule.json",
+        "kind": "file",
+        "bytes": 677,
+        "sha256": "716015d5e7a19aa3bc5add04a1d4217c1a88ccfda44d2c6f57e058ee647610c6",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/pins.json",
+        "kind": "file",
+        "bytes": 3200,
+        "sha256": "ae586bfa583693e68054a936088e54d7a81231cf65ee22e068455f033f880c85",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/probe/RamanujanProbe.lean",
+        "kind": "file",
+        "bytes": 296,
+        "sha256": "359041b5d37d7a88a86150630a0f07dcfc375273bc9ba421a246ca141d74bdca",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/probe/lakefile.lean",
+        "kind": "file",
+        "bytes": 376,
+        "sha256": "dff8e864e036e6729b4b1e0b4435cf88b2d639303386197799bc20b603a38ca0",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/probe/lean-toolchain",
+        "kind": "file",
+        "bytes": 29,
+        "sha256": "62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/replay_capsule.sh",
+        "kind": "file",
+        "bytes": 2886,
+        "sha256": "bc10b8a635a48f298a389c24c5ff42ed8231c5c72476a951eb47e743625785d8",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/container/scripts/container_replay.sh",
+        "kind": "file",
+        "bytes": 3810,
+        "sha256": "b5005a28c24defa1a01a81e8bf3ccb5bbccbecd7ff42b67c58318bba3f9b7720",
+        "class": "Q0_HARNESS"
+      },
+      {
+        "path": "ramanujan/docs/HAWKING_DEPENDENCY.md",
+        "kind": "file",
+        "bytes": 1445,
+        "sha256": "21557ce435edbc9fe0bd7865f4ffbee957c56fd758ab5d9805f4d58c77d852ed",
+        "class": "DOC"
+      },
+      {
+        "path": "ramanujan/docs/LOCAL_CHECKINS.md",
+        "kind": "file",
+        "bytes": 871,
+        "sha256": "7eb2fffd5432d012b0cb3d42c1beca5549918d876f38a3bce863c729e2b8ee29",
+        "class": "DOC"
+      },
+      {
+        "path": "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
+        "kind": "file",
+        "bytes": 1426,
+        "sha256": "7c809a3b0e41aff6c811533245318582a9789ef5683f416a5abe9f2f4e137343",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/boundary/RAMANUJAN_GOVERNANCE_STATUS.json",
+        "kind": "file",
+        "bytes": 4123,
+        "sha256": "3d548f48bf68f39c01557a89e9a3e6a72ff77938241382ab880c053ed564dfa9",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/boundary/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
+        "kind": "file",
+        "bytes": 2495,
+        "sha256": "0f9873da6518a28dced71f41f2c2db5e9e8fe4636b0a0b1d55f88197b5eb4e99",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/boundary/RAMANUJAN_OFFLINE_MANIFEST.json",
+        "kind": "file",
+        "bytes": 6830,
+        "sha256": "7d0976646f86924e95c2640184eb53a46ac84a89f90763898872112370b66245",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/boundary/RAMANUJAN_OWNER_DECISIONS_REQUIRED.json",
+        "kind": "file",
+        "bytes": 8793,
+        "sha256": "07c90bd828cfd693ee9d06f5c2af556cf3275389ec2a4c2faa9c76b353b8e09b",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/contracts/RAMANUJAN_FINAL_PARENT_RESTREAM_PLAN.json",
+        "kind": "file",
+        "bytes": 7733,
+        "sha256": "39b6bc2219f50938c6cc43c6fb1cd56e4809751883c7a2cec5fcaf061e6b0b5a",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/contracts/RAMANUJAN_GLM52_WINDOW_OPERATOR_OWNER_PROPOSAL.json",
+        "kind": "file",
+        "bytes": 5886,
+        "sha256": "a171ef2fad7f1afb0a02caa2bf6e6836e6a51a3701090abe49e6a3fb14c8c9c0",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json",
+        "kind": "file",
+        "bytes": 5832,
+        "sha256": "4ef511d5b9972e90504f880dbec7f17b5370801b857d73457e75ac214cb3919b",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json",
+        "kind": "file",
+        "bytes": 6935,
+        "sha256": "0affc61834f6f9faf9f12c227b836dc2aecf791987293aa2745a2f407e5989b7",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/governance/contracts/RAMANUJAN_ROLES_ECONOMICS.json",
+        "kind": "file",
+        "bytes": 4222,
+        "sha256": "34f512d459c53453464f9862cb1a3852012d8a5b191c5e55aead486442bc70ef",
+        "class": "GOVERNANCE"
+      },
+      {
+        "path": "ramanujan/layout.py",
+        "kind": "file",
+        "bytes": 6085,
+        "sha256": "0d64394bc58d3d28eb17f8b2af267e178e79425cbe1e566efc449d51f1bcdbea",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json",
+        "kind": "file",
+        "bytes": 14683,
+        "sha256": "ea301e59c3d170a4e23f84c7b22e2670fec9aff9f903ca463869fa974897e4a1",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT_REFRESH_2026_07_31.json",
+        "kind": "file",
+        "bytes": 9327,
+        "sha256": "7feea80e55e5ee044f5d68e0cf883161eb9b94bbb23781a296c55b49c9e296b9",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT_REFRESH_2026_08_01.json",
+        "kind": "file",
+        "bytes": 9139,
+        "sha256": "1ee1752db001f8461562cf8281c361379021c8374fe532d0c544a4e55f55d828",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
+        "kind": "file",
+        "bytes": 1935,
+        "sha256": "272e1be43c9fa9ca56ce2904ca6f7ed6f3a001cd660b8dcc6555f5544614df5e",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
+        "kind": "file",
+        "bytes": 2083,
+        "sha256": "b9c281e4faaa6baea497ee4731c13f09606c64f6bceaec56251fe9433a962f48",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/records/intake/RAMANUJAN_ACQUISITION_QUEUE.json",
+        "kind": "file",
+        "bytes": 3534,
+        "sha256": "ac1a840a355ed4d2838c9150ee934e7fcb5a758ff14d0918597bfb756f3f05c1",
+        "class": "RECORD"
+      },
+      {
+        "path": "ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json",
+        "kind": "file",
+        "bytes": 3261,
+        "sha256": "f169056bfcf19114f5304610cac9495cf598939c2c8a55cd62c4464799372328",
+        "class": "RECORD"
+      },
+      {
+        "path": "ramanujan/records/intake/RAMANUJAN_DATA_SOURCE_MATRIX.json",
+        "kind": "file",
+        "bytes": 10544,
+        "sha256": "a20fe359b41dc3b02c1799ad49b853b55d724b9bf74e73dfaeae6ca34d50867e",
+        "class": "RECORD"
+      },
+      {
+        "path": "ramanujan/records/runtime/RAMANUJAN_COGNITION_REGISTER.json",
+        "kind": "file",
+        "bytes": 15970,
+        "sha256": "8a02aea6ab5f469ac33ba7dad3ff503eaab00a864bbabc0012d569a0bf9c8fca",
+        "class": "RECORD"
+      },
+      {
+        "path": "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
+        "kind": "file",
+        "bytes": 14613,
+        "sha256": "711ab502295aaee88922566b7877965ba00b3004a6e5e992568176bb68e4f924",
+        "class": "RECORD"
+      },
+      {
+        "path": "ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json",
+        "kind": "file",
+        "bytes": 3610,
+        "sha256": "9a9a0c363b9f8094c6a84ac0200abe057c0a3265c48f9f36248b03ab2dbf6b46",
+        "class": "RECORD"
+      },
+      {
+        "path": "ramanujan/records/runtime/SMALL_SYSTEM_TRAINING_STATUS.json",
+        "kind": "file",
+        "bytes": 7050,
+        "sha256": "7b615eddba4e9bd6eeafbb4858f514abb8ad6505e8e1cbd2b27b4d88dc37857b",
+        "class": "RECORD"
+      },
+      {
+        "path": "ramanujan/scaffold/core/controllers.py",
+        "kind": "file",
+        "bytes": 11381,
+        "sha256": "016b1fe3ffcad57a1f46a28d98b5ec2a16cbdadc5fc7edfbb2961fd3419dfd11",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/core/economics.py",
+        "kind": "file",
+        "bytes": 11426,
+        "sha256": "07ca23dd6955ac352467b05a9e1f8bd940fdae28aa26d96fc03ba43ca6558c7e",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/core/evidence.py",
+        "kind": "file",
+        "bytes": 4091,
+        "sha256": "f7c54ff3727d0b550015ae10b68783eebdad7b8a6e09132cf643fadfbd51ef5c",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/core/forge.py",
+        "kind": "file",
+        "bytes": 11203,
+        "sha256": "8a8d075ac39b8b202869b8d661276f3704629ac9fb927027836e5dbcc2d9c70f",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/core/ledger.py",
+        "kind": "file",
+        "bytes": 6154,
+        "sha256": "86da229cb6bac3b54b2a19c83666ac8abe213ef84066387e736b472954f8fa3b",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/core/limits.py",
+        "kind": "file",
+        "bytes": 10861,
+        "sha256": "e9e33c2f6fbd44a9b5804cda527c0b8cd992b214712a97aa4f1ec59798fe48f8",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/core/roles.py",
+        "kind": "file",
+        "bytes": 15562,
+        "sha256": "e5f54ee2dee33137f131c277f7257d5c90bf86c75eb7d2c5b9ea5571b9179b68",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/core/sovereignty.py",
+        "kind": "file",
+        "bytes": 8024,
+        "sha256": "c16052c927cec898bcde490348788430b174358e86c9b2dd1693a57bff6deadd",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/core/stores.py",
+        "kind": "file",
+        "bytes": 18105,
+        "sha256": "8afd68d0aa5ef6698fc195f7dad6d2a1205213d824762351c64d385820cbcf2d",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/__init__.py",
+        "kind": "file",
+        "bytes": 720,
+        "sha256": "99f1feacb456aea4dddb3c65a7344d642f8e4e1f2ee32c3de528205f6211e344",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/CONTAMINATION_RECEIPT.json",
+        "kind": "file",
+        "bytes": 2602,
+        "sha256": "6ddc87bfbcff5c136ee79205fb19574ce68d4a772830ec21171d820632ca6d03",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/FREEZE_RECEIPT.json",
+        "kind": "file",
+        "bytes": 2441,
+        "sha256": "b6f3d7cf15744e7a1c26c618f85f1ea68ff44bbe4053c09527f8efa5d1b1e410",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/GENERATION_RECEIPT.json",
+        "kind": "file",
+        "bytes": 6599,
+        "sha256": "f2687b4115efa55f867fac4de5664eb5b5aec9e21476b553f62b30edd8ee27c3",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/MEMBERSHIP_MANIFEST.json",
+        "kind": "file",
+        "bytes": 1268802,
+        "sha256": "36059fb95459c80d50c25a967ced2f6f52a411dc975f2c66181561dcbcadcb29",
+        "class": "CORPUS_MEMBERSHIP"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/SCALEUP_RECEIPT.json",
+        "kind": "file",
+        "bytes": 3156,
+        "sha256": "6f14018967666ad4ec7edffd3b0dadc0918de181d4304627c2fe134423362901",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d1_proof_traces.jsonl",
+        "kind": "file",
+        "bytes": 7356989,
+        "sha256": "0a894193db95b1c921755e21afcd23a6c43b020c7c79de023e63520f78bac98c",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d2_state_transitions.jsonl",
+        "kind": "file",
+        "bytes": 9445889,
+        "sha256": "e440324abf65c1e695b91998c54d37b96c04e3913a764aa01eb6ea90d36bfff2",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d3_premise_pairs.jsonl",
+        "kind": "file",
+        "bytes": 6268853,
+        "sha256": "841ae8e754f2017bcbee282ebdaa4dc7b53a22a8dc97ebeeace78ca4786eb183",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d4_repair_pairs.jsonl",
+        "kind": "file",
+        "bytes": 1495454,
+        "sha256": "28fac8334a84065ab62c249af5f153491d2a607dd15040f5d9e9164ffb352070",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d6_counterexamples.jsonl",
+        "kind": "file",
+        "bytes": 279320,
+        "sha256": "99a2eedf44f3c219e7fc6efcb20ff30e24e0a5101a1bedf7bab6c5d0ab3ce203",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/corpora/d7_tool_use_traces.jsonl",
+        "kind": "file",
+        "bytes": 66593,
+        "sha256": "0e8ea9698ac246c859c35f22d9ec04fea44f5381b2fd8e0f5bcb5c0cd5b8ff78",
+        "class": "CORPUS"
+      },
+      {
+        "path": "ramanujan/scaffold/data/pipeline/common.py",
+        "kind": "file",
+        "bytes": 5852,
+        "sha256": "3ccb80b4694f5856c57c82f1f18ac70333260e8baf79b7c14384eb15b81d12d7",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/pipeline/contamination_pass.py",
+        "kind": "file",
+        "bytes": 3518,
+        "sha256": "155a2febec57cfa4ed30ef6e9a8a36661c81f7915df6ca3437f8edb266570e7d",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/pipeline/extractors.py",
+        "kind": "file",
+        "bytes": 37789,
+        "sha256": "a5bdf9843d12acea33548e03d92d62e30a70a284dd116c1309d102122ea14368",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/pipeline/freeze_memberships.py",
+        "kind": "file",
+        "bytes": 32600,
+        "sha256": "0d143b7b00cd2d6e1719e71d139ca9f42c76084a0e37f68dda65cf43306d3e05",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/pipeline/generate.py",
+        "kind": "file",
+        "bytes": 9693,
+        "sha256": "f4e316a4b942d7ae5b2e1f4108af0fc2eb3347bd145a85bb7a0b3599a81ba5d2",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/pipeline/parse_mathlib.py",
+        "kind": "file",
+        "bytes": 10800,
+        "sha256": "8867bb4ba41af3c83027e35dc945afd74a446e0aac99dfac6028daa57a506825",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/pipeline/paths.py",
+        "kind": "file",
+        "bytes": 1863,
+        "sha256": "7623ce28835ccd2d7a3c63602f329d07998d1066423df0040de870be65e36b11",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/data/records/research_ledger.jsonl",
+        "kind": "file",
+        "bytes": 380,
+        "sha256": "38cb2524625a8977cbbd83eee2572e8131c54bc1f5627c59c12267902c287adc",
+        "class": "RECORD"
+      },
+      {
+        "path": "ramanujan/scaffold/data/tests/test_data.py",
+        "kind": "file",
+        "bytes": 8209,
+        "sha256": "ca7709fb722726ebba642e6458e7b235006cf413953d2dbbe20e7fe97079b440",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/data/tests/test_freeze.py",
+        "kind": "file",
+        "bytes": 12225,
+        "sha256": "6faa04b1f1e9abd72c16a78f6d66b90c06024cc815ce387457ae957e96a7bdac",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/fixtures/expert_iteration_math.json",
+        "kind": "file",
+        "bytes": 1601,
+        "sha256": "c6c1fb4f14fc3e4691b53f82ab6c3c109a253942fef98cc3370f62ab4d359e76",
+        "class": "FIXTURE"
+      },
+      {
+        "path": "ramanujan/scaffold/fixtures/premise_corpus.json",
+        "kind": "file",
+        "bytes": 1790,
+        "sha256": "abf5edc48d3f94e4d2ceaed6a7cd97071920908bb8ee478ce3104a2b797c9378",
+        "class": "FIXTURE"
+      },
+      {
+        "path": "ramanujan/scaffold/fixtures/you_research_corpus.json",
+        "kind": "file",
+        "bytes": 5246,
+        "sha256": "d3e8a46bf1de35169136d35e8d95f916f83cf44195ad63d20169685e3bd56647",
+        "class": "FIXTURE"
+      },
+      {
+        "path": "ramanujan/scaffold/guards/RAMANUJAN_FINAL_PARENT_NEXT_COMMAND.sh",
+        "kind": "file",
+        "bytes": 11230,
+        "sha256": "8d7ee8073b5be208c249ac17082409b3a1121521ad5b7718b64e0ae047969790",
+        "class": "GUARD"
+      },
+      {
+        "path": "ramanujan/scaffold/guards/restream_guard.py",
+        "kind": "file",
+        "bytes": 54250,
+        "sha256": "dcebb9722b9b6930562cec0ec57b108e01b986726b9ad6f572b99870070db610",
+        "class": "GUARD"
+      },
+      {
+        "path": "ramanujan/scaffold/guards/status.py",
+        "kind": "file",
+        "bytes": 4203,
+        "sha256": "8736398268a5083d61ccacd4c932fb328ec8890ea56b3ee196836ad54e5ba29c",
+        "class": "GUARD"
+      },
+      {
+        "path": "ramanujan/scaffold/guards/toolchain_selftest.py",
+        "kind": "file",
+        "bytes": 8328,
+        "sha256": "6bf8f56c62ea6e3ec9f065cad3ae9c34677098e6faa0dcb85b15482ffedbeee9",
+        "class": "GUARD"
+      },
+      {
+        "path": "ramanujan/scaffold/ramanujan/container",
+        "kind": "symlink",
+        "target": "../../container",
+        "bytes": 15,
+        "sha256": "bc8150e89c8fc2d889c0f4bfe0d8270a4c2b6ab38801a7f6e0ef3d1de577d859",
+        "class": "OTHER"
+      },
+      {
+        "path": "ramanujan/scaffold/research/cognition.py",
+        "kind": "file",
+        "bytes": 9557,
+        "sha256": "a2b35b4830be44f2f6f39c4855ae188ee0a07ce7ab778cc7b4fa5ad6aebe300e",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/odyssey.py",
+        "kind": "file",
+        "bytes": 136261,
+        "sha256": "6faeda2e5c347408b0abae83cb70239eaa7406b97538a20190c2d5828df60da3",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/prover.py",
+        "kind": "file",
+        "bytes": 10049,
+        "sha256": "04f2c69a20a724d0ce79eae04843b20a39e003a4024ffaf567813386958ace0f",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/search.py",
+        "kind": "file",
+        "bytes": 11080,
+        "sha256": "84e8c07cfa462605a9992db4b78852b39172aaa22cb6cabb7967abb4aed43a95",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/__init__.py",
+        "kind": "file",
+        "bytes": 1727,
+        "sha256": "043cb044d6e042826aed19ca53156cdbc45cd615ba2de4e471d8e4aad539d23e",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/__main__.py",
+        "kind": "file",
+        "bytes": 5529,
+        "sha256": "30e8e1022e12e9b9658eeaca5667e2f7b13ec90aa61331ca5d828c935f6bb035",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/base.py",
+        "kind": "file",
+        "bytes": 5804,
+        "sha256": "43e43003c499991b60f53e9b0d96b8f33b0692a8331263875077a83d936b931e",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/exact_numeric.py",
+        "kind": "file",
+        "bytes": 6487,
+        "sha256": "1a4b0b29d3490fcef1bc99e33881716cfa595630a0aa1d1768d6871b6c57e308",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/expert_iteration.py",
+        "kind": "file",
+        "bytes": 11226,
+        "sha256": "c388cc1fb081a23690c79d90463dba96b3ecc6a7d2a162689211d5304c59deea",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/lean_backend.py",
+        "kind": "file",
+        "bytes": 10117,
+        "sha256": "b7d232279d123667cd77869ea144ec7c72b04574b5dfc01a2eedc1ad0b211929",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/registry.py",
+        "kind": "file",
+        "bytes": 2879,
+        "sha256": "0e659d1c81b0657576ebd79206722f12d74e3f09c9d687372767c9eb2557dcaa",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/sympy_backend.py",
+        "kind": "file",
+        "bytes": 5563,
+        "sha256": "a87ba40633deaff14447aebad4761b3b0a5c24a11aac2079101779320d9bd96f",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/verifier/trajectory.py",
+        "kind": "file",
+        "bytes": 8745,
+        "sha256": "6611dbd49dcf982dcbb2651d4e44c84f5f17ce80b3db779dd9816636dc87c144",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/research/you_research.py",
+        "kind": "file",
+        "bytes": 36900,
+        "sha256": "39cee2419a4e590004e29cc233ba16c2bc886f221c5b51e9f3afbf2aaba06d6a",
+        "class": "RESEARCH"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_boundary_status.py",
+        "kind": "file",
+        "bytes": 770,
+        "sha256": "2b1ab74a6b58ca91f6f0e24bed2c74d0c95b0ab8201256c9e8339dec02078dd1",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_cognition.py",
+        "kind": "file",
+        "bytes": 5971,
+        "sha256": "533aa87c000e367fb2c54a40a949c7a53e351eb1a0c0143134696810268abae1",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_governance_invariants.py",
+        "kind": "file",
+        "bytes": 15828,
+        "sha256": "9522b1dbfbbccd2b6a88d8ce32bb37e6a1f12c4abbb0cb722bb61be29ac94bce",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_odyssey_harness.py",
+        "kind": "file",
+        "bytes": 32614,
+        "sha256": "0401bbf04d0f1a1533aa6a4ec5096fe9355cf50126ac9f00c942bc902edada83",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_prover.py",
+        "kind": "file",
+        "bytes": 4260,
+        "sha256": "ebe0860e56a6acbfc1ce57b8128f783199c520f5b6c7f6fe1dd5a03fe2064692",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_ramanujan.py",
+        "kind": "file",
+        "bytes": 13721,
+        "sha256": "1968dfbdd1167a3f3101be83fe6ec5fbc20045a4bdb6ac6e2a78398c95ad2b13",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_roles_economics.py",
+        "kind": "file",
+        "bytes": 13988,
+        "sha256": "b8fee569615c3aa8e6483584c466023cc54bba7afc8c30fff02faab554c2494d",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_search.py",
+        "kind": "file",
+        "bytes": 6372,
+        "sha256": "70615ff0b6d07b2888308df332e2d8c94fc32fdb7207e8c195688fe7d2abd825",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_verifier_expert_iteration.py",
+        "kind": "file",
+        "bytes": 10281,
+        "sha256": "9b320187921f8c818e719051319d964dbcba30a863ba000e31752c521e345177",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tests/test_you_research.py",
+        "kind": "file",
+        "bytes": 19753,
+        "sha256": "0669bd0427bee95b8c433d1e4e0af205b222b32ab802a8c02c5faaf30358a349",
+        "class": "TEST"
+      },
+      {
+        "path": "ramanujan/scaffold/tooling/gen_data_matrix.py",
+        "kind": "file",
+        "bytes": 13144,
+        "sha256": "6b81c6aab0aa4043f43451180c7d3dc9b10b76d9c182340a90685cf846120cf4",
+        "class": "CODE"
+      },
+      {
+        "path": "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+        "kind": "file",
+        "bytes": 6904,
+        "sha256": "26b1b72326d2b3bb85f4ea1eeb47c7e62728a3dfd1db271ab5326bab157fac10",
+        "class": "TRAIN"
+      },
+      {
+        "path": "ramanujan/scaffold/train/TRAINING_RECEIPT.json",
+        "kind": "file",
+        "bytes": 12685,
+        "sha256": "de02d5ba71f0fb5de817209165e222bd45c5dbb32703e93976a1b0102e799e36",
+        "class": "RECEIPT"
+      },
+      {
+        "path": "ramanujan/scaffold/train/__init__.py",
+        "kind": "file",
+        "bytes": 276,
+        "sha256": "f4abd9f44944404478dfc01550e24df24a07b6b3243b7fb9f99fac92b1efe398",
+        "class": "TRAIN"
+      },
+      {
+        "path": "ramanujan/scaffold/train/features.py",
+        "kind": "file",
+        "bytes": 2175,
+        "sha256": "4d09be2c57f80bd447bdd545cc96c6c3c28604747df68768f6193e7413953a97",
+        "class": "TRAIN"
+      },
+      {
+        "path": "ramanujan/scaffold/train/lean_check.py",
+        "kind": "file",
+        "bytes": 3400,
+        "sha256": "84ea7b38fcb93ca2de7a110abb1cb3cb066991a7388a2b301200fd0876897da7",
+        "class": "TRAIN"
+      },
+      {
+        "path": "ramanujan/scaffold/train/models.py",
+        "kind": "file",
+        "bytes": 2944,
+        "sha256": "b5cce6497741277fe60f5d94e5dbfe31015f126e4dfb1d5eb358d001b119cf43",
+        "class": "TRAIN"
+      },
+      {
+        "path": "ramanujan/scaffold/train/train_components.py",
+        "kind": "file",
+        "bytes": 35220,
+        "sha256": "34ccd809641fe1d1735d58df76a9f569a2a59c9adb448e938ef1622cb83e8c85",
+        "class": "TRAIN"
+      }
+    ],
+    "git_only_siblings": [
+      {
+        "id": "handoff",
+        "git_path": "workspace/campaign/evidence/systems/ramanujan/RAMANUJAN_HANDOFF_CONTRACT.json",
+        "on_disk": false,
+        "bytes": 7035,
+        "sha256": "980f8cc6d68748765fd9568a8f9f3448360739bcb7f1d1574245cebfc8a69ae7",
+        "present_in_git": true
+      },
+      {
+        "id": "glm52_fast_intake",
+        "git_path": "workspace/campaign/evidence/models/glm52/GLM52_RAMANUJAN_FAST_INTAKE.json",
+        "on_disk": false,
+        "bytes": 4884,
+        "sha256": "45431b5785244cc1497133bb65f0b1745bdd258e91620b9e565771f1a981ea88",
+        "present_in_git": true
+      },
+      {
+        "id": "verification_lattice",
+        "git_path": "workspace/campaign/governance/odyssey/domains/verifiers/VERIFICATION_LATTICE.json",
+        "on_disk": false,
+        "bytes": 1171,
+        "sha256": "27f47b6e31399cfd0cb071ea442def1e7190d97e0cce3c543265ecb4cad2882c",
+        "present_in_git": true
+      },
+      {
+        "id": "substrate_capability",
+        "git_path": "workspace/campaign/governance/odyssey/program/launch/SUBSTRATE_CAPABILITY.json",
+        "on_disk": false,
+        "bytes": 4673,
+        "sha256": "00f3bbd8d11110b4743851dc85cf1196699e59fc8750ca792abc074f9b5ef051",
+        "present_in_git": true
+      },
+      {
+        "id": "support_halo",
+        "git_path": "workspace/campaign/governance/odyssey/program/evaluation/support_halo_corpus_v0.jsonl",
+        "on_disk": false,
+        "bytes": 8929,
+        "sha256": "b3ebda04ce48aa84b51faf47bff6284083029e0517b33e8c7c3f55b5fb54ec67",
+        "present_in_git": true
+      },
+      {
+        "id": "negative_science_register",
+        "git_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+        "on_disk": false,
+        "bytes": 56206,
+        "sha256": "8d6b507c219fee45f808a54e5833834c3f980ec40e8ecf57c3890c7480f0ab1a",
+        "present_in_git": true
+      }
+    ],
+    "jsonl_counts": {
+      "D1": {
+        "path": "ramanujan/scaffold/data/corpora/d1_proof_traces.jsonl",
+        "lines": 5000,
+        "bytes": 7356989
+      },
+      "D2": {
+        "path": "ramanujan/scaffold/data/corpora/d2_state_transitions.jsonl",
+        "lines": 5000,
+        "bytes": 9445889
+      },
+      "D3": {
+        "path": "ramanujan/scaffold/data/corpora/d3_premise_pairs.jsonl",
+        "lines": 5000,
+        "bytes": 6268853
+      },
+      "D4": {
+        "path": "ramanujan/scaffold/data/corpora/d4_repair_pairs.jsonl",
+        "lines": 800,
+        "bytes": 1495454
+      },
+      "D6": {
+        "path": "ramanujan/scaffold/data/corpora/d6_counterexamples.jsonl",
+        "lines": 302,
+        "bytes": 279320
+      },
+      "D7": {
+        "path": "ramanujan/scaffold/data/corpora/d7_tool_use_traces.jsonl",
+        "lines": 86,
+        "bytes": 66593
+      }
+    }
+  },
+  "measured": [
+    {
+      "claim": "Q0 capsule replay in network-disabled pinned container",
+      "value": {
+        "status": "PROVEN",
+        "capsule": {
+          "id": "two_plus_two",
+          "statement": "two_plus_two : (2 : Nat) + 2 = 4",
+          "path": "ramanujan/container/capsules/two_plus_two.capsule.json"
+        },
+        "image_tag": "ramanujan-clean-replay:2ec0166b",
+        "image_id": "sha256:21114fb4b7066b5a7c535d36685211147a920233fc7544a922846056c8ec03ad",
+        "image_size_bytes": 4644372611,
+        "tier3": {
+          "lean_proof_compiles": "MET, inside the pinned container",
+          "no_sorry": "MET",
+          "no_undeclared_axioms": "MET",
+          "pinned_mathlib": "MET, capsule pins equal the lock on mathlib_commit, lean_toolchain and lean_commit",
+          "clean_container_reproduction": "MET, replayed with --network=none"
+        },
+        "replay_exit_code": 0,
+        "replay_network": "none",
+        "hawking_commit": "208c655f781cfb7a07e585cfd140ce8198e3c4c1"
+      },
+      "receipt": "ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
+      "supporting": [
+        "ramanujan/container/REPLAY_RECEIPT.json",
+        "ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json"
+      ]
+    },
+    {
+      "claim": "Q0 evidence-bundle leaf hashes still match live bytes",
+      "value": true,
+      "receipt": "ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
+      "leaves": [
+        {
+          "logical": "ramanujan/RAMANUJAN_ENVIRONMENT_LOCK.json",
+          "physical": "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
+          "bound": "711ab502295aaee88922566b7877965ba00b3004a6e5e992568176bb68e4f924",
+          "live": "711ab502295aaee88922566b7877965ba00b3004a6e5e992568176bb68e4f924",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/BUILD_RECEIPT.json",
+          "physical": "ramanujan/container/BUILD_RECEIPT.json",
+          "bound": "87b46b64be275ff78e8c6370837f28c4160cb71a8ed2c9907b68119e7bc102a6",
+          "live": "87b46b64be275ff78e8c6370837f28c4160cb71a8ed2c9907b68119e7bc102a6",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/Dockerfile",
+          "physical": "ramanujan/container/Dockerfile",
+          "bound": "8e54b0a307a017f1edb725cdd0970d8aae2a488723b9affd3521c6ee40d24e5b",
+          "live": "8e54b0a307a017f1edb725cdd0970d8aae2a488723b9affd3521c6ee40d24e5b",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/REPLAY_RECEIPT.json",
+          "physical": "ramanujan/container/REPLAY_RECEIPT.json",
+          "bound": "e9a617c30e39b4f3952c9eb01be6f287da57a2935e0baa99f5131019e65e0ae6",
+          "live": "e9a617c30e39b4f3952c9eb01be6f287da57a2935e0baa99f5131019e65e0ae6",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/build.sh",
+          "physical": "ramanujan/container/build.sh",
+          "bound": "ad5951b29a4b3634fa9dbd9a68c7bd8eaf0b6039125bab757e8b11beb0d9cdb7",
+          "live": "ad5951b29a4b3634fa9dbd9a68c7bd8eaf0b6039125bab757e8b11beb0d9cdb7",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/capsules/two_plus_two.capsule.json",
+          "physical": "ramanujan/container/capsules/two_plus_two.capsule.json",
+          "bound": "716015d5e7a19aa3bc5add04a1d4217c1a88ccfda44d2c6f57e058ee647610c6",
+          "live": "716015d5e7a19aa3bc5add04a1d4217c1a88ccfda44d2c6f57e058ee647610c6",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/pins.json",
+          "physical": "ramanujan/container/pins.json",
+          "bound": "ae586bfa583693e68054a936088e54d7a81231cf65ee22e068455f033f880c85",
+          "live": "ae586bfa583693e68054a936088e54d7a81231cf65ee22e068455f033f880c85",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/probe/RamanujanProbe.lean",
+          "physical": "ramanujan/container/probe/RamanujanProbe.lean",
+          "bound": "359041b5d37d7a88a86150630a0f07dcfc375273bc9ba421a246ca141d74bdca",
+          "live": "359041b5d37d7a88a86150630a0f07dcfc375273bc9ba421a246ca141d74bdca",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/probe/lakefile.lean",
+          "physical": "ramanujan/container/probe/lakefile.lean",
+          "bound": "dff8e864e036e6729b4b1e0b4435cf88b2d639303386197799bc20b603a38ca0",
+          "live": "dff8e864e036e6729b4b1e0b4435cf88b2d639303386197799bc20b603a38ca0",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/probe/lean-toolchain",
+          "physical": "ramanujan/container/probe/lean-toolchain",
+          "bound": "62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef",
+          "live": "62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/replay_capsule.sh",
+          "physical": "ramanujan/container/replay_capsule.sh",
+          "bound": "bc10b8a635a48f298a389c24c5ff42ed8231c5c72476a951eb47e743625785d8",
+          "live": "bc10b8a635a48f298a389c24c5ff42ed8231c5c72476a951eb47e743625785d8",
+          "match": true
+        },
+        {
+          "logical": "ramanujan/container/scripts/container_replay.sh",
+          "physical": "ramanujan/container/scripts/container_replay.sh",
+          "bound": "b5005a28c24defa1a01a81e8bf3ccb5bbccbecd7ff42b67c58318bba3f9b7720",
+          "live": "b5005a28c24defa1a01a81e8bf3ccb5bbccbecd7ff42b67c58318bba3f9b7720",
+          "match": true
+        }
+      ]
+    },
+    {
+      "claim": "Lean-derived corpora generated from pinned Mathlib",
+      "value": {
+        "mathlib_commit": "2ec0166b31100827cd34bacca4d3b9ea3da9d618",
+        "n_modules": 8293,
+        "n_decls_parsed": 20000,
+        "counts": {
+          "D1": 5000,
+          "D2": 5000,
+          "D3": 5000,
+          "D4": 800,
+          "D6": 302,
+          "D7": 86
+        },
+        "jsonl_lines_on_disk": {
+          "D1": 5000,
+          "D2": 5000,
+          "D3": 5000,
+          "D4": 800,
+          "D6": 302,
+          "D7": 86
+        }
+      },
+      "receipt": "ramanujan/scaffold/data/corpora/GENERATION_RECEIPT.json"
+    },
+    {
+      "claim": "Scale-up wall clock and contamination negative control",
+      "value": {
+        "wall_clock_seconds": 629,
+        "counts_before": {
+          "D1": 400,
+          "D2": 400,
+          "D3": 400,
+          "D4": 60,
+          "D6": 302,
+          "D7": 86,
+          "total": 1648
+        },
+        "counts_after": {
+          "D1": 5000,
+          "D2": 5000,
+          "D3": 5000,
+          "D4": 800,
+          "D6": 302,
+          "D7": 86,
+          "total": 16188
+        },
+        "d4_all_real_lean_errors": true,
+        "contamination_total_rejected": 0,
+        "negative_control": {
+          "description": "sealed support-halo item (tl02_bpw) presented as training text",
+          "rejected": true,
+          "reason": "exact_match",
+          "eval_source": "odyssey/evaluation/support_halo_corpus_v0.jsonl",
+          "eval_id": "tl02_bpw",
+          "jaccard": 1.0,
+          "result": "PASS"
+        }
+      },
+      "receipt": "ramanujan/scaffold/data/corpora/SCALEUP_RECEIPT.json"
+    },
+    {
+      "claim": "Frozen membership (current seal)",
+      "value": {
+        "status": "PASS",
+        "at": "2026-08-01T04:58:51Z",
+        "counts": {
+          "dev": 1639,
+          "test": 1658,
+          "total": 16188,
+          "train": 12891
+        },
+        "membership_sha256": "fec9f85e677921433df4761205c391a4733a358660e1effcfe9f1b8e7651fbc6",
+        "manifest_file_sha256": "36059fb95459c80d50c25a967ced2f6f52a411dc975f2c66181561dcbcadcb29",
+        "total_rejected_vs_eval": 0,
+        "n_eval_items_indexed": 33,
+        "negative_control_pass": true
+      },
+      "receipt": "ramanujan/scaffold/data/corpora/FREEZE_RECEIPT.json"
+    },
+    {
+      "claim": "Small-system training (CPU, 103.52s) — bound to membership c0c13806, not the later freeze",
+      "value": {
+        "at": "2026-07-27T19:35:09Z",
+        "device": "cpu",
+        "wall_clock_seconds": 103.52,
+        "membership_sha256": "c0c13806a1f14553dfa3cdafa747071a088c084e7c462230ed83f1f9011675ce",
+        "converged_components": [
+          "retriever",
+          "value"
+        ],
+        "trained_but_did_not_converge": [
+          "formalizer",
+          "prover",
+          "repair"
+        ],
+        "teacher_from_math_preserve": false,
+        "RAMANUJAN_RESEARCH_AUTHORIZED": false
+      },
+      "receipt": "ramanujan/scaffold/train/TRAINING_RECEIPT.json",
+      "metrics_receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
+    },
+    {
+      "claim": "Retriever held-out test (D3 dual-encoder vs token-overlap baseline)",
+      "value": {
+        "status": "TRAINED_AND_BEATS_BASELINE",
+        "improved_vs_baseline": true,
+        "held_out_test": {
+          "mrr": 0.879459485407066,
+          "n": 496,
+          "recall@1": 0.7943548387096774,
+          "recall@3": 0.9556451612903226,
+          "recall@5": 0.9899193548387096
+        },
+        "baseline_test": {
+          "label": "token_overlap_baseline",
+          "mrr": 0.7140024961597542,
+          "n": 496,
+          "recall@1": 0.6108870967741935,
+          "recall@3": 0.7459677419354839,
+          "recall@5": 0.8326612903225806
+        }
+      },
+      "receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
+    },
+    {
+      "claim": "Value held-out test (D2 closed-next + remaining-steps)",
+      "value": {
+        "status": "TRAINED_AND_BEATS_MAJORITY",
+        "improved_vs_baseline": true,
+        "held_out_test": {
+          "closed_accuracy": 0.9688073394495413,
+          "majority_closed_baseline_accuracy": 0.7009174311926606,
+          "n": 545,
+          "remaining_steps_mae": 1.5375785503206574,
+          "train_closed_rate": 0.2914040982723236
+        }
+      },
+      "receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
+    },
+    {
+      "claim": "Formalizer held-out test (D1 first-tactic closed-vocab) — did not beat majority",
+      "value": {
+        "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+        "improved_vs_baseline": false,
+        "held_out_test": {
+          "coverage_gold_in_train_vocab": 0.6807228915662651,
+          "exact_match": 0.10642570281124498,
+          "majority_baseline_exact_match": 0.178714859437751,
+          "majority_label": "exact ( rfl",
+          "n": 498,
+          "n_classes_train": 365,
+          "n_correct": 53,
+          "n_gold_in_train_vocab": 339
+        }
+      },
+      "receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
+    },
+    {
+      "claim": "Prover held-out test (D2 next-tactic closed-vocab) — did not beat majority",
+      "value": {
+        "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+        "improved_vs_baseline": false,
+        "held_out_test": {
+          "coverage_gold_in_train_vocab": 0.4,
+          "exact_match": 0.04036697247706422,
+          "majority_baseline_exact_match": 0.04954128440366973,
+          "majority_label": "rw [ ←",
+          "n": 545,
+          "n_classes_train": 381,
+          "n_correct": 22,
+          "n_gold_in_train_vocab": 218
+        }
+      },
+      "receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
+    },
+    {
+      "claim": "Repair held-out test (D4) including Lean compile under isolated wrapper",
+      "value": {
+        "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+        "improved_vs_baseline": false,
+        "held_out_test": {
+          "coverage_gold_in_train_vocab": 0.8888888888888888,
+          "exact_match": 0.13333333333333333,
+          "majority_baseline_exact_match": 0.4,
+          "majority_label": "rfl",
+          "n": 90,
+          "n_classes_train": 178,
+          "n_correct": 12,
+          "n_gold_in_train_vocab": 80
+        },
+        "held_out_test_lean": {
+          "exact_match_on_lean_subset": 0.2,
+          "gold_fix_compiles": 0.1,
+          "lean_workers": 4,
+          "n_evaluated": 40,
+          "n_gold_compiles": 4,
+          "n_nat_basic": 6,
+          "n_predicted_compiles": 2,
+          "nat_basic_gold_compiles": 0.6666666666666666,
+          "nat_basic_predicted_compiles": 0.3333333333333333,
+          "note": "Compile under pinned Mathlib via lake env lean. Gold compile rate < 1 on non-Nat imports means the isolated example wrapper lacks typeclass context (honest ceiling). Nat.Basic subset is the fairer compile metric.",
+          "predicted_fix_compiles": 0.05
+        }
+      },
+      "receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
+    },
+    {
+      "claim": "Solver machine-checks (tools execute; not research capability)",
+      "value": {
+        "method": "each solver was made to compute, not asked for its version. A version string proves a file exists; only a computation proves a tool works.",
+        "z3": {
+          "sat": "x+y=4 with x=y solved, model x=2 y=2",
+          "unsat": "refuted (not (= (+ x 0) x)) -- it can also say no, which is the half that matters for counterexample search"
+        },
+        "cadical": {
+          "cnf": "(1 or 2) and (not 1)",
+          "result": "s SATISFIABLE, v -1 2"
+        },
+        "pari_gp": {
+          "computed": "factor(2^67-1) = 193707721 * 761838257287",
+          "note": "Cole's 1903 factorisation, reproduced in milliseconds"
+        },
+        "what_is_still_not_proven": "none of this says anything about mathematical research capability. It says the tools execute."
+      },
+      "receipt": "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json"
+    },
+    {
+      "claim": "Toolchain selftest verdict",
+      "value": {
+        "verdict": "TOOLCHAIN_INCOMPLETE",
+        "missing": [
+          "cvc5",
+          "gap"
+        ],
+        "q0_reproducibility": {
+          "status": "PROVEN_OFFLINE_HASH_BOUND",
+          "why": "Current REPLAY_OK --network=none leaf matches the Q0 evidence bundle and closure seal."
+        },
+        "lean_version_when_probed": "Lean (version 4.32.2, arm64-apple-darwin24.6.0, commit f3b06c705e6c85f5314019d5d3baab0fec5b580c, Release)"
+      },
+      "receipt": "ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json"
+    },
+    {
+      "claim": "Green-light storage sample (not a future admission receipt)",
+      "value": {
+        "free_bytes": 320015249408,
+        "green": false,
+        "model_lane_file_count": 5,
+        "protected_floor_bytes": 200005889556,
+        "required_incremental_bytes": 58885799936,
+        "residual_after_incremental_bytes": 61123559916
+      },
+      "receipt": "ramanujan/governance/boundary/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
+      "exact_next_action": "STORAGE_GREEN",
+      "status": "OWNER_GATE_READY"
+    },
+    {
+      "claim": "Pre-restream audit: Llama-3.3-70B Metal decode floor",
+      "value": {
+        "family": "Llama-3.3-70B",
+        "result": "K0_EXACT_TOKENS_METAL_DISPATCH_1043_ZERO_FALLBACK_FLOOR_SEALED",
+        "measured_decode_tps": 2.964,
+        "deepest_rung": null,
+        "first_failing_rung": "TG32",
+        "terminal_seal_sha256": "0ec1f2ace9f09e431b677bb950d3641bb1a41f67dee3bc8bf246016214760105",
+        "eviction_seal_sha256": "452a6f1f003b24947f287daab84addc6e9ccd565298eac7943e3f60c2481c517",
+        "xet_seal_sha256": "17c7354a6503ae7c99758ab0edfc933fa1517904064f7daef83ef390d23849b0"
+      },
+      "receipt": "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json"
+    },
+    {
+      "claim": "Pre-restream audit: Qwen2.5-72B first-forward swap floor",
+      "value": {
+        "terminal_seal_sha256": "846a6150f3699d1dd9ab9b012f0000025d70dea36ad95250ce574cad4320e97c",
+        "enclosing_stage": "Engine::generate prefill -> QwenDense::forward_token_greedy_tcb -> first-use DenseDecodeArena plus packed Metal TCB -> TokenCommandBuffer::commit_and_wait",
+        "elapsed_ms": 116201.248542,
+        "source_bytes": 47415715488,
+        "device": "Apple M3 Ultra",
+        "swap_before_mib": 1600.25,
+        "swap_during_first_forward_mib": 15157.69,
+        "swap_after_exit_mib": 2259.06,
+        "result": "TERMINAL_METAL_PREFILL_SWAP_FLOOR_NO_TG_RUNG",
+        "evidence_boundary": "The historical run did not serialize per-buffer allocation, nested encode/GPU/wait timing or a completed dispatch trace. Those values remain unavailable; no rerun or finer syscall claim was invented."
+      },
+      "receipt": "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json"
+    },
+    {
+      "claim": "Pre-restream audit: Q4_K fixture representation matrix (p50 microseconds)",
+      "value": {
+        "direct_gguf_q4_k": {
+          "physical_bytes": 1248,
+          "active_payload_bytes": 1152,
+          "ops_per_token": 4104,
+          "dispatches_per_token": 2,
+          "waits": 16,
+          "commits": 16,
+          "p50_us": 229,
+          "p95_us": 516,
+          "p99_us": 516,
+          "hot_allocated_bytes": 0
+        },
+        "executable_gravity_raw_q4_k": {
+          "physical_bytes": 1624,
+          "active_payload_bytes": 1152,
+          "ops_per_token": 4104,
+          "dispatches_per_token": 2,
+          "waits": 16,
+          "commits": 16,
+          "p50_us": 226,
+          "p95_us": 430,
+          "p99_us": 430,
+          "hot_allocated_bytes": 0
+        },
+        "direct_gguf_q5_k": {
+          "physical_bytes": 1504,
+          "active_payload_bytes": 1408,
+          "executed_fp_ops_per_token": 4104,
+          "executed_integer_bit_ops_per_token": "UNSEALED_STATIC_COUNT",
+          "dispatches_per_token": 2,
+          "waits": 16,
+          "commits": 16,
+          "p50_us": 263,
+          "p95_us": 300,
+          "p99_us": 300,
+          "hot_allocated_bytes": 0,
+          "authority": "independent packed-byte GGML Q5_K FP64 decoder plus FP64 matvec"
+        },
+        "native_reduced_full_qwen_gravity": "NOT_MATERIALIZED_NO_SOURCE_PRESENT",
+        "deepest_tg_rung": null,
+        "first_failing_rung": "NOT_APPLICABLE_FIXTURE_SCOPE"
+      },
+      "receipt": "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json"
+    },
+    {
+      "claim": "GLM-5.2 restream schedule (technical, not authorized)",
+      "value": {
+        "parent_revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+        "weight_shards": 282,
+        "pack_seconds_per_shard": 3.5,
+        "fetch_seconds_per_shard": 21,
+        "windows": 81,
+        "ranges": 59585,
+        "logical_source_payload_bytes": 1506659919872,
+        "peak_incremental_bytes": 58885799936,
+        "activation_aware_cosine_at_0.167_bpw": "the activation-aware result of 2026-07-27 — 0.755 cosine at 0.167 BPW fitted to real captured activations, replicated 12 of 12 experts, against 0 of 12 for raw-weight low-rank at four times the rate. That is evidence for A1 and against the fitted-to-weights framing of A2/A3, and it arrived after the arms were frozen. It does not change the arms; it changes which one to run first."
+      },
+      "receipt": "ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json",
+      "supporting": [
+        "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json"
+      ]
+    },
+    {
+      "claim": "Code-topology condensation recorded at pre-restream audit",
+      "value": {
+        "status": "PASS_ALL_BINDING_DIMENSIONS_AT_OR_BELOW_ENTRY_WITH_NON_IGNORED_UNTRACKED_SOURCE",
+        "entry_active_loc": 430284,
+        "exit_active_loc": 376064,
+        "entry_source_files": 1227,
+        "exit_source_files": 950,
+        "entry_directories": 179,
+        "exit_directories": 121,
+        "entry_public_symbols": 9412,
+        "exit_public_symbols": 8253,
+        "entry_functions": 14587,
+        "exit_functions": 12946
+      },
+      "receipt": "ramanujan/records/audits/RAMANUJAN_PRE_RESTREAM_AUDIT.json"
+    },
+    {
+      "claim": "Research ledger has a single Q0 machine-check event at seq 0",
+      "value": {
+        "path": "ramanujan/scaffold/data/records/research_ledger.jsonl",
+        "lines": 1,
+        "payload": {
+          "at": "2026-07-30T18:25:11.656339Z",
+          "chain_sha256": "1685b464c5139056b4430c28e68eb7158ce8808151ebd4231e66e18605d5d553",
+          "id": "q0-two_plus_two-machine-check",
+          "kind": "verifier_event",
+          "parents": [],
+          "payload_sha256": "4ff0a6a8be94971e9b14b02825864bcb3e87dc01f663dbb3350274bfaddb40ac",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "role": "prover",
+          "seq": 0
+        }
+      },
+      "receipt": "ramanujan/scaffold/data/records/research_ledger.jsonl"
+    },
+    {
+      "claim": "GLM52 Ramanujan fast-intake (Hawking-side; blocked)",
+      "value": {
+        "status": "BLOCKED",
+        "decode_checked_rows": [
+          {
+            "context_tokens": 4,
+            "decode_p99_ms": 7841.024958,
+            "decode_tokens": 12,
+            "decode_tps": 0.14872440141865914,
+            "device_execution_proven": false,
+            "token_only_device_head": false
+          },
+          {
+            "context_tokens": 128,
+            "decode_p99_ms": 7066.555834,
+            "decode_tokens": 12,
+            "decode_tps": 0.15061880984743498,
+            "device_execution_proven": false,
+            "token_only_device_head": false
+          }
+        ]
+      },
+      "receipt": "workspace/campaign/evidence/models/glm52/GLM52_RAMANUJAN_FAST_INTAKE.json",
+      "note": "git-only sibling; not inside ramanujan/"
+    },
+    {
+      "claim": "Handoff-bound Math-Preserve artifact (never copied into Ramanujan)",
+      "value": {
+        "name": "Math-Preserve (the Odyssey input substrate)",
+        "path": "~/Library/Application Support/Hawking/Models/GLM-5.2/b4734de4facf877f85769a911abafc5283eab3d9/GLM-5.2-H0.98-Math-Preserve.gravity",
+        "artifact_index_sha256": "33d40c254eb982d4a495f5f0792a116e9d9810d937f5f3969f4f84742b2364d9",
+        "allocation_manifest_sha256": "b34596f5d4df0b09903845302648736ee2345d7662688176c851a4d749211a83",
+        "bytes": 92038250160,
+        "complete_bpw_exact": "127830903/130786448",
+        "status": "SEALED_AND_VERIFIED_LIVE"
+      },
+      "receipt": "workspace/campaign/evidence/systems/ramanujan/RAMANUJAN_HANDOFF_CONTRACT.json"
+    }
+  ],
+  "refutations": [
+    {
+      "id": "R1_math_preserve_teacher",
+      "claim": "Generate teacher traces from the Math-Preserve .gravity artifact",
+      "result": "REFUSED",
+      "classification": "PROPERTY_OF_THE_IDEA",
+      "why": "The artifact is semantically collapsed: it predicts ' combust' for the capital of France and 'rus' for 2+2, confirmed by numpy oracle against the runtime. Traces would teach a student to reproduce the collapse and would look like data. L-TEACHER-01 is permanent for this lane. Cheapest Falsifier's own note: a 2+2 forward pass refutes the entire substrate.",
+      "receipts": [
+        "ramanujan/governance/boundary/RAMANUJAN_OFFLINE_MANIFEST.json",
+        "ramanujan/scaffold/train/TRAINING_RECEIPT.json#limit_consults",
+        "ramanujan/records/runtime/RAMANUJAN_COGNITION_REGISTER.json#CheapestFalsifier",
+        "workspace/campaign/governance/odyssey/program/launch/SUBSTRATE_CAPABILITY.json"
+      ],
+      "reopen_condition": "Never from Math-Preserve. Reopen teacher-trace generation only against an artifact whose capability_verdict is APPROVED, with live generation evidence bound to that exact content hash. Absence is UNVERIFIED, which is also refused."
+    },
+    {
+      "id": "R2_live_research_and_restream",
+      "claim": "Ramanujan can launch research or parent-restream",
+      "result": "BLOCKED_ON_HAWKING_COMPLETION / OWNER_GATE_READY / restream_started=false",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "The split was gated on HAWKING_EVOLUTION_COMPLETE and on Math-Frozen existing. A checkpoint is not automatically Ramanujan. The restream command is written down to the argv and still exits closed: the capability gate has no APPROVED artifact to name. This is sequencing, not a refutation of the freeze-the-giant / train-the-small doctrine.",
+      "receipts": [
+        "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
+        "ramanujan/governance/boundary/RAMANUJAN_GREEN_LIGHT_TRANSITION.json",
+        "ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json",
+        "workspace/campaign/evidence/systems/ramanujan/RAMANUJAN_HANDOFF_CONTRACT.json"
+      ],
+      "reopen_condition": "Validated Hawking completion evidence PLUS owner D5/D8/D9 public freeze receipt PLUS parent-restream authorization PLUS production clean GPU lease PLUS owner-approved physical GLM-5.2 window operator PLUS an APPROVED (not REFUSED) .gravity substrate. Ramanujan code must never flip any of these itself. Storage must be recomputed immediately before admission: free_bytes - 58885799936 >= 200005889556."
+    },
+    {
+      "id": "R3_closed_vocab_formalizer",
+      "claim": "A closed-vocab first-tactic classifier is a formalizer",
+      "result": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "Held-out test exact_match=0.10642570281124498 vs majority 0.178714859437751 (n=498, 365 classes, 10 CPU epochs). The majority label is 'exact ( rfl'. This does not refute autoformalization (Q4 is still DEFINED_CONTROLLER_SCAFFOLD_READY); D5 informal/formal pairs were never acquired.",
+      "receipts": [
+        "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+        "ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json#Q4"
+      ],
+      "reopen_condition": "Seq2seq proof generation beyond closed vocab, plus owner-licensed D5 pairs, plus evaluation bound to current membership fec9f85e (not the 2026-07-27 membership)."
+    },
+    {
+      "id": "R4_closed_vocab_prover",
+      "claim": "A closed-vocab next-tactic classifier is a prover",
+      "result": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "Held-out test exact_match=0.04036697247706422 vs majority 0.04954128440366973 (n=545, 381 classes). end_to_end_search_policy remains still_scaffold. Tree search was specified, not tried at production scale.",
+      "receipts": [
+        "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
+      ],
+      "reopen_condition": "Interactive Lean state value from real goals plus best-first search with the retriever/value pair that DID converge — not another closed-vocab classifier."
+    },
+    {
+      "id": "R5_repair_wrapper_ceiling",
+      "claim": "The D4 repair controller compiles fixes under pinned Mathlib",
+      "result": "predicted_fix_compiles=0.05; gold_fix_compiles=0.10 under the isolated wrapper",
+      "classification": "MIXED_METHOD_AND_WRAPPER",
+      "why": "Closed-vocab repair lost to the majority label 'rfl' on exact match. Separately, the isolated example wrapper lacks typeclass context: gold compile rate is 0.10 on the 40-item Lean subset (honest ceiling). Nat.Basic subset is the fairer metric (gold 0.667, predicted 0.333). Compiler-feedback repair as an idea is not refuted; D4 is named as the cheapest real training signal.",
+      "receipts": [
+        "ramanujan/scaffold/train/HELD_OUT_METRICS.json",
+        "ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json"
+      ],
+      "reopen_condition": "A wrapper that preserves typeclass context; D4 content_digest end-to-end rerun (still owed, about an hour of Lean); do not treat majority-class 'rfl' as a repair."
+    },
+    {
+      "id": "R6_q0_false_achieved",
+      "claim": "Q0 was ACHIEVED (first receipt)",
+      "result": "the named harness had been deleted; later re-verified PROVEN",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "Two LOC-reduction passes deleted the harness a receipt still named. 8b0c54053 then deleted more of ramanujan/; 5ae13da07 restored it; 8230904e2 closed Q0 for real with five MET requirements and a composing chain. The capsule idea was fine; the measurement was a ghost.",
+      "receipts": [
+        "ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json",
+        "git:8b0c54053",
+        "git:5ae13da07",
+        "git:8230904e2"
+      ],
+      "reopen_condition": "Not applicable as a refutation — current Q0 is PROVEN and leaf hashes match. Any leaf-byte drift refuses Q0 until an independent offline rebuild/replay emits a new bundle."
+    },
+    {
+      "id": "R7_file_hash_freeze",
+      "claim": "Sealing the jsonl file sha256 freezes the corpus",
+      "result": "unverifiable by construction (provenance.at is a wall clock)",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "Every record carries provenance.at, so the file sha256 changes on every run even when content is identical. Fixing this with content_digest immediately exposed D4 temp-path leakage into hashed error text, D4 worker-completion ordering, and D7 ids built from salted str.__hash__ (30 of 86 ids moved).",
+      "receipts": [
+        "ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json"
+      ],
+      "reopen_condition": "D1/D2/D3/D6 already REPRODUCE. D7 ids verified by recomputation. D4 end-to-end rerun under the sorted, path-stripped code is still owed."
+    },
+    {
+      "id": "R8_cvc5_gap",
+      "claim": "Second SMT solver (cvc5) and GAP are part of the locked environment",
+      "result": "UNAVAILABLE_VIA_PACKAGE_MANAGER / NOT_INSTALLED",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "Neither has a Homebrew formula. Acquiring them means downloading and executing a release binary, which needs explicit owner authorisation that was never given. Recorded as absent rather than worked around. Does not block Q0. It DOES block the second-solver disagreement signal: z3 answers alone.",
+      "receipts": [
+        "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
+        "ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json"
+      ],
+      "reopen_condition": "Explicit owner authorisation to fetch the cvc5 and GAP release binaries, then pin sha256."
+    },
+    {
+      "id": "R9_gravity_artifacts_deleted",
+      "claim": "An executable restream command exists",
+      "result": "NOT RUNNABLE — no .gravity to name",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "All .gravity artifacts were deleted on 2026-07-29 with no receipt. The capability gate refuses anything not listed; absence is UNVERIFIED, also refused. Flipping ODYSSEY_LAUNCH_AUTHORIZED still exits 5 — the fence and the capability gate are independent.",
+      "receipts": [
+        "ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json"
+      ],
+      "reopen_condition": "(a) rebuild a .gravity and submit it with live generation evidence, or (b) run the preregistered representation tournament (A1 first, then A4). (b) subsumes (a)."
+    },
+    {
+      "id": "R10_odyssey_apparatus_missing",
+      "claim": "The Odyssey apparatus does not exist",
+      "result": "CORRECTED: the apparatus exists and refuses",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "f1c55a302 corrected a finding that looked for files and missed fail-closed behaviour. Fixture self-test covers T0-T2; full T0-T12/F0-F12/Q0-Q12 runners require injected fixtures and cannot enable research authority.",
+      "receipts": [
+        "git:f1c55a302",
+        "ramanujan/scaffold/research/odyssey.py",
+        "ramanujan/README.md"
+      ],
+      "reopen_condition": "Not a refutation of Odyssey. Reopen live Odyssey only under R2's conditions."
+    },
+    {
+      "id": "R11_independent_layerwise_flash",
+      "claim": "Train a DeepSeek-V4 Flash student independently per layer / cascade",
+      "result": "REFUSED by the proto program; Flash cascade evidence already ruled it out",
+      "classification": "PROPERTY_OF_THE_IDEA",
+      "why": "ramanujan.odyssey proto refuses the independently trained layerwise route. The cascade negative lives outside ramanujan/; this tree records the refusal, not a re-derivation of the cascade measurement.",
+      "receipts": [
+        "ramanujan/README.md",
+        "ramanujan/scaffold/research/odyssey.py#ProtoStudent",
+        "ramanujan/scaffold/tests/test_odyssey_harness.py"
+      ],
+      "reopen_condition": "Only if new evidence invalidates the Flash cascade negative. Default student remains route-aware rollout on pinned DeepSeek-V4-Flash revision 60d8d70770c6776ff598c94bb586a859a38244f1."
+    },
+    {
+      "id": "R12_metrics_vs_current_freeze",
+      "claim": "Held-out metrics describe the currently sealed membership",
+      "result": "FALSE — training 2026-07-27 membership c0c13806; freeze 2026-08-01 membership fec9f85e; 7-item train/test shift",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "Generation/freeze were re-run on 2026-08-01. Training numbers were not. Retraining was never done against the current freeze. The metrics remain true of the older membership and are not current-freeze evidence.",
+      "receipts": [
+        "ramanujan/scaffold/train/TRAINING_RECEIPT.json",
+        "ramanujan/scaffold/data/corpora/FREEZE_RECEIPT.json",
+        "ramanujan/records/runtime/SMALL_SYSTEM_TRAINING_STATUS.json"
+      ],
+      "reopen_condition": "Re-train or re-evaluate the five components against membership fec9f85e. Do not cite 0.879 MRR as current-freeze evidence until then."
+    },
+    {
+      "id": "R13_q2_q3_pending_not_zero",
+      "claim": "Q2 rediscovery / Q3 frontier-variant have been measured at zero",
+      "result": "DEFINED_PENDING_OWNER_D8/D9 — an absent D8 set is PENDING, not zero credit",
+      "classification": "GATED_NOT_REFUTED",
+      "why": "Owner never selected licensed D5/D8/D9 sources. Q0-Q6 contracts explicitly forbid treating absence as a score.",
+      "receipts": [
+        "ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json",
+        "ramanujan/governance/boundary/RAMANUJAN_OWNER_DECISIONS_REQUIRED.json"
+      ],
+      "reopen_condition": "The private source is mode 0600, labels and byte hashes pass, all D1-D7 no-leak comparisons pass, and the public receipt contains no D8 raw path or item identifier."
+    },
+    {
+      "id": "R14_python_pin_disagreement",
+      "claim": "The environment lock's Python pin is the interpreter the tooling uses",
+      "result": "lock records python 3.14.6; selftest ran 3.12.6; README commands use python3.12",
+      "classification": "ARTIFACT_OF_METHOD",
+      "why": "The lock itself warns: 'the repository's own tooling targets python3.12; reconcile before locking'. Two authorities on the interpreter.",
+      "receipts": [
+        "ramanujan/records/runtime/RAMANUJAN_ENVIRONMENT_LOCK.json",
+        "ramanujan/records/runtime/RAMANUJAN_TOOLCHAIN_SELFTEST.json"
+      ],
+      "reopen_condition": "Pick one interpreter, write a hashed lockfile, re-run toolchain_selftest."
+    }
+  ],
+  "reusable_now": [
+    {
+      "item": "Fail-closed authority fences",
+      "paths": [
+        "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json",
+        "ramanujan/scaffold/core/limits.py",
+        "ramanujan/scaffold/core/roles.py",
+        "ramanujan/scaffold/guards/status.py",
+        "ramanujan/scaffold/guards/restream_guard.py"
+      ],
+      "what": "RAMANUJAN_RESEARCH_AUTHORIZED has no flip path. Generators cannot promote. Burial is not deletion. L-TEACHER-01 / L-LAUNCH-01 / L-NET-01. These laws are still the right ones for Odyssey-i / HCLI."
+    },
+    {
+      "item": "Q0 clean-container recipe and hash-bound capsule",
+      "paths": [
+        "ramanujan/container/",
+        "ramanujan/records/audits/RAMANUJAN_Q0_EVIDENCE_BUNDLE.json",
+        "ramanujan/records/audits/RAMANUJAN_Q0_CLOSURE.json"
+      ],
+      "what": "Dockerfile, pins, replay scripts, two_plus_two capsule, leaf sha256s that still match live bytes. The 4.64 GiB image is NOT in git; the recipe is. Re-build, don't re-invent."
+    },
+    {
+      "item": "Historical-path map",
+      "paths": [
+        "ramanujan/layout.py"
+      ],
+      "what": "Sealed receipts name ramanujan/RAMANUJAN_Q0_CLOSURE.json and ramanujan/ledger.py. Those files physically live under records/ and scaffold/. Deleting layout.py makes the seals unreadable without archaeology."
+    },
+    {
+      "item": "Lean-derived corpora D1 D2 D3 D4 D6 D7 plus freeze",
+      "paths": [
+        "ramanujan/scaffold/data/corpora/"
+      ],
+      "what": "16188 items, content_digest sealed, contamination negative control (tl02_bpw) caught. Regenerable from Mathlib 2ec0166b except D4's owed rerun. This is most of the 27M."
+    },
+    {
+      "item": "Q0-Q6 qualification lattice",
+      "paths": [
+        "ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json"
+      ],
+      "what": "Q0 PROVEN, Q1 PROVEN_OFFLINE, Q2-Q3 pending owner, Q4-Q6 scaffold-ready. File hashes of the bound receipts still match live bytes (lattice path moved, bytes held)."
+    },
+    {
+      "item": "Cognition register with kill conditions",
+      "paths": [
+        "ramanujan/records/runtime/RAMANUJAN_COGNITION_REGISTER.json"
+      ],
+      "what": "13 mechanisms, each with kill/ablation/self-deception written before implementation. Four exist on fixtures: Research Object Graph, Cheapest Falsifier, Calibration, Capsule. A mechanism without a kill condition is a mechanism that will be defended rather than tested."
+    },
+    {
+      "item": "Odyssey fixture control plane (T0-T12 / F0-F12 / Q0-Q12) plus proto contracts",
+      "paths": [
+        "ramanujan/scaffold/research/odyssey.py",
+        "ramanujan/scaffold/tests/test_odyssey_harness.py"
+      ],
+      "what": "Fail-closed Director environment; refuses research authorization; ProtoGravityRenderer emits a contract not a .gravity file; Condense spec is capability-first (4→3→2→1.5→1.25→1 BPW) and cannot invent a TPS number. Required Gravity gates are the reopen checklist."
+    },
+    {
+      "item": "Determinism defects already found",
+      "paths": [
+        "ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json"
+      ],
+      "what": "file-hash freeze, D4 mkdtemp path leak, D4 worker order, D7 PYTHONHASHSEED. Do not rediscover these by regenerating."
+    },
+    {
+      "item": "Hawking/Ramanujan split contract",
+      "paths": [
+        "workspace/campaign/evidence/systems/ramanujan/RAMANUJAN_HANDOFF_CONTRACT.json"
+      ],
+      "what": "Ramanujan owns doctrine, cognition, governance, the small trainable system. Hawking owns the .gravity codec, runtime, kernels, HIDE, Fabric. Giant artifacts are bound by hash and never copied. git-only in this sparse tree."
+    },
+    {
+      "item": "Retriever and value architectures (not their 2026-07-27 weights)",
+      "paths": [
+        "ramanujan/scaffold/train/models.py",
+        "ramanujan/scaffold/train/train_components.py",
+        "ramanujan/scaffold/research/search.py"
+      ],
+      "what": "Dual-encoder retriever beat token-overlap; value beat majority closed. Checkpoints are gone. Code and metrics remain. Re-train against fec9f85e before citing."
+    }
+  ],
+  "reopen_the_campaign": {
+    "required_all_of": [
+      "HAWKING_EVOLUTION_COMPLETE with validated evidence",
+      "owner-signed D5/D8/D9 public freeze receipt",
+      "HAWKING_PARENT_RESTREAM_AUTHORIZED=YES",
+      "production CLEAN GPU lease identity + receipt",
+      "owner-approved physical GLM-5.2 window operator",
+      "an APPROVED .gravity substrate (Math-Preserve stays REFUSED)",
+      "Math-Frozen Director created and bound by hash",
+      "storage recomputed: free_bytes - 58885799936 >= 200005889556",
+      "re-bind or re-train small-system metrics to membership fec9f85e",
+      "D4 content_digest end-to-end rerun"
+    ],
+    "will_not_reopen_it": [
+      "editing a Ramanujan JSON file",
+      "passing fixture tests",
+      "flipping ODYSSEY_LAUNCH_AUTHORIZED",
+      "this disband receipt"
+    ]
+  },
+  "deletion_cost": {
+    "if_ramanujan_deleted": [
+      {
+        "lost": "the entire 27 MiB campaign tree",
+        "bytes": 27151650,
+        "git_entries": 110,
+        "on_disk_entries": 110
+      },
+      {
+        "lost": "six Lean-derived corpora (16188 items) plus the membership manifest",
+        "corpus_jsonl_bytes": 24913098,
+        "manifest_bytes": 1268802,
+        "regenerable": "D1 D2 D3 D6 from Mathlib 2ec0166b in ~10 minutes; D4 needs ~1 hour Lean and the owed determinism rerun; D7 is small and verified without rerun",
+        "not_regenerable_if_mathlib_pin_moves": true
+      },
+      {
+        "lost": "Q0 hash-bound capsule, Dockerfile, pins, replay scripts, and the leaf-seal that still matches",
+        "image_not_in_git_bytes": 4644372611,
+        "image_note": "the 4.64 GiB Docker image is already not in git; deleting ramanujan/ deletes the only recipe that can rebuild it"
+      },
+      {
+        "lost": "layout.py — the map from sealed logical paths to compact physical paths",
+        "consequence": "Q0-Q6 receipt_bindings and the Q0 evidence bundle become archaeology"
+      },
+      {
+        "lost": "the Q0 false-ACHIEVED then re-PROVEN history",
+        "consequence": "the next LOC-reduction pass will delete a harness and keep a receipt again"
+      },
+      {
+        "lost": "cognition kill conditions, role/economics law, Limit Registry, YOU-research controller",
+        "consequence": "the doctrine half of the Hawking split has no home"
+      },
+      {
+        "lost": "held-out numbers (retriever MRR 0.879 vs 0.714; value closed 0.969 vs 0.701; three majority losses)",
+        "consequence": "a later lane will retrain a closed-vocab formalizer and think the idea is new"
+      },
+      {
+        "lost": "L-TEACHER-01 / Math-Preserve collapse record inside this tree",
+        "consequence": "someone will distill traces from a collapsed substrate because it looks like data"
+      },
+      {
+        "lost": "D5/D8/D9 owner packet and restream argv that correctly will not run",
+        "consequence": "the next restream attempt will be designed under pressure instead of executed from a written command"
+      },
+      {
+        "lost": "Odyssey fixture control plane and proto-Gravity/Condense contracts",
+        "consequence": "T/F/Q sequencing and the 1-BPW Flash student contract have to be re-specified"
+      },
+      {
+        "already_absent_even_without_deletion": [
+          "five .pt checkpoints named by TRAINING_RECEIPT",
+          "Math-Frozen Director (never created)",
+          ".gravity artifacts (deleted 2026-07-29 with no receipt)",
+          "D5/D8/D9 source bytes (never selected)",
+          "cvc5 and GAP binaries",
+          "the 7.1 GiB host Mathlib clone (outside the repo)",
+          "the 4.64 GiB Docker image (outside the repo)"
+        ]
+      }
+    ],
+    "what_this_receipt_saves_if_the_tree_goes": "Goal, period, mechanism, lineage to Gravity/Doctor/Odyssey, full inventory with sizes and sha256, every measured number with its receipt, every refutation classified with a reopen condition, the reusable-now list, and the deletion-cost list. It does not save the corpora bytes, the Q0 recipe, or the runnable scaffold. Indexing is not a backup.",
+    "prior_deletion_already_happened": {
+      "deleted": "8b0c54053 2026-07-29T19:17:12-04:00 Install counted verification and retire historical recovery executables",
+      "restored": "5ae13da07 2026-07-30T16:24:23-04:00 Restore the Ramanujan system that 8b0c5405 deleted",
+      "lesson": "This repo has already deleted Ramanujan once and had to put it back. Index first."
+    }
+  },
+  "ramanujan_untouched": {
+    "start_porcelain": [],
+    "end_porcelain": [],
+    "start_tree_sha256": "73fa3145dcd27a5894aabf5b122f83adbd5ac5b687f5f287d670c7525f60174a",
+    "end_tree_sha256": "73fa3145dcd27a5894aabf5b122f83adbd5ac5b687f5f287d670c7525f60174a",
+    "unchanged": true,
+    "how_verified": [
+      "git status --porcelain -- ramanujan at start and end",
+      "sha256 roll of every regular file and symlink under ramanujan/ before and after writing the receipt",
+      "this script never opens ramanujan/ paths for write",
+      "this script never imports ramanujan.* (CPython 3.14 wrote ramanujan/__pycache__ from a layout import even with sys.dont_write_bytecode)",
+      "inventory walk skips __pycache__ and .pyc so bytecode cannot inflate the census"
+    ]
+  },
+  "lock_failures": [],
+  "what_i_watched_fail": [
+    {
+      "id": "checkpoints_absent",
+      "what": "TRAINING_RECEIPT names five .pt checkpoints; none are in the tree",
+      "named": [
+        "ramanujan/train/checkpoints/formalizer.pt",
+        "ramanujan/train/checkpoints/prover.pt",
+        "ramanujan/train/checkpoints/repair.pt",
+        "ramanujan/train/checkpoints/retriever.pt",
+        "ramanujan/train/checkpoints/value.pt",
+        "ramanujan/scaffold/train/checkpoints/formalizer.pt",
+        "ramanujan/scaffold/train/checkpoints/retriever.pt"
+      ],
+      "present": [],
+      "result": "ABSENT",
+      "meaning": "The small-system weights were never committed. Held-out numbers survive; the models do not."
+    },
+    {
+      "id": "handoff_not_on_disk",
+      "what": "ramanujan.status reads the handoff contract from workspace/; this sparse checkout does not materialize workspace/",
+      "path": "workspace/campaign/evidence/systems/ramanujan/RAMANUJAN_HANDOFF_CONTRACT.json",
+      "on_disk": false,
+      "in_git": true,
+      "result": "STATUS_MODULE_CANNOT_RUN_IN_THIS_SPARSE_TREE"
+    },
+    {
+      "id": "verification_lattice_moved",
+      "what": "Q0-Q6 contracts bind odyssey/verifiers/VERIFICATION_LATTICE.json, which is not a HEAD path",
+      "old_path_on_disk": false,
+      "git_path_now": "workspace/campaign/governance/odyssey/domains/verifiers/VERIFICATION_LATTICE.json",
+      "bound_sha256": "27f47b6e31399cfd0cb071ea442def1e7190d97e0cce3c543265ecb4cad2882c",
+      "git_object_sha256": "27f47b6e31399cfd0cb071ea442def1e7190d97e0cce3c543265ecb4cad2882c",
+      "bytes_still_match_binding": true,
+      "result": "PATH_MOVED_BYTES_HELD"
+    },
+    {
+      "id": "restream_guard_import",
+      "what": "restream_guard.py imports lab.operators.glm52_common; lab/operators is not in this sparse checkout",
+      "imports_lab_operators": true,
+      "lab_operators_on_disk": false,
+      "result": "IMPORT_WOULD_FAIL_IN_THIS_SPARSE_TREE",
+      "meaning": "The fail-closed launcher still exists as source; it is not executable without the operators tree. This probe reads the source rather than importing, so it cannot mint ramanujan/__pycache__."
+    },
+    {
+      "id": "noetic_absent",
+      "what": "search HEAD for a Noetic campaign tree",
+      "hits": [],
+      "result": "NO_PATH_NAMED_NOETIC",
+      "meaning": "If Noetic names the doctrine/cognition half of the Hawking split, ramanujan/ is that half as a scaffold. It is not a separate directory."
+    },
+    {
+      "id": "thirty_one_closed_not_in_this_tree",
+      "what": "operator context cited 31 closed results with 9 reopen conditions already holding; this tree does not contain a receipt with those exact counts",
+      "closest_receipt": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+      "closest_counts": {
+        "entries": 38,
+        "listed_items_covered": 10,
+        "unlisted_found": 28,
+        "contradictions": 8,
+        "p0_contradictions": 3
+      },
+      "closest_classes": {
+        "UNREACHABLE": 1,
+        "CATEGORY_ERROR": 8,
+        "REFUTED": 26,
+        "DEAUTHORISED": 2,
+        "INSUFFICIENT": 1
+      },
+      "result": "NOT_RE_DERIVED",
+      "meaning": "That census is why Ramanujan is being indexed rather than deleted. It is not Ramanujan's own scoreboard."
+    },
+    {
+      "id": "membership_sha_mismatch",
+      "what": "TRAINING_RECEIPT.membership_sha256 != FREEZE_RECEIPT.membership_sha256",
+      "training_at": "2026-07-27T19:35:09Z",
+      "training_membership_sha256": "c0c13806a1f14553dfa3cdafa747071a088c084e7c462230ed83f1f9011675ce",
+      "training_counts": {
+        "dev": 1639,
+        "test": 1665,
+        "total": 16188,
+        "train": 12884
+      },
+      "freeze_at": "2026-08-01T04:58:51Z",
+      "freeze_membership_sha256": "fec9f85e677921433df4761205c391a4733a358660e1effcfe9f1b8e7651fbc6",
+      "freeze_counts": {
+        "dev": 1639,
+        "test": 1658,
+        "total": 16188,
+        "train": 12891
+      },
+      "delta_train_items": 7,
+      "result": "HELD_OUT_METRICS_BOUND_TO_SUPERSEDED_MEMBERSHIP",
+      "meaning": "Citing retriever MRR or value accuracy as current-freeze evidence is a method error. Re-eval against fec9f85e before reuse."
+    },
+    {
+      "id": "d4_rerun_owed",
+      "what": "CORPUS_DETERMINISM: D4 content leak and ordering were fixed; end-to-end rerun still owed",
+      "receipt": "ramanujan/records/intake/RAMANUJAN_CORPUS_DETERMINISM.json",
+      "d4_result": "content leak FIXED, ordering FIXED, end-to-end rerun still owed",
+      "result": "OWED_NOT_CLAIMED"
+    },
+    {
+      "id": "q0_image_not_in_repo",
+      "what": "Q0 clean-replay image ramanujan-clean-replay:2ec0166b (~4.64 GiB) is a host Docker image, not a git object",
+      "image_id": "sha256:21114fb4b7066b5a7c535d36685211147a920233fc7544a922846056c8ec03ad",
+      "image_size_bytes": 4644372611,
+      "in_ramanujan_tree": false,
+      "recipe_in_tree": true,
+      "result": "RECIPE_KEPT_IMAGE_EXTERNAL"
+    },
+    {
+      "id": "q0_false_achieved",
+      "what": "RAMANUJAN_Q0_CLOSURE.history: previous receipt claimed ACHIEVED while the named harness had been deleted by two LOC-reduction passes",
+      "later": "8b0c54053 deleted more of ramanujan/; 5ae13da07 restored it; 8230904e2 closed Q0 for real",
+      "current_status": "PROVEN",
+      "leaf_hashes_match": true,
+      "result": "RE_VERIFIED_PROVEN_AFTER_METHOD_FAILURE"
+    },
+    {
+      "id": "import_writes_pycache",
+      "what": "CPython 3.14 wrote ramanujan/__pycache__/{__init__,layout}.cpython-314.pyc from `from ramanujan.layout import ramanujan_path` even with sys.dont_write_bytecode=True",
+      "result": "BYTECODE_IS_A_TREE_MUTATION",
+      "pycache_present_now": false,
+      "mitigation": "this script reads ramanujan/ as bytes and JSON; it does not import the package"
+    },
+    {
+      "id": "gravity_deleted_no_receipt",
+      "what": "RAMANUJAN_RESTREAM_PLAN: all .gravity artifacts were deleted on 2026-07-29 with no receipt",
+      "result": "NO_ARTIFACT_TO_NAME",
+      "reopen": "rebuild a .gravity and pass the capability gate with live generation evidence, or run the preregistered representation tournament"
+    }
+  ],
+  "motive_not_rederived": {
+    "text": "A recent negative-science census over this project's history found closed results whose reopen conditions already hold — measured wins the project had stopped short of claiming. A retired campaign whose receipts nobody can find is how that happens. Ramanujan is indexed so it can be reopened deliberately rather than rediscovered by accident.",
+    "closest_named_register": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+  }
+}

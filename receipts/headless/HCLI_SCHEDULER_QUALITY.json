@@ -1,0 +1,957 @@
+{
+  "schema": "hawking.headless.hcli_scheduler_quality.v1",
+  "generated_at": "2026-08-23T08:56:43Z",
+  "finished_at": "2026-08-23T08:57:23Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "repo": "/Users/scammermike/Downloads/hawking-copy",
+  "unit_s": 0.06,
+  "long_s": 0.6,
+  "cpu_count": 28,
+  "as_shipped": {
+    "dispatch_sorts_by_remaining_depth": false,
+    "workunit_has_ready_at_field": true,
+    "identify_ready_stamps_ready_at": true,
+    "assign_ready_drops_runtime_count": true,
+    "workunit_fields": [
+      "id",
+      "role",
+      "description",
+      "dependencies",
+      "status",
+      "assigned_runtime",
+      "attempts",
+      "resource_class",
+      "repairs",
+      "failure_context",
+      "preferred_backend",
+      "assigned_backend",
+      "backend_task_id",
+      "verifier",
+      "effect_class",
+      "workspace",
+      "verification",
+      "ready_at",
+      "running_at",
+      "finished_at",
+      "repair_root",
+      "repair_depth",
+      "repair_reason",
+      "repair_exhausted",
+      "classification"
+    ],
+    "light_control_runtime_count_2_admitted": 10,
+    "cpu_heavy_cap2_admitted": [
+      "h0",
+      "h1"
+    ],
+    "as_shipped_first_dispatch_shorts_first": [
+      "a00",
+      "a01"
+    ],
+    "dispatch_source": "    def dispatch(self) -> List[tuple]:\n        \"\"\"Return assignments without waiting. A finished lane is released\n        by complete()/fail() and the next dependency-ready unit is claimed\n        on the subsequent dispatch \u2014 there is no barrier across unrelated\n        chains.\n        \"\"\"\n        t0 = time.monotonic()\n        ready = identify_ready(self.units)\n        # Deterministic FIFO: longest-ready first, ties by id.\n        #\n        # This USED to sort by remaining graph depth, on the theory that a\n        # flood of cheap units buries the chain that unblocks everything else.\n        # An independent lane measured that theory across four DAG shapes and\n        # it does not survive: critical-path ordering helps only when a\n        # hop-deep chain is ALSO the duration bottleneck, is a no-op at\n        # concurrency 1 and whenever the resource class is not at its cap, and\n        # actively HURTS when a hop-deep cheap chain delays a\n        # duration-dominant unit. `remaining_depth` counts hops, and hops are\n        # not time -- it cannot see the one long unit that actually sets this\n        # campaign's wall clock. The \"54 dispatch ticks versus 4\" figure that\n        # justified it did not reproduce; the chain tail was depth 1.\n        # Depth ordering also starves: a unit that always sorts last can be\n        # passed over indefinitely.\n        #\n        # Unstamped units sort LAST, not as 0.0 -- `ready_at or 0.0` made a\n        # unit that had never been stamped jump ahead of every unit that had.\n        # `ready_at` is wall-clock and its resolution is coarse enough that two\n        # units stamped in the same pass frequently share a value. The id then\n        # broke the tie, which made dispatch order alphabetical-by-accident and\n        # nondeterministic run to run: a GPU_EXCLUSIVE unit and a GPU_DECODE unit\n        # created together went 31/29 either way across 60 runs. Exclusion always\n        # held -- they never ran together -- but which one went first was a coin\n        # flip, and a scheduler nobody can predict is one nobody can test.\n        #\n        # `_ready_seq` records the order units were FIRST seen ready, in this\n        # process, and breaks the tie strictly. It lives on the scheduler rather\n        # than the WorkUnit because readiness order is not durable state: after a\n        # restart the surviving order is `ready_at`, which is what should carry\n        # across processes.\n        for unit in ready:\n            if unit.id not in self._ready_seq:\n                self._ready_seq[unit.id] = next(self._ready_counter)\n        ready.sort(key=lambda u: (\n            u.ready_at if u.ready_at is not None else float(\"inf\"),\n            self._ready_seq.get(u.id, 0),\n            u.id,\n        ))\n        requested: Dict[str, int] = {}\n        for unit in ready:\n            rc = normalize_resource_class(unit.resource_class)\n            requested[rc] = requested.get(rc, 0) + 1\n        assignments = assign_ready(\n            ready,\n            self.runtime_count,\n            all_units=self.units,\n            limits=self.limits,\n            mutation_lock=self.mutation_lock,\n        )\n        admitted: Dict[str, int] = {}\n        for wu, _slot in assignments:\n            rc = normalize_resource_class(wu.resource_class)\n            admitted[rc] = admitted.get(rc, 0) + 1\n        mutation_ready = requested.get(\"MUTATION\", 0)\n        mutation_admitted = admitted.get(\"MUTATION\", 0)\n        self.last_dispatch = {\n            \"requested\": requested,\n            \"admitted\": admitted,\n            \"overhead_s\": time.monotonic() - t0,\n            \"occupancy\": dict(occupancy_of(self.units.values())),\n            \"mutation_blocked\": max(0, mutation_ready - mutation_admitted),\n        }\n        self._persist()\n        return assignments\n"
+  },
+  "vacuous_unconstrained": {
+    "makespan": {
+      "as_shipped": 4.0,
+      "critical_path": 4.0,
+      "ready_at_only": 4.0
+    },
+    "first": {
+      "as_shipped": [
+        "a00",
+        "a01",
+        "a02",
+        "a03",
+        "a04",
+        "a05",
+        "a06",
+        "a07",
+        "c00"
+      ],
+      "critical_path": [
+        "c00",
+        "a00",
+        "a01",
+        "a02",
+        "a03",
+        "a04",
+        "a05",
+        "a06",
+        "a07"
+      ],
+      "ready_at_only": [
+        "a00",
+        "a01",
+        "a02",
+        "a03",
+        "a04",
+        "a05",
+        "a06",
+        "a07",
+        "c00"
+      ]
+    }
+  },
+  "serial_c1_54_vs_4": {
+    "as_shipped": {
+      "makespan": 54.0,
+      "chain_starts": [
+        50.0,
+        51.0,
+        52.0,
+        53.0
+      ],
+      "chain_done_at": 54.0,
+      "first_dispatch": [
+        "a00"
+      ],
+      "chain_done_tick": 54
+    },
+    "critical_path": {
+      "makespan": 54.0,
+      "chain_starts": [
+        0.0,
+        1.0,
+        2.0,
+        53.0
+      ],
+      "chain_done_at": 54.0,
+      "first_dispatch": [
+        "c00"
+      ],
+      "chain_done_tick": 54
+    },
+    "ready_at_only": {
+      "makespan": 54.0,
+      "chain_starts": [
+        50.0,
+        51.0,
+        52.0,
+        53.0
+      ],
+      "chain_done_at": 54.0,
+      "first_dispatch": [
+        "a00"
+      ],
+      "chain_done_tick": 54
+    }
+  },
+  "ab_critical_path_bound": {
+    "dag": {
+      "concurrency": 2,
+      "chain_len": 10,
+      "n_shorts": 6,
+      "unit_s": 0.06,
+      "resource_class": "CPU_HEAVY",
+      "insertion": "shorts then chain"
+    },
+    "logical": {
+      "as_shipped": {
+        "makespan": 13.0,
+        "first_dispatch": [
+          "a00",
+          "a01"
+        ],
+        "chain_start": 3.0,
+        "chain_done": 13.0
+      },
+      "critical_path": {
+        "makespan": 10.0,
+        "first_dispatch": [
+          "c00",
+          "a00"
+        ],
+        "chain_start": 0.0,
+        "chain_done": 10.0
+      },
+      "ready_at_only": {
+        "makespan": 13.0,
+        "first_dispatch": [
+          "a00",
+          "a01"
+        ],
+        "chain_start": 3.0,
+        "chain_done": 13.0
+      }
+    },
+    "wall": {
+      "on_mode": "critical_path",
+      "off_mode": "ready_at_only",
+      "on_walls_s": [
+        0.6816307920016698,
+        0.6665064159969916,
+        0.6712427090023994,
+        0.6720514589978848,
+        0.6762188749999041,
+        0.6697542080000858,
+        0.6794268340017879,
+        0.6615380419971189
+      ],
+      "off_walls_s": [
+        0.876030624996929,
+        0.8896085000014864,
+        0.8613760840016766,
+        0.8670440830028383,
+        0.8824997909978265,
+        0.8660152079974068,
+        0.8683743340006913,
+        0.870661791996099
+      ],
+      "paired_delta_s": [
+        -0.1943998329952592,
+        -0.22310208400449483,
+        -0.1901333749992773,
+        -0.19499262400495354,
+        -0.20628091599792242,
+        -0.19626099999732105,
+        -0.18894749999890337,
+        -0.2091237499989802
+      ],
+      "on": {
+        "n": 8,
+        "min": 0.6615380419971189,
+        "max": 0.6816307920016698,
+        "median": 0.6716470840001421,
+        "mean": 0.6722961668747303,
+        "spread": 0.020092750004550908,
+        "spread_pct": 2.9915636475162093
+      },
+      "off": {
+        "n": 8,
+        "min": 0.8613760840016766,
+        "max": 0.8896085000014864,
+        "median": 0.8695180629983952,
+        "mean": 0.8727013021243692,
+        "spread": 0.028232415999809746,
+        "spread_pct": 3.2469039116283263
+      },
+      "delta": {
+        "n": 8,
+        "min": -0.22310208400449483,
+        "max": -0.18894749999890337,
+        "median": -0.1956268120011373,
+        "mean": -0.200405135249639,
+        "spread": 0.03415458400559146,
+        "spread_pct": -17.45905055457986
+      },
+      "on_first_dispatch": [
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ]
+      ],
+      "off_first_dispatch": [
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ]
+      ],
+      "on_chain_start_s": {
+        "n": 8,
+        "min": 5.758399493061006e-05,
+        "max": 6.704199768137187e-05,
+        "median": 6.147900057840161e-05,
+        "mean": 6.185949860082474e-05,
+        "spread": 9.458002750761807e-06,
+        "spread_pct": 15.384119230598763
+      },
+      "off_chain_start_s": {
+        "n": 8,
+        "min": 0.19488874999660766,
+        "max": 0.2075159999949392,
+        "median": 0.19937483299872838,
+        "mean": 0.20037596874863084,
+        "spread": 0.012627249998331536,
+        "spread_pct": 6.333422232088878
+      },
+      "on_faster_count": 8,
+      "off_faster_count": 0,
+      "ties": 0
+    },
+    "as_shipped_wall": {
+      "n": 4,
+      "min": 0.8720447500018054,
+      "max": 0.8767146669997601,
+      "median": 0.8749987709998095,
+      "mean": 0.8746892397502961,
+      "spread": 0.004669916997954715,
+      "spread_pct": 0.5337055493939353
+    },
+    "verdict": "helps"
+  },
+  "ab_long_unit_campaign_shape": {
+    "dag": {
+      "concurrency": 2,
+      "n_shorts": 8,
+      "short_s": 0.06,
+      "long_s": 0.6,
+      "resource_class": "CPU_HEAVY",
+      "note": "single long unit, remaining_depth=1 for every unit"
+    },
+    "logical": {
+      "as_shipped": {
+        "makespan": 14.0,
+        "first_dispatch": [
+          "a00",
+          "a01"
+        ],
+        "zlong_start": 4.0,
+        "zlong_done": 14.0
+      },
+      "critical_path": {
+        "makespan": 14.0,
+        "first_dispatch": [
+          "a00",
+          "a01"
+        ],
+        "zlong_start": 4.0,
+        "zlong_done": 14.0
+      },
+      "ready_at_only": {
+        "makespan": 14.0,
+        "first_dispatch": [
+          "a00",
+          "a01"
+        ],
+        "zlong_start": 4.0,
+        "zlong_done": 14.0
+      }
+    },
+    "wall": {
+      "on_mode": "critical_path",
+      "off_mode": "ready_at_only",
+      "on_walls_s": [
+        0.8734198749953066,
+        0.8781684580026194,
+        0.8787307500024326,
+        0.8720298750049551
+      ],
+      "off_walls_s": [
+        0.8784364169987384,
+        0.8776253329997417,
+        0.8655747910015634,
+        0.8771587500013993
+      ],
+      "paired_delta_s": [
+        -0.005016542003431823,
+        0.0005431250028777868,
+        0.013155959000869188,
+        -0.00512887499644421
+      ],
+      "on": {
+        "n": 4,
+        "min": 0.8720298750049551,
+        "max": 0.8787307500024326,
+        "median": 0.875794166498963,
+        "mean": 0.8755872395013284,
+        "spread": 0.006700874997477513,
+        "spread_pct": 0.7651198482246853
+      },
+      "off": {
+        "n": 4,
+        "min": 0.8655747910015634,
+        "max": 0.8784364169987384,
+        "median": 0.8773920415005705,
+        "mean": 0.8746988227503607,
+        "spread": 0.012861625997174997,
+        "spread_pct": 1.4658927125869803
+      },
+      "delta": {
+        "n": 4,
+        "min": -0.00512887499644421,
+        "max": 0.013155959000869188,
+        "median": -0.002236708500277018,
+        "mean": 0.0008884167509677354,
+        "spread": 0.0182848339973134,
+        "spread_pct": -817.488465530882
+      },
+      "on_first_dispatch": [
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ]
+      ],
+      "off_first_dispatch": [
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ]
+      ],
+      "on_chain_start_s": null,
+      "off_chain_start_s": null,
+      "on_faster_count": 2,
+      "off_faster_count": 2,
+      "ties": 0
+    },
+    "verdict": "does_not_help"
+  },
+  "ab_depth_vs_duration": {
+    "dag": {
+      "concurrency": 2,
+      "chain_len": 8,
+      "n_shorts": 8,
+      "short_s": 0.06,
+      "long_s": 0.6,
+      "resource_class": "CPU_HEAVY"
+    },
+    "logical": {
+      "as_shipped": {
+        "makespan": 14.0,
+        "first_dispatch": [
+          "a00",
+          "a01"
+        ],
+        "zlong_start": 4.0,
+        "zlong_done": 14.0,
+        "chain_done": 12.0
+      },
+      "critical_path": {
+        "makespan": 17.0,
+        "first_dispatch": [
+          "c00",
+          "a00"
+        ],
+        "zlong_start": 7.0,
+        "zlong_done": 17.0,
+        "chain_done": 9.0
+      },
+      "ready_at_only": {
+        "makespan": 14.0,
+        "first_dispatch": [
+          "a00",
+          "a01"
+        ],
+        "zlong_start": 4.0,
+        "zlong_done": 14.0,
+        "chain_done": 12.0
+      }
+    },
+    "wall": {
+      "on_mode": "critical_path",
+      "off_mode": "ready_at_only",
+      "on_walls_s": [
+        1.0832821669973782,
+        1.08495687499817,
+        1.0750530830046046,
+        1.0747168749949196,
+        1.0805703329970129,
+        1.0789960830006748
+      ],
+      "off_walls_s": [
+        0.8765144169956329,
+        0.8848307079970255,
+        0.8749892499981797,
+        0.8811564999996335,
+        0.8765708330029156,
+        0.8751594999994268
+      ],
+      "paired_delta_s": [
+        0.2067677500017453,
+        0.2001261670011445,
+        0.20006383300642483,
+        0.1935603749952861,
+        0.20399949999409728,
+        0.20383658300124807
+      ],
+      "on": {
+        "n": 6,
+        "min": 1.0747168749949196,
+        "max": 1.08495687499817,
+        "median": 1.0797832079988439,
+        "mean": 1.07959590266546,
+        "spread": 0.010240000003250316,
+        "spread_pct": 0.9483385116006805
+      },
+      "off": {
+        "n": 6,
+        "min": 0.8749892499981797,
+        "max": 0.8848307079970255,
+        "median": 0.8765426249992743,
+        "mean": 0.878203534665469,
+        "spread": 0.009841457998845726,
+        "spread_pct": 1.1227586335409387
+      },
+      "delta": {
+        "n": 6,
+        "min": 0.1935603749952861,
+        "max": 0.2067677500017453,
+        "median": 0.20198137500119628,
+        "mean": 0.20139236799999102,
+        "spread": 0.013207375006459188,
+        "spread_pct": 6.538907365286014
+      },
+      "on_first_dispatch": [
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ],
+        [
+          "c00",
+          "a00"
+        ]
+      ],
+      "off_first_dispatch": [
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ],
+        [
+          "a00",
+          "a01"
+        ]
+      ],
+      "on_chain_start_s": {
+        "n": 6,
+        "min": 7.095800538081676e-05,
+        "max": 8.250000246334821e-05,
+        "median": 7.343800098169595e-05,
+        "mean": 7.443050102059108e-05,
+        "spread": 1.1541997082531452e-05,
+        "spread_pct": 15.716654767615797
+      },
+      "off_chain_start_s": {
+        "n": 6,
+        "min": 0.26301945799787063,
+        "max": 0.27188775000104215,
+        "median": 0.26912520849873545,
+        "mean": 0.26874383333294344,
+        "spread": 0.008868292003171518,
+        "spread_pct": 3.2952290321080007
+      },
+      "on_faster_count": 0,
+      "off_faster_count": 6,
+      "ties": 0
+    },
+    "verdict": "hurts"
+  },
+  "starvation": {
+    "as_shipped": {
+      "mode": "as_shipped",
+      "victim_status": "completed",
+      "victim_started_wave": 0,
+      "skips_while_ready": 0,
+      "waves": 40,
+      "first_10_dispatched": [
+        "victim",
+        "h000",
+        "h001",
+        "d000",
+        "h002",
+        "d001",
+        "h003",
+        "h004",
+        "d002",
+        "h005"
+      ],
+      "victim_ever_ran": true,
+      "worst_wait_waves": 0
+    },
+    "critical_path": {
+      "mode": "critical_path",
+      "victim_status": "ready",
+      "victim_started_wave": null,
+      "skips_while_ready": 40,
+      "waves": 40,
+      "first_10_dispatched": [
+        "h000",
+        "h001",
+        "h002",
+        "h003",
+        "h004",
+        "h005",
+        "h006",
+        "h007",
+        "h008",
+        "h009"
+      ],
+      "victim_ever_ran": false,
+      "worst_wait_waves": 40
+    },
+    "ready_at_only": {
+      "mode": "ready_at_only",
+      "victim_status": "completed",
+      "victim_started_wave": 0,
+      "skips_while_ready": 0,
+      "waves": 40,
+      "first_10_dispatched": [
+        "victim",
+        "h000",
+        "h001",
+        "d000",
+        "h002",
+        "d001",
+        "h003",
+        "h004",
+        "d002",
+        "h005"
+      ],
+      "victim_ever_ran": true,
+      "worst_wait_waves": 0
+    }
+  },
+  "fairness": {
+    "as_shipped": {
+      "insertion_a": [
+        "u3",
+        "u1",
+        "u4",
+        "u2",
+        "u0",
+        "u7",
+        "u5",
+        "u6"
+      ],
+      "insertion_b": [
+        "u6",
+        "u5",
+        "u7",
+        "u0",
+        "u2",
+        "u4",
+        "u1",
+        "u3"
+      ],
+      "dispatch_a": [
+        "u3",
+        "u1",
+        "u4",
+        "u2",
+        "u0",
+        "u7",
+        "u5",
+        "u6"
+      ],
+      "dispatch_b": [
+        "u6",
+        "u5",
+        "u7",
+        "u0",
+        "u2",
+        "u4",
+        "u1",
+        "u3"
+      ],
+      "stable_across_insertions": false,
+      "equals_sorted_ids": false,
+      "equals_insertion": true
+    },
+    "critical_path": {
+      "insertion_a": [
+        "u3",
+        "u1",
+        "u4",
+        "u2",
+        "u0",
+        "u7",
+        "u5",
+        "u6"
+      ],
+      "insertion_b": [
+        "u6",
+        "u5",
+        "u7",
+        "u0",
+        "u2",
+        "u4",
+        "u1",
+        "u3"
+      ],
+      "dispatch_a": [
+        "u3",
+        "u1",
+        "u4",
+        "u2",
+        "u0",
+        "u7",
+        "u5",
+        "u6"
+      ],
+      "dispatch_b": [
+        "u6",
+        "u5",
+        "u7",
+        "u0",
+        "u2",
+        "u4",
+        "u1",
+        "u3"
+      ],
+      "stable_across_insertions": false,
+      "equals_sorted_ids": false,
+      "equals_insertion": true
+    },
+    "ready_at_only": {
+      "insertion_a": [
+        "u3",
+        "u1",
+        "u4",
+        "u2",
+        "u0",
+        "u7",
+        "u5",
+        "u6"
+      ],
+      "insertion_b": [
+        "u6",
+        "u5",
+        "u7",
+        "u0",
+        "u2",
+        "u4",
+        "u1",
+        "u3"
+      ],
+      "dispatch_a": [
+        "u3",
+        "u1",
+        "u4",
+        "u2",
+        "u0",
+        "u7",
+        "u5",
+        "u6"
+      ],
+      "dispatch_b": [
+        "u6",
+        "u5",
+        "u7",
+        "u0",
+        "u2",
+        "u4",
+        "u1",
+        "u3"
+      ],
+      "stable_across_insertions": false,
+      "equals_sorted_ids": false,
+      "equals_insertion": true
+    }
+  },
+  "tie_break": {
+    "runs": [
+      [
+        "a",
+        "aa",
+        "b",
+        "c"
+      ],
+      [
+        "a",
+        "aa",
+        "b",
+        "c"
+      ],
+      [
+        "a",
+        "aa",
+        "b",
+        "c"
+      ],
+      [
+        "a",
+        "aa",
+        "b",
+        "c"
+      ],
+      [
+        "a",
+        "aa",
+        "b",
+        "c"
+      ],
+      [
+        "a",
+        "aa",
+        "b",
+        "c"
+      ],
+      [
+        "a",
+        "aa",
+        "b",
+        "c"
+      ]
+    ],
+    "unique_sequences": [
+      [
+        "a",
+        "aa",
+        "b",
+        "c"
+      ]
+    ],
+    "tie_break": "id lexicographic after ready_at",
+    "deterministic": true,
+    "same_instant_all_admitted": [
+      "z",
+      "m",
+      "a"
+    ],
+    "none_ready_at_first": [
+      "unset",
+      "late"
+    ]
+  },
+  "verdict": {
+    "summary": "helps only under a hop-deep chain that is also the duration bottleneck and that would otherwise lose the first slots. It does not help the campaign shape (one long independent unit \u2014 remaining_depth cannot see duration). It hurts when a hop-deep cheap chain delays a duration-long unit. At concurrency 1 it never changes total wall; the 54-vs-4 claim does not reproduce because the chain tail is depth 1. As-shipped HEAD has no remaining_depth sort and matches ready_at_only / insertion order.",
+    "cp_bound": "helps",
+    "long_unit_campaign_shape": "does_not_help",
+    "depth_vs_duration": "hurts",
+    "serial_c1_total_wall": "does_not_help",
+    "as_shipped_equals": "ready_at_only"
+  },
+  "watched_fail": [
+    {
+      "name": "runtime_count is not the concurrency cap",
+      "observed": "Scheduler(10 LIGHT_CONTROL, runtime_count=2) admitted 10 units",
+      "meaning": "assign_ready deletes runtime_count. Admission is ResourceLimits per class. LIGHT_CONTROL defaults to 128, so a 'concurrency 2' mission still launches every ready control unit. Critical-path ordering cannot matter until a class is actually at its cap."
+    },
+    {
+      "name": "as-shipped buries the chain behind insertion order",
+      "observed": "first dispatch=['a00', 'a01']; chain head c00 not admitted",
+      "meaning": "identify_ready walks units.values() and assign_ready keeps that order. A flood of independent units inserted first occupies every slot. This is the shape remaining_depth sort claims to fix \u2014 and it is the as-shipped behavior at HEAD."
+    },
+    {
+      "name": "ordering is a no-op when the class is not at its cap",
+      "observed": "LIGHT_CONTROL makespan identical across arms: {'as_shipped': 4.0, 'critical_path': 4.0, 'ready_at_only': 4.0}",
+      "meaning": "light_control limit is 128. Every ready unit is admitted on the first dispatch, so ready-list sort never chooses. Measuring remaining_depth on an unconstrained class cannot show a win or a loss."
+    },
+    {
+      "name": "the 54-vs-4 claim does not reproduce under remaining_depth",
+      "observed": "C=1, 4-deep chain + 50 shorts: critical_path chain_starts=[0.0, 1.0, 2.0, 53.0], ready_at_only chain_starts=[50.0, 51.0, 52.0, 53.0], chain_done_at=54 for both, makespan=54 for both",
+      "meaning": "remaining_depth of the tail is 1, equal to every independent short. The tail therefore loses to older ready_at shorts and the chain completes at the same tick as FIFO. The prefix (depth 4,3,2) does start immediately \u2014 that is real \u2014 but a measurement that reports 'chain done in 4 ticks' is not measuring this algorithm. At C=1 the mission wall is a permutation of the same 54 units either way."
+    },
+    {
+      "name": "remaining_depth cannot see the campaign's one-long-unit bottleneck",
+      "observed": "C=2, 8 shorts + one independent zlong (duration 10x): all three arms makespan=14.0, zlong_start=4.0, first=['a00', 'a01']",
+      "meaning": "A CPU workload that is critical-path bound because ONE long unit dominates is exactly the case remaining_depth does not change. Depth is hops of unfinished dependents, not duration. The long unit has depth 1, same as every short, so the sort falls through to ready_at then id \u2014 the same order as the disabled arm."
+    },
+    {
+      "name": "remaining_depth can starve a ready unit indefinitely",
+      "observed": "victim stayed ready across 40 waves; skips=40. as_shipped and ready_at_only both ran it on wave 0.",
+      "meaning": "Shape: one independent ready unit (depth 1) plus a continuous arrival of units that still have an unfinished dependent (depth >= 2), at a concurrency that the deep units fill. Sort key (-depth, ready_at, id) always prefers the new deep unit. There is no aging, no skip counter, no fair-share. The victim is passed over on every dispatch for as long as the stream continues. This is unbounded wait, not a long-but-finite queue."
+    },
+    {
+      "name": "as-shipped fairness depends on dict insertion order",
+      "observed": "insertion A dispatched ['u3', 'u1', 'u4', 'u2', 'u0', 'u7', 'u5', 'u6']; reversed insertion dispatched ['u6', 'u5', 'u7', 'u0', 'u2', 'u4', 'u1', 'u3']",
+      "meaning": "identify_ready yields units.values() order. Python dicts are insertion ordered but not value-sorted. Two missions that construct the same ready set in different insert orders dispatch different sequences. The remaining_depth sort's last key (id) would make this deterministic."
+    },
+    {
+      "name": "missing ready_at sorts as 0.0 and jumps the queue",
+      "observed": "key (ready_at or 0.0, id) ordered ['unset', 'late'] with unset.ready_at=None, late.ready_at=50.0",
+      "meaning": "None and 0 both become 0.0, earlier than any real timestamp. A unit that was never stamped is preferred over a unit that has been waiting. WorkUnit in this tree has no ready_at field, so a naive port of the sort treats every unit as ready_at=0 and falls through to id."
+    }
+  ],
+  "harness_failures": []
+}

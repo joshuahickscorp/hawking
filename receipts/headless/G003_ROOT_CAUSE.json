@@ -1,0 +1,274 @@
+{
+ "schema": "hawking.headless.g003_root_cause.v1",
+ "obligation": "G003 \u2014 root-cause the HCLI failure mode: every recent .hcli receipt is status:failed / kind:error with empty operations and NO error text.",
+ "generated_at": "2026-08-22T22:56:13Z",
+ "verdict": "TWO INDEPENDENT DEFECTS, both reproduced",
+ "defect_1": {
+  "id": "D-RUNAWAY",
+  "severity": "critical",
+  "title": "Unconstrained reasoning exhausts the completion budget before the JSON is emitted",
+  "mechanism": "engine.py::_call_model posts model/messages/temperature/max_tokens and nothing else. No reasoning-budget control and no response_format. Qwen3 emits its reasoning first. On a real 7257-token director mission it never reaches the JSON object before HCLI_MODEL_TOKENS (default 6500) is spent, so the reply is truncated (finish_reason='length') and unparseable. The engine then raises the generic 'Model did not return a valid structured JSON object', which is the ONLY line in every failing epoch log.",
+  "arithmetic_that_first_suggested_it": "6500 completion tokens / ~314 s observed per failed production call = 20.7 tok/s, which is exactly this machine's single-decoder rate. The call was not erroring or hanging; it was decoding to the budget.",
+  "why_it_was_never_caught": "On a small prompt every arm succeeds. The controlled probe shows baseline passing in ~9.6 s on a toy calc.py goal and failing at 6500 tokens on the real mission. A test written against the toy case cannot see this.",
+  "counter_intuitive_finding": "A JSON schema ALONE does not fix it. The 'schema' arm still burned 6500 tokens and still failed: constrained decoding forces the SHAPE of the output but the model reasons inside the string fields. Disabling thinking is the necessary condition; the schema is a structural guarantee on top, not a substitute.",
+  "fix": "chat_template_kwargs={'enable_thinking': False} on structured calls (requires the server to run with --jinja, else it is silently ignored), plus response_format json_schema, plus recording finish_reason so a length truncation can never again present as a mystery."
+ },
+ "defect_2": {
+  "id": "D-BLIND-RECEIPT",
+  "severity": "high",
+  "title": "Failure receipts record no cause",
+  "mechanism": "engine.py::execute's `except BaseException` builds a result carrying \"error\": str(exc), but _write_receipt constructs the receipt from a fixed key list that never copies `error`. The failure therefore reaches disk as kind:'error' / status:'failed' with empty operations, empty tests, null validation and no message at all.",
+  "aggravating": "str(exc) is the empty string for KeyboardInterrupt and for several timeout exceptions, so copying the message alone would still sometimes record nothing. The exception TYPE and a truncated traceback must be recorded as well.",
+  "measured": {
+   "total": 26,
+   "not_completed": 23,
+   "not_completed_with_no_error_field": 23,
+   "meaning": "_write_receipt builds the receipt from a fixed key list that never copies `error`, so a failure is recorded with no cause. Separately, str(exc) is '' for KeyboardInterrupt and several timeouts, so even copying it would sometimes record nothing \u2014 the exception TYPE must be recorded too."
+  },
+  "fix": "carry error, error_type and a truncated traceback onto failed/cancelled receipts."
+ },
+ "production_evidence": {
+  "negative_science_entries": 5,
+  "epochs_recorded": [
+   7,
+   17,
+   24,
+   31,
+   38
+  ],
+  "distinct_fingerprints": [
+   "fa1e64e89916fb4265c6"
+  ],
+  "fingerprint_is_constant": true,
+  "note_on_fingerprint": "A single distinct fingerprint across every recorded epoch is a CYCLE / NO_PROGRESS signature: the stage hash never moved, so nothing the director did changed the tree.",
+  "run_log_last_lines_grouped": {
+   "Model did not return a valid structured JSON object": {
+    "count": 9,
+    "example_epochs": [
+     "20260822-140558-epoch-00001",
+     "20260822-141128-epoch-00002",
+     "20260822-141658-epoch-00003",
+     "20260822-142228-epoch-00004",
+     "20260822-142759-epoch-00005"
+    ]
+   },
+   "[haider] runtime pool stopped": {
+    "count": 29,
+    "example_epochs": [
+     "20260822-150059-epoch-00011",
+     "20260822-150149-epoch-00012",
+     "20260822-150239-epoch-00013",
+     "20260822-150329-epoch-00014",
+     "20260822-150418-epoch-00015"
+    ]
+   },
+   "artifact attempt 4 \u00b7 role=implementation \u00b7 files=3 \u00b7 score=101": {
+    "count": 1,
+    "example_epochs": [
+     "20260822-152534-epoch-00041"
+    ]
+   },
+   "0.14.587.671 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140114-n1"
+    ]
+   },
+   "0.22.692.011 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140130-n2"
+    ]
+   },
+   "0.22.690.087 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140130-n2"
+    ]
+   },
+   "0.34.591.462 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140156-n3"
+    ]
+   },
+   "0.34.589.548 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140156-n3"
+    ]
+   },
+   "0.34.583.777 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140156-n3"
+    ]
+   },
+   "1.35.543.487 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140233-n4"
+    ]
+   },
+   "1.35.542.510 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140233-n4"
+    ]
+   },
+   "1.35.540.184 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140233-n4"
+    ]
+   },
+   "1.35.537.611 I srv    operator(): operator(): cleaning up before exit...": {
+    "count": 1,
+    "example_epochs": [
+     "equilibrium-20260822-140233-n4"
+    ]
+   }
+  }
+ },
+ "controlled_reproduction": {
+  "present": true,
+  "user_source": ".haider/bootstrap-director-v6/runs/20260822-143859-epoch-00007/mission.md",
+  "params": {
+   "ctx": 32768,
+   "max_tokens": 6500,
+   "temperature": 0.15,
+   "reps": 2,
+   "design": "alternating paired"
+  },
+  "per_arm_runs": {
+   "baseline": [
+    {
+     "rep": 0,
+     "valid_json": false,
+     "wall_s": 361.46,
+     "completion_tokens": 6500,
+     "finish_reason": "length"
+    },
+    {
+     "rep": 1,
+     "valid_json": false,
+     "wall_s": 286.29,
+     "completion_tokens": 6500,
+     "finish_reason": "length"
+    }
+   ],
+   "no_think": [
+    {
+     "rep": 0,
+     "valid_json": true,
+     "wall_s": 31.62,
+     "completion_tokens": 110,
+     "finish_reason": "stop"
+    },
+    {
+     "rep": 1,
+     "valid_json": true,
+     "wall_s": 6.46,
+     "completion_tokens": 145,
+     "finish_reason": "stop"
+    }
+   ],
+   "schema": [
+    {
+     "rep": 0,
+     "valid_json": false,
+     "wall_s": 310.95,
+     "completion_tokens": 6500,
+     "finish_reason": "length"
+    },
+    {
+     "rep": 1,
+     "valid_json": false,
+     "wall_s": 365.07,
+     "completion_tokens": 6500,
+     "finish_reason": "length"
+    }
+   ],
+   "schema_nothink": [
+    {
+     "rep": 0,
+     "valid_json": true,
+     "wall_s": 6.38,
+     "completion_tokens": 142,
+     "finish_reason": "stop"
+    },
+    {
+     "rep": 1,
+     "valid_json": true,
+     "wall_s": 11.92,
+     "completion_tokens": 163,
+     "finish_reason": "stop"
+    }
+   ]
+  },
+  "summary": {
+   "no_think": {
+    "n": 2,
+    "valid_json_rate": 1.0,
+    "wall_s_min": 6.46,
+    "wall_s_median": 31.62,
+    "wall_s_max": 31.62,
+    "completion_tokens_median": 145,
+    "finish_reasons": [
+     "stop"
+    ],
+    "any_think_block": false
+   },
+   "schema": {
+    "n": 2,
+    "valid_json_rate": 0.0,
+    "wall_s_min": 310.95,
+    "wall_s_median": 365.07,
+    "wall_s_max": 365.07,
+    "completion_tokens_median": 6500,
+    "finish_reasons": [
+     "length"
+    ],
+    "any_think_block": false
+   },
+   "schema_nothink": {
+    "n": 2,
+    "valid_json_rate": 1.0,
+    "wall_s_min": 6.38,
+    "wall_s_median": 11.92,
+    "wall_s_max": 11.92,
+    "completion_tokens_median": 163,
+    "finish_reasons": [
+     "stop"
+    ],
+    "any_think_block": false
+   },
+   "baseline": {
+    "n": 2,
+    "valid_json_rate": 0.0,
+    "wall_s_min": 286.29,
+    "wall_s_median": 361.46,
+    "wall_s_max": 361.46,
+    "completion_tokens_median": 6500,
+    "finish_reasons": [
+     "length"
+    ],
+    "any_think_block": false
+   }
+  }
+ },
+ "code_under_test": {
+  "path": "tools/haider/hcli/engine.py",
+  "pinned_commit": "d1efc693fe6aa96d0a67b1942d8444738d3fea50",
+  "call_site": "_call_model (~line 896), payload built ~line 966",
+  "receipt_site": "_write_receipt (~line 1821)",
+  "error_site": "execute's except BaseException (~line 495)"
+ },
+ "reproduce": {
+  "production_failure": "python3 tools/headless/structured_output_probe.py --reps 1 --arms baseline --user-file .haider/bootstrap-director-v6/runs/20260822-143859-epoch-00007/mission.md",
+  "the_fix": "python3 tools/headless/structured_output_probe.py --reps 1 --arms schema_nothink --user-file .haider/bootstrap-director-v6/runs/20260822-143859-epoch-00007/mission.md"
+ },
+ "related": {
+  "acceptance_vacuity": "receipts/headless/ACCEPTANCE_VACUITY.json \u2014 a separate and more dangerous class: the acceptance gate cannot fail. That one is silent where this one is loud."
+ }
+}

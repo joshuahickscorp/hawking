@@ -2,9 +2,9 @@
 """Verification authority + report-only model authority (Ascension Bible §2, §22).
 
 Generalizes the pattern already proven in:
-  - ``lab/operators/frankenstein_promotion_gate.py`` (PENDING / ACCEPT / REJECT;
+  - ``hawking-experiments/frankenstein/operators/frankenstein_promotion_gate.py`` (PENDING / ACCEPT / REJECT;
     never fabricates ACCEPT; frozen targets; claim_boundary)
-  - ``lab/operators/frankenstein_v0_seal.py`` independent ``verify`` (builder ≠
+  - ``hawking-experiments/frankenstein/operators/frankenstein_v0_seal.py`` independent ``verify`` (builder ≠
     challenger ≠ verifier; seal integrity)
   - ``lab/rules.py`` author-is-not-admitter
   - ``lab/receipts.GateEvidence`` (builder / challenger / verifier independence)

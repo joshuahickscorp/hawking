@@ -1,0 +1,1409 @@
+{
+  "schema": "hawking.headless.gravity_compiler_search.v1",
+  "generated_at": "2026-08-24T06:04:08Z",
+  "git_head": "1abd178a3c0eec8ec39731c171f4e220ff8749a4",
+  "elapsed_s": 0.116,
+  "question": "Is a Gravity candidate which codec, or a (representation, kernel, layout, runtime graph) executable program?",
+  "answer": "A candidate is the pair. Two programs with the same Q4 codes and different kernels (geo_tpr64 vs 1-thread-per-row serial) are different candidates and score differently (occupancy 1\u00d7 vs 23.7\u00d7). Scoring a candidate that names no kernel is refused \u2014 there is no default. gemv_simdgroup_f32 is 1.50\u00d7 faster per dispatch on the compute floor than geo_tpr64, but attached to the Q4 reconstruct-then-GEMM lowering it streams 218.8 GB/token; the bandwidth floor swamps the kernel gain and the search REFUSES the kernel win.",
+  "convention": {
+    "candidate": "representation AND kernel AND layout AND runtime graph",
+    "representation": "stored weights / packing / family. Active bpw is a regime of execution.",
+    "kernel": "a declared kernel void. Required to score. No default.",
+    "layout": "threadgroup, threads-per-row, occupancy class",
+    "runtime_graph": "dispatches, command buffers, prologue kernels, composition scope",
+    "SOURCE": "parent dense forward cost for the same organ/token",
+    "EXECUTABLE": "what the compressed structure actually costs as run",
+    "ORACLE": "reconstruct dense W then ordinary matmul. Allowed as a control. Must be labelled.",
+    "zero_policy": "0 means measured zero. Did-not-measure is ABSENT with a physical reason.",
+    "flop": "IEEE floating-point; FMA counted as 2"
+  },
+  "native_operator_shape": {
+    "source_receipt": "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+    "source_flops": 51541222144,
+    "executable_flops": 77163181824,
+    "flops_ratio_executable_over_source": 1.4971158737450059,
+    "source_ops": 51541222144,
+    "executable_ops": 179651020544,
+    "ops_ratio_executable_over_source": 3.4855793687250287,
+    "source_dram_bytes": 102679468036,
+    "executable_dram_bytes": 13988022948,
+    "dram_ratio_source_over_executable": 7.340527565454206,
+    "dispatch_count_both": 964,
+    "reading": "Executable does 1.50\u00d7 the FLOPs and 3.49\u00d7 the operations of the dense source, for 7.34\u00d7 fewer DRAM bytes, at an identical 964 dispatch count."
+  },
+  "parent_function": {
+    "id": "qwen38_token_gemv_organs",
+    "artifact": "qwen38-gravity-uniform-q4-v1",
+    "layers": 64,
+    "hidden": 5120,
+    "production_dispatches_per_token": 964,
+    "production_command_buffers": 1,
+    "production_workhorse_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "source": [
+      "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+      "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+      "receipts/headless/NOETIC_OPERATION_CENSUS.json"
+    ]
+  },
+  "machine": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal": "Metal 4",
+    "measured_roof_gb_s": 778.8,
+    "datasheet_peak_gb_s": 819.0,
+    "honest_decode_ceiling_gb_s": 411.51,
+    "compute_peak_gflops": 8979.0,
+    "compute_peak_source": "receipts/ascent-2026-08-16/G143_FLOPS_PER_TOKEN.json compute_peak_gflops",
+    "roof_source": "NOETIC_TRAFFIC_MODEL anchors; not re-derived"
+  },
+  "capability_contract": {
+    "id": "gravity_compiler_search.v1",
+    "a_candidate_is": "representation AND kernel AND layout AND runtime graph",
+    "scoring_without_a_kernel": "REFUSED \u2014 no default",
+    "kernel_must_be_declared_in_shaders": true,
+    "reconstruct_then_gemm_is": "ORACLE, never production",
+    "composed_behaviour_is_part_of_identity": true,
+    "report_stored_and_active_bpw": true,
+    "do_not_load_second_27b": true,
+    "absent_is_never_zero": true,
+    "executable_today_families": [
+      "grouped_absmax_q4",
+      "binary_pm_csr",
+      "hgravs01_factors",
+      "pq_codebook_lookup",
+      "moe_worklists",
+      "recurrent_state_op"
+    ],
+    "q80_decode_was_dispatch_bound": {
+      "pct_of_ceiling": 0.79,
+      "ceiling_gb_s": 700.0,
+      "gpu_idle_pct": 51.0,
+      "reading": "A representation win that adds dispatches can lose outright. Q80 sat at 0.79% of a 700 GB/s ceiling with 51% GPU idle."
+    }
+  },
+  "kernel_catalog": {
+    "required": {
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128": {
+        "file": "qwen_uniform_q4.metal",
+        "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "declared": true,
+        "on_disk": true
+      },
+      "qwen_uniform_q4_group64_matvec": {
+        "file": "qwen_uniform_q4.metal",
+        "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "declared": true,
+        "on_disk": true
+      },
+      "qwen_uniform_q4_decode_vector": {
+        "file": "qwen_uniform_q4.metal",
+        "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "declared": true,
+        "on_disk": true
+      },
+      "gemv_simdgroup_f32": {
+        "file": "matmul.metal",
+        "path": "crates/hawking-core/shaders/matmul.metal",
+        "declared": true,
+        "on_disk": true
+      },
+      "gemv_f16_simdmat": {
+        "file": "matmul.metal",
+        "path": "crates/hawking-core/shaders/matmul.metal",
+        "declared": true,
+        "on_disk": true
+      },
+      "q80_hgravs01_two_stage_matvec": {
+        "file": "q80_mixed_decode.metal",
+        "path": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+        "declared": true,
+        "on_disk": true
+      },
+      "q80_hgravs01_factor_matvec_simd3": {
+        "file": "q80_mixed_decode.metal",
+        "path": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+        "declared": true,
+        "on_disk": true
+      },
+      "gravity_pq_matvec": {
+        "file": "gravity_pq.metal",
+        "path": "crates/hawking-core/shaders/gravity_pq.metal",
+        "declared": true,
+        "on_disk": true
+      }
+    },
+    "declared_names_by_file": {
+      "qwen_uniform_q4.metal": [
+        "qwen_uniform_q4_group64_matvec",
+        "qwen_uniform_q4_group64_matvec_rowblock",
+        "qwen_uniform_q4_group64_matvec_simdgroup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+        "qwen_uniform_q4_group64_matvec_simdgroup_rowblock4",
+        "qwen_uniform_q4_group64_matvec_qkv",
+        "qwen_uniform_q4_group64_matvec_qkv_simdgroup",
+        "qwen_uniform_q4_group64_matvec_simdgroup_rowblock8",
+        "qwen_uniform_q4_group64_matvec_simdgroup_x64",
+        "qwen_uniform_q4_decode_vector",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_embedding_lookup_device_token",
+        "qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8",
+        "qwen_uniform_q4_group64_matvec_interleaved",
+        "qwen_uniform_q4_group64_matvec_vecgroup",
+        "qwen_uniform_q4_group64_matvec_vecgroup_x",
+        "qwen_uniform_q4_group64_matvec_vecgroup_r4",
+        "qwen_uniform_q4_group64_matvec_vecgroup_r4_x",
+        "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+        "qwen_uniform_q4_group64_matmul_k##KVAL##_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_r##RVAL##k##KVAL##_geo_tpr64_tg128",
+        "qwen_binary_planes_k##KVAL##_matvec_geo_tpr64_tg128",
+        "hawking_roofline_sweep_f4",
+        "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload",
+        "qwen_uniform_q4_group64_matvec_contig_tg128",
+        "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+      ],
+      "matmul.metal": [
+        "gemv_simdgroup_f32",
+        "gemv_f16_simdmat",
+        "gemv_native_bf16_seq",
+        "deepseek_v4_fp8_e4m3fn_e8m0_matvec_authority",
+        "deepseek_v4_fp8_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate",
+        "deepseek_v4_act_quant_bf16_ue8m0_authority",
+        "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate",
+        "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+        "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority",
+        "deepseek_v4_p4b_hc_post_comb_precise_exp_candidate",
+        "deepseek_v4_p4b_hc_control_fast_exp_trace_candidate",
+        "deepseek_v4_p4b_hc_control_precise_exp_trace_candidate",
+        "deepseek_v4_p4b_hc_post_cpu_exp_ulp_repair_trace_candidate",
+        "deepseek_v4_p4b_fdlibm_expf_compat_domain_candidate",
+        "deepseek_v4_p4b_darwin_expf_dd_compat_domain_candidate",
+        "deepseek_v4_p4b_hc_post_comb_darwin_dd_candidate",
+        "deepseek_v4_p3a_rmsnorm_bf16_authority",
+        "deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate",
+        "deepseek_v4_p3a_fp32_to_bf16_authority",
+        "deepseek_v4_p3a_per_head_rmsnorm_bf16_authority",
+        "deepseek_v4_p3a_per_head_rmsnorm_bf16_simdgroup_candidate",
+        "deepseek_v4_p4a_kv_nonrope_qat_inplace_authority",
+        "deepseek_v4_p4a_kv_nonrope_qat_inplace_simdgroup_candidate",
+        "deepseek_v4_p4a_sparse_attention_position0_sink_authority",
+        "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority",
+        "deepseek_v4_p4a_wo_a_convert_bf16_einsum_simdgroup_candidate",
+        "deepseek_v4_p4a_hc_attn_post_authority",
+        "deepseek_v4_p4b_rope_position1_bf16_authority",
+        "deepseek_v4_p4b_kv_cache_write_bf16_authority",
+        "deepseek_v4_p4_sparse_attention_ratio0_growing_kv_sink_authority",
+        "deepseek_v4_p4b_sparse_attention_position1_two_kv_sink_authority",
+        "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate",
+        "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
+        "activation_aware_project_f16",
+        "activation_aware_expand_f16",
+        "gemv_native_bf16_neumaier",
+        "gemv_native_bf16_neumaier_compensated_product",
+        "deepseek_v4_fp4_e2m1fn_x2_e8m0_matvec_authority",
+        "deepseek_v4_fp4_e2m1fn_x2_e8m0_matvec_simdgroup_v4_splitk_candidate"
+      ],
+      "q80_mixed_decode.metal": [
+        "q80_binary_group_matvec",
+        "q80_rice_q1_residual_apply",
+        "q80_sparse_q1_apply_csr",
+        "q80_rice_q1_expand_indices",
+        "q80_hgravs01_factor_matvec",
+        "q80_binary_group_matvec_simd",
+        "q80_binary_group_matvec_rowblock4",
+        "q80_binary_group_csr_matvec",
+        "q80_sparse_q1_apply_csr_simd",
+        "q80_hgravs01_factor_matvec_simd",
+        "q80_hgravs01_two_stage_matvec",
+        "q80_binary_group_matvec_simd_bytes",
+        "q80_binary_group_matvec_chunk",
+        "q80_binary_group_matvec_tg256",
+        "q80_binary_group_csr_matvec_tg256",
+        "q80_binary_group_csr_matvec_bytes",
+        "q80_hgravs01_factor_matvec_simd3",
+        "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_affine_q2_group32_matvec",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div",
+        "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "qwen_affine_q2_group64_matvec_qmvfast_r8tg64",
+        "qwen_affine_q2_group64_matvec_qmvfast_r8tg64_addr_probe",
+        "qwen_affine_q2_group64_matvec_wide64_r4tg128",
+        "qwen_affine_q2_group64_matvec_tgx_r8tg256",
+        "qwen_affine_q2_group64_matvec_gate_up_qmvfast_r8tg64",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_qmvfast_r8tg64",
+        "qwen_affine_q2_group64_matvec_gate_up_wide64_r4tg128",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_wide64_r4tg128",
+        "qwen_affine_q2_group64_matvec_gate_up_tgx_r8tg256",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgx_r8tg256",
+        "qwen38_hgrafv_embedding_lookup",
+        "qwen_q2f_group64_matvec",
+        "qwen_q2f_group64_matvec_geo_tpr64_tg128",
+        "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128",
+        "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "q80_uniform8_matvec_simd_bytes",
+        "q80_uniform8_matvec_tg256",
+        "q80_hgravs01_two_stage_matvec_rowblock4",
+        "q80_binary_group_matvec_interleaved",
+        "dram_row_locality_read_reduce",
+        "q80_decode_shape_unique_once",
+        "q80_decode_shape_gather",
+        "q80_decode_shape_nop",
+        "q80_decode_shape_fma",
+        "q80_binary_group_matvec_tg256_addr_probe",
+        "q80_binary_group_matvec_tg256_decode_probe",
+        "q80_uniform8_matvec_tg256_addr_probe",
+        "q80_uniform8_matvec_tg256_decode_probe",
+        "q80_uniform8_matvec_simd_bytes_addr_probe",
+        "q80_uniform8_matvec_simd_bytes_decode_probe",
+        "q80_hgravs01_factor_matvec_simd3_addr_probe",
+        "q80_hgravs01_factor_matvec_simd3_decode_probe",
+        "q80_binary_group_csr_matvec_tg256_addr_probe",
+        "q80_binary_group_csr_matvec_tg256_decode_probe"
+      ],
+      "gravity_pq.metal": [
+        "gravity_raw_q8_0_matvec",
+        "gravity_raw_q5_0_matvec",
+        "gravity_raw_q5_0_pair_matvec",
+        "gravity_raw_q5_0_llama_matvec",
+        "gravity_raw_q8_0_llama_matvec",
+        "gravity_raw_q5q5qv_rope_append",
+        "gravity_pq_matvec",
+        "gravity_residual_pq_matvec",
+        "gravity_pq_matvec_bits8_direct",
+        "gravity_pq_matvec_bits8_double_single",
+        "gravity_pq_matvec_bits8_vec4",
+        "gravity_pq_matvec_bits8_2d",
+        "gravity_pq_reduce_2d",
+        "gravity_silu_mul_f32",
+        "gravity_rope_table_f32",
+        "gravity_add_inplace_f32",
+        "gravity_axpy_f32",
+        "gravity_rope_interleaved_f32",
+        "gravity_rope_prefix_tail_f32",
+        "gravity_rope_prefix_tail_positioned_f32",
+        "gravity_copy_tail_f32",
+        "gravity_layernorm_affine_f32",
+        "gravity_rmsnorm_f32",
+        "gravity_glm_mla_append_kv",
+        "gravity_glm_mla_append_compact",
+        "gravity_pq_k_transpose_heads",
+        "gravity_glm_compact_ranked_attn",
+        "gravity_pq_v_rows_heads",
+        "gravity_glm_build_queries",
+        "gravity_copy_head_prefix_f32",
+        "gravity_glm_dsa_scores",
+        "gravity_glm_stable_topk_f32",
+        "gravity_glm_radix_topk_f32",
+        "gravity_glm_sort_u32_ascending",
+        "gravity_glm_sparse_attn",
+        "gravity_glm_router_correct",
+        "gravity_glm_expert_trace_copy",
+        "gravity_glm_router_select_noaux_f32",
+        "gravity_glm_expert_table_validate",
+        "gravity_glm_expert_table_pq_matvec",
+        "gravity_glm_expert_table_native_bf16_matvec",
+        "gravity_glm_expert_table_zero_f32",
+        "gravity_glm_expert_table_silu_mul_f32",
+        "gravity_glm_expert_table_axpy_f32",
+        "gravity_glm_expert_table_residual_add_f32",
+        "gravity_zero_f32",
+        "gravity_glm_append_index_key"
+      ]
+    },
+    "missing_required": [],
+    "missing_shader_on_disk": [],
+    "shader_paths_verified_against_HEAD": [
+      "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+      "crates/hawking-core/shaders/matmul.metal",
+      "crates/hawking-core/shaders/q80_mixed_decode.metal",
+      "crates/hawking-core/shaders/gravity_pq.metal"
+    ],
+    "all_required_declared": true
+  },
+  "candidates": [
+    {
+      "id": "q4_geo_tpr64_fused",
+      "title": "Qwen3.8 uniform-q4 fused geo_tpr64 (production execution)",
+      "scope": "token",
+      "label": "NATIVE",
+      "parent_function": "qwen38_token_gemv_organs",
+      "machine": "Apple M3 Ultra",
+      "representation": {
+        "family": "grouped_absmax_q4",
+        "packing": "group64_nibble_codes_plus_fp16_scale",
+        "weight_identity": "qwen38_uniform_q4_v1_codes",
+        "artifact": "qwen38-gravity-uniform-q4-v1",
+        "bpw": {
+          "stored_bpw": 4.253,
+          "active_bpw_fused": 4.253,
+          "active_bpw_cached_dense": 32.0,
+          "which": "stored = 4.253 Q4. Fused active = stored (codes stay packed). If the dense f32 form is cached, active is 32 bpw. Same structure, two regimes."
+        }
+      },
+      "execution": {
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "kernel_flops": 77163181824,
+        "kernel_class": "DISPATCHED",
+        "occupancy_class": "tpr64_free",
+        "layout": {
+          "threads_per_row": 64,
+          "threadgroup": 128,
+          "rows_per_threadgroup": 2,
+          "grid": "ceil(rows/2)*128",
+          "packed_decode": "in-register"
+        },
+        "runtime_graph": {
+          "dispatches_per_token": 964,
+          "gemv_dispatches": 964,
+          "command_buffers": 1,
+          "prologue_kernel": null,
+          "prologue_dispatches": 0,
+          "reconstructs_dense_w": false,
+          "dense_w_bytes": 0,
+          "composition_scope": "whole_model_uniform_q4"
+        },
+        "bytes_per_token": 13988022948,
+        "flop_per_token": 77163181824,
+        "operation_count": 179651020544,
+        "peak_temporary_materialization": 3145728
+      },
+      "notes": [
+        "Production path. Packed decode stays in registers; W is never written.",
+        "Executable does 1.50\u00d7 the FLOPs and 3.49\u00d7 the operations of the dense source, for 7.34\u00d7 fewer DRAM bytes, at an identical 964 dispatch count."
+      ],
+      "identity": {
+        "representation_fingerprint": "a63e5b71c67b76edb010988edd189c3f8f8427e9dded75ac8931f839ab6b6b0a",
+        "execution_fingerprint": "0873848269eec49ff10a1a3b5766ba06344d498d386e74e00698e83b9d941f5d",
+        "candidate_fingerprint": "1052c12795bf0bcd64b2f4600c625450889357a36ee59c67606ebfb07c294b05",
+        "representation_key": {
+          "family": "grouped_absmax_q4",
+          "packing": "group64_nibble_codes_plus_fp16_scale",
+          "weight_identity": "qwen38_uniform_q4_v1_codes"
+        },
+        "execution_key": {
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "layout": {
+            "threads_per_row": 64,
+            "threadgroup": 128,
+            "rows_per_threadgroup": 2,
+            "grid": "ceil(rows/2)*128",
+            "packed_decode": "in-register"
+          },
+          "runtime_graph": {
+            "dispatches_per_token": 964,
+            "gemv_dispatches": 964,
+            "command_buffers": 1,
+            "prologue_kernel": null,
+            "prologue_dispatches": 0,
+            "reconstructs_dense_w": false,
+            "dense_w_bytes": 0,
+            "composition_scope": "whole_model_uniform_q4"
+          }
+        },
+        "law": "Two candidates with the same weights and different kernels are DIFFERENT candidates. Identity is the pair, not the codec."
+      },
+      "score": {
+        "candidate_id": "q4_geo_tpr64_fused",
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "scored": true,
+        "scope": "token",
+        "prediction": {
+          "inputs": {
+            "bytes_per_token": 13988022948.0,
+            "flop_per_token": 77163181824.0,
+            "dispatches_per_token": 964.0,
+            "reconstruction_cost": {
+              "dense_w_write_bytes": 0.0,
+              "dense_w_reread_bytes": 0.0,
+              "extra_dispatches": 0,
+              "extra_flops": null,
+              "extra_flops_null_reason": null,
+              "command_buffers": null,
+              "occupancy_class": "tpr64_free",
+              "reread_assumed": false,
+              "note": "bytes_per_token already includes the path's DRAM (native-operator EXECUTABLE/SOURCE). reconstruction_cost is not added again."
+            },
+            "command_buffers": 1
+          },
+          "traffic_bytes_including_recon": 13988022948.0,
+          "flops_including_recon_extra": 77163181824.0,
+          "dispatches_including_recon_extra": 964.0,
+          "floors_ns": {
+            "bandwidth_at_measured_roof_595p9": 17960995.05392912,
+            "bandwidth_at_honest_ceiling_411p51": 33991939.31617701,
+            "bandwidth_at_datasheet_819": 17079393.098901097,
+            "compute_at_g143_8979_gflops": 8593738.926829267,
+            "dispatch_ceremony": 1315584.0
+          },
+          "ceremony": {
+            "encode_ns": 919250.0,
+            "submit_ns": 12084.0,
+            "gpu_gap_ns": 384250.0,
+            "total_ns": 1315584.0,
+            "source": "encode 919250 ns / 964 disp; submit 12084 ns / 1 CB; wait-minus-gpu 384250 ns / 1 CB from DIRTY_ENGINEERING QWEN38_TOKEN_NS_LEDGER.json (wall 35227917 ns, not scaled to the native 30388625 ns)"
+          },
+          "gpu_work_ns": 17960995.05392912,
+          "token_ns": 19276579.05392912,
+          "token_ms": 19.27657905392912,
+          "tok_s": 51.87642460845102,
+          "binding_term": "bandwidth",
+          "arithmetic_intensity_flop_per_byte": 5.516375123979386,
+          "ridge_flop_per_byte": 11.529275808936825,
+          "on_bandwidth_side_of_ridge": true,
+          "occupancy_applied_to_point": false,
+          "occupancy_note": "Point prediction is the roofline. ALU/occupancy lives in the error bar unless occupancy_class=serial_extract.",
+          "dense_reconstruction_is_oracle": false
+        },
+        "token_ns": {
+          "value": 19276579.05392912,
+          "unit": "ns",
+          "kind": "measured_from_encoded_algorithm",
+          "absent_reason": null,
+          "trace": "noetic_traffic_model.predict_token_ns on this candidate's (bytes, FLOP, dispatches, occupancy_class). Roofline, not a live GPU wall."
+        },
+        "token_ms": 19.27657905392912,
+        "tok_s": 51.87642460845102,
+        "binding_term": "bandwidth",
+        "dominating_term": "representation_traffic",
+        "floors_ns": {
+          "bandwidth_at_measured_roof_595p9": 17960995.05392912,
+          "bandwidth_at_honest_ceiling_411p51": 33991939.31617701,
+          "bandwidth_at_datasheet_819": 17079393.098901097,
+          "compute_at_g143_8979_gflops": 8593738.926829267,
+          "dispatch_ceremony": 1315584.0
+        },
+        "kernel_compute_ns": 8593738.926829267,
+        "kernel_compute_ns_per_dispatch": 8914.666936544883,
+        "traffic_over_kernel_compute": 2.090009390191701,
+        "gpu_live": {
+          "gpu_wall_ns_per_token": {
+            "value": null,
+            "unit": "ns",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "gpu_idle_pct": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "pct_of_bandwidth_ceiling": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          }
+        },
+        "label": "NATIVE",
+        "stored_bpw": 4.253,
+        "active_bpw_fused": 4.253,
+        "active_bpw_cached_dense": 32.0,
+        "active_bpw_this_execution": 4.253
+      }
+    },
+    {
+      "id": "q4_serial_one_thread_per_row",
+      "title": "Same Q4 codes, 1-thread-per-row serial matvec kernel",
+      "scope": "token",
+      "label": "NATIVE",
+      "parent_function": "qwen38_token_gemv_organs",
+      "machine": "Apple M3 Ultra",
+      "representation": {
+        "family": "grouped_absmax_q4",
+        "packing": "group64_nibble_codes_plus_fp16_scale",
+        "weight_identity": "qwen38_uniform_q4_v1_codes",
+        "artifact": "qwen38-gravity-uniform-q4-v1",
+        "bpw": {
+          "stored_bpw": 4.253,
+          "active_bpw_fused": 4.253,
+          "active_bpw_cached_dense": 32.0,
+          "which": "stored = 4.253 Q4. Fused active = stored (codes stay packed). If the dense f32 form is cached, active is 32 bpw. Same structure, two regimes."
+        }
+      },
+      "execution": {
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kernel_flops": 77163181824,
+        "kernel_class": "REACHABLE",
+        "occupancy_class": "serial_extract",
+        "layout": {
+          "threads_per_row": 1,
+          "threadgroup": null,
+          "rows_per_threadgroup": 1,
+          "grid": "thread_position_in_grid = row",
+          "packed_decode": "1-thread-per-row serial nibble loop"
+        },
+        "runtime_graph": {
+          "dispatches_per_token": 964,
+          "gemv_dispatches": 964,
+          "command_buffers": 1,
+          "prologue_kernel": null,
+          "prologue_dispatches": 0,
+          "reconstructs_dense_w": false,
+          "dense_w_bytes": 0,
+          "composition_scope": "whole_model_uniform_q4"
+        },
+        "bytes_per_token": 13988022948,
+        "flop_per_token": 77163181824,
+        "operation_count": 179651020544,
+        "peak_temporary_materialization": 3145728
+      },
+      "notes": [
+        "SAME stored Q4 codes as q4_geo_tpr64_fused. Different kernel, different layout.",
+        "qwen_uniform_q4_group64_matvec: one thread owns a whole row (qwen_uniform_q4.metal:38, uint row [[thread_position_in_grid]]).",
+        "occupancy_class=serial_extract is the named Q80 23.7\u00d7 lowering (gpu_matvec 867.0 \u2192 36.6 ms). Isolated Q4 tpr64 recon excess is 0 ns on 32/33 variants (NOETIC_TPR64_REOPEN). These two kernels are not interchangeable.",
+        "Live GPU wall of this serial Q4 kernel on the 27B token is ABSENT (refused to load a second 27B). Occupancy is applied by the traffic model, labelled."
+      ],
+      "identity": {
+        "representation_fingerprint": "a63e5b71c67b76edb010988edd189c3f8f8427e9dded75ac8931f839ab6b6b0a",
+        "execution_fingerprint": "b99a3648975fe2d469bca0084a1c412383b56409b19656571260c9408fc2c676",
+        "candidate_fingerprint": "2fab5cbf53380f9e2483852b50ee0cfc5cfae848336972b97e536357d4bf10c2",
+        "representation_key": {
+          "family": "grouped_absmax_q4",
+          "packing": "group64_nibble_codes_plus_fp16_scale",
+          "weight_identity": "qwen38_uniform_q4_v1_codes"
+        },
+        "execution_key": {
+          "kernel": "qwen_uniform_q4_group64_matvec",
+          "layout": {
+            "threads_per_row": 1,
+            "threadgroup": null,
+            "rows_per_threadgroup": 1,
+            "grid": "thread_position_in_grid = row",
+            "packed_decode": "1-thread-per-row serial nibble loop"
+          },
+          "runtime_graph": {
+            "dispatches_per_token": 964,
+            "gemv_dispatches": 964,
+            "command_buffers": 1,
+            "prologue_kernel": null,
+            "prologue_dispatches": 0,
+            "reconstructs_dense_w": false,
+            "dense_w_bytes": 0,
+            "composition_scope": "whole_model_uniform_q4"
+          }
+        },
+        "law": "Two candidates with the same weights and different kernels are DIFFERENT candidates. Identity is the pair, not the codec."
+      },
+      "score": {
+        "candidate_id": "q4_serial_one_thread_per_row",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "scored": true,
+        "scope": "token",
+        "prediction": {
+          "inputs": {
+            "bytes_per_token": 13988022948.0,
+            "flop_per_token": 77163181824.0,
+            "dispatches_per_token": 964.0,
+            "reconstruction_cost": {
+              "dense_w_write_bytes": 0.0,
+              "dense_w_reread_bytes": 0.0,
+              "extra_dispatches": 0,
+              "extra_flops": null,
+              "extra_flops_null_reason": null,
+              "command_buffers": null,
+              "occupancy_class": "serial_extract",
+              "reread_assumed": false,
+              "note": "bytes_per_token already includes the path's DRAM (native-operator EXECUTABLE/SOURCE). reconstruction_cost is not added again."
+            },
+            "command_buffers": 1
+          },
+          "traffic_bytes_including_recon": 13988022948.0,
+          "flops_including_recon_extra": 77163181824.0,
+          "dispatches_including_recon_extra": 964.0,
+          "floors_ns": {
+            "bandwidth_at_measured_roof_595p9": 17960995.05392912,
+            "bandwidth_at_honest_ceiling_411p51": 33991939.31617701,
+            "bandwidth_at_datasheet_819": 17079393.098901097,
+            "compute_at_g143_8979_gflops": 8593738.926829267,
+            "dispatch_ceremony": 1315584.0
+          },
+          "ceremony": {
+            "encode_ns": 919250.0,
+            "submit_ns": 12084.0,
+            "gpu_gap_ns": 384250.0,
+            "total_ns": 1315584.0,
+            "source": "encode 919250 ns / 964 disp; submit 12084 ns / 1 CB; wait-minus-gpu 384250 ns / 1 CB from DIRTY_ENGINEERING QWEN38_TOKEN_NS_LEDGER.json (wall 35227917 ns, not scaled to the native 30388625 ns)"
+          },
+          "gpu_work_ns": 425675582.77812016,
+          "token_ns": 426991166.77812016,
+          "token_ms": 426.99116677812015,
+          "tok_s": 2.3419688223190707,
+          "binding_term": "occupancy_serial_extract",
+          "arithmetic_intensity_flop_per_byte": 5.516375123979386,
+          "ridge_flop_per_byte": 11.529275808936825,
+          "on_bandwidth_side_of_ridge": true,
+          "occupancy_applied_to_point": true,
+          "occupancy_note": "occupancy_class=serial_extract: multiplied GPU-work by the measured 23.7\u00d7 (gpu_matvec 867.040696 \u2192 36.598269 ms, Q80_RECONSTRUCTION_WON.json). This is a lowering, not an error bar.",
+          "dense_reconstruction_is_oracle": false
+        },
+        "token_ns": {
+          "value": 426991166.77812016,
+          "unit": "ns",
+          "kind": "measured_from_encoded_algorithm",
+          "absent_reason": null,
+          "trace": "noetic_traffic_model.predict_token_ns on this candidate's (bytes, FLOP, dispatches, occupancy_class). Roofline, not a live GPU wall."
+        },
+        "token_ms": 426.99116677812015,
+        "tok_s": 2.3419688223190707,
+        "binding_term": "occupancy_serial_extract",
+        "dominating_term": "representation_traffic",
+        "floors_ns": {
+          "bandwidth_at_measured_roof_595p9": 17960995.05392912,
+          "bandwidth_at_honest_ceiling_411p51": 33991939.31617701,
+          "bandwidth_at_datasheet_819": 17079393.098901097,
+          "compute_at_g143_8979_gflops": 8593738.926829267,
+          "dispatch_ceremony": 1315584.0
+        },
+        "kernel_compute_ns": 8593738.926829267,
+        "kernel_compute_ns_per_dispatch": 8914.666936544883,
+        "traffic_over_kernel_compute": 2.090009390191701,
+        "gpu_live": {
+          "gpu_wall_ns_per_token": {
+            "value": null,
+            "unit": "ns",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "gpu_idle_pct": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "pct_of_bandwidth_ceiling": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          }
+        },
+        "label": "NATIVE",
+        "stored_bpw": 4.253,
+        "active_bpw_fused": 4.253,
+        "active_bpw_cached_dense": 32.0,
+        "active_bpw_this_execution": 4.253
+      }
+    },
+    {
+      "id": "q4_reconstruct_then_gemv",
+      "title": "Same Q4 codes, decode_vector then gemv_simdgroup_f32 (ORACLE)",
+      "scope": "token",
+      "label": "ORACLE",
+      "parent_function": "qwen38_token_gemv_organs",
+      "machine": "Apple M3 Ultra",
+      "representation": {
+        "family": "grouped_absmax_q4",
+        "packing": "group64_nibble_codes_plus_fp16_scale",
+        "weight_identity": "qwen38_uniform_q4_v1_codes",
+        "artifact": "qwen38-gravity-uniform-q4-v1",
+        "bpw": {
+          "stored_bpw": 4.253,
+          "active_bpw_fused": 4.253,
+          "active_bpw_cached_dense": 32.0,
+          "which": "stored = 4.253 Q4. Fused active = stored (codes stay packed). If the dense f32 form is cached, active is 32 bpw. Same structure, two regimes."
+        }
+      },
+      "execution": {
+        "kernel": "gemv_simdgroup_f32",
+        "kernel_flops": 51243909120,
+        "kernel_class": "REACHABLE",
+        "occupancy_class": "unknown",
+        "layout": {
+          "threads_per_row": "simdgroup",
+          "threadgroup": null,
+          "dtype": "f32",
+          "packed_decode": "NOT in this kernel; dense W already written"
+        },
+        "runtime_graph": {
+          "dispatches_per_token": 1365,
+          "gemv_dispatches": 964,
+          "command_buffers": 1,
+          "prologue_kernel": "qwen_uniform_q4_decode_vector",
+          "prologue_dispatches": 401,
+          "reconstructs_dense_w": true,
+          "dense_w_bytes": 102487818240,
+          "composition_scope": "whole_model_uniform_q4_oracle_reconstruct"
+        },
+        "bytes_per_token": 218778949636,
+        "flop_per_token": 77163176704,
+        "operation_count": 179650994944,
+        "peak_temporary_materialization": 5085593600
+      },
+      "notes": [
+        "SAME stored Q4 codes. Execution writes dense f32 W then runs ordinary matvec.",
+        "gemv_simdgroup_f32 issues only the GEMV MACs \u2014 1.50\u00d7 fewer FLOPs per dispatch than geo_tpr64 (which also does the scale-mul). That is a real per-dispatch kernel gain. The lowering also streams 218.8 GB/token.",
+        "Peak temp reaches lm_head parent 5_085_593_600 B. ORACLE."
+      ],
+      "identity": {
+        "representation_fingerprint": "a63e5b71c67b76edb010988edd189c3f8f8427e9dded75ac8931f839ab6b6b0a",
+        "execution_fingerprint": "8408c66ce8bd03c9c6a9ab4e2f14d496a203781aa6db381d79cb707140ef5b9b",
+        "candidate_fingerprint": "cc477b674e7de13a231b368ecd992cc937ae9dca3c58ff37ffd0d02305a1c4bb",
+        "representation_key": {
+          "family": "grouped_absmax_q4",
+          "packing": "group64_nibble_codes_plus_fp16_scale",
+          "weight_identity": "qwen38_uniform_q4_v1_codes"
+        },
+        "execution_key": {
+          "kernel": "gemv_simdgroup_f32",
+          "layout": {
+            "threads_per_row": "simdgroup",
+            "threadgroup": null,
+            "dtype": "f32",
+            "packed_decode": "NOT in this kernel; dense W already written"
+          },
+          "runtime_graph": {
+            "dispatches_per_token": 1365,
+            "gemv_dispatches": 964,
+            "command_buffers": 1,
+            "prologue_kernel": "qwen_uniform_q4_decode_vector",
+            "prologue_dispatches": 401,
+            "reconstructs_dense_w": true,
+            "dense_w_bytes": 102487818240,
+            "composition_scope": "whole_model_uniform_q4_oracle_reconstruct"
+          }
+        },
+        "law": "Two candidates with the same weights and different kernels are DIFFERENT candidates. Identity is the pair, not the codec."
+      },
+      "score": {
+        "candidate_id": "q4_reconstruct_then_gemv",
+        "kernel": "gemv_simdgroup_f32",
+        "scored": true,
+        "scope": "token",
+        "prediction": {
+          "inputs": {
+            "bytes_per_token": 218778949636.0,
+            "flop_per_token": 77163176704.0,
+            "dispatches_per_token": 1365.0,
+            "reconstruction_cost": {
+              "dense_w_write_bytes": 0.0,
+              "dense_w_reread_bytes": 0.0,
+              "extra_dispatches": 0,
+              "extra_flops": null,
+              "extra_flops_null_reason": null,
+              "command_buffers": null,
+              "occupancy_class": "unknown",
+              "reread_assumed": false,
+              "note": "bytes_per_token already includes the path's DRAM (native-operator EXECUTABLE/SOURCE). reconstruction_cost is not added again."
+            },
+            "command_buffers": 1
+          },
+          "traffic_bytes_including_recon": 218778949636.0,
+          "flops_including_recon_extra": 77163176704.0,
+          "dispatches_including_recon_extra": 1365.0,
+          "floors_ns": {
+            "bandwidth_at_measured_roof_595p9": 280918014.4273241,
+            "bandwidth_at_honest_ceiling_411p51": 531649169.24497586,
+            "bandwidth_at_datasheet_819": 267129364.63492066,
+            "compute_at_g143_8979_gflops": 8593738.356609866,
+            "dispatch_ceremony": 1697969.1141078838
+          },
+          "ceremony": {
+            "encode_ns": 1301635.1141078838,
+            "submit_ns": 12084.0,
+            "gpu_gap_ns": 384250.0,
+            "total_ns": 1697969.1141078838,
+            "source": "encode 919250 ns / 964 disp; submit 12084 ns / 1 CB; wait-minus-gpu 384250 ns / 1 CB from DIRTY_ENGINEERING QWEN38_TOKEN_NS_LEDGER.json (wall 35227917 ns, not scaled to the native 30388625 ns)"
+          },
+          "gpu_work_ns": 280918014.4273241,
+          "token_ns": 282615983.541432,
+          "token_ms": 282.615983541432,
+          "tok_s": 3.5383702912662693,
+          "binding_term": "bandwidth",
+          "arithmetic_intensity_flop_per_byte": 0.3526992740041148,
+          "ridge_flop_per_byte": 11.529275808936825,
+          "on_bandwidth_side_of_ridge": true,
+          "occupancy_applied_to_point": false,
+          "occupancy_note": "Point prediction is the roofline. ALU/occupancy lives in the error bar unless occupancy_class=serial_extract.",
+          "dense_reconstruction_is_oracle": true
+        },
+        "token_ns": {
+          "value": 282615983.541432,
+          "unit": "ns",
+          "kind": "measured_from_encoded_algorithm",
+          "absent_reason": null,
+          "trace": "noetic_traffic_model.predict_token_ns on this candidate's (bytes, FLOP, dispatches, occupancy_class). Roofline, not a live GPU wall."
+        },
+        "token_ms": 282.615983541432,
+        "tok_s": 3.5383702912662693,
+        "binding_term": "bandwidth",
+        "dominating_term": "representation_traffic",
+        "floors_ns": {
+          "bandwidth_at_measured_roof_595p9": 280918014.4273241,
+          "bandwidth_at_honest_ceiling_411p51": 531649169.24497586,
+          "bandwidth_at_datasheet_819": 267129364.63492066,
+          "compute_at_g143_8979_gflops": 8593738.356609866,
+          "dispatch_ceremony": 1697969.1141078838
+        },
+        "kernel_compute_ns": 5707084.20982292,
+        "kernel_compute_ns_per_dispatch": 5920.211835915892,
+        "traffic_over_kernel_compute": 49.222686068625656,
+        "gpu_live": {
+          "gpu_wall_ns_per_token": {
+            "value": null,
+            "unit": "ns",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "gpu_idle_pct": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "pct_of_bandwidth_ceiling": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          }
+        },
+        "label": "ORACLE",
+        "stored_bpw": 4.253,
+        "active_bpw_fused": 4.253,
+        "active_bpw_cached_dense": 32.0,
+        "active_bpw_this_execution": 32.0
+      }
+    },
+    {
+      "id": "uv_0485_fused_two_stage",
+      "title": "Generated UV at 0.0485 bpw, fused y = U @ (V @ x)",
+      "scope": "organ",
+      "label": "NATIVE",
+      "parent_function": "qwen38_token_gemv_organs",
+      "machine": "Apple M3 Ultra",
+      "representation": {
+        "family": "generated_uv_low_rank",
+        "packing": "U,V stored f16; W \u2248 U V rank 12",
+        "weight_identity": "generated_uv_L31_mlp_gate_proj_r12",
+        "artifact": "GENERATED_WEIGHTS_RETEST L31.mlp.gate_proj.weight",
+        "parent": {
+          "name": "L31.mlp.gate_proj.weight",
+          "shape": [
+            17408,
+            5120
+          ],
+          "rank": 2,
+          "bytes": 178257920
+        },
+        "bpw": {
+          "stored_bpw": 0.04853084788602941,
+          "active_bpw_fused": 0.04852941176470588,
+          "active_bpw_cached_dense": 16.0,
+          "which": "0.0485 stored, 0.0485 active fused. Same structure is 16.0 active if the dense f16 form is cached. Report both or neither."
+        }
+      },
+      "execution": {
+        "kernel": "q80_hgravs01_two_stage_matvec",
+        "kernel_flops": 540672,
+        "kernel_class": "REACHABLE",
+        "occupancy_class": "tpr64_free",
+        "layout": {
+          "two_stage": true,
+          "mid_in_threadgroup": true,
+          "rank": 12
+        },
+        "runtime_graph": {
+          "dispatches_per_token": 2,
+          "gemv_dispatches": 2,
+          "command_buffers": 1,
+          "prologue_kernel": null,
+          "prologue_dispatches": 0,
+          "reconstructs_dense_w": false,
+          "dense_w_bytes": 0,
+          "composition_scope": "single_organ"
+        },
+        "bytes_per_token": 630832,
+        "flop_per_token": 540672,
+        "operation_count": 540672,
+        "peak_temporary_materialization": 69680
+      },
+      "notes": [
+        "No default-build UV kernel on the Qwen3.8 production token. q80_hgravs01_two_stage_matvec is the existing two-stage factor kernel (threadgroup mid[rank], never dense W). Bound here as the execution this structure would run.",
+        "token_ns is ABSENT: organ-level candidate, not a 64-layer token graph."
+      ],
+      "identity": {
+        "representation_fingerprint": "93d6e8e886f26ec419fbea1bb1eb2871f57a696e5969ea17f7f7cffc23adb0fd",
+        "execution_fingerprint": "4b0b060f193242f2d4d51fb686b55389032b7590aa5b75e08a1ca54c476619c9",
+        "candidate_fingerprint": "7defb6b9da427d54e804a79bfc881e35d81de3cc3db1f12c348b1324d2d7f51f",
+        "representation_key": {
+          "family": "generated_uv_low_rank",
+          "packing": "U,V stored f16; W \u2248 U V rank 12",
+          "weight_identity": "generated_uv_L31_mlp_gate_proj_r12"
+        },
+        "execution_key": {
+          "kernel": "q80_hgravs01_two_stage_matvec",
+          "layout": {
+            "two_stage": true,
+            "mid_in_threadgroup": true,
+            "rank": 12
+          },
+          "runtime_graph": {
+            "dispatches_per_token": 2,
+            "gemv_dispatches": 2,
+            "command_buffers": 1,
+            "prologue_kernel": null,
+            "prologue_dispatches": 0,
+            "reconstructs_dense_w": false,
+            "dense_w_bytes": 0,
+            "composition_scope": "single_organ"
+          }
+        },
+        "law": "Two candidates with the same weights and different kernels are DIFFERENT candidates. Identity is the pair, not the codec."
+      },
+      "score": {
+        "candidate_id": "uv_0485_fused_two_stage",
+        "kernel": "q80_hgravs01_two_stage_matvec",
+        "scored": true,
+        "scope": "organ",
+        "prediction": null,
+        "token_ns": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "uv_0485_fused_two_stage is organ-level. Refused to scale one organ to a 64-layer token_ns. Storage/active bpw still apply.",
+          "trace": "not taken"
+        },
+        "binding_term": null,
+        "gpu_live": {
+          "gpu_wall_ns_per_token": {
+            "value": null,
+            "unit": "ns",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "gpu_idle_pct": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "pct_of_bandwidth_ceiling": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          }
+        },
+        "label": "NATIVE",
+        "stored_bpw": 0.04853084788602941,
+        "active_bpw_fused": 0.04852941176470588,
+        "active_bpw_cached_dense": 16.0,
+        "active_bpw_this_execution": 0.04852941176470588
+      }
+    },
+    {
+      "id": "uv_0485_cache_f16_gemv",
+      "title": "Same 0.0485-bpw UV, dense f16 cache then ordinary matvec (ORACLE)",
+      "scope": "organ",
+      "label": "ORACLE",
+      "parent_function": "qwen38_token_gemv_organs",
+      "machine": "Apple M3 Ultra",
+      "representation": {
+        "family": "generated_uv_low_rank",
+        "packing": "U,V stored f16; W \u2248 U V rank 12",
+        "weight_identity": "generated_uv_L31_mlp_gate_proj_r12",
+        "artifact": "GENERATED_WEIGHTS_RETEST L31.mlp.gate_proj.weight",
+        "parent": {
+          "name": "L31.mlp.gate_proj.weight",
+          "shape": [
+            17408,
+            5120
+          ],
+          "rank": 2,
+          "bytes": 178257920
+        },
+        "bpw": {
+          "stored_bpw": 0.04853084788602941,
+          "active_bpw_fused": 0.04852941176470588,
+          "active_bpw_cached_dense": 16.0,
+          "which": "0.0485 stored, 0.0485 active fused. Same structure is 16.0 active if the dense f16 form is cached. Report both or neither."
+        }
+      },
+      "execution": {
+        "kernel": "gemv_f16_simdmat",
+        "kernel_flops": 178257920,
+        "kernel_class": "REACHABLE",
+        "occupancy_class": "unknown",
+        "layout": {
+          "two_stage": false,
+          "cached_dense": "f16",
+          "dtype": "f16"
+        },
+        "runtime_graph": {
+          "dispatches_per_token": 1,
+          "gemv_dispatches": 1,
+          "command_buffers": 1,
+          "prologue_kernel": null,
+          "prologue_dispatches": 0,
+          "reconstructs_dense_w": true,
+          "dense_w_bytes": 178257920,
+          "composition_scope": "single_organ"
+        },
+        "bytes_per_token": 178348032,
+        "flop_per_token": 178257920,
+        "operation_count": 178257920,
+        "peak_temporary_materialization": 178327552
+      },
+      "notes": [
+        "SAME stored UV (0.0485 bpw). Active is 16.0 if the dense f16 form is cached.",
+        "Peak temp reaches parent f16 shape. ORACLE. token_ns ABSENT (organ-level)."
+      ],
+      "identity": {
+        "representation_fingerprint": "93d6e8e886f26ec419fbea1bb1eb2871f57a696e5969ea17f7f7cffc23adb0fd",
+        "execution_fingerprint": "02a5eee52c83a89cc023b82424a7ffb1de539d04709aada24c0c63536d4fac65",
+        "candidate_fingerprint": "df205229f6e12dda1283e80ab7b24da5baae42207fd1b1d09377e851f5126ed3",
+        "representation_key": {
+          "family": "generated_uv_low_rank",
+          "packing": "U,V stored f16; W \u2248 U V rank 12",
+          "weight_identity": "generated_uv_L31_mlp_gate_proj_r12"
+        },
+        "execution_key": {
+          "kernel": "gemv_f16_simdmat",
+          "layout": {
+            "two_stage": false,
+            "cached_dense": "f16",
+            "dtype": "f16"
+          },
+          "runtime_graph": {
+            "dispatches_per_token": 1,
+            "gemv_dispatches": 1,
+            "command_buffers": 1,
+            "prologue_kernel": null,
+            "prologue_dispatches": 0,
+            "reconstructs_dense_w": true,
+            "dense_w_bytes": 178257920,
+            "composition_scope": "single_organ"
+          }
+        },
+        "law": "Two candidates with the same weights and different kernels are DIFFERENT candidates. Identity is the pair, not the codec."
+      },
+      "score": {
+        "candidate_id": "uv_0485_cache_f16_gemv",
+        "kernel": "gemv_f16_simdmat",
+        "scored": true,
+        "scope": "organ",
+        "prediction": null,
+        "token_ns": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "uv_0485_cache_f16_gemv is organ-level. Refused to scale one organ to a 64-layer token_ns. Storage/active bpw still apply.",
+          "trace": "not taken"
+        },
+        "binding_term": null,
+        "gpu_live": {
+          "gpu_wall_ns_per_token": {
+            "value": null,
+            "unit": "ns",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "gpu_idle_pct": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          },
+          "pct_of_bandwidth_ceiling": {
+            "value": null,
+            "unit": "percent",
+            "kind": "ABSENT",
+            "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope for this search. Prior TPS 32.73 / 30.606 ms/token and the Q80 0.79%/51%-idle dispatch-bound measurement are anchors, not this run.",
+            "trace": "not taken"
+          }
+        },
+        "label": "ORACLE",
+        "stored_bpw": 0.04853084788602941,
+        "active_bpw_fused": 0.04852941176470588,
+        "active_bpw_cached_dense": 16.0,
+        "active_bpw_this_execution": 16.0
+      }
+    }
+  ],
+  "same_representation_different_execution": [
+    {
+      "representation_fingerprint": "a63e5b71c67b76edb010988edd189c3f8f8427e9dded75ac8931f839ab6b6b0a",
+      "family": "grouped_absmax_q4",
+      "weight_identity": "qwen38_uniform_q4_v1_codes",
+      "n_candidates": 3,
+      "ids": [
+        "q4_geo_tpr64_fused",
+        "q4_serial_one_thread_per_row",
+        "q4_reconstruct_then_gemv"
+      ],
+      "kernels": [
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec",
+        "gemv_simdgroup_f32"
+      ],
+      "kernels_are_not_all_equal": true,
+      "execution_fingerprints_differ": true,
+      "candidate_fingerprints_differ": true,
+      "stored_bpw": 4.253
+    },
+    {
+      "representation_fingerprint": "93d6e8e886f26ec419fbea1bb1eb2871f57a696e5969ea17f7f7cffc23adb0fd",
+      "family": "generated_uv_low_rank",
+      "weight_identity": "generated_uv_L31_mlp_gate_proj_r12",
+      "n_candidates": 2,
+      "ids": [
+        "uv_0485_fused_two_stage",
+        "uv_0485_cache_f16_gemv"
+      ],
+      "kernels": [
+        "q80_hgravs01_two_stage_matvec",
+        "gemv_f16_simdmat"
+      ],
+      "kernels_are_not_all_equal": true,
+      "execution_fingerprints_differ": true,
+      "candidate_fingerprints_differ": true,
+      "stored_bpw": 0.04853084788602941
+    }
+  ],
+  "demonstration_scoring_without_kernel": {
+    "attempted": true,
+    "candidate_id": "q4_codes_kernel_unspecified",
+    "kernel_supplied": null,
+    "refused": true,
+    "scored": false,
+    "defaulted_kernel": null,
+    "exception": "ScoringRefused",
+    "reason": "scoring without a kernel is impossible. Refusing rather than defaulting (saw kernel=None). A default to qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 would collapse the serial 1-thread-per-row kernel and production tpr64 into one 4-tuple \u2014 the bug this obligation exists to catch.",
+    "sentinel_probes": [
+      {
+        "kernel_supplied": "default",
+        "refused": true,
+        "scored": false,
+        "defaulted_kernel": null
+      },
+      {
+        "kernel_supplied": "auto",
+        "refused": true,
+        "scored": false,
+        "defaulted_kernel": null
+      },
+      {
+        "kernel_supplied": "",
+        "refused": true,
+        "scored": false,
+        "defaulted_kernel": null
+      },
+      {
+        "kernel_supplied": null,
+        "refused": true,
+        "scored": false,
+        "defaulted_kernel": null
+      }
+    ],
+    "all_sentinel_probes_refused": true
+  },
+  "demonstration_kernel_win_refused_when_traffic_dominates": {
+    "credited": false,
+    "refused": true,
+    "exception": "KernelWinRefused",
+    "decision": "KERNEL_WIN_REFUSED",
+    "payload": {
+      "candidate_id": "q4_reconstruct_then_gemv",
+      "reference_id": "q4_geo_tpr64_fused",
+      "candidate_kernel": "gemv_simdgroup_f32",
+      "reference_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "candidate_kernel_flops": 51243909120,
+      "reference_kernel_flops": 77163181824,
+      "candidate_ns_per_dispatch": 5920.211835915892,
+      "reference_ns_per_dispatch": 8914.666936544883,
+      "faster_per_dispatch": true,
+      "per_dispatch_speedup": 1.5058020191883439,
+      "kernel_compute_gain_ns": 2886654.7170063476,
+      "candidate_traffic_floor_ns": 280918014.4273241,
+      "candidate_compute_floor_ns": 8593738.356609866,
+      "candidate_ceremony_ns": 1697969.1141078838,
+      "traffic_over_compute": 32.68868596764484,
+      "traffic_dominates": true,
+      "representation_family": "grouped_absmax_q4",
+      "representation_weight_identity": "qwen38_uniform_q4_v1_codes",
+      "candidate_dram_bytes": 218778949636,
+      "reference_dram_bytes": 13988022948,
+      "same_stored_representation": true,
+      "decision": "KERNEL_WIN_REFUSED",
+      "why": "gemv_simdgroup_f32 is 1.506\u00d7 faster per dispatch than qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 on the compute floor (5920.212 ns vs 8914.667 ns; kernel FLOPs 51,243,909,120 vs 77,163,181,824 \u2014 the native-operator 1.50\u00d7). Kernel compute gain 2.887 ms. Representation traffic is 218,778,949,636 B/token (15.64\u00d7 the fused stream), flooring the GPU at 280.918 ms vs kernel compute 8.594 ms (32.7\u00d7). The kernel gain cannot move token_ns. Search REFUSES the kernel win."
+    },
+    "why": "gemv_simdgroup_f32 is 1.506\u00d7 faster per dispatch than qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 on the compute floor (5920.212 ns vs 8914.667 ns; kernel FLOPs 51,243,909,120 vs 77,163,181,824 \u2014 the native-operator 1.50\u00d7). Kernel compute gain 2.887 ms. Representation traffic is 218,778,949,636 B/token (15.64\u00d7 the fused stream), flooring the GPU at 280.918 ms vs kernel compute 8.594 ms (32.7\u00d7). The kernel gain cannot move token_ns. Search REFUSES the kernel win."
+  },
+  "serial_vs_tpr64_is_not_a_flop_kernel_win": {
+    "credited": false,
+    "refused": false,
+    "exception": null,
+    "decision": "NOT_FASTER_PER_DISPATCH",
+    "payload": {
+      "candidate_id": "q4_serial_one_thread_per_row",
+      "reference_id": "q4_geo_tpr64_fused",
+      "candidate_kernel": "qwen_uniform_q4_group64_matvec",
+      "reference_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "candidate_kernel_flops": 77163181824,
+      "reference_kernel_flops": 77163181824,
+      "candidate_ns_per_dispatch": 8914.666936544883,
+      "reference_ns_per_dispatch": 8914.666936544883,
+      "faster_per_dispatch": false,
+      "per_dispatch_speedup": 1.0,
+      "kernel_compute_gain_ns": 0.0,
+      "candidate_traffic_floor_ns": 17960995.05392912,
+      "candidate_compute_floor_ns": 8593738.926829267,
+      "candidate_ceremony_ns": 1315584.0,
+      "traffic_over_compute": 2.090009390191701,
+      "traffic_dominates": true,
+      "representation_family": "grouped_absmax_q4",
+      "representation_weight_identity": "qwen38_uniform_q4_v1_codes",
+      "candidate_dram_bytes": 13988022948,
+      "reference_dram_bytes": 13988022948,
+      "same_stored_representation": true,
+      "decision": "NOT_FASTER_PER_DISPATCH",
+      "why": "qwen_uniform_q4_group64_matvec is not faster per dispatch than qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 (8914.667 ns vs 8914.667 ns compute-floor / GEMV dispatch)."
+    },
+    "why": "qwen_uniform_q4_group64_matvec is not faster per dispatch than qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 (8914.667 ns vs 8914.667 ns compute-floor / GEMV dispatch)."
+  },
+  "composition_is_part_of_identity": {
+    "cited": true,
+    "receipt": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "law": "runtime_graph.composition_scope is part of candidate identity. A layer-local application of a codec and a whole-model application of the same codec are different programs.",
+    "first_fail_free_layer": 3,
+    "undegraded_first_fail_layer": 3,
+    "watched_fail_head": [
+      "free-run rel_l2 is NOT monotonic across depth: compounding is not a linear pile-up. L5->6 \u0394=-0.0026, L7->8 \u0394=-0.0055, L9->10 \u0394=-0.0075, L11->12 \u0394=-0.0043, L13->14 \u0394=-0.0075, L20->21 \u0394=-0.0393, L26->27 \u0394=-0.0006, L27->28 \u0394=-0.0021, L30->31 \u0394=-0.0036, L55->56 \u0394=-0.0160, L56->57 \u0394=-0.0110, L57->58 \u0394=-0.0048, L59->60 \u0394=-0.0250, L61->62 \u0394=-0.0114",
+      "scale-aware metric REJECTED 0.01*W_gate on real L0 post_attn_norm (cosine=1.000000 would have accepted; gain=0.010000 caught it; null_cosine=0.4998)",
+      "complete token loop: student argmax 10895 != teacher argmax 9714 after 64 free-run layers (hidden rel_l2=0.7360)"
+    ],
+    "local_q4_gate_survives": true,
+    "whole_model_free_run_fails": true
+  },
+  "q80_dispatch_bound_anchor": {
+    "pct_of_700_GBs": 0.79,
+    "gpu_idle_pct": 51.0,
+    "ceiling_gb_s": 700.0,
+    "serial_extract_speedup": 23.7,
+    "kind": "anchor_not_rederived",
+    "reading": "Q80 decode was DISPATCH-BOUND, not bandwidth-bound. A representation win that adds dispatches can lose outright. Occupancy 23.7\u00d7 at unchanged codec bytes is why a candidate without a kernel cannot be scored."
+  },
+  "gpu_live_this_run": {
+    "gpu_wall_ns_per_token": {
+      "value": null,
+      "unit": "ns",
+      "kind": "ABSENT",
+      "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope. Q80 0.79% of 700 GB/s with 51% GPU idle is the sealed dispatch-bound anchor, not this run.",
+      "trace": "not taken"
+    },
+    "gpu_idle_pct": {
+      "value": null,
+      "unit": "percent",
+      "kind": "ABSENT",
+      "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope. Q80 0.79% of 700 GB/s with 51% GPU idle is the sealed dispatch-bound anchor, not this run.",
+      "trace": "not taken"
+    },
+    "pct_of_bandwidth_ceiling": {
+      "value": null,
+      "unit": "percent",
+      "kind": "ABSENT",
+      "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope. Q80 0.79% of 700 GB/s with 51% GPU idle is the sealed dispatch-bound anchor, not this run.",
+      "trace": "not taken"
+    }
+  },
+  "identity_checks": {
+    "q4_fused_vs_serial_same_representation": true,
+    "q4_fused_vs_serial_different_execution": true,
+    "q4_fused_vs_serial_different_candidate": true,
+    "q4_fused_vs_reconstruct_same_representation": true,
+    "q4_fused_vs_reconstruct_different_kernel": true,
+    "uv_fused_vs_cache_same_representation": true,
+    "uv_fused_vs_cache_different_execution": true,
+    "q4_pair_has_at_least_two": true,
+    "uv_pair_has_at_least_two": true,
+    "q4_kernels_differ": true
+  },
+  "bpw_every_candidate": [
+    {
+      "id": "q4_geo_tpr64_fused",
+      "stored_bpw": 4.253,
+      "active_bpw_fused": 4.253,
+      "active_bpw_cached_dense": 32.0,
+      "active_bpw_this_execution": 4.253,
+      "which": "stored = 4.253 Q4. Fused active = stored (codes stay packed). If the dense f32 form is cached, active is 32 bpw. Same structure, two regimes."
+    },
+    {
+      "id": "q4_serial_one_thread_per_row",
+      "stored_bpw": 4.253,
+      "active_bpw_fused": 4.253,
+      "active_bpw_cached_dense": 32.0,
+      "active_bpw_this_execution": 4.253,
+      "which": "stored = 4.253 Q4. Fused active = stored (codes stay packed). If the dense f32 form is cached, active is 32 bpw. Same structure, two regimes."
+    },
+    {
+      "id": "q4_reconstruct_then_gemv",
+      "stored_bpw": 4.253,
+      "active_bpw_fused": 4.253,
+      "active_bpw_cached_dense": 32.0,
+      "active_bpw_this_execution": 32.0,
+      "which": "stored = 4.253 Q4. Fused active = stored (codes stay packed). If the dense f32 form is cached, active is 32 bpw. Same structure, two regimes."
+    },
+    {
+      "id": "uv_0485_fused_two_stage",
+      "stored_bpw": 0.04853084788602941,
+      "active_bpw_fused": 0.04852941176470588,
+      "active_bpw_cached_dense": 16.0,
+      "active_bpw_this_execution": 0.04852941176470588,
+      "which": "0.0485 stored, 0.0485 active fused. Same structure is 16.0 active if the dense f16 form is cached. Report both or neither."
+    },
+    {
+      "id": "uv_0485_cache_f16_gemv",
+      "stored_bpw": 0.04853084788602941,
+      "active_bpw_fused": 0.04852941176470588,
+      "active_bpw_cached_dense": 16.0,
+      "active_bpw_this_execution": 16.0,
+      "which": "0.0485 stored, 0.0485 active fused. Same structure is 16.0 active if the dense f16 form is cached. Report both or neither."
+    }
+  ],
+  "what_i_did_not_do": [
+    "Did not load a second 27B.",
+    "Did not open receipts/ascent-2026-08-16 or workspace/campaign for writing.",
+    "Did not default a missing kernel to geo_tpr64.",
+    "Did not credit gemv_simdgroup_f32 as a win on the reconstruct lowering.",
+    "Did not write 0 for a number that was not measured.",
+    "Did not treat organ-level UV token_ns as a 64-layer number."
+  ],
+  "self_check": {
+    "all_required_kernels_declared": true,
+    "compiler_emitted_at_least_two_q4_executions": true,
+    "no_kernel_scoring_refused": true,
+    "all_sentinels_refused": true,
+    "kernel_win_refused_on_reconstruct": true,
+    "reconstruct_kernel_is_faster_per_dispatch": true,
+    "reconstruct_traffic_dominates": true,
+    "same_stored_q4_on_the_refused_pair": true,
+    "fused_vs_serial_identity_splits_on_execution": true,
+    "every_scored_candidate_names_a_kernel": true,
+    "uv_reports_0485_and_16": true
+  },
+  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/GRAVITY_COMPILER_SEARCH.json"
+}

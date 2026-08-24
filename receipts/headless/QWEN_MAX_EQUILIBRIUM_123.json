@@ -1,0 +1,247 @@
+{
+  "gate": "QWEN_MAX_EQUILIBRIUM",
+  "probe": "qwen_equilibrium_probe",
+  "generated_at": "2026-08-23T05:11:03Z",
+  "runtime_identity": {
+    "port": 49395,
+    "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "total_slots": 3,
+    "per_slot_n_ctx": 11008,
+    "build": "b9430-d48a56eff",
+    "spawned_by_hcli": true
+  },
+  "protocol": {
+    "rungs": [
+      1,
+      2,
+      3
+    ],
+    "reps": 4,
+    "max_tokens": 192,
+    "ordering": "alternating paired reps (interleaved, not blocked)",
+    "warmup": "one discarded 32-token decode",
+    "prompt": "Count upward from one, writing each number as an English word on its own line, starting at one and continuing without stopping or commenting."
+  },
+  "samples": [
+    {
+      "concurrency": 1,
+      "wall_s": 8.1091,
+      "completed": 1,
+      "errors": [],
+      "total_completion_tokens": 192,
+      "aggregate_tps": 23.6772,
+      "per_stream_tps": [
+        23.6776
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 0
+    },
+    {
+      "concurrency": 2,
+      "wall_s": 15.0059,
+      "completed": 2,
+      "errors": [],
+      "total_completion_tokens": 384,
+      "aggregate_tps": 25.59,
+      "per_stream_tps": [
+        12.7951,
+        12.8324
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 0
+    },
+    {
+      "concurrency": 3,
+      "wall_s": 21.399,
+      "completed": 3,
+      "errors": [],
+      "total_completion_tokens": 576,
+      "aggregate_tps": 26.9171,
+      "per_stream_tps": [
+        9.0271,
+        8.9908,
+        8.9725
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 0
+    },
+    {
+      "concurrency": 1,
+      "wall_s": 8.1024,
+      "completed": 1,
+      "errors": [],
+      "total_completion_tokens": 192,
+      "aggregate_tps": 23.6965,
+      "per_stream_tps": [
+        23.6968
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 1
+    },
+    {
+      "concurrency": 2,
+      "wall_s": 14.6579,
+      "completed": 2,
+      "errors": [],
+      "total_completion_tokens": 384,
+      "aggregate_tps": 26.1974,
+      "per_stream_tps": [
+        13.0989,
+        13.0989
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 1
+    },
+    {
+      "concurrency": 3,
+      "wall_s": 20.887,
+      "completed": 3,
+      "errors": [],
+      "total_completion_tokens": 576,
+      "aggregate_tps": 27.577,
+      "per_stream_tps": [
+        9.1925,
+        9.1924,
+        9.1925
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 1
+    },
+    {
+      "concurrency": 1,
+      "wall_s": 8.1026,
+      "completed": 1,
+      "errors": [],
+      "total_completion_tokens": 192,
+      "aggregate_tps": 23.696,
+      "per_stream_tps": [
+        23.6963
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 2
+    },
+    {
+      "concurrency": 2,
+      "wall_s": 14.6562,
+      "completed": 2,
+      "errors": [],
+      "total_completion_tokens": 384,
+      "aggregate_tps": 26.2005,
+      "per_stream_tps": [
+        13.1004,
+        13.1004
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 2
+    },
+    {
+      "concurrency": 3,
+      "wall_s": 20.8878,
+      "completed": 3,
+      "errors": [],
+      "total_completion_tokens": 576,
+      "aggregate_tps": 27.5759,
+      "per_stream_tps": [
+        9.1921,
+        9.192,
+        9.1922
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 2
+    },
+    {
+      "concurrency": 1,
+      "wall_s": 8.1063,
+      "completed": 1,
+      "errors": [],
+      "total_completion_tokens": 192,
+      "aggregate_tps": 23.6852,
+      "per_stream_tps": [
+        23.6855
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 3
+    },
+    {
+      "concurrency": 2,
+      "wall_s": 14.6571,
+      "completed": 2,
+      "errors": [],
+      "total_completion_tokens": 384,
+      "aggregate_tps": 26.1989,
+      "per_stream_tps": [
+        13.0995,
+        13.0997
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 3
+    },
+    {
+      "concurrency": 3,
+      "wall_s": 20.893,
+      "completed": 3,
+      "errors": [],
+      "total_completion_tokens": 576,
+      "aggregate_tps": 27.5691,
+      "per_stream_tps": [
+        9.1897,
+        9.1899,
+        9.19
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 3
+    }
+  ],
+  "by_rung": {
+    "1": {
+      "reps": 4,
+      "median_aggregate_tps": 23.6906,
+      "min": 23.6772,
+      "max": 23.6965,
+      "spread_pct": 0.081,
+      "scaling_vs_rung1": 1.0
+    },
+    "2": {
+      "reps": 4,
+      "median_aggregate_tps": 26.1981,
+      "min": 25.59,
+      "max": 26.2005,
+      "spread_pct": 2.33,
+      "scaling_vs_rung1": 1.1058
+    },
+    "3": {
+      "reps": 4,
+      "median_aggregate_tps": 27.5725,
+      "min": 26.9171,
+      "max": 27.577,
+      "spread_pct": 2.393,
+      "scaling_vs_rung1": 1.1639
+    }
+  },
+  "measured_equilibrium_active_decodes": 3,
+  "equilibrium_rule": "highest rung whose median aggregate tok/s beats its predecessor by more than the observed measurement spread"
+}

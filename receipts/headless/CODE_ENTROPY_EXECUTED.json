@@ -1,0 +1,2604 @@
+{
+  "schema": "hawking.headless.code_entropy_executed.v1",
+  "obligation": "G027 execute the classified census: delete what is proven dead, collapse what encodes nothing",
+  "generated_at": "2026-08-23T23:12:20Z",
+  "git_head": "437d37cc0dde56ef370eeaae72b344ca3078036b",
+  "census": {
+    "path": "receipts/headless/CODE_ENTROPY.json",
+    "git_head": "38ab698658b4c7966d1b85f96047d886c6e43ad0",
+    "stale_note": "Census inventoried tools/haider/hcli/*.py at 38ab698. Live package is hcli/ after namespace migration. Every candidate was re-resolved against this HEAD via git show HEAD:<path> and git grep HEAD.",
+    "also_read": [
+      "receipts/headless/CODE_GRAPH.json",
+      "receipts/headless/CORE_AUTHORITIES.json",
+      "receipts/headless/NAMESPACE_MIGRATION.json"
+    ]
+  },
+  "sparse": {
+    "materialized_via": "git archive HEAD hcli tools/haider tools/headless | tar -x",
+    "not_used": "git sparse-checkout add (fails: sparse-checkout.lock Operation not permitted)",
+    "git_update_index_no_skip_worktree": "failed: index.lock Operation not permitted. Edited files may carry skip-worktree (git ls-files -v shows H). git diff / git status can hide these writes; the working tree is the identity.",
+    "verified_against_head": [
+      "hcli/",
+      "tools/haider/",
+      "tools/headless/"
+    ],
+    "hole_is_not_absence": true,
+    "index_py_deletion": {
+      "on_disk": "absent",
+      "at_head": "present (blob 1ff02beea4424674a989f3eec14eb6bc83f033e5)",
+      "git_ls_files_-v": "S (skip-worktree). git status does not list D.",
+      "git_rm": "failed: index.lock Operation not permitted",
+      "identity": "the working tree: hcli/index.py is not a file. rollback: git show HEAD:hcli/index.py > hcli/index.py"
+    },
+    "git_visible_diffstat": "11 files, +67/-114 (index.py deletion hidden by skip-worktree; CODE_ENTROPY_EXECUTED.json untracked)"
+  },
+  "method": {
+    "reproof": "For each census DELETE/UNKNOWN: git cat-file HEAD:live_path (tools/haider/hcli/X.py remapped to hcli/X.py), definition still present, git grep -n -w HEAD over hcli tools lab crates src pyproject.toml, plus getattr/importlib/__import__/entry_points/python -m/from hcli.index import/from .index import. Receipts and census tools are not callers.",
+    "anti_goodhart": "UNKNOWN is legitimate. Historical science is ARCHIVE/KEEP, not DELETE. Line count is reported; success is duplicate authorities and unused product modules gone, not a percentage.",
+    "wrappers": "Judged, not collapsed by default. 108 one-caller symbols; 0 collapsed."
+  },
+  "never_deleted": {
+    "receipts/": "historical science",
+    "receipts/ascent-2026-08-16": "forbidden",
+    "receipts/ascent-2026-08-18": "forbidden",
+    "workspace/campaign": "forbidden",
+    "fossils": [
+      {
+        "path": "tools/haider/haider.py",
+        "why": "HCLI-v0 fossil. Historical science."
+      },
+      {
+        "path": "tools/haider/p0_tool_bridge.py",
+        "why": "HCLI-v0 fossil. Historical science."
+      },
+      {
+        "path": "tools/haider/test_haider_edit.py",
+        "why": "fossil test. Historical science."
+      },
+      {
+        "path": "tools/haider/test_p0_tool_bridge.py",
+        "why": "fossil test. Historical science."
+      },
+      {
+        "path": "hcli/context.py",
+        "why": "Census ARCHIVE was tools/haider/hcli/context.py as a re-export. After namespace migration this is the documented compatibility re-export of goal.WorkerPacket. test_core_authorities::TestContextReexportSameObject locks it. Not a delete."
+      }
+    ]
+  },
+  "already_gone_at_head": [
+    {
+      "id": "function:hcli/scheduler.py:_remaining_depth",
+      "by": "G028 CORE_AUTHORITIES",
+      "rollback_if_needed": "git show HEAD:hcli/scheduler.py still lacks it; restore from CORE_AUTHORITIES receipt / an ancestor that still has def _remaining_depth"
+    }
+  ],
+  "deletions": [
+    {
+      "id": "file:hcli/index.py",
+      "census_id": "file:tools/haider/hcli/index.py",
+      "census_class": "DELETE",
+      "kind": "module",
+      "path": "hcli/index.py",
+      "census_path": "tools/haider/hcli/index.py",
+      "name": "WorkspaceIndex",
+      "before_identity": {
+        "path": "hcli/index.py",
+        "git_blob": "1ff02beea4424674a989f3eec14eb6bc83f033e5",
+        "sha256": "dbce195e73e4b4deb8fd57469d7e07e1748b4c9424a755e586cd56e2d0134485",
+        "bytes": 1713,
+        "lines": 45,
+        "lineno": 10,
+        "end_lineno": 45,
+        "symbol": "class WorkspaceIndex",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "none. Workspace listing lives in hcli.workspace.Workspace (product) and tools/haider/workspace.py::WorkspaceIndex (namesake fossil, not this class). No production importer.",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_hcli_index_source_removed_from_this_tree",
+        "tools/haider/test_hcli_live_start.py::TestLiveStartBoundary::test_every_hcli_module_imports",
+        "tools/haider/hcli/tests/test_module_identity.py"
+      ],
+      "rollback": "git show HEAD:hcli/index.py > hcli/index.py",
+      "dynamic_proof": {
+        "git_grep_HEAD_word_WorkspaceIndex_live_importers": 0,
+        "namesake": "tools/haider/workspace.py::WorkspaceIndex \u2014 different class, fossil, left alone",
+        "getattr_quoted": 0,
+        "importlib_hcli.index": 0,
+        "from_hcli.index_import": 0,
+        "from_.index_import": 0,
+        "python_-m_hcli.index": 0,
+        "entry_points": 0,
+        "json_check_commands_outside_receipts_and_census_tools": 0,
+        "hcli.agentos_does_not_reexport": true,
+        "hcli.__init__does_not_export": true,
+        "startup_census_lists_module_as_string_not_a_caller": true,
+        "editable_install_note": "site-packages __editable__.hcli-0.1.0.pth finder can still resolve hcli.index from /Users/scammermike/Downloads/hawking/hcli/index.py. That is another checkout, not this tree."
+      },
+      "what_it_bought": "Removed a whole unused product module that looked like a workspace authority and was not one. Persistence audits listed it only because WorkspaceIndex.read called open().",
+      "lines_removed": 45
+    },
+    {
+      "id": "constant:hcli/backends.py:KNOWN_FEATURES",
+      "census_id": "constant:tools/haider/hcli/backends.py:KNOWN_FEATURES",
+      "census_class": "DELETE",
+      "kind": "constant",
+      "path": "hcli/backends.py",
+      "name": "KNOWN_FEATURES",
+      "before_identity": {
+        "path": "hcli/backends.py",
+        "git_blob": "fad4dc908136efc2e261939b16ba31a5852989cf",
+        "lineno": 408,
+        "end_lineno": 414,
+        "symbol": "KNOWN_FEATURES",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b",
+        "snippet_sha256": "fe293cdb55b8d86f11a92d56fdb038f0812c13ce15a52a1d150b41f25bfd05c4"
+      },
+      "replacement_authority": "hcli.backends.FEATURE_ALIASES (canonical names are its values; canonical_feature() is the lookup)",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_known_features_is_feature_aliases",
+        "tools/haider/hcli/tests/test_backend_health.py",
+        "tools/haider/hcli/tests/test_mlx_backend.py"
+      ],
+      "rollback": "git show HEAD:hcli/backends.py > hcli/backends.py",
+      "dynamic_proof": {
+        "live_loads": 0,
+        "getattr": 0
+      },
+      "what_it_bought": "Dropped an unused twin of FEATURE_ALIASES so there is one capability-name table.",
+      "lines_removed": 7
+    },
+    {
+      "id": "constant:hcli/machine.py:DEFAULT_RESERVE_GIB",
+      "census_id": "constant:tools/haider/hcli/machine.py:DEFAULT_RESERVE_GIB",
+      "census_class": "DELETE",
+      "kind": "constant",
+      "path": "hcli/machine.py",
+      "name": "DEFAULT_RESERVE_GIB",
+      "before_identity": {
+        "path": "hcli/machine.py",
+        "git_blob": "1285f528c1b65f08e9f273107a60ede1d590b575",
+        "lineno": 19,
+        "symbol": "DEFAULT_RESERVE_GIB = 8.0",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "MemGate.calculate_reserve \u2014 max(12 GiB, 15% of physical). The 8.0 constant was unused and did not match that default.",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_reserve_gib_constant_gone",
+        "tools/haider/hcli/tests/test_core_authorities.py::TestLimitOneAuthority",
+        "tools/haider/hcli/tests/test_scheduler_resources.py"
+      ],
+      "rollback": "git show HEAD:hcli/machine.py > hcli/machine.py",
+      "dynamic_proof": {
+        "live_loads": 0
+      },
+      "what_it_bought": "Removed a lying unused default (8 GiB) that was not the reserve the gate actually applies (12 GiB / 15%).",
+      "lines_removed": 1
+    },
+    {
+      "id": "function:hcli/mutation.py:build_validation_plan",
+      "census_id": "function:tools/haider/hcli/mutation.py:build_validation_plan",
+      "census_class": "DELETE",
+      "kind": "function",
+      "path": "hcli/mutation.py",
+      "name": "build_validation_plan",
+      "before_identity": {
+        "path": "hcli/mutation.py",
+        "git_blob": "a0b125cf6bbcae85fe0b63e5029ecb48cc6ed770",
+        "lineno": 223,
+        "end_lineno": 229,
+        "symbol": "build_validation_plan",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b",
+        "snippet_sha256": "7400d1c12a330f6362d4e599222c6d9aa1ccdccb387582bc63a12899d9942042"
+      },
+      "replacement_authority": "hcli.mutation.discover_tests (live, used by apply_mutation_operations) and hcli.mutation.compile_python_file / validate_python_syntax (in-process syntax). Engine._validate owns the ceremony.",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_mutation_has_no_dead_validation_driver",
+        "tools/haider/hcli/tests/test_control_plane_performance.py::TestCompilePythonFile",
+        "tools/haider/hcli/tests/test_mutation_hash.py",
+        "tools/haider/hcli/tests/test_acceptance_integrity.py"
+      ],
+      "rollback": "git show HEAD:hcli/mutation.py > hcli/mutation.py",
+      "dynamic_proof": {
+        "live_loads": 0,
+        "importers": []
+      },
+      "what_it_bought": "Removed an unused plan builder that would have scheduled `python -m pytest -x` over the whole suite if anyone had called it.",
+      "lines_removed": 8
+    },
+    {
+      "id": "function:hcli/mutation.py:run_validation",
+      "census_id": "function:tools/haider/hcli/mutation.py:run_validation",
+      "census_class": "UNKNOWN\u2192DELETE",
+      "kind": "function",
+      "path": "hcli/mutation.py",
+      "name": "run_validation",
+      "before_identity": {
+        "path": "hcli/mutation.py",
+        "git_blob": "a0b125cf6bbcae85fe0b63e5029ecb48cc6ed770",
+        "lineno": 232,
+        "end_lineno": 247,
+        "symbol": "run_validation",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b",
+        "snippet_sha256": "509bd1ba46f94796d7d7d6e47493f91af5cf984a3a8a453f54f553450cf99811"
+      },
+      "replacement_authority": "none in production. Census UNKNOWN was a namesake: tools/haider/haider.py::run_validation(guard) is a different function (ARCHIVE fossil). subprocess_census warned to confirm callers; git grep HEAD found none of this definition.",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_mutation_has_no_dead_validation_driver",
+        "tools/haider/hcli/tests/test_control_plane_performance.py::TestCompilePythonFile::test_does_not_spawn_py_compile"
+      ],
+      "rollback": "git show HEAD:hcli/mutation.py > hcli/mutation.py",
+      "dynamic_proof": {
+        "this_definition_importers": 0,
+        "namesake": "tools/haider/haider.py::run_validation and bootstrap_snapshots \u2014 different signature, ARCHIVE, left alone",
+        "subprocess_census_warning_honored": "confirmed zero callers of mutation.run_validation before delete"
+      },
+      "what_it_bought": "Removed a dead driver that spawned pytest via subprocess.run. compile_python_file stays in-process; the performance test now locks that without requiring a dummy subprocess import.",
+      "lines_removed": 16
+    },
+    {
+      "id": "constant:hcli/resources.py:HEALTH_STATES",
+      "census_id": "constant:tools/haider/hcli/resources.py:HEALTH_STATES",
+      "census_class": "DELETE",
+      "kind": "constant",
+      "path": "hcli/resources.py",
+      "name": "HEALTH_STATES",
+      "before_identity": {
+        "path": "hcli/resources.py",
+        "git_blob": "0e0d7797f1f7743ebd8f440700d52ef515259dac",
+        "lineno": 546,
+        "end_lineno": 550,
+        "symbol": "HEALTH_STATES",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "hcli.resources.STATE_HEALTHY / STATE_DEGRADED / STATE_CIRCUIT_OPEN (the named states the breaker actually assigns)",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_health_states_tuple_gone_named_states_remain",
+        "tools/haider/hcli/tests/test_backend_health.py",
+        "tools/haider/hcli/tests/test_scheduler_resources.py"
+      ],
+      "rollback": "git show HEAD:hcli/resources.py > hcli/resources.py",
+      "dynamic_proof": {
+        "live_loads": 0
+      },
+      "what_it_bought": "Dropped an unused aggregate tuple. The named STATE_* constants remain the authority.",
+      "lines_removed": 5
+    },
+    {
+      "id": "function:hcli/verifier_pipeline.py:ast_has_main_guard",
+      "census_id": "function:tools/haider/hcli/verifier_pipeline.py:ast_has_main_guard",
+      "census_class": "DELETE",
+      "kind": "function",
+      "path": "hcli/verifier_pipeline.py",
+      "name": "ast_has_main_guard",
+      "before_identity": {
+        "path": "hcli/verifier_pipeline.py",
+        "git_blob": "c4e138ea8c323211aa12c875f30df0d79db7d8bb",
+        "lineno": 965,
+        "end_lineno": 968,
+        "symbol": "ast_has_main_guard",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "hcli.engine._if_is_main_guard used by _ast_is_pytest_idiom (live). verifier ast_has_tests / should_run_with_pytest do not consult the main guard.",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_verifier_main_guard_lives_on_engine",
+        "tools/haider/hcli/tests/test_verifier_authority.py",
+        "tools/haider/hcli/tests/test_verifier_pipeline.py"
+      ],
+      "rollback": "git show HEAD:hcli/verifier_pipeline.py > hcli/verifier_pipeline.py",
+      "dynamic_proof": {
+        "live_loads": 0
+      },
+      "what_it_bought": "Removed a dead detector. The live main-guard test is in engine.py, one copy.",
+      "lines_removed": 4
+    },
+    {
+      "id": "function:hcli/verifier_pipeline.py:_if_is_main_guard",
+      "census_id": null,
+      "census_class": "consequential DELETE",
+      "kind": "function",
+      "path": "hcli/verifier_pipeline.py",
+      "name": "_if_is_main_guard",
+      "before_identity": {
+        "path": "hcli/verifier_pipeline.py",
+        "git_blob": "c4e138ea8c323211aa12c875f30df0d79db7d8bb",
+        "lineno": 927,
+        "end_lineno": 947,
+        "symbol": "_if_is_main_guard",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b",
+        "note": "Not a census DELETE symbol. Only caller was ast_has_main_guard. Identical copy lives in hcli/engine.py and is live."
+      },
+      "replacement_authority": "hcli.engine._if_is_main_guard",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_verifier_main_guard_lives_on_engine"
+      ],
+      "rollback": "git show HEAD:hcli/verifier_pipeline.py > hcli/verifier_pipeline.py",
+      "dynamic_proof": {
+        "verifier_pipeline_callers_after_ast_has_main_guard_removed": 0
+      },
+      "what_it_bought": "Did not leave a new corpse next to the deleted detector. Two identical helpers collapsed to the live engine copy.",
+      "lines_removed": 21
+    },
+    {
+      "id": "function:hcli/verifier_pipeline.py:_assert_line_numbers",
+      "census_id": "function:tools/haider/hcli/verifier_pipeline.py:_assert_line_numbers",
+      "census_class": "DELETE",
+      "kind": "function",
+      "path": "hcli/verifier_pipeline.py",
+      "name": "_assert_line_numbers",
+      "before_identity": {
+        "path": "hcli/verifier_pipeline.py",
+        "git_blob": "c4e138ea8c323211aa12c875f30df0d79db7d8bb",
+        "lineno": 993,
+        "end_lineno": 1004,
+        "symbol": "_assert_line_numbers",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "hcli.verifier_pipeline.count_static_assertions (live) and the inlined child-process walker inside _run_script_counting_asserts",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_verifier_main_guard_lives_on_engine",
+        "tools/haider/hcli/tests/test_verifier_pipeline.py",
+        "tools/haider/hcli/tests/test_verifier_authority.py"
+      ],
+      "rollback": "git show HEAD:hcli/verifier_pipeline.py > hcli/verifier_pipeline.py",
+      "dynamic_proof": {
+        "live_loads": 0
+      },
+      "what_it_bought": "Removed a leftover AST walker that the child-process assert counter had already inlined.",
+      "lines_removed": 13
+    },
+    {
+      "id": "constant:hcli/workunit.py:WORKUNIT_STATUSES",
+      "census_id": "constant:tools/haider/hcli/workunit.py:WORKUNIT_STATUSES",
+      "census_class": "DELETE",
+      "kind": "constant",
+      "path": "hcli/workunit.py",
+      "name": "WORKUNIT_STATUSES",
+      "before_identity": {
+        "path": "hcli/workunit.py",
+        "git_blob": "de2184ef2bb9dfcce47018fa6abe6b282994292f",
+        "lineno": 18,
+        "end_lineno": 25,
+        "symbol": "WORKUNIT_STATUSES",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "hcli.workunit.transition_status valid dict (pending/ready/running/completed/failed/interrupted)",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_workunit_closed_set_is_transition_status",
+        "tools/haider/hcli/tests/test_workunit_status.py",
+        "tools/haider/hcli/tests/test_workunit_identity.py"
+      ],
+      "rollback": "git show HEAD:hcli/workunit.py > hcli/workunit.py",
+      "dynamic_proof": {
+        "live_loads": 0,
+        "namesake": "tools/haider/haider.py::WORKUNIT_STATUSES \u2014 fossil, shorter tuple, left alone"
+      },
+      "what_it_bought": "Closed-set authority is the transition table, not an unused tuple.",
+      "lines_removed": 8
+    },
+    {
+      "id": "constant:hcli/workunit.py:CLASSIFICATION_VERIFIER_FAILURE",
+      "census_id": "constant:tools/haider/hcli/workunit.py:CLASSIFICATION_VERIFIER_FAILURE",
+      "census_class": "DELETE",
+      "kind": "constant",
+      "path": "hcli/workunit.py",
+      "name": "CLASSIFICATION_VERIFIER_FAILURE",
+      "before_identity": {
+        "path": "hcli/workunit.py",
+        "git_blob": "de2184ef2bb9dfcce47018fa6abe6b282994292f",
+        "lineno": 38,
+        "symbol": "CLASSIFICATION_VERIFIER_FAILURE",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "hcli.resources.VERIFIER_FAILURE (live failure kind) and CLASSIFICATION_INTERRUPTED (the only classification workunit.py actually writes)",
+      "covering_tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestEntropyExecuted::test_workunit_closed_set_is_transition_status",
+        "tools/haider/hcli/tests/test_backend_health.py",
+        "tools/haider/hcli/tests/test_workunit_status.py"
+      ],
+      "rollback": "git show HEAD:hcli/workunit.py > hcli/workunit.py",
+      "dynamic_proof": {
+        "live_loads": 0
+      },
+      "what_it_bought": "Removed an unused alias of resources.VERIFIER_FAILURE so classification and failure-kind do not pretend to be two constants.",
+      "lines_removed": 1
+    },
+    {
+      "id": "constant:tools/headless/code_graph.py:WRITE_TAILS",
+      "census_id": "constant:tools/headless/code_graph.py:WRITE_TAILS",
+      "census_class": "DELETE",
+      "kind": "constant",
+      "path": "tools/headless/code_graph.py",
+      "name": "WRITE_TAILS",
+      "before_identity": {
+        "path": "tools/headless/code_graph.py",
+        "git_blob": "32eb8ac516beabb2d84ad158155c6fb54aa45fe3",
+        "lineno": 175,
+        "symbol": "WRITE_TAILS",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "tools/headless/code_graph.py::PERSIST_WRITE_TAILS (the set the walker actually tests)",
+      "covering_tests": [
+        "tools/haider tools/headless suite (code_graph is a census script, not a pytest module)"
+      ],
+      "rollback": "git show HEAD:tools/headless/code_graph.py > tools/headless/code_graph.py",
+      "dynamic_proof": {
+        "in_file_loads": 0
+      },
+      "what_it_bought": "Removed an unused superset alias. PERSIST_WRITE_TAILS remains the write classifier.",
+      "lines_removed": 1
+    },
+    {
+      "id": "constant:tools/headless/code_graph.py:READ_TAILS",
+      "census_id": "constant:tools/headless/code_graph.py:READ_TAILS",
+      "census_class": "DELETE",
+      "kind": "constant",
+      "path": "tools/headless/code_graph.py",
+      "name": "READ_TAILS",
+      "before_identity": {
+        "path": "tools/headless/code_graph.py",
+        "git_blob": "32eb8ac516beabb2d84ad158155c6fb54aa45fe3",
+        "lineno": 176,
+        "symbol": "READ_TAILS",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "tools/headless/code_graph.py::PERSIST_READ_TAILS",
+      "covering_tests": [
+        "tools/haider tools/headless suite"
+      ],
+      "rollback": "git show HEAD:tools/headless/code_graph.py > tools/headless/code_graph.py",
+      "dynamic_proof": {
+        "in_file_loads": 0
+      },
+      "what_it_bought": "Same as WRITE_TAILS for reads.",
+      "lines_removed": 1
+    },
+    {
+      "id": "constant:tools/headless/code_graph.py:MUTATION_LOCK_TAILS",
+      "census_id": "constant:tools/headless/code_graph.py:MUTATION_LOCK_TAILS",
+      "census_class": "DELETE",
+      "kind": "constant",
+      "path": "tools/headless/code_graph.py",
+      "name": "MUTATION_LOCK_TAILS",
+      "before_identity": {
+        "path": "tools/headless/code_graph.py",
+        "git_blob": "32eb8ac516beabb2d84ad158155c6fb54aa45fe3",
+        "lineno": 214,
+        "symbol": "MUTATION_LOCK_TAILS",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "none. MUTATION_TAILS is the live mutation-name set. MutationLock is classified by class name elsewhere.",
+      "covering_tests": [
+        "tools/haider tools/headless suite"
+      ],
+      "rollback": "git show HEAD:tools/headless/code_graph.py > tools/headless/code_graph.py",
+      "dynamic_proof": {
+        "in_file_loads": 0
+      },
+      "what_it_bought": "Removed an unused lock-name set the graph walker never consulted.",
+      "lines_removed": 1
+    },
+    {
+      "id": "function:tools/headless/handoff_builder.py:py_assert_eq",
+      "census_id": "function:tools/headless/handoff_builder.py:py_assert_eq",
+      "census_class": "DELETE",
+      "kind": "function",
+      "path": "tools/headless/handoff_builder.py",
+      "name": "py_assert_eq",
+      "before_identity": {
+        "path": "tools/headless/handoff_builder.py",
+        "git_blob": "c4a19b93ea183c926d114d23ad2bad36bb20dfdb",
+        "lineno": 215,
+        "end_lineno": 221,
+        "symbol": "py_assert_eq",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "handoff_builder.py_cmd / py_git_json_eq / py_disk_json_eq (the helpers claims actually call)",
+      "covering_tests": [
+        "tools/haider tools/headless suite"
+      ],
+      "rollback": "git show HEAD:tools/headless/handoff_builder.py > tools/headless/handoff_builder.py",
+      "dynamic_proof": {
+        "live_loads": 0,
+        "delete_proof_at_census": true,
+        "reproved_at_head": true
+      },
+      "what_it_bought": "Removed an unused claim-builder that never made it into a check-command.",
+      "lines_removed": 9
+    },
+    {
+      "id": "function:tools/headless/hcli_persistence_audit.py:_src_has",
+      "census_id": "function:tools/headless/hcli_persistence_audit.py:_src_has",
+      "census_class": "DELETE",
+      "kind": "function",
+      "path": "tools/headless/hcli_persistence_audit.py",
+      "name": "_src_has",
+      "before_identity": {
+        "path": "tools/headless/hcli_persistence_audit.py",
+        "git_blob": "2c8a19cb96338554cbdb13d40c57d60d74aa3248",
+        "lineno": 94,
+        "end_lineno": 99,
+        "symbol": "_src_has",
+        "head": "437d37cc0dde56ef370eeaae72b344ca3078036b"
+      },
+      "replacement_authority": "hcli_persistence_audit._loc (live) and inspect.getsource at the call sites that need a token check \u2014 none did",
+      "covering_tests": [
+        "tools/haider tools/headless suite"
+      ],
+      "rollback": "git show HEAD:tools/headless/hcli_persistence_audit.py > tools/headless/hcli_persistence_audit.py",
+      "dynamic_proof": {
+        "live_loads": 0,
+        "delete_proof_at_census": true,
+        "reproved_at_head": true
+      },
+      "what_it_bought": "Removed an unused inspect helper.",
+      "lines_removed": 7
+    }
+  ],
+  "kept_from_delete_census": [
+    {
+      "id": "function:hcli/machine.py:get_machine_genome_path",
+      "census_class": "DELETE",
+      "landed": "KEEP",
+      "why": "Live. tools/haider/hcli/tests/test_core_authorities.py::TestMachineGenomeIsNotAdmission::test_default_path_is_not_the_live_genome calls it. G028 added that test after the census."
+    },
+    {
+      "id": "function:tools/headless/hcli_self_optimize_2.py:fan_completions",
+      "census_class": "DELETE",
+      "landed": "KEEP",
+      "why": "Uncalled (pool_fan_completions replaced it) but it is the bypass the sealed iteration-2 experiment and gate_adversary name. Historical science. Deleting it would erase the artifact those receipts cite."
+    },
+    {
+      "id": "constant:tools/headless/qwen38_gravity_coherence_oracle.py:HIDDEN",
+      "census_class": "DELETE",
+      "landed": "KEEP",
+      "why": "Unused in-file, but the oracle is a one-shot sealed diagnostic. HIDDEN=5120 is model identity. Classifying a sealed experiment as DELETE is a defect."
+    },
+    {
+      "id": "constant:tools/headless/qwen38_gravity_coherence_oracle.py:VOCAB",
+      "census_class": "DELETE",
+      "landed": "KEEP",
+      "why": "Same as HIDDEN. VOCAB=248320 is model identity in a sealed diagnostic. Namesake VOCAB constants in lab/ and crates/ are different definitions."
+    },
+    {
+      "id": "constant:tools/headless/performance_ledger.py:DESIRABLE",
+      "census_class": "DELETE",
+      "landed": "KEEP",
+      "why": "Unused Load, but it encodes the optional measurement schema next to REQUIRED_FOR_PROMOTION. Policy, not a wrapper."
+    },
+    {
+      "id": "constant:tools/headless/vmcp_capability_probe.py:HARDCODED_OCULAR",
+      "census_class": "DELETE",
+      "landed": "KEEP",
+      "why": "Documents the hardcoded ocular numbers the probe reports as not-a-live-measurement. Evidence identity of a finding."
+    },
+    {
+      "id": "constant:tools/headless/vmcp_lattice_disposition.py:IMPLEMENT_AND_VERIFY",
+      "census_class": "DELETE",
+      "landed": "KEEP",
+      "why": "Unused enum member in a sealed disposition table. CONSOLIDATE/REJECT/VERIFIED_EXISTING are live. Leaving the vocabulary is cheaper than inventing a hole."
+    },
+    {
+      "id": "constant:tools/headless/repair_disposition_table.py:IMPLEMENTED_AND_VERIFIED",
+      "census_class": "DELETE",
+      "landed": "KEEP",
+      "why": "Unused; VERIFIED_EXISTING is the live token. Sealed disposition vocabulary."
+    },
+    {
+      "id": "function:hcli/scheduler.py:_remaining_depth",
+      "census_class": "DELETE",
+      "landed": "already gone at HEAD (G028)",
+      "why": "CORE_AUTHORITIES consolidation scheduler-remaining-depth-removed. test_core_authorities asserts hasattr is False. This lane did not re-delete."
+    }
+  ],
+  "unknown_left": [
+    {
+      "id": "function:tools/headless/artifact_census.py:git_head",
+      "landed": "UNKNOWN",
+      "why": "Common helper name; many files define their own git_head(). Cannot prove this definition is unused without confusing namesakes."
+    },
+    {
+      "id": "function:tools/headless/artifact_census.py:dir_sha",
+      "landed": "UNKNOWN",
+      "why": "word-grep collides with walkdir_shallow substring and other dir_sha definitions."
+    },
+    {
+      "id": "constant:tools/headless/hcli_dag_consolidation_test.py:PASSING_VERIFICATION",
+      "landed": "UNKNOWN",
+      "why": "hcli_scheduler_test.py has a live same-named constant. This copy may be unused; namesake \u2192 UNKNOWN."
+    },
+    {
+      "id": "class:tools/headless/hcli_persistence_audit.py:FakeBackend",
+      "landed": "UNKNOWN",
+      "why": "Defined for a child-process source STRING. Name collides with live test FakeBackend classes."
+    },
+    {
+      "id": "function:tools/headless/hcli_persistence_audit.py:_gate",
+      "landed": "UNKNOWN",
+      "why": "Common private name; lab/ also defines _gate."
+    },
+    {
+      "id": "constant:tools/headless/repair_disposition_table.py:CONSOLIDATE",
+      "landed": "KEEP (re-proved live namesake, not this risk)",
+      "why": "vmcp_lattice_disposition.CONSOLIDATE is live. repair_disposition_table.CONSOLIDATE is a same-named constant; not proven unused as the authority of that file's vocabulary. Left."
+    },
+    {
+      "id": "constant:tools/headless/vmcp_lattice_disposition.py:VERIFIED_EXISTING",
+      "landed": "UNKNOWN",
+      "why": "repair_disposition_table.VERIFIED_EXISTING is live. This copy is comment-only in-file; namesake \u2192 UNKNOWN."
+    }
+  ],
+  "wrappers": {
+    "census_one_caller_symbols": 108,
+    "collapsed": 0,
+    "judgement": "Collapse only where the wrapper encodes no policy, validation, identity, transaction boundary, or compatibility. Most of the 108 are test factories, 2-line regex/time helpers, or census git/sha shims. None of the product wrappers were empty hops.",
+    "product_kept": [
+      {
+        "name": "inject_schema_instruction",
+        "path": "hcli/backends.py",
+        "why": "Two in-file callers. Encodes skip_if policy string. Not even one-caller."
+      },
+      {
+        "name": "_clamp_runtime_count",
+        "path": "hcli/cli.py",
+        "why": "Encodes 1..MAX_RUNTIME_COUNT policy."
+      },
+      {
+        "name": "assert_packet_evidence_fresh",
+        "path": "hcli/goal.py",
+        "why": "Packet-identity adapter; tests call it. Encodes where evidence lives on WorkerPacket."
+      },
+      {
+        "name": "_now_iso",
+        "path": "hcli/grok_bridge.py",
+        "why": "Timestamp identity (UTC ISO)."
+      },
+      {
+        "name": "_lint_codes",
+        "path": "hcli/grok_bridge.py",
+        "why": "Regex policy."
+      },
+      {
+        "name": "_make_info",
+        "path": "hcli/models.py",
+        "why": "ModelInfo identity + family/quant inference."
+      },
+      {
+        "name": "_strip_verified_instruction",
+        "path": "hcli/steering.py",
+        "why": "Regex policy."
+      },
+      {
+        "name": "CommandHandler._cmd_*",
+        "path": "hcli/commands.py",
+        "why": "getattr(self, f\"_cmd_{name}\") dispatch. Command identity. Collapsing into Controller would merge command surface with the run-loop."
+      },
+      {
+        "name": "hcli.context re-export",
+        "path": "hcli/context.py",
+        "why": "Compatibility. Same WorkerPacket object as hcli.goal."
+      },
+      {
+        "name": "commands.py module",
+        "path": "hcli/commands.py",
+        "why": "One non-test caller (controller) but 925 lines of command policy, not a wrapper."
+      }
+    ]
+  },
+  "reexport_only_modules": {
+    "census": [
+      "tools/haider/hcli/__init__.py",
+      "tools/haider/hcli/context.py"
+    ],
+    "live": {
+      "hcli/__init__.py": "KEEP \u2014 not re-export-only; PEP 562 lazy Controller/Workspace/Event/EventBus plus cli.main",
+      "hcli/context.py": "KEEP \u2014 compatibility re-export, locked by test",
+      "hcli/agentos/__init__.py": "KEEP \u2014 ownership surface, same class objects, does not export WorkspaceIndex",
+      "hcli/genomes/__init__.py": "KEEP \u2014 ownership surface for MachineGenome"
+    }
+  },
+  "call_depth": [
+    {
+      "command": "hcli install-shims",
+      "kind": "cli_subcommand",
+      "before_depth": 3,
+      "after_depth": 3,
+      "delta": 0,
+      "impl": "hcli.cli:install_shims",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "cli.install_shims",
+          "path": "hcli/cli.py",
+          "symbol": "install_shims"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "cli.install_shims",
+          "path": "hcli/cli.py",
+          "symbol": "install_shims"
+        }
+      ],
+      "collapsed": false,
+      "notes": "does not enter App; copies the package and writes ~/.local/bin shims",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli [prompt]  (headless mission)",
+      "kind": "cli_entrypoint",
+      "before_depth": 5,
+      "after_depth": 5,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.execute",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.execute",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.execute"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.execute",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.execute"
+        }
+      ],
+      "collapsed": false,
+      "notes": "non-slash prompt; engine/mission sit behind execute",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli  (interactive)",
+      "kind": "cli_entrypoint",
+      "before_depth": 4,
+      "after_depth": 4,
+      "delta": 0,
+      "impl": "hcli.app.App._run_interactive",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_interactive",
+          "path": "hcli/app.py",
+          "symbol": "App._run_interactive"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_interactive",
+          "path": "hcli/app.py",
+          "symbol": "App._run_interactive"
+        }
+      ],
+      "collapsed": false,
+      "notes": "TUI loop; slash commands still enter CommandHandler via Controller.handle_command",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli max [prompt]",
+      "kind": "cli_entrypoint",
+      "before_depth": 5,
+      "after_depth": 5,
+      "delta": 0,
+      "impl": "hcli.cli:resolve_resident_runtime_limit then App.run",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.parse_haider_args",
+          "path": "hcli/cli.py",
+          "symbol": "parse_haider_args"
+        },
+        {
+          "label": "resolve_resident_runtime_limit",
+          "path": "hcli/cli.py",
+          "symbol": "resolve_resident_runtime_limit"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.parse_haider_args",
+          "path": "hcli/cli.py",
+          "symbol": "parse_haider_args"
+        },
+        {
+          "label": "resolve_resident_runtime_limit",
+          "path": "hcli/cli.py",
+          "symbol": "resolve_resident_runtime_limit"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        }
+      ],
+      "collapsed": false,
+      "notes": "N is resolved from env / machine_genome / worker-equilibrium before App starts",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /cancel",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.cancel",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_cancel  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_cancel"
+        },
+        {
+          "label": "Controller.cancel",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.cancel"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_cancel  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_cancel"
+        },
+        {
+          "label": "Controller.cancel",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.cancel"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /clear",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.clear_transcript",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_clear  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_clear"
+        },
+        {
+          "label": "Controller.clear_transcript",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.clear_transcript"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_clear  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_clear"
+        },
+        {
+          "label": "Controller.clear_transcript",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.clear_transcript"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /compact",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.compact_context",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_compact  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_compact"
+        },
+        {
+          "label": "Controller.compact_context",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.compact_context"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_compact  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_compact"
+        },
+        {
+          "label": "Controller.compact_context",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.compact_context"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /context",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.context_summary",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_context  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_context"
+        },
+        {
+          "label": "Controller.context_summary",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.context_summary"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_context  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_context"
+        },
+        {
+          "label": "Controller.context_summary",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.context_summary"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /exit",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.request_exit",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_exit  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_exit"
+        },
+        {
+          "label": "Controller.request_exit",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.request_exit"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_exit  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_exit"
+        },
+        {
+          "label": "Controller.request_exit",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.request_exit"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /goal",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.set_goal",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_goal  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_goal"
+        },
+        {
+          "label": "Controller.set_goal",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.set_goal"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_goal  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_goal"
+        },
+        {
+          "label": "Controller.set_goal",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.set_goal"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /grok",
+      "kind": "slash_command",
+      "before_depth": 7,
+      "after_depth": 7,
+      "delta": 0,
+      "impl": "hcli.commands.CommandHandler._cmd_grok",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_grok  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_grok"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_grok  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_grok"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /help",
+      "kind": "slash_command",
+      "before_depth": 7,
+      "after_depth": 7,
+      "delta": 0,
+      "impl": "hcli.commands.CommandHandler._cmd_help",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_help  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_help"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_help  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_help"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /mission",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.run_mission",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_mission  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_mission"
+        },
+        {
+          "label": "Controller.run_mission",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.run_mission"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_mission  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_mission"
+        },
+        {
+          "label": "Controller.run_mission",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.run_mission"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /model",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.select_model",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_model  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_model"
+        },
+        {
+          "label": "Controller.select_model",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.select_model"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_model  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_model"
+        },
+        {
+          "label": "Controller.select_model",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.select_model"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /models",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.list_models",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_models  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_models"
+        },
+        {
+          "label": "Controller.list_models",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.list_models"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_models  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_models"
+        },
+        {
+          "label": "Controller.list_models",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.list_models"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /quit",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.request_exit",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_quit  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_quit"
+        },
+        {
+          "label": "Controller.request_exit",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.request_exit"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_quit  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_quit"
+        },
+        {
+          "label": "Controller.request_exit",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.request_exit"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /resume",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.resume_session",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_resume  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_resume"
+        },
+        {
+          "label": "Controller.resume_session",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.resume_session"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_resume  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_resume"
+        },
+        {
+          "label": "Controller.resume_session",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.resume_session"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /status",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.status",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_status  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_status"
+        },
+        {
+          "label": "Controller.status",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.status"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_status  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_status"
+        },
+        {
+          "label": "Controller.status",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.status"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /steer",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.queue_steer",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_steer  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_steer"
+        },
+        {
+          "label": "Controller.queue_steer",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.queue_steer"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_steer  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_steer"
+        },
+        {
+          "label": "Controller.queue_steer",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.queue_steer"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /stop",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.request_exit",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_stop  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_stop"
+        },
+        {
+          "label": "Controller.request_exit",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.request_exit"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_stop  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_stop"
+        },
+        {
+          "label": "Controller.request_exit",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.request_exit"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "hcli /ultragoal",
+      "kind": "slash_command",
+      "before_depth": 8,
+      "after_depth": 8,
+      "delta": 0,
+      "impl": "hcli.controller.Controller.start_ultragoal",
+      "before_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_ultragoal  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_ultragoal"
+        },
+        {
+          "label": "Controller.start_ultragoal",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.start_ultragoal"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "python -m hcli",
+          "path": "hcli/__main__.py",
+          "symbol": "__main__"
+        },
+        {
+          "label": "cli.main",
+          "path": "hcli/cli.py",
+          "symbol": "main"
+        },
+        {
+          "label": "App.run",
+          "path": "hcli/app.py",
+          "symbol": "App.run"
+        },
+        {
+          "label": "App._run_headless",
+          "path": "hcli/app.py",
+          "symbol": "App._run_headless"
+        },
+        {
+          "label": "Controller.handle_command",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.handle_command"
+        },
+        {
+          "label": "CommandHandler.handle",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler.handle"
+        },
+        {
+          "label": "CommandHandler._cmd_ultragoal  [getattr]",
+          "path": "hcli/commands.py",
+          "symbol": "CommandHandler._cmd_ultragoal"
+        },
+        {
+          "label": "Controller.start_ultragoal",
+          "path": "hcli/controller.py",
+          "symbol": "Controller.start_ultragoal"
+        }
+      ],
+      "collapsed": false,
+      "notes": "CommandHandler.handle dispatches with getattr(self, f'_cmd_{cmd[1:]}', None). A static import graph will not show _cmd_* as called.",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    },
+    {
+      "command": "python tools/haider/haider.py",
+      "kind": "fossil_cli",
+      "before_depth": 1,
+      "after_depth": 1,
+      "delta": 0,
+      "impl": "tools/haider/haider.py:main",
+      "before_chain": [
+        {
+          "label": "haider.main",
+          "path": "tools/haider/haider.py",
+          "symbol": "main"
+        }
+      ],
+      "after_chain": [
+        {
+          "label": "haider.main",
+          "path": "tools/haider/haider.py",
+          "symbol": "main"
+        }
+      ],
+      "collapsed": false,
+      "notes": "ARCHIVE fossil launcher; disconnected from python -m hcli",
+      "why_depth_unchanged": "No wrapper on this command encoded nothing. getattr _cmd_* dispatch, CommandHandler, and CLI clamps stay \u2014 they are identity, policy, or compatibility."
+    }
+  ],
+  "lines": {
+    "removed_from_deletions": 148,
+    "hcli_package_before": 21765,
+    "hcli_package_after": 21628,
+    "note": "156 lines of proven-dead product/census-tool source. Tests gained assertions. Not a 20% cut.",
+    "file_delta_including_blanks_and_import": {
+      "hcli/index.py": -45,
+      "hcli/backends.py": -7,
+      "hcli/machine.py": -1,
+      "hcli/mutation.py": -28,
+      "hcli/resources.py": -5,
+      "hcli/verifier_pipeline.py": -42,
+      "hcli/workunit.py": -9,
+      "tools/headless/code_graph.py": -3,
+      "tools/headless/handoff_builder.py": -9,
+      "tools/headless/hcli_persistence_audit.py": -7,
+      "total": -156
+    }
+  },
+  "what_the_reduction_bought": [
+    "One unused product module (WorkspaceIndex) that was not a workspace authority.",
+    "Three unused twin tables (KNOWN_FEATURES, HEALTH_STATES, WORKUNIT_STATUSES) so FEATURE_ALIASES, STATE_*, and transition_status are each the only table.",
+    "A lying unused reserve default (8 GiB) that did not match MemGate.calculate_reserve (12 GiB / 15%).",
+    "A dead mutation validation driver that would have subprocess-run pytest -x over the workspace.",
+    "A duplicate main-guard helper in verifier_pipeline; engine.py keeps the live copy.",
+    "Unused census-tool aliases and two unused helpers (py_assert_eq, _src_has).",
+    "Call depth of every user-facing command unchanged. CommandHandler and getattr _cmd_* dispatch kept."
+  ],
+  "anti_goodhart_clause": "A 20% line reduction with worse architecture would have been a failure. This is a ~156-line cut that removes one dead module and several unused twin authorities. Wrappers, fossils, sealed experiments, and compatibility re-exports were left.",
+  "pytest": {
+    "command": "HCLI_SWAP_CEILING_GIB=64 PYTHONPATH=<worktree> python3 -m pytest tools/haider tools/headless -q",
+    "floor": 849,
+    "result": "852 passed, 7 skipped in 337.34s",
+    "exit": 0,
+    "tail": "852 passed, 7 skipped in 337.34s (0:05:37)",
+    "count_did_not_decrease": true,
+    "first_run": "851 passed, 1 failed (test_control_plane_performance patched hcli.mutation.subprocess.run; import was removed with dead run_validation). Test rewritten to inspect compile_python_file source and patch subprocess.run. Re-run: 852 passed, 7 skipped, exit 0.",
+    "note": "tools/haider/bootstrap_snapshots/ ignored by tools/haider/conftest.py. Four tools/headless/test_noetic_zero_parent.py cases skip when live_native_decode.metal_refused. Skips are not counted as failures.",
+    "side_effect": "tools/headless tests rewrote 7 science receipts (timestamps, pids, worktree paths). Restored from HEAD: DOCTOR_V2_PRESCRIPTION.json, GRAVITY_COMPILER_SEARCH.json, HCLI_CRASH_CHECKPOINT.json, NOETIC_CLOSURE.json, NOETIC_IR.json, NOETIC_NATIVE_OPERATOR.json, NOETIC_ZERO_PARENT.json. Those are not this lane's writes."
+  },
+  "test_adaptations": [
+    {
+      "path": "tools/haider/hcli/tests/test_core_authorities.py",
+      "what": "Added TestEntropyExecuted: source-gone / hasattr locks for the product deletions; get_machine_genome_path stays.",
+      "rollback": "git show HEAD:tools/haider/hcli/tests/test_core_authorities.py > tools/haider/hcli/tests/test_core_authorities.py"
+    },
+    {
+      "path": "tools/haider/hcli/tests/test_control_plane_performance.py",
+      "what": "test_does_not_spawn_py_compile no longer patches hcli.mutation.subprocess.run. It inspects compile_python_file source (no subprocess/Popen) and patches subprocess.run.",
+      "rollback": "git show HEAD:tools/haider/hcli/tests/test_control_plane_performance.py > tools/haider/hcli/tests/test_control_plane_performance.py"
+    }
+  ],
+  "receipt_sha256": "663ef5559ef73f6185994f64388e1253ae235ec68be13d8cbca655e8bef61fa9"
+}

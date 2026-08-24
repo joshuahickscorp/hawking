@@ -1,0 +1,1618 @@
+{
+ "schema": "hawking.headless.noetic_mlp_distill_probe.v1",
+ "obligation": "NNS-015",
+ "generated_at": "2026-08-23T18:42:26Z",
+ "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+ "what_this_is": "function-space fit of a thinner SwiGLU to the MLP map on real X; not a student-model distillation arc",
+ "parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+ "capture": {
+  "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/phaseB/capture_diverse2",
+  "site": "post_attn_norm",
+  "post_swiglu": "computed as silu(X@Wg.T)*(X@Wu.T) from qualified-parent BF16",
+  "n_tokens": 11269,
+  "n_train": 7699,
+  "n_val": 1358,
+  "n_hold": 2212,
+  "hidden": 5120,
+  "intermediate": 17408,
+  "source_note": "Phase-B capture_diverse2: real BF16 parent MLX full-model forward, 11269 tokens, 6 families, last 3 prompts/family held out. Not Gaussian. Not Q5_K llama-server.",
+  "manifest_families": [
+   "prose",
+   "code",
+   "math",
+   "multilingual",
+   "instruction",
+   "dialogue"
+  ],
+  "split_rule": "last 3 prompts/family = hold"
+ },
+ "accounting": {
+  "q3_storage_bpw": 3.25,
+  "q3_fused_active_bpw": 3.25,
+  "q3_decoded_f16_active_bpw": 16.0,
+  "scale_bits": 16,
+  "group": 64,
+  "note": "PHASE_B_HYBRID quoted 3.5 b/elem (f32 scales). Native family (G033/G034/G105) is 3 + 16/64 = 3.25 with f16 scales. This probe matches bits against 3.25. Storage and active are both reported.",
+  "orig_numel_per_mlp": 267386880,
+  "q3_storage_bytes": 108625920.0,
+  "q3_fused_active_bytes": 108625920.0,
+  "q3_decoded_active_bytes": 534773760.0,
+  "student_f16_active_equals_storage": true,
+  "materially_fewer_ratio": 0.9
+ },
+ "widths": [
+  1024,
+  2560,
+  3536
+ ],
+ "layers": [
+  0,
+  31
+ ],
+ "train": {
+  "steps": 400,
+  "batch": 512,
+  "lr": 0.0002,
+  "grad_clip": 1.0,
+  "init": "teacher channel-prune by ||Wg_i||*||Wu_i||*||Wd_i||",
+  "hold_never_used_in_fit": true,
+  "val_carved_from_fit": true,
+  "unused_probe_axis": "isotropic Gaussian, per-channel RMS matched to train X; Doctor observed scored on HOLD"
+ },
+ "layers_out": {
+  "0": {
+   "q3": {
+    "hold": {
+     "rel_fro": 0.17752763628959656,
+     "cosine": 0.9845958352088928,
+     "gain": 0.6288180351257324,
+     "worst_unit": 0.5456599593162537,
+     "cosine_minus_null": 0.3719717264175415
+    },
+    "train": {
+     "rel_fro": 0.17316590249538422,
+     "cosine": 0.9869549870491028,
+     "gain": 0.6906930208206177,
+     "worst_unit": 0.6821452975273132
+    },
+    "doctor": {
+     "observed": 0.9845958352088928,
+     "probed": 0.994769811630249,
+     "worst_unit": 0.5456599593162537,
+     "gain": 0.6288180351257324,
+     "observed_rel_fro": 0.17752763628959656,
+     "probed_rel_fro": 0.10955410450696945,
+     "probed_gain": 0.8170915246009827,
+     "mode": "relative_to_q3",
+     "deficit": {
+      "observed": 0.020000000000000018,
+      "probed": 0.020000000000000018,
+      "worst_unit": 0.09999999999999998,
+      "gain": 0.020000000000000018
+     },
+     "worst_axis": "observed",
+     "healthy": true
+    },
+    "bpw_fused": {
+     "storage_bits": 869007360,
+     "active_bits": 869007360,
+     "storage_bpw": 3.25,
+     "active_bpw": 3.25,
+     "orig_numel": 267386880,
+     "storage_bytes": 108625920.0,
+     "active_bytes": 108625920.0
+    },
+    "bpw_decoded_f16": {
+     "storage_bits": 869007360,
+     "active_bits": 4278190080,
+     "storage_bpw": 3.25,
+     "active_bpw": 16.0,
+     "orig_numel": 267386880,
+     "storage_bytes": 108625920.0,
+     "active_bytes": 534773760.0
+    },
+    "health_verdict": "HEALTHY (incumbent reference)"
+   },
+   "widths": {
+    "1024": {
+     "width": 1024,
+     "underdetermined": false,
+     "bpw": {
+      "storage_bits": 251658240,
+      "active_bits": 251658240,
+      "storage_bpw": 0.9411764705882353,
+      "active_bpw": 0.9411764705882353,
+      "orig_numel": 267386880,
+      "storage_bytes": 31457280.0,
+      "active_bytes": 31457280.0
+     },
+     "byte_ratio_vs_q3_fused_active": 0.2895927601809955,
+     "weight_space_prune": {
+      "hold": {
+       "rel_fro": 0.9310580492019653,
+       "cosine": 0.5528295040130615,
+       "gain": 0.03624162822961807,
+       "worst_unit": -0.6130306124687195,
+       "cosine_minus_null": -0.059794604778289795
+      },
+      "train": {
+       "rel_fro": 0.919579267501831,
+       "cosine": 0.599818766117096,
+       "gain": 0.04779646918177605,
+       "worst_unit": -0.4528155028820038
+      },
+      "doctor": {
+       "observed": 0.5528295040130615,
+       "probed": 0.9059363603591919,
+       "worst_unit": -0.6635318994522095,
+       "gain": 0.03624162822961807,
+       "observed_rel_fro": 0.9310580492019653,
+       "probed_rel_fro": 0.7799885869026184,
+       "probed_gain": 0.15159446001052856,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.4117663311958313,
+        "probed": -0.06883345127105711,
+        "worst_unit": -1.109191858768463,
+        "gain": -0.5725764068961143
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "health_verdict": "UNHEALTHY"
+     },
+     "function_space_distill": {
+      "hold": {
+       "rel_fro": 0.29043301939964294,
+       "cosine": 0.7867709994316101,
+       "gain": 0.5745355486869812,
+       "worst_unit": 0.548302948474884,
+       "cosine_minus_null": 0.1741468906402588
+      },
+      "train": {
+       "rel_fro": 0.2654726505279541,
+       "cosine": 0.872775673866272,
+       "gain": 0.7342745661735535,
+       "worst_unit": 0.7415671348571777
+      },
+      "doctor": {
+       "observed": 0.7867709994316101,
+       "probed": 0.9063353538513184,
+       "worst_unit": -0.26186785101890564,
+       "gain": 0.20981253683567047,
+       "observed_rel_fro": 0.29043301939964294,
+       "probed_rel_fro": 0.7015751600265503,
+       "probed_gain": 0.20981253683567047,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.1778248357772827,
+        "probed": -0.06843445777893065,
+        "worst_unit": -0.7075278103351593,
+        "gain": -0.39900549829006193
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "best_step": 375,
+      "best_val_rel_fro": 0.2381177544593811,
+      "plateau": false,
+      "still_dropping_at_end": false,
+      "n_params": 15728640,
+      "curve": [
+       {
+        "step": 0,
+        "train_rel_fro": 0.8817194700241089,
+        "val_rel_fro": 0.8931832909584045
+       },
+       {
+        "step": 25,
+        "train_rel_fro": 0.6383786797523499,
+        "val_rel_fro": 0.4057362675666809
+       },
+       {
+        "step": 50,
+        "train_rel_fro": 0.4716600179672241,
+        "val_rel_fro": 0.3509906232357025
+       },
+       {
+        "step": 75,
+        "train_rel_fro": 0.5973893404006958,
+        "val_rel_fro": 0.31830087304115295
+       },
+       {
+        "step": 100,
+        "train_rel_fro": 0.35612842440605164,
+        "val_rel_fro": 0.48823627829551697
+       },
+       {
+        "step": 125,
+        "train_rel_fro": 0.5146376490592957,
+        "val_rel_fro": 0.3027862012386322
+       },
+       {
+        "step": 150,
+        "train_rel_fro": 0.42027023434638977,
+        "val_rel_fro": 0.4613092243671417
+       },
+       {
+        "step": 175,
+        "train_rel_fro": 0.457756906747818,
+        "val_rel_fro": 0.28216272592544556
+       },
+       {
+        "step": 200,
+        "train_rel_fro": 0.502943217754364,
+        "val_rel_fro": 0.27110418677330017
+       },
+       {
+        "step": 225,
+        "train_rel_fro": 0.39813336730003357,
+        "val_rel_fro": 0.2541630268096924
+       },
+       {
+        "step": 250,
+        "train_rel_fro": 0.3547367453575134,
+        "val_rel_fro": 0.3403882086277008
+       },
+       {
+        "step": 275,
+        "train_rel_fro": 0.4992813467979431,
+        "val_rel_fro": 0.2674815356731415
+       },
+       {
+        "step": 300,
+        "train_rel_fro": 0.45411911606788635,
+        "val_rel_fro": 0.25416362285614014
+       },
+       {
+        "step": 325,
+        "train_rel_fro": 0.3102092742919922,
+        "val_rel_fro": 0.25785475969314575
+       },
+       {
+        "step": 350,
+        "train_rel_fro": 0.45142728090286255,
+        "val_rel_fro": 0.24292948842048645
+       },
+       {
+        "step": 375,
+        "train_rel_fro": 0.334154337644577,
+        "val_rel_fro": 0.2381177544593811
+       },
+       {
+        "step": 399,
+        "train_rel_fro": 0.4003377854824066,
+        "val_rel_fro": 0.24535158276557922
+       }
+      ],
+      "train_wall_s": 10.676770210266113,
+      "beats_q3_hold": false,
+      "materially_fewer_active_bytes": true,
+      "health_verdict": "UNHEALTHY"
+     }
+    },
+    "2560": {
+     "width": 2560,
+     "underdetermined": false,
+     "bpw": {
+      "storage_bits": 629145600,
+      "active_bits": 629145600,
+      "storage_bpw": 2.3529411764705883,
+      "active_bpw": 2.3529411764705883,
+      "orig_numel": 267386880,
+      "storage_bytes": 78643200.0,
+      "active_bytes": 78643200.0
+     },
+     "byte_ratio_vs_q3_fused_active": 0.7239819004524887,
+     "weight_space_prune": {
+      "hold": {
+       "rel_fro": 0.8669898509979248,
+       "cosine": 0.713784396648407,
+       "gain": 0.06256686896085739,
+       "worst_unit": -0.6561007499694824,
+       "cosine_minus_null": 0.10116028785705566
+      },
+      "train": {
+       "rel_fro": 0.8468521237373352,
+       "cosine": 0.7483458518981934,
+       "gain": 0.08267182856798172,
+       "worst_unit": -0.5571987628936768
+      },
+      "doctor": {
+       "observed": 0.713784396648407,
+       "probed": 0.9544020295143127,
+       "worst_unit": -0.6561007499694824,
+       "gain": 0.06256686896085739,
+       "observed_rel_fro": 0.8669898509979248,
+       "probed_rel_fro": 0.6127997636795044,
+       "probed_gain": 0.16760963201522827,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.2508114385604858,
+        "probed": -0.02036778211593626,
+        "worst_unit": -1.101760709285736,
+        "gain": -0.546251166164875
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "health_verdict": "UNHEALTHY"
+     },
+     "function_space_distill": {
+      "hold": {
+       "rel_fro": 0.2696780264377594,
+       "cosine": 0.8439942598342896,
+       "gain": 0.6224905848503113,
+       "worst_unit": 0.643711268901825,
+       "cosine_minus_null": 0.23137015104293823
+      },
+      "train": {
+       "rel_fro": 0.2289726883172989,
+       "cosine": 0.9170529246330261,
+       "gain": 0.7796862721443176,
+       "worst_unit": 0.8258837461471558
+      },
+      "doctor": {
+       "observed": 0.8439942598342896,
+       "probed": 0.9510060548782349,
+       "worst_unit": -0.050978317856788635,
+       "gain": 0.23342151939868927,
+       "observed_rel_fro": 0.2696780264377594,
+       "probed_rel_fro": 0.5520256757736206,
+       "probed_gain": 0.23342151939868927,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.12060157537460325,
+        "probed": -0.023763756752014142,
+        "worst_unit": -0.4966382771730423,
+        "gain": -0.37539651572704313
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "best_step": 225,
+      "best_val_rel_fro": 0.22153230011463165,
+      "plateau": false,
+      "still_dropping_at_end": false,
+      "n_params": 39321600,
+      "curve": [
+       {
+        "step": 0,
+        "train_rel_fro": 0.7885197997093201,
+        "val_rel_fro": 0.8026973605155945
+       },
+       {
+        "step": 25,
+        "train_rel_fro": 0.5343356728553772,
+        "val_rel_fro": 0.3571232259273529
+       },
+       {
+        "step": 50,
+        "train_rel_fro": 0.4339059591293335,
+        "val_rel_fro": 0.4173629879951477
+       },
+       {
+        "step": 75,
+        "train_rel_fro": 0.5042622685432434,
+        "val_rel_fro": 0.3123413622379303
+       },
+       {
+        "step": 100,
+        "train_rel_fro": 0.29772719740867615,
+        "val_rel_fro": 0.2735624313354492
+       },
+       {
+        "step": 125,
+        "train_rel_fro": 0.4077816903591156,
+        "val_rel_fro": 0.31238216161727905
+       },
+       {
+        "step": 150,
+        "train_rel_fro": 0.31572166085243225,
+        "val_rel_fro": 0.25425243377685547
+       },
+       {
+        "step": 175,
+        "train_rel_fro": 0.3357733190059662,
+        "val_rel_fro": 0.24591562151908875
+       },
+       {
+        "step": 200,
+        "train_rel_fro": 0.37009701132774353,
+        "val_rel_fro": 0.23890797793865204
+       },
+       {
+        "step": 225,
+        "train_rel_fro": 0.2955904006958008,
+        "val_rel_fro": 0.22153230011463165
+       },
+       {
+        "step": 250,
+        "train_rel_fro": 0.16859984397888184,
+        "val_rel_fro": 0.22216758131980896
+       },
+       {
+        "step": 275,
+        "train_rel_fro": 0.3602871000766754,
+        "val_rel_fro": 0.24797137081623077
+       },
+       {
+        "step": 300,
+        "train_rel_fro": 0.31608977913856506,
+        "val_rel_fro": 0.2469092607498169
+       },
+       {
+        "step": 325,
+        "train_rel_fro": 0.2765534222126007,
+        "val_rel_fro": 0.23963633179664612
+       },
+       {
+        "step": 350,
+        "train_rel_fro": 0.3137030005455017,
+        "val_rel_fro": 0.48930251598358154
+       },
+       {
+        "step": 375,
+        "train_rel_fro": 0.2553331255912781,
+        "val_rel_fro": 0.23515571653842926
+       },
+       {
+        "step": 399,
+        "train_rel_fro": 0.2902187407016754,
+        "val_rel_fro": 0.24348808825016022
+       }
+      ],
+      "train_wall_s": 23.19116735458374,
+      "beats_q3_hold": false,
+      "materially_fewer_active_bytes": true,
+      "health_verdict": "UNHEALTHY"
+     }
+    },
+    "3536": {
+     "width": 3536,
+     "underdetermined": true,
+     "bpw": {
+      "storage_bits": 869007360,
+      "active_bits": 869007360,
+      "storage_bpw": 3.25,
+      "active_bpw": 3.25,
+      "orig_numel": 267386880,
+      "storage_bytes": 108625920.0,
+      "active_bytes": 108625920.0
+     },
+     "byte_ratio_vs_q3_fused_active": 1.0,
+     "weight_space_prune": {
+      "hold": {
+       "rel_fro": 0.8345167636871338,
+       "cosine": 0.767423689365387,
+       "gain": 0.07514914870262146,
+       "worst_unit": -0.5419403314590454,
+       "cosine_minus_null": 0.15479958057403564
+      },
+      "train": {
+       "rel_fro": 0.8060000538825989,
+       "cosine": 0.794002115726471,
+       "gain": 0.09733016788959503,
+       "worst_unit": -0.454822301864624
+      },
+      "doctor": {
+       "observed": 0.767423689365387,
+       "probed": 0.9646847248077393,
+       "worst_unit": -0.5419403314590454,
+       "gain": 0.07514914870262146,
+       "observed_rel_fro": 0.8345167636871338,
+       "probed_rel_fro": 0.5418935418128967,
+       "probed_gain": 0.23475167155265808,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.19717214584350584,
+        "probed": -0.010085086822509748,
+        "worst_unit": -0.9876002907752991,
+        "gain": -0.5336688864231109
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "health_verdict": "UNHEALTHY"
+     },
+     "function_space_distill": {
+      "hold": {
+       "rel_fro": 0.28726786375045776,
+       "cosine": 0.8737651705741882,
+       "gain": 0.6175034046173096,
+       "worst_unit": 0.6177771091461182,
+       "cosine_minus_null": 0.2611410617828369
+      },
+      "train": {
+       "rel_fro": 0.2359902560710907,
+       "cosine": 0.9420803189277649,
+       "gain": 0.7474668025970459,
+       "worst_unit": 0.7975164651870728
+      },
+      "doctor": {
+       "observed": 0.8737651705741882,
+       "probed": 0.9583433866500854,
+       "worst_unit": 0.12615731358528137,
+       "gain": 0.22283940017223358,
+       "observed_rel_fro": 0.28726786375045776,
+       "probed_rel_fro": 0.4957633316516876,
+       "probed_gain": 0.22283940017223358,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.09083066463470457,
+        "probed": -0.016426424980163556,
+        "worst_unit": -0.3195026457309723,
+        "gain": -0.3859786349534988
+       },
+       "worst_axis": "gain",
+       "healthy": false
+      },
+      "best_step": 250,
+      "best_val_rel_fro": 0.24877814948558807,
+      "plateau": false,
+      "still_dropping_at_end": false,
+      "n_params": 54312960,
+      "curve": [
+       {
+        "step": 0,
+        "train_rel_fro": 0.7102402448654175,
+        "val_rel_fro": 0.7698454856872559
+       },
+       {
+        "step": 25,
+        "train_rel_fro": 0.5754871368408203,
+        "val_rel_fro": 0.32817599177360535
+       },
+       {
+        "step": 50,
+        "train_rel_fro": 0.36355191469192505,
+        "val_rel_fro": 0.4044840931892395
+       },
+       {
+        "step": 75,
+        "train_rel_fro": 0.4817345440387726,
+        "val_rel_fro": 0.28327515721321106
+       },
+       {
+        "step": 100,
+        "train_rel_fro": 0.26457783579826355,
+        "val_rel_fro": 0.3865257799625397
+       },
+       {
+        "step": 125,
+        "train_rel_fro": 0.3563666343688965,
+        "val_rel_fro": 0.3268324136734009
+       },
+       {
+        "step": 150,
+        "train_rel_fro": 0.4620976746082306,
+        "val_rel_fro": 0.26033368706703186
+       },
+       {
+        "step": 175,
+        "train_rel_fro": 0.3163962960243225,
+        "val_rel_fro": 0.3240640461444855
+       },
+       {
+        "step": 200,
+        "train_rel_fro": 0.32296961545944214,
+        "val_rel_fro": 0.2952173948287964
+       },
+       {
+        "step": 225,
+        "train_rel_fro": 0.2880306541919708,
+        "val_rel_fro": 0.26267942786216736
+       },
+       {
+        "step": 250,
+        "train_rel_fro": 0.33031752705574036,
+        "val_rel_fro": 0.24877814948558807
+       },
+       {
+        "step": 275,
+        "train_rel_fro": 0.3065212666988373,
+        "val_rel_fro": 0.4523991346359253
+       },
+       {
+        "step": 300,
+        "train_rel_fro": 0.26899245381355286,
+        "val_rel_fro": 0.2725865840911865
+       },
+       {
+        "step": 325,
+        "train_rel_fro": 0.3129764497280121,
+        "val_rel_fro": 0.2579353451728821
+       },
+       {
+        "step": 350,
+        "train_rel_fro": 0.2686346769332886,
+        "val_rel_fro": 0.47595924139022827
+       },
+       {
+        "step": 375,
+        "train_rel_fro": 0.22208772599697113,
+        "val_rel_fro": 0.26015591621398926
+       },
+       {
+        "step": 399,
+        "train_rel_fro": 0.23866166174411774,
+        "val_rel_fro": 0.2623857855796814
+       }
+      ],
+      "train_wall_s": 28.564306020736694,
+      "beats_q3_hold": false,
+      "materially_fewer_active_bytes": false,
+      "health_verdict": "UNHEALTHY"
+     }
+    }
+   }
+  },
+  "31": {
+   "q3": {
+    "hold": {
+     "rel_fro": 0.3978462517261505,
+     "cosine": 0.9260261654853821,
+     "gain": 0.765886664390564,
+     "worst_unit": 0.8396581411361694,
+     "cosine_minus_null": 0.7583750933408737
+    },
+    "train": {
+     "rel_fro": 0.3919661343097687,
+     "cosine": 0.9283164143562317,
+     "gain": 0.7993283271789551,
+     "worst_unit": 0.8050143718719482
+    },
+    "doctor": {
+     "observed": 0.9260261654853821,
+     "probed": 0.9163733720779419,
+     "worst_unit": 0.8396581411361694,
+     "gain": 0.765886664390564,
+     "observed_rel_fro": 0.3978462517261505,
+     "probed_rel_fro": 0.44045695662498474,
+     "probed_gain": 0.8180222511291504,
+     "mode": "relative_to_q3",
+     "deficit": {
+      "observed": 0.020000000000000018,
+      "probed": 0.020000000000000018,
+      "worst_unit": 0.09999999999999998,
+      "gain": 0.020000000000000018
+     },
+     "worst_axis": "observed",
+     "healthy": true
+    },
+    "bpw_fused": {
+     "storage_bits": 869007360,
+     "active_bits": 869007360,
+     "storage_bpw": 3.25,
+     "active_bpw": 3.25,
+     "orig_numel": 267386880,
+     "storage_bytes": 108625920.0,
+     "active_bytes": 108625920.0
+    },
+    "bpw_decoded_f16": {
+     "storage_bits": 869007360,
+     "active_bits": 4278190080,
+     "storage_bpw": 3.25,
+     "active_bpw": 16.0,
+     "orig_numel": 267386880,
+     "storage_bytes": 108625920.0,
+     "active_bytes": 534773760.0
+    },
+    "health_verdict": "HEALTHY (incumbent reference)"
+   },
+   "widths": {
+    "1024": {
+     "width": 1024,
+     "underdetermined": false,
+     "bpw": {
+      "storage_bits": 251658240,
+      "active_bits": 251658240,
+      "storage_bpw": 0.9411764705882353,
+      "active_bpw": 0.9411764705882353,
+      "orig_numel": 267386880,
+      "storage_bytes": 31457280.0,
+      "active_bytes": 31457280.0
+     },
+     "byte_ratio_vs_q3_fused_active": 0.2895927601809955,
+     "weight_space_prune": {
+      "hold": {
+       "rel_fro": 0.9474976658821106,
+       "cosine": 0.32590052485466003,
+       "gain": 0.11817905306816101,
+       "worst_unit": 0.14634810388088226,
+       "cosine_minus_null": 0.15824945271015167
+      },
+      "train": {
+       "rel_fro": 0.9479573965072632,
+       "cosine": 0.32484129071235657,
+       "gain": 0.12453813850879669,
+       "worst_unit": 0.15423931181430817
+      },
+      "doctor": {
+       "observed": 0.32590052485466003,
+       "probed": 0.35019201040267944,
+       "worst_unit": 0.0021992025431245565,
+       "gain": 0.11817905306816101,
+       "observed_rel_fro": 0.9474976658821106,
+       "probed_rel_fro": 0.9346124529838562,
+       "probed_gain": 0.15289552509784698,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.580125640630722,
+        "probed": -0.5461813616752624,
+        "worst_unit": -0.7374589385930449,
+        "gain": -0.6277076113224029
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "health_verdict": "UNHEALTHY"
+     },
+     "function_space_distill": {
+      "hold": {
+       "rel_fro": 0.8775181770324707,
+       "cosine": 0.48412612080574036,
+       "gain": 0.4841139018535614,
+       "worst_unit": 0.31730934977531433,
+       "cosine_minus_null": 0.316475048661232
+      },
+      "train": {
+       "rel_fro": 0.6862114667892456,
+       "cosine": 0.7177003026008606,
+       "gain": 0.6231966018676758,
+       "worst_unit": 0.643743097782135
+      },
+      "doctor": {
+       "observed": 0.48412612080574036,
+       "probed": 0.22864848375320435,
+       "worst_unit": -0.02014218643307686,
+       "gain": 0.2789708077907562,
+       "observed_rel_fro": 0.8775181770324707,
+       "probed_rel_fro": 1.0281404256820679,
+       "probed_gain": 0.2789708077907562,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.4219000446796417,
+        "probed": -0.6677248883247375,
+        "worst_unit": -0.7598003275692463,
+        "gain": -0.4669158565998077
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "best_step": 250,
+      "best_val_rel_fro": 0.8215571641921997,
+      "plateau": true,
+      "still_dropping_at_end": false,
+      "n_params": 15728640,
+      "curve": [
+       {
+        "step": 0,
+        "train_rel_fro": 0.9494532942771912,
+        "val_rel_fro": 0.9446396231651306
+       },
+       {
+        "step": 25,
+        "train_rel_fro": 0.8783518671989441,
+        "val_rel_fro": 0.8914320468902588
+       },
+       {
+        "step": 50,
+        "train_rel_fro": 0.8349185585975647,
+        "val_rel_fro": 0.8659173250198364
+       },
+       {
+        "step": 75,
+        "train_rel_fro": 0.8112457990646362,
+        "val_rel_fro": 0.8494990468025208
+       },
+       {
+        "step": 100,
+        "train_rel_fro": 0.7784730195999146,
+        "val_rel_fro": 0.839492917060852
+       },
+       {
+        "step": 125,
+        "train_rel_fro": 0.7598302364349365,
+        "val_rel_fro": 0.8324577808380127
+       },
+       {
+        "step": 150,
+        "train_rel_fro": 0.7386569976806641,
+        "val_rel_fro": 0.8273900747299194
+       },
+       {
+        "step": 175,
+        "train_rel_fro": 0.7256859540939331,
+        "val_rel_fro": 0.8247483968734741
+       },
+       {
+        "step": 200,
+        "train_rel_fro": 0.71494060754776,
+        "val_rel_fro": 0.8229368925094604
+       },
+       {
+        "step": 225,
+        "train_rel_fro": 0.6993273496627808,
+        "val_rel_fro": 0.821570873260498
+       },
+       {
+        "step": 250,
+        "train_rel_fro": 0.6846763491630554,
+        "val_rel_fro": 0.8215571641921997
+       },
+       {
+        "step": 275,
+        "train_rel_fro": 0.674115002155304,
+        "val_rel_fro": 0.8234453201293945
+       },
+       {
+        "step": 300,
+        "train_rel_fro": 0.6700001358985901,
+        "val_rel_fro": 0.8230135440826416
+       },
+       {
+        "step": 325,
+        "train_rel_fro": 0.6600040197372437,
+        "val_rel_fro": 0.8239372372627258
+       },
+       {
+        "step": 350,
+        "train_rel_fro": 0.6540314555168152,
+        "val_rel_fro": 0.8256598114967346
+       },
+       {
+        "step": 375,
+        "train_rel_fro": 0.6442638039588928,
+        "val_rel_fro": 0.8268660306930542
+       },
+       {
+        "step": 399,
+        "train_rel_fro": 0.6373201608657837,
+        "val_rel_fro": 0.8284984827041626
+       }
+      ],
+      "train_wall_s": 9.97157597541809,
+      "beats_q3_hold": false,
+      "materially_fewer_active_bytes": true,
+      "health_verdict": "UNHEALTHY"
+     }
+    },
+    "2560": {
+     "width": 2560,
+     "underdetermined": false,
+     "bpw": {
+      "storage_bits": 629145600,
+      "active_bits": 629145600,
+      "storage_bpw": 2.3529411764705883,
+      "active_bpw": 2.3529411764705883,
+      "orig_numel": 267386880,
+      "storage_bytes": 78643200.0,
+      "active_bytes": 78643200.0
+     },
+     "byte_ratio_vs_q3_fused_active": 0.7239819004524887,
+     "weight_space_prune": {
+      "hold": {
+       "rel_fro": 0.8865699172019958,
+       "cosine": 0.466399222612381,
+       "gain": 0.19162940979003906,
+       "worst_unit": 0.2656859755516052,
+       "cosine_minus_null": 0.2987481504678726
+      },
+      "train": {
+       "rel_fro": 0.8879705667495728,
+       "cosine": 0.4661344885826111,
+       "gain": 0.20275500416755676,
+       "worst_unit": 0.3210015594959259
+      },
+      "doctor": {
+       "observed": 0.466399222612381,
+       "probed": 0.5007096529006958,
+       "worst_unit": 0.20097433030605316,
+       "gain": 0.19162940979003906,
+       "observed_rel_fro": 0.8865699172019958,
+       "probed_rel_fro": 0.8631937503814697,
+       "probed_gain": 0.25573840737342834,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.4396269428730011,
+        "probed": -0.3956637191772461,
+        "worst_unit": -0.5386838108301163,
+        "gain": -0.5542572546005249
+       },
+       "worst_axis": "gain",
+       "healthy": false
+      },
+      "health_verdict": "UNHEALTHY"
+     },
+     "function_space_distill": {
+      "hold": {
+       "rel_fro": 0.8184722065925598,
+       "cosine": 0.5779491066932678,
+       "gain": 0.571076512336731,
+       "worst_unit": 0.44708251953125,
+       "cosine_minus_null": 0.41029803454875946
+      },
+      "train": {
+       "rel_fro": 0.5761133432388306,
+       "cosine": 0.8098663687705994,
+       "gain": 0.7332990765571594,
+       "worst_unit": 0.7586658000946045
+      },
+      "doctor": {
+       "observed": 0.5779491066932678,
+       "probed": 0.4160577356815338,
+       "worst_unit": 0.10210225731134415,
+       "gain": 0.3919863700866699,
+       "observed_rel_fro": 0.8184722065925598,
+       "probed_rel_fro": 0.9315969347953796,
+       "probed_gain": 0.3919863700866699,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.32807705879211424,
+        "probed": -0.48031563639640806,
+        "worst_unit": -0.6375558838248253,
+        "gain": -0.353900294303894
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "best_step": 150,
+      "best_val_rel_fro": 0.7586798071861267,
+      "plateau": false,
+      "still_dropping_at_end": false,
+      "n_params": 39321600,
+      "curve": [
+       {
+        "step": 0,
+        "train_rel_fro": 0.8899669647216797,
+        "val_rel_fro": 0.8808058500289917
+       },
+       {
+        "step": 25,
+        "train_rel_fro": 0.7733796834945679,
+        "val_rel_fro": 0.8077102303504944
+       },
+       {
+        "step": 50,
+        "train_rel_fro": 0.7066889405250549,
+        "val_rel_fro": 0.7813267707824707
+       },
+       {
+        "step": 75,
+        "train_rel_fro": 0.6718175411224365,
+        "val_rel_fro": 0.7675541639328003
+       },
+       {
+        "step": 100,
+        "train_rel_fro": 0.6287232041358948,
+        "val_rel_fro": 0.761811375617981
+       },
+       {
+        "step": 125,
+        "train_rel_fro": 0.6032612323760986,
+        "val_rel_fro": 0.7598247528076172
+       },
+       {
+        "step": 150,
+        "train_rel_fro": 0.573775589466095,
+        "val_rel_fro": 0.7586798071861267
+       },
+       {
+        "step": 175,
+        "train_rel_fro": 0.5609264969825745,
+        "val_rel_fro": 0.7600796818733215
+       },
+       {
+        "step": 200,
+        "train_rel_fro": 0.5395511388778687,
+        "val_rel_fro": 0.7617373466491699
+       },
+       {
+        "step": 225,
+        "train_rel_fro": 0.5256812572479248,
+        "val_rel_fro": 0.7638987898826599
+       },
+       {
+        "step": 250,
+        "train_rel_fro": 0.5057671070098877,
+        "val_rel_fro": 0.766903817653656
+       },
+       {
+        "step": 275,
+        "train_rel_fro": 0.48855939507484436,
+        "val_rel_fro": 0.7707114815711975
+       },
+       {
+        "step": 300,
+        "train_rel_fro": 0.4814964830875397,
+        "val_rel_fro": 0.7741401791572571
+       },
+       {
+        "step": 325,
+        "train_rel_fro": 0.4727078080177307,
+        "val_rel_fro": 0.7783730626106262
+       },
+       {
+        "step": 350,
+        "train_rel_fro": 0.45779290795326233,
+        "val_rel_fro": 0.7825212478637695
+       },
+       {
+        "step": 375,
+        "train_rel_fro": 0.4491167366504669,
+        "val_rel_fro": 0.7863768339157104
+       },
+       {
+        "step": 399,
+        "train_rel_fro": 0.44084101915359497,
+        "val_rel_fro": 0.7901829481124878
+       }
+      ],
+      "train_wall_s": 20.998279809951782,
+      "beats_q3_hold": false,
+      "materially_fewer_active_bytes": true,
+      "health_verdict": "UNHEALTHY"
+     }
+    },
+    "3536": {
+     "width": 3536,
+     "underdetermined": true,
+     "bpw": {
+      "storage_bits": 869007360,
+      "active_bits": 869007360,
+      "storage_bpw": 3.25,
+      "active_bpw": 3.25,
+      "orig_numel": 267386880,
+      "storage_bytes": 108625920.0,
+      "active_bytes": 108625920.0
+     },
+     "byte_ratio_vs_q3_fused_active": 1.0,
+     "weight_space_prune": {
+      "hold": {
+       "rel_fro": 0.8514018058776855,
+       "cosine": 0.528354823589325,
+       "gain": 0.23163823783397675,
+       "worst_unit": 0.28411757946014404,
+       "cosine_minus_null": 0.3607037514448166
+      },
+      "train": {
+       "rel_fro": 0.8529514074325562,
+       "cosine": 0.5282970070838928,
+       "gain": 0.2468133419752121,
+       "worst_unit": 0.36427271366119385
+      },
+      "doctor": {
+       "observed": 0.528354823589325,
+       "probed": 0.567841112613678,
+       "worst_unit": 0.28411757946014404,
+       "gain": 0.23163823783397675,
+       "observed_rel_fro": 0.8514018058776855,
+       "probed_rel_fro": 0.8206775188446045,
+       "probed_gain": 0.3057292699813843,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.3776713418960571,
+        "probed": -0.3285322594642639,
+        "worst_unit": -0.4555405616760254,
+        "gain": -0.5142484265565872
+       },
+       "worst_axis": "gain",
+       "healthy": false
+      },
+      "health_verdict": "UNHEALTHY"
+     },
+     "function_space_distill": {
+      "hold": {
+       "rel_fro": 0.7850154638290405,
+       "cosine": 0.6220824718475342,
+       "gain": 0.6105802059173584,
+       "worst_unit": 0.48768794536590576,
+       "cosine_minus_null": 0.4544313997030258
+      },
+      "train": {
+       "rel_fro": 0.5264101028442383,
+       "cosine": 0.8435705304145813,
+       "gain": 0.7628092169761658,
+       "worst_unit": 0.8043773770332336
+      },
+      "doctor": {
+       "observed": 0.6220824718475342,
+       "probed": 0.4955591857433319,
+       "worst_unit": 0.20429636538028717,
+       "gain": 0.4381439685821533,
+       "observed_rel_fro": 0.7850154638290405,
+       "probed_rel_fro": 0.882300615310669,
+       "probed_gain": 0.4381439685821533,
+       "mode": "relative_to_q3",
+       "deficit": {
+        "observed": -0.2839436936378479,
+        "probed": -0.40081418633460997,
+        "worst_unit": -0.5353617757558823,
+        "gain": -0.3077426958084106
+       },
+       "worst_axis": "worst_unit",
+       "healthy": false
+      },
+      "best_step": 125,
+      "best_val_rel_fro": 0.7245302796363831,
+      "plateau": false,
+      "still_dropping_at_end": false,
+      "n_params": 54312960,
+      "curve": [
+       {
+        "step": 0,
+        "train_rel_fro": 0.8550662398338318,
+        "val_rel_fro": 0.8435413837432861
+       },
+       {
+        "step": 25,
+        "train_rel_fro": 0.7194835543632507,
+        "val_rel_fro": 0.7648683190345764
+       },
+       {
+        "step": 50,
+        "train_rel_fro": 0.6418070793151855,
+        "val_rel_fro": 0.7404521107673645
+       },
+       {
+        "step": 75,
+        "train_rel_fro": 0.6043052673339844,
+        "val_rel_fro": 0.7286218404769897
+       },
+       {
+        "step": 100,
+        "train_rel_fro": 0.5570023059844971,
+        "val_rel_fro": 0.7248143553733826
+       },
+       {
+        "step": 125,
+        "train_rel_fro": 0.5293624997138977,
+        "val_rel_fro": 0.7245302796363831
+       },
+       {
+        "step": 150,
+        "train_rel_fro": 0.49675822257995605,
+        "val_rel_fro": 0.7254581451416016
+       },
+       {
+        "step": 175,
+        "train_rel_fro": 0.4833257496356964,
+        "val_rel_fro": 0.7282986044883728
+       },
+       {
+        "step": 200,
+        "train_rel_fro": 0.4596041440963745,
+        "val_rel_fro": 0.7318421602249146
+       },
+       {
+        "step": 225,
+        "train_rel_fro": 0.4471648037433624,
+        "val_rel_fro": 0.7351986765861511
+       },
+       {
+        "step": 250,
+        "train_rel_fro": 0.4274265170097351,
+        "val_rel_fro": 0.7394779920578003
+       },
+       {
+        "step": 275,
+        "train_rel_fro": 0.4080018401145935,
+        "val_rel_fro": 0.7441594004631042
+       },
+       {
+        "step": 300,
+        "train_rel_fro": 0.40138670802116394,
+        "val_rel_fro": 0.7489861249923706
+       },
+       {
+        "step": 325,
+        "train_rel_fro": 0.39273977279663086,
+        "val_rel_fro": 0.7531313896179199
+       },
+       {
+        "step": 350,
+        "train_rel_fro": 0.3775750696659088,
+        "val_rel_fro": 0.7581694722175598
+       },
+       {
+        "step": 375,
+        "train_rel_fro": 0.36864399909973145,
+        "val_rel_fro": 0.7618791460990906
+       },
+       {
+        "step": 399,
+        "train_rel_fro": 0.35961610078811646,
+        "val_rel_fro": 0.7665560841560364
+       }
+      ],
+      "train_wall_s": 28.724677801132202,
+      "beats_q3_hold": false,
+      "materially_fewer_active_bytes": false,
+      "health_verdict": "UNHEALTHY"
+     }
+    }
+   }
+  }
+ },
+ "scale_trap": {
+  "linear_down_proj": {
+   "rel_fro": 0.9899997711181641,
+   "cosine": 1.0,
+   "gain": 0.009999956004321575,
+   "worst_unit": 0.9999983906745911,
+   "organ": "down_proj"
+  },
+  "mlp_swiglu": {
+   "rel_fro": 0.9999992847442627,
+   "cosine": 0.9599384069442749,
+   "gain": 4.2255450694028696e-07,
+   "worst_unit": 0.3984835147857666,
+   "organ": "mlp_swiglu"
+  },
+  "pass_if": "linear: cosine~1 and gain~0.01; MLP: cosine still high, gain~0, rel_fro~1. GO uses rel_fro+gain, never cosine alone.",
+  "rejects_scaled_artifact": true
+ },
+ "null_baseline": {
+  "0": {
+   "hold_constant_mean_cosine": 0.6126241087913513,
+   "note": "every cosine below is paired with this null; raw cosine near the null is not fidelity"
+  },
+  "31": {
+   "hold_constant_mean_cosine": 0.16765107214450836,
+   "note": "every cosine below is paired with this null; raw cosine near the null is not fidelity"
+  }
+ },
+ "one_hop": {
+  "kind": "residual_injection",
+  "claim_boundary": "ONE hop only. Mixer/attn of L1 is not replayed; e_L0 is added to captured L1 MLP input. First-order residual model, not a 64-layer cascade.",
+  "src_layer": 0,
+  "dst_layer": 1,
+  "n_hold": 2212,
+  "rows": {
+   "q3": {
+    "rel_fro": 0.05944506824016571,
+    "cosine": 0.999667763710022,
+    "gain": 0.9099790453910828,
+    "worst_unit": 0.9661104083061218,
+    "injected_rel": 0.17752763628959656,
+    "amplification": 0.33484965767918184
+   },
+   "distill_1024": {
+    "rel_fro": 0.08274906873703003,
+    "cosine": 0.9962924122810364,
+    "gain": 0.911246657371521,
+    "worst_unit": 0.992609441280365,
+    "injected_rel": 0.29043301939964294,
+    "amplification": 0.2849161879323552,
+    "amp_vs_q3": 0.8508779429762245
+   },
+   "prune_1024": {
+    "rel_fro": 0.19821681082248688,
+    "cosine": 0.9921857118606567,
+    "gain": 0.742621660232544,
+    "worst_unit": 0.6728505492210388,
+    "injected_rel": 0.9310580492019653,
+    "amplification": 0.212894148750858
+   },
+   "distill_2560": {
+    "rel_fro": 0.07244955748319626,
+    "cosine": 0.9971466660499573,
+    "gain": 0.9232218265533447,
+    "worst_unit": 0.9922168850898743,
+    "injected_rel": 0.2696780264377594,
+    "amplification": 0.26865206053381335,
+    "amp_vs_q3": 0.8023065109154385
+   },
+   "prune_2560": {
+    "rel_fro": 0.18453733623027802,
+    "cosine": 0.9933417439460754,
+    "gain": 0.746458888053894,
+    "worst_unit": 0.7400115728378296,
+    "injected_rel": 0.8669898509979248,
+    "amplification": 0.2128483234467755
+   },
+   "distill_3536": {
+    "rel_fro": 0.07430557161569595,
+    "cosine": 0.9975656867027283,
+    "gain": 0.9188622832298279,
+    "worst_unit": 0.9861291646957397,
+    "injected_rel": 0.28726786375045776,
+    "amplification": 0.2586630145314246,
+    "amp_vs_q3": 0.7724750753045375
+   },
+   "prune_3536": {
+    "rel_fro": 0.1781734675168991,
+    "cosine": 0.993979811668396,
+    "gain": 0.7540221810340881,
+    "worst_unit": 0.7631779313087463,
+    "injected_rel": 0.8345167636871338,
+    "amplification": 0.21350495912110593
+   }
+  }
+ },
+ "nns014_control": {
+  "0": {
+   "rank": 803,
+   "matched_byte_rank_formula": 804,
+   "functional_pca_train": {
+    "rel_fro": 0.14675094187259674,
+    "cosine": 0.9539666771888733,
+    "gain": 0.9112998247146606,
+    "worst_unit": 0.9114453196525574
+   },
+   "functional_pca_hold": {
+    "rel_fro": 0.20203207433223724,
+    "cosine": 0.898399293422699,
+    "gain": 0.7512352466583252,
+    "worst_unit": 0.7521468997001648
+   },
+   "weight_svd_hold": {
+    "rel_fro": 0.5864777565002441,
+    "cosine": 0.8549880385398865,
+    "gain": 0.15246571600437164,
+    "worst_unit": -0.7286666631698608
+   },
+   "q3_hold": {
+    "rel_fro": 0.16726469993591309,
+    "cosine": 0.9892627596855164,
+    "gain": 0.621121346950531,
+    "worst_unit": 0.5963032841682434
+   },
+   "bpw_functional_factors": {
+    "storage_bits": 289439744,
+    "active_bits": 289439744,
+    "storage_bpw": 3.2474264705882354,
+    "active_bpw": 3.2474264705882354,
+    "orig_numel": 89128960,
+    "storage_bytes": 36179968.0,
+    "active_bytes": 36179968.0
+   },
+   "bpw_q3": {
+    "storage_bits": 289669120,
+    "active_bits": 289669120,
+    "storage_bpw": 3.25,
+    "active_bpw": 3.25,
+    "orig_numel": 89128960,
+    "storage_bytes": 36208640.0,
+    "active_bytes": 36208640.0
+   },
+   "overfit_as_nns014": true,
+   "health_verdict": "UNHEALTHY as a generalizing codec"
+  },
+  "31": {
+   "rank": 803,
+   "matched_byte_rank_formula": 804,
+   "functional_pca_train": {
+    "rel_fro": 0.5478209853172302,
+    "cosine": 0.8261383771896362,
+    "gain": 0.6607813239097595,
+    "worst_unit": 0.6650424599647522
+   },
+   "functional_pca_hold": {
+    "rel_fro": 0.6930344104766846,
+    "cosine": 0.7159399390220642,
+    "gain": 0.530405580997467,
+    "worst_unit": 0.467227578163147
+   },
+   "weight_svd_hold": {
+    "rel_fro": 0.7177928686141968,
+    "cosine": 0.6956697702407837,
+    "gain": 0.340023398399353,
+    "worst_unit": 0.3498879373073578
+   },
+   "q3_hold": {
+    "rel_fro": 0.23222194612026215,
+    "cosine": 0.9743369817733765,
+    "gain": 0.9344872832298279,
+    "worst_unit": 0.9576531052589417
+   },
+   "bpw_functional_factors": {
+    "storage_bits": 289439744,
+    "active_bits": 289439744,
+    "storage_bpw": 3.2474264705882354,
+    "active_bpw": 3.2474264705882354,
+    "orig_numel": 89128960,
+    "storage_bytes": 36179968.0,
+    "active_bytes": 36179968.0
+   },
+   "bpw_q3": {
+    "storage_bits": 289669120,
+    "active_bits": 289669120,
+    "storage_bpw": 3.25,
+    "active_bpw": 3.25,
+    "orig_numel": 89128960,
+    "storage_bytes": 36208640.0,
+    "active_bytes": 36208640.0
+   },
+   "overfit_as_nns014": false,
+   "health_verdict": "see numbers"
+  }
+ },
+ "watched_fail": [
+  "0.01*W linear down_proj cosine=1.000000 (blind) gain=0.010000 (rejects); MLP cosine=0.959938 gain=0.000000 rel_fro=0.999999. Cosine is not a GO metric.",
+  "L0 down_proj output-PCA r=803 train 0.1468 < q3 0.1673 but hold 0.2020 > q3 (NNS-014 replicated on this capture)",
+  "L0 I'=1024 distill Doctor UNHEALTHY vs q3 on worst_unit (observed=0.7868 probed=0.9063 gain=0.2098 worst_unit=-0.2619)",
+  "L0 I'=2560 distill Doctor UNHEALTHY vs q3 on worst_unit (observed=0.8440 probed=0.9510 gain=0.2334 worst_unit=-0.0510)",
+  "L0 I'=3536 distill Doctor UNHEALTHY vs q3 on gain (observed=0.8738 probed=0.9583 gain=0.2228 worst_unit=0.1262)",
+  "L31 I'=1024 distill Doctor UNHEALTHY vs q3 on worst_unit (observed=0.4841 probed=0.2286 gain=0.2790 worst_unit=-0.0201)",
+  "L31 I'=2560 distill Doctor UNHEALTHY vs q3 on worst_unit (observed=0.5779 probed=0.4161 gain=0.3920 worst_unit=0.1021)",
+  "L31 I'=3536 distill Doctor UNHEALTHY vs q3 on worst_unit (observed=0.6221 probed=0.4956 gain=0.4381 worst_unit=0.2043)",
+  "one-hop residual injection L0\u2192L1: q3 amp=0.335; distill I'=1024 amp=0.285 (vs q3 0.851x), distill I'=2560 amp=0.269 (vs q3 0.802x), distill I'=3536 amp=0.259 (vs q3 0.772x)",
+  "Synthetic activations were not used; prior sub-bit negatives on this family were Gaussian-proxy artifacts.",
+  "Raw cosine without null is meaningless; measured null on hold MLP outputs is per-layer in null_baseline (not assumed 0.898).",
+  "Low storage BPW without a health verdict is not a result; every candidate has HEALTHY/UNHEALTHY vs q3 Doctor.",
+  "q3 storage BPW 3.25 is not q3 decoded-f16 active BPW 16.0; both are in accounting.",
+  "Student-model compounding (closed at layers 4-8) is not this experiment; one residual hop is the only downstream claim."
+ ],
+ "verdict": {
+  "decision": "NO-GO",
+  "deciding_number": 0.4206259548664093,
+  "deciding_number_meaning": "worst L0/L31 hold rel-fro gap of I'=2560 vs q3 (positive = worse than q3). Reopen needs this <= 0 AND byte_ratio <= 0.9 AND Doctor healthy.",
+  "headline_width": 2560,
+  "materially_fewer_ratio": 0.9,
+  "go_reasons": [],
+  "nogo_reasons": [
+   "L0 I'=1024: hold rel_fro 0.2904 > q3 0.1775 (gap +0.1129); Doctor UNHEALTHY on worst_unit",
+   "L0 I'=2560: hold rel_fro 0.2697 > q3 0.1775 (gap +0.0922); Doctor UNHEALTHY on worst_unit",
+   "L0 I'=3536: hold rel_fro 0.2873 > q3 0.1775 (gap +0.1097); active bytes 1.000 of q3 fused (need \u2264 0.9); Doctor UNHEALTHY on gain",
+   "L31 I'=1024: hold rel_fro 0.8775 > q3 0.3978 (gap +0.4797); Doctor UNHEALTHY on worst_unit",
+   "L31 I'=2560: hold rel_fro 0.8185 > q3 0.3978 (gap +0.4206); Doctor UNHEALTHY on worst_unit",
+   "L31 I'=3536: hold rel_fro 0.7850 > q3 0.3978 (gap +0.3872); active bytes 1.000 of q3 fused (need \u2264 0.9); Doctor UNHEALTHY on worst_unit"
+  ],
+  "per_candidate": [
+   {
+    "layer": 0,
+    "width": 1024,
+    "hold_rel_fro": 0.29043301939964294,
+    "q3_hold_rel_fro": 0.17752763628959656,
+    "quality_gap": 0.11290538311004639,
+    "prune_hold_rel_fro": 0.9310580492019653,
+    "distill_beats_prune": true,
+    "byte_ratio_vs_q3_fused_active": 0.2895927601809955,
+    "storage_bpw": 0.9411764705882353,
+    "active_bpw": 0.9411764705882353,
+    "q3_storage_bpw": 3.25,
+    "q3_active_fused_bpw": 3.25,
+    "doctor_healthy": false,
+    "health_verdict": "UNHEALTHY",
+    "hop_ok": true,
+    "plateau": false,
+    "still_dropping_at_end": false,
+    "underdetermined": false,
+    "pass_quality": false,
+    "pass_bytes": true,
+    "pass_doctor": false,
+    "pass_all": false
+   },
+   {
+    "layer": 0,
+    "width": 2560,
+    "hold_rel_fro": 0.2696780264377594,
+    "q3_hold_rel_fro": 0.17752763628959656,
+    "quality_gap": 0.09215039014816284,
+    "prune_hold_rel_fro": 0.8669898509979248,
+    "distill_beats_prune": true,
+    "byte_ratio_vs_q3_fused_active": 0.7239819004524887,
+    "storage_bpw": 2.3529411764705883,
+    "active_bpw": 2.3529411764705883,
+    "q3_storage_bpw": 3.25,
+    "q3_active_fused_bpw": 3.25,
+    "doctor_healthy": false,
+    "health_verdict": "UNHEALTHY",
+    "hop_ok": true,
+    "plateau": false,
+    "still_dropping_at_end": false,
+    "underdetermined": false,
+    "pass_quality": false,
+    "pass_bytes": true,
+    "pass_doctor": false,
+    "pass_all": false
+   },
+   {
+    "layer": 0,
+    "width": 3536,
+    "hold_rel_fro": 0.28726786375045776,
+    "q3_hold_rel_fro": 0.17752763628959656,
+    "quality_gap": 0.1097402274608612,
+    "prune_hold_rel_fro": 0.8345167636871338,
+    "distill_beats_prune": true,
+    "byte_ratio_vs_q3_fused_active": 1.0,
+    "storage_bpw": 3.25,
+    "active_bpw": 3.25,
+    "q3_storage_bpw": 3.25,
+    "q3_active_fused_bpw": 3.25,
+    "doctor_healthy": false,
+    "health_verdict": "UNHEALTHY",
+    "hop_ok": true,
+    "plateau": false,
+    "still_dropping_at_end": false,
+    "underdetermined": true,
+    "pass_quality": false,
+    "pass_bytes": false,
+    "pass_doctor": false,
+    "pass_all": false
+   },
+   {
+    "layer": 31,
+    "width": 1024,
+    "hold_rel_fro": 0.8775181770324707,
+    "q3_hold_rel_fro": 0.3978462517261505,
+    "quality_gap": 0.4796719253063202,
+    "prune_hold_rel_fro": 0.9474976658821106,
+    "distill_beats_prune": true,
+    "byte_ratio_vs_q3_fused_active": 0.2895927601809955,
+    "storage_bpw": 0.9411764705882353,
+    "active_bpw": 0.9411764705882353,
+    "q3_storage_bpw": 3.25,
+    "q3_active_fused_bpw": 3.25,
+    "doctor_healthy": false,
+    "health_verdict": "UNHEALTHY",
+    "hop_ok": true,
+    "plateau": true,
+    "still_dropping_at_end": false,
+    "underdetermined": false,
+    "pass_quality": false,
+    "pass_bytes": true,
+    "pass_doctor": false,
+    "pass_all": false
+   },
+   {
+    "layer": 31,
+    "width": 2560,
+    "hold_rel_fro": 0.8184722065925598,
+    "q3_hold_rel_fro": 0.3978462517261505,
+    "quality_gap": 0.4206259548664093,
+    "prune_hold_rel_fro": 0.8865699172019958,
+    "distill_beats_prune": true,
+    "byte_ratio_vs_q3_fused_active": 0.7239819004524887,
+    "storage_bpw": 2.3529411764705883,
+    "active_bpw": 2.3529411764705883,
+    "q3_storage_bpw": 3.25,
+    "q3_active_fused_bpw": 3.25,
+    "doctor_healthy": false,
+    "health_verdict": "UNHEALTHY",
+    "hop_ok": true,
+    "plateau": false,
+    "still_dropping_at_end": false,
+    "underdetermined": false,
+    "pass_quality": false,
+    "pass_bytes": true,
+    "pass_doctor": false,
+    "pass_all": false
+   },
+   {
+    "layer": 31,
+    "width": 3536,
+    "hold_rel_fro": 0.7850154638290405,
+    "q3_hold_rel_fro": 0.3978462517261505,
+    "quality_gap": 0.38716921210289,
+    "prune_hold_rel_fro": 0.8514018058776855,
+    "distill_beats_prune": true,
+    "byte_ratio_vs_q3_fused_active": 1.0,
+    "storage_bpw": 3.25,
+    "active_bpw": 3.25,
+    "q3_storage_bpw": 3.25,
+    "q3_active_fused_bpw": 3.25,
+    "doctor_healthy": false,
+    "health_verdict": "UNHEALTHY",
+    "hop_ok": true,
+    "plateau": false,
+    "still_dropping_at_end": false,
+    "underdetermined": true,
+    "pass_quality": false,
+    "pass_bytes": false,
+    "pass_doctor": false,
+    "pass_all": false
+   }
+  ],
+  "campaign_note": "Trustworthy negative for a cheap/local distill of the MLP function. The last surviving avenue named by PHASE_B_HYBRID does not deserve a campaign on this family at this capture size: held-out function-space fitting did not beat q3 at fewer active bytes, Doctor holding.",
+  "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding.",
+  "scale_trap_rejects_001W": true,
+  "null_baseline_measured": true,
+  "storage_and_active_both_reported": true,
+  "one_hop_claimed": "one residual injection only",
+  "llama_server_52484": "not used as teacher (Q5_K; NS-015)"
+ },
+ "wall_s": 278.8208260536194
+}

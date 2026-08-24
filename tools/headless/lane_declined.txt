@@ -1,0 +1,11 @@
+# Lane outputs reviewed and deliberately NOT harvested. One path per line.
+#
+# tools/headless/pytest.ini — proposed independently by g009native, g011zeroparent
+# and g027entropy. All three correctly diagnosed that collecting tools/headless
+# died on an import-time re-exec into an interpreter without pytest, but each
+# fixed it by narrowing python_files to its own test file. That would make the
+# acceptance command `python3 -m pytest tools/headless -q` exit 0 while running
+# ONE test instead of 54 — a green check measuring almost nothing. The cause is
+# fixed properly in noetic_composition._reexec_vision, which now fires only
+# under __main__, so the whole directory collects.
+tools/headless/pytest.ini

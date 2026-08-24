@@ -1,0 +1,863 @@
+{
+  "schema": "hawking.headless.c1sharedbasis_design.v1",
+  "generated_at": "2026-08-23T19:18:48Z",
+  "git_head": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "lane": "c1sharedbasis",
+  "question": "Did sharing lose on FIDELITY, or because the only way to execute it was to rebuild a dense matrix first?",
+  "answer": "FIDELITY",
+  "verdict": "NOT_WORTH_BUILDING",
+  "failure_that_killed_it": "fidelity",
+  "stop": true,
+  "scoped_refutation": "G035 lost on FUNCTION-SPACE error at matched bits (shared_beats_independent=false on 3/3 column-basis pairs). g1-shared-basis FALSIFIED this parent: adjacent flattened cosine 1e-5..8e-3, shared rank-256 residual worse than per-layer. G034 refuted the low-rank family at the coherent 3.25-bit point (2.93\u00d7 q3 error). Associativity shows native two-stage equals reconstruct-then-GEMM, so the missing kernel is not the variable that produced those errors.",
+  "decision": {
+    "question": "Did sharing lose on FIDELITY, or because the only way to execute it was to rebuild a dense matrix first?",
+    "answer": "FIDELITY",
+    "failure_that_killed_it": "fidelity",
+    "stop": true,
+    "verdict": "NOT_WORTH_BUILDING",
+    "scoped_refutation": "G035 lost on FUNCTION-SPACE error at matched bits (shared_beats_independent=false on 3/3 column-basis pairs). g1-shared-basis FALSIFIED this parent: adjacent flattened cosine 1e-5..8e-3, shared rank-256 residual worse than per-layer. G034 refuted the low-rank family at the coherent 3.25-bit point (2.93\u00d7 q3 error). Associativity shows native two-stage equals reconstruct-then-GEMM, so the missing kernel is not the variable that produced those errors.",
+    "evidence": {
+      "g035_column_shared_beats_independent_all_false": true,
+      "g035_adjacent_mean_error_reduction": -0.014270588755607605,
+      "g1_this_parent_falsified": true,
+      "g034_lowrank_over_q3": 2.9322886686304153,
+      "associativity_identity_holds": true,
+      "native_kernel_absent": true,
+      "reconstruction_killed_fidelity": false
+    },
+    "two_failures_separated": {
+      "fidelity": "a property of the idea (\u0174 \u2248 shared-U \u00d7 per-layer-C vs independent SVD)",
+      "reconstruction": "a property of the implementation (no shared_basis kernel; G035 materialised \u0174 then applied X). Associativity says they compute the same y.",
+      "only_the_first_is_a_property_of_the_idea": true,
+      "native_changes": "bytes, FLOPs, dispatches, TG pressure \u2014 not the G035 errors"
+    },
+    "row_basis_not_a_reopen": {
+      "what": "G035 corrected_verdict: sharing the ROW space WINS 6.3% on adjacent gate at ~1.03 bits/elem (0.57592 vs 0.61465), 9\u00d7 more than the far pair.",
+      "why_not_design_around_it": "The win is at the DEAD zone: pair errors 0.58\u20130.70 against the coherent anchor 0.198. G034 independently measured low-rank at a usable 3.25 bits/elem running 2.93\u00d7 worse than flat q3. Whether the row-basis edge survives at usable fidelity is UNTESTED and is a low-rank-family question G034 already closed. Designing a native row-basis kernel around a dead-zone 6% would be designing around a fidelity result."
+    },
+    "hadamard_not_a_reopen": "Block-diagonal Sylvester-Hadamard is generated, not stored. At q4 it moves hold cosine by +3.4e-4 and entropy by +0.026 bits. That is not a shared-basis win and not a bits-at-equal-function win. Folding H into a native operator is the structured_transform family, already PARTIAL, already measured."
+  },
+  "prior_science_search": {
+    "performed": true,
+    "result": "Family already refuted on FIDELITY for this parent. Native execution does not scope the refutation away from the idea.",
+    "records": {
+      "lane_bootstrap_paths_in_head": [],
+      "g035": {
+        "loaded": true,
+        "schema": "hawking.nos.crosslayer_share.v1",
+        "obligation": "G035 -- shared basis plus per-layer coefficients vs independent, matched bits",
+        "method": "Randomized-SVD range finder; only the leading subspace is compared, an exact SVD of a 17408x10240 matrix is neither affordable nor needed. Independent gives each layer its own rank-r factorization; shared computes one column basis from the two layers concatenated and projects both onto it. The shared basis IS the alignment and it is inside the parameter budget, so there is no separate alignment cost to omit.",
+        "error_space": "FUNCTION space on the thick v2 capture, not weight cosine -- weight space already inverted a ranking once in this campaign (G033).",
+        "pairs": [
+          {
+            "organ": "gate_proj",
+            "layers": [
+              30,
+              31
+            ],
+            "kind": "adjacent",
+            "shape": [
+              17408,
+              5120
+            ],
+            "rank_independent": 256,
+            "rank_shared": 417,
+            "params_independent": 11534336,
+            "params_shared": 11529216,
+            "bits_per_elem_independent": 1.035294117647059,
+            "bits_per_elem_shared": 1.0348345588235295,
+            "independent_mean": 0.6075034141540527,
+            "shared_mean": 0.6312928795814514,
+            "shared_beats_independent": false
+          },
+          {
+            "organ": "down_proj",
+            "layers": [
+              30,
+              31
+            ],
+            "kind": "adjacent",
+            "shape": [
+              5120,
+              17408
+            ],
+            "rank_independent": 256,
+            "rank_shared": 288,
+            "params_independent": 11534336,
+            "params_shared": 11501568,
+            "bits_per_elem_independent": 1.035294117647059,
+            "bits_per_elem_shared": 1.0323529411764707,
+            "independent_mean": 0.8625422120094299,
+            "shared_mean": 0.8672939240932465,
+            "shared_beats_independent": false
+          },
+          {
+            "organ": "gate_proj",
+            "layers": [
+              15,
+              47
+            ],
+            "kind": "far control",
+            "shape": [
+              17408,
+              5120
+            ],
+            "rank_independent": 256,
+            "rank_shared": 417,
+            "params_independent": 11534336,
+            "params_shared": 11529216,
+            "bits_per_elem_independent": 1.035294117647059,
+            "bits_per_elem_shared": 1.0348345588235295,
+            "independent_mean": 0.6967267990112305,
+            "shared_mean": 0.709695428609848,
+            "shared_beats_independent": false
+          }
+        ],
+        "all_column_shared_beats_independent": true,
+        "adjacent_mean_error_reduction": -0.014270588755607605,
+        "far_control_mean_error_reduction": -0.012968629598617554,
+        "corrected_verdict": "AXIS-DEPENDENT, which the original refutation did not distinguish. Sharing the COLUMN space (the contraction axis) LOSES on 3/3 pairs. Sharing the ROW space (the output axis) WINS, and wins 9x more for adjacent layers than distant ones. The blanket 'REFUTED AT MATCHED BITS' was drawn from the column basis alone and is too broad.",
+        "what_still_limits_it": "The row-basis win is measured at ~1.03 bits/elem where the pair errors are 0.58-0.70, deep in the DEAD zone against the coherent anchor's 0.198. It is a 6.3% improvement to something unusable. G034 separately measured low-rank at a usable 3.25 bits/elem running 2.93x worse than flat q3, so the family's ceiling is low whichever axis is shared. Whether the row-basis advantage survives at usable fidelity is UNTESTED.",
+        "row_basis_verdict": "WINS, unlike the column basis. Adjacent gate_proj L30/L31: 0.57592 against independent 0.61465, a 6.3% error reduction at slightly FEWER bits. Far pair L15/L47: 0.69274 against 0.69775, only 0.7%. THE ADJACENCY SIGNATURE THE COLUMN BASIS FAILED TO SHOW IS PRESENT HERE -- adjacent benefits 9x more than distant, which is what the spectral observation that opened this obligation predicted.",
+        "row_basis_rows": [
+          {
+            "organ": "gate_proj",
+            "pair": [
+              30,
+              31
+            ],
+            "kind": "adjacent",
+            "scheme": "independent SVD r=256",
+            "bits_per_elem": 1.035294117647059,
+            "mean_out_err": 0.6146529316902161
+          },
+          {
+            "organ": "gate_proj",
+            "pair": [
+              30,
+              31
+            ],
+            "kind": "adjacent",
+            "scheme": "shared ROW basis r=288",
+            "bits_per_elem": 1.0323529411764707,
+            "mean_out_err": 0.5759161114692688
+          },
+          {
+            "organ": "gate_proj",
+            "pair": [
+              15,
+              47
+            ],
+            "kind": "far",
+            "scheme": "independent SVD r=256",
+            "bits_per_elem": 1.035294117647059,
+            "mean_out_err": 0.6977511644363403
+          },
+          {
+            "organ": "gate_proj",
+            "pair": [
+              15,
+              47
+            ],
+            "kind": "far",
+            "scheme": "shared ROW basis r=288",
+            "bits_per_elem": 1.0323529411764707,
+            "mean_out_err": 0.6927357614040375
+          }
+        ],
+        "delta_coding_verdict": "REFUTED, and not marginally: roughly 2x the error of independent q3+q3 at identical total bits on all three pairs and in BOTH directions. The delta carries L_a's quantization error on top of the genuine layer difference, so it has a WIDER spread than the tensor it replaces and quantizes worse at q2 than the tensor does at q3. The far pair behaves like the adjacent pair, so proximity does not help."
+      },
+      "g034": {
+        "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.93x the output error of flat q3 on every tensor tested. It reduces operations to 0.203x dense, but the acceptance requires bytes AND operations WITH function preserved.",
+        "family_verdict": "COMPREHENSIVELY REFUTED at the coherent operating point. Plain low-rank is 2.93x flat q3's error at identical bits; TT unfolding is worse again. The acceptance also requires a native kernel path and none was built, but no member has earned one.",
+        "mean_flat_q3": 0.1839276241211841,
+        "mean_lowrank": 0.5393288880586624,
+        "mean_mac_ratio": 0.2029641544117647,
+        "error_ratio": 2.9322886686304153
+      },
+      "g032_hadamard_q4": {
+        "mean_delta_hold": 0.00033819033592939903,
+        "mean_delta_entropy_bits": 0.025883768994956233,
+        "stored_bytes": 0,
+        "family": "block-diagonal Sylvester-Hadamard, right-multiplied on the contraction axis",
+        "reading": "Block-diagonal Sylvester-Hadamard is generated, not stored. At q4 it moves hold cosine by +3.4e-4 and entropy by +0.026 bits. That is not a shared-basis win and not a bits-at-equal-function win. Folding H into a native operator is the structured_transform family, already PARTIAL, already measured."
+      },
+      "ns010": {
+        "id": "NS-010",
+        "class": "REFUTED",
+        "mechanism": "Shared cross-expert basis / shared codebook across routed experts",
+        "models": [
+          "q80"
+        ],
+        "gate_proj_pairwise_cosine_mean": 0.004142791032791138,
+        "retry_when": "never on Q80. On DSV4F: do not treat this as settled. A pairwise-cosine measurement on DSV4F experts is the cheap check; only if that mean is materially above ~0.05 would a shared-basis pack be a new premise. Do not skip that measurement by transferring the Q80 number.",
+        "why_it_failed": "Q80 experts in the measured slice are mutually orthogonal. There is no shared direction to exploit."
+      },
+      "q80_cross_expert": {
+        "layer": 10,
+        "n_experts": 96,
+        "gate_pairwise_cosine_mean": 0.004142791032791138,
+        "up_pairwise_cosine_mean": -5.968913319520652e-05
+      },
+      "g013_storage_vs_active": {
+        "storage_bpw": 0.6462,
+        "active_bpw": 2.518,
+        "factor": 3.8966,
+        "source": "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json",
+        "law": "Report both or neither. Storage averages experts decode never touches.",
+        "loaded": true
+      },
+      "g1_shared_basis_this_parent": {
+        "status": "FALSIFIED",
+        "path": "workspace/superwave/g1/g1-shared-basis.md",
+        "adjacent_cosine": {
+          "mlp.gate_proj": 0.004354,
+          "mlp.up_proj": 1.4e-05,
+          "mlp.down_proj": 6.1e-05,
+          "self_attn.q_proj": 0.007632,
+          "note": "Exact adjacent flattened cosine from workspace/superwave/g1/g1-shared-basis.md. Highest class-mean 0.00763 (GQA q_proj). MLP gate 0.00435 is the Q80 expert number. Adjacent rel_delta_fro 1.40\u20131.42 \u2248 \u221a2. Shared rank-256 residual 69\u201393% vs per-layer 38\u201387%."
+        },
+        "reopen_bar_mean_cosine": 0.05,
+        "loaded_md": true
+      },
+      "kernel_census_family": {
+        "id": "shared_basis_x_coefficients",
+        "verdict": "ABSENT",
+        "kernel": null,
+        "why": "Zero shaders mention shared_basis / shared_codebook / joint_basis. q80_hgravs01_factor_matvec_* is per-tensor U,V \u2014 not a basis shared across layers. G035 G-SHARE measured shared_beats_independent=false. G042 SHARED_BPW is hardcoded 0.0. NS-010 killed cross-expert shared bases on Q80."
+      },
+      "kernel_census_missing_cost": {
+        "id": "shared_basis_x_coefficients",
+        "status": "kernel_cheap_quality_blocked",
+        "estimate": "GPU: clone q80_hgravs01_two_stage_matvec (~200 lines) to take a shared B buffer plus per-site C, y = B@(C@x), mid[rank] in threadgroup. Host: bind B once into unified memory, per-layer C like today's factors (~100 lines). NX: name the kernel. That is a 1\u20132 day shader+bind if quality were solved. G035 already refuted sharing on this model (shared_beats_independent=false). Do not write the kernel to reopen a closed idea."
+      },
+      "named_traps": {
+        "glm_expert_bpw": 0.167,
+        "hgravs01_down_proj_only_bpw": 0.13,
+        "tpr64_reconstruction_free": "32/33",
+        "sub_0_5_local_bpw_rows": 223,
+        "sub_0_5_healthy": 0,
+        "law": "A low number is not a result until paired with a health verdict.",
+        "cosine_scale_invariance": "0.01*W scores cosine 1.000000; gain is 0.01. Raw activation cosine null baseline 0.898.",
+        "mlp_function_distillation": {
+          "status": "NO-GO (lane brief; not re-derived)",
+          "held_out_gap_vs_q3": 0.4206,
+          "active_byte_frac_of_q3": 0.72
+        },
+        "never_synthetic_activations": true
+      },
+      "watched": [
+        {
+          "what": ".lane-bootstrap/census/ (n1arch 35, n15neg 31, n16clos)",
+          "result": "ABSENT_FROM_HEAD",
+          "detail": "git ls-tree HEAD has zero paths under .lane-bootstrap and zero files named n1arch/n15neg/n16clos. Sparse-checkout add is forbidden. Stand-ins used: NEGATIVE_SCIENCE_REGISTER (38 entries, NS-010), NOETIC_KERNEL_CENSUS families, G035/G034/G032, g1-shared-basis.md, QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE."
+        },
+        {
+          "what": "MLP function distillation primary receipt",
+          "result": "BRIEF_ONLY",
+          "detail": "Lane brief: NO-GO, +0.4206 held-out gap vs q3 at 72% of its active bytes. NOETIC_KERNEL_CENSUS missing_family_cost still says distillation of the MLP function 'has not been run'. No primary JSON with those two numbers is materialized in this sparse checkout. Cited as a supplied constraint, not re-derived, and not used as a reopen."
+        }
+      ],
+      "g1_md_err": null,
+      "distill_receipt": null
+    }
+  },
+  "incumbent_anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "roof_gb_s": 595.9,
+    "dispatches": 964,
+    "command_buffers": 1,
+    "gemv_gflop": 51.24390912,
+    "parameter_count": 26895998464,
+    "bpw": 4.253,
+    "artifact_bytes": 14297933604,
+    "tensors": 755,
+    "reconstructs_dense_on_38": "NO",
+    "reachable_dead_unknown": [
+      508,
+      4,
+      4
+    ],
+    "mlx_4bit_tps_live": 35.51,
+    "llamacpp_q5k_tps_archived": 24.12
+  },
+  "associativity_identity": {
+    "shape_U": [
+      3,
+      2
+    ],
+    "shape_C": [
+      2,
+      4
+    ],
+    "y_oracle": [
+      2.875,
+      -5.5,
+      4.875
+    ],
+    "y_native": [
+      2.875,
+      -5.5,
+      4.875
+    ],
+    "max_abs_residual": 0.0,
+    "sum_abs_residual": 0.0,
+    "identity_holds_at_1e12": true,
+    "reading": "Native two-stage and reconstruct-then-GEMM compute the same vector. Execution path is not a fidelity variable."
+  },
+  "two_stage_kernel_caps": {
+    "present": true,
+    "kRankCap": 160,
+    "kXCap": 512,
+    "kSimdWidth": 32,
+    "tg_mid_documented_640b": true,
+    "file": "crates/hawking-core/shaders/q80_mixed_decode.metal"
+  },
+  "organs_derived": {
+    "mlp.gate_proj": {
+      "shape": [
+        17408,
+        5120
+      ],
+      "count": 64,
+      "n_pairs": 32,
+      "rank_independent": 256,
+      "rank_shared": 417,
+      "params_independent_pair": 11534336,
+      "params_shared_pair": 11529216,
+      "bits_per_elem_independent": 1.035294117647059,
+      "bits_per_elem_shared": 1.0348345588235295,
+      "q4_bytes_per_launch": 47349760,
+      "q4_bytes_per_token": 3030384640,
+      "shared_f16_bytes_per_token": 737869824,
+      "byte_ratio_shared_over_q4": 0.24349048442906573,
+      "dense_mac_per_launch": 178257920,
+      "dense_mac_per_token": 11408506880,
+      "sequential_two_stage_mac_per_launch": 18788352,
+      "sequential_two_stage_mac_per_token": 1202454528,
+      "sequential_mac_ratio": 0.10539981617647058,
+      "fused_recompute_mac_per_launch": 9306212352,
+      "fused_recompute_mac_per_token": 595597590528,
+      "fused_over_dense": 52.2064453125,
+      "fused_over_sequential": 495.3181818181818,
+      "u_f16_bytes_per_pair": 14518272,
+      "c_f16_bytes_per_layer": 4270080,
+      "x_f32_bytes": 20480,
+      "mid_f32_bytes": 1668,
+      "x_fits_32kib_tg": true,
+      "mid_fits_32kib_tg": true,
+      "x_plus_mid_fits_32kib_tg": true,
+      "exceeds_hgravs01_kRankCap160": true,
+      "exceeds_hgravs01_kXCap512": true
+    },
+    "mlp.up_proj": {
+      "shape": [
+        17408,
+        5120
+      ],
+      "count": 64,
+      "n_pairs": 32,
+      "rank_independent": 256,
+      "rank_shared": 417,
+      "params_independent_pair": 11534336,
+      "params_shared_pair": 11529216,
+      "bits_per_elem_independent": 1.035294117647059,
+      "bits_per_elem_shared": 1.0348345588235295,
+      "q4_bytes_per_launch": 47349760,
+      "q4_bytes_per_token": 3030384640,
+      "shared_f16_bytes_per_token": 737869824,
+      "byte_ratio_shared_over_q4": 0.24349048442906573,
+      "dense_mac_per_launch": 178257920,
+      "dense_mac_per_token": 11408506880,
+      "sequential_two_stage_mac_per_launch": 18788352,
+      "sequential_two_stage_mac_per_token": 1202454528,
+      "sequential_mac_ratio": 0.10539981617647058,
+      "fused_recompute_mac_per_launch": 9306212352,
+      "fused_recompute_mac_per_token": 595597590528,
+      "fused_over_dense": 52.2064453125,
+      "fused_over_sequential": 495.3181818181818,
+      "u_f16_bytes_per_pair": 14518272,
+      "c_f16_bytes_per_layer": 4270080,
+      "x_f32_bytes": 20480,
+      "mid_f32_bytes": 1668,
+      "x_fits_32kib_tg": true,
+      "mid_fits_32kib_tg": true,
+      "x_plus_mid_fits_32kib_tg": true,
+      "exceeds_hgravs01_kRankCap160": true,
+      "exceeds_hgravs01_kXCap512": true
+    },
+    "mlp.down_proj": {
+      "shape": [
+        5120,
+        17408
+      ],
+      "count": 64,
+      "n_pairs": 32,
+      "rank_independent": 256,
+      "rank_shared": 288,
+      "params_independent_pair": 11534336,
+      "params_shared_pair": 11501568,
+      "bits_per_elem_independent": 1.035294117647059,
+      "bits_per_elem_shared": 1.0323529411764707,
+      "q4_bytes_per_launch": 47349760,
+      "q4_bytes_per_token": 3030384640,
+      "shared_f16_bytes_per_token": 736100352,
+      "byte_ratio_shared_over_q4": 0.24290657439446367,
+      "dense_mac_per_launch": 178257920,
+      "dense_mac_per_token": 11408506880,
+      "sequential_two_stage_mac_per_launch": 12976128,
+      "sequential_two_stage_mac_per_token": 830472192,
+      "sequential_mac_ratio": 0.07279411764705883,
+      "fused_recompute_mac_per_launch": 6420234240,
+      "fused_recompute_mac_per_token": 410894991360,
+      "fused_over_dense": 36.01654411764706,
+      "fused_over_sequential": 494.77272727272725,
+      "u_f16_bytes_per_pair": 2949120,
+      "c_f16_bytes_per_layer": 10027008,
+      "x_f32_bytes": 69632,
+      "mid_f32_bytes": 1152,
+      "x_fits_32kib_tg": false,
+      "mid_fits_32kib_tg": true,
+      "x_plus_mid_fits_32kib_tg": false,
+      "exceeds_hgravs01_kRankCap160": true,
+      "exceeds_hgravs01_kXCap512": true
+    }
+  },
+  "eight_items": {
+    "1_mathematical_operator": {
+      "name": "G035 pair-shared column basis \u00d7 per-layer coefficients",
+      "built": false,
+      "reason_not_built": "G035 lost on FUNCTION-SPACE error at matched bits (shared_beats_independent=false on 3/3 column-basis pairs). g1-shared-basis FALSIFIED this parent: adjacent flattened cosine 1e-5..8e-3, shared rank-256 residual worse than per-layer. G034 refuted the low-rank family at the coherent 3.25-bit point (2.93\u00d7 q3 error). Associativity shows native two-stage equals reconstruct-then-GEMM, so the missing kernel is not the variable that produced those errors.",
+      "math": {
+        "W_ell": "R^{m\u00d7n}, x in R^n, y in R^m",
+        "column_basis_share_the_one_that_lost": "For a pair (W_a, W_b), stack S = [W_a W_b] in R^{m\u00d72n}. Randomized SVD gives U in R^{m\u00d7r} spanning the column space of S. C_ell = U^T W_ell in R^{r\u00d7n}. \u0174_ell = U C_ell.",
+        "native_production_algebra": "z = C_ell x  in R^r;  y = U z  in R^m.  Never form \u0174_ell. This is the same y as (U C_ell) x by associativity.",
+        "row_basis_share_dead_zone_win": "Stack along rows, share V in R^{n\u00d7r}, \u0174_ell = A_ell V^T. Native: z = V^T x; y = A_ell z. Measured +6.3% adjacent at ~1.03 b/elem, unusable vs coherent 0.198. Not a reopen.",
+        "ranks": {
+          "independent": 256,
+          "gate_up_shared": 417,
+          "down_shared": 288,
+          "matching_rule": "largest r_s with r_s*m + 2*r_s*n <= 2*r_ind*(m+n)"
+        }
+      },
+      "correctness_oracle": {
+        "labelled": "ORACLE",
+        "path": "reconstruct_dense_then_GEMM",
+        "definition": "Form \u0174_ell = U C_ell as an m\u00d7n f32 matrix in DRAM (or on host). y_oracle = \u0174_ell x. Compare y_native to y_oracle. This path exists to prove algebraic correctness. It is NOT a production implementation and must never be presented as one. On the incumbent, the analogous trap is qwen_uniform_q4_decode_vector (102.5e9 B/token of dense W); qwen38_hybrid_decode.rs does not dispatch it.",
+        "tolerance": "max_abs(y_native - y_oracle) consistent with f32 GEMV rounding",
+        "this_process_toy_residual": 0.0
+      },
+      "production_path": {
+        "named_separately": true,
+        "name": "sequential_two_stage_shared_basis_matvec",
+        "would_be": "Two Metal dispatches per organ, one CB: (1) mid = C@x, (2) y = U@mid. Bind one U buffer per pair, one C buffer per layer. No dense W.",
+        "status": "NOT_TO_BE_WRITTEN",
+        "existing_near_miss": "q80_hgravs01_two_stage_matvec is per-tensor U,V fused with TG-private mid recompute, kRankCap=160, kXCap=512. It is not this family (census: shared_basis_x_coefficients ABSENT) and cannot run G035 ranks."
+      },
+      "foldable_transforms": {
+        "preference": "Butterfly / Walsh-Hadamard / structured rotations over a dense per-layer transform, which just moves the reconstruction.",
+        "g032": {
+          "mean_delta_hold": 0.00033819033592939903,
+          "mean_delta_entropy_bits": 0.025883768994956233,
+          "stored_bytes": 0,
+          "family": "block-diagonal Sylvester-Hadamard, right-multiplied on the contraction axis",
+          "reading": "Block-diagonal Sylvester-Hadamard is generated, not stored. At q4 it moves hold cosine by +3.4e-4 and entropy by +0.026 bits. That is not a shared-basis win and not a bits-at-equal-function win. Folding H into a native operator is the structured_transform family, already PARTIAL, already measured."
+        },
+        "decision": "Hadamard is generated (0 stored bytes) and already measured at q4: +3.4e-4 hold cosine, +0.026 entropy bits. It is not a shared-basis coefficient win. Do not pivot the family into structured_transform."
+      }
+    },
+    "2_expected_bytes_per_token": {
+      "incumbent": {
+        "executable_dram_bytes_per_token": 13988022948,
+        "executable_weight_bytes_per_token": 13623403168,
+        "q4_gemv_bytes_per_token": 13611663360,
+        "mlp_q4_bytes_per_token": 9091153920,
+        "derivation": "NOETIC_OPERATION_CENSUS dram_and_temp + q4_matrix_bytes(rows,cols)=rows*ceil(cols/64)*34, 64 layers \u00d7 3 MLP organs."
+      },
+      "counterfactual_g035_rank_mlp_only": {
+        "mlp_shared_f16_bytes_per_token": 2211840000,
+        "mlp_byte_ratio_vs_q4": 0.24329584775086505,
+        "rest_of_q4_gemv_untouched": 4520509440,
+        "implied_gemv_payload_if_mlp_replaced": 6732349440,
+        "note": "Derived, not guessed: 32 pairs \u00d7 (U[m,r]+2\u00b7C[r,n]) f16 per organ, r = rank_shared_matching(m,n,256) which reproduces G035's 417/288."
+      },
+      "roof_ms_incumbent": 23.47377571404598,
+      "measured_ms": 30.606
+    },
+    "3_expected_ops_per_token": {
+      "incumbent_gemv_mac_flops": 51243909120,
+      "incumbent_gemv_gflop": 51.24390912,
+      "incumbent_activation_flops": 297313024,
+      "incumbent_dispatches": 964,
+      "mlp_dense_mac": 34225520640,
+      "mlp_sequential_two_stage_mac": 3235381248,
+      "mlp_fused_recompute_mac": 1602090172416,
+      "token_gemv_if_mlp_sequential": 20253769728,
+      "token_gemv_gflop_if_mlp_sequential": 20.253769728,
+      "token_gemv_if_mlp_fused_recompute": 1619108560896,
+      "token_gemv_gflop_if_mlp_fused_recompute": 1619.108560896,
+      "sequential_vs_incumbent": 0.3952424800491099,
+      "fused_vs_incumbent": 31.596117249846532,
+      "compared_against": "51.24 GFLOP / 964 dispatches (measured incumbent)",
+      "reading": "Sequential two-stage at G035 ranks would drop GEMV MACs 51.24 \u2192 20.25 GFLOP (0.395\u00d7) and raise dispatches 964 \u2192 1156. Fused hgravs01-clone would RAISE GEMV MACs to 1619.11 GFLOP (31.6\u00d7) because every TG recomputes mid. Neither path preserves function."
+    },
+    "4_dispatch_topology": {
+      "incumbent": {
+        "dispatches_per_token": 964,
+        "command_buffers_per_token": 1,
+        "mlp_gemv_dispatches": 192,
+        "formula": "1 embed + 64*(9 mixer + 6 mlp) + 3 terminal = 964",
+        "synchronises": "one TokenCommandBuffer; GPU waits once at the end of the token"
+      },
+      "sequential_two_stage_if_built": {
+        "dispatches_per_token": 1156,
+        "delta_vs_incumbent": 192,
+        "command_buffers_per_token": 1,
+        "mlp_dispatches": 384,
+        "synchronises": "Same CB. Metal orders compute dispatches; stage-2 reads mid written by stage-1. No extra host wait. One extra producer-consumer barrier per MLP organ (192 barriers inside the existing CB).",
+        "note": "Dispatch count goes UP. Bytes and sequential FLOPs go down. Function does not hold."
+      },
+      "fused_clone_if_built": {
+        "dispatches_per_token": 964,
+        "command_buffers_per_token": 1,
+        "synchronises": "one threadgroup_barrier inside each fused MLP dispatch (already the hgravs01 pattern)",
+        "note": "Dispatch count unchanged, FLOPs explode because every TG recomputes mid. Also refuses G035 ranks/dims without a cap rewrite."
+      },
+      "shared_V_does_not_collapse_stage1": "Even on the G035 row-basis (shared V on the contraction axis), each layer has its own x, so V^T x still runs 64 times. Sharing saves storage of V, not the first GEMV at decode. Layers are sequential; L30's mid is not L31's."
+    },
+    "5_metal_feasibility": {
+      "device": "Apple M3 Ultra, 60 GPU cores, Metal 4, unified memory",
+      "unified_memory_bytes": 103079215104,
+      "roof_gb_s": 595.9,
+      "simdgroup_width": 32,
+      "simdgroup_width_source": "crates/hawking-core/shaders/q80_mixed_decode.metal: constexpr uint kSimdWidth = 32u in q80_hgravs01_two_stage_matvec; common.metal documents 32 lanes/simdgroup",
+      "threadgroup": {
+        "fused_kernel_threads": 256,
+        "fused_rows_per_tg": 8,
+        "incumbent_gemv": "tpr64, TG 128, 2 rows/TG, 64 threads/row",
+        "documented_apple_tg_memory_bytes": 32768,
+        "hgravs01_mid_plus_x": {
+          "kRankCap": 160,
+          "kXCap": 512,
+          "mid_bytes_at_cap": 640,
+          "x_bytes_at_cap": 2048,
+          "comment_640b_not_dense_w": true
+        }
+      },
+      "g035_vs_existing_fused_kernel": {
+        "gate_rank_shared": 417,
+        "down_rank_shared": 288,
+        "gate_n": 5120,
+        "down_n": 17408,
+        "kernel_refuses_rank_gt_160": true,
+        "kernel_refuses_n_gt_512": true,
+        "drop_in_clone_runs_g035": false,
+        "why": "q80_hgravs01_two_stage_matvec returns immediately if right_rows > 160 or right_cols > 512. G035 gate r=417 n=5120; down r=288 n=17408. The census line 'clone ~200 lines' is kernel-cheap only after the caps and the TG-recompute cost are redesigned. Quality is already blocked."
+      },
+      "threadgroup_memory_at_g035_ranks": {
+        "gate_x_f32_bytes": 20480,
+        "gate_mid_f32_bytes": 1668,
+        "gate_x_plus_mid": 22148,
+        "gate_x_plus_mid_fits_32kib": true,
+        "down_x_f32_bytes": 69632,
+        "down_mid_f32_bytes": 1152,
+        "down_x_plus_mid": 70784,
+        "down_x_plus_mid_fits_32kib": false,
+        "reading": "gate x+mid = 22148 B < 32 KiB, so a fused kernel COULD keep x resident in TG on gate/up. down x = 69632 B already exceeds 32 KiB, so down_proj cannot cache x in threadgroup memory; it must stream x from device. That is a hardware constraint, not a coding preference."
+      },
+      "register_pressure": {
+        "incumbent_tpr64": "64 threads/row, 8 Q4 weights unpacked per iteration into registers, FMA, discard. Occupancy: 17408-row gate \u2192 8704 TGs of 128 = 1,114,112 threads; 145 TGs/core if spread. Bandwidth-saturated, not occupancy-starved (NOETIC_TPR64_REOPEN simd_vehicle).",
+        "two_stage_sequential": "Stage-1 is a fat GEMV of only r=417 rows (gate) \u2014 under-occupied relative to 17408-row q4. Stage-2 GEMV of 17408 rows against a 417-wide mid vector is ALU-short, not bandwidth-heavy. Register pressure is lower than Q4 unpack."
+      },
+      "coalescing": {
+        "C_layout": "row-major f16 [r, n], stage-1 is a standard row-wise GEMV; simd 32 consecutive lanes hit consecutive halves",
+        "U_layout": "row-major f16 [m, r], stage-2 same pattern on a short k=r inner dimension",
+        "vs_q4": "Q4 is 32 code bytes + 2 scale per 64-wide group. f16 factors are simpler loads. Coalescing is not the blocker."
+      },
+      "fused_recompute_is_a_trap": {
+        "gate_fused_over_dense": 52.2064453125,
+        "gate_fused_over_sequential": 495.3181818181818,
+        "down_fused_over_dense": 36.01654411764706,
+        "why": "The shipped fused kernel recomputes mid[rank] in EVERY threadgroup (2176 TGs on gate). At G035 r=417 that is tens of times the dense GEMV FLOPs. It is the right fused shape for rank 160 \u00d7 n 512 (hgravs01_r160). It is the wrong shape for G035."
+      }
+    },
+    "6_memory_layout": {
+      "representation": "Pair-shared G035 column basis, f16 factors, no Q4. One U[m,r] per adjacent pair per organ; one C[r,n] per layer per organ. Row-major, 64-byte aligned. No recurrent extra state. mid[r] f32 is workspace, not stored.",
+      "why_pairs_not_all64": "g1-shared-basis falsified a single all-layer basis (shared rank-256 residual 1.08\u20131.83\u00d7 per-layer). G035 tested pairs. The layout matches the experiment that already lost, not a more aggressive share that lost harder.",
+      "organs": [
+        {
+          "organ": "mlp.gate_proj",
+          "U_per_pair": {
+            "shape": [
+              17408,
+              417
+            ],
+            "dtype": "f16",
+            "bytes": 14518272,
+            "count": 32
+          },
+          "C_per_layer": {
+            "shape": [
+              417,
+              5120
+            ],
+            "dtype": "f16",
+            "bytes": 4270080,
+            "count": 64
+          },
+          "bytes_per_token_streamed": 737869824
+        },
+        {
+          "organ": "mlp.up_proj",
+          "U_per_pair": {
+            "shape": [
+              17408,
+              417
+            ],
+            "dtype": "f16",
+            "bytes": 14518272,
+            "count": 32
+          },
+          "C_per_layer": {
+            "shape": [
+              417,
+              5120
+            ],
+            "dtype": "f16",
+            "bytes": 4270080,
+            "count": 64
+          },
+          "bytes_per_token_streamed": 737869824
+        },
+        {
+          "organ": "mlp.down_proj",
+          "U_per_pair": {
+            "shape": [
+              5120,
+              288
+            ],
+            "dtype": "f16",
+            "bytes": 2949120,
+            "count": 32
+          },
+          "C_per_layer": {
+            "shape": [
+              288,
+              17408
+            ],
+            "dtype": "f16",
+            "bytes": 10027008,
+            "count": 64
+          },
+          "bytes_per_token_streamed": 736100352
+        }
+      ],
+      "mlp_shared_f16_bytes_per_token": 2211840000,
+      "temporary_mid_bytes_live": 1668,
+      "does_not_materialize_W": true,
+      "dense_W_bytes_if_oracle_ran_mlp": 68451041280
+    },
+    "7_cheap_microbenchmark": {
+      "purpose": "Discriminate this family from the incumbent BEFORE anyone writes a full kernel. Two cheap checks, one of which already ran, one of which this process ran.",
+      "already_ran_fidelity": {
+        "command": "python3 tools/gravity_share_crosslayer.py --rank 256 --rows 512 --out receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json",
+        "uses": "real BF16 W from the Qwen3.8 parent; function-space error on the thick v2 capture (SITE[organ] activations). NOT synthetic X. NOT weight cosine.",
+        "kill_if": "shared_beats_independent is false on adjacent gate_proj",
+        "observed": "false on 3/3 column-basis pairs; adjacent mean error reduction \u22120.01427",
+        "status": "ALREADY_EXECUTED \u2014 this is the kill"
+      },
+      "this_process_associativity": {
+        "what": "2\u00d74 toy (U C)x vs U(Cx) in pure Python. Discriminates reconstruction-cost from fidelity: if the residual is ~0, rebuilding W cannot have been what produced G035's extra error.",
+        "observed": {
+          "shape_U": [
+            3,
+            2
+          ],
+          "shape_C": [
+            2,
+            4
+          ],
+          "y_oracle": [
+            2.875,
+            -5.5,
+            4.875
+          ],
+          "y_native": [
+            2.875,
+            -5.5,
+            4.875
+          ],
+          "max_abs_residual": 0.0,
+          "sum_abs_residual": 0.0,
+          "identity_holds_at_1e12": true,
+          "reading": "Native two-stage and reconstruct-then-GEMM compute the same vector. Execution path is not a fidelity variable."
+        },
+        "kill_native_rescue_if": "max_abs_residual < 1e-12 (rescue is then impossible)",
+        "status": "RAN_THIS_PROCESS"
+      },
+      "would_run_before_a_kernel_if_fidelity_had_held": {
+        "command": "One Metal CB, three arms on a single 17408\u00d75120 gate, r=417, real x from the v2 capture token 192 (NOT Gaussian): (R) write \u0174=U@C as f32 (356,515,840 B) then GEMV; (N) z=C@x; y=U@z with two dispatches, no \u0174; (Q) incumbent qwen_uniform_q4_group64_matvec_geo_tpr64_tg128. GPU ns from MTLCommandBuffer GPUEndTime-GPUStartTime. Function-space rel_fro of N vs Q vs independent SVD r=256 vs flat q3.",
+        "discriminates": "N vs R time = reconstruction tax. N vs Q error = whether the approximation is even in the same quality band as the incumbent. Do not write the 64-layer bind until N beats Q on error at matched-or-better bytes \u2014 G035/G034 say it will not.",
+        "status": "NOT_RUN \u2014 fidelity already lost, so this timing is not owed"
+      },
+      "do_not": [
+        "synthetic activations",
+        "weight cosine as the score (G033 inverted a ranking once)",
+        "cosine without gain (0.01*W scores 1.000000)",
+        "claim a win at ~1.03 bits/elem against a 0.198 coherent anchor"
+      ]
+    },
+    "8_expected_value": {
+      "verdict": "NOT_WORTH_BUILDING",
+      "would_win_if_function_held": {
+        "mlp_bytes_q4": 9091153920,
+        "mlp_bytes_shared_f16_g035_rank": 2211840000,
+        "mlp_byte_ratio": 0.24329584775086505,
+        "mlp_mac_dense": 34225520640,
+        "mlp_mac_sequential_two_stage": 3235381248,
+        "mlp_mac_ratio_sequential": 0.09453125,
+        "tok_s_incumbent": 32.73,
+        "tok_s_mlx_4bit_live": 35.51,
+        "tok_s_llamacpp_q5k_archived": 24.12,
+        "gap_to_mlx": 1.0849373663305837,
+        "fantasy_dram_if_mlp_replaced": "Incumbent executable DRAM 13.988 GB/token. MLP Q4 is 9.091 GB of that. Replacing MLP with 2211840000 B shared f16 drops ~6879313920 B. Roof 595.9 GB/s would then floor the token well under the measured 30.606 ms IF the approximation were q3-quality. It is not."
+      },
+      "what_it_risks": [
+        "Shipping 1.03 BPW factors whose function-space error sits in the dead zone (0.58\u20130.87 vs q3 ~0.18).",
+        "Cloning q80_hgravs01_two_stage_matvec and inflating MLP FLOPs by tens of \u00d7 via TG-private mid recompute.",
+        "Raising dispatches 964 \u2192 1156 (sequential) for an approximation G034 already showed 2.93\u00d7 worse than q3 at usable bits.",
+        "Reopening a family the kernel census marked kernel_cheap_quality_blocked with the instruction 'Do not write the kernel to reopen a closed idea.'",
+        "Cosine-only scoring (0.01*W = 1.0) or synthetic X."
+      ],
+      "cheapest_experiment_that_would_kill_it": "Already executed: G035 shared vs independent at matched bits on real X, function-space rel_fro. Kill criterion met (shared_beats_independent=false). G034 is the ceiling at usable bits. Associativity (this process) kills the 'native would have changed the error' rescue. Stop.",
+      "s011_section4": {
+        "necessary_condition": "A design that does not reduce at least one of bytes, operations, dispatches, materialization, synchronization or traffic is INCOMPLETE.",
+        "sequential_two_stage_reduces": [
+          "bytes",
+          "operations",
+          "traffic"
+        ],
+        "sequential_two_stage_increases": [
+          "dispatches",
+          "synchronization"
+        ],
+        "sequential_materialization": "Incumbent already materialises 0 dense W. Sequential two-stage also 0. No win on that axis.",
+        "fused_clone_reduces": [
+          "bytes",
+          "traffic"
+        ],
+        "fused_clone_increases": [
+          "operations"
+        ],
+        "function_preserved": false,
+        "incomplete_as_production_candidate": true,
+        "why": "S011 \u00a74 is necessary, not sufficient. Sequential two-stage would pass the reduce-one-axis bar and still be the wrong object: it executes an approximation that lost on fidelity at matched bits and whose family ceiling at usable bits is 2.93\u00d7 q3. Reported as INCOMPLETE for production, not as a kernel to write."
+      },
+      "do_not_build": true,
+      "ops": {
+        "incumbent_gemv_mac_flops": 51243909120,
+        "incumbent_gemv_gflop": 51.24390912,
+        "incumbent_activation_flops": 297313024,
+        "incumbent_dispatches": 964,
+        "mlp_dense_mac": 34225520640,
+        "mlp_sequential_two_stage_mac": 3235381248,
+        "mlp_fused_recompute_mac": 1602090172416,
+        "token_gemv_if_mlp_sequential": 20253769728,
+        "token_gemv_gflop_if_mlp_sequential": 20.253769728,
+        "token_gemv_if_mlp_fused_recompute": 1619108560896,
+        "token_gemv_gflop_if_mlp_fused_recompute": 1619.108560896,
+        "sequential_vs_incumbent": 0.3952424800491099,
+        "fused_vs_incumbent": 31.596117249846532,
+        "compared_against": "51.24 GFLOP / 964 dispatches (measured incumbent)",
+        "reading": "Sequential two-stage at G035 ranks would drop GEMV MACs 51.24 \u2192 20.25 GFLOP (0.395\u00d7) and raise dispatches 964 \u2192 1156. Fused hgravs01-clone would RAISE GEMV MACs to 1619.11 GFLOP (31.6\u00d7) because every TG recomputes mid. Neither path preserves function."
+      }
+    }
+  },
+  "what_i_watched_fail": [
+    {
+      "what": ".lane-bootstrap/census/ (n1arch 35, n15neg 31, n16clos)",
+      "result": "ABSENT_FROM_HEAD",
+      "detail": "git ls-tree HEAD has zero paths under .lane-bootstrap and zero files named n1arch/n15neg/n16clos. Sparse-checkout add is forbidden. Stand-ins used: NEGATIVE_SCIENCE_REGISTER (38 entries, NS-010), NOETIC_KERNEL_CENSUS families, G035/G034/G032, g1-shared-basis.md, QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE."
+    },
+    {
+      "what": "MLP function distillation primary receipt",
+      "result": "BRIEF_ONLY",
+      "detail": "Lane brief: NO-GO, +0.4206 held-out gap vs q3 at 72% of its active bytes. NOETIC_KERNEL_CENSUS missing_family_cost still says distillation of the MLP function 'has not been run'. No primary JSON with those two numbers is materialized in this sparse checkout. Cited as a supplied constraint, not re-derived, and not used as a reopen."
+    },
+    {
+      "what": "Treat missing native kernel as the thing that killed sharing",
+      "result": "REJECTED",
+      "detail": "Associativity residual 0.000e+00. G035's extra error is in \u0174, not in how \u0174 is applied."
+    },
+    {
+      "what": "Design around G035 row-basis 6.3% adjacent win",
+      "result": "STOPPED",
+      "detail": "Dead-zone 1.03 b/elem, errors 0.58 vs coherent 0.198. G034 ceiling 2.93\u00d7 q3 at 3.25 b/elem. That is still a fidelity result."
+    },
+    {
+      "what": "Clone q80_hgravs01_two_stage_matvec as the production path",
+      "result": "INFEASIBLE_AT_G035",
+      "detail": "kRankCap=160 kXCap=512; G035 gate r=417 n=5120. Fused recompute 52.2\u00d7 dense FLOPs on gate."
+    },
+    {
+      "what": "Re-run G035 SVD on this box",
+      "result": "NOT_RUN (refused)",
+      "detail": "Would need the BF16 parent and the thick v2 capture. Those sit outside WRITE scope. The receipt is in git; the question was which failure it recorded, not whether the SVD still runs."
+    },
+    {
+      "what": "Live 27B native decode re-time / MLX 35.51 remeasure",
+      "result": "NOT_RUN (refused)",
+      "detail": "Anchors 32.73 tok/s / 30.606 ms and MLX 35.51 live / llama.cpp Q5_K 24.12 archived are supplied. Occupancy is not free (two servers: 3.986 tok/s vs 33.47 with one)."
+    },
+    {
+      "what": "223 sub-0.5 local BPW rows as a result",
+      "result": "PAIRED_WITH_HEALTH",
+      "detail": "223 rows, healthy=0. A low number is not a result until paired with a health verdict."
+    },
+    {
+      "what": "Q80 0.6462 as the density that decode moves",
+      "result": "CORRECTED_TO_BOTH",
+      "detail": "storage BPW 0.6462 against ACTIVE 2.518 (factor 3.9). Report both or neither."
+    }
+  ],
+  "write_scope": {
+    "write": [
+      "tools/headless/c1sharedbasis_design.py",
+      "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+    ],
+    "verify": [
+      "tools/headless",
+      "receipts/headless"
+    ],
+    "deny": [
+      "workspace",
+      "crates",
+      "visionmcp",
+      "app",
+      "lab",
+      "tools/haider",
+      "ramanujan"
+    ],
+    "crates_read_only": true
+  },
+  "self_check": {
+    "eight_items_present": true,
+    "prior_science_searched": true,
+    "family_refuted_on_fidelity": true,
+    "stopped_rather_than_designing_around": true,
+    "oracle_labelled_oracle": true,
+    "production_path_named_separately": true,
+    "ops_compared_against_51_24_gflop": true,
+    "dispatches_compared_against_964": true,
+    "microbenchmark_concrete": true,
+    "verdict_is_not_worth_building": true,
+    "associativity_holds": true,
+    "g035_rank_gate_is_417": true,
+    "g035_rank_down_is_288": true,
+    "fused_increases_ops": true,
+    "sequential_decreases_ops": true,
+    "hgravs01_caps_parsed": true,
+    "all_passed": true
+  }
+}

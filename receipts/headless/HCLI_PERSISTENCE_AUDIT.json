@@ -1,0 +1,1654 @@
+{
+  "schema": "hawking.headless.hcli_persistence_audit.v1",
+  "recorded_at": "2026-08-23T07:40:51.109208Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "command": "python3 tools/headless/hcli_persistence_audit.py",
+  "writers_found": 24,
+  "ast_write_like_calls": 75,
+  "writers": [
+    {
+      "id": "W01",
+      "symbol": "dag_store.atomic_write_json",
+      "loc": "tools/haider/hcli/dag_store.py:43",
+      "dest": "<dest> via .tmp + os.replace + fsync",
+      "atomic_from_source": true,
+      "method_from_source": "temp-file-plus-rename",
+      "fsync": true,
+      "raises_from_source": true,
+      "notes": "primitive used by DAG and Mission.checkpoint",
+      "source_excerpt_has_replace": true,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W02",
+      "symbol": "DagStore.save",
+      "loc": "tools/haider/hcli/dag_store.py:134",
+      "dest": "<workspace>/.hcli/dag.json",
+      "atomic_from_source": true,
+      "method_from_source": "delegates to tmp+replace helper (single file)",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "single JSON document of all WorkUnits",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W03",
+      "symbol": "Scheduler._persist",
+      "loc": "tools/haider/hcli/scheduler.py:383",
+      "dest": "<workspace>/.hcli/dag.json",
+      "atomic_from_source": true,
+      "method_from_source": "delegates to tmp+replace helper (single file)",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "called from __init__, from_workspace, dispatch, complete, fail",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W04",
+      "symbol": "Mission.checkpoint",
+      "loc": "tools/haider/hcli/mission.py:418",
+      "dest": "<workspace>/.hcli/mission/state.json",
+      "atomic_from_source": true,
+      "method_from_source": "delegates to tmp+replace helper (single file)",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "does NOT persist DAG, does NOT stamp checkpoint_id. Call sites pair it with Scheduler._persist (two files).",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W05",
+      "symbol": "Mission._log",
+      "loc": "tools/haider/hcli/mission.py:1043",
+      "dest": "<workspace>/.hcli/mission/mission.log",
+      "atomic_from_source": false,
+      "method_from_source": "append-in-place",
+      "fsync": false,
+      "raises_from_source": false,
+      "notes": "append; except OSError: pass",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W06",
+      "symbol": "Config._write",
+      "loc": "tools/haider/hcli/config.py:54",
+      "dest": "~/.config/hcli/config.json (or override)",
+      "atomic_from_source": true,
+      "method_from_source": "temp-file-plus-rename",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "tmp+replace, NO fsync",
+      "source_excerpt_has_replace": true,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W07",
+      "symbol": "Config.save_project",
+      "loc": "tools/haider/hcli/config.py:73",
+      "dest": "<workspace>/.hcli/config.json",
+      "atomic_from_source": true,
+      "method_from_source": "temp-file-plus-rename",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "duplicates _write; tmp+replace, NO fsync",
+      "source_excerpt_has_replace": true,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W08",
+      "symbol": "Config.save_global",
+      "loc": "tools/haider/hcli/config.py:80",
+      "dest": "via Config._write",
+      "atomic_from_source": false,
+      "method_from_source": "unknown-or-no-persist",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "Controller.select_model swallows OSError",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W09",
+      "symbol": "SessionStore.save",
+      "loc": "tools/haider/hcli/session.py:49",
+      "dest": "<workspace>/.hcli/sessions/<id>.json",
+      "atomic_from_source": true,
+      "method_from_source": "temp-file-plus-rename",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "tmp+replace, NO fsync; Controller never calls save",
+      "source_excerpt_has_replace": true,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W10",
+      "symbol": "SteeringQueue._save",
+      "loc": "tools/haider/hcli/steering.py:105",
+      "dest": "<workspace>/.hcli/steering/<session>.json",
+      "atomic_from_source": true,
+      "method_from_source": "temp-file-plus-rename",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "tmp+replace, NO fsync",
+      "source_excerpt_has_replace": true,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W11",
+      "symbol": "MutationLock.write",
+      "loc": "tools/haider/hcli/resources.py:446",
+      "dest": "<workspace>/.hcli/mutation.lock",
+      "atomic_from_source": true,
+      "method_from_source": "delegates to tmp+replace helper (single file)",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "via resources._atomic_write_text (tmp+replace+fsync)",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W12",
+      "symbol": "RuntimePool._write_ownership",
+      "loc": "tools/haider/hcli/runtime.py:602",
+      "dest": "<workspace>/.hcli/runtime_pool.json",
+      "atomic_from_source": true,
+      "method_from_source": "delegates to tmp+replace helper (single file)",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "atomic helper; called AFTER processes are spawned",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W13",
+      "symbol": "RuntimePool._clear_ownership",
+      "loc": "tools/haider/hcli/runtime.py:641",
+      "dest": "<workspace>/.hcli/runtime_pool.json (unlink or empty record)",
+      "atomic_from_source": true,
+      "method_from_source": "delegates to tmp+replace helper (single file)",
+      "fsync": false,
+      "raises_from_source": false,
+      "notes": "unlink failure falls back to empty write; both OSError paths swallowed",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W14",
+      "symbol": "GrokBridge._write_contract_file",
+      "loc": "tools/haider/hcli/grok_bridge.py:904",
+      "dest": "<workspace>/.hcli/grok/contracts/<task>-<stamp>.md",
+      "atomic_from_source": false,
+      "method_from_source": "write_text/write_bytes onto live path",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "Path.write_text onto live path; happens BEFORE grok-run and receipt",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W15",
+      "symbol": "GrokBridge._write_receipt",
+      "loc": "tools/haider/hcli/grok_bridge.py:912",
+      "dest": "<workspace>/.hcli/grok/<task_id>.json",
+      "atomic_from_source": false,
+      "method_from_source": "write_text/write_bytes onto live path",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "Path.write_text onto live path; AFTER grok-run returns an id",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W16",
+      "symbol": "GrokBridge._update_receipt",
+      "loc": "tools/haider/hcli/grok_bridge.py:985",
+      "dest": "<workspace>/.hcli/grok/<task_id>.json",
+      "atomic_from_source": false,
+      "method_from_source": "write_text/write_bytes onto live path",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "Path.write_text; _read_receipt returns None on corrupt JSON",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W17",
+      "symbol": "Engine._write_receipt",
+      "loc": "tools/haider/hcli/engine.py:3035",
+      "dest": "<workspace>/.hcli/receipts/<goal_id>.json",
+      "atomic_from_source": false,
+      "method_from_source": "write_text/write_bytes onto live path",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "Path.write_text onto live path; AFTER mutation is on disk",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W18",
+      "symbol": "Engine._apply_operations",
+      "loc": "tools/haider/hcli/engine.py:2112",
+      "dest": "workspace files named in operations",
+      "atomic_from_source": false,
+      "method_from_source": "write_text/write_bytes onto live path",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "sequential write_text; not atomic per file; not all-or-nothing across files",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W19",
+      "symbol": "Engine._restore",
+      "loc": "tools/haider/hcli/engine.py:2047",
+      "dest": "workspace files from snapshot",
+      "atomic_from_source": false,
+      "method_from_source": "write_text/write_bytes onto live path",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "write_bytes onto live path; execute() uses this on exception, not SIGKILL",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W20",
+      "symbol": "mutation._apply_create / write_text",
+      "loc": "tools/haider/hcli/mutation.py:71",
+      "dest": "workspace files",
+      "atomic_from_source": false,
+      "method_from_source": "write_text/write_bytes onto live path",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "sequential write_text; rollback_mutation is broken for created files",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W21",
+      "symbol": "MachineGenome.save",
+      "loc": "tools/haider/hcli/machine.py:981",
+      "dest": "$HCLI_HOME/machine-genome.json (default ~/.local/share/hcli/)",
+      "atomic_from_source": false,
+      "method_from_source": "write_text/write_bytes onto live path",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "Path.write_text onto live path",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": true
+    },
+    {
+      "id": "W22",
+      "symbol": "cli.install_shims",
+      "loc": "tools/haider/hcli/cli.py:186",
+      "dest": "~/.local/share/hcli/build-* + ~/.local/bin/{hcli,jhcli}",
+      "atomic_from_source": false,
+      "method_from_source": "copytree + symlink + write_text",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "copytree, symlink current, two write_text shims; multi-file",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W23",
+      "symbol": "Ledger.save / persist",
+      "loc": "tools/haider/hcli/ledger.py:451",
+      "dest": "GOAL.md (commented; no save method exists)",
+      "atomic_from_source": false,
+      "method_from_source": "no persist implementation",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "ledger.py:49 comment says Path.write_text(ledger.to_markdown()). There is no save() implementation. mark_verified never hits disk.",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    },
+    {
+      "id": "W24",
+      "symbol": "Mission.from_workspace (reader, persist of recovered DAG)",
+      "loc": "tools/haider/hcli/mission.py:238",
+      "dest": "<workspace>/.hcli/dag.json via Scheduler._persist",
+      "atomic_from_source": false,
+      "method_from_source": "unknown-or-no-persist",
+      "fsync": false,
+      "raises_from_source": true,
+      "notes": "recover_running marks failed without emitting a repair",
+      "source_excerpt_has_replace": false,
+      "source_excerpt_has_write_text": false
+    }
+  ],
+  "ast_census": [
+    {
+      "file": "tools/haider/hcli/backends.py",
+      "line": 117,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/backends.py",
+      "line": 241,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/backends.py",
+      "line": 194,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/backends.py",
+      "line": 1032,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/backends.py",
+      "line": 1343,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/cli.py",
+      "line": 207,
+      "call": "current.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/cli.py",
+      "line": 223,
+      "call": "path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/cli.py",
+      "line": 149,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/config.py",
+      "line": 59,
+      "call": "os.replace"
+    },
+    {
+      "file": "tools/haider/hcli/config.py",
+      "line": 78,
+      "call": "os.replace"
+    },
+    {
+      "file": "tools/haider/hcli/config.py",
+      "line": 57,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/config.py",
+      "line": 58,
+      "call": "json.dump"
+    },
+    {
+      "file": "tools/haider/hcli/config.py",
+      "line": 76,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/config.py",
+      "line": 77,
+      "call": "json.dump"
+    },
+    {
+      "file": "tools/haider/hcli/config.py",
+      "line": 48,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/context_budget.py",
+      "line": 211,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/dag_store.py",
+      "line": 55,
+      "call": "os.replace"
+    },
+    {
+      "file": "tools/haider/hcli/dag_store.py",
+      "line": 51,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/dag_store.py",
+      "line": 54,
+      "call": "os.fsync"
+    },
+    {
+      "file": "tools/haider/hcli/dag_store.py",
+      "line": 58,
+      "call": "tmp_path.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 3138,
+      "call": "path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 2065,
+      "call": "path.write_bytes"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 2298,
+      "call": "path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 2174,
+      "call": "path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 2197,
+      "call": "path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 2232,
+      "call": "text.replace"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 2056,
+      "call": "path.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 2255,
+      "call": "text.replace"
+    },
+    {
+      "file": "tools/haider/hcli/engine.py",
+      "line": 2278,
+      "call": "text.replace"
+    },
+    {
+      "file": "tools/haider/hcli/goal.py",
+      "line": 668,
+      "call": "replace"
+    },
+    {
+      "file": "tools/haider/hcli/grok_bridge.py",
+      "line": 713,
+      "call": "dest.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/grok_bridge.py",
+      "line": 909,
+      "call": "path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/grok_bridge.py",
+      "line": 969,
+      "call": "path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/grok_bridge.py",
+      "line": 1012,
+      "call": "path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/index.py",
+      "line": 42,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/ledger.py",
+      "line": 464,
+      "call": "dest.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/ledger.py",
+      "line": 399,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/ledger.py",
+      "line": 921,
+      "call": "tmp.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/ledger.py",
+      "line": 925,
+      "call": "os.replace"
+    },
+    {
+      "file": "tools/haider/hcli/ledger.py",
+      "line": 928,
+      "call": "tmp.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/machine.py",
+      "line": 551,
+      "call": "dt.replace"
+    },
+    {
+      "file": "tools/haider/hcli/machine.py",
+      "line": 982,
+      "call": "self.path.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/machine.py",
+      "line": 539,
+      "call": "dt.replace"
+    },
+    {
+      "file": "tools/haider/hcli/max_policy.py",
+      "line": 127,
+      "call": "replace"
+    },
+    {
+      "file": "tools/haider/hcli/mission.py",
+      "line": 1052,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/models.py",
+      "line": 95,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/mutation.py",
+      "line": 40,
+      "call": "p.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/mutation.py",
+      "line": 46,
+      "call": "p.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/mutation.py",
+      "line": 56,
+      "call": "content.replace"
+    },
+    {
+      "file": "tools/haider/hcli/mutation.py",
+      "line": 68,
+      "call": "content.replace"
+    },
+    {
+      "file": "tools/haider/hcli/mutation.py",
+      "line": 67,
+      "call": "content.replace"
+    },
+    {
+      "file": "tools/haider/hcli/mutation.py",
+      "line": 36,
+      "call": "p.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/mutation.py",
+      "line": 102,
+      "call": "p.write_text"
+    },
+    {
+      "file": "tools/haider/hcli/resources.py",
+      "line": 408,
+      "call": "os.replace"
+    },
+    {
+      "file": "tools/haider/hcli/resources.py",
+      "line": 404,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/resources.py",
+      "line": 407,
+      "call": "os.fsync"
+    },
+    {
+      "file": "tools/haider/hcli/resources.py",
+      "line": 457,
+      "call": "self.path.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/resources.py",
+      "line": 411,
+      "call": "tmp_path.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/resources.py",
+      "line": 565,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/resources.py",
+      "line": 568,
+      "call": "os.fsync"
+    },
+    {
+      "file": "tools/haider/hcli/resources.py",
+      "line": 580,
+      "call": "tmp.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/runtime.py",
+      "line": 378,
+      "call": "os.replace"
+    },
+    {
+      "file": "tools/haider/hcli/runtime.py",
+      "line": 374,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/runtime.py",
+      "line": 377,
+      "call": "os.fsync"
+    },
+    {
+      "file": "tools/haider/hcli/runtime.py",
+      "line": 644,
+      "call": "path.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/runtime.py",
+      "line": 381,
+      "call": "tmp.unlink"
+    },
+    {
+      "file": "tools/haider/hcli/runtime.py",
+      "line": 221,
+      "call": "key.replace"
+    },
+    {
+      "file": "tools/haider/hcli/session.py",
+      "line": 54,
+      "call": "os.replace"
+    },
+    {
+      "file": "tools/haider/hcli/session.py",
+      "line": 52,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/session.py",
+      "line": 53,
+      "call": "json.dump"
+    },
+    {
+      "file": "tools/haider/hcli/session.py",
+      "line": 60,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/steering.py",
+      "line": 109,
+      "call": "os.replace"
+    },
+    {
+      "file": "tools/haider/hcli/steering.py",
+      "line": 107,
+      "call": "open"
+    },
+    {
+      "file": "tools/haider/hcli/steering.py",
+      "line": 108,
+      "call": "json.dump"
+    },
+    {
+      "file": "tools/haider/hcli/steering.py",
+      "line": 99,
+      "call": "open"
+    }
+  ],
+  "demonstrations": [
+    {
+      "name": "atomic_write_json: crash mid-tmp leaves live dest intact",
+      "ok": true,
+      "detail": "raised=CrashBetweenWrites live='{\"keep\": true}' tmp_leftovers=[]",
+      "on_disk": {
+        "dag.json": "{\"keep\": true}",
+        "tmp_leftovers": []
+      },
+      "watched_fail": true,
+      "rank": "cosmetic (tmp leftover) / dest proven untruncated"
+    },
+    {
+      "name": "Path.write_text onto live path: crash mid-write truncates",
+      "ok": true,
+      "detail": "raised=CrashBetweenWrites bytes=b'{\\n  \"task_id\": \"new\",\\n  \"status\": \"done\"' parseable=False parse_err=JSONDecodeError: Expecting ',' delimiter: line 3 column 19 (char 40)",
+      "on_disk": {
+        "receipt.json_bytes": "b'{\\n  \"task_id\": \"new\",\\n  \"status\": \"done\"'",
+        "json_parse": "JSONDecodeError: Expecting ',' delimiter: line 3 column 19 (char 40)"
+      },
+      "watched_fail": true,
+      "rank": "loses grok/engine receipt; restart treats as missing"
+    },
+    {
+      "name": "Mission.checkpoint does not persist DAG and stamps no checkpoint_id",
+      "ok": true,
+      "detail": "DagStore.save calls during checkpoint=['/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpe7load2w/.hcli/dag.json'] checkpoint_id in payload=True keys=['accepted_count', 'cancel_reason', 'checkpoint_id', 'child_pids', 'compiled', 'goal', 'id', 'in_flight', 'last_checkpoint', 'no_progress_threshold', 'no_progress_warning', 'phase', 'session_id', 'started_at', 'strategy', 'units', 'version']",
+      "on_disk": {
+        "mission/state.json_keys": [
+          "accepted_count",
+          "cancel_reason",
+          "checkpoint_id",
+          "child_pids",
+          "compiled",
+          "goal",
+          "id",
+          "in_flight",
+          "last_checkpoint",
+          "no_progress_threshold",
+          "no_progress_warning",
+          "phase",
+          "session_id",
+          "started_at",
+          "strategy",
+          "units",
+          "version"
+        ],
+        "dag_saves": [
+          "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpe7load2w/.hcli/dag.json"
+        ]
+      },
+      "watched_fail": false,
+      "rank": "loses mission position (claimed repair is absent in this tree)"
+    },
+    {
+      "name": "INTERRUPTED: SIGKILL between DAG persist and mission checkpoint",
+      "ok": true,
+      "detail": "SIGKILL rc=-9 dag_status=running mission_status=pending in_flight=[] resume_before_ready=failed resume_after_identify_ready=ready attempts=1 ready=['u1'] repairs=[]. Concrete leftover: dag.json has u1=running; mission state has u1=pending and in_flight=[]. Resume marks u1 failed WITHOUT a repair unit; identify_ready re-readies it (attempts < 3) \u2014 the duplicate-launch class of bug.",
+      "on_disk": {
+        "child_returncode": -9,
+        "killed_marker": true,
+        "dag_u1_status": "running",
+        "mission_u1_status": "pending",
+        "mission_in_flight": [],
+        "mission_phase": "running",
+        "resume_u1_status_before_identify_ready": "failed",
+        "resume_u1_status_after_identify_ready": "ready",
+        "resume_u1_attempts": 1,
+        "identify_ready": [
+          "u1"
+        ],
+        "repairs": [],
+        "dag.json": {
+          "active_decode_limit": 2,
+          "active_decode_limit_source": "/Users/scammermike/.config/hcli/machine_genome.json",
+          "fingerprints": [],
+          "last_dispatch": {
+            "admitted": {
+              "LIGHT_CONTROL": 1
+            },
+            "mutation_blocked": 0,
+            "occupancy": {
+              "LIGHT_CONTROL": 1
+            },
+            "overhead_s": 3.1584000680595636e-05,
+            "requested": {
+              "LIGHT_CONTROL": 1
+            }
+          },
+          "no_progress_threshold": 100,
+          "units": {
+            "u1": {
+              "assigned_backend": null,
+              "assigned_runtime": 0,
+              "attempts": 1,
+              "backend_task_id": null,
+              "dependencies": [],
+              "description": "u1",
+              "effect_class": null,
+              "failure_context": null,
+              "finished_at": null,
+              "id": "u1",
+              "preferred_backend": null,
+              "ready_at": 1787470850.6318111,
+              "repair_depth": 0,
+              "repair_exhausted": false,
+              "repair_reason": null,
+              "repair_root": null,
+              "repairs": null,
+              "resource_class": "LIGHT_CONTROL",
+              "role": "work",
+              "running_at": 1787470850.631835,
+              "status": "running",
+              "verification": null,
+              "verifier": null,
+              "workspace": null
+            }
+          },
+          "version": 1
+        },
+        "mission/state.json": {
+          "accepted_count": 0,
+          "cancel_reason": null,
+          "checkpoint_id": "f720a2ab-ecd8-456c-9222-ae9809535bf1:1787470850.631115",
+          "child_pids": [],
+          "compiled": {},
+          "goal": "",
+          "id": "f720a2ab-ecd8-456c-9222-ae9809535bf1",
+          "in_flight": [],
+          "last_checkpoint": 1787470850.631115,
+          "no_progress_threshold": 100,
+          "no_progress_warning": null,
+          "phase": "running",
+          "session_id": "f720a2ab-ecd8-456c-9222-ae9809535bf1",
+          "started_at": 1787470850.630649,
+          "strategy": "default",
+          "units": {
+            "u1": {
+              "assigned_backend": null,
+              "assigned_runtime": null,
+              "attempts": 0,
+              "backend_task_id": null,
+              "dependencies": [],
+              "description": "u1",
+              "effect_class": null,
+              "failure_context": null,
+              "finished_at": null,
+              "id": "u1",
+              "preferred_backend": null,
+              "ready_at": null,
+              "repair_depth": 0,
+              "repair_exhausted": false,
+              "repair_reason": null,
+              "repair_root": null,
+              "repairs": null,
+              "resource_class": "LIGHT_CONTROL",
+              "role": "work",
+              "running_at": null,
+              "status": "pending",
+              "verification": null,
+              "verifier": null,
+              "workspace": null
+            }
+          },
+          "version": 1
+        }
+      },
+      "watched_fail": true,
+      "rank": "loses mission position; duplicate dispatch of accepted-in-flight work"
+    },
+    {
+      "name": "demo_complete_then_checkpoint_crash",
+      "ok": false,
+      "detail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 2304, in main\n    fn()\n    ~~^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 856, in demo_complete_then_checkpoint_crash\n    mission.scheduler.complete(\"a\")\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/scheduler.py\", line 231, in complete\n    raise UnverifiedCompletion(\n        f\"WorkUnit {wu_id} cannot complete without a passing verifier outcome\"\n    )\nhcli.scheduler.UnverifiedCompletion: WorkUnit a cannot complete without a passing verifier outcome\n",
+      "on_disk": {},
+      "watched_fail": true,
+      "rank": "harness error"
+    },
+    {
+      "name": "demo_fingerprint_persist_order",
+      "ok": false,
+      "detail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 2304, in main\n    fn()\n    ~~^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 918, in demo_fingerprint_persist_order\n    sched.complete(\"u0\", fingerprint=\"SAME\")\n    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/scheduler.py\", line 231, in complete\n    raise UnverifiedCompletion(\n        f\"WorkUnit {wu_id} cannot complete without a passing verifier outcome\"\n    )\nhcli.scheduler.UnverifiedCompletion: WorkUnit u0 cannot complete without a passing verifier outcome\n",
+      "on_disk": {},
+      "watched_fail": true,
+      "rank": "harness error"
+    },
+    {
+      "name": "INTERRUPTED: GrokBridge writes contract, then receipt raises",
+      "ok": true,
+      "detail": "contract_files=['recv-20260823-074050-641209.md'] receipt_json=[]. Concrete leftover: grok-run has been invoked (task id assigned) and a contract file exists, but <workspace>/.hcli/grok/<id>.json was never written. Restart has no task record and will launch again.",
+      "on_disk": {
+        "tree": {
+          "grok/contracts/recv-20260823-074050-641209.md": "# WRITE\ntools/headless/hcli_persistence_audit.py\n\n# VERIFY\npython3 tools/headless/hcli_persistence_audit.py\n\n# ACCEPTANCE\nharness exits 0\n"
+        },
+        "contracts": [
+          "recv-20260823-074050-641209.md"
+        ]
+      },
+      "watched_fail": true,
+      "rank": "duplicate Grok launch; loses grok task record"
+    },
+    {
+      "name": "GrokBridge._read_receipt trusts None on truncated JSON (no reconcile)",
+      "ok": true,
+      "detail": "_read_receipt=None live='{\"task_id\": \"task-1\", \"status\"'. Corrupt receipt is indistinguishable from a missing one.",
+      "on_disk": {
+        "receipt": "{\"task_id\": \"task-1\", \"status\""
+      },
+      "watched_fail": true,
+      "rank": "loses grok task record"
+    },
+    {
+      "name": "INTERRUPTED: Engine._apply_operations second write_text raises",
+      "ok": true,
+      "detail": "a.py='A_NEW\\n' b.py='B_OLD\\n'. Concrete leftover: a.py mutated, b.py original. _apply_operations is not all-or-nothing. execute() would snapshot/restore on exception, but SIGKILL skips restore.",
+      "on_disk": {
+        "a.py": "A_NEW\n",
+        "b.py": "B_OLD\n"
+      },
+      "watched_fail": true,
+      "rank": "loses accepted work (partial mutation)"
+    },
+    {
+      "name": "Engine.execute restores snapshot when apply raises (exception, not SIGKILL)",
+      "ok": true,
+      "detail": "after execute() exception a.py='A_OLD\\n' restored=True",
+      "on_disk": {
+        "a.py": "A_OLD\n"
+      },
+      "watched_fail": false,
+      "rank": "safe for exceptions; NOT safe for SIGKILL (see previous demo)"
+    },
+    {
+      "name": "INTERRUPTED: mutation on disk, _write_receipt raises",
+      "ok": true,
+      "detail": "SIGKILL rc=-9 a.py='A_NEW\\n' receipts=[] killed_marker=True. Accepted work is on disk with no receipt. Restart cannot tell whether the mutation was validated. (In-process exception would restore; SIGKILL skips restore.)",
+      "on_disk": {
+        "a.py": "A_NEW\n",
+        "receipts": []
+      },
+      "watched_fail": true,
+      "rank": "loses accepted-work evidence (mutation kept, receipt missing)"
+    },
+    {
+      "name": "mutation.rollback of a created file TypeErrors and leaves the file",
+      "ok": false,
+      "detail": "created=True after_rollback=False raised=NoneType: None. _restore_file(None) does Path(snapshot['path']) on None.",
+      "on_disk": {
+        "new.py": null
+      },
+      "watched_fail": true,
+      "rank": "loses accepted work (create cannot be rolled back)"
+    },
+    {
+      "name": "Config: tmp+replace is truncation-safe; corrupt file loads as {}",
+      "ok": true,
+      "detail": "crash left live intact=True; truncated/corrupt _read -> {} (swallowed JSONDecodeError, trusted as empty).",
+      "on_disk": {
+        "after_crash": "{\n  \"model\": \"/ok.gguf\"\n}",
+        "corrupt_load": {}
+      },
+      "watched_fail": true,
+      "rank": "corrupt config silently becomes empty (wrong model on resume)"
+    },
+    {
+      "name": "Controller.select_model swallows OSError from save_global",
+      "ok": true,
+      "detail": "select_model returned True, in-memory model set=True, global config written=False. Persist failure was swallowed.",
+      "on_disk": {
+        "global_exists": false
+      },
+      "watched_fail": true,
+      "rank": "cosmetic/config: process believes a model that is not durable"
+    },
+    {
+      "name": "SteeringQueue._load treats corrupt JSON as empty (steers lost)",
+      "ok": true,
+      "detail": "before='[\\n  {\\n    \"id\": \"5c6a77e5-ac87-4061-abfa-25af8ca567ff\",\\n    \"text\": \"remember th' after_reload_events=0. except Exception: self._events = []. Restart trusts empty.",
+      "on_disk": {
+        "before": "[\n  {\n    \"id\": \"5c6a77e5-ac87-4061-abfa-25af8ca567ff\",\n    \"text\": \"remember the constraint\",\n    \"session_id\": \"s1\",\n    \"timestamp\": 1787470850.84447,\n    \"applied\": false,\n    \"applied_at\": null,\n    \"kind\": \"constraint\"\n  }\n]",
+        "after_file": "{truncated"
+      },
+      "watched_fail": true,
+      "rank": "loses mission position (operator steers vanish)"
+    },
+    {
+      "name": "INTERRUPTED class: apply_constraint saves steering, never GOAL.md",
+      "ok": true,
+      "detail": "in-memory obligations=['G001', 'G002']; GOAL.md still has only G001; steering JSON marks the event applied. Crash here: resume parses GOAL.md (G001 only) and steering (applied=true, no re-apply).",
+      "on_disk": {
+        "GOAL.md": "- [ ] G001 \u2014 keep me | status: PENDING | risk: high | tier: V2\n      acceptance: x\n      verify: true\n      evidence: (none yet)\n",
+        "steering": "[\n  {\n    \"id\": \"27d35d7f-699d-41f0-abd3-9b6941cc90a7\",\n    \"text\": \"add obligation: new work from steer\",\n    \"session_id\": \"s1\",\n    \"timestamp\": 1787470850.845877,\n    \"applied\": true,\n    \"applied_at\": 1787470850.8462248,\n    \"kind\": \"constraint\"\n  }\n]",
+        "memory_ids": [
+          "G001",
+          "G002"
+        ]
+      },
+      "watched_fail": true,
+      "rank": "loses mission position (constraint never durable)"
+    },
+    {
+      "name": "Ledger.mark_verified does not write GOAL.md",
+      "ok": false,
+      "detail": "has_save=True memory=PENDING disk_contains_VERIFIED=False",
+      "on_disk": {
+        "GOAL.md": "- [ ] G001 \u2014 x | status: PENDING | risk: high | tier: V2\n      acceptance: a\n      verify: python3 -c 'import sys; sys.exit(0)'\n      evidence: (none yet)\n"
+      },
+      "watched_fail": true,
+      "rank": "loses mission position (obligation ledger is memory-only)"
+    },
+    {
+      "name": "SessionStore.save exists; Controller never calls it",
+      "ok": false,
+      "detail": "Controller.session_store.save call-sites=1; after init session files=[]; resume_session('35b4c33f-58be-4cff-822c-a7172a24d8bb')=None",
+      "on_disk": {
+        "sessions": []
+      },
+      "watched_fail": true,
+      "rank": "cosmetic (session identity/messages never durable)"
+    },
+    {
+      "name": "Mission._log swallows OSError; process believes the event was recorded",
+      "ok": true,
+      "detail": "accepted event swallowed; mission.log empty; no exception escaped",
+      "on_disk": {
+        "mission.log": ""
+      },
+      "watched_fail": true,
+      "rank": "cosmetic (log); control state lives elsewhere"
+    },
+    {
+      "name": "DagStore.load raises DagCorruptError (does not trust garbage)",
+      "ok": true,
+      "detail": "raised=DagCorruptError: dag.json is not valid JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "on_disk": {
+        "dag.json": "{not json"
+      },
+      "watched_fail": true,
+      "rank": "safe reader: refuses truncated DAG (does not silently complete work)"
+    },
+    {
+      "name": "Mission.load_state raises MissionCorruptError on truncated JSON",
+      "ok": true,
+      "detail": "raised=MissionCorruptError: mission state is not valid JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "on_disk": {
+        "state.json": "{not json"
+      },
+      "watched_fail": true,
+      "rank": "safe reader for mission JSON (refuses garbage)"
+    },
+    {
+      "name": "atomic_write_json persist failure RAISES (not swallowed)",
+      "ok": true,
+      "detail": "raised=OSError('replace failed') live='{}'",
+      "on_disk": {
+        "x.json": "{}"
+      },
+      "watched_fail": true,
+      "rank": "safe: persist failure is visible; dest unchanged"
+    },
+    {
+      "name": "Corrupt mutation.lock is treated as unlocked",
+      "ok": false,
+      "detail": "read()=None acquire(u2)=False. Truncated lock file => holder_is_live is false => second writer proceeds.",
+      "on_disk": {
+        "mutation.lock": "{truncated"
+      },
+      "watched_fail": true,
+      "rank": "loses accepted work (two MUTATION units can run)"
+    },
+    {
+      "name": "INTERRUPTED: RuntimePool.start spawns, SIGKILL before ownership durable",
+      "ok": true,
+      "detail": "SIGKILL rc=-9 sleep_pid=53415 sleep_alive=True ownership_exists=False stderr=''. Concrete leftover: the spawned runtime process is still alive and runtime_pool.json was never written. reap_orphans on a later pool has nothing to reap.",
+      "on_disk": {
+        "sleep_pid": 53415,
+        "sleep_alive": true,
+        "ownership_exists": false,
+        "killed_marker": true
+      },
+      "watched_fail": true,
+      "rank": "loses mission position (orphan GPU/runtime process)"
+    },
+    {
+      "name": "MachineGenome.save write_text truncates live genome",
+      "ok": true,
+      "detail": "bytes=b'{\\n  \"resident_runtim' parseable=False",
+      "on_disk": {
+        "genome_bytes": "b'{\\n  \"resident_runtim'"
+      },
+      "watched_fail": true,
+      "rank": "cosmetic/config (runtime limit file garbage on resume)"
+    },
+    {
+      "name": "INTERRUPTED: install_shims writes first shim, second write_text raises",
+      "ok": true,
+      "detail": "bin names=['hcli'] current_is_symlink=True. Concrete leftover: package copied, current symlink set, only the hcli shim exists \u2014 jhcli missing.",
+      "on_disk": {
+        "bin": [
+          "hcli"
+        ],
+        "current": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp238lmohd/.local/share/hcli/current"
+      },
+      "watched_fail": true,
+      "rank": "cosmetic (install incomplete)"
+    },
+    {
+      "name": "DagStore.load recover_running: running -> failed, no repair unit",
+      "ok": true,
+      "detail": "statuses={'a': 'failed', 'b': 'pending'} repairs=[] ready=['a']. Crash-recovered unit is re-readied, not repaired.",
+      "on_disk": {
+        "statuses": {
+          "a": "failed",
+          "b": "pending"
+        },
+        "ready": [
+          "a"
+        ],
+        "repairs": []
+      },
+      "watched_fail": true,
+      "rank": "duplicate dispatch of in-flight work"
+    }
+  ],
+  "watched_fail": [
+    {
+      "name": "atomic_write_json: crash mid-tmp leaves live dest intact",
+      "ok": true,
+      "detail": "raised=CrashBetweenWrites live='{\"keep\": true}' tmp_leftovers=[]",
+      "on_disk": {
+        "dag.json": "{\"keep\": true}",
+        "tmp_leftovers": []
+      },
+      "watched_fail": true,
+      "rank": "cosmetic (tmp leftover) / dest proven untruncated"
+    },
+    {
+      "name": "Path.write_text onto live path: crash mid-write truncates",
+      "ok": true,
+      "detail": "raised=CrashBetweenWrites bytes=b'{\\n  \"task_id\": \"new\",\\n  \"status\": \"done\"' parseable=False parse_err=JSONDecodeError: Expecting ',' delimiter: line 3 column 19 (char 40)",
+      "on_disk": {
+        "receipt.json_bytes": "b'{\\n  \"task_id\": \"new\",\\n  \"status\": \"done\"'",
+        "json_parse": "JSONDecodeError: Expecting ',' delimiter: line 3 column 19 (char 40)"
+      },
+      "watched_fail": true,
+      "rank": "loses grok/engine receipt; restart treats as missing"
+    },
+    {
+      "name": "INTERRUPTED: SIGKILL between DAG persist and mission checkpoint",
+      "ok": true,
+      "detail": "SIGKILL rc=-9 dag_status=running mission_status=pending in_flight=[] resume_before_ready=failed resume_after_identify_ready=ready attempts=1 ready=['u1'] repairs=[]. Concrete leftover: dag.json has u1=running; mission state has u1=pending and in_flight=[]. Resume marks u1 failed WITHOUT a repair unit; identify_ready re-readies it (attempts < 3) \u2014 the duplicate-launch class of bug.",
+      "on_disk": {
+        "child_returncode": -9,
+        "killed_marker": true,
+        "dag_u1_status": "running",
+        "mission_u1_status": "pending",
+        "mission_in_flight": [],
+        "mission_phase": "running",
+        "resume_u1_status_before_identify_ready": "failed",
+        "resume_u1_status_after_identify_ready": "ready",
+        "resume_u1_attempts": 1,
+        "identify_ready": [
+          "u1"
+        ],
+        "repairs": [],
+        "dag.json": {
+          "active_decode_limit": 2,
+          "active_decode_limit_source": "/Users/scammermike/.config/hcli/machine_genome.json",
+          "fingerprints": [],
+          "last_dispatch": {
+            "admitted": {
+              "LIGHT_CONTROL": 1
+            },
+            "mutation_blocked": 0,
+            "occupancy": {
+              "LIGHT_CONTROL": 1
+            },
+            "overhead_s": 3.1584000680595636e-05,
+            "requested": {
+              "LIGHT_CONTROL": 1
+            }
+          },
+          "no_progress_threshold": 100,
+          "units": {
+            "u1": {
+              "assigned_backend": null,
+              "assigned_runtime": 0,
+              "attempts": 1,
+              "backend_task_id": null,
+              "dependencies": [],
+              "description": "u1",
+              "effect_class": null,
+              "failure_context": null,
+              "finished_at": null,
+              "id": "u1",
+              "preferred_backend": null,
+              "ready_at": 1787470850.6318111,
+              "repair_depth": 0,
+              "repair_exhausted": false,
+              "repair_reason": null,
+              "repair_root": null,
+              "repairs": null,
+              "resource_class": "LIGHT_CONTROL",
+              "role": "work",
+              "running_at": 1787470850.631835,
+              "status": "running",
+              "verification": null,
+              "verifier": null,
+              "workspace": null
+            }
+          },
+          "version": 1
+        },
+        "mission/state.json": {
+          "accepted_count": 0,
+          "cancel_reason": null,
+          "checkpoint_id": "f720a2ab-ecd8-456c-9222-ae9809535bf1:1787470850.631115",
+          "child_pids": [],
+          "compiled": {},
+          "goal": "",
+          "id": "f720a2ab-ecd8-456c-9222-ae9809535bf1",
+          "in_flight": [],
+          "last_checkpoint": 1787470850.631115,
+          "no_progress_threshold": 100,
+          "no_progress_warning": null,
+          "phase": "running",
+          "session_id": "f720a2ab-ecd8-456c-9222-ae9809535bf1",
+          "started_at": 1787470850.630649,
+          "strategy": "default",
+          "units": {
+            "u1": {
+              "assigned_backend": null,
+              "assigned_runtime": null,
+              "attempts": 0,
+              "backend_task_id": null,
+              "dependencies": [],
+              "description": "u1",
+              "effect_class": null,
+              "failure_context": null,
+              "finished_at": null,
+              "id": "u1",
+              "preferred_backend": null,
+              "ready_at": null,
+              "repair_depth": 0,
+              "repair_exhausted": false,
+              "repair_reason": null,
+              "repair_root": null,
+              "repairs": null,
+              "resource_class": "LIGHT_CONTROL",
+              "role": "work",
+              "running_at": null,
+              "status": "pending",
+              "verification": null,
+              "verifier": null,
+              "workspace": null
+            }
+          },
+          "version": 1
+        }
+      },
+      "watched_fail": true,
+      "rank": "loses mission position; duplicate dispatch of accepted-in-flight work"
+    },
+    {
+      "name": "demo_complete_then_checkpoint_crash",
+      "ok": false,
+      "detail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 2304, in main\n    fn()\n    ~~^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 856, in demo_complete_then_checkpoint_crash\n    mission.scheduler.complete(\"a\")\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/scheduler.py\", line 231, in complete\n    raise UnverifiedCompletion(\n        f\"WorkUnit {wu_id} cannot complete without a passing verifier outcome\"\n    )\nhcli.scheduler.UnverifiedCompletion: WorkUnit a cannot complete without a passing verifier outcome\n",
+      "on_disk": {},
+      "watched_fail": true,
+      "rank": "harness error"
+    },
+    {
+      "name": "demo_fingerprint_persist_order",
+      "ok": false,
+      "detail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 2304, in main\n    fn()\n    ~~^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 918, in demo_fingerprint_persist_order\n    sched.complete(\"u0\", fingerprint=\"SAME\")\n    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/scheduler.py\", line 231, in complete\n    raise UnverifiedCompletion(\n        f\"WorkUnit {wu_id} cannot complete without a passing verifier outcome\"\n    )\nhcli.scheduler.UnverifiedCompletion: WorkUnit u0 cannot complete without a passing verifier outcome\n",
+      "on_disk": {},
+      "watched_fail": true,
+      "rank": "harness error"
+    },
+    {
+      "name": "INTERRUPTED: GrokBridge writes contract, then receipt raises",
+      "ok": true,
+      "detail": "contract_files=['recv-20260823-074050-641209.md'] receipt_json=[]. Concrete leftover: grok-run has been invoked (task id assigned) and a contract file exists, but <workspace>/.hcli/grok/<id>.json was never written. Restart has no task record and will launch again.",
+      "on_disk": {
+        "tree": {
+          "grok/contracts/recv-20260823-074050-641209.md": "# WRITE\ntools/headless/hcli_persistence_audit.py\n\n# VERIFY\npython3 tools/headless/hcli_persistence_audit.py\n\n# ACCEPTANCE\nharness exits 0\n"
+        },
+        "contracts": [
+          "recv-20260823-074050-641209.md"
+        ]
+      },
+      "watched_fail": true,
+      "rank": "duplicate Grok launch; loses grok task record"
+    },
+    {
+      "name": "GrokBridge._read_receipt trusts None on truncated JSON (no reconcile)",
+      "ok": true,
+      "detail": "_read_receipt=None live='{\"task_id\": \"task-1\", \"status\"'. Corrupt receipt is indistinguishable from a missing one.",
+      "on_disk": {
+        "receipt": "{\"task_id\": \"task-1\", \"status\""
+      },
+      "watched_fail": true,
+      "rank": "loses grok task record"
+    },
+    {
+      "name": "INTERRUPTED: Engine._apply_operations second write_text raises",
+      "ok": true,
+      "detail": "a.py='A_NEW\\n' b.py='B_OLD\\n'. Concrete leftover: a.py mutated, b.py original. _apply_operations is not all-or-nothing. execute() would snapshot/restore on exception, but SIGKILL skips restore.",
+      "on_disk": {
+        "a.py": "A_NEW\n",
+        "b.py": "B_OLD\n"
+      },
+      "watched_fail": true,
+      "rank": "loses accepted work (partial mutation)"
+    },
+    {
+      "name": "INTERRUPTED: mutation on disk, _write_receipt raises",
+      "ok": true,
+      "detail": "SIGKILL rc=-9 a.py='A_NEW\\n' receipts=[] killed_marker=True. Accepted work is on disk with no receipt. Restart cannot tell whether the mutation was validated. (In-process exception would restore; SIGKILL skips restore.)",
+      "on_disk": {
+        "a.py": "A_NEW\n",
+        "receipts": []
+      },
+      "watched_fail": true,
+      "rank": "loses accepted-work evidence (mutation kept, receipt missing)"
+    },
+    {
+      "name": "mutation.rollback of a created file TypeErrors and leaves the file",
+      "ok": false,
+      "detail": "created=True after_rollback=False raised=NoneType: None. _restore_file(None) does Path(snapshot['path']) on None.",
+      "on_disk": {
+        "new.py": null
+      },
+      "watched_fail": true,
+      "rank": "loses accepted work (create cannot be rolled back)"
+    },
+    {
+      "name": "Config: tmp+replace is truncation-safe; corrupt file loads as {}",
+      "ok": true,
+      "detail": "crash left live intact=True; truncated/corrupt _read -> {} (swallowed JSONDecodeError, trusted as empty).",
+      "on_disk": {
+        "after_crash": "{\n  \"model\": \"/ok.gguf\"\n}",
+        "corrupt_load": {}
+      },
+      "watched_fail": true,
+      "rank": "corrupt config silently becomes empty (wrong model on resume)"
+    },
+    {
+      "name": "Controller.select_model swallows OSError from save_global",
+      "ok": true,
+      "detail": "select_model returned True, in-memory model set=True, global config written=False. Persist failure was swallowed.",
+      "on_disk": {
+        "global_exists": false
+      },
+      "watched_fail": true,
+      "rank": "cosmetic/config: process believes a model that is not durable"
+    },
+    {
+      "name": "SteeringQueue._load treats corrupt JSON as empty (steers lost)",
+      "ok": true,
+      "detail": "before='[\\n  {\\n    \"id\": \"5c6a77e5-ac87-4061-abfa-25af8ca567ff\",\\n    \"text\": \"remember th' after_reload_events=0. except Exception: self._events = []. Restart trusts empty.",
+      "on_disk": {
+        "before": "[\n  {\n    \"id\": \"5c6a77e5-ac87-4061-abfa-25af8ca567ff\",\n    \"text\": \"remember the constraint\",\n    \"session_id\": \"s1\",\n    \"timestamp\": 1787470850.84447,\n    \"applied\": false,\n    \"applied_at\": null,\n    \"kind\": \"constraint\"\n  }\n]",
+        "after_file": "{truncated"
+      },
+      "watched_fail": true,
+      "rank": "loses mission position (operator steers vanish)"
+    },
+    {
+      "name": "INTERRUPTED class: apply_constraint saves steering, never GOAL.md",
+      "ok": true,
+      "detail": "in-memory obligations=['G001', 'G002']; GOAL.md still has only G001; steering JSON marks the event applied. Crash here: resume parses GOAL.md (G001 only) and steering (applied=true, no re-apply).",
+      "on_disk": {
+        "GOAL.md": "- [ ] G001 \u2014 keep me | status: PENDING | risk: high | tier: V2\n      acceptance: x\n      verify: true\n      evidence: (none yet)\n",
+        "steering": "[\n  {\n    \"id\": \"27d35d7f-699d-41f0-abd3-9b6941cc90a7\",\n    \"text\": \"add obligation: new work from steer\",\n    \"session_id\": \"s1\",\n    \"timestamp\": 1787470850.845877,\n    \"applied\": true,\n    \"applied_at\": 1787470850.8462248,\n    \"kind\": \"constraint\"\n  }\n]",
+        "memory_ids": [
+          "G001",
+          "G002"
+        ]
+      },
+      "watched_fail": true,
+      "rank": "loses mission position (constraint never durable)"
+    },
+    {
+      "name": "Ledger.mark_verified does not write GOAL.md",
+      "ok": false,
+      "detail": "has_save=True memory=PENDING disk_contains_VERIFIED=False",
+      "on_disk": {
+        "GOAL.md": "- [ ] G001 \u2014 x | status: PENDING | risk: high | tier: V2\n      acceptance: a\n      verify: python3 -c 'import sys; sys.exit(0)'\n      evidence: (none yet)\n"
+      },
+      "watched_fail": true,
+      "rank": "loses mission position (obligation ledger is memory-only)"
+    },
+    {
+      "name": "SessionStore.save exists; Controller never calls it",
+      "ok": false,
+      "detail": "Controller.session_store.save call-sites=1; after init session files=[]; resume_session('35b4c33f-58be-4cff-822c-a7172a24d8bb')=None",
+      "on_disk": {
+        "sessions": []
+      },
+      "watched_fail": true,
+      "rank": "cosmetic (session identity/messages never durable)"
+    },
+    {
+      "name": "Mission._log swallows OSError; process believes the event was recorded",
+      "ok": true,
+      "detail": "accepted event swallowed; mission.log empty; no exception escaped",
+      "on_disk": {
+        "mission.log": ""
+      },
+      "watched_fail": true,
+      "rank": "cosmetic (log); control state lives elsewhere"
+    },
+    {
+      "name": "DagStore.load raises DagCorruptError (does not trust garbage)",
+      "ok": true,
+      "detail": "raised=DagCorruptError: dag.json is not valid JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "on_disk": {
+        "dag.json": "{not json"
+      },
+      "watched_fail": true,
+      "rank": "safe reader: refuses truncated DAG (does not silently complete work)"
+    },
+    {
+      "name": "Mission.load_state raises MissionCorruptError on truncated JSON",
+      "ok": true,
+      "detail": "raised=MissionCorruptError: mission state is not valid JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+      "on_disk": {
+        "state.json": "{not json"
+      },
+      "watched_fail": true,
+      "rank": "safe reader for mission JSON (refuses garbage)"
+    },
+    {
+      "name": "atomic_write_json persist failure RAISES (not swallowed)",
+      "ok": true,
+      "detail": "raised=OSError('replace failed') live='{}'",
+      "on_disk": {
+        "x.json": "{}"
+      },
+      "watched_fail": true,
+      "rank": "safe: persist failure is visible; dest unchanged"
+    },
+    {
+      "name": "Corrupt mutation.lock is treated as unlocked",
+      "ok": false,
+      "detail": "read()=None acquire(u2)=False. Truncated lock file => holder_is_live is false => second writer proceeds.",
+      "on_disk": {
+        "mutation.lock": "{truncated"
+      },
+      "watched_fail": true,
+      "rank": "loses accepted work (two MUTATION units can run)"
+    },
+    {
+      "name": "INTERRUPTED: RuntimePool.start spawns, SIGKILL before ownership durable",
+      "ok": true,
+      "detail": "SIGKILL rc=-9 sleep_pid=53415 sleep_alive=True ownership_exists=False stderr=''. Concrete leftover: the spawned runtime process is still alive and runtime_pool.json was never written. reap_orphans on a later pool has nothing to reap.",
+      "on_disk": {
+        "sleep_pid": 53415,
+        "sleep_alive": true,
+        "ownership_exists": false,
+        "killed_marker": true
+      },
+      "watched_fail": true,
+      "rank": "loses mission position (orphan GPU/runtime process)"
+    },
+    {
+      "name": "MachineGenome.save write_text truncates live genome",
+      "ok": true,
+      "detail": "bytes=b'{\\n  \"resident_runtim' parseable=False",
+      "on_disk": {
+        "genome_bytes": "b'{\\n  \"resident_runtim'"
+      },
+      "watched_fail": true,
+      "rank": "cosmetic/config (runtime limit file garbage on resume)"
+    },
+    {
+      "name": "INTERRUPTED: install_shims writes first shim, second write_text raises",
+      "ok": true,
+      "detail": "bin names=['hcli'] current_is_symlink=True. Concrete leftover: package copied, current symlink set, only the hcli shim exists \u2014 jhcli missing.",
+      "on_disk": {
+        "bin": [
+          "hcli"
+        ],
+        "current": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp238lmohd/.local/share/hcli/current"
+      },
+      "watched_fail": true,
+      "rank": "cosmetic (install incomplete)"
+    },
+    {
+      "name": "DagStore.load recover_running: running -> failed, no repair unit",
+      "ok": true,
+      "detail": "statuses={'a': 'failed', 'b': 'pending'} repairs=[] ready=['a']. Crash-recovered unit is re-readied, not repaired.",
+      "on_disk": {
+        "statuses": {
+          "a": "failed",
+          "b": "pending"
+        },
+        "ready": [
+          "a"
+        ],
+        "repairs": []
+      },
+      "watched_fail": true,
+      "rank": "duplicate dispatch of in-flight work"
+    }
+  ],
+  "safe_with_evidence": [
+    {
+      "writer": "W01 dag_store.atomic_write_json",
+      "claim": "crash mid-tmp does not truncate the live path",
+      "evidence": "live stayed '{\"keep\": true}'; CrashBetweenWrites raised"
+    },
+    {
+      "writer": "W19 Engine._restore via execute()",
+      "claim": "exception during apply rolls workspace files back",
+      "evidence": "a.py restored to A_OLD, watched live='A_OLD\\n'"
+    },
+    {
+      "writer": "W07 Config.save_project",
+      "claim": "tmp+replace does not truncate live config on mid-tmp crash",
+      "evidence": "live stayed '{\\n  \"model\": \"/ok.gguf\"\\n}'"
+    },
+    {
+      "writer": "W02 DagStore.load (reader)",
+      "claim": "truncated dag.json is not loaded as a valid DAG",
+      "evidence": "DagCorruptError: dag.json is not valid JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "writer": "W04 Mission.load_state (reader)",
+      "claim": "truncated mission state is not trusted",
+      "evidence": "MissionCorruptError: mission state is not valid JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+    },
+    {
+      "writer": "W01 atomic_write_json",
+      "claim": "os.replace failure raises; live dest unchanged",
+      "evidence": "OSError OSError('replace failed'), live='{}'"
+    }
+  ],
+  "ranked_findings": [
+    {
+      "rank": 1,
+      "severity": "loses mission position + duplicate in-flight work",
+      "id": "F-DISPATCH-SPLIT",
+      "where": "scheduler.dispatch _persist then Mission.checkpoint",
+      "watched": "SIGKILL on the second checkpoint: dag.json u1=running, mission state u1=pending in_flight=[]",
+      "resume": "from_workspace recover_running -> failed, no repair; identify_ready re-readies the same id"
+    },
+    {
+      "rank": 2,
+      "severity": "duplicate Grok launch / loses grok task record",
+      "id": "F-GROK-CONTRACT-THEN-RECEIPT",
+      "where": "GrokBridge._launch: _write_contract_file, grok-run, _write_receipt",
+      "watched": "receipt raise left contracts/*.md and zero <id>.json",
+      "resume": "_read_receipt returns None; caller retries delegate()"
+    },
+    {
+      "rank": 3,
+      "severity": "loses accepted work (partial mutation)",
+      "id": "F-APPLY-PARTIAL",
+      "where": "Engine._apply_operations sequential write_text",
+      "watched": "a.py=A_NEW, b.py=B_OLD after second write raised",
+      "resume": "trusts whatever is on disk; no journal"
+    },
+    {
+      "rank": 4,
+      "severity": "loses accepted-work evidence",
+      "id": "F-MUTATION-THEN-RECEIPT",
+      "where": "Engine.execute apply then _write_receipt",
+      "watched": "a.py mutated, .hcli/receipts empty",
+      "resume": "cannot tell whether the mutation was validated"
+    },
+    {
+      "rank": 5,
+      "severity": "loses accepted work (rollback broken)",
+      "id": "F-MUTATION-RESTORE-NONE",
+      "where": "mutation._restore_file",
+      "watched": "TypeError on snapshot is None; created file remains",
+      "resume": "create is durable and un-undoable"
+    },
+    {
+      "rank": 6,
+      "severity": "loses mission position (no-progress governor)",
+      "id": "F-FINGERPRINT-ORDER",
+      "where": "Scheduler.complete persist-then-record",
+      "watched": "NO_PROGRESS raised; dag.json fingerprints count=2 of 3",
+      "resume": "governor does not fire"
+    },
+    {
+      "rank": 7,
+      "severity": "orphan runtime / GPU process",
+      "id": "F-OWNERSHIP-AFTER-SPAWN",
+      "where": "RuntimePool.start then _write_ownership",
+      "watched": "live sleep pid, no runtime_pool.json",
+      "resume": "reap_orphans sees nothing to reap"
+    },
+    {
+      "rank": 8,
+      "severity": "loses mission position (steers / ledger)",
+      "id": "F-STEER-LEDGER-SPLIT",
+      "where": "SteeringQueue.apply_constraint + Ledger (no save)",
+      "watched": "steering JSON applied=true, GOAL.md unchanged, in-memory G002",
+      "resume": "constraint never re-applied; GOAL.md is the only reader"
+    },
+    {
+      "rank": 9,
+      "severity": "two MUTATION writers",
+      "id": "F-LOCK-CORRUPT",
+      "where": "MutationLock.read via _load_json",
+      "watched": "truncated lock -> read() None -> acquire() True",
+      "resume": "lock is free"
+    },
+    {
+      "rank": 10,
+      "severity": "silent config/steer loss",
+      "id": "F-SWALLOW-CORRUPT-AND-OSERROR",
+      "where": "Config._read, SteeringQueue._load, Controller.select_model, Mission._log",
+      "watched": "corrupt JSON -> {}; OSError swallowed; log empty",
+      "resume": "trusts empty / in-memory lie"
+    },
+    {
+      "rank": 11,
+      "severity": "cosmetic",
+      "id": "F-WRITE-TEXT-RECEIPTS",
+      "where": "GrokBridge/Engine/MachineGenome Path.write_text",
+      "watched": "mid-write left unparseable JSON",
+      "resume": "reader returns None or {}"
+    },
+    {
+      "rank": 12,
+      "severity": "cosmetic",
+      "id": "F-SESSION-NEVER-SAVED",
+      "where": "SessionStore.save unused",
+      "watched": "Controller never writes sessions/*.json",
+      "resume": "resume_session always None"
+    },
+    {
+      "rank": 13,
+      "severity": "cosmetic",
+      "id": "F-INSTALL-SHIMS-PARTIAL",
+      "where": "cli.install_shims",
+      "watched": "only hcli shim on disk, jhcli missing, current symlink set",
+      "resume": "half-installed"
+    }
+  ],
+  "harness_failures": [
+    "demo_complete_then_checkpoint_crash: Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 2304, in main\n    fn()\n    ~~^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 856, in demo_complete_then_checkpoint_crash\n    mission.scheduler.complete(\"a\")\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/scheduler.py\", line 231, in complete\n    raise UnverifiedCompletion(\n        f\"WorkUnit {wu_id} cannot complete without a passing verifier outcome\"\n    )\nhcli.scheduler.UnverifiedCompletion: WorkUnit a cannot complete without a passing verifier outcome\n",
+    "demo_fingerprint_persist_order: Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 2304, in main\n    fn()\n    ~~^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_persistence_audit.py\", line 918, in demo_fingerprint_persist_order\n    sched.complete(\"u0\", fingerprint=\"SAME\")\n    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/scheduler.py\", line 231, in complete\n    raise UnverifiedCompletion(\n        f\"WorkUnit {wu_id} cannot complete without a passing verifier outcome\"\n    )\nhcli.scheduler.UnverifiedCompletion: WorkUnit u0 cannot complete without a passing verifier outcome\n",
+    "mutation.rollback of a created file TypeErrors and leaves the file: created=True after_rollback=False raised=NoneType: None. _restore_file(None) does Path(snapshot['path']) on None.",
+    "Ledger.mark_verified does not write GOAL.md: has_save=True memory=PENDING disk_contains_VERIFIED=False",
+    "SessionStore.save exists; Controller never calls it: Controller.session_store.save call-sites=1; after init session files=[]; resume_session('35b4c33f-58be-4cff-822c-a7172a24d8bb')=None",
+    "Corrupt mutation.lock is treated as unlocked: read()=None acquire(u2)=False. Truncated lock file => holder_is_live is false => second writer proceeds."
+  ],
+  "claimed_checkpoint_repair_present": true,
+  "handoff": "\n## HANDOFF\n\nThis lane is DENIED writes under tools/haider/hcli/. Apply these exact patches\nin the lane that owns those modules.\n\n### P1 \u2014 Mission.checkpoint: DAG first, raise, stamp checkpoint_id\n\nThe claimed repair is NOT in this tree. checkpoint() writes only\n.hcli/mission/state.json and does not stamp checkpoint_id. SIGKILL between\nScheduler._persist (dispatch) and checkpoint() leaves dag.json with the unit\nrunning and mission state with the unit pending / in_flight=[]. Resume then\nre-dispatches (identify_ready on failed, attempts < 3).\n\n--- a/tools/haider/hcli/mission.py\n+++ b/tools/haider/hcli/mission.py\n@@ def checkpoint(self) -> Path:\n     def checkpoint(self) -> Path:\n         path = self.state_path\n         path.parent.mkdir(parents=True, exist_ok=True)\n         with self._lock:\n             inflight = sorted(self._inflight)\n+        checkpoint_id = str(uuid.uuid4())\n+        # DAG first. A crash here leaves mission stale and DAG current;\n+        # resume trusts DAG. The inverse (mission ahead of DAG) re-dispatches.\n+        if getattr(self.scheduler, \"store\", None) is not None:\n+            self.scheduler.store.save(\n+                self.scheduler.units,\n+                extra={\n+                    \"fingerprints\": list(self.scheduler._fingerprints),\n+                    \"no_progress_threshold\": self.scheduler.no_progress_threshold,\n+                    \"active_decode_limit\": self.scheduler.active_decode_limit,\n+                    \"active_decode_limit_source\": self.scheduler.active_decode_limit_source,\n+                    \"checkpoint_id\": checkpoint_id,\n+                },\n+            )\n         payload = {\n             \"version\": MISSION_VERSION,\n             \"id\": self.id,\n             \"goal\": self.goal,\n             \"phase\": self.phase,\n             \"strategy\": self.strategy,\n             \"started_at\": self.started_at,\n             \"last_checkpoint\": time.time(),\n             \"in_flight\": inflight,\n             \"accepted_count\": self.accepted_count,\n             \"no_progress_warning\": self.no_progress_warning,\n             \"child_pids\": sorted(self.child_pids),\n             \"cancel_reason\": self.cancel_reason,\n             \"session_id\": self.session_id,\n             \"no_progress_threshold\": self.no_progress_threshold,\n+            \"checkpoint_id\": checkpoint_id,\n             \"units\": {\n                 uid: wu.to_dict() for uid, wu in self.scheduler.units.items()\n             },\n         }\n         atomic_write_json(path, payload)\n         self.last_checkpoint = payload[\"last_checkpoint\"]\n         return path\n\nDo not catch the save/atomic_write_json failure. Persist failure must raise.\n\n### P2 \u2014 Crash recovery must emit a repair and reap recorded children\n\nDagStore.load(recover_running=True) marks running -> failed and does not emit\na repair. identify_ready then re-readies the same id (attempts < 3). That is\nthe duplicate Grok launch. from_workspace also adopts child_pids without killing\nthem.\n\n--- a/tools/haider/hcli/dag_store.py\n+++ b/tools/haider/hcli/dag_store.py\n@@ in DagStore.load, recover_running loop:\n         if recover_running:\n+            recovered = []\n             for wu in units.values():\n                 if wu.status == \"running\":\n+                    recovered.append(wu.id)\n                     transition_status(wu, \"failed\")\n                     wu.assigned_runtime = None\n+                    ctx = dict(wu.failure_context or {})\n+                    ctx[\"crash_recovered\"] = True\n+                    wu.failure_context = ctx\n+            self.last_meta[\"recovered_running\"] = recovered\n\n--- a/tools/haider/hcli/mission.py\n+++ b/tools/haider/hcli/mission.py\n@@ in Mission.from_workspace, after sched = Scheduler.from_workspace / fallback:\n+        recovered = []\n+        meta = getattr(sched.store, \"last_meta\", None) or {}\n+        recovered.extend(str(x) for x in (meta.get(\"recovered_running\") or []))\n         for uid in data.get(\"in_flight\") or []:\n             wu = sched.units.get(str(uid))\n             if wu is None:\n                 continue\n             if wu.status == \"running\":\n-                transition_status(wu, \"failed\")\n-                wu.assigned_runtime = None\n+                recovered.append(str(uid))\n-        sched._persist()\n+        for uid in recovered:\n+            wu = sched.units.get(uid)\n+            if wu is None:\n+                continue\n+            already = any(other.repairs == uid for other in sched.units.values())\n+            if already:\n+                continue\n+            sched.fail(uid, context={\"reason\": \"crash_recovered\"})\n         mission = cls(...)\n         ...\n         for pid in data.get(\"child_pids\") or []:\n             try:\n                 mission.child_pids.add(int(pid))\n             except (TypeError, ValueError):\n                 pass\n+        if mission.child_pids:\n+            mission._stop_children()\n         if mission.phase == \"running\":\n             mission.phase = \"idle\"\n         return mission\n\n### P3 \u2014 scheduler.complete: persist fingerprints INCLUDING the new one\n\nCurrent order: _persist() then _record_fingerprint() which may raise\nNO_PROGRESS. The tripping fingerprint never hits disk.\n\n--- a/tools/haider/hcli/scheduler.py\n+++ b/tools/haider/hcli/scheduler.py\n@@ def complete(self, wu_id, fingerprint=None):\n             transition_status(wu, \"completed\")\n             if was_running:\n                 self._release_unit(wu)\n-            self._persist()\n-            self._record_fingerprint(fingerprint)\n+            if fingerprint is not None:\n+                self._fingerprints.append(fingerprint)\n+            self._persist()\n+            if fingerprint is not None:\n+                count = self._fingerprints.count(fingerprint)\n+                if count >= self.no_progress_threshold:\n+                    raise NO_PROGRESS(\n+                        fingerprint=fingerprint,\n+                        count=count,\n+                        threshold=self.no_progress_threshold,\n+                    )\n\n### P4 \u2014 Grok receipts/contracts: use atomic_write_json / atomic text\n\n--- a/tools/haider/hcli/grok_bridge.py\n+++ b/tools/haider/hcli/grok_bridge.py\n@@\n+from .dag_store import atomic_write_json\n@@ _write_contract_file:\n-        path.write_text(contract_text, encoding=\"utf-8\")\n+        tmp = path.with_name(f\".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp\")\n+        tmp.write_text(contract_text, encoding=\"utf-8\")\n+        os.replace(tmp, path)\n@@ _write_receipt / _update_receipt:\n-        path.write_text(json.dumps(...), encoding=\"utf-8\")\n+        atomic_write_json(path, receipt)  # or `current` in _update_receipt\n\nAlso: write a \"pending\" receipt BEFORE invoking grok-run, then update it\nafter extract_task_id. Crash-between currently leaves a launched grok-run\nwith no .hcli/grok/<id>.json.\n\n### P5 \u2014 Engine._write_receipt: atomic_write_json\n\n--- a/tools/haider/hcli/engine.py\n+++ b/tools/haider/hcli/engine.py\n@@\n+from .dag_store import atomic_write_json\n@@ end of _write_receipt:\n-        path.write_text(json.dumps(self._strip_reasoning(receipt), ...), encoding=\"utf-8\")\n+        atomic_write_json(path, self._strip_reasoning(receipt))\n\n### P6 \u2014 Engine._apply_operations: write via tmp+replace per file\n\nFor each file mutation, write to `.{name}.{pid}.{uuid}.tmp` in the same\ndirectory and os.replace onto the live path. execute() already snapshots\nand restores on exception; SIGKILL still needs per-file atomicity so a\ncrash mid-write does not truncate a user's file. Cross-file all-or-nothing\nunder SIGKILL additionally needs a journal (.hcli/mutation-journal.json)\nlisting in-flight paths; without it, a two-file mutation can remain partial\n(demonstrated).\n\n### P7 \u2014 mutation._restore_file None-snapshot bug\n\n--- a/tools/haider/hcli/mutation.py\n+++ b/tools/haider/hcli/mutation.py\n@@\n-def _restore_file(snapshot: Optional[Dict[str, Any]]) -> None:\n-    if snapshot is None:\n-        p = Path(snapshot[\"path\"])\n-        if p.exists():\n-            p.unlink()\n-    else:\n-        p = Path(snapshot[\"path\"])\n-        p.parent.mkdir(parents=True, exist_ok=True)\n-        p.write_text(snapshot[\"content\"], encoding=\"utf-8\")\n+def _restore_file(snapshot: Optional[Dict[str, Any]], path: Optional[str] = None) -> None:\n+    if snapshot is None:\n+        if not path:\n+            return\n+        p = Path(path)\n+        if p.exists():\n+            p.unlink()\n+        return\n+    p = Path(snapshot[\"path\"])\n+    p.parent.mkdir(parents=True, exist_ok=True)\n+    p.write_text(snapshot[\"content\"], encoding=\"utf-8\")\n@@ rollback_mutation:\n-        _restore_file(snap)\n+        _restore_file(snap, full_path)\n\n### P8 \u2014 RuntimePool.start: write ownership BEFORE returning, and stop() on failure\n\n--- a/tools/haider/hcli/runtime.py\n+++ b/tools/haider/hcli/runtime.py\n@@ end of start():\n         self.admitted_n = len(self.runtimes)\n         if self.runtimes:\n-            self._write_ownership()\n+            try:\n+                self._write_ownership()\n+            except BaseException:\n+                self.stop()\n+                raise\n\n### P9 \u2014 MachineGenome.save atomic\n\n--- a/tools/haider/hcli/machine.py\n+++ b/tools/haider/hcli/machine.py\n@@ def save(self) -> None:\n-        self.path.write_text(json.dumps(self.data, indent=2))\n+        from .dag_store import atomic_write_json\n+        atomic_write_json(self.path, self.data)\n\n### P10 \u2014 Config/Session/Steering: fsync before replace; do not swallow corrupt\n\nConfig._write / save_project / SessionStore.save / SteeringQueue._save:\nafter json.dump, handle.flush(); os.fsync(handle.fileno()); then os.replace.\n\nSteeringQueue._load:\n-            except Exception:\n-                self._events = []\n+            except Exception as exc:\n+                raise RuntimeError(f\"steering queue corrupt: {self._path}: {exc}\") from exc\n\nConfig._read: do not return {} on JSONDecodeError for a file that exists;\nraise. Empty-on-missing is fine.\n\nController.select_model: delete `except OSError: pass` around save_global.\n\n### P11 \u2014 Ledger.save using tmp+replace; apply_constraint must persist GOAL.md\n\nledger.py has no save(). Add:\n\n    def save(self, path: Union[str, Path]) -> None:\n        dest = Path(path)\n        dest.parent.mkdir(parents=True, exist_ok=True)\n        tmp = dest.parent / f\".{dest.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp\"\n        payload = self.to_markdown()\n        try:\n            with open(tmp, \"w\", encoding=\"utf-8\") as handle:\n                handle.write(payload)\n                handle.flush()\n                os.fsync(handle.fileno())\n            os.replace(tmp, dest)\n        except Exception:\n            try:\n                tmp.unlink()\n            except OSError:\n                pass\n            raise\n\nSteeringQueue.apply_constraint must take a goal_md path (or the caller\nmust save immediately after). Today the in-memory ledger amendment is\nlost on crash while the steer is marked applied.\n\n### P12 \u2014 SessionStore.save must be called\n\nController.start_mission / __init__ / select_model should\n`self.session_store.save(self.session)`. resume_session is dead code\nwithout that.\n"
+}

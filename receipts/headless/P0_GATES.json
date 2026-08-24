@@ -1,0 +1,139 @@
+{
+  "suite": "hcli_p0_gates",
+  "generated_at": "2026-08-23T05:55:22Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "results": [
+    {
+      "gate": "P0-1",
+      "claim": "every compiled obligation carries a verify command that is capable of failing",
+      "defends": "tools/haider/hcli/controller.py:580 start_ultragoal",
+      "obligations": 25,
+      "unfailable": 0,
+      "distinct_unfailable": [],
+      "ok": true
+    },
+    {
+      "gate": "P0-2",
+      "claim": "the mutation lock uses flock or O_EXCL, not check-then-replace",
+      "defends": "tools/haider/hcli/resources.py:481-505",
+      "uses_real_primitive": true,
+      "ok": true
+    },
+    {
+      "gate": "P0-3",
+      "claim": "a failed Grok terminal state blocks acceptance regardless of the verifier",
+      "defends": "tools/haider/hcli/executors.py WorkUnitExecutor._run_grok",
+      "failed_state": {
+        "ok": false,
+        "reason": "GROK_TERMINAL_STATE_NOT_SUCCESSFUL"
+      },
+      "done_state": {
+        "ok": false,
+        "reason": "VACUOUS_COMMAND"
+      },
+      "ok": true
+    },
+    {
+      "gate": "P0-4",
+      "claim": "an executor-run verifier that cannot fail is rejected, not accepted",
+      "defends": "tools/haider/hcli/executors.py WorkUnitExecutor._run_cpu",
+      "validation": {
+        "ok": false,
+        "reason": "VACUOUS_COMMAND"
+      },
+      "ok": true
+    },
+    {
+      "gate": "P0-6",
+      "claim": "HCLI hands grok-run a distinct task slug per dispatch",
+      "defends": "tools/haider/hcli/grok_bridge.py consult() -> --task slug",
+      "dispatches": 50,
+      "distinct_slugs": 50,
+      "example": "consult-53717x0x670991",
+      "ok": true
+    },
+    {
+      "gate": "P0-7",
+      "claim": "reported Grok activity tracks the real process table",
+      "defends": "tools/haider/hcli/max_policy.py grok_pool_snapshot",
+      "reported_active": 7,
+      "live_grok_processes": 7,
+      "conclusive": true,
+      "ok": true,
+      "inconclusive": false,
+      "note": null
+    },
+    {
+      "gate": "P0-8",
+      "claim": "Scheduler.complete consults a verifier outcome before completing a WorkUnit",
+      "defends": "tools/haider/hcli/scheduler.py:94-102",
+      "body_mentions_verifier": true,
+      "ok": true
+    },
+    {
+      "gate": "P0-11",
+      "claim": "the error path preserves the evidence list instead of emitting an empty one",
+      "defends": "tools/haider/hcli/engine.py:788",
+      "empty_evidence_arguments_at_lines": [],
+      "ok": true
+    },
+    {
+      "gate": "P0-12",
+      "claim": "the WorkUnit DAG is derived from the obligations, not a fixed two-step template",
+      "defends": "tools/haider/hcli/controller.py start_ultragoal -> dag.json",
+      "obligations": 25,
+      "workunits": 25,
+      "workunit_ids": [
+        "G001",
+        "G002",
+        "G003",
+        "G004",
+        "G005",
+        "G006",
+        "G007",
+        "G008"
+      ],
+      "returned_workunit_ids": [
+        "G001",
+        "G002",
+        "G003",
+        "G004",
+        "G005",
+        "G006",
+        "G007",
+        "G008",
+        "G009",
+        "G010",
+        "G011",
+        "G012",
+        "G013",
+        "G014",
+        "G015",
+        "G016",
+        "G017",
+        "G018",
+        "G019",
+        "G020",
+        "G021",
+        "G022",
+        "G023",
+        "G024",
+        "G025"
+      ],
+      "ok": true
+    }
+  ],
+  "green": [
+    "P0-1",
+    "P0-2",
+    "P0-3",
+    "P0-4",
+    "P0-6",
+    "P0-7",
+    "P0-8",
+    "P0-11",
+    "P0-12"
+  ],
+  "red": [],
+  "inconclusive": []
+}

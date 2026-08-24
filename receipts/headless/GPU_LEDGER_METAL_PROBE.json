@@ -1,0 +1,28 @@
+{
+ "counterSets": [
+  {
+   "counters": [
+    "GPUTimestamp"
+   ],
+   "name": "timestamp"
+  }
+ ],
+ "hasUnifiedMemory": true,
+ "maxBufferLength": 62620631040,
+ "name": "Apple M3 Ultra",
+ "pipeline_reflection_toy_kernel": {
+  "compiled": true,
+  "maxTotalThreadsPerThreadgroup": 1024,
+  "staticThreadgroupMemoryLength": 16,
+  "threadExecutionWidth": 32
+ },
+ "recommendedMaxWorkingSetSize": 83494174720,
+ "supportsCounterSampling": {
+  "atBlitBoundary": false,
+  "atDispatchBoundary": false,
+  "atDrawBoundary": false,
+  "atStageBoundary": true,
+  "atTileDispatchBoundary": false
+ },
+ "command": "swift /tmp/n004_gpu_ledger_probe.swift"
+}

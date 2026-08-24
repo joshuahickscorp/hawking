@@ -1,0 +1,1089 @@
+{
+  "schema": "hawking.headless.architecture_canon.v1",
+  "generated_at": "2026-08-23T21:35:38Z",
+  "git_head": "fef695d26eb89447125472c65f028b0e836cd4ad",
+  "branch": "grok/g031canon-20260823-172647",
+  "document": "docs/CURRENT_ARCHITECTURE.md",
+  "document_sha256": "1f4fb25b62204225d43e5cbe9dfcb830238f2cc58812352676bcb7b747353a8b",
+  "document_status": "CURRENT",
+  "graph": {
+    "path": "receipts/headless/CODE_GRAPH.json",
+    "schema": "hawking.headless.code_graph.v1",
+    "git_head": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+    "sha256": "5b08e237f5c9798729d639c8a0d9b848882d7921d9c41622a236db604b1cf84d",
+    "census_roots": [
+      "tools/haider",
+      "tools/headless"
+    ],
+    "counts": {
+      "combined_cycles": 5,
+      "cycles": 2,
+      "entrypoints": 127,
+      "import_edges": 514,
+      "leaf_fossils": 5,
+      "modules": 159,
+      "mutation_edges": 31,
+      "one_caller_modules": 3,
+      "one_caller_wrappers": 0,
+      "path_resolution_problems": 0,
+      "persistence_edges": 1076,
+      "product_entrypoints": 6,
+      "reexport_only_modules": 2,
+      "runtime_edges": 89,
+      "subprocess_edges": 185,
+      "tool_edges": 160,
+      "unknowns": 43,
+      "unreachable_from_product": 3
+    },
+    "is_ancestor_of_document_head": true,
+    "note": "Graph snapshot predates G026 namespace migration (a76efc875). Graph is not rewritten."
+  },
+  "entropy": {
+    "path": "receipts/headless/CODE_ENTROPY.json",
+    "schema": "hawking.headless.code_entropy.v1",
+    "git_head": "38ab698658b4c7966d1b85f96047d886c6e43ad0",
+    "sha256": "1d21aac58e31c7310ec1a23f6a19d40bd6fc22cdf7675c3b0fa98910f055e9d9",
+    "never_delete": {
+      "receipts/": "historical science; 0 proposed DELETE of receipt files",
+      "this_lane": "writes two paths and unlinks none",
+      "workspace/": "precious corpora; 0 proposed DELETE"
+    }
+  },
+  "namespace_migration": {
+    "path": "receipts/headless/NAMESPACE_MIGRATION.json",
+    "schema": "hawking.headless.namespace_migration.v1",
+    "head": "38ab698658b4c7966d1b85f96047d886c6e43ad0",
+    "sha256": "82f1cec653d0b2b8b60096d7164fbf80293a75f8b4e6a1a6bf410acbd46628c7",
+    "canonical_package_name": "hcli",
+    "canonical_physical_path": "hcli/",
+    "incident": "F24"
+  },
+  "ownership": {
+    "HCLI": {
+      "means": "command surface / UI / headless entry / status rendering",
+      "modules": [
+        "hcli.__init__",
+        "hcli.__main__",
+        "hcli.cli",
+        "hcli.app",
+        "hcli.commands",
+        "hcli.tui",
+        "hcli.controller",
+        "hcli.events",
+        "hcli.workspace",
+        "hcli.grok_bridge",
+        "hcli.report_compiler"
+      ],
+      "physical": "hcli/*.py at repo root (installed package)"
+    },
+    "AgentOS": {
+      "means": "Goal, obligations, WorkUnit DAG, scheduler, repair, mutation authority, verifier orchestration, mission persistence, steering",
+      "modules": [
+        "hcli.goal",
+        "hcli.workunit",
+        "hcli.scheduler",
+        "hcli.mission",
+        "hcli.ledger",
+        "hcli.steering",
+        "hcli.mutation",
+        "hcli.verifier_pipeline",
+        "hcli.dag_store",
+        "hcli.executors",
+        "hcli.resources",
+        "hcli.index"
+      ],
+      "physical": "implementation at hcli/<module>.py; ownership package hcli.agentos re-exports the public types (same class objects). Files were not nested under hcli/agentos/ because that would make hcli.goal and hcli.agentos.goal two module objects — the F24 defect again."
+    },
+    "Runtime": {
+      "means": "model execution, sessions, context, backends, runtime identity",
+      "modules": [
+        "hcli.engine",
+        "hcli.backends",
+        "hcli.session",
+        "hcli.context",
+        "hcli.context_budget",
+        "hcli.runtime",
+        "hcli.models",
+        "hcli.machine",
+        "hcli.max_policy",
+        "hcli.config"
+      ],
+      "physical": "hcli/runtime.py is the Runtime module. A hcli/runtime/ package would shadow it and recreate two identities. Ownership is the module name plus this map."
+    },
+    "Doctor": {
+      "means": "measurement, diagnosis, prescription",
+      "physical": "hcli/doctor/ ownership marker; instruments stay tools/doctor_seal.py and tools/gravity_doctor_*.py (nos_pipeline stage 3). Not relocated: moving them would invent a second import identity.",
+      "owned_paths": [
+        "tools/doctor_seal.py",
+        "tools/gravity_doctor_capability.py",
+        "tools/gravity_doctor_dimensions.py",
+        "tools/gravity_doctor_gate.py"
+      ]
+    },
+    "Gravity": {
+      "means": "experiment search, compilation, candidates",
+      "physical": "hcli/gravity/ ownership marker; product remains tools/gravity_*.py plus hawking crates. Not relocated."
+    },
+    "VMCP": {
+      "means": "sensory / evidence tools",
+      "physical": "hcli/vmcp/ ownership marker; VisionMCP remains the visionmcp/ package. Harnesses insert visionmcp/src (foreign package, not a second hcli name)."
+    },
+    "Genomes": {
+      "means": "learned persistent machine/model/runtime science",
+      "physical": "hcli/genomes/ re-exports MachineGenome from hcli.machine (same class object)",
+      "modules": [
+        "hcli.machine.MachineGenome",
+        "hcli.genomes"
+      ]
+    }
+  },
+  "docs": [
+    {
+      "path": "docs/CURRENT_ARCHITECTURE.md",
+      "status": "CURRENT",
+      "in_head_tree": false,
+      "on_disk": true,
+      "historical_body_rewritten": false,
+      "note": "Status marker is a one-line HTML comment prepended. Body bytes otherwise from HEAD (new file CURRENT_ARCHITECTURE.md is original)."
+    },
+    {
+      "path": "docs/HQ80BR1_KERNEL_DESIGN_SUPERSEDED.md",
+      "status": "SUPERSEDED",
+      "in_head_tree": true,
+      "on_disk": true,
+      "historical_body_rewritten": false,
+      "note": "Status marker is a one-line HTML comment prepended. Body bytes otherwise from HEAD (new file CURRENT_ARCHITECTURE.md is original)."
+    },
+    {
+      "path": "docs/QWEN80_MIXED_1P5_PACKED_FORMAT.md",
+      "status": "CURRENT",
+      "in_head_tree": true,
+      "on_disk": true,
+      "historical_body_rewritten": false,
+      "note": "Status marker is a one-line HTML comment prepended. Body bytes otherwise from HEAD (new file CURRENT_ARCHITECTURE.md is original)."
+    }
+  ],
+  "docs_marking_rule": "Every file under docs/ begins with <!-- DOC_STATUS: CURRENT|HISTORICAL|SUPERSEDED|EXPERIMENTAL -->. Historical bodies are not rewritten. workspace/docs/ is outside docs/ and was not marked.",
+  "outside_docs_not_rewritten": [
+    {
+      "path": "workspace/docs/reference/ARCHITECTURE.md",
+      "status_if_classified": "HISTORICAL",
+      "why_unmarked": "WRITE scope is docs/ and receipts/headless only"
+    }
+  ],
+  "graph_check": {
+    "method": "Load CODE_GRAPH.json. git ls-tree HEAD hcli/. Map graph tools/haider/hcli/<file> -> hcli/<file>. Diff findings against NAMESPACE_MIGRATION.json and HEAD blobs (git show). Working-tree grep was not used as evidence of absence.",
+    "graph_wins": "A claim about the graph snapshot is settled by CODE_GRAPH.json. A claim about HEAD is settled by git ls-tree/git show of this commit. Disagreement is recorded; the graph file is not edited to match HEAD.",
+    "checked_claims": [
+      {
+        "claim": "canonical package name is hcli",
+        "source": "NAMESPACE_MIGRATION.json canonical_package_name + pyproject.toml + HEAD:hcli/__init__.py"
+      },
+      {
+        "claim": "physical path is hcli/",
+        "source": "git ls-tree HEAD -- hcli/ (n=40) + NAMESPACE_MIGRATION.json canonical_physical_path"
+      },
+      {
+        "claim": "fossil tools.haider.hcli raises ImportError",
+        "source": "HEAD:tools/haider/hcli/tests/test_module_identity.py + NAMESPACE_MIGRATION.json proof.identity_test"
+      },
+      {
+        "claim": "ownership packages exist and re-export same class objects",
+        "source": "HEAD:hcli/{agentos,doctor,gravity,vmcp,genomes}/__init__.py + NAMESPACE_MIGRATION.json ownership"
+      },
+      {
+        "claim": "persist.py broke dag_store/max_policy SCC",
+        "source": "HEAD:hcli/persist.py + NAMESPACE_MIGRATION.json cycles.broken; graph still lists the SCC"
+      },
+      {
+        "claim": "graph git_head is ancestor of HEAD",
+        "source": "git merge-base --is-ancestor cba2bb657 HEAD -> yes"
+      },
+      {
+        "claim": "33 graph product modules map onto hcli/",
+        "source": "this receipt graph_check.agreements basename_bijection_33"
+      },
+      {
+        "claim": "Doctor/Gravity/VMCP instruments were not relocated",
+        "source": "HEAD:hcli/doctor/__init__.py OWNED_PATHS; gravity OWNED_PREFIXES; vmcp OWNED_PREFIXES"
+      }
+    ],
+    "agreements": [
+      {
+        "id": "fossil_haider_disconnected",
+        "fact": "tools/haider/haider.py and p0_tool_bridge.py are a disconnected fossil namespace, not the live control plane.",
+        "graph": "findings.accidental_coupling fossil_haider_disconnected + leaf_fossils kind=hcli_fossil",
+        "entropy": "ARCHIVE",
+        "document": "same"
+      },
+      {
+        "id": "tests_stay_under_tools_haider_hcli_tests",
+        "fact": "Product tests remain tools/haider/hcli/tests/.",
+        "graph": "kind=hcli_test under tools/haider/hcli/tests/",
+        "document": "same"
+      },
+      {
+        "id": "lab_hcli_is_namesake",
+        "fact": "lab/hcli/ is a different product.",
+        "graph": "inventory.sibling_namespaces_not_parsed",
+        "entropy": "namesakes_out_of_census",
+        "document": "same"
+      },
+      {
+        "id": "receipts_never_deleted",
+        "fact": "receipts/ is historical science; 0 proposed DELETE.",
+        "entropy": "never_delete.receipts/",
+        "document": "historical science preservation law"
+      },
+      {
+        "id": "basename_bijection_33",
+        "fact": "Every graph hcli_product basename exists at hcli/ on HEAD.",
+        "mapped_present": 33,
+        "mapped_missing": []
+      }
+    ],
+    "disagreements": [
+      {
+        "id": "physical_package_path",
+        "graph_wins_as": "At graph.git_head the product modules are tools/haider/hcli/*.py (kind=hcli_product, n=33).",
+        "document_says": "Product modules live at hcli/ (installed package).",
+        "resolution": "HEAD successor. Graph snapshot is pre-G026 (a76efc875). 33/33 graph product basenames exist at hcli/ on HEAD. Graph not rewritten.",
+        "graph_path_examples": [
+          "tools/haider/hcli/__init__.py",
+          "tools/haider/hcli/__main__.py",
+          "tools/haider/hcli/app.py"
+        ],
+        "head_path_examples": [
+          "hcli/__init__.py",
+          "hcli/__main__.py",
+          "hcli/agentos/__init__.py"
+        ],
+        "winner_for_snapshot": "graph",
+        "winner_for_now": "HEAD + receipts/headless/NAMESPACE_MIGRATION.json"
+      },
+      {
+        "id": "dual_import_identity",
+        "graph_wins_as": "The same files are imported as `hcli.*` (sys.path=tools/haider, 216 statements) and as `tools.haider.hcli.*` (sys.path=repo root, 161 statements). Two dotted identities, one path. Tests mostly use the latter; harnesses mostly use the former.",
+        "document_says": "tools.haider.hcli raises ImportError; one class object (incident F24 closed).",
+        "resolution": "Graph finding is true of cba2bb657. NAMESPACE_MIGRATION.json records the watched AssertionError and the fix.",
+        "winner_for_snapshot": "graph",
+        "winner_for_now": "HEAD test tools/haider/hcli/tests/test_module_identity.py"
+      },
+      {
+        "id": "census_roots",
+        "graph_wins_as": [
+          "tools/haider",
+          "tools/headless"
+        ],
+        "document_says": "Control-plane census must include hcli/.",
+        "resolution": "Graph scope.includes is tools/haider/** and tools/headless/**. hcli/ did not exist at graph.git_head.",
+        "winner_for_snapshot": "graph",
+        "winner_for_now": "HEAD tree"
+      },
+      {
+        "id": "product_entrypoints",
+        "graph_wins_as": [
+          "tools/haider/haider.py",
+          "tools/haider/hcli/__init__.py",
+          "tools/haider/hcli/__main__.py",
+          "tools/haider/hcli/app.py",
+          "tools/haider/hcli/cli.py",
+          "tools/haider/p0_tool_bridge.py"
+        ],
+        "document_says": "python3 -m hcli / console scripts hcli, jhcli -> hcli.cli:main",
+        "resolution": "Graph entrypoints are the pre-move files plus HCLI-v0 fossils. Fossils remain entrypoints of a disconnected namespace (entropy ARCHIVE).",
+        "winner_for_snapshot": "graph",
+        "winner_for_now": "pyproject.toml + hcli/__main__.py"
+      },
+      {
+        "id": "import_scc_dag_store_max_policy",
+        "graph_wins_as": [
+          "tools/haider/hcli/dag_store.py",
+          "tools/haider/hcli/max_policy.py",
+          "tools/haider/hcli/resources.py",
+          "tools/haider/hcli/workunit.py"
+        ],
+        "document_says": "Cycle broken by extracting hcli.persist.atomic_write_json.",
+        "resolution": "NAMESPACE_MIGRATION.json cycles.broken. Graph still lists the SCC because persist.py did not exist in its inventory.",
+        "winner_for_snapshot": "graph",
+        "winner_for_now": "HEAD hcli/persist.py"
+      },
+      {
+        "id": "sys_path_inserts",
+        "graph_wins_as": "Modules that mutate sys.path to load HCLI. Accidental coupling surface.",
+        "document_says": "88 fossil inserts deleted; remaining inserts are foreign/harness.",
+        "resolution": "NAMESPACE_MIGRATION.json sys_path.deleted_fossil_inserts=88 remaining_count=44.",
+        "winner_for_snapshot": "graph",
+        "winner_for_now": "NAMESPACE_MIGRATION.json"
+      },
+      {
+        "id": "modules_absent_from_graph",
+        "graph_wins_as": "Graph inventory of hcli_product is 33 files under tools/haider/hcli/.",
+        "document_says": "HEAD hcli/ has 40 files; extra ownership packages + persist.py + paths.py.",
+        "head_only": [
+          "hcli/agentos/__init__.py",
+          "hcli/doctor/__init__.py",
+          "hcli/genomes/__init__.py",
+          "hcli/gravity/__init__.py",
+          "hcli/paths.py",
+          "hcli/persist.py",
+          "hcli/vmcp/__init__.py"
+        ],
+        "resolution": "Graph cannot list files that did not exist at its git_head. Treat as graph-incomplete, not as document error.",
+        "winner_for_snapshot": "graph (complete for its tree)",
+        "winner_for_now": "HEAD ls-tree hcli/"
+      },
+      {
+        "id": "ledger_steering_cycle",
+        "graph_wins_as": [
+          "tools/haider/hcli/ledger.py",
+          "tools/haider/hcli/steering.py"
+        ],
+        "document_says": "Still present; import-time safe.",
+        "resolution": "AGREEMENT on existence. NAMESPACE_MIGRATION.json cycles.remaining_import_time_safe explains why it was not split.",
+        "winner_for_snapshot": "graph",
+        "winner_for_now": "graph + NAMESPACE_MIGRATION.json (same fact)"
+      },
+      {
+        "id": "duplicate_llama_server_spawn",
+        "graph_wins_as": {
+          "detail": "Modules that spawn or resolve llama-server. More than one product spawn site is a second runtime authority.",
+          "files": [
+            "tools/haider/haider.py",
+            "tools/haider/hcli/backends.py",
+            "tools/haider/hcli/tests/test_runtime_pool.py",
+            "tools/headless/decode_topology_probe.py",
+            "tools/headless/hcli_runtimepool_test.py",
+            "tools/headless/machine_probe.py",
+            "tools/headless/runtime_ab.py",
+            "tools/headless/structured_output_probe.py"
+          ]
+        },
+        "document_says": "Runtime spawn authority is hcli.backends / hcli.runtime. Harness probes also spawn.",
+        "resolution": "Graph lists tools/haider/hcli/backends.py plus fossils and harnesses. Path prefix is stale; the multiple-site finding still holds for harnesses vs product.",
+        "winner_for_snapshot": "graph",
+        "winner_for_now": "graph finding kept; path prefix updated in document"
+      }
+    ],
+    "mapped_present": 33,
+    "mapped_missing": [],
+    "head_hcli_files": [
+      "hcli/__init__.py",
+      "hcli/__main__.py",
+      "hcli/agentos/__init__.py",
+      "hcli/app.py",
+      "hcli/backends.py",
+      "hcli/cli.py",
+      "hcli/commands.py",
+      "hcli/config.py",
+      "hcli/context.py",
+      "hcli/context_budget.py",
+      "hcli/controller.py",
+      "hcli/dag_store.py",
+      "hcli/doctor/__init__.py",
+      "hcli/engine.py",
+      "hcli/events.py",
+      "hcli/executors.py",
+      "hcli/genomes/__init__.py",
+      "hcli/goal.py",
+      "hcli/gravity/__init__.py",
+      "hcli/grok_bridge.py",
+      "hcli/index.py",
+      "hcli/ledger.py",
+      "hcli/machine.py",
+      "hcli/max_policy.py",
+      "hcli/mission.py",
+      "hcli/models.py",
+      "hcli/mutation.py",
+      "hcli/paths.py",
+      "hcli/persist.py",
+      "hcli/report_compiler.py",
+      "hcli/resources.py",
+      "hcli/runtime.py",
+      "hcli/scheduler.py",
+      "hcli/session.py",
+      "hcli/steering.py",
+      "hcli/tui.py",
+      "hcli/verifier_pipeline.py",
+      "hcli/vmcp/__init__.py",
+      "hcli/workspace.py",
+      "hcli/workunit.py"
+    ],
+    "head_only_vs_graph_product": [
+      "hcli/agentos/__init__.py",
+      "hcli/doctor/__init__.py",
+      "hcli/genomes/__init__.py",
+      "hcli/gravity/__init__.py",
+      "hcli/paths.py",
+      "hcli/persist.py",
+      "hcli/vmcp/__init__.py"
+    ]
+  },
+  "laws": {
+    "tools_know": {
+      "id": "tools_know",
+      "title": "tools know",
+      "statement": "Models think. Tools know. Context is a cache. Disk state is authority.",
+      "home": [
+        "receipts/headless/MACHINE_GENOME.json",
+        "hcli.machine.MachineGenome",
+        "lab.receipts (schema hawking.lab.receipt.v1)"
+      ],
+      "resolver": {
+        "kind": "json_schema",
+        "path": "receipts/headless/MACHINE_GENOME.json",
+        "schema": "hawking.headless.machine_genome.v1",
+        "keys": [
+          "RESIDENT_RUNTIME_LIMIT",
+          "ACTIVE_DECODE_LIMIT",
+          "machine",
+          "runtime_identity"
+        ]
+      },
+      "program": "json.load(open('receipts/headless/MACHINE_GENOME.json')); import hcli.machine. Do not parse TUI/status prose.",
+      "english_is_not_resolver": true
+    },
+    "evidence_promotes": {
+      "id": "evidence_promotes",
+      "title": "evidence promotes",
+      "statement": "A claim is promoted only by sealed evidence / an admissible verifier command, never by model prose.",
+      "home": [
+        "hcli.verifier_pipeline.command_is_admissible",
+        "lab.rules.apply_governance",
+        "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json"
+      ],
+      "resolver": {
+        "kind": "python_symbol_and_json",
+        "module": "hcli.verifier_pipeline",
+        "symbol": "command_is_admissible",
+        "receipt": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+        "json_path": [
+          "attacks_closed",
+          "self_promotion_from_prose"
+        ],
+        "vacuous": "VACUOUS_COMMAND"
+      },
+      "program": "from hcli.verifier_pipeline import command_is_admissible; ok, why = command_is_admissible(cmd). Promotion: lab.rules.apply_governance requires sealed GateEvidence. Grok prose alone -> GROK_REQUIRES_VERIFIER.",
+      "english_is_not_resolver": true
+    },
+    "adversary_attacks": {
+      "id": "adversary_attacks",
+      "title": "adversary attacks",
+      "statement": "Newly closed gates are re-attacked; default is REFUTED when uncertain.",
+      "home": [
+        "tools/headless/gate_adversary.py",
+        "receipts/headless/NOETIC_GATE_ADVERSARY.json"
+      ],
+      "resolver": {
+        "kind": "harness_receipt",
+        "command": [
+          "python3",
+          "tools/headless/gate_adversary.py"
+        ],
+        "path": "receipts/headless/NOETIC_GATE_ADVERSARY.json",
+        "schema": "hawking.headless.noetic_gate_adversary.v1"
+      },
+      "program": "python3 tools/headless/gate_adversary.py; json.load(...)['schema'] == 'hawking.headless.noetic_gate_adversary.v1'",
+      "english_is_not_resolver": true
+    },
+    "noop_proves_causality": {
+      "id": "noop_proves_causality",
+      "title": "no-op proves causality",
+      "statement": "A no-op is not progress. A conventional control (and a control watched to fail) is required before a candidate is meaningful.",
+      "home": [
+        "hcli.mutation.apply_mutation_operations (NO_OP_MUTATION)",
+        "tools/headless/conventional_control_set.py",
+        "receipts/headless/CONVENTIONAL_CONTROL_SET.json",
+        "tools/doctor_seal.py (tabula_drift + observed_controls)"
+      ],
+      "resolver": {
+        "kind": "exception_and_receipt",
+        "mutation_error": "NO_OP_MUTATION",
+        "control_receipt": "receipts/headless/CONVENTIONAL_CONTROL_SET.json",
+        "control_schema": "hawking.headless.conventional_control_set.v1",
+        "live_arm_key": [
+          "live",
+          "status"
+        ],
+        "live_expected": "LIVE"
+      },
+      "program": "apply_mutation_operations([]) raises MutationError('NO_OP_MUTATION'). json.load(CONVENTIONAL_CONTROL_SET.json)['live']['status'] == 'LIVE'. Doctor seal refuses without a control watched to fail (NOMENCLATURE_CENSUS.json doctor_is_component.required_gate).",
+      "english_is_not_resolver": true
+    },
+    "atomic_truth": {
+      "id": "atomic_truth",
+      "title": "atomic truth",
+      "statement": "Durable JSON is never observable half-written. The mutation lock is never observable empty-from-a-live-acquirer.",
+      "home": [
+        "hcli.persist.atomic_write_json",
+        "hcli.dag_store (uses persist)",
+        "hcli.resources.MutationLock.acquire"
+      ],
+      "resolver": {
+        "kind": "python_symbol",
+        "module": "hcli.persist",
+        "symbol": "atomic_write_json",
+        "mechanism": "same-directory temp + os.fsync + os.replace",
+        "lock_module": "hcli.resources",
+        "lock_symbol": "MutationLock.acquire",
+        "lock_mechanism": "os.link from a fully-written temp file"
+      },
+      "program": "from hcli.persist import atomic_write_json; from hcli.resources import MutationLock",
+      "english_is_not_resolver": true
+    },
+    "candidate_preservation": {
+      "id": "candidate_preservation",
+      "title": "candidate preservation",
+      "statement": "Uncommitted / rejected / vestigial science is preserved. Vestigial means not active, not reclaimable.",
+      "home": [
+        "receipts/headless/DIRTY_TREE_PRESERVATION.json",
+        "receipts/headless/CODE_ENTROPY.json never_delete",
+        "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+        "receipts/headless/NOMENCLATURE_CENSUS.json vestigial_means",
+        "lab.verification_authority.CandidateKind"
+      ],
+      "resolver": {
+        "kind": "json_key",
+        "path": "receipts/headless/CODE_ENTROPY.json",
+        "key": [
+          "never_delete",
+          "receipts/"
+        ],
+        "dirty_tree": "receipts/headless/DIRTY_TREE_PRESERVATION.json",
+        "dirty_key": "verdict"
+      },
+      "program": "json.load(open('receipts/headless/CODE_ENTROPY.json'))['never_delete']['receipts/']; json.load(...DIRTY_TREE_PRESERVATION.json)['verdict']",
+      "english_is_not_resolver": true
+    },
+    "content_fresh_evidence": {
+      "id": "content_fresh_evidence",
+      "title": "content-fresh evidence",
+      "statement": "Evidence is identified by path+size+mtime_ns+sha256. A mutated file is refused, never silently re-read as the same evidence.",
+      "home": [
+        "hcli.goal.assert_evidence_fresh",
+        "hcli.goal.StaleEvidenceError",
+        "hcli.engine.Engine._assert_evidence_fresh",
+        "tools/haider/hcli/tests/test_evidence_freshness.py"
+      ],
+      "resolver": {
+        "kind": "python_symbol",
+        "module": "hcli.goal",
+        "symbol": "assert_evidence_fresh",
+        "raises": "StaleEvidenceError",
+        "identity_fields": [
+          "path",
+          "size",
+          "mtime_ns",
+          "sha256"
+        ]
+      },
+      "program": "from hcli.goal import assert_evidence_fresh, StaleEvidenceError",
+      "english_is_not_resolver": true
+    },
+    "single_writer": {
+      "id": "single_writer",
+      "title": "single writer",
+      "statement": "One crash-safe mutation lock. Two contenders -> one holder.",
+      "home": [
+        "hcli.resources.MutationLock",
+        "receipts/headless/AGENTOS_SINGLE_WRITER.json"
+      ],
+      "resolver": {
+        "kind": "json_receipt",
+        "path": "receipts/headless/AGENTOS_SINGLE_WRITER.json",
+        "key": "result",
+        "expected": "PASS",
+        "code": "hcli.resources.MutationLock.acquire",
+        "mechanism": "os.link"
+      },
+      "program": "json.load(open('receipts/headless/AGENTOS_SINGLE_WRITER.json'))['result'] == 'PASS'; MutationLock(path).acquire(unit_id)",
+      "english_is_not_resolver": true
+    },
+    "focused_context": {
+      "id": "focused_context",
+      "title": "focused context",
+      "statement": "A WorkUnit receives compiled focused context and a ROOT_REF, never the inlined root goal.",
+      "home": [
+        "hcli.goal.compile_worker_context",
+        "hcli.goal.GoalCompiler.build_focused_context",
+        "receipts/headless/HCLI_WORKUNIT_FOCUSED_CONTEXT.json"
+      ],
+      "resolver": {
+        "kind": "python_symbol_and_json",
+        "module": "hcli.goal",
+        "symbol": "compile_worker_context",
+        "receipt": "receipts/headless/HCLI_WORKUNIT_FOCUSED_CONTEXT.json",
+        "json_path": [
+          "root_still_reachable"
+        ],
+        "packet_must_not_contain": "full root goal text",
+        "packet_must_contain": "ROOT_REF"
+      },
+      "program": "from hcli.goal import compile_worker_context; json.load(...HCLI_WORKUNIT_FOCUSED_CONTEXT.json)['gate'] == 'HCLI_WORKUNIT_FOCUSED_CONTEXT'",
+      "english_is_not_resolver": true
+    },
+    "max_equilibrium": {
+      "id": "max_equilibrium",
+      "title": "MAX equilibrium",
+      "statement": "Admitted concurrency is a measured equilibrium, not a wish. Occupancy is live grok-run processes, not a WorkUnit flag.",
+      "home": [
+        "hcli.max_policy (GROK_LADDER, load_equilibrium, grok_pool_snapshot)",
+        "workspace .hcli/max-equilibrium.json",
+        "receipts/headless/GROK_MAX_EQUILIBRIUM.json",
+        "receipts/headless/QWEN_MAX_EQUILIBRIUM.json"
+      ],
+      "resolver": {
+        "kind": "json_key",
+        "path": "receipts/headless/GROK_MAX_EQUILIBRIUM.json",
+        "key": "useful_equilibrium",
+        "code_module": "hcli.max_policy",
+        "code_symbol": "load_equilibrium",
+        "occupancy": "live grok-run processes (task_process_is_live); GrokBridge.status() is not called from max_policy",
+        "ladder": [
+          1,
+          2,
+          4,
+          6,
+          8
+        ]
+      },
+      "program": "from hcli.max_policy import load_equilibrium, grok_pool_snapshot; json.load(...GROK_MAX_EQUILIBRIUM.json)['useful_equilibrium']",
+      "english_is_not_resolver": true
+    },
+    "historical_science_preservation": {
+      "id": "historical_science_preservation",
+      "title": "historical science preservation",
+      "statement": "Vestigial is not reclaimable. Receipts are never deleted because nothing imports them.",
+      "home": [
+        "receipts/headless/CODE_ENTROPY.json never_delete",
+        "receipts/headless/NOMENCLATURE_CENSUS.json vestigial_means",
+        "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+        "receipts/headless/DIRTY_TREE_PRESERVATION.json"
+      ],
+      "resolver": {
+        "kind": "json_key",
+        "path": "receipts/headless/NOMENCLATURE_CENSUS.json",
+        "key": "vestigial_means",
+        "never_delete": [
+          "receipts/headless/CODE_ENTROPY.json",
+          "never_delete"
+        ]
+      },
+      "program": "json.load(...NOMENCLATURE_CENSUS.json)['vestigial_means']; json.load(...CODE_ENTROPY.json)['never_delete']",
+      "english_is_not_resolver": true
+    },
+    "noetic_ontology": {
+      "id": "noetic_ontology",
+      "title": "the Noetic ontology",
+      "statement": "Prior Noetic science is indexed before anyone invents a representation. Classification is RAN / CODE_ONLY / REFUTED / PROSE_ONLY.",
+      "home": [
+        "receipts/headless/NOETIC_ARCHAEOLOGY_INDEX.json",
+        "tools/headless/noetic_archaeology.py",
+        "receipts/headless/NOMENCLATURE_CENSUS.json surviving_vocabulary"
+      ],
+      "resolver": {
+        "kind": "json_schema",
+        "path": "receipts/headless/NOETIC_ARCHAEOLOGY_INDEX.json",
+        "schema": "hawking.headless.noetic_archaeology.v1",
+        "classification_key": [
+          "RAN",
+          "CODE_ONLY",
+          "REFUTED",
+          "PROSE_ONLY"
+        ],
+        "surviving_vocabulary": [
+          "HCLI",
+          "Odyssey",
+          "Noetic",
+          "Gravity"
+        ]
+      },
+      "program": "idx = json.load(open('receipts/headless/NOETIC_ARCHAEOLOGY_INDEX.json')); idx['classification_key']; idx['mechanisms'][i]['status']",
+      "english_is_not_resolver": true
+    },
+    "native_operators": {
+      "id": "native_operators",
+      "title": "native operators",
+      "statement": "Compressed structure must execute directly. Reconstruct-then-matmul is ORACLE, labelled, never presented as native.",
+      "home": [
+        "tools/headless/noetic_native_operator.py",
+        "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+        "tools/headless/test_noetic_native_operator.py"
+      ],
+      "resolver": {
+        "kind": "json_schema",
+        "path": "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+        "schema": "hawking.headless.noetic_native_operator.v1",
+        "discriminator": "peak_temporary_materialization vs parent-tensor shape",
+        "labels": [
+          "NATIVE",
+          "ORACLE"
+        ],
+        "keys": [
+          "production_label",
+          "oracle_path_ids",
+          "native_path_ids"
+        ]
+      },
+      "program": "doc = json.load(open('receipts/headless/NOETIC_NATIVE_OPERATOR.json')); assert doc['production_label'] == 'NATIVE'; assert doc['every_oracle_path_labelled_ORACLE']",
+      "english_is_not_resolver": true
+    },
+    "no_hidden_information_accounting": {
+      "id": "no_hidden_information_accounting",
+      "title": "no hidden information accounting",
+      "statement": "Supporting structures may not escape the bit budget. Seven buckets. A canary that hides parent-derived bytes must be caught.",
+      "home": [
+        "tools/headless/noetic_information_accounting.py",
+        "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json"
+      ],
+      "resolver": {
+        "kind": "json_schema",
+        "path": "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+        "schema": "hawking.headless.noetic_information_accounting.v1",
+        "buckets": [
+          "MODEL_SPECIFIC_BYTES",
+          "SHARED_RUNTIME_BYTES",
+          "MACHINE_SPECIFIC_BYTES",
+          "GENERATED_CACHE_BYTES",
+          "TEMPORARY_BYTES",
+          "RESIDENT_BYTES",
+          "ACTIVE_BYTES"
+        ],
+        "canary_key": [
+          "canary",
+          "completeness"
+        ]
+      },
+      "program": "acct = json.load(open('receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json')); acct['definitions']; acct['canary']['completeness']",
+      "english_is_not_resolver": true
+    },
+    "routes_as_physical_cost": {
+      "id": "routes_as_physical_cost",
+      "title": "routes as physical cost",
+      "statement": "A route is billed. The ledger can show a route that is not worth it. Counts pair with parent-weight equivalents.",
+      "home": [
+        "tools/headless/noetic_route_ledger.py",
+        "receipts/headless/NOETIC_ROUTE_LEDGER.json"
+      ],
+      "resolver": {
+        "kind": "json_schema",
+        "path": "receipts/headless/NOETIC_ROUTE_LEDGER.json",
+        "schema": "hawking.headless.noetic_route_ledger.v1",
+        "keys": [
+          "route_decisions_per_token",
+          "route_decisions_per_second",
+          "route_table_bytes",
+          "route_state_bytes"
+        ]
+      },
+      "program": "json.load(open('receipts/headless/NOETIC_ROUTE_LEDGER.json'))['schema'] == 'hawking.headless.noetic_route_ledger.v1'",
+      "english_is_not_resolver": true
+    },
+    "function_space_fitting": {
+      "id": "function_space_fitting",
+      "title": "function-space fitting",
+      "statement": "Codecs are scored on Y=X@W.T with real captured X, not weight cosine. Local survival is not whole-model survival.",
+      "home": [
+        "tools/gravity_function_space_rank.py",
+        "receipts/headless/FRACTIONAL_BIT_CANON.json",
+        "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+      ],
+      "resolver": {
+        "kind": "json_key",
+        "path": "receipts/headless/FRACTIONAL_BIT_CANON.json",
+        "schema": "hawking.headless.fractional_bit_canon.v1",
+        "key": "survival_rule",
+        "eval_space": "function-space (output cosine / rel_l2 of Y=X@W.T on real X)",
+        "ascent_receipts_not_modified": "receipts/ascent-2026-08-16/G033_FUNCTION_SPACE_RANK.json is cited, never rewritten"
+      },
+      "program": "json.load(open('receipts/headless/FRACTIONAL_BIT_CANON.json'))['survival_rule']",
+      "english_is_not_resolver": true
+    }
+  },
+  "law_home_presence": [
+    {
+      "law": "tools_know",
+      "path": "receipts/headless/MACHINE_GENOME.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "evidence_promotes",
+      "path": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "adversary_attacks",
+      "path": "tools/headless/gate_adversary.py",
+      "where": "HEAD",
+      "present": true
+    },
+    {
+      "law": "adversary_attacks",
+      "path": "receipts/headless/NOETIC_GATE_ADVERSARY.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "noop_proves_causality",
+      "path": "tools/headless/conventional_control_set.py",
+      "where": "HEAD",
+      "present": true
+    },
+    {
+      "law": "noop_proves_causality",
+      "path": "receipts/headless/CONVENTIONAL_CONTROL_SET.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "candidate_preservation",
+      "path": "receipts/headless/DIRTY_TREE_PRESERVATION.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "candidate_preservation",
+      "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "content_fresh_evidence",
+      "path": "tools/haider/hcli/tests/test_evidence_freshness.py",
+      "where": "HEAD",
+      "present": true
+    },
+    {
+      "law": "single_writer",
+      "path": "receipts/headless/AGENTOS_SINGLE_WRITER.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "focused_context",
+      "path": "receipts/headless/HCLI_WORKUNIT_FOCUSED_CONTEXT.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "max_equilibrium",
+      "path": "receipts/headless/GROK_MAX_EQUILIBRIUM.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "max_equilibrium",
+      "path": "receipts/headless/QWEN_MAX_EQUILIBRIUM.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "historical_science_preservation",
+      "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "historical_science_preservation",
+      "path": "receipts/headless/DIRTY_TREE_PRESERVATION.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "noetic_ontology",
+      "path": "receipts/headless/NOETIC_ARCHAEOLOGY_INDEX.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "noetic_ontology",
+      "path": "tools/headless/noetic_archaeology.py",
+      "where": "HEAD",
+      "present": true
+    },
+    {
+      "law": "native_operators",
+      "path": "tools/headless/noetic_native_operator.py",
+      "where": "HEAD",
+      "present": true
+    },
+    {
+      "law": "native_operators",
+      "path": "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "native_operators",
+      "path": "tools/headless/test_noetic_native_operator.py",
+      "where": "HEAD",
+      "present": true
+    },
+    {
+      "law": "no_hidden_information_accounting",
+      "path": "tools/headless/noetic_information_accounting.py",
+      "where": "HEAD",
+      "present": true
+    },
+    {
+      "law": "no_hidden_information_accounting",
+      "path": "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "routes_as_physical_cost",
+      "path": "tools/headless/noetic_route_ledger.py",
+      "where": "HEAD",
+      "present": true
+    },
+    {
+      "law": "routes_as_physical_cost",
+      "path": "receipts/headless/NOETIC_ROUTE_LEDGER.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "function_space_fitting",
+      "path": "tools/gravity_function_space_rank.py",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "function_space_fitting",
+      "path": "receipts/headless/FRACTIONAL_BIT_CANON.json",
+      "where": "disk",
+      "present": true
+    },
+    {
+      "law": "function_space_fitting",
+      "path": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+      "where": "disk",
+      "present": true
+    }
+  ],
+  "laws_that_resolve_only_by_english": [],
+  "terminal_prose_scraping": [
+    {
+      "path": "hcli/grok_bridge.py",
+      "symbols": [
+        "parse_grok_status",
+        "GrokBridge.status",
+        "extract_task_id",
+        "_task_dir_from_stdout"
+      ],
+      "what": "Production Grok task state is parsed from grok-run status --id human text ('status: running (exit -)'). Task ids are scraped from stdout. This is production truth from terminal prose.",
+      "in_write_scope": false,
+      "named_not_fixed": true
+    },
+    {
+      "path": "hcli/max_policy.py",
+      "symbols": [
+        "_scan_throttle"
+      ],
+      "what": "Throttle evidence is a regex over task-dir stdout/stderr. Occupancy itself is a process check (task_process_is_live), not this parser.",
+      "in_write_scope": false,
+      "named_not_fixed": true
+    }
+  ],
+  "sparse": {
+    "this_worktree_is_sparse": true,
+    "sparse_checkout_list": [
+      "crates/hawking",
+      "crates/hawking-adapters",
+      "crates/hawking-bench",
+      "crates/hawking-comms",
+      "crates/hawking-context",
+      "crates/hawking-core",
+      "crates/hawking-eval",
+      "crates/hawking-events",
+      "crates/hawking-index",
+      "crates/hawking-orch",
+      "crates/hawking-perception",
+      "crates/hawking-research",
+      "crates/hawking-serve",
+      "crates/hawking-speculate",
+      "crates/hide-acp",
+      "crates/hide-backend",
+      "crates/hide-core",
+      "crates/hide-fleet",
+      "crates/hide-gateway",
+      "crates/hide-kernel",
+      "crates/hide-protocol",
+      "crates/hide-serve",
+      "lab/tests",
+      "receipts/headless",
+      "src/bin/fabric_agent.rs",
+      "src/bin/hawking-adapters-codegen.rs",
+      "src/bin/hide-acp-server.rs",
+      "src/bin/hide-sdk-codegen.rs",
+      "src/lib.rs",
+      "src/main.rs",
+      "tools/awq_bake",
+      "tools/q4k_fast",
+      "tools/tq_bake",
+      "workspace/vendor/strand-quant"
+    ],
+    "paths_verified_against_HEAD_not_working_tree": [
+      "hcli/",
+      "docs/",
+      "tools/headless/",
+      "tools/haider/hcli/tests/",
+      "pyproject.toml",
+      "hcli/__init__.py",
+      "hcli/__main__.py",
+      "hcli/agentos/__init__.py",
+      "hcli/persist.py",
+      "hcli/paths.py",
+      "hcli/grok_bridge.py",
+      "hcli/verifier_pipeline.py",
+      "hcli/goal.py",
+      "hcli/resources.py",
+      "hcli/mutation.py",
+      "hcli/max_policy.py",
+      "hcli/runtime.py",
+      "hcli/backends.py",
+      "tools/haider/hcli/tests/test_module_identity.py",
+      "workspace/docs/reference/ARCHITECTURE.md"
+    ],
+    "on_disk_and_used": [
+      "receipts/headless/CODE_GRAPH.json",
+      "receipts/headless/CODE_ENTROPY.json",
+      "receipts/headless/NAMESPACE_MIGRATION.json",
+      "receipts/headless/AGENTOS_SINGLE_WRITER.json",
+      "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+      "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+      "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+      "receipts/headless/NOETIC_ROUTE_LEDGER.json",
+      "receipts/headless/NOETIC_ARCHAEOLOGY_INDEX.json",
+      "receipts/headless/NOMENCLATURE_CENSUS.json",
+      "receipts/headless/FRACTIONAL_BIT_CANON.json",
+      "receipts/headless/GROK_MAX_EQUILIBRIUM.json",
+      "receipts/headless/HCLI_WORKUNIT_FOCUSED_CONTEXT.json",
+      "receipts/headless/DIRTY_TREE_PRESERVATION.json",
+      "receipts/headless/CONVENTIONAL_CONTROL_SET.json",
+      "receipts/headless/CODE_GRAPH.json"
+    ],
+    "missing_on_disk_needed_for_pytest": [
+      "tools/headless",
+      "hcli"
+    ]
+  },
+  "anti_goodhart": "Success is a CURRENT document checked against the graph (disagreements recorded), every docs/ file marked, laws resolving via JSON/symbols, and pytest tools/headless -q exiting 0. Not document length.",
+  "receipt_sha256_of_body_without_this_field": "6cba80967d762d1e14e3f00b00ccda0547b58c88ab98f6faec9232f3872b2e96",
+  "pytest_attempt": {
+    "command": "python3 -m pytest tools/headless -q",
+    "exit": 4,
+    "stdout_tail": "ERROR: file or directory not found: tools/headless\n\nno tests ran in 0.00s",
+    "reason": "sparse checkout: tools/headless is in HEAD (124 files) but not on disk. This worktree cannot `git sparse-checkout add` (sparse-checkout.lock: Operation not permitted).",
+    "blocker_paths": [
+      "tools/headless"
+    ],
+    "also_unmaterialized_product": [
+      "hcli"
+    ],
+    "note": "conftest.py skips hcli_* tests when tools/haider/hcli is absent; after G026 those tests import the installed hcli package. Widening tools/headless is the minimum to collect the suite; widening hcli/ is required for any collected test that imports hcli."
+  }
+}

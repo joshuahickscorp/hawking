@@ -13,18 +13,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "hawking-experiments/frankenstein/operators"))
 
 from lab.receipts import seal, verify  # noqa: E402
-from lab.operators.frankenstein_corpus_id_map import emit_reconciliation  # noqa: E402
+from frankenstein_corpus_id_map import emit_reconciliation  # noqa: E402
 
 PROTO_L1 = (
     ROOT
-    / "workspace/campaign/evidence/models/frankenstein/corpus"
+    / "hawking-experiments/frankenstein/data/corpus"
     / "PROTO_FRANKENSTEIN_V0_L1_CORPUS.jsonl"
 )
 MEMBERSHIP = (
     ROOT
-    / "workspace/campaign/evidence/models/frankenstein/corpus"
+    / "hawking-experiments/frankenstein/data/corpus"
     / "PROTO_FRANKENSTEIN_V0_MEMBERSHIP.json"
 )
 OUT_DIR_FILE = ROOT / "logs/glm_L1_out_dir.txt"
@@ -133,7 +134,7 @@ def main() -> int:
 
     recon_out = (
         ROOT
-        / "workspace/campaign/evidence/models/frankenstein/cartography"
+        / "hawking-experiments/frankenstein/data/cartography"
         / "GLM_DSV4F_CORPUS_ID_RECONCILIATION_L1.json"
     )
     recon = emit_reconciliation(

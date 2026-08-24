@@ -1,0 +1,328 @@
+{
+  "gate": "QWEN_MAX_EQUILIBRIUM",
+  "probe": "qwen_equilibrium_probe",
+  "generated_at": "2026-08-23T05:16:49Z",
+  "runtime_identity": {
+    "port": 49539,
+    "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "total_slots": 5,
+    "per_slot_n_ctx": 6656,
+    "build": "b9430-d48a56eff",
+    "spawned_by_hcli": true
+  },
+  "protocol": {
+    "rungs": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "reps": 3,
+    "max_tokens": 192,
+    "ordering": "alternating paired reps (interleaved, not blocked)",
+    "warmup": "one discarded 32-token decode",
+    "prompt": "Count upward from one, writing each number as an English word on its own line, starting at one and continuing without stopping or commenting."
+  },
+  "samples": [
+    {
+      "concurrency": 1,
+      "wall_s": 8.5376,
+      "completed": 1,
+      "errors": [],
+      "total_completion_tokens": 192,
+      "aggregate_tps": 22.4888,
+      "per_stream_tps": [
+        22.4891
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 0
+    },
+    {
+      "concurrency": 2,
+      "wall_s": 15.8081,
+      "completed": 2,
+      "errors": [],
+      "total_completion_tokens": 384,
+      "aggregate_tps": 24.2913,
+      "per_stream_tps": [
+        12.1811,
+        12.1458
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 0
+    },
+    {
+      "concurrency": 3,
+      "wall_s": 22.4364,
+      "completed": 3,
+      "errors": [],
+      "total_completion_tokens": 576,
+      "aggregate_tps": 25.6726,
+      "per_stream_tps": [
+        8.5576,
+        8.5752,
+        8.5753
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 0
+    },
+    {
+      "concurrency": 4,
+      "wall_s": 27.0884,
+      "completed": 4,
+      "errors": [],
+      "total_completion_tokens": 768,
+      "aggregate_tps": 28.3516,
+      "per_stream_tps": [
+        7.1001,
+        7.1001,
+        7.088,
+        7.1003
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 0
+    },
+    {
+      "concurrency": 5,
+      "wall_s": 34.1338,
+      "completed": 5,
+      "errors": [],
+      "total_completion_tokens": 960,
+      "aggregate_tps": 28.1246,
+      "per_stream_tps": [
+        5.6326,
+        5.6327,
+        5.6327,
+        5.6327,
+        5.625
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 0
+    },
+    {
+      "concurrency": 1,
+      "wall_s": 8.5388,
+      "completed": 1,
+      "errors": [],
+      "total_completion_tokens": 192,
+      "aggregate_tps": 22.4856,
+      "per_stream_tps": [
+        22.4858
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 1
+    },
+    {
+      "concurrency": 2,
+      "wall_s": 15.4593,
+      "completed": 2,
+      "errors": [],
+      "total_completion_tokens": 384,
+      "aggregate_tps": 24.8394,
+      "per_stream_tps": [
+        12.4198,
+        12.42
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 1
+    },
+    {
+      "concurrency": 3,
+      "wall_s": 22.1112,
+      "completed": 3,
+      "errors": [],
+      "total_completion_tokens": 576,
+      "aggregate_tps": 26.0501,
+      "per_stream_tps": [
+        8.6835,
+        8.6835,
+        8.6836
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 1
+    },
+    {
+      "concurrency": 4,
+      "wall_s": 27.0216,
+      "completed": 4,
+      "errors": [],
+      "total_completion_tokens": 768,
+      "aggregate_tps": 28.4217,
+      "per_stream_tps": [
+        7.1055,
+        7.1272,
+        7.1055,
+        7.1272
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 1
+    },
+    {
+      "concurrency": 5,
+      "wall_s": 33.9716,
+      "completed": 5,
+      "errors": [],
+      "total_completion_tokens": 960,
+      "aggregate_tps": 28.2589,
+      "per_stream_tps": [
+        5.6519,
+        5.6519,
+        5.6518,
+        5.6757,
+        5.6519
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 1
+    },
+    {
+      "concurrency": 1,
+      "wall_s": 8.5401,
+      "completed": 1,
+      "errors": [],
+      "total_completion_tokens": 192,
+      "aggregate_tps": 22.4821,
+      "per_stream_tps": [
+        22.4823
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 2
+    },
+    {
+      "concurrency": 2,
+      "wall_s": 15.455,
+      "completed": 2,
+      "errors": [],
+      "total_completion_tokens": 384,
+      "aggregate_tps": 24.8464,
+      "per_stream_tps": [
+        12.4234,
+        12.4234
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 2
+    },
+    {
+      "concurrency": 3,
+      "wall_s": 22.1098,
+      "completed": 3,
+      "errors": [],
+      "total_completion_tokens": 576,
+      "aggregate_tps": 26.0518,
+      "per_stream_tps": [
+        8.684,
+        8.6842,
+        8.6842
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 2
+    },
+    {
+      "concurrency": 4,
+      "wall_s": 27.0154,
+      "completed": 4,
+      "errors": [],
+      "total_completion_tokens": 768,
+      "aggregate_tps": 28.4282,
+      "per_stream_tps": [
+        7.1288,
+        7.1072,
+        7.1288,
+        7.1072
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 2
+    },
+    {
+      "concurrency": 5,
+      "wall_s": 33.8746,
+      "completed": 5,
+      "errors": [],
+      "total_completion_tokens": 960,
+      "aggregate_tps": 28.3398,
+      "per_stream_tps": [
+        5.6759,
+        5.676,
+        5.676,
+        5.676,
+        5.6681
+      ],
+      "finish_reasons": [
+        "length"
+      ],
+      "rep": 2
+    }
+  ],
+  "by_rung": {
+    "1": {
+      "reps": 3,
+      "median_aggregate_tps": 22.4856,
+      "min": 22.4821,
+      "max": 22.4888,
+      "spread_pct": 0.03,
+      "scaling_vs_rung1": 1.0
+    },
+    "2": {
+      "reps": 3,
+      "median_aggregate_tps": 24.8394,
+      "min": 24.2913,
+      "max": 24.8464,
+      "spread_pct": 2.235,
+      "scaling_vs_rung1": 1.1047
+    },
+    "3": {
+      "reps": 3,
+      "median_aggregate_tps": 26.0501,
+      "min": 25.6726,
+      "max": 26.0518,
+      "spread_pct": 1.456,
+      "scaling_vs_rung1": 1.1585
+    },
+    "4": {
+      "reps": 3,
+      "median_aggregate_tps": 28.4217,
+      "min": 28.3516,
+      "max": 28.4282,
+      "spread_pct": 0.27,
+      "scaling_vs_rung1": 1.264
+    },
+    "5": {
+      "reps": 3,
+      "median_aggregate_tps": 28.2589,
+      "min": 28.1246,
+      "max": 28.3398,
+      "spread_pct": 0.762,
+      "scaling_vs_rung1": 1.2568
+    }
+  },
+  "measured_equilibrium_active_decodes": 4,
+  "equilibrium_rule": "highest rung whose median aggregate tok/s beats its predecessor by more than the observed measurement spread"
+}

@@ -1,7 +1,7 @@
 # Functional Transfer Program — Scaffold
 
 **Status:** SCAFFOLD SEALED (framework/formats/harnesses real; runtime stages gated)  
-**Seal companion:** `workspace/campaign/evidence/models/frankenstein/FUNCTIONAL_TRANSFER_PROGRAM.json`  
+**Seal companion:** `hawking-experiments/frankenstein/data/FUNCTIONAL_TRANSFER_PROGRAM.json`  
 **Related:** `FRANKENSTEIN_PROGRAM.md` (multi-stage product path); this doc is the
 **trained functional-transfer** lane that must exist before any honest
 `PROTO_FRANKENSTEIN` capability claim.
@@ -135,18 +135,18 @@ Promotion requires **all** of:
 
 | Module | Role |
 |--------|------|
-| `lab/operators/frankenstein_gates.py` | Shared labels + gates |
-| `lab/operators/frankenstein_baseline_freeze.py` | Stage 1 freeze |
-| `lab/operators/frankenstein_trace_format.py` | Trace schema + membership |
-| `lab/operators/frankenstein_aligner.py` | Span/action/tool aligner |
-| `lab/operators/frankenstein_cartography.py` | CKA/CCA/Procrustes |
-| `lab/operators/frankenstein_bridges.py` | Bridges + adapters + trainer iface |
-| `lab/operators/frankenstein_verifier_loop.py` | Expert-iteration iface |
-| `lab/operators/frankenstein_promotion_gate.py` | Promotion + secondary suite |
-| `lab/operators/frankenstein_functional_transfer.py` | Program seal |
-| `lab/operators/frankenstein_ablation.py` | A–B + A–G harnesses |
-| `lab/operators/frankenstein_transfer.py` | Linear mapping (relabeled init) |
-| `lab/operators/frankenstein_proto_run.py` | Structural compose (not PROTO complete) |
+| `hawking-experiments/frankenstein/operators/frankenstein_gates.py` | Shared labels + gates |
+| `hawking-experiments/frankenstein/operators/frankenstein_baseline_freeze.py` | Stage 1 freeze |
+| `hawking-experiments/frankenstein/operators/frankenstein_trace_format.py` | Trace schema + membership |
+| `hawking-experiments/frankenstein/operators/frankenstein_aligner.py` | Span/action/tool aligner |
+| `hawking-experiments/frankenstein/operators/frankenstein_cartography.py` | CKA/CCA/Procrustes |
+| `hawking-experiments/frankenstein/operators/frankenstein_bridges.py` | Bridges + adapters + trainer iface |
+| `hawking-experiments/frankenstein/operators/frankenstein_verifier_loop.py` | Expert-iteration iface |
+| `hawking-experiments/frankenstein/operators/frankenstein_promotion_gate.py` | Promotion + secondary suite |
+| `hawking-experiments/frankenstein/operators/frankenstein_functional_transfer.py` | Program seal |
+| `hawking-experiments/frankenstein/operators/frankenstein_ablation.py` | A–B + A–G harnesses |
+| `hawking-experiments/frankenstein/operators/frankenstein_transfer.py` | Linear mapping (relabeled init) |
+| `hawking-experiments/frankenstein/operators/frankenstein_proto_run.py` | Structural compose (not PROTO complete) |
 
 ---
 

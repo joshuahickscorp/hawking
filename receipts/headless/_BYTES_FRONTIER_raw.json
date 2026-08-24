@@ -1,0 +1,522 @@
+{
+  "compile_s": 0.000734209,
+  "dense_w_materialized": 0,
+  "device": "Apple M3 Ultra",
+  "elapsed_s": 10.670603792,
+  "git_head": "799b39cbd5b6596a1f29f8ba94bc4cd3910c0ecd",
+  "graphs": [
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          15738249,
+          15727624,
+          15749500,
+          15763416,
+          15755375,
+          15705625,
+          15725583
+        ],
+        "max": 15763416,
+        "median": 15738249,
+        "min": 15705625,
+        "n": 7
+      },
+      "id": "q2f",
+      "kernels": [
+        "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+        "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+        "q2f_g64_matvec_geo_c17408_tpr64_tg128"
+      ],
+      "layers": 64,
+      "mlp_payload_bytes": 4812963840,
+      "role": "baseline_2.25_bpw",
+      "serial": null,
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          16133375,
+          16118917,
+          16169917,
+          16133041,
+          16165791,
+          16083042,
+          16149708
+        ],
+        "max": 16169917,
+        "median": 16133375,
+        "min": 16083042,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          47683375,
+          47595291,
+          47503708,
+          47585874,
+          47635666,
+          47607749,
+          47614416
+        ],
+        "max": 47683375,
+        "median": 47607749,
+        "min": 47503708,
+        "n": 7
+      },
+      "id": "ternary",
+      "kernels": [
+        "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+        "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+        "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128"
+      ],
+      "layers": 64,
+      "mlp_payload_bytes": 3957456896,
+      "role": "candidate",
+      "serial": {
+        "gpu_ns": {
+          "all": [
+            209383166,
+            209261374,
+            209601624,
+            209209124,
+            209366791,
+            209180166,
+            209160541
+          ],
+          "max": 209601624,
+          "median": 209261374,
+          "min": 209160541,
+          "n": 7
+        },
+        "overlap_with_geo": false,
+        "wall_ns": {
+          "all": [
+            209785666,
+            209709625,
+            210035583,
+            209590333,
+            209734125,
+            209705625,
+            209724000
+          ],
+          "max": 210035583,
+          "median": 209724000,
+          "min": 209590333,
+          "n": 7
+        }
+      },
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          48044708,
+          47966917,
+          47977834,
+          47970458,
+          48019166,
+          48009208,
+          47978458
+        ],
+        "max": 48044708,
+        "median": 47978458,
+        "min": 47966917,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          11596124,
+          11626374,
+          11626499,
+          11622583,
+          11585833,
+          11599375,
+          11622166
+        ],
+        "max": 11626499,
+        "median": 11622166,
+        "min": 11585833,
+        "n": 7
+      },
+      "id": "binary",
+      "kernels": [
+        "binary_g64_matvec_geo_c5120_tpr64_tg128",
+        "binary_g64_matvec_geo_c5120_tpr64_tg128",
+        "binary_g64_matvec_geo_c17408_tpr64_tg128"
+      ],
+      "layers": 64,
+      "mlp_payload_bytes": 2673868800,
+      "role": "candidate",
+      "serial": {
+        "gpu_ns": {
+          "all": [
+            44652791,
+            44553750,
+            44505625,
+            44551375,
+            44393666,
+            44482500,
+            44429583
+          ],
+          "max": 44652791,
+          "median": 44505625,
+          "min": 44393666,
+          "n": 7
+        },
+        "overlap_with_geo": false,
+        "wall_ns": {
+          "all": [
+            45030750,
+            45015667,
+            44886208,
+            44913792,
+            44823334,
+            44849709,
+            44938042
+          ],
+          "max": 45030750,
+          "median": 44913792,
+          "min": 44823334,
+          "n": 7
+        }
+      },
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          11957375,
+          12022375,
+          12064250,
+          12000083,
+          11921500,
+          11970333,
+          11983000
+        ],
+        "max": 12064250,
+        "median": 11983000,
+        "min": 11921500,
+        "n": 7
+      }
+    },
+    {
+      "basis_sign_bytes": 66846720,
+      "dense_w_materialized": 0,
+      "dispatches": 384,
+      "gpu_ns": {
+        "all": [
+          99816541,
+          99847375,
+          99741666,
+          99861458,
+          99671958,
+          99564375,
+          99829125
+        ],
+        "max": 99861458,
+        "median": 99816541,
+        "min": 99564375,
+        "n": 7
+      },
+      "id": "shared_binary_k2",
+      "layers": 64,
+      "mlp_payload_bytes_active_fused": 1136394240,
+      "per_layer_scale_bytes_total": 1069547520,
+      "reload_control": {
+        "gpu_ns": {
+          "all": [
+            76782749,
+            76754083,
+            76894291,
+            77084499,
+            77032625,
+            76749333,
+            76988874
+          ],
+          "max": 77084499,
+          "median": 76894291,
+          "min": 76749333,
+          "n": 7
+        },
+        "note": "reload control fuses K=2 on gate only; up/down stay two-pass",
+        "overlap_with_amortized": false,
+        "wall_ns": {
+          "all": [
+            77195125,
+            77181792,
+            77360083,
+            77492834,
+            77419166,
+            77208333,
+            77645875
+          ],
+          "max": 77645875,
+          "median": 77360083,
+          "min": 77181792,
+          "n": 7
+        }
+      },
+      "role": "candidate",
+      "wall_ns": {
+        "all": [
+          100246625,
+          100286250,
+          100176417,
+          100334500,
+          100124875,
+          100004625,
+          100266208
+        ],
+        "max": 100334500,
+        "median": 100246625,
+        "min": 100004625,
+        "n": 7
+      }
+    },
+    {
+      "csr_unique_tiles": 8,
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          25253458,
+          25266875,
+          25244208,
+          25359958,
+          25389874,
+          25337750,
+          25555125
+        ],
+        "max": 25555125,
+        "median": 25337750,
+        "min": 25244208,
+        "n": 7
+      },
+      "id": "binary_residual_sparse_2pct",
+      "layers": 64,
+      "mlp_payload_bytes": 4731962112,
+      "noop_drop_csr": {
+        "gpu_ns": {
+          "all": [
+            21289999,
+            21322958,
+            21327499,
+            21304916,
+            21287958,
+            21290541,
+            21175624
+          ],
+          "max": 21327499,
+          "median": 21290541,
+          "min": 21175624,
+          "n": 7
+        },
+        "overlap_with_fused": false,
+        "wall_ns": {
+          "all": [
+            21740875,
+            21691500,
+            21693125,
+            21699625,
+            21654334,
+            21704000,
+            21587500
+          ],
+          "max": 21740875,
+          "median": 21693125,
+          "min": 21587500,
+          "n": 7
+        }
+      },
+      "role": "candidate",
+      "wall_ns": {
+        "all": [
+          25655166,
+          25674333,
+          25695125,
+          25735250,
+          25788583,
+          25720959,
+          25946167
+        ],
+        "max": 25946167,
+        "median": 25720959,
+        "min": 25655166,
+        "n": 7
+      }
+    }
+  ],
+  "layers": 64,
+  "mlp_elements": 17112760320,
+  "n021_complete_gpu_ns_median": 27547874,
+  "occupancy": [
+    {
+      "kernel": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "ternary_5in8_g64_matvec_serial_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "ternary_5in8_g64_matvec_serial_c17408",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_g64_matvec_geo_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_g64_matvec_serial_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_g64_matvec_serial_c17408",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k2_group_dots_c17408_g64_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k2_scale_contract_gpr80",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k2_scale_contract_gpr272",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k2_reload_every_layer_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_sparse_fused_geo_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_sparse_fused_serial_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_sparse_noop_drop_csr_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "q2f_g64_matvec_geo_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "q2f_g64_matvec_serial_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    }
+  ],
+  "parent_params": 26895998464,
+  "parity": [
+    {
+      "dense_w_materialized": 0,
+      "id": "ternary_geo_c5120",
+      "kernel": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "binary_geo_c5120",
+      "kernel": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "q2f_geo_c5120",
+      "kernel": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "residual_fused_c5120",
+      "kernel": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "residual_noop_drop_csr",
+      "kernel": "binary_sparse_noop_drop_csr_c5120",
+      "max_abs_diff": 1.4326362609863281,
+      "must_match": false,
+      "ok": false,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "shared_k2_two_pass_c5120",
+      "kernel": "shared_binary_k2_group_dots + scale_contract_gpr80",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    }
+  ],
+  "q4_attn_f32_bytes": 5206533080,
+  "reps": 7,
+  "roof_tok_s": 729.7,
+  "schema": "hawking.headless.bytes_frontier.raw.v1",
+  "skip_unique": false,
+  "warmup": 2
+}

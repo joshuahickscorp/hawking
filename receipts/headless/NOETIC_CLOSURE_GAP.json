@@ -1,0 +1,779 @@
+{
+  "schema": "hawking.headless.noetic_closure_gap.v1",
+  "generated_at": "2026-08-23T18:31:12Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "branch": "grok/n10persist-20260823-141823",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/n10persist-20260823-141823",
+  "obligation": "Assess whether the existing NR/NX artifact meets the executable-closure and IR bar. Do not rebuild the format.",
+  "sealed_instance": {
+    "receipt": "receipts/ascent-2026-08-16/G105_NR_NX_ARTIFACT.json",
+    "artifact": "uniform-q4-v1",
+    "parameter_count": 26895998464,
+    "payload_bytes": 14297694680,
+    "complete_bits_per_weight": 4.252735126866492,
+    "codec_families": [
+      {
+        "family": "grouped_absmax",
+        "bits": 4,
+        "group": 64,
+        "applies_to": "q4_tensors",
+        "count": 402
+      },
+      {
+        "family": "raw_f32",
+        "applies_to": "f32_tensors",
+        "count": 353
+      }
+    ],
+    "measured_tps": 32.73,
+    "token_ms": 30.606,
+    "battery": "28/30 on the G100 task set",
+    "byte_reproducibility_NOT_met": {
+      "why": "Reproducing the NR half from the raw parent needs the ENCODER's exact rounding rule and its fusion recipe, and neither is recorded in the artifact. The manifest declares fused_in_proj_layers, so some tensors (in_proj_ba) do not exist in the parent at all and are derived -- the recipe for that derivation is not written down anywhere in the artifact.",
+      "missing_input": [
+        "the encoder's scale rule and rounding mode as a recorded parameter, not inferred",
+        "the in_proj fusion recipe",
+        "a re-pack run to compare against the digests now recorded"
+      ]
+    },
+    "artifact_rolling_digest": "89e780555634f28aaf86d03108407f29da254af61404a92d2ca750e00b3fa812",
+    "nx_has_lowers_nr": false,
+    "nx_kernel_binding_count": 38,
+    "nx_declared_in_tree": 554
+  },
+  "verdict": {
+    "meets_executable_closure_bar": false,
+    "meets_ir_sufficiency_bar": false,
+    "meets_information_accounting_bar": false,
+    "content_addressing_defect_blocks_closure_hash": true,
+    "summary": "The sealed uniform-q4-v1 NR/NX pair describes a conventional grouped-absmax + raw_f32 pack and a machine genome. It does not hash the whole manifested execution unit, cannot account for any of the 16 structured node families, and misses every hiding path that is not a catalog tensor. Gravity IR already states the missing law; NR/NX is not that law."
+  },
+  "q1_executable_closure": {
+    "physical_execution_unit": "Qwen38HybridWeights::load opens manifest.json and every row.artifact under tensors/. Generate additionally opens tokenizer.json from the bf16 parent. The decode binary embeds shaders and qwen38_geometry constants. That whole set is the manifested artifact. The G105 rolling digest covers only the 755 tensor files.",
+    "files_execution_touches": [
+      {
+        "file": "manifest.json",
+        "role": "load: Qwen38HybridWeights::load -> load_qwen38_manifest",
+        "source": "qwen38_hybrid_decode.rs:880",
+        "model_specific": true,
+        "seal_coverage": "not_covered",
+        "why": "Always opened. Names every tensor via row.artifact. G105's rolling digest hashes 755 tensor files (14297694680 bytes) and does not include the manifest. The manifest itself stores no per-tensor sha256 (G105 found). Substituting a tensor and leaving the manifest pointer unchanged is exactly what name-hash filenames permit."
+      },
+      {
+        "file": "tensors/<sha256(tensor_name)>.{hq30uq4,f32v2}  (755 files)",
+        "role": "load: fs::read(tensors_dir.join(row.artifact))",
+        "source": "qwen38_hybrid_decode.rs:899",
+        "model_specific": true,
+        "seal_coverage": "hashed_in_sidecar_not_addressed_not_checked_at_load",
+        "why": "These are the 14.30 GB payload. G105 records a sha256 per file and rolling digest 89e780555634f28aaf86d03108407f29da254af61404a92d2ca750e00b3fa812. That is a verification list, not an address. Filenames are sha256(name) (755/755 in the sidecar). Load never compares content to the sidecar. Two files can share a name-address and differ in bytes; the live sample demonstrates this."
+      },
+      {
+        "file": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+        "role": "generate: --tokenizer (wide_battery.py, ascension_qwen38_hybrid_greedy)",
+        "source": "wide_battery.py:46",
+        "model_specific": true,
+        "seal_coverage": "not_covered",
+        "bytes": 12809320,
+        "why": "Weight load does not open the tokenizer. Greedy generate does, from the bf16 parent, not from the artifact root. 12809320 bytes of vocabulary/merges if present. The G105 seal, the rolling digest, and the NX genome do not name it. Swapping tokenizer.json changes every token id the model emits and would not move artifact_rolling_digest."
+      },
+      {
+        "file": "crates/hawking-core/src/model/qwen38_geometry.rs (compiled into the decode binary)",
+        "role": "load+decode: vocab, hidden, rope theta, mixer schedule, RMS eps",
+        "source": "qwen38_geometry.rs:29",
+        "model_specific": true,
+        "seal_coverage": "not_covered",
+        "why": "Architecture constants for this patient (248320 vocab, 5120 hidden, 1e7 rope, 48 DeltaNet / 16 GQA, fused in_proj shapes) are compiled into the binary. They are not in NR representation and not hashed by NX. A geometry edit is a silent model change."
+      },
+      {
+        "file": "crates/hawking-core/shaders/*.metal (include_str into metal/mod.rs)",
+        "role": "runtime: compiled at MetalContext construction via newLibraryWithSource",
+        "source": "metal/mod.rs:273",
+        "model_specific": false,
+        "seal_coverage": "names_only",
+        "why": "NX lists 38 dispatched of 554 declared, by intersecting decode string literals with `kernel void` names. The sealed NX is a decode-source union, not this artifact's codec set: it names q80_binary / q80_hgravs / q80_sparse kernels that uniform-q4-v1 will not run. Shader source is not hashed. Learned constants baked into a shader would ride along here."
+      },
+      {
+        "file": "decode binary (ascension_qwen38_hybrid_greedy / hawking-core)",
+        "role": "the executable half of the manifested artifact",
+        "source": "wide_battery.py:19",
+        "model_specific": false,
+        "seal_coverage": "not_covered",
+        "why": "G096/G097 count ~6.3\u20137.8 MB of shared runtime separately. The sealed NX has no binary digest, no metallib digest, and no lowers_nr binding to the NR content hash (the optional --nr path in nx_genome.py was not used for G105)."
+      },
+      {
+        "file": "chat template (hardcoded render_qwen38_user_chat)",
+        "role": "generate: prompt wrapping",
+        "source": "qwen38_hybrid_decode.rs:681",
+        "model_specific": true,
+        "seal_coverage": "not_covered",
+        "why": "The Qwen chat wrapper lives in decode source, not in the artifact. Changing it changes the function. NR semantic_provenance does not hash it."
+      }
+    ],
+    "covered_by_seal": [
+      "tensors/<sha256(tensor_name)>.{hq30uq4,f32v2}  (755 files)"
+    ],
+    "not_covered_by_seal": [
+      "manifest.json",
+      "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+      "crates/hawking-core/src/model/qwen38_geometry.rs (compiled into the decode binary)",
+      "crates/hawking-core/shaders/*.metal (include_str into metal/mod.rs)",
+      "decode binary (ascension_qwen38_hybrid_greedy / hawking-core)",
+      "chat template (hardcoded render_qwen38_user_chat)"
+    ],
+    "content_addressing": {
+      "tensors_in_sidecar": 755,
+      "filename_stem_equals_sha256_of_tensor_name": 755,
+      "filename_stem_equals_sha256_of_contents": 0,
+      "first_12": [
+        {
+          "filename": "7cf1b122be1f8265ad64c83b9a9f1c065e1e780bea0fd1c74ac4598596cb3c69.hq30uq4",
+          "tensor_name": "language_model.model.embed_tokens.weight",
+          "filename_stem": "7cf1b122be1f8265ad64c83b9a9f1c065e1e780bea0fd1c74ac4598596cb3c69",
+          "sha256_of_name": "7cf1b122be1f8265ad64c83b9a9f1c065e1e780bea0fd1c74ac4598596cb3c69",
+          "sha256_of_contents_recorded": "8bf67af581661b60dced866143eed48ae14fe7d5d15ab6dd64bc856268aaed62",
+          "bytes": 675430440,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "b562b986ad0a175dff2803bfe05a6582e815edf279aa777207d81f32556d9630.f32v2",
+          "tensor_name": "language_model.model.layers.0.input_layernorm.weight",
+          "filename_stem": "b562b986ad0a175dff2803bfe05a6582e815edf279aa777207d81f32556d9630",
+          "sha256_of_name": "b562b986ad0a175dff2803bfe05a6582e815edf279aa777207d81f32556d9630",
+          "sha256_of_contents_recorded": "4487e59fb774e13c79f8668afb1f49f7e41f268118653d52bc55192857847de3",
+          "bytes": 20488,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2.f32v2",
+          "tensor_name": "language_model.model.layers.0.post_attention_layernorm.weight",
+          "filename_stem": "a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2",
+          "sha256_of_name": "a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2",
+          "sha256_of_contents_recorded": "fb986ccbccce3b2671fc71b7eadedc35c301d6cfba97c403ba322c84eab75413",
+          "bytes": 20488,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "634c88ebf503dfbd5c65998144d94e8e0000ae780b2a250588c61819ce94c982.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.linear_attn.in_proj_qkvz.weight",
+          "filename_stem": "634c88ebf503dfbd5c65998144d94e8e0000ae780b2a250588c61819ce94c982",
+          "sha256_of_name": "634c88ebf503dfbd5c65998144d94e8e0000ae780b2a250588c61819ce94c982",
+          "sha256_of_contents_recorded": "b1038cc7cf31f14f089717601d93d45bc0d1bd402fec606f886fe23c11e43037",
+          "bytes": 44564520,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "6ef2a12f6e0acacc946fa5ca1aeaedd2214e4b492856acb175a0c7f995665446.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.linear_attn.in_proj_ba.weight",
+          "filename_stem": "6ef2a12f6e0acacc946fa5ca1aeaedd2214e4b492856acb175a0c7f995665446",
+          "sha256_of_name": "6ef2a12f6e0acacc946fa5ca1aeaedd2214e4b492856acb175a0c7f995665446",
+          "sha256_of_contents_recorded": "e47bac45ec7ac361ad8ea934e525ffca13563d21ec5b7fdd082246822fa049e5",
+          "bytes": 261160,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "a3290e055bc5a212b6cab08cb24386d56f69536ce5c6865974814b83cae4caff.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.linear_attn.out_proj.weight",
+          "filename_stem": "a3290e055bc5a212b6cab08cb24386d56f69536ce5c6865974814b83cae4caff",
+          "sha256_of_name": "a3290e055bc5a212b6cab08cb24386d56f69536ce5c6865974814b83cae4caff",
+          "sha256_of_contents_recorded": "b42b2e1e2eb4c016408efd9337d99c2a2acf6245f00527b595ac11492bfa5168",
+          "bytes": 16711720,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "8eb544723d8aa37bd4289e07d202c172707586758ae4c78cd055f31fa989a922.f32v2",
+          "tensor_name": "language_model.model.layers.0.linear_attn.conv1d.weight",
+          "filename_stem": "8eb544723d8aa37bd4289e07d202c172707586758ae4c78cd055f31fa989a922",
+          "sha256_of_name": "8eb544723d8aa37bd4289e07d202c172707586758ae4c78cd055f31fa989a922",
+          "sha256_of_contents_recorded": "f2d274da7cadb11d01b5a8382db91c2c1342a507b90c307f2891592de3975985",
+          "bytes": 163848,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "e24110ded742e05e820234740ad50c5746cf3ff4ac5a49d102b61919a2350b14.f32v2",
+          "tensor_name": "language_model.model.layers.0.linear_attn.A_log",
+          "filename_stem": "e24110ded742e05e820234740ad50c5746cf3ff4ac5a49d102b61919a2350b14",
+          "sha256_of_name": "e24110ded742e05e820234740ad50c5746cf3ff4ac5a49d102b61919a2350b14",
+          "sha256_of_contents_recorded": "6e5bbfbbe022eb9dea4640f6b02059222181855159a4c548a9ba80e195d67c71",
+          "bytes": 200,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "6a93026c32cb4cbc7b07cc41d298096e8e24715e2772e48d5d8c28ca6617a815.f32v2",
+          "tensor_name": "language_model.model.layers.0.linear_attn.dt_bias",
+          "filename_stem": "6a93026c32cb4cbc7b07cc41d298096e8e24715e2772e48d5d8c28ca6617a815",
+          "sha256_of_name": "6a93026c32cb4cbc7b07cc41d298096e8e24715e2772e48d5d8c28ca6617a815",
+          "sha256_of_contents_recorded": "90a3f091649ff048614400b9e82bafd87401f80f95fc0fa860d29fea14f79638",
+          "bytes": 200,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "d632ce4e9b0d5b30d77b3fd7ce88ccc3f011e11e8a2868d747806413cbd95b50.f32v2",
+          "tensor_name": "language_model.model.layers.0.linear_attn.norm.weight",
+          "filename_stem": "d632ce4e9b0d5b30d77b3fd7ce88ccc3f011e11e8a2868d747806413cbd95b50",
+          "sha256_of_name": "d632ce4e9b0d5b30d77b3fd7ce88ccc3f011e11e8a2868d747806413cbd95b50",
+          "sha256_of_contents_recorded": "0b3cf79bc3977e1c3ac417136dc21402ea5f96bf6153d4dc5896c25b00d9b29b",
+          "bytes": 520,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "c48d8d8932a40c589295c4c5cc9a3803d95ad321f0cf3dfd7b1536d7104db100.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.mlp.gate_proj.weight",
+          "filename_stem": "c48d8d8932a40c589295c4c5cc9a3803d95ad321f0cf3dfd7b1536d7104db100",
+          "sha256_of_name": "c48d8d8932a40c589295c4c5cc9a3803d95ad321f0cf3dfd7b1536d7104db100",
+          "sha256_of_contents_recorded": "ba6165b4a5e3afa702d349522ecefd382832bd86a033ef6abe40be3306f1ec6d",
+          "bytes": 47349800,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        },
+        {
+          "filename": "0131459de7a29b9225ad574e30451d9e5802692ed10ab918194814e07c3d15db.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.mlp.up_proj.weight",
+          "filename_stem": "0131459de7a29b9225ad574e30451d9e5802692ed10ab918194814e07c3d15db",
+          "sha256_of_name": "0131459de7a29b9225ad574e30451d9e5802692ed10ab918194814e07c3d15db",
+          "sha256_of_contents_recorded": "dd604f109459feb7d79ec5d9cd1ca734503e657c9759ce4e0a8e4ec27b0ad26b",
+          "bytes": 47349800,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_contents": false
+        }
+      ],
+      "verdict": "0/755 filenames equal sha256(contents); 755/755 equal sha256(tensor_name). The 64-hex stem is a name hash, not a content address."
+    },
+    "live_sample": {
+      "artifact_root": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+      "sampled": 12,
+      "sidecar_sha_matches_disk": 10,
+      "filename_is_content_address": 0,
+      "filename_is_name_hash": 12,
+      "missing": 0,
+      "rows": [
+        {
+          "filename": "7cf1b122be1f8265ad64c83b9a9f1c065e1e780bea0fd1c74ac4598596cb3c69.hq30uq4",
+          "tensor_name": "language_model.model.embed_tokens.weight",
+          "sidecar_sha256": "8bf67af581661b60dced866143eed48ae14fe7d5d15ab6dd64bc856268aaed62",
+          "sidecar_bytes": 675430440,
+          "present": true,
+          "disk_bytes": 675430440,
+          "disk_sha256": "8bf67af581661b60dced866143eed48ae14fe7d5d15ab6dd64bc856268aaed62",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "b562b986ad0a175dff2803bfe05a6582e815edf279aa777207d81f32556d9630.f32v2",
+          "tensor_name": "language_model.model.layers.0.input_layernorm.weight",
+          "sidecar_sha256": "4487e59fb774e13c79f8668afb1f49f7e41f268118653d52bc55192857847de3",
+          "sidecar_bytes": 20488,
+          "present": true,
+          "disk_bytes": 20488,
+          "disk_sha256": "501519842a4cb9c542eea58188d48aa1a9326ead30566857149b9123c5c0582e",
+          "sidecar_sha_matches_disk": false,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2.f32v2",
+          "tensor_name": "language_model.model.layers.0.post_attention_layernorm.weight",
+          "sidecar_sha256": "fb986ccbccce3b2671fc71b7eadedc35c301d6cfba97c403ba322c84eab75413",
+          "sidecar_bytes": 20488,
+          "present": true,
+          "disk_bytes": 20488,
+          "disk_sha256": "62d6915c59a84052ee9a6bb0d3fdaed345e1124029ebd5942ba5552c3d9d9d63",
+          "sidecar_sha_matches_disk": false,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "634c88ebf503dfbd5c65998144d94e8e0000ae780b2a250588c61819ce94c982.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.linear_attn.in_proj_qkvz.weight",
+          "sidecar_sha256": "b1038cc7cf31f14f089717601d93d45bc0d1bd402fec606f886fe23c11e43037",
+          "sidecar_bytes": 44564520,
+          "present": true,
+          "disk_bytes": 44564520,
+          "disk_sha256": "b1038cc7cf31f14f089717601d93d45bc0d1bd402fec606f886fe23c11e43037",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "6ef2a12f6e0acacc946fa5ca1aeaedd2214e4b492856acb175a0c7f995665446.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.linear_attn.in_proj_ba.weight",
+          "sidecar_sha256": "e47bac45ec7ac361ad8ea934e525ffca13563d21ec5b7fdd082246822fa049e5",
+          "sidecar_bytes": 261160,
+          "present": true,
+          "disk_bytes": 261160,
+          "disk_sha256": "e47bac45ec7ac361ad8ea934e525ffca13563d21ec5b7fdd082246822fa049e5",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "a3290e055bc5a212b6cab08cb24386d56f69536ce5c6865974814b83cae4caff.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.linear_attn.out_proj.weight",
+          "sidecar_sha256": "b42b2e1e2eb4c016408efd9337d99c2a2acf6245f00527b595ac11492bfa5168",
+          "sidecar_bytes": 16711720,
+          "present": true,
+          "disk_bytes": 16711720,
+          "disk_sha256": "b42b2e1e2eb4c016408efd9337d99c2a2acf6245f00527b595ac11492bfa5168",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "8eb544723d8aa37bd4289e07d202c172707586758ae4c78cd055f31fa989a922.f32v2",
+          "tensor_name": "language_model.model.layers.0.linear_attn.conv1d.weight",
+          "sidecar_sha256": "f2d274da7cadb11d01b5a8382db91c2c1342a507b90c307f2891592de3975985",
+          "sidecar_bytes": 163848,
+          "present": true,
+          "disk_bytes": 163848,
+          "disk_sha256": "f2d274da7cadb11d01b5a8382db91c2c1342a507b90c307f2891592de3975985",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "e24110ded742e05e820234740ad50c5746cf3ff4ac5a49d102b61919a2350b14.f32v2",
+          "tensor_name": "language_model.model.layers.0.linear_attn.A_log",
+          "sidecar_sha256": "6e5bbfbbe022eb9dea4640f6b02059222181855159a4c548a9ba80e195d67c71",
+          "sidecar_bytes": 200,
+          "present": true,
+          "disk_bytes": 200,
+          "disk_sha256": "6e5bbfbbe022eb9dea4640f6b02059222181855159a4c548a9ba80e195d67c71",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "6a93026c32cb4cbc7b07cc41d298096e8e24715e2772e48d5d8c28ca6617a815.f32v2",
+          "tensor_name": "language_model.model.layers.0.linear_attn.dt_bias",
+          "sidecar_sha256": "90a3f091649ff048614400b9e82bafd87401f80f95fc0fa860d29fea14f79638",
+          "sidecar_bytes": 200,
+          "present": true,
+          "disk_bytes": 200,
+          "disk_sha256": "90a3f091649ff048614400b9e82bafd87401f80f95fc0fa860d29fea14f79638",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "d632ce4e9b0d5b30d77b3fd7ce88ccc3f011e11e8a2868d747806413cbd95b50.f32v2",
+          "tensor_name": "language_model.model.layers.0.linear_attn.norm.weight",
+          "sidecar_sha256": "0b3cf79bc3977e1c3ac417136dc21402ea5f96bf6153d4dc5896c25b00d9b29b",
+          "sidecar_bytes": 520,
+          "present": true,
+          "disk_bytes": 520,
+          "disk_sha256": "0b3cf79bc3977e1c3ac417136dc21402ea5f96bf6153d4dc5896c25b00d9b29b",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "c48d8d8932a40c589295c4c5cc9a3803d95ad321f0cf3dfd7b1536d7104db100.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.mlp.gate_proj.weight",
+          "sidecar_sha256": "ba6165b4a5e3afa702d349522ecefd382832bd86a033ef6abe40be3306f1ec6d",
+          "sidecar_bytes": 47349800,
+          "present": true,
+          "disk_bytes": 47349800,
+          "disk_sha256": "ba6165b4a5e3afa702d349522ecefd382832bd86a033ef6abe40be3306f1ec6d",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "0131459de7a29b9225ad574e30451d9e5802692ed10ab918194814e07c3d15db.hq30uq4",
+          "tensor_name": "language_model.model.layers.0.mlp.up_proj.weight",
+          "sidecar_sha256": "dd604f109459feb7d79ec5d9cd1ca734503e657c9759ce4e0a8e4ec27b0ad26b",
+          "sidecar_bytes": 47349800,
+          "present": true,
+          "disk_bytes": 47349800,
+          "disk_sha256": "dd604f109459feb7d79ec5d9cd1ca734503e657c9759ce4e0a8e4ec27b0ad26b",
+          "sidecar_sha_matches_disk": true,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        }
+      ],
+      "same_name_address_different_bytes": [
+        {
+          "filename": "b562b986ad0a175dff2803bfe05a6582e815edf279aa777207d81f32556d9630.f32v2",
+          "tensor_name": "language_model.model.layers.0.input_layernorm.weight",
+          "sidecar_sha256": "4487e59fb774e13c79f8668afb1f49f7e41f268118653d52bc55192857847de3",
+          "sidecar_bytes": 20488,
+          "present": true,
+          "disk_bytes": 20488,
+          "disk_sha256": "501519842a4cb9c542eea58188d48aa1a9326ead30566857149b9123c5c0582e",
+          "sidecar_sha_matches_disk": false,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        },
+        {
+          "filename": "a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2.f32v2",
+          "tensor_name": "language_model.model.layers.0.post_attention_layernorm.weight",
+          "sidecar_sha256": "fb986ccbccce3b2671fc71b7eadedc35c301d6cfba97c403ba322c84eab75413",
+          "sidecar_bytes": 20488,
+          "present": true,
+          "disk_bytes": 20488,
+          "disk_sha256": "62d6915c59a84052ee9a6bb0d3fdaed345e1124029ebd5942ba5552c3d9d9d63",
+          "sidecar_sha_matches_disk": false,
+          "stem_equals_sha256_of_name": true,
+          "stem_equals_sha256_of_disk_contents": false
+        }
+      ]
+    },
+    "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+    "what_the_seal_covers": [
+      "NR JSON: semantic_provenance, representation (declared BPW), kernel_requirements.",
+      "NX JSON: machine genome, 38 kernel names, threadgroup geometry, residency, cache, scheduling.",
+      "Sidecar sha256 of 755 tensor files and an opaque rolling digest.",
+      "Does not cover manifest.json, tokenizer.json, shader source, decode binary, geometry constants, chat template.",
+      "Does not check hashes at load.",
+      "Filenames cannot be the merkle leaves."
+    ]
+  },
+  "q2_ir_sufficiency": {
+    "bar": "Writing a node down must force its true byte cost, its kernel requirement, and its reconstruction cost into the receipt where they can be checked. A container that can describe is not one that can account.",
+    "nr_representation_schema": {
+      "type": "object"
+    },
+    "nr_declared_not_computed_bpw": true,
+    "gravity_ir_reason_it_exists": "tools/gravity_ir.py: 'The existing recipe vocabulary is tensor: codec. It cannot express anything this campaign now wants: structure shared across sites, blocks generated rather than stored, additive correction stages, exact islands.'",
+    "families": [
+      {
+        "family": "SharedBasis",
+        "classification": "schema-change",
+        "field": "representation.shared_structures (empty list; untyped)",
+        "tempting_slot": "representation.shared_structures",
+        "why": "gravity_ir.shared_basis stores per-site coefficients and points at a content-addressed pool object counted ONCE. NR's empty shared_structures list can hold a JSON blob, but complete_bpw is declared from tensor_payload_bytes (manifest row sum). Filling the list does not recompute BPW, does not content-address the basis, and does not derive a kernel_requirements entry. Adding stored_bytes to the blob is the trap: the accounting law stays declared-from-packer.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "BasisCoefficient",
+        "classification": "schema-change",
+        "field": "no dedicated field; not tensors.codec_families",
+        "tempting_slot": "representation.latent_codes or per-site tensors",
+        "why": "Coefficients without the pooled basis undercount the basis. Coefficients plus a copied basis in tensors overcount it. The only honest form is gravity_ir's (site stored_bytes) + (SharedPool object counted once). NR has no pool and no computed BPW, so there is no field that can carry this without a schema change.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "StructuredTransform",
+        "classification": "schema-change",
+        "field": "none",
+        "tempting_slot": null,
+        "why": "G032 members (sign, permutation, channel-scale) are gauges and folds, not a codec family. codec_families is {family, bits, group, applies_to, count}. There is no transform/fold/reconstruction slot, and no field for the runtime cost of unapplying a transform.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "TensorTrain",
+        "classification": "schema-change",
+        "field": "none; G096 status NEVER BUILT",
+        "tempting_slot": "representation.tensors.codec_families.family",
+        "why": "A TT is cores, ranks, an unfolding, a reconstruct kernel and a MAC count. codec_families cannot say any of that. G096 records TENSOR_TRAIN as never built: no receipt, no kernel, no measurement. Stuffing family=TensorTrain into the list is exactly the injection this script watched NR.validate() accept without moving BPW.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "TensorRing",
+        "classification": "schema-change",
+        "field": "none",
+        "tempting_slot": null,
+        "why": "No NR slot, no gravity_ir constructor, no kernel family. A ring is a cyclic core contraction; it is not a bitwidth on a dense tensor. Requires a program node with stored_bytes per core, a reconstruct kernel, and reconstruction FLOPs.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "Tucker",
+        "classification": "schema-change",
+        "field": "none",
+        "tempting_slot": null,
+        "why": "Core tensor plus factor matrices. Same gap as TensorTrain: not a codec_families row, and writing it down would not force factor bytes or reconstruct cost into complete_bpw.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "AdditiveCodebook",
+        "classification": "schema-change",
+        "field": "representation.entropy_streams / latent_codes (empty lists)",
+        "tempting_slot": "representation.entropy_streams",
+        "why": "G114 costed a rANS stream as coded payload + table + per-stream state + index + flush padding + scales. NR entropy_streams is an empty list with no such schema. The sealed NR says no packer emits an entropy stream. Filling the list would not move complete_bpw and would not add a decoder requirement.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "DictionaryRoute",
+        "classification": "schema-change",
+        "field": "representation.route_graph (null, untyped)",
+        "tempting_slot": "representation.route_graph",
+        "why": "G106's route graph is mixer/MLP halves of a dense model, not a learned dictionary. A routing table's bytes, its gather kernel and its reconstruction/dispatch cost have no required subfields. route_graph=null is a measured absence, not a schema for a dictionary.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "LowRank",
+        "classification": "schema-change",
+        "field": "none; G034 is an offline factorization",
+        "tempting_slot": "representation.tensors.codec_families",
+        "why": "G034 replaces a dense map with two factors at matched bits. That is two tensors, a reconstruct kernel, and a MAC ratio (0.203x dense, 2.93x the error of flat q3). codec_families carries bits/group/count, not rank/factors/MACs. An additive `rank` key would still leave complete_bpw declared and reconstruction uncosted.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "SparseResidual",
+        "classification": "schema-change",
+        "field": "representation.correction_planes (empty list)",
+        "tempting_slot": "representation.correction_planes",
+        "why": "gravity_ir.sparse_correction counts values AND index bits (index usually dominates). NR correction_planes has no n_exceptions, index_bits, value_bytes, or kernel. G042 CORRECTION_BPW is a hardcoded 0 on the candidate, not computed from this list.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "ProtectedIsland",
+        "classification": "schema-change",
+        "field": "representation.exact_islands (empty list)",
+        "tempting_slot": "representation.exact_islands",
+        "why": "gravity_ir.exact_island is a compile-time-known exact region with optional index cost. NR exact_islands is an empty list. G096 EXACT_ISLAND is UNBUILT (CORRECTION_BPW 0.0, no kernel binding). Writing an island into the list does not charge its bytes or name a consumer kernel.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "GeneratedCoefficient",
+        "classification": "schema-change",
+        "field": "representation.generated_structures (empty list)",
+        "tempting_slot": "representation.generated_structures",
+        "why": "gravity_ir.generated_block has stored code_bytes, a shared generator in the pool, active_bytes != stored_bytes, and decode_flops_per_elem. That inequality IS the family. NR has one declared complete_bpw and no reconstruction_flops field, so a generated node cannot be accounted even if the empty list holds a description.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "RoutedOperator",
+        "classification": "schema-change",
+        "field": "representation.route_graph / kernel_requirements",
+        "tempting_slot": "representation.route_graph",
+        "why": "An operator identity (which kernel, which expert, which specialization) is not a tensor codec. kernel_requirements may name a portable decoder family but is a parallel list, not derived from nodes, and must not name an implementation (that is NX). No byte cost, no reconstruction cost.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "StateTransition",
+        "classification": "schema-change",
+        "field": "none in NR; G042 STATE_BPW_EQUIVALENT is a side tool",
+        "tempting_slot": null,
+        "why": "G106 defines a ROUTE as a semantic state transition. KV and DeltaNet state live in the workspace (qwen38_workspace_bytes), not in the artifact. NR has no state-bytes field. NX residency_plan says all_weights=unified_memory and does not account state. Putting a transition in route_graph would not charge 131,072 bytes/position.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "Composition",
+        "classification": "schema-change",
+        "field": "none; a site is one codec, not additive terms",
+        "tempting_slot": null,
+        "why": "gravity_ir_roundtrip.mech_shared_basis_plus_island is three additive terms at one site (shared basis + sparse correction + exact island) and is explicitly 'unsayable as tensor: codec'. NR tensors are one kind per row (q4 or f32). Composition of terms requires a program, not another codec_families string.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      },
+      {
+        "family": "Correction",
+        "classification": "schema-change",
+        "field": "representation.correction_planes (empty list)",
+        "tempting_slot": "representation.correction_planes",
+        "why": "Same slot as SparseResidual. G043 CORRECTION_FLOPS is 0.0 for uniform-q4-v1 because no packer emits a correction stream. The empty list is a measured absence. A future correction plane would need stored bytes, index cost, a consumer kernel, and reconstruction FLOPs computed into the receipt \u2014 a program schema, not an additive key.",
+        "forces_byte_cost": false,
+        "forces_kernel_requirement": false,
+        "forces_reconstruction_cost": false
+      }
+    ],
+    "injection_watched": {
+      "injected": [
+        "representation.shared_structures = 1_000_000_000-byte SharedBasis",
+        "representation.tensors.codec_families += TensorTrain",
+        "representation.generated_structures = 50_000_000-byte GeneratedCoefficient"
+      ],
+      "validator_ok": true,
+      "validator_problems": [],
+      "complete_bits_per_weight_before": 4.252735126866492,
+      "complete_bits_per_weight_after": 4.252735126866492,
+      "bpw_moved": false,
+      "byte_cost_forced": false,
+      "kernel_requirement_forced": false,
+      "reconstruction_cost_forced": false,
+      "meaning": "NR.validate() accepts a 1 GB shared basis, a TensorTrain family, and a generated-coefficient blob. complete_bits_per_weight stays the declared packer number. A container that can describe a representation is not one that can account for it."
+    },
+    "expressible_as_is": 0,
+    "additive_field": 0,
+    "schema_change": 16
+  },
+  "q3_information_accounting": {
+    "scenarios": [
+      {
+        "scenario": "shared basis in a separate file",
+        "mark": "MISSED",
+        "reasoning": "NR complete_bits_per_weight is the packer's tensor_payload_bytes (14297694680) over 26895998464 parameters. Load reads only manifest.json + tensors/<name-hash>.{{hq30uq4,f32v2}}. A basis.bin next to them is invisible to both. G042 SHARED_BPW is 0.0 (hardcoded from G035 refutation, not a walk of extra files). The injection test put a 1 GB SharedBasis into shared_structures; validator_ok=True and bpw_moved=False. STORED_BPW would see the file IF it sat under the artifact root, but that is gravity_bpw_family, not the NR/NX format, and load still would not consume it unless the decode path were patched."
+      },
+      {
+        "scenario": "routing table",
+        "mark": "MISSED",
+        "reasoning": "NR route_graph is null. G043 ROUTING_FLOPS for this dense patient is 0.0. NX kernel_binding is shader names extracted from decode string literals, not a table of routes. A learned routing table (expert map, dictionary indices, token-to-island ids) as a sidecar has nowhere to charge its bytes, its gather kernel, or its dispatch cost. G106's 130 'routes' are mixer/MLP halves, not a stored table."
+      },
+      {
+        "scenario": "generated-state cache",
+        "mark": "MISSED",
+        "reasoning": "NR generated_structures is []. G042 GENERATED_BPW_EQUIVALENT is 0.0 for every live candidate. A cache of generated coefficients or a materialized generator state is neither a catalog tensor nor an NR node. gravity_ir.generated_block is the IR that would count code_bytes + a pooled generator and report active_bytes != stored_bytes; NR has one declared BPW and cannot say that inequality. The injection of a 50 MB generated blob left BPW unchanged."
+      },
+      {
+        "scenario": "learned constant compiled into a shader",
+        "mark": "MISSED",
+        "reasoning": "Shaders are include_str!'d into crates/hawking-core/src/metal/mod.rs and compiled at runtime via newLibraryWithSource. NX kernel_binding lists 38 names; it does not hash shader source. G096 reports shared_runtime_binary_bytes=6270096 and shader_source_bytes=1500000 as a pooled VM, not as model information. G097 folds the same blob into REQUIRED_RUNTIME_BYTES (7770096) \u2014 the whole binary, not a learned constant isolated inside a kernel. A scale, codebook, or folded transform baked into a Metal function is invisible to NR payload_bytes and to NX geometry."
+      },
+      {
+        "scenario": "machine-specific kernel parameter carrying learned information",
+        "mark": "MISSED",
+        "reasoning": "NX threadgroup_geometry records gemv tg=128 / mha tg=512 from occupancy sweeps (G072, G060). Those are launch sizes, not learned weights. Decode set_u32's grid parameters and can pass extra bytes into a kernel; nothing in NR or NX accounts a learned scale, bias, or routing constant delivered that way. NR's deny-list rejects a field named `threadgroup` in an NR document, which is the opposite check: it keeps machine fields out of NR, it does not count model information that has been smuggled into NX parameters. An NX that could load anywhere has failed; an NX that loads here still does not hash its set_bytes payloads."
+      }
+    ],
+    "marks": {
+      "MISSED": [
+        "shared basis in a separate file",
+        "routing table",
+        "generated-state cache",
+        "learned constant compiled into a shader",
+        "machine-specific kernel parameter carrying learned information"
+      ],
+      "COUNTED": []
+    },
+    "all_five_missed_by_nr_nx": true,
+    "expected_missed": 5,
+    "live_nr_generated_structures": [],
+    "live_nr_route_graph": null,
+    "live_nr_shared_structures": []
+  },
+  "refusal_test": {
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/scammermike/.claude-grok/worktrees/n10persist-20260823-141823/tools/nx_genome.py",
+      "--refusal-test",
+      "/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/G104_NX_SEAL.json"
+    ],
+    "exit_code": 1,
+    "stdout": "REFUSAL TEST: an NX sealed for a 40-core GPU, loaded on this 60-core machine\nruntime says: REFUSED, as required\n  MACHINE GENOME MISMATCH: NX built for 65cb6a1a0777dee4, this machine is 5f53c848f1fc4b60\n    gpu_cores: NX has 40, machine has 60\n    metal_family: NX has 'Metal 4', machine has '?'\n",
+    "stderr": ""
+  },
+  "nr_negative_test": {
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/scammermike/.claude-grok/worktrees/n10persist-20260823-141823/tools/nr_container.py",
+      "--negative-test",
+      "/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/G103_NR_uniform-q4-v1.json"
+    ],
+    "exit_code": 1,
+    "stdout": "NEGATIVE TEST: injected a threadgroup_size and a named kernel into NR\nvalidator says: REJECTED, as required\n  MACHINE-SPECIFIC FIELD in NR: representation.threadgroup_size\n  MACHINE-SPECIFIC FIELD in NR: kernel_requirements[0].kernel\n  kernel_requirements entry names an implementation, not a requirement: {'requires': 'grouped_absmax_decoder', 'bits': 4, 'group': 64, 'note': 'a REQUIREMENT on the decoder family and its parameters. Naming a specific kernel, threadgroup geometry or device here would make this NX, not NR.', 'kernel': 'qwen_uniform_q4_group64_matvec_geo_tpr64_tg128'}\n",
+    "stderr": ""
+  },
+  "minimum_fix": {
+    "content_addressing_defect_blocks_real_closure_hash": true,
+    "why_it_blocks": "A closure hash is a hash of the whole manifested execution unit whose constituent pointers are functions of content. Here the manifest points at sha256(tensor_name) filenames. A merkle of those pointers is a merkle of names. Bytes can change under a stable pointer; load will upload whatever is there. G105's sidecar sha256 list would detect a swap only if something recomputed and compared it \u2014 load does not. The rolling digest algorithm is not reconstructable from the sidecar (concat, sorted, json.dumps all miss 89e78055\u2026). G148's NR link head-hashes blobs above 64 MiB, so even the provenance chain misses a mid-blob mutation. Filenames that look like content addresses and are not cannot anchor a closure.",
+    "minimum_fix": [
+      "Rename every tensor file to sha256(file_bytes).ext. artifact_filename currently hashes the name (qwen38_pack.rs artifact_filename).",
+      "Store those content ids in the manifest. Load refuses if sha256(bytes) != filename stem.",
+      "Put tokenizer.json (and any other generate input) in the same manifest with a content id. Generate refuses a missing or mismatched tokenizer.",
+      "Closure hash = digest over the canonical manifest (every id load or generate will open) plus a runtime identity (shader source digest / binary digest) plus the NR and NX documents.",
+      "Bind NX to NR with lowers_nr (nr_content_sha256). The sealed G105 NX omits this even though nx_genome.py supports --nr.",
+      "Do not treat a sidecar rolling digest as a closure. Until pointers are content-derived and load consults them, the digest is an optional audit log."
+    ],
+    "accounting_fix_is_not_add_fields": "NR complete_bits_per_weight must be COMPUTED from a program whose every node reports stored_bytes, names its kernel, and round-trips against a disk walk, with shared objects in a content-addressed pool counted once. That is already tools/gravity_ir.py + tools/gravity_container.py. It is not the NR schema. Adding stored_bytes to an empty list while leaving BPW declared is the trap this assessment refuses."
+  },
+  "what_i_watched_fail": [
+    {
+      "watched": "NX refusal test REFUSED a 40-core genome on this machine (exit 1, required 1).",
+      "evidence": "REFUSAL TEST: an NX sealed for a 40-core GPU, loaded on this 60-core machine runtime says: REFUSED, as required   MACHINE GENOME MISMATCH: NX built for 65cb6a1a0777dee4, this machine is 5f53c848f1fc4b60"
+    },
+    {
+      "watched": "NR negative-test REJECTED an injected threadgroup_size and named kernel (exit 1, required 1). That check has teeth for machine fields and none for accounting.",
+      "evidence": "NEGATIVE TEST: injected a threadgroup_size and a named kernel into NR validator says: REJECTED, as required   MACHINE-SPECIFIC FIELD in NR: representation.threadgroup_size   MACHINE-SPECIFIC FIELD in NR: kernel_requirements[0].kernel"
+    },
+    {
+      "watched": "Content addressing: 0/755 filenames equal sha256(contents); 755/755 equal sha256(tensor_name). The 64-hex stem is produced at qwen38_pack.rs:304 by Sha256(name.as_bytes()).",
+      "evidence": "0/755 filenames equal sha256(contents); 755/755 equal sha256(tensor_name). The 64-hex stem is a name hash, not a content address."
+    },
+    {
+      "watched": "NR.validate() accepted a 1 GB SharedBasis, a TensorTrain codec family, and a 50 MB generated blob. complete_bits_per_weight stayed 4.252735126866492. Description succeeded; accounting did not run.",
+      "evidence": "NR.validate() accepts a 1 GB shared basis, a TensorTrain family, and a generated-coefficient blob. complete_bits_per_weight stays the declared packer number. A container that can describe a representation is not one that can account for it."
+    },
+    {
+      "watched": "Load does not consult G105_TENSOR_DIGESTS. qwen38_hybrid_decode.rs:899 is fs::read of row.artifact with no sha256 compare.",
+      "evidence": "grep of Qwen38HybridWeights::load: no sha256, no digest, no sidecar."
+    },
+    {
+      "watched": "Sealed NX has no lowers_nr (present=False). G148 NX link is a placeholder digest 0e090e05af19b517\u2026 with path=null. The executable genome is not bound to the NR it supposedly lowers, and the provenance chain's NX slot was empty at seal time.",
+      "evidence": "no committed NX genome for this candidate yet; link is a placeholder digest so the chain is well-formed and the missing link is explicit"
+    },
+    {
+      "watched": "spec/nr_container.schema.json types representation as {'type': 'object'}. There is no required stored_bytes, kernel, or reconstruction field. gravity_ir.py:4 states the existing recipe vocabulary cannot express sharing, generation, additive correction, or exact islands.",
+      "evidence": "representation: {type: object} with no required subfields."
+    },
+    {
+      "watched": "Live artifact /Users/scammermike/models/qwen38-gravity-uniform-q4-v1: 2/12 sampled tensors keep the G105 name-address and do not match the sidecar sha256. Same pointer, different bytes. Load would accept either.",
+      "evidence": [
+        {
+          "name": "language_model.model.layers.0.input_layernorm.weight",
+          "sidecar": "4487e59fb774e13c79f8668afb1f49f7e41f268118653d52bc55192857847de3",
+          "disk": "501519842a4cb9c542eea58188d48aa1a9326ead30566857149b9123c5c0582e"
+        },
+        {
+          "name": "language_model.model.layers.0.post_attention_layernorm.weight",
+          "sidecar": "fb986ccbccce3b2671fc71b7eadedc35c301d6cfba97c403ba322c84eab75413",
+          "disk": "62d6915c59a84052ee9a6bb0d3fdaed345e1124029ebd5942ba5552c3d9d9d63"
+        }
+      ]
+    }
+  ],
+  "write_scope": {
+    "intended_writes": [
+      "receipts/headless/NOETIC_CLOSURE_GAP.json",
+      "tools/headless/noetic_closure_gap.py"
+    ],
+    "landed_script": {
+      "ok": true,
+      "path": "/Users/scammermike/.claude-grok/worktrees/n10persist-20260823-141823/tools/headless/noetic_closure_gap.py",
+      "error": null
+    },
+    "landed_receipt": {
+      "ok": true,
+      "path": "/Users/scammermike/.claude-grok/worktrees/n10persist-20260823-141823/receipts/headless/NOETIC_CLOSURE_GAP.json",
+      "error": null
+    },
+    "denied": [
+      "crates",
+      "workspace",
+      "visionmcp",
+      "app",
+      "lab",
+      "tools/haider"
+    ],
+    "git_mutations": "none \u2014 this script does not invoke git write operations"
+  }
+}

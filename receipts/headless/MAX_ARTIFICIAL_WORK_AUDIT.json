@@ -1,0 +1,57 @@
+{
+  "gate": "MAX_NO_ARTIFICIAL_WORK",
+  "result": "FAIL \u2014 the existing qualification is artificial",
+  "generated_at": "2026-08-23T03:46:35Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "subject": ".hcli/max-equilibrium.json  source=live-mixed-max  updated 2026-08-23T02:46:09Z",
+  "claimed": {
+    "accepted": 4,
+    "elapsed_s": 12.367,
+    "verified_units_per_hour": 1164.349,
+    "units": {
+      "cpu1": "completed",
+      "cpu2": "completed",
+      "grok1": "completed",
+      "grok2": "completed"
+    }
+  },
+  "findings": [
+    {
+      "unit": "cpu1",
+      "defined_at": "tools/headless/hcli_bootstrap_live_proof.py:330-336",
+      "verifier": "grep -q <cpu_nonce> <ws>/c.txt",
+      "defect": "TAUTOLOGICAL. The harness itself writes cpu_nonce into c.txt at line 318-319, before the WorkUnit runs. The verifier therefore passes whether or not the unit did anything."
+    },
+    {
+      "unit": "cpu2",
+      "defined_at": "tools/headless/hcli_bootstrap_live_proof.py:337-341",
+      "verifier": "assert c.txt.read_text().strip()==cpu_nonce",
+      "defect": "TAUTOLOGICAL. Same file, same pre-written nonce as cpu1."
+    },
+    {
+      "unit": "grok1",
+      "defined_at": "tools/headless/hcli_bootstrap_live_proof.py:344-353",
+      "verifier": "exit 0 if <task_id>.compact.json is non-empty",
+      "defect": "Checks only that a compact report file exists and is non-empty. It never checks that the requested token was echoed, nor that the report belongs to this unit's task."
+    },
+    {
+      "unit": "grok2",
+      "defined_at": "tools/headless/hcli_bootstrap_live_proof.py:354-363",
+      "verifier": "identical to grok1",
+      "defect": "Same non-empty-file check. An independent audit found grok1 and grok2 resolved to the SAME Grok task id (consult-20260822-224557, a 1-second-resolution id collision from grok-run:210-218), so two WorkUnits were accepted off one Grok run and grok2's token was never in any prompt."
+    }
+  ],
+  "annualization": {
+    "measured_window_s": 12.367,
+    "reported_rate_per_hour": 1164.349,
+    "extrapolation_factor": 291.1,
+    "defect": "A 12.4-second window extrapolated by ~291x into an hourly rate, from four units whose verifiers cannot fail. This number must not be reported as throughput."
+  },
+  "consequence": "The existing .hcli/max-equilibrium.json does not qualify anything. It cannot be used as the MAX baseline, and verified_units_per_hour=1164 must not be surfaced by /status.",
+  "what_a_real_campaign_requires": [
+    "every WorkUnit maps to a real repository change or a real measurement, with the diff or receipt to prove it",
+    "no verifier whose subject is written by the harness before the unit runs",
+    "a Grok unit's verifier must bind to that unit's own task id and check the unit's own required output",
+    "throughput measured over a window long enough that annualization is not the dominant term"
+  ]
+}

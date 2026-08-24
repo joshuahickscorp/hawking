@@ -1,0 +1,737 @@
+{
+  "census_not_rederived": {
+    "core_mcp_tools": 15,
+    "files": 10106,
+    "package": "visionmcp 0.8.0a2",
+    "python_modules": 1770,
+    "source": "receipts/headless/VMCP_CENSUS.json \u2014 not re-derived",
+    "worldir_schema_hash_prefix": "ee28e5a9"
+  },
+  "elapsed_s": 0.5959,
+  "gate": "VMCP_LATTICE_DISPOSITION",
+  "generated_at": "2026-08-23T08:54:23Z",
+  "git": {
+    "cwd": "/Users/scammermike/Downloads/hawking-copy",
+    "head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+    "oneline": "2f670c2 hcli: wire /grok command dispatch through GrokBridge (G027 phase 2)"
+  },
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "handoff": [
+    {
+      "file": "visionmcp/src/visionmcp/memory/store.py",
+      "item": "MemoryStore PK must equal payload content_hash",
+      "line": 443,
+      "smallest_change": "get_entity_version: after from_dict, refuse unless record.content_hash == content_hash (the row PK). Add a BEFORE UPDATE trigger on entity_versions matching evidence_snapshots_no_update."
+    },
+    {
+      "file": "visionmcp/src/visionmcp/repair/ledger.py",
+      "item": "RepairEvidenceLedger.from_dict must recompute content_digest",
+      "line": 206,
+      "smallest_change": "Pass content_digest through RepairAttempt only after checking it equals canonical_digest(to_dict_without_digest()). Refuse a lying ledger-level content_digest the same way."
+    },
+    {
+      "file": "visionmcp/src/visionmcp/performance/kernels/registry.py",
+      "item": "Do not promote KernelRecord to a named lattice",
+      "line": 33,
+      "smallest_change": "Keep KernelRecord as a lab note. Attest measured_speedup as an EvidenceClaim if it must participate in claim truth. Do not add PERFORMANCE_LEDGER as a parallel type."
+    },
+    {
+      "file": "visionmcp (do not add)",
+      "item": "Do not build DIRECTOR_STATE or DEEP_DIGEST",
+      "smallest_change": "Integrate against profile='core'. Identity is content_digest. Campaign heads already exist (evidence_heads, project.json)."
+    },
+    {
+      "file": "visionmcp/src/visionmcp/perception/bus.py",
+      "item": "Neighbouring CaptureBus.verify does not bind subject",
+      "note": "Already filed by VMCP_FORGERY_CANARY (replay UNDETECTED). Cited, not re-derived. Not this lane's write."
+    }
+  ],
+  "method": "Drove WorldIR parsers, EvidenceGraph.support_for / verify_content_hash / DurableStore, ArtifactStore.verify, RepairEvidenceLedger, MemoryStore, KernelRecord, and crash-before-replace / crash-before-COMMIT subprocesses. Name scan is supporting, not a close.",
+  "name_scan": {
+    "digest_functions": [
+      "visionmcp/memory/canonical.py:content_digest",
+      "visionmcp/acquisition/models.py:canonical_digest",
+      "visionmcp/world_brain/models.py:content_digest",
+      "visionmcp/simulation/canonical.py:content_digest",
+      "visionmcp/greed/records.py:canonical_digest",
+      "visionmcp/intent/canonical.py:content_digest",
+      "visionmcp/worldir/canonical.py:content_digest",
+      "visionmcp/taste/canonical.py:content_digest",
+      "visionmcp/repair/models.py:canonical_digest"
+    ],
+    "director_classes": [
+      "visionmcp/critics/editorial_art_director.py:EditorialArtDirectorCritic"
+    ],
+    "exact_name_file_counts": {
+      "ASSET_LATTICE": 0,
+      "DECODE_LATTICE": 0,
+      "DEEP_DIGEST": 0,
+      "DIRECTOR_STATE": 0,
+      "ENTITY_GENOME": 0,
+      "PERFORMANCE_LEDGER": 0,
+      "RENDER_GENOME": 0,
+      "REPAIR_VECTOR": 0,
+      "SPATIAL_GENOME": 0,
+      "TRUTH_LEDGER": 0
+    }
+  },
+  "result": "COMPLETE",
+  "table": [
+    {
+      "atomic": null,
+      "canary": {
+        "detection": "content_digest value mutation c2985c5ba6f7d2a5\u2026 \u2192 51221262a85f3423\u2026; one-byte schema flip ee28e5a9ec1e8799\u2026 \u2192 e706823490cb855f\u2026; migrate_legacy(deep-digest/v1) WorldIRValidationError: no authorized WorldIR migration for schema 'visionmcp.deep-digest/v1'",
+        "extras": {
+          "key_order_stable": true,
+          "schema_hash_frozen": true
+        },
+        "verdict": "DETECTED"
+      },
+      "census_status": "ABSENT by name",
+      "consolidates_onto": "visionmcp.worldir.canonical.content_digest + frozen WorldIR schema",
+      "disposition": "CONSOLIDATE",
+      "name": "DEEP_DIGEST",
+      "negative_science": {
+        "evidence_it_would_not_pay": "migrate_legacy('visionmcp.deep-digest/v1') raises \"no authorized WorldIR migration for schema 'visionmcp.deep-digest/v1'\". The frozen v1 schema hash is a literal; a parallel DeepDigest type would split the address space the EvidenceGraph already binds as target_world_content_hash.",
+        "what_already_covers_it": "visionmcp.worldir.canonical.content_digest \u2014 canonical JSON, sorted keys, SHA-256, frozen WorldIR schema ee28e5a9\u2026",
+        "what_it_would_cost": "A fourth identity function next to 9 existing content_digest/canonical_digest implementations, plus a new schema that migrate_legacy already refuses to guess at."
+      },
+      "proof": {
+        "canonical_key_order_stable": true,
+        "canonical_value_mutation_detected": true,
+        "digest_functions_already_in_tree": [
+          "visionmcp/memory/canonical.py:content_digest",
+          "visionmcp/acquisition/models.py:canonical_digest",
+          "visionmcp/world_brain/models.py:content_digest",
+          "visionmcp/simulation/canonical.py:content_digest",
+          "visionmcp/greed/records.py:canonical_digest",
+          "visionmcp/intent/canonical.py:content_digest",
+          "visionmcp/worldir/canonical.py:content_digest",
+          "visionmcp/taste/canonical.py:content_digest",
+          "visionmcp/repair/models.py:canonical_digest"
+        ],
+        "frozen_schema_hash": "ee28e5a9ec1e8799868e35161daa932de3127ea848a41a14c0a69ba810be2674",
+        "live_schema_hash": "ee28e5a9ec1e8799868e35161daa932de3127ea848a41a14c0a69ba810be2674",
+        "migrate_deep_digest_schema": {
+          "detection": "WorldIRValidationError: no authorized WorldIR migration for schema 'visionmcp.deep-digest/v1'",
+          "verdict": "DETECTED"
+        },
+        "mutated_digest": "51221262a85f34235978c8dc712134f6e04b6078190d87ef73bee21422c8af3e",
+        "named_type_present": false,
+        "negative_science": {
+          "evidence_it_would_not_pay": "migrate_legacy('visionmcp.deep-digest/v1') raises \"no authorized WorldIR migration for schema 'visionmcp.deep-digest/v1'\". The frozen v1 schema hash is a literal; a parallel DeepDigest type would split the address space the EvidenceGraph already binds as target_world_content_hash.",
+          "what_already_covers_it": "visionmcp.worldir.canonical.content_digest \u2014 canonical JSON, sorted keys, SHA-256, frozen WorldIR schema ee28e5a9\u2026",
+          "what_it_would_cost": "A fourth identity function next to 9 existing content_digest/canonical_digest implementations, plus a new schema that migrate_legacy already refuses to guess at."
+        },
+        "one_byte_schema_flip_detected": true,
+        "one_byte_schema_flip_hash": "e706823490cb855f447411018ad7ba61fb846e9128e9c92fb099685a9773481f",
+        "schema": "visionmcp.worldir/v1",
+        "schema_hash_matches_frozen": true,
+        "schema_version": "1.0.0",
+        "stable_digest_a": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73"
+      }
+    },
+    {
+      "atomic": null,
+      "canary": {
+        "detection": "No DirectorState type to mutate. Absence confirmed by driven import surface plus name scan (hits=0, Director classes=['visionmcp/critics/editorial_art_director.py:EditorialArtDirectorCritic']).",
+        "verdict": "N/A"
+      },
+      "census_status": "ABSENT by name",
+      "consolidates_onto": null,
+      "disposition": "REJECT",
+      "name": "DIRECTOR_STATE",
+      "negative_science": {
+        "evidence_it_would_not_pay": "Exact-name scan of visionmcp/src: DIRECTOR_STATE in 0 files. The only *Director* class is ['visionmcp/critics/editorial_art_director.py:EditorialArtDirectorCritic'], a critic, not a state lattice. Census instruction: integrate against profile='core' only. Building DirectorState would recreate the duplicate control plane both directives forbid.",
+        "what_already_covers_it": "Observation persistence: CaptureBus + ProjectStore + ArtifactStore. Claim truth: EvidenceGraphDurableStore (append-only snapshots, WAL, heads). Orchestration of workers: hawking AgentOS DISK_TRUTH.director_state (LLM decode worker-equilibrium) \u2014 a different plane, already recorded.",
+        "what_it_would_cost": "A third mutable campaign head beside EvidenceGraphDurableStore.evidence_heads and ProjectStore (project.json + project.db, including jobs/workers/receipts tables). The VMCP_CENSUS already called the laboratory MCP profile 'the second AgentOS'; a DirectorState type inside visionmcp would be the third control plane."
+      },
+      "proof": {
+        "director_classes": [
+          "visionmcp/critics/editorial_art_director.py:EditorialArtDirectorCritic"
+        ],
+        "named_type_present": false,
+        "negative_science": {
+          "evidence_it_would_not_pay": "Exact-name scan of visionmcp/src: DIRECTOR_STATE in 0 files. The only *Director* class is ['visionmcp/critics/editorial_art_director.py:EditorialArtDirectorCritic'], a critic, not a state lattice. Census instruction: integrate against profile='core' only. Building DirectorState would recreate the duplicate control plane both directives forbid.",
+          "what_already_covers_it": "Observation persistence: CaptureBus + ProjectStore + ArtifactStore. Claim truth: EvidenceGraphDurableStore (append-only snapshots, WAL, heads). Orchestration of workers: hawking AgentOS DISK_TRUTH.director_state (LLM decode worker-equilibrium) \u2014 a different plane, already recorded.",
+          "what_it_would_cost": "A third mutable campaign head beside EvidenceGraphDurableStore.evidence_heads and ProjectStore (project.json + project.db, including jobs/workers/receipts tables). The VMCP_CENSUS already called the laboratory MCP profile 'the second AgentOS'; a DirectorState type inside visionmcp would be the third control plane."
+        }
+      }
+    },
+    {
+      "atomic": {
+        "child_returncode": 9,
+        "child_stderr": "",
+        "heads_after": 1,
+        "heads_before": 1,
+        "hybrid_state": false,
+        "inserted_then_killed": true,
+        "rows_after": [
+          [
+            "graph:store",
+            "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5"
+          ]
+        ],
+        "rows_before": [
+          [
+            "graph:store",
+            "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5"
+          ]
+        ],
+        "snapshots_after": 1,
+        "snapshots_before": 1,
+        "verdict": "ATOMIC"
+      },
+      "canary": {
+        "detection": "EvidenceGraphValidationError: claim value_digest does not match its canonical value",
+        "support_for": {
+          "binding_id": "binding:store:0",
+          "fail_closed_unknown_binding": {
+            "detection": "KeyError: 'unknown field binding: binding:nope'",
+            "verdict": "DETECTED"
+          },
+          "status": "supported"
+        },
+        "verdict": "DETECTED",
+        "verify_content_hash_after_forge": false
+      },
+      "census_status": "CONSOLIDATE onto EvidenceGraph",
+      "consolidates_onto": "visionmcp.evidence_graph.EvidenceGraph + EvidenceGraphDurableStore",
+      "disposition": "CONSOLIDATE",
+      "name": "TRUTH_LEDGER",
+      "negative_science": null,
+      "proof": {
+        "append_only_update_trigger": {
+          "detection": "IntegrityError: evidence snapshots are append-only",
+          "verdict": "DETECTED"
+        },
+        "atomic_crash_mid_insert": {
+          "child_returncode": 9,
+          "child_stderr": "",
+          "heads_after": 1,
+          "heads_before": 1,
+          "hybrid_state": false,
+          "inserted_then_killed": true,
+          "rows_after": [
+            [
+              "graph:store",
+              "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5"
+            ]
+          ],
+          "rows_before": [
+            [
+              "graph:store",
+              "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5"
+            ]
+          ],
+          "snapshots_after": 1,
+          "snapshots_before": 1,
+          "verdict": "ATOMIC"
+        },
+        "binding_count": 38,
+        "content_hash": "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5",
+        "durable_put_snapshot": "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5",
+        "freshness": "Durable snapshots are sequenced; public bindings require the live World content hash",
+        "from_dict_forged_claim": {
+          "detection": "EvidenceGraphValidationError: claim value_digest does not match its canonical value",
+          "verdict": "DETECTED"
+        },
+        "graph_id": "graph:store",
+        "provenance": "World.provenance.supporting_evidence_ids bind the observation node",
+        "reload_matches": true,
+        "schema": "visionmcp.evidence-graph (EvidenceGraph.schema_version)",
+        "support_for": {
+          "binding_id": "binding:store:0",
+          "fail_closed_unknown_binding": {
+            "detection": "KeyError: 'unknown field binding: binding:nope'",
+            "verdict": "DETECTED"
+          },
+          "status": "supported"
+        },
+        "verify_content_hash_after_claim_forge": false,
+        "verify_content_hash_clean": true,
+        "wrong_schema_version": {
+          "detection": "EvidenceGraphValidationError: EvidenceGraph requires schema_version '1.0.0'",
+          "verdict": "DETECTED"
+        }
+      }
+    },
+    {
+      "atomic": {
+        "child_returncode": 9,
+        "child_stderr": "",
+        "dest_bytes_unchanged": true,
+        "dest_existed_before": true,
+        "dest_exists_after": true,
+        "hybrid_state": false,
+        "leftover_temp_names": [
+          ".atomic-project.json.4fy8chi3"
+        ],
+        "verdict": "ATOMIC"
+      },
+      "canary": {
+        "detection": "SecurityError: content-addressed artifact digest mismatch",
+        "resource_digest": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "verdict": "DETECTED"
+      },
+      "census_status": "PARTIAL \u2014 WorldIR Resource + ArtifactStore CAS",
+      "consolidates_onto": "visionmcp.artifacts.store.ArtifactStore + worldir.Resource",
+      "disposition": "CONSOLIDATE",
+      "name": "ASSET_LATTICE",
+      "negative_science": null,
+      "proof": {
+        "atomic_write_crash": {
+          "child_returncode": 9,
+          "child_stderr": "",
+          "dest_bytes_unchanged": true,
+          "dest_existed_before": true,
+          "dest_exists_after": true,
+          "hybrid_state": false,
+          "leftover_temp_names": [
+            ".atomic-project.json.4fy8chi3"
+          ],
+          "verdict": "ATOMIC"
+        },
+        "cas_byte_tamper": {
+          "detection": "SecurityError: content-addressed artifact digest mismatch",
+          "verdict": "DETECTED"
+        },
+        "cas_digest": "cf76ebe011a5541c4085ba6e1b25ac2e6bb07e7e4a4931078feb55358e96287a",
+        "cas_verify_after_restore": {
+          "digest": "cf76ebe011a5541c4085ba6e1b25ac2e6bb07e7e4a4931078feb55358e96287a",
+          "relative_path": "artifacts/sha256/cf/76/cf76ebe011a5541c4085ba6e1b25ac2e6bb07e7e4a4931078feb55358e96287a",
+          "size": 22,
+          "valid": true
+        },
+        "cas_verify_clean": {
+          "digest": "cf76ebe011a5541c4085ba6e1b25ac2e6bb07e7e4a4931078feb55358e96287a",
+          "relative_path": "artifacts/sha256/cf/76/cf76ebe011a5541c4085ba6e1b25ac2e6bb07e7e4a4931078feb55358e96287a",
+          "size": 22,
+          "valid": true
+        },
+        "ingest_uses_os_replace": true,
+        "project_id": "09c94809-4079-4d90-845d-9fbea6428ae8",
+        "project_schema_version": 1,
+        "resource_content_hash": "c7346a7587bb357de0719a2c5c84fede4f1f3b91a00dc99f47a74aed117d91ec",
+        "resource_digest_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "digest",
+          "kept_content_hash": "c7346a7587bb357de0719a2c5c84fede4f1f3b91a00dc99f47a74aed117d91ec",
+          "original_hash": "c7346a7587bb357de0719a2c5c84fede4f1f3b91a00dc99f47a74aed117d91ec",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "verdict": "DETECTED"
+        },
+        "resource_media_type_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "media_type",
+          "kept_content_hash": "c7346a7587bb357de0719a2c5c84fede4f1f3b91a00dc99f47a74aed117d91ec",
+          "original_hash": "c7346a7587bb357de0719a2c5c84fede4f1f3b91a00dc99f47a74aed117d91ec",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "image/jpeg",
+          "verdict": "DETECTED"
+        },
+        "resource_schema_version": "1.0.0"
+      }
+    },
+    {
+      "atomic": null,
+      "canary": {
+        "binary_format": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "language": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "verdict": "DETECTED"
+      },
+      "census_status": "PARTIAL \u2014 WorldIR Program / BinaryIR",
+      "consolidates_onto": "visionmcp.worldir.Program + worldir.BinaryIR",
+      "disposition": "CONSOLIDATE",
+      "name": "DECODE_LATTICE",
+      "negative_science": null,
+      "proof": {
+        "binary_content_hash": "40e821647caeb154902793dc6c39b310a3cdc9edc63e760bea123c37b0e052b6",
+        "binary_format_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "binary_format",
+          "kept_content_hash": "40e821647caeb154902793dc6c39b310a3cdc9edc63e760bea123c37b0e052b6",
+          "original_hash": "40e821647caeb154902793dc6c39b310a3cdc9edc63e760bea123c37b0e052b6",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "dxil",
+          "verdict": "DETECTED"
+        },
+        "binary_wrong_domain": {
+          "detection": "WorldIRValidationError: BinaryIR requires domain 'binary', received 'spatial'",
+          "verdict": "DETECTED"
+        },
+        "program_content_hash": "f38933d5cc3e646606afbe2b06227346a2ec93dfac39cb72a1ead9db7a98034f",
+        "program_language_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "language",
+          "kept_content_hash": "f38933d5cc3e646606afbe2b06227346a2ec93dfac39cb72a1ead9db7a98034f",
+          "original_hash": "f38933d5cc3e646606afbe2b06227346a2ec93dfac39cb72a1ead9db7a98034f",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "wgsl",
+          "verdict": "DETECTED"
+        },
+        "program_schema_version": "1.0.0",
+        "program_source_content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "program_source_hash_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "source_content_hash",
+          "kept_content_hash": "f38933d5cc3e646606afbe2b06227346a2ec93dfac39cb72a1ead9db7a98034f",
+          "original_hash": "f38933d5cc3e646606afbe2b06227346a2ec93dfac39cb72a1ead9db7a98034f",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "verdict": "DETECTED"
+        }
+      }
+    },
+    {
+      "atomic": null,
+      "canary": {
+        "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "entity_version_lying_hash": "MemoryValidationError: entity_version content_hash mismatch",
+        "verdict": "DETECTED"
+      },
+      "census_status": "PARTIAL \u2014 WorldIR Entity + WorldMemory EntityVersion",
+      "consolidates_onto": "visionmcp.worldir.Entity + memory.EntityVersion",
+      "disposition": "CONSOLIDATE",
+      "name": "ENTITY_GENOME",
+      "negative_science": null,
+      "proof": {
+        "entity_version_forged_hash": "7a1a9f586cdadd12b583525ec75daf074944226353a5ebe9d0087083b4cf8c34",
+        "entity_version_hash": "32f22fa5fbe02dbddf036d7fec27630b41bee03fad6c4cdc69879cdcb040c792",
+        "entity_version_lying_hash": {
+          "detection": "MemoryValidationError: entity_version content_hash mismatch",
+          "verdict": "DETECTED"
+        },
+        "memory_schema": "visionmcp.world-memory.entity-version/v1",
+        "memory_store_pk_payload_swap": {
+          "detection": "MemoryStore.get_entity_version(old_pk) returned a record whose content_hash is 7a1a9f586cdadd12b583525ec75daf074944226353a5ebe9d0087083b4cf8c34 and attributes={'label': 'FORGED'}; row PK was not bound to payload identity",
+          "error": null,
+          "hybrid": true,
+          "payload_attributes": {
+            "label": "FORGED"
+          },
+          "payload_hash": "7a1a9f586cdadd12b583525ec75daf074944226353a5ebe9d0087083b4cf8c34",
+          "raised": false,
+          "row_pk": "32f22fa5fbe02dbddf036d7fec27630b41bee03fad6c4cdc69879cdcb040c792",
+          "verdict": "UNDETECTED"
+        },
+        "worldir_entity_hash": "ce023b6caefbb114dbf0b566455f217bc6cff6f5aca42529aac0f25e83bb4298",
+        "worldir_entity_type_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "entity_type",
+          "kept_content_hash": "ce023b6caefbb114dbf0b566455f217bc6cff6f5aca42529aac0f25e83bb4298",
+          "original_hash": "ce023b6caefbb114dbf0b566455f217bc6cff6f5aca42529aac0f25e83bb4298",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "surface",
+          "verdict": "DETECTED"
+        },
+        "worldir_wrong_schema": {
+          "detection": "WorldIRValidationError: WorldIR v1 records require schema_version '1.0.0'",
+          "verdict": "DETECTED"
+        }
+      }
+    },
+    {
+      "atomic": null,
+      "canary": {
+        "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "geometry": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "verdict": "DETECTED",
+        "visible": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content"
+      },
+      "census_status": "PARTIAL \u2014 WorldIR Surface / Geometry; KernelRecord is not a lattice",
+      "consolidates_onto": "visionmcp.worldir.Surface + worldir.Geometry",
+      "disposition": "CONSOLIDATE",
+      "name": "RENDER_GENOME",
+      "negative_science": null,
+      "proof": {
+        "geometry_dimensions_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "dimensions",
+          "kept_content_hash": "f3f3b313db9b06e6d40a207f38142e3327f9824faca8abfa5b65c16a786afc48",
+          "original_hash": "f3f3b313db9b06e6d40a207f38142e3327f9824faca8abfa5b65c16a786afc48",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": [
+            9.0,
+            9.0,
+            9.0
+          ],
+          "verdict": "DETECTED"
+        },
+        "geometry_hash": "f3f3b313db9b06e6d40a207f38142e3327f9824faca8abfa5b65c16a786afc48",
+        "kernel_record": {
+          "detection": "KernelRecord.to_dict is dataclasses.asdict with no content address; measured_speedup 2.5 \u2192 0.1 loaded as a valid record (gate_passed=False, which is an adoption floor, not identity)",
+          "has_content_hash": false,
+          "keys": [
+            "adoption_floor",
+            "decision",
+            "equivalence",
+            "equivalence_justification",
+            "fallback_tested",
+            "hot_path",
+            "kernel_id",
+            "language",
+            "measured_speedup",
+            "notes",
+            "optimized_symbol",
+            "package_size_delta_bytes",
+            "reference_symbol",
+            "workload"
+          ],
+          "original_gate_passed": true,
+          "rewritten_gate_passed": false,
+          "speedup_rewrite_accepted": true,
+          "verdict": "UNDETECTED"
+        },
+        "surface_hash": "1789305bc5124beff46308fe297791a4d8946f0ce98c2ef90bca6b68d3a0effe",
+        "surface_material_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "material",
+          "kept_content_hash": "1789305bc5124beff46308fe297791a4d8946f0ce98c2ef90bca6b68d3a0effe",
+          "original_hash": "1789305bc5124beff46308fe297791a4d8946f0ce98c2ef90bca6b68d3a0effe",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "unlit",
+          "verdict": "DETECTED"
+        },
+        "surface_visible_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "visible",
+          "kept_content_hash": "1789305bc5124beff46308fe297791a4d8946f0ce98c2ef90bca6b68d3a0effe",
+          "original_hash": "1789305bc5124beff46308fe297791a4d8946f0ce98c2ef90bca6b68d3a0effe",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": false,
+          "verdict": "DETECTED"
+        }
+      }
+    },
+    {
+      "atomic": null,
+      "canary": {
+        "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "unit": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+        "verdict": "DETECTED"
+      },
+      "census_status": "PARTIAL \u2014 WorldIR SpatialIR",
+      "consolidates_onto": "visionmcp.worldir.SpatialIR",
+      "disposition": "CONSOLIDATE",
+      "name": "SPATIAL_GENOME",
+      "negative_science": null,
+      "proof": {
+        "content_hash": "cfbd756cf7b0513a3978e0240e1b0839e3c69cfae09fa59fea6acc35e9e58394",
+        "coordinate_system_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "coordinate_system",
+          "kept_content_hash": "cfbd756cf7b0513a3978e0240e1b0839e3c69cfae09fa59fea6acc35e9e58394",
+          "original_hash": "cfbd756cf7b0513a3978e0240e1b0839e3c69cfae09fa59fea6acc35e9e58394",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "left-handed",
+          "verdict": "DETECTED"
+        },
+        "domain": "spatial",
+        "schema_version": "1.0.0",
+        "unit_tamper": {
+          "detection": "WorldIRValidationError: invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+          "field": "unit",
+          "kept_content_hash": "cfbd756cf7b0513a3978e0240e1b0839e3c69cfae09fa59fea6acc35e9e58394",
+          "original_hash": "cfbd756cf7b0513a3978e0240e1b0839e3c69cfae09fa59fea6acc35e9e58394",
+          "result": {
+            "error": "invalid external WorldIR at $: content_hash does not match the exact canonical record content",
+            "error_type": "WorldIRValidationError",
+            "raised": true
+          },
+          "tampered_value": "m",
+          "verdict": "DETECTED"
+        },
+        "wrong_domain": {
+          "detection": "WorldIRValidationError: SpatialIR requires domain 'spatial', received 'browser'",
+          "verdict": "DETECTED"
+        }
+      }
+    },
+    {
+      "atomic": {
+        "child_returncode": 9,
+        "child_stderr": "",
+        "dest_bytes_unchanged": true,
+        "dest_existed_before": true,
+        "dest_exists_after": true,
+        "hybrid_state": false,
+        "leftover_temp_names": [
+          ".repair-atomic.json.cfsa9kcz"
+        ],
+        "verdict": "ATOMIC"
+      },
+      "canary": {
+        "detection": "live RepairAttempt reason change 4930deaf00bfb58a\u2026 \u2192 3c1059662c1a0c0b\u2026; threshold mutation ValidationError: hypothesis mutation may not touch acceptance criteria: gate_threshold",
+        "verdict": "DETECTED"
+      },
+      "census_status": "PARTIAL \u2014 RepairOS RepairAttempt + RepairEvidenceLedger",
+      "consolidates_onto": "visionmcp.repair.RepairEvidenceLedger (live digest) / EvidenceGraph for durable truth",
+      "disposition": "CONSOLIDATE",
+      "name": "REPAIR_VECTOR",
+      "negative_science": null,
+      "proof": {
+        "atomic_save_crash": {
+          "child_returncode": 9,
+          "child_stderr": "",
+          "dest_bytes_unchanged": true,
+          "dest_existed_before": true,
+          "dest_exists_after": true,
+          "hybrid_state": false,
+          "leftover_temp_names": [
+            ".repair-atomic.json.cfsa9kcz"
+          ],
+          "verdict": "ATOMIC"
+        },
+        "attempt_digest": "4930deaf00bfb58a6e238fbb890410770c0def4880094be738e224af32bbf117",
+        "changed_digest": "3c1059662c1a0c0be224d64ae4d150472e6ac0d38390b20f0c62ac50e2afde3a",
+        "ledger_schema": "visionmcp.repair-evidence-ledger/v1",
+        "lying_digest_on_load": {
+          "detection": "RepairEvidenceLedger.from_dict accepted reason='LYING' while keeping the original content_digest; from_dict passes the stored digest through and RepairAttempt only checks hex format, it does not recompute",
+          "digest_still_original": true,
+          "loaded_digest": "4930deaf00bfb58a6e238fbb890410770c0def4880094be738e224af32bbf117",
+          "loaded_reason": "LYING",
+          "original_digest": "4930deaf00bfb58a6e238fbb890410770c0def4880094be738e224af32bbf117",
+          "verdict": "UNDETECTED"
+        },
+        "reason_change_live_digest_differs": true,
+        "reload_matches": true,
+        "save_load_digest": "1bfbb14d8f668cae4cecf74bc30a1983177f3aa7c59bc54aaeb283e97831a98d",
+        "threshold_mutation_forbidden": {
+          "detection": "ValidationError: hypothesis mutation may not touch acceptance criteria: gate_threshold",
+          "verdict": "DETECTED"
+        }
+      }
+    },
+    {
+      "atomic": {
+        "child_returncode": 9,
+        "child_stderr": "",
+        "heads_after": 1,
+        "heads_before": 1,
+        "hybrid_state": false,
+        "inserted_then_killed": true,
+        "rows_after": [
+          [
+            "graph:store",
+            "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5"
+          ]
+        ],
+        "rows_before": [
+          [
+            "graph:store",
+            "b8cff53c97e38ea68671d767b7b33b9d1d6cf30a92efae8cf38faa90e5f140b5"
+          ]
+        ],
+        "snapshots_after": 1,
+        "snapshots_before": 1,
+        "verdict": "ATOMIC"
+      },
+      "canary": {
+        "detection": "Identity of a performance *claim* is EvidenceGraph: forged world_kind claim EvidenceGraphValidationError: claim value_digest does not match its canonical value. KernelRecord and AgentOS jsonl are not lattices (see WHAT I WATCHED FAIL).",
+        "verdict": "DETECTED"
+      },
+      "census_status": "PARTIAL \u2014 KernelRecord / PerformanceMeasurement / AgentOS jsonl",
+      "consolidates_onto": "EvidenceGraph (attested measurements) + artifacts/capability-ledger.json",
+      "disposition": "CONSOLIDATE",
+      "name": "PERFORMANCE_LEDGER",
+      "negative_science": null,
+      "proof": {
+        "hawking_performance_ledger_row_id": {
+          "detection": "row_id hashes generation/model_identity/runtime_build/source_sha only; decode_tps 40 \u2192 4000 keeps the same id and load() has no content digest to recompute",
+          "forged_id": "780330e62052d955",
+          "honest_id": "780330e62052d955",
+          "id_ignores_decode_tps": true,
+          "stored_decode_tps_after_edit": 4000.0,
+          "verdict": "UNDETECTED"
+        },
+        "kernel_has_content_hash": false,
+        "kernel_speedup_rewrite": {
+          "detection": "KernelRecord accepted measured_speedup 3.1 \u2192 0.01 with no identity check",
+          "loaded": 0.01,
+          "original": 3.1,
+          "verdict": "UNDETECTED"
+        },
+        "why_evidencegraph_is_stronger": "A performance number that is not an attested EvidenceClaim is not a lattice. EvidenceGraph.verify_content_hash and support_for fail closed on a forged field value; KernelRecord and the AgentOS jsonl do not."
+      }
+    }
+  ],
+  "visionmcp": {
+    "in_this_worktree": true,
+    "root": "/Users/scammermike/Downloads/hawking-copy/visionmcp",
+    "src": "/Users/scammermike/Downloads/hawking-copy/visionmcp/src",
+    "version": "0.8.0a2"
+  },
+  "what_i_watched_fail": [
+    {
+      "detection": "RepairEvidenceLedger.from_dict accepted reason='LYING' while keeping the original content_digest; from_dict passes the stored digest through and RepairAttempt only checks hex format, it does not recompute",
+      "digest_still_original": true,
+      "id": "repair_ledger_lying_digest",
+      "loaded_reason": "LYING",
+      "structure": "REPAIR_VECTOR / RepairEvidenceLedger.from_dict",
+      "verdict": "UNDETECTED"
+    },
+    {
+      "detection": "MemoryStore.get_entity_version(old_pk) returned a record whose content_hash is 7a1a9f586cdadd12b583525ec75daf074944226353a5ebe9d0087083b4cf8c34 and attributes={'label': 'FORGED'}; row PK was not bound to payload identity",
+      "hybrid": true,
+      "id": "memory_store_pk_payload_swap",
+      "structure": "ENTITY_GENOME / MemoryStore.get_entity_version",
+      "verdict": "UNDETECTED"
+    },
+    {
+      "detection": "KernelRecord.to_dict is dataclasses.asdict with no content address; measured_speedup 2.5 \u2192 0.1 loaded as a valid record (gate_passed=False, which is an adoption floor, not identity)",
+      "id": "kernel_record_speedup_rewrite",
+      "structure": "RENDER_GENOME / PERFORMANCE_LEDGER KernelRecord",
+      "verdict": "UNDETECTED"
+    },
+    {
+      "detection": "row_id hashes generation/model_identity/runtime_build/source_sha only; decode_tps 40 \u2192 4000 keeps the same id and load() has no content digest to recompute",
+      "id": "hawking_performance_ledger_decode_tps",
+      "id_ignores_decode_tps": true,
+      "structure": "PERFORMANCE_LEDGER / tools/headless/performance_ledger.py row_id",
+      "verdict": "UNDETECTED"
+    }
+  ]
+}

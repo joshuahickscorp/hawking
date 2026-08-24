@@ -45,10 +45,29 @@ impl Scope {
     }
     /// True if no path or resource is shared (safe to write concurrently).
     pub fn disjoint(&self, other: &Scope) -> bool {
-        self.paths.is_disjoint(&other.paths) && self.resources.is_disjoint(&other.resources)
+        !Self::paths_overlap(&self.paths, &other.paths)
+            && self.resources.is_disjoint(&other.resources)
     }
     pub fn is_empty(&self) -> bool {
         self.paths.is_empty() && self.resources.is_empty()
+    }
+
+    fn paths_overlap(a: &BTreeSet<String>, b: &BTreeSet<String>) -> bool {
+        for x in a {
+            for y in b {
+                if Self::path_prefix_overlap(x, y) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    fn path_prefix_overlap(a: &str, b: &str) -> bool {
+        if a == b {
+            return true;
+        }
+        a.starts_with(&format!("{b}/")) || b.starts_with(&format!("{a}/"))
     }
 }
 
@@ -62,6 +81,10 @@ pub enum ResourceClass {
     GpuTiming,
     Io,
     Worktree,
+    Build,
+    Test,
+    NetworkExternal,
+    ExclusiveRuntime,
 }
 
 impl ResourceClass {
@@ -70,6 +93,7 @@ impl ResourceClass {
             (ResourceClass::GpuTiming, ResourceClass::GpuTiming) => false,
             (ResourceClass::GpuTiming, ResourceClass::GpuInference)
             | (ResourceClass::GpuInference, ResourceClass::GpuTiming) => false,
+            (ResourceClass::ExclusiveRuntime, _) | (_, ResourceClass::ExclusiveRuntime) => false,
             _ => true,
         }
     }
@@ -82,6 +106,7 @@ pub enum NodeStatus {
     Running,
     Done,
     Failed,
+    Blocked,
 }
 
 /// A node's result (filled when Done).
@@ -110,6 +135,7 @@ pub struct HaiderNode {
     pub status: NodeStatus,
     pub result: Option<NodeResult>,
     pub receipt: Option<String>,
+    pub acceptance: Option<String>,
 }
 
 /// The DAG.

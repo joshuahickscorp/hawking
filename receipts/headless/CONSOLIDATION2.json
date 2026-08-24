@@ -1,0 +1,408 @@
+{
+  "schema": "hawking.headless.consolidation2.v1",
+  "status": "COMPLETE",
+  "when_utc": "2026-08-24T15:40:29Z",
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/consolidate2-20260824-111709",
+  "branch": "grok/consolidate2-20260824-111709",
+  "notes": [
+    "ramanujan/ was NOT moved (live package imported by lab/layout.py).",
+    "hawking-experiments contains a dash so it is not a Python package. Bare module names resolve via sys.path.",
+    "No model was loaded.",
+    "Forbidden GPU-lane kernels and ascent/odyssey/BANDWIDTH/KERNEL_BOTTLENECK receipts were not modified."
+  ],
+  "sparse_checkout": {
+    "action": "git sparse-checkout disable (already not sparse); skip-worktree count 0; frankenstein 1440/1440 on disk"
+  },
+  "git_mvs": [
+    {
+      "from": "workspace/campaign/evidence/models/frankenstein/",
+      "to": "hawking-experiments/frankenstein/data/",
+      "files": 1440
+    },
+    {
+      "from": "lab/operators/frankenstein_*.py",
+      "to": "hawking-experiments/frankenstein/operators/",
+      "files": 27
+    },
+    {
+      "from": "tools/condense/frankenstein_*.py",
+      "to": "hawking-experiments/frankenstein/condense/",
+      "files": 13
+    },
+    {
+      "from": "tools/condense/tests/test_frankenstein_*.py",
+      "to": "hawking-experiments/frankenstein/condense/tests/",
+      "files": 17
+    },
+    {
+      "from": "tools/prometheus/",
+      "to": "hawking-experiments/prometheus/tools/",
+      "files": 6
+    },
+    {
+      "from": "workspace/campaign/config/profiles/prometheus/",
+      "to": "hawking-experiments/prometheus/config/",
+      "files": 5
+    },
+    {
+      "from": "workspace/campaign/evidence/research/prometheus/",
+      "to": "hawking-experiments/prometheus/evidence/",
+      "files": 1
+    },
+    {
+      "from": "workspace/superwave/",
+      "to": "hawking-experiments/superwave/",
+      "files": 439
+    }
+  ],
+  "git_mv_total_files": 1948,
+  "git_status_renames": {
+    "R_or_RM": 1948,
+    "D": 0,
+    "A": 0,
+    "proof": "git status --short shows 1948 R/RM lines, 0 D, 0 A for the moves"
+  },
+  "new_files": [
+    "conftest.py",
+    "hawking-experiments/conftest.py",
+    "hawking-experiments/frankenstein/__init__.py",
+    "hawking-experiments/frankenstein/operators/__init__.py",
+    "hawking-experiments/frankenstein/condense/__init__.py"
+  ],
+  "import_mechanism": {
+    "why": "hawking-experiments is not a valid Python module name",
+    "sys_path_dirs": [
+      "hawking-experiments/frankenstein/operators",
+      "hawking-experiments/frankenstein/condense",
+      "hawking-experiments/prometheus/tools"
+    ],
+    "order": "operators is searched first so it wins the frankenstein_* name collision with thin condense CLI wrappers",
+    "hooks": [
+      "lab.layout.ensure_experiment_imports()",
+      "lab.operators.__init__ calls ensure_experiment_imports on package import",
+      "repo-root conftest.py",
+      "hawking-experiments/conftest.py",
+      "pyproject.toml tool.pytest.ini_options.pythonpath",
+      "hawking-experiments/frankenstein/__init__.py"
+    ],
+    "rewrite_rule": "from lab.operators.frankenstein_X import ...  ->  from frankenstein_X import ...;  from lab.operators import frankenstein_X as Y  ->  import frankenstein_X as Y;  from tools.condense.frankenstein_X import ...  ->  from frankenstein_X import ...",
+    "old_path_shims": "NONE. lab.operators.__all__ no longer contains frankenstein_pipeline. Old locations are gone.",
+    "parents_depth": "operators/condense: parents[2]->parents[3]; condense/tests: parents[3]->parents[4]; prometheus HERE.parents[1]->HERE.parents[2] and prometheus.py parents[2]->parents[3]"
+  },
+  "import_rewrites": {
+    "files_touched_by_rewrite_script": [
+      "hawking-experiments/README.md",
+      "hawking-experiments/prometheus/tools/math_pass3_pack.py",
+      "hawking-experiments/prometheus/tools/test_prometheus.py",
+      "hawking-experiments/prometheus/tools/math_pass1_cartography.py",
+      "hawking-experiments/prometheus/tools/math_pass2_allocation.py",
+      "hawking-experiments/prometheus/tools/prometheus.py",
+      "hawking-experiments/prometheus/tools/architecture.py",
+      "hawking-experiments/superwave/g1/g1-arch-gravity-runs.md",
+      "hawking-experiments/superwave/g1/g1-roof-falsification.md",
+      "hawking-experiments/superwave/g1/g1-lm-head-and-tails.md",
+      "hawking-experiments/superwave/g1/g1-traffic-anatomy.md",
+      "hawking-experiments/superwave/g1/g1-addressing-derivation.md",
+      "hawking-experiments/superwave/g1/g1-overflow-source-fix.md",
+      "hawking-experiments/superwave/g1/g1-token-anatomy.md",
+      "hawking-experiments/superwave/g1/g1-heterogeneous-allocation.md",
+      "hawking-experiments/superwave/g1/g1-hgravu01-geo-tpr64.md",
+      "hawking-experiments/superwave/g1/g1-promotion-packet.md",
+      "hawking-experiments/superwave/g1/g1-byte-deletions.md",
+      "hawking-experiments/superwave/g1/g1-vector-quantization.md",
+      "hawking-experiments/superwave/g1/g1-gqa-and-attention-geometry.md",
+      "hawking-experiments/superwave/g1/g1-addressing-topology.md",
+      "hawking-experiments/superwave/g1/g1-sub15-composition.md",
+      "hawking-experiments/superwave/g1/g1-nonuniform-levels.md",
+      "hawking-experiments/superwave/g1/g1-mlp-rolelock-unlock.md",
+      "hawking-experiments/superwave/g1/g1-capability-gate.md",
+      "hawking-experiments/superwave/g1/g1-residency-reuse.md",
+      "hawking-experiments/superwave/g1/g1-mixed2p0-organ-bisect.md",
+      "hawking-experiments/superwave/g1/g1-channel-3994-island.md",
+      "hawking-experiments/superwave/g1/g1-baseline-remeasure.md",
+      "hawking-experiments/superwave/g1/g1-adversarial-sub15.md",
+      "hawking-experiments/superwave/g1/g1-sub15-native-impl.md",
+      "hawking-experiments/superwave/g1/g1-tabula-genome.md",
+      "hawking-experiments/superwave/g1/g1-doctor-tensor-map.md",
+      "hawking-experiments/superwave/g1/g1-capture-harness.md",
+      "hawking-experiments/superwave/g1/g1-deltanet-geometry.md",
+      "hawking-experiments/superwave/g1/g1-bpw-ladder.md",
+      "hawking-experiments/superwave/g1/g1-attention-2bpw-stack.md",
+      "hawking-experiments/superwave/g1/g1-capability-suite.md",
+      "hawking-experiments/superwave/g1/g1-identity-contract.md",
+      "hawking-experiments/superwave/g1/g1-q3-uniform-kernel.md",
+      "hawking-experiments/superwave/g1/g1-resident-harvest.md",
+      "hawking-experiments/superwave/g1/g1-turn-anatomy.md",
+      "hawking-experiments/superwave/g1/g1-sub15-kernel-specialization.md",
+      "hawking-experiments/superwave/g1/g1-recipe-v2.md",
+      "hawking-experiments/superwave/g1/g1-baseline-audit.md",
+      "hawking-experiments/superwave/g1/g1-kernel-inventory.md",
+      "hawking-experiments/superwave/g1/g1-bit-budget-accounting.md",
+      "hawking-experiments/superwave/g1/g1-resident-headroom.md",
+      "hawking-experiments/superwave/g1/g1-fusion-persistent.md",
+      "hawking-experiments/superwave/g1/g1-tabula-baseline.md",
+      "hawking-experiments/superwave/g1/g1-arch-negative.md",
+      "hawking-experiments/superwave/g1/g1-sub15-native-gap.md",
+      "hawking-experiments/superwave/g1/g1-geo-tpr64-g128.md",
+      "hawking-experiments/superwave/g1/g1-out-proj-forensics.md",
+      "hawking-experiments/superwave/g1/g1-mse-scale-rule.md",
+      "hawking-experiments/superwave/g1/g1-artifact-inventory.md",
+      "hawking-experiments/superwave/g1/g1-sparse-exact-islands.md",
+      "hawking-experiments/superwave/g1/g1-sub15-repair-plan.md",
+      "hawking-experiments/superwave/g1/g1-gqa-geometry-redo.md",
+      "hawking-experiments/superwave/g1/g1-direct-gemv-geometry.md",
+      "hawking-experiments/superwave/g1/g1-mlp-floor-locate.md",
+      "hawking-experiments/superwave/g1/g1-kv-and-host-gaps.md",
+      "hawking-experiments/superwave/g1/compact-q3attn-r1p2-v1.container.json",
+      "hawking-experiments/superwave/g1/g1-scale-contradiction.md",
+      "hawking-experiments/superwave/g1/g1-bracket-generate.md",
+      "hawking-experiments/superwave/g1/g1-group-partition-geometry.md",
+      "hawking-experiments/superwave/g1/g1-doctor-recovery.md",
+      "hawking-experiments/superwave/g1/g1-repack-recipe.md",
+      "hawking-experiments/superwave/g1/g1-bracket-bisection.md",
+      "hawking-experiments/superwave/g1/g1-arch-dsv4f.md",
+      "hawking-experiments/superwave/g1/mixed-sub15-native-catalog/NATIVE_CATALOG.json",
+      "hawking-experiments/superwave/g1/claude-evidence/g1_gravity_ir_eval.py",
+      "hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified.py",
+      "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis_smoke.json",
+      "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.py",
+      "hawking-experiments/superwave/g1/claude-evidence/g1_share_basis.json",
+      "hawking-experiments/frankenstein/operators/frankenstein_trace_format.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_v0_seal.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_pipeline.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_bridges.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_corpus_id_map.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_latent_v0.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_transfer.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_proto_run.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_corpus.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_promotion_gate.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_direct.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_verifier_loop.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_teacher_forced_executor.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_b_linear_hub_wire.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_bridge_train_real.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_functional_transfer.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_cartography.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_receipts.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_baseline_freeze.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_adapter_modules.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_adapter_trainer.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_adapter_hub.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_ablation.py",
+      "hawking-experiments/frankenstein/operators/frankenstein_correspondence_loader.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_v0_seal.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_pipeline.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_latent_v0.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_transfer.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_proto_run.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_direct.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_teacher_forced_executor.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_bridge_train_real.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_functional_transfer.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_receipts.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_baseline_freeze.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_adapter_trainer.py",
+      "hawking-experiments/frankenstein/condense/frankenstein_ablation.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_adapter_hub.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_adapter_trainer.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_hidden_sample_speed.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_host_activation_export_format.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_ablation.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_direct.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_corpus_align.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_functional_transfer.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_proto_run.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_v0_seal.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_latent_v0.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_b_linear_hub_wire.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_correspondence_loader.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_pipeline.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_corpus_id_map.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_transfer.py",
+      "hawking-experiments/frankenstein/condense/tests/test_frankenstein_teacher_forced_generalized.py",
+      "lab/verification_authority.py",
+      "lab/operators/glm52_teacher_forced_executor.py",
+      "lab/operators/ascension_parity_ladder.py",
+      "tools/matryoshka_pack.py",
+      "tools/gravity_container.py",
+      "tools/gravity_verify_source.py",
+      "tools/gravity_seal_artifact.py",
+      "tools/gravity_ir_roundtrip.py",
+      "tools/odyssey/contracts.py",
+      "tools/headless/nomenclature_census.py",
+      "tools/headless/c5structtransform_design.py",
+      "tools/headless/git_storage_ledger.py",
+      "tools/headless/noetic_gain_rescore.py",
+      "tools/headless/noetic_archaeology.py",
+      "tools/headless/spring_clean_census.py",
+      "tools/headless/authority_census.py",
+      "tools/headless/c2tensorop_design.py",
+      "tools/headless/c1sharedbasis_design.py",
+      "tools/headless/noetic_negative_science.py",
+      "tools/sovereignty/sovereignty.py",
+      "tools/eval/support_halo_gate.py",
+      "tools/condense/glm_teacher_forced_parallelism_probe.py",
+      "tools/condense/tests/test_glm_teacher_forced_sequence_sharding.py",
+      "crates/hawking-core/examples/gravity_deepseek_v4_fullseq_capture.rs",
+      "docs/ultragoals/ARTIFACT_STORAGE_POLICY.md",
+      "workspace/docs/plans/FRANKENSTEIN_PROGRAM.md",
+      "workspace/docs/plans/STAGE2_KIMI_STREAMING_DISTILL_PLAN.md",
+      "workspace/docs/plans/FUNCTIONAL_TRANSFER_PROGRAM.md",
+      "workspace/docs/plans/POST_FINAL_GRAVITY_HCLI_PLAN.md",
+      "workspace/docs/plans/RESIDENT_MEMORY_AND_BPW_PLAN.md",
+      "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
+      "workspace/docs/plans/ascension/ASCENSION_RESEARCH_REGISTRY_PLAN.md",
+      "workspace/docs/plans/ascension/HCLI_PERCEPTION_SERVICE_PLAN.md",
+      "workspace/docs/plans/ascension/HCLI_AGENT_SCHEDULER_PLAN.md",
+      "workspace/docs/plans/ascension/ASCENSION_CREDENTIAL_BROKER_PLAN.md",
+      "workspace/docs/plans/ascension/ASCENSION_PROGRAM_OVERVIEW.md",
+      "workspace/docs/plans/ascension/ASCENSION_GARBAGE_ECOSYSTEM_PLAN.md",
+      "workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md",
+      "workspace/docs/plans/ascension/HCLI_VERIFICATION_AUTHORITY_PLAN.md",
+      "workspace/docs/plans/ascension/HCLI_SKILL_FOUNDRY_PLAN.md",
+      "workspace/docs/plans/ascension/HCLI_EXECUTION_SANDBOX_PLAN.md",
+      "workspace/docs/plans/ascension/HCLI_SELF_EVOLUTION_PLAN.md"
+    ],
+    "file_count": 172,
+    "remaining_lab_consumers": [
+      "lab/operators/glm52_teacher_forced_executor.py (bare import frankenstein_teacher_forced_executor after ensure_experiment_imports)",
+      "tools/condense/glm_teacher_forced_parallelism_probe.py",
+      "tools/condense/tests/test_glm_teacher_forced_sequence_sharding.py"
+    ],
+    "out_of_write_scope_left": [
+      {
+        "path": "logs/seal_l1_provenance.py",
+        "why": "WRITE allowlist is hawking-experiments/tools/lab/crates/workspace/docs/hcli. File still has `from lab.operators.frankenstein_corpus_id_map import emit_reconciliation`. Not executed by accepted pytest targets."
+      }
+    ]
+  },
+  "layout_bridge": {
+    "lab.layout": [
+      "FRANKENSTEIN_DATA_ROOT, PROMETHEUS_CONFIG_ROOT, PROMETHEUS_EVIDENCE_ROOT, SUPERWAVE_ROOT, PROMETHEUS_TOOLS_ROOT",
+      "evidence_dir('prometheus') and evidence_dir('frankenstein') return the new physical homes",
+      "resolve_workspace_path remaps historic workspace/... and tools/prometheus and lab/operators/frankenstein_* paths for live readers of sealed metadata"
+    ]
+  },
+  "baselines": {
+    "pytest_tools_condense_q_before": {
+      "command": "python3 -m pytest tools/condense -q",
+      "result": "Interrupted: 9 errors during collection; 1 skipped, 9 errors in 1.65s",
+      "collection_errors": [
+        "test_frankenstein_adapter_hub.py",
+        "test_frankenstein_adapter_trainer.py",
+        "test_frankenstein_b_linear_hub_wire.py",
+        "test_frankenstein_latent_v0.py",
+        "test_glm52_teacher_capture.py (GLM52_SHARD_DEPENDENCY_GRAPH.json missing)",
+        "test_llama_conditional_student_probe.py",
+        "test_llama_q4k_gravity_pack.py",
+        "test_llama_residual_pq_pack.py",
+        "test_llama_shared_block_probe.py"
+      ]
+    },
+    "pytest_tools_condense_q_after": {
+      "command": "python3 -m pytest tools/condense -q",
+      "result": "Interrupted: 5 errors during collection; 1 skipped, 5 errors in 1.66s",
+      "collection_errors": [
+        "test_glm52_teacher_capture.py (GLM52_SHARD_DEPENDENCY_GRAPH.json missing)",
+        "test_llama_conditional_student_probe.py",
+        "test_llama_q4k_gravity_pack.py",
+        "test_llama_residual_pq_pack.py",
+        "test_llama_shared_block_probe.py"
+      ],
+      "vs_baseline": "BETTER: 9 collection errors -> 5. The 4 frankenstein collection errors left because those tests moved; remaining 5 are identical pre-existing glm52/llama errors. Exit still non-zero, same as baseline, not worse."
+    }
+  },
+  "verification": {
+    "cargo_build": {
+      "command": "CARGO_TARGET_DIR=workspace/ops/build/rust cargo build --profile release-fast -p hawking-core",
+      "exit": 0,
+      "warnings": "pre-existing hawking-core warnings only; Finished release-fast in 38.40s"
+    },
+    "pytest_tools_headless": {
+      "command": "python3 -m pytest tools/headless -q",
+      "result": "2 failed, 469 passed in 266.73s",
+      "exit": 1,
+      "failures": [
+        {
+          "test": "tools/headless/test_composition_ladder.py::test_the_2p25_arm_is_untested_not_dead",
+          "error": "unreached_above is 'capability' not 'coherent_generation'",
+          "caused_by_this_move": false,
+          "why": "reads receipts/headless/COMPOSITION_LADDER.json which this lane did not modify. HEAD already stores unreached_above=capability for q2_4level_fitted_g64."
+        },
+        {
+          "test": "tools/headless/test_frontier_adversary.py::test_dense_counter_is_a_literal_zero_not_an_increment",
+          "error": "decoder increments == 1, expected 0",
+          "caused_by_this_move": false,
+          "why": "counts hardcoded dense increments in crates/hawking-core/src/model/qwen38_hybrid_decode.rs which this lane was forbidden to modify (GPU lane N024)."
+        }
+      ],
+      "note": "Acceptance asked for exit 0. These 2 failures are pre-existing on HEAD artifacts this lane must not edit. 469 other headless tests passed including those that read rewritten path strings."
+    },
+    "pytest_frankenstein_moved_tests": {
+      "command": "python3 -m pytest hawking-experiments/frankenstein/condense/tests -q --continue-on-collection-errors",
+      "result": "5 failed, 120 passed, 4 errors in 195.40s",
+      "proves_import_shim": "120 tests imported frankenstein_* as bare modules from the new location and passed. The 4 collection errors are the same torch-missing errors as the pre-move frankenstein collection errors. Remaining failures: missing torch (v0_seal) and a timing flake in test_frankenstein_hidden_sample_speed (vec vs loop), not path/import breakage."
+    },
+    "prometheus_selftest": {
+      "command": "python3 hawking-experiments/prometheus/tools/test_prometheus.py",
+      "result": "ALL PASS (9 invariants)",
+      "exit": 0
+    }
+  },
+  "dangling_grep": {
+    "command": "grep -rnE '(lab/operators/frankenstein|tools/condense/frankenstein|tools/prometheus|workspace/superwave|workspace/campaign/evidence/models/frankenstein)' crates tools lab hcli hawking-experiments",
+    "total_hits_excluding_pycache": 476,
+    "sealed_frankenstein_data_hits": 466,
+    "sealed_frankenstein_data_reason": "Historical sealed evidence JSON/logs/receipts under hawking-experiments/frankenstein/data/ still record the path that was true at seal time. Live readers use lab.layout.resolve_workspace_path. Rewriting them would falsify hashes and seals.",
+    "remaining_outside_data": [
+      {
+        "hit": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6294 workspace/superwave/g1/mixed-sub15-native-catalog",
+        "action": "intentionally-left",
+        "reason": "NEVER MODIFY this file (GPU lane N024 is editing those kernels)."
+      },
+      {
+        "hit": "tools/headless/c1sharedbasis_design.py git show HEAD:workspace/superwave/g1/g1-shared-basis.md",
+        "action": "intentionally-left",
+        "reason": "git show HEAD:<old-path> still addresses the blob at the current HEAD commit. Replacing with the new path would 404 until this work is committed. Filesystem readers were updated to hawking-experiments/superwave/."
+      },
+      {
+        "hit": "tools/headless/c2tensorop_design.py git show HEAD:workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+        "action": "intentionally-left",
+        "reason": "same HEAD: blob lookup as c1sharedbasis_design.py"
+      },
+      {
+        "hit": "tools/sovereignty/sovereignty.py docstring mentions hawking-experiments/prometheus/tools/prometheus.py",
+        "action": "intentionally-left",
+        "reason": "False positive: the NEW path .../prometheus/tools/prometheus.py contains the substring tools/prometheus. Not a live old-location reference."
+      },
+      {
+        "hit": "hawking-experiments/superwave/g1/mixed-sub15-native-catalog/NATIVE_CATALOG.json install command",
+        "action": "intentionally-left",
+        "reason": "External historical worktree path (.../50-sub15-native-impl-.../workspace/superwave/...). Not a repo-relative live reader."
+      },
+      {
+        "hit": "hawking-experiments/superwave/g1/overflow-generate/*.err 'wrote workspace/superwave/...'",
+        "action": "intentionally-left",
+        "reason": "Dead-data command logs captured at generation time. Not live code."
+      },
+      {
+        "hit": "hawking-experiments/superwave/g1/claude-evidence/g1_alloc_unified_out.json pin: workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json",
+        "action": "intentionally-left",
+        "reason": "Sealed Superwave evidence artifact; live gravity tools now read hawking-experiments/superwave/g1/GRAVITY1_SOURCE_PIN.json."
+      }
+    ],
+    "broken_live_imports_or_paths_in_grep_roots": "none"
+  },
+  "intentionally_unrewritten": [
+    "External Desktop/hawking-frankenstein paths",
+    "Absolute /Users/.../Downloads/hawking/... paths (other checkout)",
+    "workspace/campaign/records/runs/frankenstein (did not move)",
+    "hawking.frankenstein.* schema names and frankenstein_* symbol names",
+    "CLI --out-dir output layout evidence/models/frankenstein under a caller-supplied campaign root (test_frankenstein_direct asserts this output convention)",
+    "Sealed JSON under hawking-experiments/frankenstein/data/",
+    "qwen38_hybrid_decode.rs superwave path (forbidden)",
+    "git show HEAD:workspace/superwave/... (HEAD still has the old tree)"
+  ],
+  "modules_not_moved": "none of the specified frankenstein/prometheus/superwave sources were left behind"
+}

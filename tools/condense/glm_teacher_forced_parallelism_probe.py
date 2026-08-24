@@ -30,8 +30,10 @@ from typing import Any
 _REPO = Path(__file__).resolve().parents[2]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
+from lab.layout import ensure_experiment_imports  # noqa: E402
+ensure_experiment_imports()
 
-from lab.operators import frankenstein_teacher_forced_executor as tfe  # noqa: E402
+import frankenstein_teacher_forced_executor as tfe  # noqa: E402
 from lab.operators import glm52_synthetic as synthetic  # noqa: E402
 from lab.operators.glm52_common import verify_sealed  # noqa: E402
 from tools.condense.merge_glm_teacher_forced_shards import (  # noqa: E402
@@ -45,13 +47,13 @@ PUBLIC_PATH_WINNER = (
 )
 OFFICIAL_FULL = (
     _REPO
-    / "workspace/campaign/evidence/models/frankenstein/teacher_forced"
+    / "hawking-experiments/frankenstein/data/teacher_forced"
     / "official_L0_stream_full_20260805T200728Z"
     / "GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json"
 )
 OFFICIAL_REEXPORT = (
     _REPO
-    / "workspace/campaign/evidence/models/frankenstein/teacher_forced"
+    / "hawking-experiments/frankenstein/data/teacher_forced"
     / "official_L0_stream_reexport_20260805T214500Z"
     / "GLM_TEACHER_FORCED_CAPTURE_RECEIPT.json"
 )
@@ -375,7 +377,7 @@ def main(argv: list[str] | None = None) -> int:
         "--work",
         type=Path,
         default=_REPO
-        / "workspace/campaign/evidence/models/frankenstein"
+        / "hawking-experiments/frankenstein/data"
         / "glm_parallelism_probe_20260806",
     )
     parser.add_argument("--workers", type=int, default=2)

@@ -1,0 +1,54 @@
+{
+  "gate": "REPAIR_HOMEOSTASIS",
+  "generated_at": "2026-08-23T08:48:30Z",
+  "max_repair_depth": 3,
+  "results": [
+    {
+      "name": "a permanently dead backend produces a BOUNDED repair tree",
+      "ok": true,
+      "detail": "2 units in the lineage: ['dead', 'dead.repair.1']"
+    },
+    {
+      "name": "the lineage terminates in an explicit exhausted state",
+      "ok": true,
+      "detail": "exhausted=[('dead', 'repair cycle: failure signature already seen in lineage dead'), ('fine', 'repair cycle: failure signature already seen in lineage fine'), ('dead.repair.1', 'repair cycle: failure signature already seen in lineage dead'), ('fine.repair.1', 'repair cycle: failure signature already seen in lineage fine')]"
+    },
+    {
+      "name": "repair depth never exceeds the bound",
+      "ok": true,
+      "detail": "deepest=1 bound=3"
+    },
+    {
+      "name": "with every failure distinct, the DEPTH bound stops the lineage",
+      "ok": true,
+      "detail": "deepest=3 bound=3 exhausted=['dead', 'dead.repair.1', 'dead.repair.1.repair.1', 'dead.repair.2', 'dead.repair.1.repair.1.repair.1', 'dead.repair.1.repair.2', 'dead.repair.2.repair.1'] units=7"
+    },
+    {
+      "name": "repair lineage is structured, not parsed back out of the id string",
+      "ok": true,
+      "detail": "[('dead.repair.1', 'dead', 1), ('dead.repair.1.repair.1', 'dead', 2), ('dead.repair.2', 'dead', 1), ('dead.repair.1.repair.1.repair.1', 'dead', 3), ('dead.repair.1.repair.2', 'dead', 2), ('dead.repair.2.repair.1', 'dead', 2)]"
+    },
+    {
+      "name": "an exhausted unit is never re-readied",
+      "ok": true,
+      "detail": "is_ready returned False as required"
+    },
+    {
+      "name": "repair lineage survives serialization",
+      "ok": true,
+      "detail": "root=root depth=2 exhausted=True"
+    },
+    {
+      "name": "with cycle detection defeated, the per-root COUNT cap bounds the tree",
+      "ok": true,
+      "detail": "6 repairs for one root, cap is 6 (depth bound alone allowed 3+9+27=39 before this cap existed)"
+    },
+    {
+      "name": "NEGATIVE CONTROL: raising the bound really does let the lineage grow",
+      "ok": true,
+      "detail": "deepest=12 with both bounds lifted (defaults: depth 3, per-root 6)"
+    }
+  ],
+  "failed": [],
+  "result": "PASS"
+}

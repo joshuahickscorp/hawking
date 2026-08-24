@@ -1,7 +1,7 @@
 # Post-Final Gravity + HCLI Plan
 
 **Status:** PLAN ONLY — after Final Frankenstein exists.  
-**Seal companion:** `workspace/campaign/evidence/models/frankenstein/POST_FINAL_GRAVITY_HCLI_PLAN.json`  
+**Seal companion:** `hawking-experiments/frankenstein/data/POST_FINAL_GRAVITY_HCLI_PLAN.json`  
 **Upstream:** Final Frankenstein seal from Stage-2 (`STAGE2_KIMI_STREAMING_DISTILL_PLAN.md`)  
 **Downstream:** Stage-3 Ramanujan (Odyssey / Q-gauntlet) uses Final as substrate; HCLI serves Terra + Luna (+ Sol on demand)
 

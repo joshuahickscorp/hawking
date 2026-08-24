@@ -1,0 +1,1095 @@
+{
+ "schema": "hawking.headless.gpu_ledger.v1",
+ "generated_at": "2026-08-24T03:01:24Z",
+ "git_head": "7200c96c4cd77bf51f958c207a79b9194f4b7559",
+ "obligation": "N004 \u2014 GPU ledger per token: stop optimizing blind",
+ "incumbent": {
+  "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+  "name": "qwen38-gravity-uniform-q4-v1",
+  "complete_physical_bpw": 4.252735126866492,
+  "parameter_count": 26895998464
+ },
+ "did_not_load_second_27b": true,
+ "occupancy": {
+  "ps_matches": [
+   "12402  84880 /Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp9wq3pmxx/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}"
+  ],
+  "loaded_a_second_27b": false,
+  "note": "mlx_lm.server on a tiny tmp 4bit (~tens of MiB RSS) is not a 27B. A second Qwen3.8-27B would show RSS in the 10+ GiB class and is refused."
+ },
+ "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+ "measurement_label": "DIRTY_ENGINEERING",
+ "measurement_label_reason": "GPU lock held for the three process runs; other CPU/memory lanes may still be live. A tiny mlx_lm.server (~tens of MiB) was resident and is not a 27B. Not offered as CLEAN_CANDIDATE or BASE_TRUE_TPS.",
+ "ACTIVE_BYTES_PER_TOKEN": {
+  "value": 13622266960,
+  "kind": "MEASURED",
+  "unit": "bytes/token",
+  "command": "python3 -c 'import json; from pathlib import Path; m=json.loads(Path.home().joinpath(\"models/qwen38-gravity-uniform-q4-v1/manifest.json\").read_text()); embed=next(t[\"bytes\"] for t in m[\"tensors\"] if \"embed_tokens\" in t[\"name\"]); row=34*(5120//64); print(m[\"tensor_payload_bytes\"]-embed+row)'",
+  "absent_reason": null,
+  "note": "Sum of 755 tensor payloads minus the embedding table plus one Q4 gathered row. Dense decode streams every weight except the embed table. Rank this above stored size."
+ },
+ "DRAM_BYTES_PER_TOKEN": {
+  "value": 13989071524,
+  "kind": "DERIVED",
+  "unit": "bytes/token",
+  "command": "python3 -c 'from noetic_operation_census import load_geometry, gemv_organs, dram_and_temp; print(dram_and_temp(load_geometry(), gemv_organs(load_geometry()), 42)[\"executable_dram_bytes_per_token\"])'",
+  "absent_reason": null,
+  "note": "Weight stream + activation writes + rec/conv/KV reads + GEMV X reads at seq_len=42. Not a GPU DRAM counter (that is ABSENT). Rank this with ACTIVE_BYTES above stored size."
+ },
+ "rank_above_stored_size": [
+  "ACTIVE_BYTES_PER_TOKEN",
+  "DRAM_BYTES_PER_TOKEN"
+ ],
+ "doctor_objective": {
+  "formula": "useful_function / (ACTIVE_BYTES_PER_TOKEN \u00d7 TOKEN_NS)",
+  "useful_function": "one coherent decode token of the qualified parent (fallbacks=0, greedy ids stable across warm reps, prose-on-compiler prompt)",
+  "useful_function_scalar": {
+   "value": 1.0,
+   "kind": "DERIVED",
+   "unit": "coherent_token",
+   "note": "Unit function. A capability-suite score would replace this; it is not invented here."
+  },
+  "ACTIVE_BYTES_PER_TOKEN": 13622266960,
+  "TOKEN_NS": 30375208,
+  "denominator_byte_ns": 4.137791923415277e+17,
+  "ranking_quantity": 2.416747914125691e-18,
+  "ranking_unit": "coherent_token / (byte \u00b7 ns)",
+  "rank_active_and_dram_above_stored_size": true,
+  "why": "A representation storing 1 EBPW but reading 5 EBPW/token is worse than a 2 EBPW one reading 1.2. Parallel sessions compete for the same unified-memory subsystem, so bytes actually moved per token is the quantity that governs concurrency.",
+  "stored_ebpw": 4.252735126866492,
+  "active_ebpw": 4.05183454430465,
+  "stored_vs_active": "Stored complete_physical_bpw=4.2527 includes the embed table. Active EBPW=4.0518 is what decode actually moves. Optimizing stored size while increasing active bytes is a regression on this objective."
+ },
+ "fields": {
+  "GPU_NS": {
+   "value": 29049999,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json",
+   "absent_reason": null,
+   "note": "warm process-headline median of 3 fresh processes; GPUEnd\u2212GPUStart of the production CB",
+   "spread": {
+    "n": 3,
+    "min": 28981041.0,
+    "median": 29049999.0,
+    "max": 29129125.0,
+    "spread_pct": 0.509755611351312,
+    "all": [
+     29129125.0,
+     29049999.0,
+     28981041.0
+    ]
+   }
+  },
+  "GPU_BUSY_NS": {
+   "value": 29049999,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json",
+   "absent_reason": null,
+   "note": "Equal to GPU_NS on this 1-CB production path: the CB GPU interval includes any intra-CB bubbles, which cannot be subtracted (see GPU_IDLE_GAPS_NS ABSENT).",
+   "spread": {
+    "n": 3,
+    "min": 28981041.0,
+    "median": 29049999.0,
+    "max": 29129125.0,
+    "spread_pct": 0.509755611351312,
+    "all": [
+     29129125.0,
+     29049999.0,
+     28981041.0
+    ]
+   }
+  },
+  "GPU_IDLE_GAPS_NS": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "ns/token",
+   "command": "python3 -c 'import json; print(json.load(open(\"receipts/headless/GPU_LEDGER_METAL_PROBE.json\"))[\"supportsCounterSampling\"][\"atDispatchBoundary\"])'",
+   "absent_reason": "Production is one mixed command buffer. Intra-CB idle between the 964 dispatches sits inside GPUEndTime\u2212GPUStartTime and cannot be split: supportsCounterSampling.atDispatchBoundary=False (false). TCB production identity refuses ComputePassDescriptor boundary samples because they changed greedy token ids. wait_minus_gpu is host queue wait, not intra-CB GPU idle \u2014 see GPU_QUEUE_WAIT_NS."
+  },
+  "GPU_QUEUE_WAIT_NS": {
+   "value": 421416,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # steady_decode.wait_minus_gpu_ns.median",
+   "absent_reason": null,
+   "note": "host wait_until_completed minus GPUEnd\u2212GPUStart; NOT intra-CB GPU idle",
+   "spread": {
+    "n": 3,
+    "min": 399084.0,
+    "median": 421416.0,
+    "max": 430167.0,
+    "spread_pct": 7.375847143914801,
+    "all": [
+     430167.0,
+     399084.0,
+     421416.0
+    ]
+   }
+  },
+  "DRAM_READ_BYTES": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "bytes/token",
+   "command": "swift receipts/headless probe: MTLDevice.counterSets",
+   "absent_reason": "MTLDevice.counterSets on this Apple M3 Ultra contains only the 'timestamp' set with counter ['GPUTimestamp']. There is no DRAM bytes-moved, cache, or occupancy counter. Apple GPU does not expose NVIDIA-style Nsight bandwidth counters via the public Metal API."
+  },
+  "DRAM_WRITE_BYTES": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "bytes/token",
+   "command": "swift receipts/headless probe: MTLDevice.counterSets",
+   "absent_reason": "MTLDevice.counterSets on this Apple M3 Ultra contains only the 'timestamp' set with counter ['GPUTimestamp']. There is no DRAM bytes-moved, cache, or occupancy counter. Apple GPU does not expose NVIDIA-style Nsight bandwidth counters via the public Metal API."
+  },
+  "DRAM_READ_BYTES_DERIVED": {
+   "value": 13797421728,
+   "kind": "DERIVED",
+   "unit": "bytes/token",
+   "command": "python3 -c 'from noetic_operation_census import load_geometry, gemv_organs, dram_and_temp; g=load_geometry(); print(dram_and_temp(g, gemv_organs(g), 42))'",
+   "absent_reason": null,
+   "note": "encode-path traffic at seq_len=42; not a GPU counter"
+  },
+  "DRAM_WRITE_BYTES_DERIVED": {
+   "value": 191649796,
+   "kind": "DERIVED",
+   "unit": "bytes/token",
+   "command": "tools/headless/noetic_operation_census.py::dram_and_temp executable_activation_write_bytes",
+   "absent_reason": null,
+   "note": "activation + state writes the fused kernels emit; dense W write is 0"
+  },
+  "dispatch_count": {
+   "value": 964,
+   "kind": "MEASURED",
+   "unit": "dispatches/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # steady_decode.dispatches",
+   "absent_reason": null,
+   "note": "TokenCommandBuffer.dispatch_count: one kernel launch = one dispatch. Reproduced 964 on every cold and warm step of 3 processes."
+  },
+  "command_buffer_count": {
+   "value": 1,
+   "kind": "MEASURED",
+   "unit": "command_buffers/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # steady_decode.command_buffers",
+   "absent_reason": null,
+   "note": "Production shape is one CB. Reproduced 1 on every step."
+  },
+  "encoder_count": {
+   "value": 964,
+   "kind": "DERIVED",
+   "unit": "compute_encoders/token",
+   "command": "rg -n 'new_compute_command_encoder' crates/hawking-core/src/metal/mod.rs; python3 -c 'import json; print(json.load(open(\"receipts/headless/GPU_LEDGER_RAW.run1.json\"))[\"identity\"][\"concurrent_independent\"])'",
+   "absent_reason": null,
+   "note": "Off-mode TokenCommandBuffer::dispatch_threads_inner creates one compute encoder per dispatch (new_compute_command_encoder + end_encoding) unless a concurrent/serial group is open. This run has concurrent_independent=false and does not call begin_serial_group on the production token, so encoder_count = dispatch_count = 964. Not a PhysicalTraceGuard measurement (the complete-wall JSON does not emit encoder_count)."
+  },
+  "synchronization_count": {
+   "value": 1,
+   "kind": "MEASURED",
+   "unit": "waits/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # one wait_until_completed per production CB",
+   "absent_reason": null,
+   "note": "One host wait per token, matching one command buffer."
+  },
+  "host_wait_ns": {
+   "value": 29471415,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # wait_ns \u2248 gpu_ns + wait_minus_gpu_ns",
+   "absent_reason": null,
+   "note": "host Instant around wait_until_completed"
+  },
+  "active_threadgroups": {
+   "value": 8704,
+   "kind": "DERIVED",
+   "unit": "threadgroups/launch",
+   "command": "python3 tools/headless/gpu_ledger.py  # geo_tpr64_tg(17408)",
+   "absent_reason": null,
+   "note": "Workhorse gate_proj launch: ceil(17408/2)=8704 TGs of 128 threads. Other organs differ by rows."
+  },
+  "occupancy_estimate": {
+   "value": 145.06666666666666,
+   "kind": "DERIVED",
+   "unit": "threadgroups/core",
+   "command": "python3 tools/headless/gpu_ledger.py  # 8704/60",
+   "absent_reason": null,
+   "note": "Not a hardware occupancy counter. Launch geometry vs 60 M3 Ultra cores. A 17408-row gate launches 8704 TGs; the kernel is bandwidth-saturated, not occupancy-starved."
+  },
+  "SIMD_utilization": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "fraction",
+   "command": "swift Metal probe: MTLDevice.counterSets",
+   "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED."
+  },
+  "register_pressure": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "registers/thread",
+   "command": "MTLComputePipelineState is not emitted by the production decode JSON",
+   "absent_reason": "Apple Metal does not report register file pressure via a public GPU counter. MTLComputePipelineState.maxTotalThreadsPerThreadgroup is queryable after compiling a pipeline; the production decode binary does not emit it, and a toy kernel's 1024 is not geo_tpr64's occupancy. Xcode GPU debugger is out of band."
+  },
+  "threadgroup_memory_bytes": {
+   "value": 16,
+   "kind": "DERIVED",
+   "unit": "bytes/threadgroup",
+   "command": "rg -n 'threadgroup float red\\[4\\]' crates/hawking-core/shaders/qwen_uniform_q4.metal",
+   "absent_reason": null,
+   "note": "geo_tpr64_tg128: threadgroup float red[4] = 16 bytes. gated_delta binds set_threadgroup_memory_length(0, 128*4)=512 bytes on that organ only. Not a hardware occupancy counter."
+  },
+  "ACTIVE_BYTES_PER_TOKEN": {
+   "value": 13622266960,
+   "kind": "MEASURED",
+   "unit": "bytes/token",
+   "command": "python3 -c 'import json; from pathlib import Path; m=json.loads(Path.home().joinpath(\"models/qwen38-gravity-uniform-q4-v1/manifest.json\").read_text()); embed=next(t[\"bytes\"] for t in m[\"tensors\"] if \"embed_tokens\" in t[\"name\"]); row=34*(5120//64); print(m[\"tensor_payload_bytes\"]-embed+row)'",
+   "absent_reason": null,
+   "note": "Sum of 755 tensor payloads minus the embedding table plus one Q4 gathered row. Dense decode streams every weight except the embed table. Rank this above stored size."
+  },
+  "DRAM_BYTES_PER_TOKEN": {
+   "value": 13989071524,
+   "kind": "DERIVED",
+   "unit": "bytes/token",
+   "command": "python3 -c 'from noetic_operation_census import load_geometry, gemv_organs, dram_and_temp; print(dram_and_temp(load_geometry(), gemv_organs(load_geometry()), 42)[\"executable_dram_bytes_per_token\"])'",
+   "absent_reason": null,
+   "note": "Weight stream + activation writes + rec/conv/KV reads + GEMV X reads at seq_len=42. Not a GPU DRAM counter (that is ABSENT). Rank this with ACTIVE_BYTES above stored size."
+  },
+  "STORED_BYTES": {
+   "value": 14297694680,
+   "kind": "MEASURED",
+   "unit": "bytes",
+   "command": "python3 -c 'import json; from pathlib import Path; print(json.loads(Path.home().joinpath(\"models/qwen38-gravity-uniform-q4-v1/manifest.json\").read_text())[\"tensor_payload_bytes\"])'",
+   "absent_reason": null,
+   "note": "On-disk tensor payloads including the embed table you do not stream per token. Ranked BELOW active/DRAM bytes."
+  },
+  "host_encode_ns": {
+   "value": 851500,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # encode_host_prepare_ns",
+   "absent_reason": null,
+   "spread": {
+    "n": 3,
+    "min": 827083.0,
+    "median": 851500.0,
+    "max": 877208.0,
+    "spread_pct": 5.88667058132707,
+    "all": [
+     877208.0,
+     827083.0,
+     851500.0
+    ]
+   }
+  },
+  "host_submit_ns": {
+   "value": 7500,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # submit_ns",
+   "absent_reason": null,
+   "spread": {
+    "n": 3,
+    "min": 6125.0,
+    "median": 7500.0,
+    "max": 7542.0,
+    "spread_pct": 18.893333333333334,
+    "all": [
+     7542.0,
+     7500.0,
+     6125.0
+    ]
+   }
+  },
+  "sample_readback_ns": {
+   "value": 792,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # sample_readback_ns",
+   "absent_reason": null,
+   "note": "Host read of the sampled u32 after the CB wait. Sampling compute is the argmax dispatch inside the CB.",
+   "spread": {
+    "n": 3,
+    "min": 792.0,
+    "median": 792.0,
+    "max": 916.0,
+    "spread_pct": 15.656565656565656,
+    "all": [
+     792.0,
+     792.0,
+     916.0
+    ]
+   }
+  },
+  "COMPLETE_TOKEN_WALL_NS": {
+   "value": 30375208,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json",
+   "absent_reason": null,
+   "note": "warm process-headline median; complete-wall = encode+submit+wait+epilogue+readback+state+tokenizer+bookkeeping+residual",
+   "spread": {
+    "n": 3,
+    "min": 30218584.0,
+    "median": 30375208.0,
+    "max": 30498791.0,
+    "spread_pct": 0.9224858641297206,
+    "all": [
+     30498791.0,
+     30375208.0,
+     30218584.0
+    ]
+   }
+  },
+  "OS_PAGE_CACHE_COLD_GPU_NS": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "ns/token",
+   "command": "sudo purge && <decode>  # not run; purge requires root",
+   "absent_reason": "A true disk-cold run requires dropping the kernel page cache (purge / posix_fadvise). This session cannot sudo purge. Three sequential processes share the ~14 GiB artifact page cache. Graph-cold first-step GPU (pipeline first-touch in a fresh process) IS measured separately as COLD_FIRST_STEP_GPU_NS."
+  },
+  "COLD_FIRST_STEP_GPU_NS": {
+   "value": 80492625,
+   "kind": "MEASURED",
+   "unit": "ns",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # cold_generate.cold_or_first_step.gpu_ns",
+   "absent_reason": null,
+   "note": "First step of the first generate in a fresh process. role=prefill. Graph-cold. Never averaged into the warm median.",
+   "spread": {
+    "n": 3,
+    "min": 74532750.0,
+    "median": 80492625.0,
+    "max": 80919833.0,
+    "spread_pct": 7.9349915597857565,
+    "all": [
+     74532750.0,
+     80492625.0,
+     80919833.0
+    ]
+   }
+  },
+  "hardware_occupancy_counter": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "fraction",
+   "command": "MTLDevice.counterSets",
+   "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED."
+  },
+  "per_dispatch_gpu_ns": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "ns/dispatch",
+   "command": "TokenCommandBuffer ProdCbGpu / atDispatchBoundary",
+   "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode."
+  }
+ },
+ "cold": {
+  "what": "first step of the first generate in a fresh process (graph-cold prefill)",
+  "gpu_ns": {
+   "value": 80492625,
+   "kind": "MEASURED",
+   "unit": "ns",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # cold_generate.cold_or_first_step.gpu_ns",
+   "absent_reason": null,
+   "note": "First step of the first generate in a fresh process. role=prefill. Graph-cold. Never averaged into the warm median.",
+   "spread": {
+    "n": 3,
+    "min": 74532750.0,
+    "median": 80492625.0,
+    "max": 80919833.0,
+    "spread_pct": 7.9349915597857565,
+    "all": [
+     74532750.0,
+     80492625.0,
+     80919833.0
+    ]
+   }
+  },
+  "wall_ns": {
+   "value": 147156333,
+   "kind": "MEASURED",
+   "unit": "ns",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json",
+   "absent_reason": null,
+   "spread": {
+    "n": 3,
+    "min": 138128375.0,
+    "median": 147156333.0,
+    "max": 150685125.0,
+    "spread_pct": 8.532932116485942,
+    "all": [
+     138128375.0,
+     150685125.0,
+     147156333.0
+    ]
+   }
+  },
+  "page_cache_cold": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "ns/token",
+   "command": "sudo purge && <decode>  # not run; purge requires root",
+   "absent_reason": "A true disk-cold run requires dropping the kernel page cache (purge / posix_fadvise). This session cannot sudo purge. Three sequential processes share the ~14 GiB artifact page cache. Graph-cold first-step GPU (pipeline first-touch in a fresh process) IS measured separately as COLD_FIRST_STEP_GPU_NS."
+  },
+  "dispatches": 964,
+  "command_buffers": 1,
+  "role": "prefill"
+ },
+ "warm": {
+  "what": "in-process warm complete-wall after one discarded cold generate; 3 fresh processes \u00d7 4 warm reps",
+  "gpu_ns": {
+   "value": 29049999,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json",
+   "absent_reason": null,
+   "note": "warm process-headline median of 3 fresh processes; GPUEnd\u2212GPUStart of the production CB",
+   "spread": {
+    "n": 3,
+    "min": 28981041.0,
+    "median": 29049999.0,
+    "max": 29129125.0,
+    "spread_pct": 0.509755611351312,
+    "all": [
+     29129125.0,
+     29049999.0,
+     28981041.0
+    ]
+   }
+  },
+  "complete_token_wall_ns": {
+   "value": 30375208,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json",
+   "absent_reason": null,
+   "note": "warm process-headline median; complete-wall = encode+submit+wait+epilogue+readback+state+tokenizer+bookkeeping+residual",
+   "spread": {
+    "n": 3,
+    "min": 30218584.0,
+    "median": 30375208.0,
+    "max": 30498791.0,
+    "spread_pct": 0.9224858641297206,
+    "all": [
+     30498791.0,
+     30375208.0,
+     30218584.0
+    ]
+   }
+  },
+  "tps": {
+   "value": 32.921585261243315,
+   "kind": "DERIVED",
+   "unit": "tok/s",
+   "command": "1e9 / COMPLETE_TOKEN_WALL_NS",
+   "absent_reason": null,
+   "spread": {
+    "n": 3,
+    "min": 32.78818494805253,
+    "median": 32.921585261243315,
+    "max": 33.09221901330651,
+    "spread_pct": 0.9235097971175206,
+    "all": [
+     32.78818494805253,
+     32.921585261243315,
+     33.09221901330651
+    ],
+    "note": "derived from per-process wall medians"
+   }
+  },
+  "wait_minus_gpu_ns": {
+   "value": 421416,
+   "kind": "MEASURED",
+   "unit": "ns/token",
+   "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json  # steady_decode.wait_minus_gpu_ns.median",
+   "absent_reason": null,
+   "note": "host wait_until_completed minus GPUEnd\u2212GPUStart; NOT intra-CB GPU idle",
+   "spread": {
+    "n": 3,
+    "min": 399084.0,
+    "median": 421416.0,
+    "max": 430167.0,
+    "spread_pct": 7.375847143914801,
+    "all": [
+     430167.0,
+     399084.0,
+     421416.0
+    ]
+   }
+  },
+  "dispatches": 964,
+  "command_buffers": 1,
+  "gpu_as_fraction_of_wall": 0.956372018917533,
+  "n_process_runs": 3,
+  "n_warm_reps_per_process": 4
+ },
+ "stages": {
+  "representation_decode": {
+   "stage": "representation_decode",
+   "prior_isolated_gpu_ns": 1812751.0,
+   "live_ns": 1552839.6332168889,
+   "pct_of_live_gpu": 5.345403396457566,
+   "kind": "DERIVED",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json | python3 -c 'isolated family GPU medians, scaled onto this session GPU_NS'",
+   "what": "Nibble-unpack ALU: (decode_probe \u2212 addr_probe) on MLP/DN/GQA/lm_head isolated GEMV CBs. Packed decode stays in registers; bytes_written=0."
+  },
+  "routing": {
+   "stage": "routing",
+   "prior_isolated_gpu_ns": null,
+   "live_ns": null,
+   "pct_of_live_gpu": null,
+   "kind": "ABSENT",
+   "value": null,
+   "absent_reason": "This parent is dense Qwen3.8 (zero expert routes). The production graph has no router dispatch. A 0 would imply a measured empty router; the physical reason is the architecture has no routing stage.",
+   "command": "python3 -c 'from pathlib import Path; import json; d=json.loads(Path(\"receipts/headless/DOCTOR_V2_PRESCRIPTION.json\").read_text()); print(d[\"prior_science\"][\"q80\"][\"note\"])'"
+  },
+  "operator": {
+   "stage": "operator",
+   "prior_isolated_gpu_ns": 27353921.0,
+   "live_ns": 23431928.95918069,
+   "pct_of_live_gpu": 80.66068766191933,
+   "kind": "DERIVED",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json | python3 -c 'isolated family GPU medians, scaled onto this session GPU_NS'",
+   "what": "Remainder of production GPU after representation-decode, activation, KV-state, sampling, and embed are attributed out. Dominated by geo_tpr64 weight addressing (TOKEN_NS weight_addressing ~60% of wall)."
+  },
+  "activation": {
+   "stage": "activation",
+   "prior_isolated_gpu_ns": 3867498,
+   "live_ns": 3312977.996308953,
+   "pct_of_live_gpu": 11.404399691404302,
+   "kind": "DERIVED",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json | python3 -c 'isolated family GPU medians, scaled onto this session GPU_NS'",
+   "what": "isolated silu + sigmoid + input/post/final RMSNorm + gated RMSNorm"
+  },
+  "kv_state": {
+   "stage": "kv_state",
+   "prior_isolated_gpu_ns": 537665,
+   "live_ns": 460574.8508171054,
+   "pct_of_live_gpu": 1.5854556511933284,
+   "kind": "DERIVED",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json | python3 -c 'isolated family GPU medians, scaled onto this session GPU_NS'",
+   "what": "isolated sequential f32 stream of rec_state + conv_state + GQA K/V"
+  },
+  "sampling": {
+   "stage": "sampling",
+   "prior_isolated_gpu_ns": 335499,
+   "live_ns": 287395.3146927697,
+   "pct_of_live_gpu": 0.9893126491769233,
+   "kind": "DERIVED",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json | python3 -c 'isolated family GPU medians, scaled onto this session GPU_NS'",
+   "what": "isolated sample_argmax_f32; host sample_readback is a separate host field"
+  }
+ },
+ "stages_closure": {
+  "prior_gpu_ns": 33912333.0,
+  "live_gpu_ns": 29049999.0,
+  "scale": 0.8566204808144576,
+  "prior_named_sum_ns": 33912333.0,
+  "prior_residual_ns": 0.0,
+  "embed_ns_prior": 4999,
+  "routing_in_sum": false,
+  "identity": "representation_decode + operator + activation + kv_state + sampling + embed == prior GPU_NS; routing is ABSENT and not in the sum",
+  "kind": "DERIVED",
+  "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+  "note": "Isolated families are diagnostic CBs. Production is 1 mixed CB / 964 dispatches; per-dispatch GPU timestamps are ABSENT on this box (counterSets={timestamp}; atDispatchBoundary=false). Scale is live_gpu / prior_token_ns_gpu so the exclusive set partitions THIS session's GPU_NS."
+ },
+ "exclusive_token_ns_components": [
+  {
+   "component": "host_preparation",
+   "prior_ns_per_token": 919250.0,
+   "prior_pct_of_token_wall": 2.609436146905876,
+   "resource_class": "cpu",
+   "bytes_read": 0,
+   "bytes_written": 0,
+   "dispatches": 964,
+   "scaled_live_ns_if_gpu": null,
+   "kind": "MEASURED",
+   "method": "host Instant wrapping encode of the production single-CB token",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "weight_addressing",
+   "prior_ns_per_token": 21293102.524500456,
+   "prior_pct_of_token_wall": 60.443830739411744,
+   "resource_class": "gpu",
+   "bytes_read": 13611663360,
+   "bytes_written": 0,
+   "dispatches": 401,
+   "scaled_live_ns_if_gpu": 18240107.722569123,
+   "kind": "DERIVED",
+   "method": "addr_probe / full GEMV fraction, applied to isolated class GEMV GPU time, then scaled onto production GPU",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "weight_decode_reconstruction",
+   "prior_ns_per_token": 1808227.3508656735,
+   "prior_pct_of_token_wall": 5.132938603397054,
+   "resource_class": "gpu",
+   "bytes_read": 0,
+   "bytes_written": 0,
+   "dispatches": 401,
+   "scaled_live_ns_if_gpu": 1548964.5827204061,
+   "kind": "DERIVED",
+   "method": "(decode_probe \u2212 addr_probe) / full, applied to isolated class GEMV GPU time",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "command_submission",
+   "prior_ns_per_token": 12084.0,
+   "prior_pct_of_token_wall": 0.03430234038532565,
+   "resource_class": "cpu",
+   "bytes_read": 0,
+   "bytes_written": 0,
+   "dispatches": 0,
+   "scaled_live_ns_if_gpu": null,
+   "kind": "MEASURED",
+   "method": "host Instant around commit on the production CB",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "deltanet",
+   "prior_ns_per_token": 3732794.9326240737,
+   "prior_pct_of_token_wall": 10.596127306147773,
+   "resource_class": "gpu",
+   "bytes_read": 4718592,
+   "bytes_written": 2162688,
+   "dispatches": 192,
+   "scaled_live_ns_if_gpu": 3197588.589966205,
+   "kind": "DERIVED",
+   "method": "isolated rearrange+ba+gated_delta+gated_rmsnorm+dn FMA remainder + 48/64 mixer residual, minus KV/state streams attributed out",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "gqa",
+   "prior_ns_per_token": 2443470.7102658837,
+   "prior_pct_of_token_wall": 6.936177095755857,
+   "resource_class": "gpu",
+   "bytes_read": 2883584,
+   "bytes_written": 327680,
+   "dispatches": 64,
+   "scaled_live_ns_if_gpu": 2093127.0546840057,
+   "kind": "DERIVED",
+   "method": "isolated rope+mha+sigmoid+gqa FMA remainder + 16/64 mixer residual, minus KV/state stream",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "dense_swiglu",
+   "prior_ns_per_token": 1004197.5322722804,
+   "prior_pct_of_token_wall": 2.850573118678236,
+   "resource_class": "gpu",
+   "bytes_read": 8912896,
+   "bytes_written": 5767168,
+   "dispatches": 128,
+   "scaled_live_ns_if_gpu": 860216.1729277727,
+   "kind": "DERIVED",
+   "method": "isolated silu + mlp residual + MLP GEMV FMA remainder (full \u2212 addr \u2212 decode)",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "normalization",
+   "prior_ns_per_token": 2367415.0,
+   "prior_pct_of_token_wall": 6.720280963532416,
+   "resource_class": "gpu",
+   "bytes_read": 5283840,
+   "bytes_written": 2641920,
+   "dispatches": 129,
+   "scaled_live_ns_if_gpu": 2027976.1755873591,
+   "kind": "DERIVED",
+   "method": "isolated input + post + final RMSNorm CBs",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "kv_state",
+   "prior_ns_per_token": 537665.0,
+   "prior_pct_of_token_wall": 1.52624692513043,
+   "resource_class": "gpu",
+   "bytes_read": 159383552,
+   "bytes_written": 157024256,
+   "dispatches": 3,
+   "scaled_live_ns_if_gpu": 460574.8508171054,
+   "kind": "DERIVED",
+   "method": "measured sequential f32 stream of rec_state + conv_state + GQA cache, capped by fused parent GPU time",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "terminal_head",
+   "prior_ns_per_token": 383534.9494716367,
+   "prior_pct_of_token_wall": 1.0887244609768914,
+   "resource_class": "gpu",
+   "bytes_read": 675430400,
+   "bytes_written": 993284,
+   "dispatches": 2,
+   "scaled_live_ns_if_gpu": 328543.89282554213,
+   "kind": "DERIVED",
+   "method": "isolated argmax + lm_head FMA remainder. lm_head weight traffic lives in addressing/decode.",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "synchronization",
+   "prior_ns_per_token": 384250.0,
+   "prior_pct_of_token_wall": 1.09075424470882,
+   "resource_class": "sync",
+   "bytes_read": 0,
+   "bytes_written": 4,
+   "dispatches": 0,
+   "scaled_live_ns_if_gpu": null,
+   "kind": "MEASURED",
+   "method": "production wait_ns \u2212 gpu_ns (GPUEnd\u2212GPUStart). Host is not the wall if this is << GPU.",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  },
+  {
+   "component": "unattributed_residual",
+   "prior_ns_per_token": 341925.0,
+   "prior_pct_of_token_wall": 0.9706080549695856,
+   "resource_class": "gpu",
+   "bytes_read": 2720,
+   "bytes_written": 20480,
+   "dispatches": 1,
+   "scaled_live_ns_if_gpu": 292899.9579024834,
+   "kind": "DERIVED",
+   "method": "NAMED residual = embed_row_gather (4999 ns) + intra_cb_encoder_transition_gap (341925 ns) + host_tail_outside_encode_submit_wait (0 ns) + rounding",
+   "command": "git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+  }
+ ],
+ "q80_anchor": {
+  "anchor": {
+   "pct_of_700_GBs": 0.79,
+   "gpu_idle_pct": 51.0,
+   "ceiling_gb_s": 700.0,
+   "kind": "PRIOR_MEASURED",
+   "note": "Qwen3-80B MoE mixed decode, many CBs, host router readback. Sealed prior, not re-derived."
+  },
+  "q4_incumbent": {
+   "achieved_gb_s": 468.9248684655721,
+   "pct_of_700_GBs": 66.98926692365315,
+   "pct_of_819_peak": 57.25578369543005,
+   "pct_of_595p9_roof": 78.69187253995169,
+   "gpu_as_fraction_of_wall": 0.956372018917533,
+   "queue_wait_as_pct_of_wall": 1.3873682774452112,
+   "kind": "DERIVED",
+   "command": "ACTIVE_BYTES_PER_TOKEN / (GPU_NS * 1e-9) / 1e9"
+  },
+  "verdict": "CONTRADICTED_FOR_THIS_INCUMBENT",
+  "reading": "Q80 sat at 0.79% of a 700.0 GB/s ceiling with 51.0% GPU idle because it was dispatch-bound across many CBs. The q4 incumbent is 1 CB / 964 dispatches, streams 468.9 GB/s (67.0% of 700, 78.7% of the 595.9 GB/s sequential roof) with GPU occupying 95.6% of complete-wall. Host queue wait is 1.39% of wall, not 51.0%. Applying the Q80 idle diagnosis to this vehicle is false. The remaining lever is ACTIVE BYTES per token (and encoder/dispatch ceremony), not 'the GPU is idle'."
+ },
+ "metal_probe": {
+  "counterSets": [
+   {
+    "counters": [
+     "GPUTimestamp"
+    ],
+    "name": "timestamp"
+   }
+  ],
+  "hasUnifiedMemory": true,
+  "maxBufferLength": 62620631040,
+  "name": "Apple M3 Ultra",
+  "pipeline_reflection_toy_kernel": {
+   "compiled": true,
+   "maxTotalThreadsPerThreadgroup": 1024,
+   "staticThreadgroupMemoryLength": 16,
+   "threadExecutionWidth": 32
+  },
+  "recommendedMaxWorkingSetSize": 83494174720,
+  "supportsCounterSampling": {
+   "atBlitBoundary": false,
+   "atDispatchBoundary": false,
+   "atDrawBoundary": false,
+   "atStageBoundary": true,
+   "atTileDispatchBoundary": false
+  },
+  "command": "swift /tmp/n004_gpu_ledger_probe.swift"
+ },
+ "artifact": {
+  "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+  "manifest_schema": "hawking.ascent.qwen38_language_uniform_q4.v1",
+  "tensor_count": 755,
+  "q4_tensors": 402,
+  "f32_tensors": 353,
+  "source_weight_elements": 26895998464,
+  "complete_physical_bpw": 4.252735126866492,
+  "stored_payload_bytes": 14297694680,
+  "disk_bytes": 14297933604,
+  "n_files": 756,
+  "by_class_bytes": {
+   "embed_table": 675430440,
+   "norms_and_mixer_f32": 2642952,
+   "linear_attn": 2961704064,
+   "mlp": 9091161600,
+   "full_attn": 891325184,
+   "lm_head": 675430440
+  },
+  "by_class_n": {
+   "embed_table": 1,
+   "norms_and_mixer_f32": 129,
+   "linear_attn": 336,
+   "mlp": 192,
+   "full_attn": 96,
+   "lm_head": 1
+  },
+  "embed_table_bytes": 675430440,
+  "embed_row_bytes": 2720,
+  "ACTIVE_BYTES_PER_TOKEN": 13622266960,
+  "command": "python3 -c 'import json; from pathlib import Path; m=json.loads(Path.home().joinpath(\"models/qwen38-gravity-uniform-q4-v1/manifest.json\").read_text()); embed=next(t[\"bytes\"] for t in m[\"tensors\"] if \"embed_tokens\" in t[\"name\"]); row=34*(5120//64); print(m[\"tensor_payload_bytes\"]-embed+row)'"
+ },
+ "dram_geometry": {
+  "seq_len": 42,
+  "executable_weight_bytes_per_token": 13623403168,
+  "executable_dram_bytes_per_token": 13989071524,
+  "executable_activation_write_bytes": 191649796,
+  "dense_w_materialized_bytes_per_token": 0,
+  "kind": "DERIVED",
+  "command": "tools/headless/noetic_operation_census.py::dram_and_temp"
+ },
+ "occupancy_launch_geometry": {
+  "gate_proj": {
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+   "rows": 17408,
+   "threadgroups": 8704,
+   "threads": 1114112,
+   "threads_per_threadgroup": 128,
+   "simdgroups_per_threadgroup": 4,
+   "gpu_cores": 60,
+   "threadgroups_per_core_if_spread": 145.06666666666666,
+   "note": "Not a hardware occupancy counter. Launch geometry vs 60 M3 Ultra cores. A 17408-row gate launches 8704 TGs; the kernel is bandwidth-saturated, not occupancy-starved."
+  },
+  "lm_head": {
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+   "rows": 248320,
+   "threadgroups": 124160,
+   "threads": 15892480,
+   "threads_per_threadgroup": 128,
+   "simdgroups_per_threadgroup": 4,
+   "gpu_cores": 60,
+   "threadgroups_per_core_if_spread": 2069.3333333333335,
+   "note": "Not a hardware occupancy counter. Launch geometry vs 60 M3 Ultra cores. A 17408-row gate launches 8704 TGs; the kernel is bandwidth-saturated, not occupancy-starved."
+  },
+  "kind": "DERIVED"
+ },
+ "production_shape": {
+  "dispatches_per_token": 964,
+  "command_buffers_per_token": 1,
+  "encoder_count_derived": 964,
+  "source_unit_test": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs::production_dispatch_count_is_964"
+ },
+ "binary": {
+  "path": "/Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+  "bytes": 6305936,
+  "note": "Existing release-fast hybrid greedy; production graph default 964/1 CB (fusion is opt-in)."
+ },
+ "runs": {
+  "n_process_runs": 3,
+  "warm_process_gpu_ns": {
+   "n": 3,
+   "min": 28981041.0,
+   "median": 29049999.0,
+   "max": 29129125.0,
+   "spread_pct": 0.509755611351312,
+   "all": [
+    29129125.0,
+    29049999.0,
+    28981041.0
+   ]
+  },
+  "warm_process_wall_ns": {
+   "n": 3,
+   "min": 30218584.0,
+   "median": 30375208.0,
+   "max": 30498791.0,
+   "spread_pct": 0.9224858641297206,
+   "all": [
+    30498791.0,
+    30375208.0,
+    30218584.0
+   ]
+  },
+  "warm_process_tps": {
+   "n": 3,
+   "min": 32.78818494805253,
+   "median": 32.921585261243315,
+   "max": 33.09221901330651,
+   "spread_pct": 0.9235097971175206,
+   "all": [
+    32.78818494805253,
+    32.921585261243315,
+    33.09221901330651
+   ]
+  },
+  "warm_rep_gpu_ns": {
+   "n": 12,
+   "min": 28820749.0,
+   "median": 29049999.0,
+   "max": 29143333.0,
+   "spread_pct": 1.1104441001874046,
+   "all": [
+    29129125.0,
+    29064166.0,
+    28972000.0,
+    29134458.0,
+    29049999.0,
+    29035625.0,
+    28965208.0,
+    29143333.0,
+    29075583.0,
+    28981041.0,
+    28820749.0,
+    28971583.0
+   ]
+  },
+  "warm_rep_wall_ns": {
+   "n": 12,
+   "min": 30174125.0,
+   "median": 30327792.0,
+   "max": 30518916.0,
+   "spread_pct": 1.1368813133511335,
+   "all": [
+    30493000.0,
+    30516500.0,
+    30327792.0,
+    30498791.0,
+    30298125.0,
+    30375208.0,
+    30266000.0,
+    30518916.0,
+    30310375.0,
+    30218584.0,
+    30205708.0,
+    30174125.0
+   ]
+  },
+  "cold_first_step_gpu_ns": {
+   "n": 3,
+   "min": 74532750.0,
+   "median": 80492625.0,
+   "max": 80919833.0,
+   "spread_pct": 7.9349915597857565,
+   "all": [
+    74532750.0,
+    80492625.0,
+    80919833.0
+   ]
+  },
+  "cold_first_step_wall_ns": {
+   "n": 3,
+   "min": 138128375.0,
+   "median": 147156333.0,
+   "max": 150685125.0,
+   "spread_pct": 8.532932116485942,
+   "all": [
+    138128375.0,
+    150685125.0,
+    147156333.0
+   ]
+  },
+  "cold_first_step_encode_ns": {
+   "n": 3,
+   "min": 2148375.0,
+   "median": 2262000.0,
+   "max": 2570333.0,
+   "spread_pct": 18.65419982316534,
+   "all": [
+    2148375.0,
+    2570333.0,
+    2262000.0
+   ]
+  },
+  "cold_first_step_wait_ns": {
+   "n": 3,
+   "min": 135922792.0,
+   "median": 144832750.0,
+   "max": 148063750.0,
+   "spread_pct": 8.382743543846264,
+   "all": [
+    135922792.0,
+    148063750.0,
+    144832750.0
+   ]
+  },
+  "warm_wait_minus_gpu_ns": {
+   "n": 3,
+   "min": 399084.0,
+   "median": 421416.0,
+   "max": 430167.0,
+   "spread_pct": 7.375847143914801,
+   "all": [
+    430167.0,
+    399084.0,
+    421416.0
+   ]
+  },
+  "warm_encode_ns": {
+   "n": 3,
+   "min": 827083.0,
+   "median": 851500.0,
+   "max": 877208.0,
+   "spread_pct": 5.88667058132707,
+   "all": [
+    877208.0,
+    827083.0,
+    851500.0
+   ]
+  },
+  "warm_submit_ns": {
+   "n": 3,
+   "min": 6125.0,
+   "median": 7500.0,
+   "max": 7542.0,
+   "spread_pct": 18.893333333333334,
+   "all": [
+    7542.0,
+    7500.0,
+    6125.0
+   ]
+  },
+  "warm_sample_readback_ns": {
+   "n": 3,
+   "min": 792.0,
+   "median": 792.0,
+   "max": 916.0,
+   "spread_pct": 15.656565656565656,
+   "all": [
+    792.0,
+    792.0,
+    916.0
+   ]
+  },
+  "dispatches_per_token": 964,
+  "command_buffers_per_token": 1,
+  "fallbacks": [
+   0,
+   0,
+   0
+  ],
+  "greedy_new_token_ids": [
+   248068,
+   198,
+   760,
+   1156,
+   6587,
+   264,
+   11346,
+   11,
+   58655,
+   15673,
+   314,
+   1204,
+   264,
+   18826,
+   27545,
+   264
+  ],
+  "generated_text_excerpt": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+  "concurrent_independent": false,
+  "raw_paths": [
+   "receipts/headless/GPU_LEDGER_RAW.run1.json",
+   "receipts/headless/GPU_LEDGER_RAW.run2.json",
+   "receipts/headless/GPU_LEDGER_RAW.run3.json"
+  ],
+  "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+  "command": "./tools/gpu_lane_lock.sh n004-gpu-ledger /Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy --artifact-root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 --tokenizer /Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json --complete-wall --pairs 2 --max-new-tokens 16 --max-seq-len 256 --out receipts/headless/GPU_LEDGER_RAW.runN.json"
+ },
+ "anchors_reproduced": {
+  "dispatches_per_token": 964,
+  "command_buffers_per_token": 1,
+  "reproduced": true
+ },
+ "never_zero_unmeasurable": true,
+ "sparse_note": "This worktree is sparse. TOKEN_NS prior was read via git show HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json, not by writing receipts/ascent-2026-08-16."
+}

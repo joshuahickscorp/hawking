@@ -126,7 +126,7 @@ def verify(body, expect_bpw_denominator=SOURCE_PARAM_COUNT):
 def demo():
     """Write a container, read it back, and prove each guard fires."""
     from gravity_ir import quant_tensor, shared_basis
-    pin = "workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json"
+    pin = "hawking-experiments/superwave/g1/GRAVITY1_SOURCE_PIN.json"
     p = Program("demo-shared", source_pin=pin)
     b = p.pool.put("SharedBasis", nbytes=256 * 5120 * 2, rank=256)
     e = 17408 * 5120

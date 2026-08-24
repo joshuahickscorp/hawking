@@ -1339,6 +1339,9 @@ impl MetalMixedAccel {
                 Ok(GpuWeight::Hgravs(self.upload_hgravs(left, right)?))
             }
             MixedPackedTensor::Uniform8(body) => Ok(GpuWeight::Uniform(self.upload_uniform(body)?)),
+            MixedPackedTensor::Affine(_) => Err(mixed_error(
+                "HGRAVF01 Affine is a Qwen3.8 organ; Q80 mixed refuses it",
+            )),
         }
     }
 
@@ -1470,6 +1473,9 @@ impl MetalMixedAccel {
                 bits: factor.bits,
                 bound: factor.bound,
             })),
+            MixedGpuKind::Affine { .. } => Err(mixed_error(
+                "HGRAVF01 Affine is a Qwen3.8 organ; Q80 mixed refuses it",
+            )),
         }
     }
 

@@ -1,0 +1,2266 @@
+{
+  "schema": "hawking.headless.namespace_migration.v1",
+  "generated_at": "2026-08-23T20:57:22Z",
+  "head": "38ab698658b4c7966d1b85f96047d886c6e43ad0",
+  "branch": "grok/g026ns-20260823-162830",
+  "incident": "F24",
+  "canonical_package_name": "hcli",
+  "canonical_physical_path": "hcli/",
+  "install": {
+    "pyproject_toml": "pyproject.toml (project name hcli, scripts hcli and jhcli)",
+    "editable": "uv pip install -e . into a venv (Homebrew CPython is PEP 668 externally managed; user site-packages is not writable in this sandbox)",
+    "proof_command": "cd /tmp && env -u PYTHONPATH PATH=<venv>/bin:/opt/homebrew/bin:/usr/bin:/bin python3 -m hcli --help",
+    "console_scripts": [
+      "hcli",
+      "jhcli"
+    ]
+  },
+  "watched_fail_before_fix": {
+    "repro": "sys.path = [tools/haider, repo]; import hcli.engine as a; import tools.haider.hcli.engine as b; a.Engine is b.Engine",
+    "result": false,
+    "same_file": "tools/haider/hcli/engine.py",
+    "engine_ids": [
+      535448141840,
+      535453394960
+    ],
+    "note": "Watched this AssertionError before any files moved. After the move, tools.haider.hcli.engine raises ImportError and hcli.engine.Engine is the only object."
+  },
+  "proof": {
+    "pytest_tools_haider": {
+      "command": "HCLI_SWAP_CEILING_GIB=64 python3 -m pytest tools/haider -q",
+      "result": "517 passed, 3 skipped in 139.85s",
+      "exit": 0
+    },
+    "identity_test": {
+      "path": "tools/haider/hcli/tests/test_module_identity.py",
+      "result": "3 passed",
+      "asserts": [
+        "import hcli.engine succeeds",
+        "importlib.import_module(\"tools.haider.hcli.engine\") raises ImportError",
+        "sys.modules has hcli.engine and not the fossil name"
+      ]
+    },
+    "python_m_hcli_help_from_tmp": {
+      "cwd": "/tmp",
+      "PYTHONPATH": "unset",
+      "PATH": "<venv>/bin:/opt/homebrew/bin:/usr/bin:/bin (~/.local/bin stripped)",
+      "exit": 0
+    },
+    "headless_imports_from_tmp": {
+      "cwd": "/tmp",
+      "files": 98,
+      "imported": 98,
+      "failed": 0
+    }
+  },
+  "ownership": {
+    "HCLI": {
+      "means": "command surface / UI / headless entry / status rendering",
+      "modules": [
+        "hcli.__init__",
+        "hcli.__main__",
+        "hcli.cli",
+        "hcli.app",
+        "hcli.commands",
+        "hcli.tui",
+        "hcli.controller",
+        "hcli.events",
+        "hcli.workspace",
+        "hcli.grok_bridge",
+        "hcli.report_compiler"
+      ],
+      "physical": "hcli/*.py at repo root (installed package)"
+    },
+    "AgentOS": {
+      "means": "Goal, obligations, WorkUnit DAG, scheduler, repair, mutation authority, verifier orchestration, mission persistence, steering",
+      "modules": [
+        "hcli.goal",
+        "hcli.workunit",
+        "hcli.scheduler",
+        "hcli.mission",
+        "hcli.ledger",
+        "hcli.steering",
+        "hcli.mutation",
+        "hcli.verifier_pipeline",
+        "hcli.dag_store",
+        "hcli.executors",
+        "hcli.resources",
+        "hcli.index"
+      ],
+      "physical": "implementation at hcli/<module>.py; ownership package hcli.agentos re-exports the public types (same class objects). Files were not nested under hcli/agentos/ because that would make hcli.goal and hcli.agentos.goal two module objects \u2014 the F24 defect again."
+    },
+    "Runtime": {
+      "means": "model execution, sessions, context, backends, runtime identity",
+      "modules": [
+        "hcli.engine",
+        "hcli.backends",
+        "hcli.session",
+        "hcli.context",
+        "hcli.context_budget",
+        "hcli.runtime",
+        "hcli.models",
+        "hcli.machine",
+        "hcli.max_policy",
+        "hcli.config"
+      ],
+      "physical": "hcli/runtime.py is the Runtime module. A hcli/runtime/ package would shadow it and recreate two identities. Ownership is the module name plus this map."
+    },
+    "Doctor": {
+      "means": "measurement, diagnosis, prescription",
+      "physical": "hcli/doctor/ ownership marker; instruments stay tools/doctor_seal.py and tools/gravity_doctor_*.py (nos_pipeline stage 3). Not relocated: moving them would invent a second import identity.",
+      "owned_paths": [
+        "tools/doctor_seal.py",
+        "tools/gravity_doctor_capability.py",
+        "tools/gravity_doctor_dimensions.py",
+        "tools/gravity_doctor_gate.py"
+      ]
+    },
+    "Gravity": {
+      "means": "experiment search, compilation, candidates",
+      "physical": "hcli/gravity/ ownership marker; product remains tools/gravity_*.py plus hawking crates. Not relocated."
+    },
+    "VMCP": {
+      "means": "sensory / evidence tools",
+      "physical": "hcli/vmcp/ ownership marker; VisionMCP remains the visionmcp/ package. Harnesses insert visionmcp/src (foreign package, not a second hcli name)."
+    },
+    "Genomes": {
+      "means": "learned persistent machine/model/runtime science",
+      "physical": "hcli/genomes/ re-exports MachineGenome from hcli.machine (same class object)",
+      "modules": [
+        "hcli.machine.MachineGenome",
+        "hcli.genomes"
+      ]
+    }
+  },
+  "cycles": {
+    "broken": [
+      {
+        "was": [
+          "hcli.dag_store",
+          "hcli.max_policy",
+          "hcli.resources",
+          "hcli.workunit"
+        ],
+        "how": "extracted atomic_write_json into hcli.persist (no hcli imports). max_policy now imports persist, not dag_store."
+      }
+    ],
+    "remaining_import_time_safe": [
+      {
+        "modules": [
+          "hcli.ledger",
+          "hcli.steering"
+        ],
+        "why_safe": "steering imports Ledger only under TYPE_CHECKING; ledger imports steering inside apply_constraint (function-level). No import-time cycle. Breaking it further would split the one mutation implementation the comments require."
+      }
+    ]
+  },
+  "sys_path": {
+    "deleted_fossil_inserts": 88,
+    "remaining": [
+      {
+        "path": "tools/headless/gate_adversary.py",
+        "text": "543:    sys.path.insert(0, str(vmcp_src))",
+        "reason": "foreign package visionmcp/src \u2014 not a second name for hcli"
+      },
+      {
+        "path": "tools/headless/noetic_gain_rescore.py",
+        "text": "40:sys.path.insert(0, str(TOOLS))",
+        "reason": "loads tools/ gravity_doctor_gate"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "text": "71:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/headless/vmcp_unavailable_gate.py",
+        "text": "948:    sys.path.insert(0, str(src))",
+        "reason": "foreign package visionmcp/src \u2014 not a second name for hcli"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "text": "209:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/headless/runtime_correctness_gate.py",
+        "text": "39:sys.path.insert(0, str(REPO / \"tools\" / \"headless\"))",
+        "reason": "sibling harness import (tools/headless is not an installed package)"
+      },
+      {
+        "path": "tools/headless/rollback_integrity_test.py",
+        "text": "229:        sys.path.insert(0, str(root))",
+        "reason": "anti-vacuity: copies hcli package to a temp dir and imports the broken copy as hcli (one identity, mutated source)"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+        "text": "26:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+        "text": "61:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/headless/hcli_vmcp_integration.py",
+        "text": "35:sys.path.insert(0, str(REPO_ROOT / \"visionmcp\" / \"src\"))",
+        "reason": "foreign package visionmcp/src \u2014 not a second name for hcli"
+      },
+      {
+        "path": "tools/headless/hcli_vmcp_integration.py",
+        "text": "145:sys.path.insert(0, sys.argv[1])   # visionmcp/src",
+        "reason": "foreign package visionmcp/src \u2014 not a second name for hcli"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "text": "23:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "text": "42:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "text": "61:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "text": "76:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/headless/decode_topology_probe.py",
+        "text": "54:sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))",
+        "reason": "loads local metal_budget sibling"
+      },
+      {
+        "path": "tools/headless/vmcp_lattice_disposition.py",
+        "text": "1272:        sys.path.insert(0, str(src))",
+        "reason": "foreign package visionmcp/src \u2014 not a second name for hcli"
+      },
+      {
+        "path": "tools/haider/haider.py",
+        "text": "32:sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))",
+        "reason": "fossil HCLI-v0 bootstrap; loads p0_tool_bridge from its own directory"
+      },
+      {
+        "path": "tools/headless/hcli_self_optimize_2.py",
+        "text": "122:        sys.path.insert(0, parent)",
+        "reason": "script-mode: insert repo root so `import hcli` works when this harness is run as python3 tools/headless/hcli_self_optimize_2.py without an install"
+      },
+      {
+        "path": "tools/headless/handoff_builder.py",
+        "text": "429:            if \"haider\" in text and \"sys.path.insert\" in text:",
+        "reason": "census string describing how to scan for inserts"
+      },
+      {
+        "path": "tools/headless/handoff_builder.py",
+        "text": "1770:                    \"how\": \"scan *_test.py for sys.path.insert(...haider) plus Path.is_dir\",",
+        "reason": "census string describing how to scan for inserts"
+      },
+      {
+        "path": "tools/headless/hcli_restart_resume_test.py",
+        "text": "49:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/headless/hcli_self_supplement.py",
+        "text": "76:sys.path.insert(0, sys.argv[1])",
+        "reason": "child process receives repo root as argv so `import hcli` works in a fresh interpreter; canonical name, not the fossil dotted name"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "text": "831:sys.path.insert(0, {str(REPO_ROOT)!r})",
+        "reason": "child process repo root so `import hcli` works in a fresh interpreter; canonical name"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "text": "911:sys.path.insert(0, {str(REPO_ROOT)!r})",
+        "reason": "child process repo root so `import hcli` works in a fresh interpreter; canonical name"
+      },
+      {
+        "path": "tools/haider/test_haider_edit.py",
+        "text": "11:sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))",
+        "reason": "fossil tests load the sibling script"
+      },
+      {
+        "path": "tools/headless/machine_probe.py",
+        "text": "55:sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))",
+        "reason": "loads local metal_budget sibling"
+      },
+      {
+        "path": "tools/headless/vmcp_forgery_canary.py",
+        "text": "941:        sys.path.insert(0, str(vmcp_src))",
+        "reason": "foreign package visionmcp/src \u2014 not a second name for hcli"
+      },
+      {
+        "path": "tools/headless/noetic_closure_gap.py",
+        "text": "34:sys.path.insert(0, str(REPO / \"tools\"))",
+        "reason": "loads tools/"
+      },
+      {
+        "path": "tools/headless/hcli_self_optimize.py",
+        "text": "94:        sys.path.insert(0, parent)",
+        "reason": "script-mode: insert repo root so `import hcli` works when this harness is run as a script without an install"
+      },
+      {
+        "path": "tools/headless/hcli_persistence_audit.py",
+        "text": "1603:                    f\"sys.path.insert(0, {str(REPO / 'tools' / 'headless')!r})\",",
+        "reason": "sibling harness import (tools/headless is not an installed package)"
+      },
+      {
+        "path": "tools/headless/code_graph.py",
+        "text": "1063:            if fname.endswith(\"path.insert\") or fname in {\"sys.path.insert\", \"sys.path.append\"}:",
+        "reason": "census detector of sys.path.insert, not a live insert"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "426:        \"sys.path.insert\" in stripped or \"sys.path.append\" in stripped",
+        "reason": "census detector / historical plan text"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "885:    # sys.path.insert inventory (headless + in-package tests + fossil siblings)",
+        "reason": "sibling harness import (tools/headless is not an installed package)"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "899:            if \"sys.path.insert\" in line or \"sys.path.append\" in line:",
+        "reason": "census detector / historical plan text"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "912:                        and 'f\"sys.path.insert' not in line",
+        "reason": "census detector / historical plan text"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "913:                        and \"f'sys.path.insert\" not in line",
+        "reason": "census detector / historical plan text"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "1138:                    \"vmcp\": \"visionmcp/ is already its own package; harnesses sys.path.insert visionmcp/src independently\",",
+        "reason": "foreign package visionmcp/src \u2014 not a second name for hcli"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "1152:                \"owns\": \"HCLI-v0 Gate Zero bootstrap. Does not import the hcli package. sys.path.insert of its own directory + import p0_tool_bridge.\",",
+        "reason": "census detector / historical plan text"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "1513:        f\"{len(headless_files_without)} headless .py files have no sys.path.insert\"",
+        "reason": "sibling harness import (tools/headless is not an installed package)"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "1518:    print(\"\\nheadless sys.path.insert sites:\")",
+        "reason": "sibling harness import (tools/headless is not an installed package)"
+      },
+      {
+        "path": "tools/headless/namespace_plan.py",
+        "text": "1521:    print(\"\\nheadless files WITHOUT sys.path.insert:\")",
+        "reason": "sibling harness import (tools/headless is not an installed package)"
+      },
+      {
+        "path": "tools/haider/test_p0_tool_bridge.py",
+        "text": "7:sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))",
+        "reason": "fossil tests load the sibling script"
+      },
+      {
+        "path": "tools/headless/vmcp_capability_probe.py",
+        "text": "691:        sys.path.insert(0, str(vmcp_src))",
+        "reason": "foreign package visionmcp/src \u2014 not a second name for hcli"
+      }
+    ],
+    "remaining_count": 44,
+    "policy": "Deleted every insert that existed only to make tools.haider.hcli or PYTHONPATH=tools/haider work. Remaining inserts are foreign packages, sibling harnesses, fossil HCLI-v0, census detectors, or child-process repo-root so `import hcli` works in a fresh interpreter."
+  },
+  "migrated": {
+    "count": 300,
+    "by_kind": {
+      "dotted_import_or_patch_path": 209,
+      "sys.path_insert": 88,
+      "PYTHONPATH_fossil": 3
+    },
+    "product_modules_moved_from_tools_haider_hcli_to_hcli": [
+      "__init__.py",
+      "__main__.py",
+      "app.py",
+      "backends.py",
+      "cli.py",
+      "commands.py",
+      "config.py",
+      "context.py",
+      "context_budget.py",
+      "controller.py",
+      "dag_store.py",
+      "engine.py",
+      "events.py",
+      "executors.py",
+      "goal.py",
+      "grok_bridge.py",
+      "index.py",
+      "ledger.py",
+      "machine.py",
+      "max_policy.py",
+      "mission.py",
+      "models.py",
+      "mutation.py",
+      "paths.py",
+      "persist.py",
+      "report_compiler.py",
+      "resources.py",
+      "runtime.py",
+      "scheduler.py",
+      "session.py",
+      "steering.py",
+      "tui.py",
+      "verifier_pipeline.py",
+      "workspace.py",
+      "workunit.py"
+    ],
+    "product_modules_moved_count": 35,
+    "modified_live_files": 119,
+    "references": [
+      {
+        "path": "tools/haider/hcli/tests/conftest.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli import mission  # noqa: F401"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import Engine, EngineError, NoOpMutation"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mutation import MutationError, _apply_insert, _apply_replace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_acceptance_integrity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_backend_health.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_backend_health.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import NoOpMutation"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_backend_health.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokContractError, GrokNotAvailable, GrokRunError"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_backend_health.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mutation import MutationError"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_backend_health.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import ResourceLimits, can_admit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_backend_health.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "import tools.haider.hcli.resources as resources_mod"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_backend_health.py",
+        "kind": "sys.path_insert",
+        "text": "f\"sys.path.insert(0, {str(REPO)!r})\\n\""
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_backend_health.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"from tools.haider.hcli.resources import BackendHealth\\n\""
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_callpath.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_callpath.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.config import Config, coerce_bool, coerce_on_off"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_callpath.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_callpath.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_callpath.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_command_ingress.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_command_ingress.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.app import App"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_command_ingress.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.commands import REQUIRED_COMMANDS, CommandHandler"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_command_ingress.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.controller import Controller"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_command_ingress.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_command_ingress.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokBridge, GrokRunHandle"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_command_ingress.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.tui import TUI"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_commands_grok.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_commands_grok.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.commands import CommandHandler"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_commands_grok.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokBridge, GrokRunHandle"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_config_persist.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_config_persist.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.config import Config"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_config_persist.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.controller import Controller"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_config_persist.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_config_persist.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.models import ModelRegistry, discover_models"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_budget.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_budget.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.config import Config"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_budget.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.context_budget import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_budget.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_budget.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_compiler.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_compiler.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.context_budget import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_compiler.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import EngineError"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_compiler.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.executors import consult_worker, execute_workunit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_compiler.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.goal import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_context_compiler.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit, emit_repair"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_dag_store.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_dag_store.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.dag_store import DagCorruptError, DagStore, atomic_write_json"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_dag_store.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.scheduler import Scheduler"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_dag_store.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit, is_ready"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.ledger import Ledger"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.ledger import Ledger"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.controller import Controller"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.controller import Controller"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_durability_restart.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.backends import StructuredOutputExhausted"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.config import Config"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import Engine, HCLI_RESULT_SCHEMA"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_evidence_freshness.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_evidence_freshness.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.config import Config"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_evidence_freshness.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import Engine"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_evidence_freshness.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_evidence_freshness.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_executors.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_executors.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.executors import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_executors.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokRunHandle"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_executors.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import MutationLock"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_executors.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import Engine, EngineError, _SYSTEM_PROMPT"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.goal import GoalCompiler"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mission import Mission"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.config import Config"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.goal import WorkerPacket, compile_worker_context"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.goal import compile_worker_context"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.steering import SteerEvent"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.goal import compile_worker_context"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.executors import dispatch_workunit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.executors import consult_worker"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.goal import compile_worker_context"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal_workunit_dag.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal_workunit_dag.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.goal import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_goal_workunit_dag.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import identify_ready, transition_status"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grammar.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grammar.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.cli import parse_haider_args, resolve_resident_runtime_limit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_async.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_async.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokBridge, GrokRunError"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_async.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.report_compiler import compile_backend_report"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_async.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.grok_bridge.shutil.which\","
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_async.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.grok_bridge.subprocess.run\","
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import (  # noqa: E402"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.grok_bridge.shutil.which\","
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.grok_bridge.subprocess.run\","
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.grok_bridge.subprocess.run\", side_effect=boom):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.grok_bridge.subprocess.Popen\", side_effect=boom"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.grok_bridge.subprocess.run\", side_effect=boom):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.grok_bridge.subprocess.Popen\", side_effect=boom"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.grok_bridge.shutil.which\", return_value=None):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.grok_bridge.shutil.which\", return_value=None):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.grok_bridge.subprocess.run\", side_effect=fake_run):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.grok_bridge.subprocess.run\", side_effect=fake_run):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import grok_succeeded"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.grok_bridge.subprocess.run\", side_effect=fake_run):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_bridge.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.grok_bridge.subprocess.run\", side_effect=boom):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokBridge, process_alive"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mission import Mission"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokBridge"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mission import Mission"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_grok_identity.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(Path(__file__).resolve().parents[2]))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_install_shims.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_install_shims.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.cli import install_shims"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_ledger.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_ledger.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.ledger import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_ledger.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.steering import SteeringQueue"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_max_policy.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_max_policy.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.max_policy import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_max_policy.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mission.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mission.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.controller import Controller"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mission.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mission import Mission, MissionCorruptError"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mission.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.steering import SteeringQueue"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mission.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mission.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mission.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli import max_policy as mp"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mission.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.controller.grok_pool_snapshot\", isolated):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mixed_backend.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mixed_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.controller import Controller"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mixed_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mission import Mission"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mixed_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import MutationLock"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mixed_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit, transition_status"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.backends import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\", return_value=MLX_HELP"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\","
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\", return_value=MLX_HELP"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\", return_value=MLX_HELP"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\", return_value=MLX_HELP"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\", return_value=MLX_HELP"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\", return_value=MLX_HELP"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\", return_value=MLX_HELP"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mlx_backend.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"tools.haider.hcli.backends.mlx_help_text\", return_value=MLX_HELP"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_models_sidecars.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_models_sidecars.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.models import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mutation_hash.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mutation_hash.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mutation import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import MutationLock, process_start_token"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import MutationLock, process_start_token"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_mutation_lock_race.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import MutationLock"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.controller import Controller"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import Engine"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.goal import GoalCompiler"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.ledger import Ledger"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.executors import WorkUnitExecutor"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_p0_closeout.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.executors import WorkUnitExecutor"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_parallel_engine.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(Path(__file__).resolve().parents[3]))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_parallel_engine.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import Engine, EngineError"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_parallel_engine.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_parallel_engine.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_receipt_diagnostics.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_receipt_diagnostics.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import Engine"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_receipt_diagnostics.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_receipt_diagnostics.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workspace import Workspace"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_report_compiler.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.report_compiler import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_report_compiler.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokBridge"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_authority.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_authority.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.backends import CompletionResult"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_authority.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.machine import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_authority.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli import machine as machine_mod"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_authority.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import pid_is_alive, process_start_token"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_authority.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.runtime import RuntimePool"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_authority.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.backends import terminate_pid"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_pool.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_pool.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.backends import CompletionResult, LlamaServerBackend"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_pool.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.machine import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_pool.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import pid_is_alive, process_start_token"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_pool.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.runtime import RuntimePool, allocate_port"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_pool.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.backends import terminate_pid"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_runtime_pool.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.runtime import store_observed_overlap"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli import scheduler as scheduler_mod"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import ResourceLimits"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.scheduler import Scheduler"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.scheduler import Scheduler"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit, content_identity"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_resources.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_resources.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_resources.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.scheduler import NO_PROGRESS, Scheduler, UnverifiedCompletion"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_scheduler_resources.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_status_completeness.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_status_completeness.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.commands import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_status_completeness.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.ledger import Ledger"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_status_truth.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_status_truth.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.commands import format_status"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_status_truth.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.controller import Controller, _http_json"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_status_truth.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import MutationLock"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_status_truth.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "with patch(\"tools.haider.hcli.controller._http_json\", side_effect=fake_http):"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_steer_constraint.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_steer_constraint.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.ledger import Ledger"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_steer_constraint.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.steering import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_tui_events.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(Path(__file__).resolve().parents[3]))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_tui_events.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.events import EventBus"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_tui_events.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.tui import TUI"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_verifier_authority.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_verifier_authority.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.verifier_pipeline import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_verifier_pipeline.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_verifier_pipeline.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.verifier_pipeline import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli import dag_store as dag_store_mod"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli import workunit as workunit_mod"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.dag_store import DagStore"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.scheduler import Scheduler"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit, assign_ready, identify_ready, is_ready"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "sys.path_insert",
+        "text": "f\"sys.path.insert(0, {str(REPO)!r})\\n\""
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"from tools.haider.hcli.dag_store import DagStore\\n\""
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_identity.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"from tools.haider.hcli import workunit as wm\\n\""
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_status.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_status.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import ("
+      },
+      {
+        "path": "tools/haider/hcli/tests/test_workunit_status.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import assign_ready"
+      },
+      {
+        "path": "tools/headless/hcli_acceptance_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_agentos_ledger_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_bootstrap_live_proof.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_bootstrap_live_proof.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/headless/hcli_callpath_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_command_driver.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_command_ingress_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_command_ingress_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO))"
+      },
+      {
+        "path": "tools/headless/hcli_containment_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_crash_checkpoint_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_dag_consolidation_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_foundation_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_foundation_test.py",
+        "kind": "PYTHONPATH_fossil",
+        "text": "\"PYTHONPATH=tools/haider python3 -m hcli install-shims\""
+      },
+      {
+        "path": "tools/headless/hcli_grok_dispatch_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_grokbridge_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_long_context_ingress.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_max_isolation_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_mission_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_mission_test.py",
+        "kind": "sys.path_insert",
+        "text": "f\"sys.path.insert(0, {str(REPO / 'tools' / 'haider')!r})\","
+      },
+      {
+        "path": "tools/headless/hcli_mission_test.py",
+        "kind": "PYTHONPATH_fossil",
+        "text": "env[\"PYTHONPATH\"] = str(REPO / \"tools\" / \"haider\") + os.pathsep + env.get("
+      },
+      {
+        "path": "tools/headless/hcli_mission_test.py",
+        "kind": "sys.path_insert",
+        "text": "f\"sys.path.insert(0, {str(REPO / 'tools' / 'haider')!r})\","
+      },
+      {
+        "path": "tools/headless/hcli_mission_test.py",
+        "kind": "PYTHONPATH_fossil",
+        "text": "env[\"PYTHONPATH\"] = str(REPO / \"tools\" / \"haider\") + os.pathsep + env.get("
+      },
+      {
+        "path": "tools/headless/hcli_mixed_max_campaign.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_mixed_max_campaign.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "MISSION workspace as its cwd, and these checks import `tools.haider.hcli`,"
+      },
+      {
+        "path": "tools/headless/hcli_mixed_max_campaign.py",
+        "kind": "sys.path_insert",
+        "text": "f'{PY} -c \"import sys;sys.path.insert(0,r\\'{REPO_ROOT}/tools/haider\\');'"
+      },
+      {
+        "path": "tools/headless/hcli_mixed_max_campaign.py",
+        "kind": "sys.path_insert",
+        "text": "f'{PY} -c \"import sys;sys.path.insert(0,r\\'{REPO_ROOT}/tools/haider\\');'"
+      },
+      {
+        "path": "tools/headless/hcli_mixed_max_campaign.py",
+        "kind": "sys.path_insert",
+        "text": "f'{PY} -c \"import sys;sys.path.insert(0,r\\'{REPO_ROOT}/tools/haider\\');'"
+      },
+      {
+        "path": "tools/headless/hcli_p0_gates.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_repair_homeostasis_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_runtime_authority_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_runtimepool_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_runtimepool_test.py",
+        "kind": "sys.path_insert",
+        "text": "f\"sys.path.insert(0, {str(REPO / 'tools' / 'haider')!r})\\n\""
+      },
+      {
+        "path": "tools/headless/hcli_scheduler_quality.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_scheduler_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_self_supplement.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "# `tools.haider.hcli...`, so pytest needs the repo root on sys.path, and a"
+      },
+      {
+        "path": "tools/headless/hcli_true_mixed_max.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_true_mixed_max.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "# as cwd, and these checks import tools.haider.hcli."
+      },
+      {
+        "path": "tools/headless/hcli_true_mixed_max.py",
+        "kind": "sys.path_insert",
+        "text": "f'{PY} -c \"import sys; sys.path.insert(0, \\'tools/haider\\'); '"
+      },
+      {
+        "path": "tools/headless/hcli_validation_authority_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_verifier_pipeline_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_vmcp_integration.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/hcli_vmcp_integration.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, sys.argv[1])   # tools/haider"
+      },
+      {
+        "path": "tools/headless/qwen_equilibrium_probe.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT))"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(REPO_ROOT / \"tools\" / \"haider\"))"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.dag_store import DagStore  # noqa: E402"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.engine import NoOpMutation  # noqa: E402"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import (  # noqa: E402"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mission import Mission  # noqa: E402"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mutation import MutationError  # noqa: E402"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.resources import (  # noqa: E402"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.scheduler import (  # noqa: E402"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.workunit import WorkUnit, assign_ready, is_ready  # noqa: E402"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "sys.path_insert",
+        "text": "f\"sys.path.insert(0, {str(REPO_ROOT)!r})\\n\""
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"from tools.haider.hcli.resources import BackendHealth\\n\""
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "sys.path_insert",
+        "text": "f\"sys.path.insert(0, {str(REPO_ROOT)!r})\\n\""
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "\"from tools.haider.hcli.resources import BackendHealth\\n\""
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "import tools.haider.hcli.executors as executors_mod"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "import tools.haider.hcli.grok_bridge as gb"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokBridge"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.grok_bridge import GrokBridge"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.mission import mission_state_path"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "from tools.haider.hcli.dag_store import atomic_write_json"
+      },
+      {
+        "path": "tools/headless/repair_disposition_table.py",
+        "kind": "dotted_import_or_patch_path",
+        "text": "import tools.haider.hcli.grok_bridge as gb"
+      },
+      {
+        "path": "tools/headless/rollback_integrity_test.py",
+        "kind": "sys.path_insert",
+        "text": "sys.path.insert(0, str(Path(__file__).resolve().parents[1] / \"haider\"))"
+      }
+    ]
+  },
+  "preserved": {
+    "policy": "Do not rename schema ids, receipt filenames, log text, or anything under receipts/. Historical names in historical receipts are evidence. Fossil HCLI-v0 (haider.py, p0_tool_bridge.py) stays. lab/hcli and crates/hide-backend hcli.rs are other products.",
+    "sealed_schema_ids": {
+      "count": 48,
+      "ids": [
+        "hawking.ascent.qwen38_complete_token_wall.v1",
+        "hawking.hcli.self_optimization_bootstrap.milestones.v1",
+        "hawking.hcli.self_optimization_bootstrap.v1",
+        "hawking.headless.acceptance_vacuity.v1",
+        "hawking.headless.artifact_ledger.v1",
+        "hawking.headless.backend_capability.v1",
+        "hawking.headless.capability_suite.v1",
+        "hawking.headless.dag_consolidation_decision.v1",
+        "hawking.headless.decode_topology.v1",
+        "hawking.headless.dirty_tree_preservation.v1",
+        "hawking.headless.disk_truth.v1",
+        "hawking.headless.freetoken_assessment.v1",
+        "hawking.headless.g003_root_cause.v1",
+        "hawking.headless.gpu_attack.v1",
+        "hawking.headless.gpu_memory_gate.v1",
+        "hawking.headless.gravity_coherence_diagnosis.v1",
+        "hawking.headless.hcli_audit.v1",
+        "hawking.headless.hcli_crash_checkpoint.v1",
+        "hawking.headless.hcli_persistence_audit.v1",
+        "hawking.headless.hcli_scheduler_quality.v1",
+        "hawking.headless.hcli_self_opt.iteration.v1",
+        "hawking.headless.machine_genome.v1",
+        "hawking.headless.model_registry.v1",
+        "hawking.headless.namespace_plan.v1",
+        "hawking.headless.noetic_dsv4f_cosine.v1",
+        "hawking.headless.noetic_executable_closure.v1",
+        "hawking.headless.noetic_gain_rescore.v1",
+        "hawking.headless.noetic_gate_adversary.v1",
+        "hawking.headless.noetic_information_accounting.v1",
+        "hawking.headless.noetic_kernel_census.v1",
+        "hawking.headless.noetic_l0_reopen.v1",
+        "hawking.headless.noetic_metrics.v1",
+        "hawking.headless.noetic_operation_census.v1",
+        "hawking.headless.noetic_organ_census.v1",
+        "hawking.headless.noetic_route_ledger.v1",
+        "hawking.headless.noetic_tpr64_reopen.v1",
+        "hawking.headless.port_matrix.v1",
+        "hawking.headless.qwen38_gravity_native.v1",
+        "hawking.headless.qwen38_gravity_native_raw.v1",
+        "hawking.headless.qwen_archaeology.v1",
+        "hawking.headless.qwen_tune_skipped.v1",
+        "hawking.headless.runtime_ab.v1",
+        "hawking.headless.runtime_experiment.v1",
+        "hawking.headless.storage_selection.v1",
+        "hawking.headless.structured_output_probe.v1",
+        "hawking.headless.vmcp_capability_surface.v1",
+        "hawking.headless.vmcp_unavailable_gate.v1",
+        "hawking.headless.writer_authority.v1"
+      ],
+      "reason": "schema ids are the sealed contract; renaming is a regression"
+    },
+    "named_schema_cites": {
+      "count": 2,
+      "cites": [
+        {
+          "id": "hawking.nos.nr_nx_artifact.v1",
+          "path": "receipts/headless/NOETIC_METRICS.json",
+          "line": 10,
+          "resolves": "disk",
+          "preserve": true
+        },
+        {
+          "id": "hcli.command.v1",
+          "path": "crates/hide-backend/src/bin/hcli.rs",
+          "line": 32,
+          "resolves": "disk",
+          "preserve": true
+        }
+      ],
+      "reason": "explicitly called out (hawking.nos.nr_nx_artifact.v1 and hcli.command.v1)"
+    },
+    "historical_receipt_filenames": {
+      "count": 120,
+      "names": [
+        "receipts/headless/ACCEPTANCE_VACUITY.json",
+        "receipts/headless/AGENTOS_GROK_WORKUNITS.json",
+        "receipts/headless/AGENTOS_SINGLE_WRITER.json",
+        "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+        "receipts/headless/ARTIFACT_LEDGER.json",
+        "receipts/headless/AUTHORITY_CENSUS.json",
+        "receipts/headless/BACKEND_CAPABILITY.json",
+        "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+        "receipts/headless/C2TENSOROP_DESIGN.json",
+        "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+        "receipts/headless/C4CODEBOOK_DESIGN.json",
+        "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json",
+        "receipts/headless/CAPABILITY_llamacpp-q5k.json",
+        "receipts/headless/CAPABILITY_mlx-4bit.json",
+        "receipts/headless/CODE_GRAPH.json",
+        "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+        "receipts/headless/DEAD_CODE_CENSUS.json",
+        "receipts/headless/DECODE_TOPOLOGY.json",
+        "receipts/headless/DIRTY_TREE_PRESERVATION.json",
+        "receipts/headless/DISK_TRUTH.json",
+        "receipts/headless/FREETOKEN_ASSESSMENT.json",
+        "receipts/headless/G003_ROOT_CAUSE.json",
+        "receipts/headless/GPU_ATTACK.json",
+        "receipts/headless/GPU_MEMORY_GATE.json",
+        "receipts/headless/GRAVITY_COHERENCE_DIAGNOSIS.json",
+        "receipts/headless/GROK_MAX_EQUILIBRIUM.json",
+        "receipts/headless/HCLI_AUDIT.json",
+        "receipts/headless/HCLI_BOOTSTRAP_HANDOFF.json",
+        "receipts/headless/HCLI_BOOTSTRAP_LIVE.json",
+        "receipts/headless/HCLI_BOOTSTRAP_MILESTONES.json",
+        "receipts/headless/HCLI_COMMAND_INGRESS.json",
+        "receipts/headless/HCLI_CONTEXT_AUTHORITY.json",
+        "receipts/headless/HCLI_CONTEXT_CAUSE.json",
+        "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
+        "receipts/headless/HCLI_LONG_CONTEXT_ROOT_INGRESS.json",
+        "receipts/headless/HCLI_MAX_CONTEXT_NONREGRESSION.json",
+        "receipts/headless/HCLI_MIXED_MAX.json",
+        "receipts/headless/HCLI_PERSISTENCE_AUDIT.json",
+        "receipts/headless/HCLI_REAL_ULTRAGOAL_PREFLIGHT.json",
+        "receipts/headless/HCLI_REPORT_COMPACTION.json",
+        "receipts/headless/HCLI_RESTART_RESUME.json",
+        "receipts/headless/HCLI_SCHEDULER_QUALITY.json",
+        "receipts/headless/HCLI_SELF_OPT_ITERATION_1.json",
+        "receipts/headless/HCLI_SELF_OPT_ITERATION_2.json",
+        "receipts/headless/HCLI_SELF_OPT_ITERATION_2_REMEASURED.json",
+        "receipts/headless/HCLI_SELF_SUPPLEMENT.json",
+        "receipts/headless/HCLI_STATUS_OBSERVABILITY.json",
+        "receipts/headless/HCLI_TRUE_MIXED_MAX.json",
+        "receipts/headless/HCLI_ULTRAGOAL_INGRESS.json",
+        "receipts/headless/HCLI_WORKUNIT_FOCUSED_CONTEXT.json",
+        "receipts/headless/LANE_WATCH.json",
+        "receipts/headless/LONG_CONTEXT_RUNTIME_CAPABILITY.json",
+        "receipts/headless/MACHINE_GENOME.json",
+        "receipts/headless/MACHINE_GENOME.superseded-20260822T2308Z.json",
+        "receipts/headless/MAX_ARTIFICIAL_WORK_AUDIT.json",
+        "receipts/headless/MAX_DEPENDENCY_AND_ISOLATION.json",
+        "receipts/headless/MODEL_REGISTRY.json",
+        "receipts/headless/NAMESPACE_PLAN.json",
+        "receipts/headless/NOETIC_ARCHAEOLOGY_INDEX.json",
+        "receipts/headless/NOETIC_CLOSURE_GAP.json",
+        "receipts/headless/NOETIC_COMPOSITION.json",
+        "receipts/headless/NOETIC_DELTANET_DESIGN.json",
+        "receipts/headless/NOETIC_DSV4F_COSINE.json",
+        "receipts/headless/NOETIC_EXECUTABLE_CLOSURE.json",
+        "receipts/headless/NOETIC_GAIN_RESCORE.json",
+        "receipts/headless/NOETIC_GATE_ADVERSARY.json",
+        "receipts/headless/NOETIC_GQA_DESIGN.json",
+        "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+        "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+        "receipts/headless/NOETIC_L0_REOPEN.json",
+        "receipts/headless/NOETIC_METRICS.json",
+        "receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+        "receipts/headless/NOETIC_MLX_ANATOMY.json",
+        "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+        "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+        "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+        "receipts/headless/NOETIC_ROUTE_LEDGER.json",
+        "receipts/headless/NOETIC_TPR64_REOPEN.json",
+        "receipts/headless/NOETIC_TRAFFIC_MODEL.json",
+        "receipts/headless/NOMENCLATURE_CENSUS.json",
+        "receipts/headless/P0_GATES.json",
+        "receipts/headless/P0_GATES_BASELINE.json",
+        "receipts/headless/PERFORMANCE_LEDGER.jsonl",
+        "receipts/headless/PORT_MATRIX.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_PACK.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_PACK.json.stderr",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_PACK.json.stdout",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run1.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run2.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run3.json",
+        "receipts/headless/QWEN_ARCHAEOLOGY.json",
+        "receipts/headless/QWEN_MAX_EQUILIBRIUM.json",
+        "receipts/headless/QWEN_MAX_EQUILIBRIUM_123.json",
+        "receipts/headless/QWEN_MAX_EQUILIBRIUM_LADDER.json",
+        "receipts/headless/QWEN_TUNE_SKIPPED.json",
+        "receipts/headless/RAMANUJAN_DISBAND.json",
+        "receipts/headless/REPAIR_DISPOSITION.json",
+        "receipts/headless/REPAIR_HOMEOSTASIS.json",
+        "receipts/headless/RUNTIME_AB.json",
+        "receipts/headless/RUNTIME_AB.lineage-matched.json",
+        "receipts/headless/RUNTIME_AUTHORITY.json",
+        "receipts/headless/RUNTIME_CORRECTNESS.json",
+        "receipts/headless/RUNTIME_CORRECTNESS_DAMAGED.json",
+        "receipts/headless/RUNTIME_EXPERIMENT.json",
+        "receipts/headless/SPRING_CLEAN_CENSUS.json",
+        "receipts/headless/STARTUP_CENSUS.json",
+        "receipts/headless/STORAGE_SELECTION.json",
+        "receipts/headless/STRUCTURED_OUTPUT_PROBE.json",
+        "receipts/headless/TRUST_THRESHOLD.json",
+        "receipts/headless/VMCP_AGENTOS_INTEGRATION.json",
+        "receipts/headless/VMCP_CAPABILITY_SURFACE.json",
+        "receipts/headless/VMCP_CENSUS.json",
+        "receipts/headless/VMCP_FORGERY_CANARY.json",
+        "receipts/headless/VMCP_LATTICE_DISPOSITION.json",
+        "receipts/headless/VMCP_UNAVAILABLE_GATE.json",
+        "receipts/headless/WRITER_AUTHORITY.json",
+        "receipts/headless/snapshots/hcli-source-20260822T222931Z.tar.gz",
+        "receipts/headless/writer_authority_before.txt"
+      ],
+      "reason": "historical receipt FILENAMES under receipts/ are evidence"
+    },
+    "historical_receipt_bodies": {
+      "count": 97,
+      "reason": "git diff receipts/ is empty except this new NAMESPACE_MIGRATION.json; bodies including historical tools.haider.hcli text were not rewritten",
+      "dotted_tools_haider_hcli_hits_still_in_receipts_headless": 536
+    },
+    "on_disk_state_dir_names": {
+      "count": 5,
+      "names": [
+        {
+          "name": ".hcli/",
+          "role": "live per-workspace durable state (dag.json, mission, ledger, grok receipts, sessions)",
+          "preserve": true,
+          "cite": "tools/haider/hcli/dag_store.py:3"
+        },
+        {
+          "name": ".haider/",
+          "role": "gitignored fossil state dir; also listed in engine skip sets and genome lookup",
+          "preserve": true,
+          "cite": ".gitignore:182 and tools/haider/hcli/cli.py:14"
+        },
+        {
+          "name": "~/.config/hcli/",
+          "role": "user config + machine_genome.json",
+          "preserve": true,
+          "cite": "tools/haider/hcli/config.py:41"
+        },
+        {
+          "name": "~/.local/share/hcli/current",
+          "role": "install-shims package copy; PYTHONPATH for the operator shims",
+          "preserve": true,
+          "cite": "tools/haider/hcli/cli.py:191"
+        },
+        {
+          "name": "~/.local/bin/{hcli,jhcli}",
+          "role": "user-facing shims; both exec python -m hcli",
+          "preserve_command_name": true,
+          "cite": "tools/haider/hcli/cli.py:221"
+        }
+      ],
+      "reason": ".hcli/ .haider/ ~/.config/hcli/ operator shims are live state or fossil state, not import paths"
+    },
+    "gitignore_haider": {
+      "rule": ".haider/",
+      "reason": "gitignore of fossil state dir; PRESERVE the ignore rule"
+    },
+    "fossil_hcli_v0": {
+      "paths": [
+        "tools/haider/haider.py",
+        "tools/haider/p0_tool_bridge.py",
+        "tools/haider/test_haider_edit.py",
+        "tools/haider/test_p0_tool_bridge.py",
+        "tools/haider/P1_HAIDER_PRODUCTIZATION_MAX.md"
+      ],
+      "reason": "disconnected Gate Zero bootstrap; later campaign to retire after zero callers"
+    },
+    "other_products_sharing_the_name": [
+      "lab/hcli/ (lab.hcli, not this package)",
+      "crates/hide-backend/src/bin/hcli.rs (schema hcli.command.v1)",
+      "crates/hide-backend/src/haider/ (unwired Rust namesake)"
+    ],
+    "tests_stay_under_tools_haider_hcli_tests": {
+      "reason": "acceptance requires python3 -m pytest tools/haider -q; moving tests would miss that command. They import hcli, not tools.haider.hcli."
+    },
+    "remaining_live_dotted_fossil_strings": {
+      "count": 12,
+      "items": [
+        {
+          "path": "tools/haider/hcli/tests/test_module_identity.py",
+          "text": "6:* ``tools.haider.hcli.engine``  with sys.path = <repo>",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/haider/hcli/tests/test_module_identity.py",
+          "text": "22:# Built so a mechanical ``tools.haider.hcli`` -> ``hcli`` rewrite cannot",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "hcli/__init__.py",
+          "text": "3:Canonical import name: ``hcli``. ``tools.haider.hcli`` is gone.",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/dead_code_census.py",
+          "text": "305:        f\"from tools.haider.hcli.{stem} import\",",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/dead_code_census.py",
+          "text": "935:                \"residency, self-evolution), not tools.haider.hcli. Internals \"",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/namespace_plan.py",
+          "text": "617:    add(\"import_tools_haider_hcli\", [sys.executable, \"-c\", \"import tools.haider.hcli\"])",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/namespace_plan.py",
+          "text": "1214:                f\"{len(import_tools_haider)} live `from tools.haider.hcli` sites, mostly in \"",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/namespace_plan.py",
+          "text": "1481:    print(\"- two live import conventions exist (from hcli vs from tools.haider.hcli)\")",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/namespace_plan.py",
+          "text": "1506:        f\"from/import tools.haider.hcli: {len(import_tools_haider)}\"",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/code_graph.py",
+          "text": "1233:                f.startswith(\"from hcli\") or f.startswith(\"import hcli\") or \"tools.haider.hcli\" in f",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/code_graph.py",
+          "text": "1943:            if \"tools.haider.hcli\" in form:",
+          "reason": "detector_or_identity_lock_or_docstring"
+        },
+        {
+          "path": "tools/headless/code_graph.py",
+          "text": "1979:                f\"{forms_hcli} statements) and as `tools.haider.hcli.*` \"",
+          "reason": "detector_or_identity_lock_or_docstring"
+        }
+      ],
+      "reason": "code_graph/dead_code_census/namespace_plan detectors still search for the dual identity so a regression is visible; identity test locks the fossil name; hcli/__init__.py docstring says it is gone."
+    }
+  },
+  "anti_goodhart": "Success is one import identity (hcli), an installed package, fossil sys.path inserts gone, and a test that failed on the dual-object defect and now passes. Not a LOC target."
+}

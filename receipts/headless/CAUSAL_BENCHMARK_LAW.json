@@ -1,0 +1,156 @@
+{
+  "schema": "hawking.headless.causal_benchmark_law.v1",
+  "obligation": "N012 (S017 \u00a737)",
+  "git_head": "805700376b64",
+  "law": "A benchmark that would show the same win on a NO-OP is invalid. Every GPU optimization must prove the changed kernel or operator executed: kernel identity, dispatch count, a candidate-specific sentinel, a no-op control and an intentionally bad control.",
+  "why_this_is_not_theoretical": [
+    "A self-optimization harness compared two arms running IDENTICAL code because sys.path ordering made the inspected file differ from the executed module (G021_SCRATCH_IMPORT_SHADOW). Its REFUSED verdicts were vacuous.",
+    "An earlier benchmark fanned completions at a live llama-server and never entered the mutated pool, so a no-op would have scored identically."
+  ],
+  "requirements": {
+    "kernel_identity": "which code actually executed",
+    "dispatch_count": "the execution graph actually changed shape",
+    "sentinel": "something only the candidate path can produce",
+    "noop_control": "a candidate that changes nothing must not score",
+    "bad_control": "a deliberately worse candidate must be rejected"
+  },
+  "audited": [
+    {
+      "receipt": "NOETIC_DISPATCH_FUSION",
+      "claim": "964 -> 756 dispatches, 33.717 -> 35.670 tok/s",
+      "evidence_found": {
+        "kernel_identity": "kernel",
+        "dispatch_count": "dispatch",
+        "sentinel": "expanded_to_q4",
+        "noop_control": "unfused",
+        "bad_control": null
+      },
+      "missing": [
+        "bad_control"
+      ],
+      "verdict": "INCOMPLETE_UNDER_THE_LAW",
+      "would_a_noop_pass": false
+    },
+    {
+      "receipt": "NOETIC_FUSED_SUBBIT",
+      "claim": "2-bit MLP on the fused graph beats the incumbent on both axes",
+      "evidence_found": {
+        "kernel_identity": "kernel",
+        "dispatch_count": "dispatch",
+        "sentinel": "expanded_to_q4",
+        "noop_control": "unfused",
+        "bad_control": "runtime_div"
+      },
+      "missing": [],
+      "verdict": "SURVIVES_THE_LAW",
+      "would_a_noop_pass": false
+    },
+    {
+      "receipt": "AFFINE2_G64_LSFIT",
+      "claim": "LS fit + g64 specialization, 26.84 -> 32.84 tok/s unfused",
+      "evidence_found": {
+        "kernel_identity": "kernel",
+        "dispatch_count": null,
+        "sentinel": "expanded_to_q4",
+        "noop_control": "incumbent",
+        "bad_control": null
+      },
+      "missing": [
+        "dispatch_count",
+        "bad_control"
+      ],
+      "verdict": "INCOMPLETE_UNDER_THE_LAW",
+      "would_a_noop_pass": false
+    },
+    {
+      "receipt": "AFFINE2_NATIVE_MLP",
+      "claim": "native 2-bit MLP at 3.4574 EBPW",
+      "evidence_found": {
+        "kernel_identity": "kernel",
+        "dispatch_count": null,
+        "sentinel": "expanded_to_q4",
+        "noop_control": "incumbent",
+        "bad_control": null
+      },
+      "missing": [
+        "dispatch_count",
+        "bad_control"
+      ],
+      "verdict": "INCOMPLETE_UNDER_THE_LAW",
+      "would_a_noop_pass": false
+    },
+    {
+      "receipt": "NOETIC_Q3_MLP_Q4_ATTN",
+      "claim": "q3 MLP + q4 attention at 3.6165 EBPW",
+      "evidence_found": {
+        "kernel_identity": "kernel",
+        "dispatch_count": "dispatch",
+        "sentinel": "expanded_to_q4",
+        "noop_control": "incumbent",
+        "bad_control": null
+      },
+      "missing": [
+        "bad_control"
+      ],
+      "verdict": "INCOMPLETE_UNDER_THE_LAW",
+      "would_a_noop_pass": false
+    },
+    {
+      "receipt": "GPU_LEDGER",
+      "claim": "incumbent is bandwidth-bound, 468.9 GB/s",
+      "evidence_found": {
+        "kernel_identity": "kernel",
+        "dispatch_count": "dispatch",
+        "sentinel": "dense_w_materialized",
+        "noop_control": "incumbent",
+        "bad_control": null
+      },
+      "missing": [
+        "bad_control"
+      ],
+      "verdict": "INCOMPLETE_UNDER_THE_LAW",
+      "would_a_noop_pass": false
+    },
+    {
+      "receipt": "NOETIC_MULTISESSION",
+      "claim": "one shared body; concurrency ceiling 1.32x",
+      "evidence_found": {
+        "kernel_identity": "kernel",
+        "dispatch_count": "dispatch",
+        "sentinel": "weights_ptr_shared",
+        "noop_control": "before",
+        "bad_control": null
+      },
+      "missing": [
+        "bad_control"
+      ],
+      "verdict": "INCOMPLETE_UNDER_THE_LAW",
+      "would_a_noop_pass": false
+    },
+    {
+      "receipt": "NOETIC_PARENT_A",
+      "claim": "sealed leader: 3.1393 EBPW, 756 dispatches",
+      "evidence_found": {
+        "kernel_identity": "kernel",
+        "dispatch_count": "dispatch",
+        "sentinel": "expanded_to_q4",
+        "noop_control": "unfused",
+        "bad_control": "runtime_div"
+      },
+      "missing": [],
+      "verdict": "SURVIVES_THE_LAW",
+      "would_a_noop_pass": false
+    }
+  ],
+  "counts": {
+    "claims": 8,
+    "survives": 2,
+    "incomplete": 6,
+    "noop_would_pass": 0
+  },
+  "applied_retroactively": "Deliberately. A law that governs only future work leaves every existing claim unexamined, and the existing claims are the ones the campaign is currently reasoning from.",
+  "limits": [
+    "This audits for the PRESENCE of control evidence in a receipt, not for its correctness. A receipt can name a no-op control and still have run it wrongly.",
+    "Substring matching is permissive on purpose: it finds claims with no trace of a control, not claims whose wording differs."
+  ]
+}

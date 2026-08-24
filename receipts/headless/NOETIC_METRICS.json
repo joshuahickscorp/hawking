@@ -1,0 +1,683 @@
+{
+  "schema": "hawking.headless.noetic_metrics.v1",
+  "generated_at": "2026-08-23T20:09:45Z",
+  "commit": "0d0ff83f0631a9bb952817c7982e82bb8ae6da66",
+  "artifact": {
+    "name": "uniform-q4-v1",
+    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "nr_kind": "hawking.nos.noetic_representation",
+    "nx_kind": "hawking.nos.noetic_executable_genome",
+    "g105_schema": "hawking.nos.nr_nx_artifact.v1",
+    "codec_families": [
+      {
+        "family": "grouped_absmax",
+        "kind": "q4",
+        "bits": 4,
+        "group": 64,
+        "count": 402,
+        "bytes": 14287109840,
+        "hq30_parsed": 402,
+        "groups_seen": [
+          64
+        ]
+      },
+      {
+        "family": "raw_f32",
+        "kind": "f32",
+        "count": 353,
+        "bytes": 10584840
+      }
+    ],
+    "exactly_two_codec_families": true,
+    "tensor_count": 755,
+    "n_files_walked": 756,
+    "skipped_vision_tensors": 333,
+    "fused_in_proj_layers": 48
+  },
+  "machine": {
+    "unified_memory_bytes": 103079215104,
+    "chipset": "Apple M3 Ultra",
+    "source": "sysctl hw.memsize this process; chipset from NX/G105 (not re-derived)"
+  },
+  "byte_boundary": {
+    "model_specific": {
+      "bytes": 14297694680,
+      "what": "755 tensor payloads (HQ30UQ4 + f32v2) under the artifact root",
+      "includes": [
+        "codes",
+        "f16 group scales",
+        "f32 mixer/norm vectors",
+        "per-tensor headers that ride in the file"
+      ],
+      "does_not_include": [
+        "native decode binary",
+        "Metal shaders",
+        "llama.cpp",
+        "OS AGX metallib"
+      ]
+    },
+    "shared_runtime": {
+      "hawking_native_decode_binary_bytes": 6305936,
+      "hawking_native_decode_binary_path": "/Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "hawking_shader_source_bytes": 1526519,
+      "hawking_shader_source_files": 42,
+      "hawking_decode_rs_bytes": 257945,
+      "llama_cpp_runtime_bytes_control_only": 18644144,
+      "boundary": "EXECUTABLE_MODEL_BYTES / EBPW use only tensor payloads. The 6.3 MiB native decode binary and 1.5 MiB of shader source are shared Hawking runtime: they decode this patient and every future Qwen3.8 pack that binds the same kernels. Moving model information into the binary would show up here as runtime growth, not as a fake EBPW win. llama.cpp dylibs are the control runtime for the live GGUF, not this artifact's NX.",
+      "runtime": {
+        "shader_source_files": 42,
+        "shader_source_bytes": 1526519,
+        "decode_rs_bytes": 257945,
+        "decode_rs_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "native_decode_binary_path": "/Users/scammermike/Downloads/hawking-copy/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+        "native_decode_binary_bytes": 6305936,
+        "note": "The release-fast example binary embeds the compiled Metal library. Shader sources are listed so a later pack cannot hide model information in an executable without the split showing up here. OS Metal.framework / AGX metallib are not Hawking and are not counted."
+      },
+      "kernels": {
+        "present": true,
+        "dispatched": 41,
+        "declared_in_tree": 561,
+        "extraction": "string literals in qwen38_hybrid_decode.rs intersected with declared `kernel void` names \u2014 same method as NX"
+      },
+      "kernel_names": [
+        "q80_binary_group_csr_matvec_bytes",
+        "q80_binary_group_csr_matvec_tg256",
+        "q80_binary_group_matvec_simd_bytes",
+        "q80_binary_group_matvec_tg256",
+        "q80_hgravs01_factor_matvec_simd",
+        "q80_hgravs01_factor_matvec_simd3",
+        "q80_sparse_q1_apply_csr",
+        "q80_uniform8_matvec_simd_bytes",
+        "q80_uniform8_matvec_tg256",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_f32_stream_probe",
+        "qwen38_fuse_split_ba_f32",
+        "qwen38_fuse_split_qkvz_f32",
+        "qwen38_gated_delta_decode_vi",
+        "qwen38_gated_delta_decode_vi_simd",
+        "qwen38_gqa_qk_norm_rope_cache_f32",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_hgrafv_embedding_lookup",
+        "qwen38_hgravu_embedding_lookup",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_ba_to_decay_beta_f32",
+        "qwen80_deltanet_gated_rmsnorm_f32",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_gated_delta_decode_tg",
+        "qwen80_residual_rmsnorm_f32",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+        "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+        "qwen_uniform_q4_group64_matvec_vecgroup",
+        "qwen_uniform_q4_group64_matvec_vecgroup_r4",
+        "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+        "sample_argmax_f32_pass1",
+        "sample_argmax_f32_pass2"
+      ]
+    }
+  },
+  "static": {
+    "PARENT_PARAMETER_COUNT": {
+      "value": 26895998464,
+      "status": "MEASURED",
+      "unit": "parameters",
+      "method": "manifest.source_weight_elements; sum(tensor.elements) checked equal",
+      "sum_tensor_elements": 26895998464,
+      "g105_nr": 26895998464
+    },
+    "SOURCE_BYTES": {
+      "value": 53791996928,
+      "status": "MEASURED",
+      "unit": "bytes",
+      "method": "sum of safetensors data_offsets for model.language_model.* plus lm_head.weight. Vision (333 tensors) and MTP are not packed and are not SOURCE_BYTES. Equals PARENT_PARAMETER_COUNT * 2 (bf16).",
+      "bf16_equivalent": 53791996928,
+      "matches_params_times_2": true,
+      "parent_tree": {
+        "files": 98,
+        "bytes": 55586063333,
+        "by_ext": {
+          ".safetensors": 55563006216,
+          "(none)": 13115,
+          ".json": 19667512,
+          ".md": 10187,
+          ".txt": 3353497,
+          ".jinja": 8952,
+          ".tag": 191,
+          ".metadata": 3663,
+          ".lock": 0
+        },
+        "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16"
+      },
+      "census": {
+        "safetensors_files": 18,
+        "header_overhead_bytes": 150312,
+        "language_plus_lm_head_payload_bytes": 53791996928,
+        "method": "safetensors header JSON + data_offsets; file bodies not hashed",
+        "buckets": {
+          "language_model": {
+            "tensors": 850,
+            "bytes": 51249200128
+          },
+          "lm_head": {
+            "tensors": 1,
+            "bytes": 2542796800
+          },
+          "visual": {
+            "tensors": 333,
+            "bytes": 921460192
+          },
+          "mtp": {
+            "tensors": 15,
+            "bytes": 849398784
+          },
+          "other": {
+            "tensors": 0,
+            "bytes": 0
+          }
+        }
+      }
+    },
+    "EXECUTABLE_MODEL_BYTES": {
+      "value": 14297694680,
+      "status": "MEASURED",
+      "unit": "bytes",
+      "method": "sum of 755 tensor file sizes (= manifest.tensor_payload_bytes)",
+      "present_tensor_bytes": 14297694680,
+      "missing": 0
+    },
+    "EXECUTABLE_BPW": {
+      "value": 4.252735126866492,
+      "status": "MEASURED",
+      "unit": "bits_per_weight",
+      "method": "computed this process from walked payload and manifest parameter count",
+      "formula": "8 * EXECUTABLE_MODEL_BYTES / PARENT_PARAMETER_COUNT",
+      "exact": 4.252735126866492,
+      "recorded_approx": 4.253,
+      "manifest_complete_physical_bpw": 4.252735126866492,
+      "delta_vs_recorded_approx": -0.0002648731335082033,
+      "delta_vs_manifest": 0.0,
+      "reconciliation": "Matches manifest complete_physical_bpw exactly. The sealed anchor '~4.253' is that value rounded to three decimals. G042 STORED_BPW 4.25595 was a different directory (campaign run root with extra files); this artifact's walk has no dead tensors."
+    },
+    "TOTAL_PHYSICAL_BYTES": {
+      "value": 14297933604,
+      "status": "MEASURED",
+      "unit": "bytes",
+      "method": "os.walk of artifact root, every regular file, followlinks=False",
+      "n_files": 756,
+      "by_ext": {
+        ".json": 238924,
+        ".hq30uq4": 14287109840,
+        ".f32v2": 10584840
+      },
+      "overhead_vs_payload": 238924,
+      "overhead_is": "manifest.json only (238924 bytes)"
+    },
+    "RESIDENT_BYTES": {
+      "value": 14297694680,
+      "status": "MEASURED",
+      "unit": "bytes",
+      "method": "When loaded, NX residency_plan is all_weights in unified_memory. lsof on the artifact this process shows it is NOT currently mapped, so this is the loaded occupancy (G085's 13.9% numerator), not a live RSS. Headers stay on disk after load (~19 KiB); Metal holds codes+scales \u2248 payload.",
+      "live_mapped_now": {
+        "manifest_open_in_n_processes": 0,
+        "lsof_lines": [],
+        "method": "lsof -nP on manifest.json"
+      },
+      "machine_unified_memory_bytes": 103079215104,
+      "occupancy_fraction_of_ram": 0.1387058939629545,
+      "occupancy_pct": 13.870589396295449,
+      "g085_stated": "13.9% of 103.1 GB"
+    }
+  },
+  "active": {
+    "ACTIVE_BYTES_PER_TOKEN": {
+      "value": 13622266960,
+      "status": "MEASURED",
+      "unit": "bytes/token",
+      "method": "tensor census this process; embed row = q4_matrix_bytes(1, 5120) = 2720",
+      "formula": "payload - embed_table + one_embed_row",
+      "embed_table_bytes": 675430440,
+      "embed_row_bytes": 2720,
+      "class_bytes": {
+        "embed_table": 675430440,
+        "norms": 2642952,
+        "linear_attn": 2961704064,
+        "mlp": 9091161600,
+        "full_attn": 891325184,
+        "lm_head": 675430440
+      },
+      "why_not_all_payload": "Dense model reads every weight per token EXCEPT the embedding table, from which exactly one row is gathered."
+    },
+    "DRAM_BYTES_PER_TOKEN": {
+      "value": 13611663360,
+      "status": "MEASURED",
+      "unit": "bytes/token",
+      "method": "Bytes the Q4 GEMV kernels actually stream: 32 code bytes + 2-byte f16 scale per group of 64, summed over MLP+DeltaNet+GQA+lm_head from geometry that matches parent config.json. Headers are not streamed. Mixer extras (conv, A_log, dt_bias, q/k RMS) are not GEMV traffic. This is NOT G042's 'DRAM = ACTIVE'.",
+      "formula": "rows * ceil(cols/64) * 34  (32 code bytes + 2-byte f16 scale)",
+      "breakdown": {
+        "mlp_bytes": 9091153920,
+        "linear_attn_bytes": 2953789440,
+        "full_attn_bytes": 891289600,
+        "lm_head_bytes": 675430400,
+        "embed_row_bytes": 2720,
+        "gemv_payload_bytes": 13611663360,
+        "formula": "rows * ceil(cols/64) * 34  (32 code bytes + 2-byte f16 scale)",
+        "matches_honest_roof_GEMV_PAYLOAD_BYTES": true
+      },
+      "vs_active_bytes": 10603600,
+      "vs_active_is": "ACTIVE includes HQ30UQ4 headers, f32 mixer extras, f32 norms, and the gathered embed row. DRAM here is GEMV payload only."
+    },
+    "KV_BYTES_PER_TOKEN": {
+      "value": 131072,
+      "status": "MEASURED",
+      "unit": "bytes/token",
+      "method": "GQA write of one new (K,V) slot: gqa_layers * 2 * kv_heads * head_dim * 4, from parent config.json (16 * 2 * 4 * 256 * 4).",
+      "read_bytes_grow_with_seq_len": {
+        "formula": "gqa_layers * 2 * seq_len * kv_heads * head_dim * 4",
+        "at_1": 131072,
+        "at_256": 33554432,
+        "at_8192": 1073741824,
+        "at_131072": 17179869184
+      },
+      "write_is_constant_per_decode_step": true,
+      "g042_only_counted_this_as_STATE": "G042 STATE_BPW_EQUIVALENT is this KV term only. It missed DeltaNet conv+recurrent state, reported separately as STATE_BYTES_PER_TOKEN."
+    },
+    "STATE_BYTES_PER_TOKEN": {
+      "value": 313786368,
+      "status": "MEASURED",
+      "unit": "bytes/token",
+      "method": "DeltaNet conv and recurrent state are read+written every token, independent of context. From config.json: 48 layers, conv_channels*(kernel-1)*4*2 + value_heads*key_dim*value_dim*4*2.",
+      "conv_rw": 11796480,
+      "rec_rw": 301989888,
+      "conv_resident": 5898240,
+      "rec_resident": 150994944,
+      "does_not_include_gqa_kv": true,
+      "geometry_matches_qwen38_geometry_rs": true
+    },
+    "RECONSTRUCTION_BYTES_PER_TOKEN": {
+      "value": 0,
+      "status": "MEASURED",
+      "unit": "bytes/token",
+      "method": "Inspected qwen_uniform_q4.metal this process: the production matvec does `sum += float(q)*scale*input[col]` and writes only the output row. No reconstructed-weight buffer. The sealed token-ns ledger also records weight_decode_reconstruction bytes_read=0, bytes_written=0. Codes+scales are DRAM_BYTES, not an extra reconstruction term.",
+      "kernel": {
+        "present": true,
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "in_register_fma": true,
+        "reconstructed_weight_buffer_in_kernel": false,
+        "conclusion": "grouped_absmax Q4 reconstructs in-register inside the GEMV. No extra DRAM write of expanded f32 weights. Reconstruction bytes are already counted as the 34 B/group of codes+scales that DRAM_BYTES_PER_TOKEN streams."
+      },
+      "ledger_bytes_read": 0,
+      "ledger_bytes_written": 0
+    },
+    "RECONSTRUCTION_NS_PER_TOKEN": {
+      "value": 1808227.3508656735,
+      "status": "MEASURED",
+      "unit": "ns/token",
+      "method": "Sealed QWEN38_TOKEN_NS_LEDGER component weight_decode_reconstruction: addr_probe vs decode_probe fraction of isolated class GEMVs, GPUEndTime-GPUStartTime. Not re-isolated this process (would require the native 27B).",
+      "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+      "ledger_wall_ns": 35227917,
+      "ledger_gpu_ns": 33912333,
+      "measurement_label": "DIRTY_ENGINEERING",
+      "commit": "57ee82ccef7aba803416ec3562c8981277120fd4",
+      "probes": [
+        {
+          "class": "mlp",
+          "full_median_gpu_ns": 15850166,
+          "addr_median_gpu_ns": 13816458,
+          "decode_median_gpu_ns": 15141291,
+          "addr_frac_of_full": 0.8716916907999576,
+          "decode_minus_addr_frac": 0.0835848028342416,
+          "fma_remainder_frac": 0.04472350636580083
+        },
+        {
+          "class": "dn",
+          "full_median_gpu_ns": 5536666,
+          "addr_median_gpu_ns": 5011166,
+          "decode_median_gpu_ns": 5339083,
+          "addr_frac_of_full": 0.9050872853807689,
+          "decode_minus_addr_frac": 0.05922643699294847,
+          "fma_remainder_frac": 0.03568627762628265
+        },
+        {
+          "class": "gqa",
+          "full_median_gpu_ns": 1894625,
+          "addr_median_gpu_ns": 1573041,
+          "decode_median_gpu_ns": 1694000,
+          "addr_frac_of_full": 0.8302650920366828,
+          "decode_minus_addr_frac": 0.06384324074684965,
+          "fma_remainder_frac": 0.1058916672164676
+        },
+        {
+          "class": "lm_head",
+          "full_median_gpu_ns": 1052874,
+          "addr_median_gpu_ns": 964124,
+          "decode_median_gpu_ns": 1003166,
+          "addr_frac_of_full": 0.9157069126980056,
+          "decode_minus_addr_frac": 0.03708136016275452,
+          "fma_remainder_frac": 0.047211727139239844
+        }
+      ],
+      "not_re_run": "Isolating reconstruction requires the native 27B decode with addr/decode probes. Not re-run while llama-server holds a 27B.",
+      "belongs_to_older_wall": "Ledger complete wall is 35.228 ms; the more recent native receipt is 30.275 ms. Reconstruction ns was not scaled to the new wall \u2014 scaling a 12-component split without re-probing is how a receipt starts lying."
+    }
+  },
+  "time": {
+    "TTFT": {
+      "value": 1016285541.5,
+      "status": "MEASURED",
+      "unit": "ns",
+      "method": "Median warm prefill_wall_ns across the RAW native runs' in-process warm reps. Prefill is the teacher-forced walk of the prompt; the last prefill step emits new-token[0]. session.open / chat render are request-level and excluded (session_open_ns was 3.19 s and is NOT in this number).",
+      "source": "/Users/scammermike/Downloads/hawking/receipts/headless",
+      "n_samples": 18,
+      "n_prefill_steps": 34,
+      "min_ns": 1015136416,
+      "max_ns": 1018152625,
+      "median_last_prefill_step_ns": 29682500.0,
+      "last_step_is_not_user_ttft": "The last prefill step is ~29.7 ms, same as a decode step. User-facing TTFT is the whole prompt walk."
+    },
+    "COMPLETE_DECODE_TPS": {
+      "value": 32.907049924108115,
+      "status": "MEASURED",
+      "unit": "tokens/s",
+      "method": "3 native decode process runs, pairs=3, max_new_tokens=128, median of per-run complete_wall_tps. Steady decode steps only (prefill excluded from the denominator).",
+      "source": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_GRAVITY_NATIVE.json",
+      "per_run": [
+        32.907049924108115,
+        32.89284333961039,
+        32.94607962243793
+      ],
+      "spread_pct": 0.2,
+      "recorded_at": "2026-08-23T00:58:00Z",
+      "bar": "PASS",
+      "bar_reasons": [],
+      "g105_tps": 32.73,
+      "not_re_run": "A llama-server is already resident on 52484. A native run with two 27B servers was measured at 3.986 tok/s vs 33.47 with one. This process did not spawn a second 27B.",
+      "output_collapsed": "QWEN38_GRAVITY_NATIVE bar is FAIL on coherence (replacement characters). The timing is of a collapsed greedy loop; it is still the wall of this executable."
+    },
+    "COMPLETE_TOKEN_NS": {
+      "value": 30388625,
+      "status": "MEASURED",
+      "unit": "ns/token",
+      "method": "same native runs as COMPLETE_DECODE_TPS; median complete_wall_ns",
+      "source": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_GRAVITY_NATIVE.json",
+      "formula_check_tps": 32.907049924108115
+    }
+  },
+  "dropped": [
+    {
+      "field": "RESIDENT_EQUIVALENT_BPW",
+      "why": "NX places all weights in unified memory and they fit (13.87% of 103079215104 bytes RAM). 8*RESIDENT/PARAMS is then EBPW under a second name. The useful resident fact is the byte count and the occupancy fraction, not another BPW."
+    },
+    {
+      "field": "ACTIVE_EQUIVALENT_BPW_PER_TOKEN",
+      "why": "BPW is demoted to one field (EXECUTABLE_BPW). The active quantity that cannot be recovered from EBPW is the byte count (embed table is not moved). Re-encoding that count as BPW is how G042's family of BPWs hid the on-disk vs moved distinction."
+    },
+    {
+      "field": "PREFILL_TPS",
+      "why": "The native decoder prefills by a teacher-forced walk of each prompt token (same 964-dispatch GEMV organ as decode). At the 34-token prompt used in QWEN38_GRAVITY_NATIVE, prefill wall is ~1.016 s \u2192 ~33.5 steps/s, indistinguishable from complete decode. A distinct batched-prefill TPS does not exist on this executable. Reporting one would invent a lever. The live llama-server Q5_K GGUF DOES have a distinct prefill (measured this process as a labeled control only)."
+    },
+    {
+      "field": "CACHE_BPW / GENERATED_BPW / CORRECTION_BPW / SHARED_BPW",
+      "why": "G042 BPW family. GENERATED/CORRECTION/SHARED were measured 0 for this dense patient. CACHE_BPW is activation traffic that G094 found has zero rank correlation with time. BPW is one field now; zeros and uncorrelated traffic are not promoted into the record."
+    }
+  ],
+  "counts": {
+    "measured": 15,
+    "null_with_reason": 0,
+    "dropped": 4,
+    "surviving_named_fields": 15
+  },
+  "ebpw_reconciliation": {
+    "exact": 4.252735126866492,
+    "recorded_approx": 4.253,
+    "manifest_complete_physical_bpw": 4.252735126866492,
+    "delta_vs_recorded_approx": -0.0002648731335082033,
+    "delta_vs_manifest": 0.0,
+    "reconciliation": "Matches manifest complete_physical_bpw exactly. The sealed anchor '~4.253' is that value rounded to three decimals. G042 STORED_BPW 4.25595 was a different directory (campaign run root with extra files); this artifact's walk has no dead tensors."
+  },
+  "defects_reconfirmed_this_process": {
+    "content_addressing": {
+      "n": 12,
+      "matches": 0,
+      "method": "sha256(entire tensor file) vs 64-hex filename stem",
+      "rows": [
+        {
+          "name": "language_model.model.layers.19.post_attention_layernorm.weight",
+          "filename_stem": "421a394db2609c35899edce702ab39dc86b39204f3150c4dd5bf86c9c7b9c034",
+          "sha256": "078d872a85e0a4e8fcfe6b65c1fe99c396362822b76fa5f339ca8282e69c5c1c",
+          "filename_is_content_sha256": false,
+          "bytes": 20488
+        },
+        {
+          "name": "language_model.model.layers.1.linear_attn.dt_bias",
+          "filename_stem": "e9505943e89fabe7407d4d028c7562e0bc6a4a1b541c1ceb4ba69663c16a7043",
+          "sha256": "9ddb887df1ed485f853e1775c5fed69bbb1e37459bd461d2af56da2eebf3f2d6",
+          "filename_is_content_sha256": false,
+          "bytes": 200
+        },
+        {
+          "name": "language_model.model.layers.7.self_attn.k_proj.weight",
+          "filename_stem": "17bcda63d3bd1620a20cffd47ecbd302aff26fea953d6b62c88069b49b77cf3e",
+          "sha256": "8ec7498766720be65d378e4aa9eee7af053264e4514aa677ff8f4b37bb5aa698",
+          "filename_is_content_sha256": false,
+          "bytes": 2785320
+        },
+        {
+          "name": "language_model.model.layers.12.linear_attn.norm.weight",
+          "filename_stem": "1a9093cc07679a706ebefd40e25098ab832dd150565810786c50c40958c72f6a",
+          "sha256": "1e3b231856139965832a762d04ca3fec06c966e46421adb178baff5d3e6a9afc",
+          "filename_is_content_sha256": false,
+          "bytes": 520
+        },
+        {
+          "name": "language_model.model.layers.61.mlp.gate_proj.weight",
+          "filename_stem": "c459faddba04908a3c5e7871f2924439de6bd500082611386f4c0fd7dd634443",
+          "sha256": "e2be22d229ca094567d9d56f29b071c681750b11375e178d43647651efb9ac73",
+          "filename_is_content_sha256": false,
+          "bytes": 47349800
+        },
+        {
+          "name": "language_model.model.layers.44.mlp.down_proj.weight",
+          "filename_stem": "999e2d62ce09e75117ab0ff2e76b9598eff75bccb78490cedffebd4eb2df9ada",
+          "sha256": "711fad4080b8df78896a22808d2f26c8d95ca30d886428c2e625b7fb945c1a7f",
+          "filename_is_content_sha256": false,
+          "bytes": 47349800
+        },
+        {
+          "name": "language_model.model.layers.13.linear_attn.conv1d.weight",
+          "filename_stem": "c189a2cf2545a4d34dac49ceefb2fa7a7a95be986d5890926776065eaf383de7",
+          "sha256": "dfacdb9279afc1495f63b4265e96810b657f87dea650f7f473ba2c60057ef7a8",
+          "filename_is_content_sha256": false,
+          "bytes": 163848
+        },
+        {
+          "name": "language_model.model.layers.0.post_attention_layernorm.weight",
+          "filename_stem": "a77f005719dad6d425a413981170d6619aefc36947c70e804b0e1cb23ed747b2",
+          "sha256": "62d6915c59a84052ee9a6bb0d3fdaed345e1124029ebd5942ba5552c3d9d9d63",
+          "filename_is_content_sha256": false,
+          "bytes": 20488
+        },
+        {
+          "name": "language_model.model.layers.15.mlp.up_proj.weight",
+          "filename_stem": "f228a925c5196085af0ded2b83374a88a01ba6c16e6b65eba243e3b6a82bbe4b",
+          "sha256": "ff6f37dcd46ce69089c8e3400adc20c25f8bcbb208600d3a8ae3ecceb1dec41b",
+          "filename_is_content_sha256": false,
+          "bytes": 47349800
+        },
+        {
+          "name": "language_model.model.layers.47.mlp.down_proj.weight",
+          "filename_stem": "717b00a19873f6b20e7d4849829ef88f622ef230d84d0800e5e6a75e5a8fee91",
+          "sha256": "4fe8d5b15ac55c9782868412d757cb2dbe1c4b4f3225249bd4d8c1a8e000b2fa",
+          "filename_is_content_sha256": false,
+          "bytes": 47349800
+        },
+        {
+          "name": "language_model.model.layers.21.linear_attn.in_proj_qkvz.weight",
+          "filename_stem": "f80b00e592607bd0e738241271f206283ffeafc5f79469da7649bbd6b6a8dd01",
+          "sha256": "a179128a9f8a639d5570d0f9d2ebe50e16581816d94de22a0164595715c22682",
+          "filename_is_content_sha256": false,
+          "bytes": 44564520
+        },
+        {
+          "name": "language_model.model.layers.37.linear_attn.dt_bias",
+          "filename_stem": "6b8233471eba7d483fd671a97cd6601398accdb8028a5b5bb9d798330384c084",
+          "sha256": "87f40679ad60de6955de6e2eac4a7562631b19a172c8c5f80c366097277bcaad",
+          "filename_is_content_sha256": false,
+          "bytes": 200
+        }
+      ],
+      "defect_confirmed": true
+    },
+    "byte_reproducibility_NOT_met": {
+      "why": "Reproducing the NR half from the raw parent needs the ENCODER's exact rounding rule and its fusion recipe, and neither is recorded in the artifact. The manifest declares fused_in_proj_layers, so some tensors (in_proj_ba) do not exist in the parent at all and are derived -- the recipe for that derivation is not written down anywhere in the artifact.",
+      "missing_input": [
+        "the encoder's scale rule and rounding mode as a recorded parameter, not inferred",
+        "the in_proj fusion recipe",
+        "a re-pack run to compare against the digests now recorded"
+      ]
+    }
+  },
+  "live_control_different_artifact": {
+    "llama_server": {
+      "reachable": false,
+      "error": "<urlopen error [Errno 61] Connection refused>"
+    },
+    "pid": null,
+    "rss": null,
+    "runtime_bytes": {
+      "bytes": 18644144,
+      "files": [
+        {
+          "path": "/opt/homebrew/Cellar/llama.cpp/9430/bin/llama-server",
+          "bytes": 51424
+        },
+        {
+          "path": "/opt/homebrew/Cellar/llama.cpp/9430/lib/libllama.0.0.9430.dylib",
+          "bytes": 2279248
+        },
+        {
+          "path": "/opt/homebrew/Cellar/llama.cpp/9430/lib/libllama-server-impl.dylib",
+          "bytes": 8832368
+        },
+        {
+          "path": "/opt/homebrew/Cellar/llama.cpp/9430/lib/libllama-common.0.0.9430.dylib",
+          "bytes": 4674784
+        },
+        {
+          "path": "/opt/homebrew/Cellar/llama.cpp/9430/lib/libmtmd.0.0.9430.dylib",
+          "bytes": 793808
+        },
+        {
+          "path": "/opt/homebrew/Cellar/ggml/0.13.1/lib/libggml.0.13.1.dylib",
+          "bytes": 77920
+        },
+        {
+          "path": "/opt/homebrew/Cellar/ggml/0.13.1/lib/libggml-base.0.13.1.dylib",
+          "bytes": 503520
+        },
+        {
+          "path": "/opt/homebrew/Cellar/ggml/0.13.1/libexec/libggml-metal.so",
+          "bytes": 823280
+        },
+        {
+          "path": "/opt/homebrew/Cellar/ggml/0.13.1/libexec/libggml-cpu-apple_m2_m3.so",
+          "bytes": 549040
+        },
+        {
+          "path": "/opt/homebrew/Cellar/ggml/0.13.1/libexec/libggml-blas.so",
+          "bytes": 58752
+        }
+      ],
+      "missing": []
+    }
+  },
+  "geometry": {
+    "source": "parent config.json text_config, measured this process",
+    "hidden": 5120,
+    "vocab": 248320,
+    "n_layers": 64,
+    "gqa_layers": 16,
+    "deltanet_layers": 48,
+    "kv_heads": 4,
+    "head_dim": 256,
+    "linear_key_heads": 16,
+    "linear_value_heads": 48,
+    "linear_key_head_dim": 128,
+    "linear_value_head_dim": 128,
+    "linear_conv_kernel": 4,
+    "conv_state_elements_per_layer": 30720,
+    "recurrent_state_elements_per_layer": 786432,
+    "conv_state_resident_bytes": 5898240,
+    "rec_state_resident_bytes": 150994944,
+    "conv_state_rw_bytes_per_token": 11796480,
+    "rec_state_rw_bytes_per_token": 301989888,
+    "gqa_kv_write_bytes_per_position": 131072,
+    "gqa_kv_read_bytes_at_len": {
+      "formula": "gqa_layers * 2 * seq_len * kv_heads * head_dim * 4",
+      "at_1": 131072,
+      "at_256": 33554432,
+      "at_8192": 1073741824,
+      "at_131072": 17179869184
+    },
+    "matches_qwen38_geometry_rs": true
+  },
+  "watched_fail": [
+    {
+      "what": "git apply of lane-bootstrap/tree-state.patch",
+      "result": "FAILED",
+      "why": "Patch is 30 files under tools/haider/hcli, which is a DENY path and is not in this sparse checkout. untracked.tar is the same tree. Baseline 464-pass haider suite cannot run here without materializing tools/haider."
+    },
+    {
+      "what": "content-addressing of 64-hex tensor filenames",
+      "result": "0/12 matched",
+      "why": "G105 defect reconfirmed this process: filenames look like sha256 and are not. A substituted tensor would not be detected by name."
+    },
+    {
+      "what": "byte_reproducibility of uniform-q4-v1",
+      "result": "NOT MET (inherited, not re-run)",
+      "why": "G105: encoder rounding and in_proj fusion recipe are not in the artifact. This process did not re-pack."
+    },
+    {
+      "what": "using llama-server:52484 as gravity time",
+      "result": "REFUSED",
+      "why": "Server is None at None tps, n_params=None. Gravity native is 33.03 tps on 26,895,998,464 params. Mixing them is the 1164/hour failure."
+    },
+    {
+      "what": "G042 STATE_BPW as the state metric",
+      "result": "INCOMPLETE",
+      "why": "G042 counted GQA KV only (131,072 B/position). Config-measured DeltaNet state is 150994944 B resident, read+written every token. That is the actual state traffic; KV is reported separately."
+    },
+    {
+      "what": "G042 DRAM_BPW = ACTIVE_BPW",
+      "result": "WRONG DENOMINATOR FOR WEIGHT TRAFFIC",
+      "why": "ACTIVE=13622266960 includes headers and mixer extras. GEMV payload=13611663360 is what geo_tpr64 streams. honest_roof already adjudicated this; this record keeps the split instead of collapsing it."
+    },
+    {
+      "what": "PREFILL_TPS as a distinct lever on this executable",
+      "result": "DROPPED",
+      "why": "Native prefill is serial teacher-force at decode speed."
+    },
+    {
+      "what": "live RSS of the gravity artifact",
+      "result": "NOT CURRENTLY RESIDENT",
+      "why": "lsof shows 0 processes holding manifest.json. Measuring RSS would require loading the 27B native decoder alongside the live llama-server."
+    },
+    {
+      "what": "QWEN38_GRAVITY_NATIVE coherence bar",
+      "result": "FAIL (timings still used)",
+      "why": "Generated text is replacement characters; greedy ids stuck on 150910. Speed of a collapsed loop is still the wall of this executable; it is not a quality claim."
+    },
+    {
+      "what": "ps / vmmap on pid 59064",
+      "result": "sandbox Operation not permitted / privilege",
+      "why": "Fell back to lsof + proc_pidinfo for the live GGUF only."
+    }
+  ]
+}

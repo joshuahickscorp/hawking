@@ -1,0 +1,2392 @@
+{
+  "schema": "hawking.headless.noetic_gain_rescore.v1",
+  "generated_at": "2026-08-23T18:42:15Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/n18gain-20260823-142518",
+  "obligation": "NNS-005: gravity_doctor_gate._gain exists. Cosine-only campaigns have not been re-scored. Re-score them; report rank inversions; prove the new instrument rejects 0.01*W.",
+  "gain_definition": {
+    "file": "tools/gravity_doctor_gate.py",
+    "lines": [
+      106,
+      127
+    ],
+    "symbol": "gravity_doctor_gate._gain",
+    "measures": "Magnitude agreement of output activations A=X@W.T vs B=X@Wh.T (and of isotropic probes). min(r, 1/r) on the per-row mean AND the per-unit worst of the L2-norm ratio. 1.0 is exact.",
+    "vs_cosine_only": {
+      "file": "tools/gravity_doctor_gate.py",
+      "rowcos_lines": [
+        82,
+        85
+      ],
+      "observed_score_lines": [
+        88,
+        90
+      ],
+      "axes_lines": [
+        148,
+        170
+      ],
+      "original_axes": [
+        "observed",
+        "probed",
+        "worst_unit"
+      ],
+      "why_blind": "Cosine divides out the per-row norms, so it is scale-invariant. 0.01*W and 100*W score 1.000000 on observed, probed, and worst_unit."
+    },
+    "packers_that_drop_gain": [
+      {
+        "path": "workspace/superwave/g1/claude-evidence/g1_func_objective.py",
+        "fn": "pack_axes",
+        "lines": [
+          309,
+          310
+        ],
+        "note": "stores only observed/probed/worst_unit; drops gain even if axes() returns it"
+      },
+      {
+        "path": "workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.py",
+        "fn": "score_pack",
+        "lines": [
+          360,
+          372
+        ],
+        "note": "packs the three cosine axes + energy_ratio/rel_fro/weight_cos; never persisted gain"
+      }
+    ],
+    "thresholds": {
+      "ABS_THRESHOLD": {
+        "observed": 0.95,
+        "probed": 0.95,
+        "worst_unit": 0.85,
+        "gain": 0.85
+      },
+      "AXIS_MARGIN": {
+        "observed": 0.02,
+        "probed": 0.02,
+        "worst_unit": 0.1,
+        "gain": 0.02
+      },
+      "note": "Honest Q4 g128 scores about 0.90 on gain by construction (min over 17408 units). Relative mode vs same-tensor Q4 is the real gate."
+    }
+  },
+  "instrument_check": {
+    "synthetic": {
+      "W_shape": [
+        64,
+        256
+      ],
+      "X_shape": [
+        128,
+        256
+      ],
+      "X_kind": "low-rank synthetic (demo geometry); instrument check only, not a codec claim",
+      "direct_scale": {
+        "scale_0.01": {
+          "scale": 0.01,
+          "observed_cosine": 1.0,
+          "worst_unit_cosine": 0.999999463558197,
+          "gain": 0.009999996051192284,
+          "rejects_as_perfect": true,
+          "cosine_claims_perfect": true,
+          "instrument_works": true
+        },
+        "scale_100": {
+          "scale": 100.0,
+          "observed_cosine": 1.0,
+          "worst_unit_cosine": 0.9999995231628418,
+          "gain": 0.009999996982514858,
+          "rejects_as_perfect": true,
+          "cosine_claims_perfect": true,
+          "instrument_works": true
+        },
+        "scale_1": {
+          "scale": 1.0,
+          "observed_cosine": 1.0,
+          "worst_unit_cosine": 0.9999998807907104,
+          "gain": 1.0,
+          "rejects_as_perfect": false,
+          "cosine_claims_perfect": true,
+          "instrument_works": false
+        }
+      },
+      "axes_faithful_q4": {
+        "observed": 0.9938774108886719,
+        "probed": 0.9939591884613037,
+        "worst_unit": 0.9683879613876343,
+        "gain": 0.8998886942863464
+      },
+      "axes_visible_subspace": {
+        "observed": 1.0,
+        "probed": 0.2111876755952835,
+        "worst_unit": 0.004853823222219944,
+        "gain": 0.11365454643964767
+      },
+      "axes_scale_0.01": {
+        "observed": 1.0,
+        "probed": 1.0,
+        "worst_unit": 0.9999994039535522,
+        "gain": 0.009999995119869709
+      },
+      "instrument_works": true
+    },
+    "real_l0_gate": {
+      "scale_0.01": {
+        "scale": 0.01,
+        "observed_cosine": 1.0,
+        "worst_unit_cosine": 0.9999994039535522,
+        "gain": 0.009999978356063366,
+        "rejects_as_perfect": true,
+        "cosine_claims_perfect": true,
+        "instrument_works": true
+      },
+      "scale_100": {
+        "scale": 100.0,
+        "observed_cosine": 1.0,
+        "worst_unit_cosine": 0.9999995231628418,
+        "gain": 0.009999982081353664,
+        "rejects_as_perfect": true,
+        "cosine_claims_perfect": true,
+        "instrument_works": true
+      },
+      "scale_1": {
+        "scale": 1.0,
+        "observed_cosine": 1.0,
+        "worst_unit_cosine": 0.9999998807907104,
+        "gain": 1.0,
+        "rejects_as_perfect": false,
+        "cosine_claims_perfect": true,
+        "instrument_works": false
+      }
+    },
+    "real_l0_load": {
+      "loaded": true,
+      "root": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+      "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ],
+      "n_tried": 4,
+      "tried": [
+        {
+          "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+          "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+          "ok": false,
+          "reason": "no index"
+        },
+        {
+          "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+          "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+          "ok": false,
+          "reason": "no index"
+        },
+        {
+          "root": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+          "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+          "ok": false,
+          "reason": "KeyError: 'language_model.model.layers.0.mlp.gate_proj.weight'"
+        },
+        {
+          "root": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+          "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+          "ok": true,
+          "shape": [
+            17408,
+            5120
+          ],
+          "dtype": "float32"
+        }
+      ]
+    },
+    "proof": {
+      "claim": "0.01*W must NOT score 1.0 on `_gain`",
+      "synthetic_gain_0.01": 0.009999996051192284,
+      "synthetic_cosine_0.01": 1.0,
+      "real_gain_0.01": 0.009999978356063366,
+      "real_cosine_0.01": 1.0,
+      "instrument_works": true
+    }
+  },
+  "campaigns": [
+    {
+      "id": "G1_ADVERSARIAL_FRONTIER",
+      "name": "G1 adversarial frontier (L0 gate constructions)",
+      "ranking_metric": "observed cosine; healthy from 3-axis relative gate",
+      "notes": "Stores energy_ratio. spanfit_X_and_P0 scored HEALTHY at cosine 1.0 with energy 0.294.",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 35,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 34,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.json"
+      ]
+    },
+    {
+      "id": "G003_DOCTOR_L0",
+      "name": "G003 doctor gate run, L0 gate_proj",
+      "ranking_metric": "observed/probed/worst_unit; no gain in results[]",
+      "notes": "Same constructions as tools/gravity_doctor_gate.py:run, packed without gain.",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g003-L0.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-L0.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 14,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-L0.json"
+      ]
+    },
+    {
+      "id": "G003_DOCTOR_L31",
+      "name": "G003 doctor gate run, L31",
+      "ranking_metric": "observed/probed/worst_unit",
+      "notes": "",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g003-L31.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-L31.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 14,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-L31.json"
+      ]
+    },
+    {
+      "id": "G003_DOCTOR_GATE",
+      "name": "G003 doctor gate smoke",
+      "ranking_metric": "observed/probed/worst_unit",
+      "notes": "",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g003-gate.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-gate.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 5,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g003-gate.json"
+      ]
+    },
+    {
+      "id": "G1_TENSOR_OPERATORS",
+      "name": "G1 tensor operators (TT / Tucker / Kronecker / low-rank)",
+      "ranking_metric": "gate.observed / healthy (3 cosine axes)",
+      "notes": "373 family rows, 223 with local_bpw<0.5 and healthy=true: 0. Wh not stored; cannot live-rescore.",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 238,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_tensor_operators.json"
+      ]
+    },
+    {
+      "id": "G1_SHARE_BASIS",
+      "name": "G1 shared basis vs independent (G-SHARE)",
+      "ranking_metric": "axes_shared/axes_indep observed/probed/worst_unit",
+      "notes": "Shared vs independent already both UNHEALTHY on worst_unit. Magnitude not the binder.",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_share_basis.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_share_basis.json",
+          "present": true
+        },
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_share_basis_smoke.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_share_basis_smoke.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 132,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_share_basis.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_share_basis_smoke.json"
+      ]
+    },
+    {
+      "id": "G1_XFORM_HADAMARD",
+      "name": "G1 Hadamard-then-qN (G032 / xform)",
+      "ranking_metric": "per-site gate.{id,wh_*,rht_*,bfly*} bits 2/3/4, 3 cosine axes",
+      "notes": "axis_margin has only observed/probed/worst_unit. Honest qN, energy tracks cosine.",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_xform_hadamard.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_xform_hadamard.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 528,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_xform_hadamard.json"
+      ]
+    },
+    {
+      "id": "G1_PLANES_TERNARY",
+      "name": "G1 binary/ternary planes (G033)",
+      "ranking_metric": "rung observed cosine + healthy",
+      "notes": "Some rows store resid_rel_f (weight residual), not activation gain.",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_planes_ternary.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_ternary.json",
+          "present": true
+        },
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_planes_ternary_smoke.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_ternary_smoke.json",
+          "present": true
+        },
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_planes_lm_head.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_lm_head.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 719,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_ternary.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_ternary_smoke.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_planes_lm_head.json"
+      ]
+    },
+    {
+      "id": "G1_ALLOC_UNIFIED",
+      "name": "G1 unified allocator candidate auction",
+      "ranking_metric": "score (= worst_unit); observed/probed/worst_unit stored, no gain",
+      "notes": "26 tensors × 26 codecs (qN, planes, rank_k, shared_k, sparse). Duplicate receipts.",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
+          "present": true
+        },
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_alloc_unified_measure.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_measure.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 1352,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_measure.json"
+      ]
+    },
+    {
+      "id": "G005_ALLOC",
+      "name": "G005 bit-allocation curves",
+      "ranking_metric": "observed/probed/worst_unit + damage/score",
+      "notes": "",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g005-alloc.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g005-alloc.json",
+          "present": true
+        },
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g005-curves.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g005-curves.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 160,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g005-alloc.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g005-curves.json"
+      ]
+    },
+    {
+      "id": "G1_RESHAPE_BEFORE_LOWBIT",
+      "name": "G1 reshape-before-lowbit",
+      "ranking_metric": "3 cosine axes; axis_margin has no gain",
+      "notes": "",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_reshape_before_lowbit.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_reshape_before_lowbit.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 233,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_reshape_before_lowbit.json"
+      ]
+    },
+    {
+      "id": "G010",
+      "name": "G010 object rows",
+      "ranking_metric": "observed/probed/worst_unit per (cls, layer, bits)",
+      "notes": "",
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g010.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g010.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 20,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": true,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g010.json"
+      ]
+    },
+    {
+      "id": "G1_CAPABILITY_GATE_Q4_COSINE",
+      "name": "G1 capability-gate full q4 weight cosine (306 tensors)",
+      "ranking_metric": "weight-space cosine (not doctor axes). lowest5 also store rel_l2; measure rows store src_norm/recon_norm",
+      "notes": "Different cosine (weights, not X@W). Still scale-invariant. 10 dequant rows have norms → archive gain proxy.",
+      "weight_space": true,
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_capability_gate_full_cosine.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_full_cosine.json",
+          "present": true
+        },
+        {
+          "path": "workspace/superwave/g1/claude-evidence/g1_capability_gate_measure.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_measure.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 0,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": false,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_full_cosine.json",
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_measure.json"
+      ]
+    },
+    {
+      "id": "Q80_PREFIX_COSINE",
+      "name": "Q80 recalibrate prefix-cosine by rank cap",
+      "ranking_metric": "holdout organ cosine vs rank {160,80,40,20,16,8}",
+      "notes": "Monotone in rank; not doctor axes. Magnitude-blind organ cosine.",
+      "weight_space": false,
+      "organ_cosine": true,
+      "receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/q80-recalibrate-prefix-cosines.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/q80-recalibrate-prefix-cosines.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 0,
+      "n_with_gain_field": 0,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": false,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/q80-recalibrate-prefix-cosines.json"
+      ]
+    },
+    {
+      "id": "G1_ENDPOINT",
+      "name": "G1 endpoint.json (ALREADY has gain)",
+      "ranking_metric": "observed/probed/worst_unit/gain",
+      "notes": "Negative control: the one G1 receipt that persisted a gain field. Not re-scored as cosine-only.",
+      "already_has_gain": true,
+      "receipts": [
+        {
+          "path": "workspace/superwave/g1/claude-evidence/endpoint.json",
+          "resolved": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/endpoint.json",
+          "present": true
+        }
+      ],
+      "n_cosine_axis_dicts": 15,
+      "n_with_gain_field": 15,
+      "n_with_energy_or_norm_proxy": 0,
+      "cosine_only": false,
+      "missing_receipts": [],
+      "resolved_from": [
+        "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/endpoint.json"
+      ]
+    }
+  ],
+  "live_rescore": {
+    "tensor_source": {
+      "loaded": true,
+      "tried": [
+        {
+          "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+          "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+          "ok": false,
+          "reason": "no index"
+        },
+        {
+          "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/bf16",
+          "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+          "ok": false,
+          "reason": "no index"
+        },
+        {
+          "root": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+          "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+          "ok": false,
+          "reason": "KeyError: 'language_model.model.layers.0.mlp.gate_proj.weight'"
+        },
+        {
+          "root": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+          "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+          "ok": true,
+          "shape": [
+            17408,
+            5120
+          ],
+          "dtype": "float32"
+        }
+      ],
+      "root": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+      "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+      "shape": [
+        17408,
+        5120
+      ]
+    },
+    "probe_only": true,
+    "X": {
+      "kind": "isotropic _probe",
+      "n": 64,
+      "d_in": 5120,
+      "seed": 0
+    },
+    "W_shape": [
+      17408,
+      5120
+    ],
+    "rows": [
+      {
+        "id": "identity",
+        "observed": 1.0,
+        "probed": 1.0,
+        "worst_unit": 0.9999998807907104,
+        "gain": 1.0,
+        "cosine_composite": 0.9999998807907104,
+        "gain_aware": 0.9999998807907104,
+        "energy_ratio": 1.0,
+        "rel_fro": 0.0,
+        "old_healthy": true,
+        "new_healthy": true,
+        "old_metric": 0.9999998807907104,
+        "new_metric": 0.9999998807907104
+      },
+      {
+        "id": "scale_0.01*W",
+        "observed": 1.0,
+        "probed": 1.0,
+        "worst_unit": 0.9999987483024597,
+        "gain": 0.009999984875321388,
+        "cosine_composite": 0.9999987483024597,
+        "gain_aware": 0.009999984875321388,
+        "energy_ratio": 0.009998129680752754,
+        "rel_fro": 0.989818274974823,
+        "old_healthy": true,
+        "new_healthy": false,
+        "old_metric": 0.9999987483024597,
+        "new_metric": 0.009999984875321388
+      },
+      {
+        "id": "scale_100*W",
+        "observed": 1.0,
+        "probed": 1.0,
+        "worst_unit": 0.9999986290931702,
+        "gain": 0.009999985806643963,
+        "cosine_composite": 0.9999986290931702,
+        "gain_aware": 0.009999985806643963,
+        "energy_ratio": 99.9907455444336,
+        "rel_fro": 98.98851013183594,
+        "old_healthy": true,
+        "new_healthy": false,
+        "old_metric": 0.9999986290931702,
+        "new_metric": 0.009999985806643963
+      },
+      {
+        "id": "q6_g128",
+        "observed": 0.999640703201294,
+        "probed": 0.9996391534805298,
+        "worst_unit": 0.9977588653564453,
+        "gain": 0.9845031499862671,
+        "cosine_composite": 0.9977588653564453,
+        "gain_aware": 0.9845031499862671,
+        "energy_ratio": 1.0003323554992676,
+        "rel_fro": 0.026868201792240143,
+        "old_healthy": true,
+        "new_healthy": true,
+        "old_metric": 0.9977588653564453,
+        "new_metric": 0.9845031499862671
+      },
+      {
+        "id": "q4_g128",
+        "observed": 0.9930272102355957,
+        "probed": 0.9930038452148438,
+        "worst_unit": 0.9587662220001221,
+        "gain": 0.9190552830696106,
+        "cosine_composite": 0.9587662220001221,
+        "gain_aware": 0.9190552830696106,
+        "energy_ratio": 1.007893681526184,
+        "rel_fro": 0.11899048089981079,
+        "old_healthy": true,
+        "new_healthy": true,
+        "old_metric": 0.9587662220001221,
+        "new_metric": 0.9190552830696106
+      },
+      {
+        "id": "q3_g128",
+        "observed": 0.963987410068512,
+        "probed": 0.9637510180473328,
+        "worst_unit": 0.8147771954536438,
+        "gain": 0.8000122904777527,
+        "cosine_composite": 0.8147771954536438,
+        "gain_aware": 0.8000122904777527,
+        "energy_ratio": 1.040086269378662,
+        "rel_fro": 0.27739113569259644,
+        "old_healthy": false,
+        "new_healthy": false,
+        "old_metric": 0.8147771954536438,
+        "new_metric": 0.8000122904777527
+      },
+      {
+        "id": "q2_g128",
+        "observed": 0.7386574745178223,
+        "probed": 0.7373742461204529,
+        "worst_unit": 0.3539256751537323,
+        "gain": 0.5703729391098022,
+        "cosine_composite": 0.3539256751537323,
+        "gain_aware": 0.3539256751537323,
+        "energy_ratio": 1.103610873222351,
+        "rel_fro": 0.7683060169219971,
+        "old_healthy": false,
+        "new_healthy": false,
+        "old_metric": 0.3539256751537323,
+        "new_metric": 0.3539256751537323
+      },
+      {
+        "id": "channel_deletion_k3",
+        "observed": 0.9995921850204468,
+        "probed": 0.9995940327644348,
+        "worst_unit": 0.0,
+        "gain": 0.0,
+        "cosine_composite": 0.0,
+        "gain_aware": 0.0,
+        "energy_ratio": 0.9996011257171631,
+        "rel_fro": 0.028239136561751366,
+        "old_healthy": false,
+        "new_healthy": false,
+        "old_metric": 0.0,
+        "new_metric": 0.0
+      },
+      {
+        "id": "visible_subspace_X",
+        "observed": 1.0,
+        "probed": 0.11143234372138977,
+        "worst_unit": -0.162758931517601,
+        "gain": 0.06646308302879333,
+        "cosine_composite": -0.162758931517601,
+        "gain_aware": -0.162758931517601,
+        "energy_ratio": 0.11214608699083328,
+        "rel_fro": 0.9935336709022522,
+        "old_healthy": false,
+        "new_healthy": false,
+        "old_metric": -0.162758931517601,
+        "new_metric": -0.162758931517601
+      },
+      {
+        "id": "spanfit_X_and_P0",
+        "observed": 1.0,
+        "probed": 0.1584888994693756,
+        "worst_unit": -0.09719980508089066,
+        "gain": 0.10600200295448303,
+        "cosine_composite": -0.09719980508089066,
+        "gain_aware": -0.09719980508089066,
+        "energy_ratio": 0.15830722451210022,
+        "rel_fro": 0.9872332215309143,
+        "old_healthy": false,
+        "new_healthy": false,
+        "old_metric": -0.09719980508089066,
+        "new_metric": -0.09719980508089066
+      }
+    ],
+    "inversions": [
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "scale_0.01*W",
+        "old_rank": 2,
+        "new_rank": 7,
+        "rank_delta": 5,
+        "n_peers": 10,
+        "old_metric": 0.9999987483024597,
+        "new_metric": 0.009999984875321388,
+        "score_drop": 0.9899987634271383,
+        "old_healthy": true,
+        "new_healthy": false,
+        "cause": "PRIMARY",
+        "kind": "VERDICT_AND_RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "scale_100*W",
+        "old_rank": 3,
+        "new_rank": 6,
+        "rank_delta": 3,
+        "n_peers": 10,
+        "old_metric": 0.9999986290931702,
+        "new_metric": 0.009999985806643963,
+        "score_drop": 0.9899986432865262,
+        "old_healthy": true,
+        "new_healthy": false,
+        "cause": "PRIMARY",
+        "kind": "VERDICT_AND_RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "q6_g128",
+        "old_rank": 4,
+        "new_rank": 2,
+        "rank_delta": -2,
+        "n_peers": 10,
+        "old_metric": 0.9977588653564453,
+        "new_metric": 0.9845031499862671,
+        "score_drop": 0.013255715370178223,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "q4_g128",
+        "old_rank": 5,
+        "new_rank": 3,
+        "rank_delta": -2,
+        "n_peers": 10,
+        "old_metric": 0.9587662220001221,
+        "new_metric": 0.9190552830696106,
+        "score_drop": 0.039710938930511475,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "q3_g128",
+        "old_rank": 6,
+        "new_rank": 4,
+        "rank_delta": -2,
+        "n_peers": 10,
+        "old_metric": 0.8147771954536438,
+        "new_metric": 0.8000122904777527,
+        "score_drop": 0.014764904975891113,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "q2_g128",
+        "old_rank": 7,
+        "new_rank": 5,
+        "rank_delta": -2,
+        "n_peers": 10,
+        "old_metric": 0.3539256751537323,
+        "new_metric": 0.3539256751537323,
+        "score_drop": 0.0,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK"
+      }
+    ],
+    "spanfit_on_fitted_probes": {
+      "observed": 1.0,
+      "probed": 1.0,
+      "worst_unit": 0.9999995231628418,
+      "gain": 0.9999984502792358,
+      "cosine_composite": 0.9999995231628418,
+      "gain_aware": 0.9999984502792358,
+      "energy_ratio": 0.15830722451210022,
+      "fresh_probe_gain": 0.08885722607374191,
+      "fresh_probe_cosine": 0.1643679291009903
+    },
+    "ranked_by_cosine_composite": [
+      "identity",
+      "scale_0.01*W",
+      "scale_100*W",
+      "q6_g128",
+      "q4_g128",
+      "q3_g128",
+      "q2_g128",
+      "channel_deletion_k3",
+      "spanfit_X_and_P0",
+      "visible_subspace_X"
+    ],
+    "ranked_by_gain_aware": [
+      "identity",
+      "q6_g128",
+      "q4_g128",
+      "q3_g128",
+      "q2_g128",
+      "scale_100*W",
+      "scale_0.01*W",
+      "channel_deletion_k3",
+      "spanfit_X_and_P0",
+      "visible_subspace_X"
+    ],
+    "note": "probe_only=True: original activation-capture-v1 is not on this machine. Isotropic probes still prove scale: cosine(W, 0.01*W)=1 and `_gain`≈0.01 regardless of X. qN numbers here are NOT a capture-conditioned campaign claim."
+  },
+  "archive_rescore": {
+    "stats": {
+      "peer_sets": 2,
+      "candidates_with_proxy": 44,
+      "candidates_cosine_only_no_proxy": 676
+    },
+    "peer_sets": [
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_adversarial_frontier.json",
+        "n": 34,
+        "n_high_cosine_obs_ge_0.95": 24,
+        "ranked_by_old": [
+          "visible_subspace_X_only",
+          "spanfit_X_and_P0",
+          "hadamard256_then_q4_g128",
+          "uniform_q4_g128",
+          "q4_error_row_permuted",
+          "planes/ternary_row[3]",
+          "planes/binary_row[5]",
+          "planes/ternary_row[2]",
+          "planes/binary_row[4]",
+          "planes/binary_g128[3]",
+          "mse_q3_fit_even/on_even_same_split",
+          "mse_q3_fit_even/on_full_vs_q4ref",
+          "mse_q3_fit_even/on_full_vs_q3ref",
+          "planes/binary_row[3]",
+          "mse_q3_fit_even/on_odd_heldout",
+          "planes/ternary_row[1]",
+          "planes/binary_g128[2]",
+          "planes/binary_row[2]",
+          "hadamard256_then_q3_g128",
+          "mse_q3_fit_even/absmax_q3_on_even",
+          "uniform_q3_g128",
+          "mse_q3_fit_even/absmax_q3_on_odd",
+          "planes/binary_g128[1]",
+          "planes/binary_row[1]"
+        ],
+        "ranked_by_new": [
+          "q4_error_row_permuted",
+          "hadamard256_then_q4_g128",
+          "uniform_q4_g128",
+          "mse_q3_fit_even/on_even_same_split",
+          "mse_q3_fit_even/on_odd_heldout",
+          "mse_q3_fit_even/on_full_vs_q4ref",
+          "mse_q3_fit_even/on_full_vs_q3ref",
+          "hadamard256_then_q3_g128",
+          "uniform_q3_g128",
+          "mse_q3_fit_even/absmax_q3_on_even",
+          "mse_q3_fit_even/absmax_q3_on_odd",
+          "planes/ternary_row[3]",
+          "planes/binary_row[5]",
+          "planes/ternary_row[2]",
+          "planes/binary_row[4]",
+          "planes/binary_g128[3]",
+          "planes/binary_row[3]",
+          "planes/ternary_row[1]",
+          "planes/binary_g128[2]",
+          "planes/binary_row[2]",
+          "planes/binary_g128[1]",
+          "planes/binary_row[1]",
+          "spanfit_X_and_P0",
+          "visible_subspace_X_only"
+        ],
+        "n_inversions": 22,
+        "n_primary": 2,
+        "rows": [
+          {
+            "id": "uniform_q2_g128",
+            "observed": 0.8164251446723938,
+            "probed": 0.737866222858429,
+            "worst_unit": 0.28317025303840637,
+            "energy_ratio": 1.103610873222351,
+            "gain_proxy": 0.9061164802410605,
+            "old_metric": 0.8164251446723938,
+            "new_metric": 0.8164251446723938,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "uniform_q3_g128",
+            "observed": 0.9775376319885254,
+            "probed": 0.9638259410858154,
+            "worst_unit": 0.8583678007125854,
+            "energy_ratio": 1.040086269378662,
+            "gain_proxy": 0.9614587072641491,
+            "old_metric": 0.9775376319885254,
+            "new_metric": 0.9614587072641491,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "uniform_q4_g128",
+            "observed": 0.9957399368286133,
+            "probed": 0.9930044412612915,
+            "worst_unit": 0.9638223052024841,
+            "energy_ratio": 1.007893681526184,
+            "gain_proxy": 0.992168140677069,
+            "old_metric": 0.9957399368286133,
+            "new_metric": 0.992168140677069,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "visible_subspace_X_only",
+            "observed": 1.0,
+            "probed": 0.19344943761825562,
+            "worst_unit": -0.11392464488744736,
+            "energy_ratio": 0.19304509460926056,
+            "gain_proxy": 0.19304509460926056,
+            "old_metric": 1.0,
+            "new_metric": 0.19304509460926056,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "spanfit_X_and_P0",
+            "observed": 1.0,
+            "probed": 1.0,
+            "worst_unit": 0.9999992847442627,
+            "energy_ratio": 0.2941656708717346,
+            "gain_proxy": 0.2941656708717346,
+            "old_metric": 1.0,
+            "new_metric": 0.2941656708717346,
+            "old_healthy": true,
+            "new_healthy": false
+          },
+          {
+            "id": "q4_error_row_permuted",
+            "observed": 0.9957336187362671,
+            "probed": 0.9929940700531006,
+            "worst_unit": 0.8861873745918274,
+            "energy_ratio": 1.006911277770996,
+            "gain_proxy": 0.9931361601329011,
+            "old_metric": 0.9957336187362671,
+            "new_metric": 0.9931361601329011,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "mse_q3_fit_even/on_even_same_split",
+            "observed": 0.9877574443817139,
+            "probed": 0.9731699824333191,
+            "worst_unit": 0.8822159767150879,
+            "energy_ratio": 0.9796245694160461,
+            "gain_proxy": 0.9796245694160461,
+            "old_metric": 0.9877574443817139,
+            "new_metric": 0.9796245694160461,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "mse_q3_fit_even/on_odd_heldout",
+            "observed": 0.9873453378677368,
+            "probed": 0.9731699824333191,
+            "worst_unit": 0.8822159767150879,
+            "energy_ratio": 0.9796245694160461,
+            "gain_proxy": 0.9796245694160461,
+            "old_metric": 0.9873453378677368,
+            "new_metric": 0.9796245694160461,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "mse_q3_fit_even/on_full_vs_q4ref",
+            "observed": 0.9875513315200806,
+            "probed": 0.9731699824333191,
+            "worst_unit": 0.8822159767150879,
+            "energy_ratio": 0.9796245694160461,
+            "gain_proxy": 0.9796245694160461,
+            "old_metric": 0.9875513315200806,
+            "new_metric": 0.9796245694160461,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "mse_q3_fit_even/on_full_vs_q3ref",
+            "observed": 0.9875513315200806,
+            "probed": 0.9731699824333191,
+            "worst_unit": 0.8822159767150879,
+            "energy_ratio": 0.9796245694160461,
+            "gain_proxy": 0.9796245694160461,
+            "old_metric": 0.9875513315200806,
+            "new_metric": 0.9796245694160461,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "mse_q3_fit_even/absmax_q3_on_even",
+            "observed": 0.9776560664176941,
+            "probed": 0.9638259410858154,
+            "worst_unit": 0.8583678007125854,
+            "energy_ratio": 1.040086269378662,
+            "gain_proxy": 0.9614587072641491,
+            "old_metric": 0.9776560664176941,
+            "new_metric": 0.9614587072641491,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "mse_q3_fit_even/absmax_q3_on_odd",
+            "observed": 0.9774191975593567,
+            "probed": 0.9638259410858154,
+            "worst_unit": 0.8583678007125854,
+            "energy_ratio": 1.040086269378662,
+            "gain_proxy": 0.9614587072641491,
+            "old_metric": 0.9774191975593567,
+            "new_metric": 0.9614587072641491,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "hadamard256_then_q2_g128",
+            "observed": 0.8182479227854396,
+            "probed": 0.7422012525144569,
+            "worst_unit": 0.188369258107922,
+            "energy_ratio": 1.112872994279473,
+            "gain_proxy": 0.8985751340362497,
+            "old_metric": 0.8182479227854396,
+            "new_metric": 0.8182479227854396,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "hadamard256_then_q3_g128",
+            "observed": 0.9780779705948678,
+            "probed": 0.9646835403553703,
+            "worst_unit": 0.8727901570957255,
+            "energy_ratio": 1.0381999663062118,
+            "gain_proxy": 0.9632055793238729,
+            "old_metric": 0.9780779705948678,
+            "new_metric": 0.9632055793238729,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "hadamard256_then_q4_g128",
+            "observed": 0.9958556010551958,
+            "probed": 0.9932077358418601,
+            "worst_unit": 0.9747855146068725,
+            "energy_ratio": 1.0071372466480655,
+            "gain_proxy": 0.9929133326447617,
+            "old_metric": 0.9958556010551958,
+            "new_metric": 0.9929133326447617,
+            "old_healthy": true,
+            "new_healthy": true
+          },
+          {
+            "id": "planes/binary_row[0]",
+            "observed": 0.8542351126670837,
+            "probed": 0.7968344688415527,
+            "worst_unit": 0.4363360106945038,
+            "energy_ratio": 0.7965761423110962,
+            "gain_proxy": 0.7965761423110962,
+            "old_metric": 0.8542351126670837,
+            "new_metric": 0.7965761423110962,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_row[1]",
+            "observed": 0.9546678066253662,
+            "probed": 0.9338769912719727,
+            "worst_unit": 0.6542349457740784,
+            "energy_ratio": 0.8664148449897766,
+            "gain_proxy": 0.8664148449897766,
+            "old_metric": 0.9546678066253662,
+            "new_metric": 0.8664148449897766,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_row[2]",
+            "observed": 0.9793139696121216,
+            "probed": 0.9716697931289673,
+            "worst_unit": 0.7531589865684509,
+            "energy_ratio": 0.905269205570221,
+            "gain_proxy": 0.905269205570221,
+            "old_metric": 0.9793139696121216,
+            "new_metric": 0.905269205570221,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_row[3]",
+            "observed": 0.9874796867370605,
+            "probed": 0.984313428401947,
+            "worst_unit": 0.7782118320465088,
+            "energy_ratio": 0.9255980849266052,
+            "gain_proxy": 0.9255980849266052,
+            "old_metric": 0.9874796867370605,
+            "new_metric": 0.9255980849266052,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_row[4]",
+            "observed": 0.9906913042068481,
+            "probed": 0.9891889095306396,
+            "worst_unit": 0.8045856356620789,
+            "energy_ratio": 0.9376976490020752,
+            "gain_proxy": 0.9376976490020752,
+            "old_metric": 0.9906913042068481,
+            "new_metric": 0.9376976490020752,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_row[5]",
+            "observed": 0.9922100305557251,
+            "probed": 0.9914840459823608,
+            "worst_unit": 0.8133237361907959,
+            "energy_ratio": 0.9461357593536377,
+            "gain_proxy": 0.9461357593536377,
+            "old_metric": 0.9922100305557251,
+            "new_metric": 0.9461357593536377,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_g128[0]",
+            "observed": 0.8557038903236389,
+            "probed": 0.79857337474823,
+            "worst_unit": 0.4572010934352875,
+            "energy_ratio": 0.7983571887016296,
+            "gain_proxy": 0.7983571887016296,
+            "old_metric": 0.8557038903236389,
+            "new_metric": 0.7983571887016296,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_g128[1]",
+            "observed": 0.9555814266204834,
+            "probed": 0.9349364042282104,
+            "worst_unit": 0.7201026678085327,
+            "energy_ratio": 0.8684765100479126,
+            "gain_proxy": 0.8684765100479126,
+            "old_metric": 0.9555814266204834,
+            "new_metric": 0.8684765100479126,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_g128[2]",
+            "observed": 0.9800310134887695,
+            "probed": 0.972367525100708,
+            "worst_unit": 0.776338517665863,
+            "energy_ratio": 0.9071117043495178,
+            "gain_proxy": 0.9071117043495178,
+            "old_metric": 0.9800310134887695,
+            "new_metric": 0.9071117043495178,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/binary_g128[3]",
+            "observed": 0.9881840348243713,
+            "probed": 0.985011100769043,
+            "worst_unit": 0.8235604166984558,
+            "energy_ratio": 0.9276431202888489,
+            "gain_proxy": 0.9276431202888489,
+            "old_metric": 0.9881840348243713,
+            "new_metric": 0.9276431202888489,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/ternary_row[0]",
+            "observed": 0.9286563396453857,
+            "probed": 0.8952096700668335,
+            "worst_unit": 0.6493655443191528,
+            "energy_ratio": 0.8953062891960144,
+            "gain_proxy": 0.8953062891960144,
+            "old_metric": 0.9286563396453857,
+            "new_metric": 0.8953062891960144,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/ternary_row[1]",
+            "observed": 0.9820144176483154,
+            "probed": 0.9755467176437378,
+            "worst_unit": 0.7971564531326294,
+            "energy_ratio": 0.9239645600318909,
+            "gain_proxy": 0.9239645600318909,
+            "old_metric": 0.9820144176483154,
+            "new_metric": 0.9239645600318909,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/ternary_row[2]",
+            "observed": 0.99110347032547,
+            "probed": 0.9893494844436646,
+            "worst_unit": 0.8333308696746826,
+            "energy_ratio": 0.9450294971466064,
+            "gain_proxy": 0.9450294971466064,
+            "old_metric": 0.99110347032547,
+            "new_metric": 0.9450294971466064,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "planes/ternary_row[3]",
+            "observed": 0.9937459826469421,
+            "probed": 0.993112325668335,
+            "worst_unit": 0.8525082468986511,
+            "energy_ratio": 0.960071861743927,
+            "gain_proxy": 0.960071861743927,
+            "old_metric": 0.9937459826469421,
+            "new_metric": 0.960071861743927,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "kronecker[0]",
+            "observed": 0.019741766154766083,
+            "probed": 0.014815629459917545,
+            "worst_unit": -0.7087821364402771,
+            "energy_ratio": 0.014838595874607563,
+            "gain_proxy": 0.014838595874607563,
+            "old_metric": 0.019741766154766083,
+            "new_metric": 0.014838595874607563,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "kronecker[1]",
+            "observed": 0.056583382189273834,
+            "probed": 0.04159882664680481,
+            "worst_unit": -0.6696357727050781,
+            "energy_ratio": 0.042027801275253296,
+            "gain_proxy": 0.042027801275253296,
+            "old_metric": 0.056583382189273834,
+            "new_metric": 0.042027801275253296,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "kronecker[2]",
+            "observed": 0.11454100161790848,
+            "probed": 0.08310622721910477,
+            "worst_unit": -0.5681875944137573,
+            "energy_ratio": 0.08337903022766113,
+            "gain_proxy": 0.08337903022766113,
+            "old_metric": 0.11454100161790848,
+            "new_metric": 0.08337903022766113,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "kronecker[3]",
+            "observed": 0.22915321588516235,
+            "probed": 0.1749495565891266,
+            "worst_unit": -0.6187142133712769,
+            "energy_ratio": 0.1744813770055771,
+            "gain_proxy": 0.1744813770055771,
+            "old_metric": 0.22915321588516235,
+            "new_metric": 0.1744813770055771,
+            "old_healthy": false,
+            "new_healthy": false
+          },
+          {
+            "id": "kronecker[4]",
+            "observed": 0.10379496961832047,
+            "probed": 0.07943784445524216,
+            "worst_unit": -0.6667560935020447,
+            "energy_ratio": 0.0791209414601326,
+            "gain_proxy": 0.0791209414601326,
+            "old_metric": 0.10379496961832047,
+            "new_metric": 0.0791209414601326,
+            "old_healthy": false,
+            "new_healthy": false
+          }
+        ]
+      },
+      {
+        "campaign": "G1_CAPABILITY_GATE_Q4_COSINE",
+        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_capability_gate_measure.json",
+        "n": 10,
+        "n_inversions": 0,
+        "note": "q4 dequant vs BF16; global-norm gain proxy. Honest q4 is not a scale cheat.",
+        "rows": [
+          {
+            "id": "language_model.model.layers.0.linear_attn.out_proj.weight",
+            "old_metric": 0.9935414911194438,
+            "new_metric": 0.9931510956358821,
+            "gain_proxy": 0.9931510956358821,
+            "cosine": 0.9935414911194438,
+            "rel_l2": 0.11425257960453206,
+            "src_norm": 88.21649638934416,
+            "recon_norm": 88.82484928726986
+          },
+          {
+            "id": "language_model.model.layers.0.mlp.gate_proj.weight",
+            "old_metric": 0.9941447925762601,
+            "new_metric": 0.9937231252372056,
+            "gain_proxy": 0.9937231252372056,
+            "cosine": 0.9941447925762601,
+            "rel_l2": 0.10873951632127579,
+            "src_norm": 95.98708303027591,
+            "recon_norm": 96.59338762732669
+          },
+          {
+            "id": "language_model.model.layers.0.mlp.up_proj.weight",
+            "old_metric": 0.9941928218031617,
+            "new_metric": 0.993792084085641,
+            "gain_proxy": 0.993792084085641,
+            "cosine": 0.9941928218031617,
+            "rel_l2": 0.1082863284583889,
+            "src_norm": 92.68858593388717,
+            "recon_norm": 93.26758324822764
+          },
+          {
+            "id": "language_model.model.layers.0.mlp.down_proj.weight",
+            "old_metric": 0.994008404206767,
+            "new_metric": 0.9936574485242387,
+            "gain_proxy": 0.9936574485242387,
+            "cosine": 0.994008404206767,
+            "rel_l2": 0.11000192672662153,
+            "src_norm": 100.38931591408824,
+            "recon_norm": 101.03010455281603
+          },
+          {
+            "id": "language_model.model.layers.3.self_attn.o_proj.weight",
+            "old_metric": 0.9937473451468555,
+            "new_metric": 0.9931687765695717,
+            "gain_proxy": 0.9931687765695717,
+            "cosine": 0.9937473451468555,
+            "rel_l2": 0.11242167774005858,
+            "src_norm": 89.44257222645027,
+            "recon_norm": 90.05777702294166
+          },
+          {
+            "id": "language_model.model.layers.3.self_attn.q_proj.weight",
+            "old_metric": 0.9939553680199088,
+            "new_metric": 0.9935722939921651,
+            "gain_proxy": 0.9935722939921651,
+            "cosine": 0.9939553680199088,
+            "rel_l2": 0.11049581256788257,
+            "src_norm": 136.8075115180211,
+            "recon_norm": 137.6925588054893
+          },
+          {
+            "id": "language_model.model.layers.63.self_attn.o_proj.weight",
+            "old_metric": 0.9925598851191002,
+            "new_metric": 0.9922357515901984,
+            "gain_proxy": 0.9922357515901984,
+            "cosine": 0.9925598851191002,
+            "rel_l2": 0.12271062829724379,
+            "src_norm": 100.38807386702182,
+            "recon_norm": 101.17361091468001
+          },
+          {
+            "id": "language_model.model.layers.63.mlp.down_proj.weight",
+            "old_metric": 0.9932512059131099,
+            "new_metric": 0.9928820559061081,
+            "gain_proxy": 0.9928820559061081,
+            "cosine": 0.9932512059131099,
+            "rel_l2": 0.11681500835603364,
+            "src_norm": 109.8189611100133,
+            "recon_norm": 110.60625021548212
+          },
+          {
+            "id": "language_model.model.embed_tokens.weight",
+            "old_metric": 0.9942128523312148,
+            "new_metric": 0.9937951236388438,
+            "gain_proxy": 0.9937951236388438,
+            "cosine": 0.9942128523312148,
+            "rel_l2": 0.10809969270808145,
+            "src_norm": 454.0709546262009,
+            "recon_norm": 456.90599986402765
+          },
+          {
+            "id": "language_model.lm_head.weight",
+            "old_metric": 0.9937578775846426,
+            "new_metric": 0.9933664896662913,
+            "gain_proxy": 0.9933664896662913,
+            "cosine": 0.9937578775846426,
+            "rel_l2": 0.11230407530937533,
+            "src_norm": 490.1472832911878,
+            "recon_norm": 493.4203925641246
+          }
+        ]
+      },
+      {
+        "campaign": "G1_ALLOC_UNIFIED",
+        "receipt": "/Users/scammermike/Downloads/hawking-copy/workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
+        "n": 676,
+        "n_inversions": 0,
+        "note": "No energy_ratio / norms stored. Cosine-only archive cannot recover `_gain`. Live reconstruction of the qN subset is in live_rescore."
+      }
+    ],
+    "inversions": [
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "visible_subspace_X_only",
+        "old_rank": 1,
+        "new_rank": 24,
+        "rank_delta": 23,
+        "n_peers": 24,
+        "old_metric": 1.0,
+        "new_metric": 0.19304509460926056,
+        "score_drop": 0.8069549053907394,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "PRIMARY",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "spanfit_X_and_P0",
+        "old_rank": 2,
+        "new_rank": 23,
+        "rank_delta": 21,
+        "n_peers": 24,
+        "old_metric": 1.0,
+        "new_metric": 0.2941656708717346,
+        "score_drop": 0.7058343291282654,
+        "old_healthy": true,
+        "new_healthy": false,
+        "cause": "PRIMARY",
+        "kind": "VERDICT_AND_RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "uniform_q3_g128",
+        "old_rank": 21,
+        "new_rank": 9,
+        "rank_delta": -12,
+        "n_peers": 24,
+        "old_metric": 0.9775376319885254,
+        "new_metric": 0.9614587072641491,
+        "score_drop": 0.01607892472437633,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/absmax_q3_on_odd",
+        "old_rank": 22,
+        "new_rank": 11,
+        "rank_delta": -11,
+        "n_peers": 24,
+        "old_metric": 0.9774191975593567,
+        "new_metric": 0.9614587072641491,
+        "score_drop": 0.01596049029520763,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "hadamard256_then_q3_g128",
+        "old_rank": 19,
+        "new_rank": 8,
+        "rank_delta": -11,
+        "n_peers": 24,
+        "old_metric": 0.9780779705948678,
+        "new_metric": 0.9632055793238729,
+        "score_drop": 0.014872391270994934,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/on_odd_heldout",
+        "old_rank": 15,
+        "new_rank": 5,
+        "rank_delta": -10,
+        "n_peers": 24,
+        "old_metric": 0.9873453378677368,
+        "new_metric": 0.9796245694160461,
+        "score_drop": 0.007720768451690674,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/absmax_q3_on_even",
+        "old_rank": 20,
+        "new_rank": 10,
+        "rank_delta": -10,
+        "n_peers": 24,
+        "old_metric": 0.9776560664176941,
+        "new_metric": 0.9614587072641491,
+        "score_drop": 0.016197359153545032,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/on_even_same_split",
+        "old_rank": 11,
+        "new_rank": 4,
+        "rank_delta": -7,
+        "n_peers": 24,
+        "old_metric": 0.9877574443817139,
+        "new_metric": 0.9796245694160461,
+        "score_drop": 0.008132874965667725,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/on_full_vs_q4ref",
+        "old_rank": 12,
+        "new_rank": 6,
+        "rank_delta": -6,
+        "n_peers": 24,
+        "old_metric": 0.9875513315200806,
+        "new_metric": 0.9796245694160461,
+        "score_drop": 0.007926762104034424,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/on_full_vs_q3ref",
+        "old_rank": 13,
+        "new_rank": 7,
+        "rank_delta": -6,
+        "n_peers": 24,
+        "old_metric": 0.9875513315200806,
+        "new_metric": 0.9796245694160461,
+        "score_drop": 0.007926762104034424,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[4]",
+        "old_rank": 9,
+        "new_rank": 15,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.9906913042068481,
+        "new_metric": 0.9376976490020752,
+        "score_drop": 0.05299365520477295,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[5]",
+        "old_rank": 7,
+        "new_rank": 13,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.9922100305557251,
+        "new_metric": 0.9461357593536377,
+        "score_drop": 0.0460742712020874,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_g128[3]",
+        "old_rank": 10,
+        "new_rank": 16,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.9881840348243713,
+        "new_metric": 0.9276431202888489,
+        "score_drop": 0.06054091453552246,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/ternary_row[2]",
+        "old_rank": 8,
+        "new_rank": 14,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.99110347032547,
+        "new_metric": 0.9450294971466064,
+        "score_drop": 0.046073973178863525,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/ternary_row[3]",
+        "old_rank": 6,
+        "new_rank": 12,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.9937459826469421,
+        "new_metric": 0.960071861743927,
+        "score_drop": 0.03367412090301514,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "q4_error_row_permuted",
+        "old_rank": 5,
+        "new_rank": 1,
+        "rank_delta": -4,
+        "n_peers": 24,
+        "old_metric": 0.9957336187362671,
+        "new_metric": 0.9931361601329011,
+        "score_drop": 0.0025974586033660207,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[3]",
+        "old_rank": 14,
+        "new_rank": 17,
+        "rank_delta": 3,
+        "n_peers": 24,
+        "old_metric": 0.9874796867370605,
+        "new_metric": 0.9255980849266052,
+        "score_drop": 0.06188160181045532,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[1]",
+        "old_rank": 24,
+        "new_rank": 22,
+        "rank_delta": -2,
+        "n_peers": 24,
+        "old_metric": 0.9546678066253662,
+        "new_metric": 0.8664148449897766,
+        "score_drop": 0.0882529616355896,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[2]",
+        "old_rank": 18,
+        "new_rank": 20,
+        "rank_delta": 2,
+        "n_peers": 24,
+        "old_metric": 0.9793139696121216,
+        "new_metric": 0.905269205570221,
+        "score_drop": 0.07404476404190063,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_g128[1]",
+        "old_rank": 23,
+        "new_rank": 21,
+        "rank_delta": -2,
+        "n_peers": 24,
+        "old_metric": 0.9555814266204834,
+        "new_metric": 0.8684765100479126,
+        "score_drop": 0.0871049165725708,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_g128[2]",
+        "old_rank": 17,
+        "new_rank": 19,
+        "rank_delta": 2,
+        "n_peers": 24,
+        "old_metric": 0.9800310134887695,
+        "new_metric": 0.9071117043495178,
+        "score_drop": 0.07291930913925171,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/ternary_row[1]",
+        "old_rank": 16,
+        "new_rank": 18,
+        "rank_delta": 2,
+        "n_peers": 24,
+        "old_metric": 0.9820144176483154,
+        "new_metric": 0.9239645600318909,
+        "score_drop": 0.05804985761642456,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      }
+    ]
+  },
+  "inversions": {
+    "primary": [
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "scale_0.01*W",
+        "old_rank": 2,
+        "new_rank": 7,
+        "rank_delta": 5,
+        "n_peers": 10,
+        "old_metric": 0.9999987483024597,
+        "new_metric": 0.009999984875321388,
+        "score_drop": 0.9899987634271383,
+        "old_healthy": true,
+        "new_healthy": false,
+        "cause": "PRIMARY",
+        "kind": "VERDICT_AND_RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "scale_100*W",
+        "old_rank": 3,
+        "new_rank": 6,
+        "rank_delta": 3,
+        "n_peers": 10,
+        "old_metric": 0.9999986290931702,
+        "new_metric": 0.009999985806643963,
+        "score_drop": 0.9899986432865262,
+        "old_healthy": true,
+        "new_healthy": false,
+        "cause": "PRIMARY",
+        "kind": "VERDICT_AND_RANK"
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "visible_subspace_X_only",
+        "old_rank": 1,
+        "new_rank": 24,
+        "rank_delta": 23,
+        "n_peers": 24,
+        "old_metric": 1.0,
+        "new_metric": 0.19304509460926056,
+        "score_drop": 0.8069549053907394,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "PRIMARY",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "spanfit_X_and_P0",
+        "old_rank": 2,
+        "new_rank": 23,
+        "rank_delta": 21,
+        "n_peers": 24,
+        "old_metric": 1.0,
+        "new_metric": 0.2941656708717346,
+        "score_drop": 0.7058343291282654,
+        "old_healthy": true,
+        "new_healthy": false,
+        "cause": "PRIMARY",
+        "kind": "VERDICT_AND_RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      }
+    ],
+    "displacement_live": [
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "q6_g128",
+        "old_rank": 4,
+        "new_rank": 2,
+        "rank_delta": -2,
+        "n_peers": 10,
+        "old_metric": 0.9977588653564453,
+        "new_metric": 0.9845031499862671,
+        "score_drop": 0.013255715370178223,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "q4_g128",
+        "old_rank": 5,
+        "new_rank": 3,
+        "rank_delta": -2,
+        "n_peers": 10,
+        "old_metric": 0.9587662220001221,
+        "new_metric": 0.9190552830696106,
+        "score_drop": 0.039710938930511475,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "q3_g128",
+        "old_rank": 6,
+        "new_rank": 4,
+        "rank_delta": -2,
+        "n_peers": 10,
+        "old_metric": 0.8147771954536438,
+        "new_metric": 0.8000122904777527,
+        "score_drop": 0.014764904975891113,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK"
+      },
+      {
+        "campaign": "LIVE_L0_GATE",
+        "peer_set": "live reconstructions (probe-space)",
+        "candidate": "q2_g128",
+        "old_rank": 7,
+        "new_rank": 5,
+        "rank_delta": -2,
+        "n_peers": 10,
+        "old_metric": 0.3539256751537323,
+        "new_metric": 0.3539256751537323,
+        "score_drop": 0.0,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK"
+      }
+    ],
+    "displacement_archive": [
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "uniform_q3_g128",
+        "old_rank": 21,
+        "new_rank": 9,
+        "rank_delta": -12,
+        "n_peers": 24,
+        "old_metric": 0.9775376319885254,
+        "new_metric": 0.9614587072641491,
+        "score_drop": 0.01607892472437633,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/absmax_q3_on_odd",
+        "old_rank": 22,
+        "new_rank": 11,
+        "rank_delta": -11,
+        "n_peers": 24,
+        "old_metric": 0.9774191975593567,
+        "new_metric": 0.9614587072641491,
+        "score_drop": 0.01596049029520763,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "hadamard256_then_q3_g128",
+        "old_rank": 19,
+        "new_rank": 8,
+        "rank_delta": -11,
+        "n_peers": 24,
+        "old_metric": 0.9780779705948678,
+        "new_metric": 0.9632055793238729,
+        "score_drop": 0.014872391270994934,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/on_odd_heldout",
+        "old_rank": 15,
+        "new_rank": 5,
+        "rank_delta": -10,
+        "n_peers": 24,
+        "old_metric": 0.9873453378677368,
+        "new_metric": 0.9796245694160461,
+        "score_drop": 0.007720768451690674,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/absmax_q3_on_even",
+        "old_rank": 20,
+        "new_rank": 10,
+        "rank_delta": -10,
+        "n_peers": 24,
+        "old_metric": 0.9776560664176941,
+        "new_metric": 0.9614587072641491,
+        "score_drop": 0.016197359153545032,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/on_even_same_split",
+        "old_rank": 11,
+        "new_rank": 4,
+        "rank_delta": -7,
+        "n_peers": 24,
+        "old_metric": 0.9877574443817139,
+        "new_metric": 0.9796245694160461,
+        "score_drop": 0.008132874965667725,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/on_full_vs_q4ref",
+        "old_rank": 12,
+        "new_rank": 6,
+        "rank_delta": -6,
+        "n_peers": 24,
+        "old_metric": 0.9875513315200806,
+        "new_metric": 0.9796245694160461,
+        "score_drop": 0.007926762104034424,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "mse_q3_fit_even/on_full_vs_q3ref",
+        "old_rank": 13,
+        "new_rank": 7,
+        "rank_delta": -6,
+        "n_peers": 24,
+        "old_metric": 0.9875513315200806,
+        "new_metric": 0.9796245694160461,
+        "score_drop": 0.007926762104034424,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[4]",
+        "old_rank": 9,
+        "new_rank": 15,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.9906913042068481,
+        "new_metric": 0.9376976490020752,
+        "score_drop": 0.05299365520477295,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[5]",
+        "old_rank": 7,
+        "new_rank": 13,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.9922100305557251,
+        "new_metric": 0.9461357593536377,
+        "score_drop": 0.0460742712020874,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_g128[3]",
+        "old_rank": 10,
+        "new_rank": 16,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.9881840348243713,
+        "new_metric": 0.9276431202888489,
+        "score_drop": 0.06054091453552246,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/ternary_row[2]",
+        "old_rank": 8,
+        "new_rank": 14,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.99110347032547,
+        "new_metric": 0.9450294971466064,
+        "score_drop": 0.046073973178863525,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/ternary_row[3]",
+        "old_rank": 6,
+        "new_rank": 12,
+        "rank_delta": 6,
+        "n_peers": 24,
+        "old_metric": 0.9937459826469421,
+        "new_metric": 0.960071861743927,
+        "score_drop": 0.03367412090301514,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "q4_error_row_permuted",
+        "old_rank": 5,
+        "new_rank": 1,
+        "rank_delta": -4,
+        "n_peers": 24,
+        "old_metric": 0.9957336187362671,
+        "new_metric": 0.9931361601329011,
+        "score_drop": 0.0025974586033660207,
+        "old_healthy": true,
+        "new_healthy": true,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[3]",
+        "old_rank": 14,
+        "new_rank": 17,
+        "rank_delta": 3,
+        "n_peers": 24,
+        "old_metric": 0.9874796867370605,
+        "new_metric": 0.9255980849266052,
+        "score_drop": 0.06188160181045532,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[1]",
+        "old_rank": 24,
+        "new_rank": 22,
+        "rank_delta": -2,
+        "n_peers": 24,
+        "old_metric": 0.9546678066253662,
+        "new_metric": 0.8664148449897766,
+        "score_drop": 0.0882529616355896,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_row[2]",
+        "old_rank": 18,
+        "new_rank": 20,
+        "rank_delta": 2,
+        "n_peers": 24,
+        "old_metric": 0.9793139696121216,
+        "new_metric": 0.905269205570221,
+        "score_drop": 0.07404476404190063,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_g128[1]",
+        "old_rank": 23,
+        "new_rank": 21,
+        "rank_delta": -2,
+        "n_peers": 24,
+        "old_metric": 0.9555814266204834,
+        "new_metric": 0.8684765100479126,
+        "score_drop": 0.0871049165725708,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/binary_g128[2]",
+        "old_rank": 17,
+        "new_rank": 19,
+        "rank_delta": 2,
+        "n_peers": 24,
+        "old_metric": 0.9800310134887695,
+        "new_metric": 0.9071117043495178,
+        "score_drop": 0.07291930913925171,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      },
+      {
+        "campaign": "G1_ADVERSARIAL_FRONTIER",
+        "peer_set": "L0_gate.constructions with observed>=0.95 (rank by observed vs min(observed, energy_gain))",
+        "candidate": "planes/ternary_row[1]",
+        "old_rank": 16,
+        "new_rank": 18,
+        "rank_delta": 2,
+        "n_peers": 24,
+        "old_metric": 0.9820144176483154,
+        "new_metric": 0.9239645600318909,
+        "score_drop": 0.05804985761642456,
+        "old_healthy": false,
+        "new_healthy": false,
+        "cause": "DISPLACEMENT",
+        "kind": "RANK",
+        "metric_note": "new_metric uses min(observed, min(energy_ratio, 1/energy_ratio)). energy_ratio is ||Wh||_F/||W||_F (weight space), not activation `_gain`. For a global scale they coincide; for spanfit they diverge (see live_rescore)."
+      }
+    ]
+  },
+  "counts": {
+    "cosine_only_campaigns": 12,
+    "cosine_axis_dicts_enumerated": 3465,
+    "live_candidates_rescored_with_gain": 10,
+    "archive_candidates_rescored_with_proxy": 44,
+    "primary_inversions_live": 2,
+    "primary_inversions_archive": 2,
+    "primary_inversions_total": 4,
+    "displacement_live": 4,
+    "displacement_archive": 20
+  },
+  "material_rule": {
+    "primary": "verdict flip OR own-score drop >= 0.15. These are the candidates cosine certified and a magnitude term refuses.",
+    "displacement": "rank moved because a PRIMARY left the top, or a small energy-vs-cosine difference shuffled honest codecs. Not a scale pathology of that codec.",
+    "primary_score_drop_ge": 0.15,
+    "rank_delta_abs_ge": 2,
+    "score_delta_abs_ge": 0.05,
+    "or_healthy_verdict_flip": true
+  },
+  "what_i_watched_fail": "## WHAT I WATCHED FAIL\n\nThe cosine-only doctor gate is not a slightly noisy quality metric. It is\nscale-invariant by construction (`_rowcos` divides out the per-row norms).\nThe construction that exhibited this — Wh = 0.01*W on real L0 gate_proj —\nscored observed = probed = worst_unit = 1.000000 at relative weight error\n0.9898. A candidate that kept every direction and destroyed every magnitude\nwas HEALTHY on every axis the campaign used to rank.\n\n`_gain` was added to `axes()` because that construction was exhibited. It\nis min(r, 1/r) on the per-row mean AND the per-unit worst of the OUTPUT\nactivation norms, so both shrink and blow-up fail symmetrically. Cosine\ncannot see this; `_gain` is the axis that can.\n\nTwo further method failures sit on top of the missing axis:\n\n1. Campaign packers (`pack_axes`, `score_pack`) persist only the three\n   cosine keys. Even after `_gain` existed in `axes()`/`gate()`, the\n   archive kept being written cosine-only. Re-running those scripts today\n   would still not store gain. The receipts are blind by packing, not only\n   by age.\n\n2. spanfit_X_and_P0 Goodharted the three-axis gate: fitted onto span(X, P0)\n   it scored observed=1, probed=1, worst_unit≈1 while keeping 29.4% of\n   weight energy, and was stored HEALTHY. Activation `_gain` on those SAME\n   fitted directions is also ~1 (the map is exact on that span). Weight\n   energy catches it; activation gain on the fitted span does not. Fresh\n   probes catch it with BOTH probed cosine AND gain. `_gain` is the fix\n   for scale, not a substitute for unfittable probes.\n\nWhat this re-score is not: a claim that every low-cosine codec was\nmis-ranked. Most candidates in these campaigns were honest codecs whose\nmagnitude tracks their direction (q4 energy_ratio ≈ 1.008, cosine ≈ 0.996).\nThose rankings survive, and saying so is the result. The inversions are\nthe scale cheats — 0.01*W / 100*W, and the archive spanfit that cosine\ncertified.\n\nSynthetic activations are used ONLY for the algebraic instrument check\n(cosine(W, 0.01*W) is a mathematical identity, not a compression claim).\nLive `_gain` on real L0 gate_proj, when the tensor loads, is the\ncampaign-shaped proof. Capture-conditioned `observed` from the original\nX is not recomputed: the v1 capture path in the pin is not on this\nmachine. Probe-space scores are labelled probe_only.\n\nTensor-train / Tucker / shared-basis / plane-rung candidates cannot be\nre-materialised without the original Wh. Their receipts store cosine axes\nand no per-row activation norms, so `_gain` is not recoverable from the\narchive. Those rows are enumerated, not invented.\n",
+  "write_scope": {
+    "WRITE": [
+      "tools/headless/noetic_gain_rescore.py",
+      "receipts/headless/NOETIC_GAIN_RESCORE.json"
+    ],
+    "VERIFY": [
+      "tools/headless"
+    ],
+    "DENY": [
+      "crates",
+      "workspace",
+      "visionmcp",
+      "app",
+      "lab",
+      "tools/haider"
+    ]
+  },
+  "elapsed_s": 4.1720311641693115
+}

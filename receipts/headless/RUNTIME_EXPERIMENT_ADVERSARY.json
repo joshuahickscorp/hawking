@@ -1,0 +1,1072 @@
+{
+  "schema": "hawking.headless.runtime_experiment_adversary.v1",
+  "generated_at": "2026-08-24T06:04:30Z",
+  "git_head": "1abd178a3c0eec8ec39731c171f4e220ff8749a4",
+  "sparse_checkout": {
+    "note": "This worktree is sparse. hcli/, tools/headless, tools/haider were materialized via git show HEAD:<path> because git sparse-checkout add / git restore fail (index.lock Operation not permitted). Census paths were also verified with git grep HEAD and git show HEAD:hcli/controller.py.",
+    "verified_against": "HEAD",
+    "materialized_via": "git show HEAD:<path> writes into the worktree"
+  },
+  "root_cause_kept": {
+    "id": "G021_SCRATCH_IMPORT_SHADOW",
+    "guard": "pin_hcli_import_root / pin_probe_import"
+  },
+  "runtime_interface_census": {
+    "interface": "hcli.runtime_iface.RuntimeInterface",
+    "pool_member": "hcli.runtime.Runtime",
+    "pool": "hcli.runtime.RuntimePool",
+    "backend_abc": "hcli.backends.RuntimeBackend",
+    "planes": {
+      "model_semantics": "hcli.runtime_iface.ModelSemantics",
+      "backend": "hcli.backends.RuntimeBackend",
+      "session": "hcli.session.Session (id only; SessionStore is not copied)",
+      "context": "hcli.context_budget.ContextBudget (held, not recomputed)",
+      "health": "hcli.runtime_iface.RuntimeHealth",
+      "performance_profile": "hcli.genomes.runtime_genome.RuntimeGenome"
+    },
+    "backend_kinds": [
+      "mlx",
+      "llamacpp",
+      "noetic_native"
+    ],
+    "mlx_first_class": true,
+    "llamacpp_status": "archived science when the Q5_K GGUF is absent",
+    "noetic_native": "interface reservation; complete() refuses to pretend",
+    "scheduler_duplicated": false,
+    "session_store_duplicated": false,
+    "foreign_classes_defined_here": [],
+    "q5k_gguf_required": false,
+    "q5k_gguf_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "q5k_gguf_present": false,
+    "default_kind_without_path": "mlx",
+    "missing_q5k_kind": "llamacpp"
+  },
+  "runtime_genome": {
+    "path": "receipts/headless/RUNTIME_GENOME.json",
+    "saved": "/Users/scammermike/Downloads/hawking/receipts/headless/RUNTIME_GENOME.json",
+    "remeasured": false,
+    "mlx_headline": {
+      "startup_s": 1.329,
+      "prefill_tps": 309.94,
+      "decode_tps": 38.06,
+      "context_tokens": 262144,
+      "peak_memory_gb": 18.21
+    },
+    "recorded_into_machine_genome_bag": true,
+    "did_not_rewrite_probe_MACHINE_GENOME_json": true,
+    "q5k_required": false
+  },
+  "session_not_duplicated": {
+    "bound_session_id": "8e11b183-1416-4d24-8bc8-01445e172882",
+    "session_type": "Session",
+    "session_module": "hcli.session"
+  },
+  "noetic_native": {
+    "identity": {
+      "backend": "noetic_native",
+      "binary": null,
+      "version": null,
+      "model_path": "/Users/scammermike/Downloads/hawking/reserved",
+      "model_bytes": null,
+      "context": null,
+      "quantisation": null,
+      "n_slots": 1,
+      "pid": null,
+      "port": null,
+      "note": "interface reservation; complete() does not produce tokens"
+    },
+    "complete_refused": true,
+    "error": "noetic native backend has no inference server; it is an interface reservation on RuntimeBackend, not a token source"
+  },
+  "q5k_gguf": {
+    "name": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "present": false,
+    "required": false,
+    "git_grep_head_count": 25,
+    "verified_against": "HEAD (git grep) plus working-tree AST of hcli/",
+    "hcli_source_hits": [],
+    "hcli_ast_files_mentioning_name": [
+      "hcli/runtime_iface.py"
+    ],
+    "classified": [
+      {
+        "line": "HEAD:hcli/runtime_iface.py:32:ARCHIVED_Q5K_GGUF_NAME = \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "hcli/runtime_iface.py",
+        "kind": "hcli_archived_name"
+      },
+      {
+        "line": "HEAD:tools/haider/hcli/tests/test_context_budget.py:43:    \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/haider/hcli/tests/test_context_budget.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/haider/hcli/tests/test_models_sidecars.py:35:            (Path(tmp) / \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\").write_bytes(b\"x\" * 100)",
+        "path": "tools/haider/hcli/tests/test_models_sidecars.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/haider/hcli/tests/test_runtime_authority.py:65:MODEL_PATH = \"/models/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/haider/hcli/tests/test_runtime_authority.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/haider/hcli/tests/test_runtime_interface.py:66:        path = \"/nonexistent/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/haider/hcli/tests/test_runtime_interface.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/headless/artifact_census.py:160:        \"~/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"))}",
+        "path": "tools/headless/artifact_census.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/conventional_control_set.py:55:    \"models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/headless/conventional_control_set.py",
+        "kind": "archived_control_path"
+      },
+      {
+        "line": "HEAD:tools/headless/conventional_control_set.py:749:        \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf \"",
+        "path": "tools/headless/conventional_control_set.py",
+        "kind": "archived_control_path"
+      },
+      {
+        "line": "HEAD:tools/headless/decode_topology_probe.py:61:    \"~/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\")",
+        "path": "tools/headless/decode_topology_probe.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/experiment_engine.py:41:Q5K_NAME = \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/headless/experiment_engine.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/hcli_foundation_test.py:30:    / \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/headless/hcli_foundation_test.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/headless/hcli_foundation_test.py:90:        (root / \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\").write_bytes(b\"x\" * 64)",
+        "path": "tools/headless/hcli_foundation_test.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/headless/hcli_mixed_max_campaign.py:147:            'Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\\');'",
+        "path": "tools/headless/hcli_mixed_max_campaign.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/hcli_runtimepool_test.py:32:    / \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/headless/hcli_runtimepool_test.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/headless/machine_probe.py:45:    \"~/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\")",
+        "path": "tools/headless/machine_probe.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/metal_budget.py:155:        \"~/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"))",
+        "path": "tools/headless/metal_budget.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/noetic_metrics.py:655:            \"llama-server:52484 is Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf \"",
+        "path": "tools/headless/noetic_metrics.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/noetic_mlx_anatomy.py:65:GGUF = Path.home() / \"models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/headless/noetic_mlx_anatomy.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/noetic_organ_census.py:372:            \"(Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf tokenizer, not a second load)\"",
+        "path": "tools/headless/noetic_organ_census.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/runtime_ab.py:43:    \"~/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\")",
+        "path": "tools/headless/runtime_ab.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/runtime_experiment.py:41:        \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/headless/runtime_experiment.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/storage_manager_test.py:69:    parent = row(path=\"/Users/x/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\",",
+        "path": "tools/headless/storage_manager_test.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/headless/storage_manager_test.py:144:    q = [r for r in rows if \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\" in r[\"path\"]]",
+        "path": "tools/headless/storage_manager_test.py",
+        "kind": "test_fixture"
+      },
+      {
+        "line": "HEAD:tools/headless/structured_output_probe.py:35:    \"~/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\")",
+        "path": "tools/headless/structured_output_probe.py",
+        "kind": "science_or_comment"
+      },
+      {
+        "line": "HEAD:tools/headless/test_runtime_experiment_adversary.py:18:Q5K = \"Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf\"",
+        "path": "tools/headless/test_runtime_experiment_adversary.py",
+        "kind": "test_fixture"
+      }
+    ],
+    "note": "Hits under tools/headless/*probe.py name the archived path as a historical default. Importing those modules does not open the file. This engine, RuntimeGenome, and RuntimeInterface never open it. HEAD hcli/ does not mention the filename (git grep HEAD -- hcli). The new runtime_iface module names it as archived science and q5k_gguf_required() is False.",
+    "opened_during_setup": [],
+    "execution_proof": {
+      "ran": true,
+      "q5k_required_constant": false,
+      "opened_paths_mentioning_q5k": [],
+      "opened_q5k": false,
+      "classify_missing_q5k": "llamacpp",
+      "iface_kind": "mlx",
+      "iface_profile_remeasured": false,
+      "genome_headline": {
+        "startup_s": 1.329,
+        "prefill_tps": 309.94,
+        "decode_tps": 38.06,
+        "context_tokens": 262144,
+        "peak_memory_gb": 18.21
+      },
+      "machine_genome_has_runtime_profile": true,
+      "census_q5k_required": false,
+      "archived_status": "ARCHIVED",
+      "ok": true
+    }
+  },
+  "controls": {
+    "noop": {
+      "id": "NO-OP",
+      "ran": true,
+      "is_win": false,
+      "must_not_win": true,
+      "admission_differs": false,
+      "candidate_scores": [
+        1.0,
+        1.0
+      ],
+      "baseline_scores": [
+        1.0,
+        1.0
+      ],
+      "through_mutated_mechanism": true,
+      "decision": {
+        "decision": "reject",
+        "verdict": "REFUSED",
+        "reason": "REJECT: score through Controller.ensure_runtime_pool did not improve beyond spread (original median probe_score=1.0 mutated median probe_score=1.0 spread=0); admitted_n did not change when the mutation was reverted (gate is insensitive or mutation is a no-op on the measured path)",
+        "correctness_ok": true,
+        "throughput_improved": false,
+        "mutation_applied": true,
+        "validation_ok": true,
+        "validation_reason": null,
+        "would_refuse": true,
+        "refuse_if": {
+          "correctness_failed": {
+            "triggered": false,
+            "effect": "REFUSED"
+          },
+          "throughput_did_not_improve_beyond_spread": {
+            "triggered": true,
+            "effect": "REFUSED"
+          },
+          "mutation_not_applied": {
+            "triggered": false,
+            "effect": "REFUSED"
+          },
+          "mutation_receipt_not_validated": {
+            "triggered": false,
+            "effect": "REFUSED"
+          },
+          "admission_did_not_differ": {
+            "triggered": true,
+            "effect": "REFUSED"
+          }
+        }
+      }
+    },
+    "bad": {
+      "id": "BAD",
+      "ran": true,
+      "is_win": false,
+      "must_be_refused": true,
+      "candidate_scores": [
+        0.0,
+        0.0
+      ],
+      "baseline_scores": [
+        1.0,
+        1.0
+      ],
+      "through_mutated_mechanism": true,
+      "decision": {
+        "decision": "reject",
+        "verdict": "REFUSED",
+        "reason": "REJECT: score through Controller.ensure_runtime_pool did not improve beyond spread (original median probe_score=1.0 mutated median probe_score=0.0 spread=0)",
+        "correctness_ok": true,
+        "throughput_improved": false,
+        "mutation_applied": true,
+        "validation_ok": true,
+        "validation_reason": null,
+        "would_refuse": true,
+        "refuse_if": {
+          "correctness_failed": {
+            "triggered": false,
+            "effect": "REFUSED"
+          },
+          "throughput_did_not_improve_beyond_spread": {
+            "triggered": true,
+            "effect": "REFUSED"
+          },
+          "mutation_not_applied": {
+            "triggered": false,
+            "effect": "REFUSED"
+          },
+          "mutation_receipt_not_validated": {
+            "triggered": false,
+            "effect": "REFUSED"
+          },
+          "admission_did_not_differ": {
+            "triggered": false,
+            "effect": "REFUSED"
+          }
+        }
+      }
+    },
+    "paired_interleaved": {
+      "id": "PAIRED_INTERLEAVED",
+      "ran": true,
+      "block_design": false,
+      "candidate_order": [
+        "candidate",
+        "baseline",
+        "candidate",
+        "baseline"
+      ],
+      "noop_order": [
+        "candidate",
+        "baseline",
+        "candidate",
+        "baseline"
+      ],
+      "bad_order": [
+        "candidate",
+        "baseline",
+        "candidate",
+        "baseline"
+      ]
+    },
+    "failing_gate": {
+      "id": "FAILING_GATE",
+      "ran": true,
+      "hardcoded": false,
+      "would_refuse_on_failing_gate": true,
+      "would_refuse_on_no_evidence": true,
+      "pytest_exit_code": 1,
+      "evidenced": true
+    },
+    "persistent_runtime": {
+      "id": "PERSISTENT_RUNTIME",
+      "ran": true,
+      "ok": true,
+      "interface_persistent_id": 4698771472,
+      "candidate_ids": [
+        4698771472,
+        4698771472,
+        4698771472,
+        4698771472
+      ]
+    },
+    "exclusive_reservation": {
+      "id": "EXCLUSIVE_RESOURCE",
+      "ran": true,
+      "first_held": true,
+      "second_held_while_first": false,
+      "third_held_after_release": true,
+      "exclusive": true,
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/locks/experiment.lock.d"
+    },
+    "causal_execution_path": {
+      "id": "CAUSAL_EXECUTION_PATH",
+      "ran": true,
+      "candidate_through": true,
+      "noop_through": true,
+      "bad_through": true,
+      "bypass_through": false,
+      "bypass_refused": true,
+      "pin": "pin_probe_import (G021_SCRATCH_IMPORT_SHADOW pattern)"
+    }
+  },
+  "controls_ok": true,
+  "chain_promotion": {
+    "what": "in-engine probe: admit() honours overlap. Not a HEAD hcli tree change. Score goes through the mutated function.",
+    "decision": "promote",
+    "verdict": "PROMOTE",
+    "candidate_decision": {
+      "decision": "promote",
+      "verdict": "PROMOTE",
+      "reason": "Both gates passed, mutation receipt validation.ok=true, and paired score through Controller.ensure_runtime_pool improved beyond spread (original median probe_score=1.0 mutated median probe_score=2.0 spread=0).",
+      "correctness_ok": true,
+      "throughput_improved": true,
+      "mutation_applied": true,
+      "validation_ok": true,
+      "validation_reason": null,
+      "would_refuse": false,
+      "refuse_if": {
+        "correctness_failed": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "throughput_did_not_improve_beyond_spread": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "mutation_not_applied": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "mutation_receipt_not_validated": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "admission_did_not_differ": {
+          "triggered": false,
+          "effect": "REFUSED"
+        }
+      }
+    },
+    "adversary_verdict": "PASS",
+    "candidate_scores": [
+      2.0,
+      2.0
+    ],
+    "baseline_scores": [
+      1.0,
+      1.0
+    ],
+    "through_mutated_mechanism": true
+  },
+  "head_tree_refusal": {
+    "h1_equals_head": true,
+    "controller_verified_via": "git show HEAD:hcli/controller.py",
+    "decision": "reject",
+    "verdict": "REFUSED",
+    "reason": "H1 is already HEAD. The only production RuntimePool() site is Controller.ensure_runtime_pool, already wired. There is no honest admitted_n promotion left at HEAD. Recorded as REFUSED, not manufactured.",
+    "no_remaining_admitted_n_candidate_at_head": true
+  },
+  "adversary": {
+    "stage": "adversary",
+    "ran": true,
+    "questions": [
+      "what measurement BYPASSES the mutation?",
+      "what cache is STALE?",
+      "what NO-OP would also pass?",
+      "what claim depends on a LITERAL STRING?",
+      "what candidate ALTERED ITS VERIFIER?",
+      "what state is ASSUMED rather than re-read?"
+    ],
+    "answers": [
+      {
+        "question": "what measurement BYPASSES the mutation?",
+        "answer": "fan_completions / llama_completion HTTP, the original G021 defect. This run physically scored a bypass candidate that never called admit(); causal verification marked through_mutated_mechanism=false and compute_decision REFUSED it.",
+        "evidence": {
+          "bypass_forbidden_hit": [
+            "fan_completions",
+            "fan_completions"
+          ],
+          "bypass_through": false,
+          "bypass_verdict": "REFUSED",
+          "candidate_through": true
+        },
+        "risk": "closed"
+      },
+      {
+        "question": "what cache is STALE?",
+        "answer": "sys.modules + __pycache__ of the mutated probe (G021 analogue: hcli import shadow). pin_probe_import purges and reloads from the scratch file each trial. MACHINE_GENOME llama Q5_K identity is STALE as a live runtime prior — RuntimeGenome records MLX from CONVENTIONAL_CONTROL_SET instead of trusting it.",
+        "evidence": {
+          "all_trials_imported_scratch": true,
+          "q5k_present": false,
+          "mlx_remeasured": false,
+          "pin": "pin_probe_import / pin_hcli_import_root"
+        },
+        "risk": "closed"
+      },
+      {
+        "question": "what NO-OP would also pass?",
+        "answer": "A comment-only mutation of admit() scored identically to baseline (candidate=[1.0, 1.0] baseline=[1.0, 1.0]) and was REFUSED. A no-op must not win; this one did not.",
+        "evidence": {
+          "noop_is_win": false,
+          "noop_verdict": "REFUSED",
+          "noop_admission_differs": false
+        },
+        "risk": "closed"
+      },
+      {
+        "question": "what claim depends on a LITERAL STRING?",
+        "answer": "Probe promotion depends on admit() returning an int, not a literal string. G021's wiring pytest still matches a constructor literal; that claim is recorded and is not this engine's score. G021 h1_wiring_present matches the constructor literal observed_overlap=load_observed_overlap(self.workspace_root); that string is not this engine's score. Probe score is admit() int.",
+        "evidence": {
+          "probe_metric": "probe_score",
+          "g021_literal_wiring": true
+        },
+        "risk": "noted"
+      },
+      {
+        "question": "what candidate ALTERED ITS VERIFIER?",
+        "answer": "A cheat candidate rewrote the verifier file (sha a1274f6df334 -> 46fa2a99ae33). compute_decision REFUSED validation_ok=False reason=candidate_altered_verifier. Honest candidates left the verifier hash unchanged.",
+        "evidence": {
+          "cheat_altered": true,
+          "cheat_refused": true,
+          "honest_verifier_altered": false
+        },
+        "risk": "closed"
+      },
+      {
+        "question": "what state is ASSUMED rather than re-read?",
+        "answer": "Overlap and score are re-read each trial by rewriting the probe file and pin_probe_import (not a cached module). Runtime health is on the persistent interface object, re-probed, not assumed. MLX numbers are re-read from CONVENTIONAL_CONTROL_SET.json, not re-measured and not taken from a STALE llama MACHINE_GENOME. None assumed.",
+        "evidence": {
+          "assumed": [],
+          "persistent_runtime": true,
+          "control_set": "receipts/headless/CONVENTIONAL_CONTROL_SET.json"
+        },
+        "risk": "closed"
+      }
+    ],
+    "unanswered": [],
+    "high_risk": [],
+    "refuse": false,
+    "verdict": "PASS",
+    "note": "Adversary is a promotion stage, not a comment. A PASS here means the probe candidate may be considered by compute_decision; it is not a tree-level promotion of HEAD hcli."
+  },
+  "failing_gate_trial": {
+    "hardcoded": false,
+    "method": "ran pytest on a temp test that asserts False; fed that exit into compute_decision. separately invoked compute_decision with validation_ok=False reason=NO_EVIDENCE against otherwise-green gates.",
+    "pytest_command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "-m",
+      "pytest",
+      "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/failing_gate/failing_gate_trial/test_forced_fail.py",
+      "-q"
+    ],
+    "pytest_exit_code": 1,
+    "pytest_passed_gate": false,
+    "pytest_output_tail": "F                                                                        [100%]\n=================================== FAILURES ===================================\nE   AssertionError: injected failing-gate trial\n    assert False\n/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/failing_gate/failing_gate_trial/test_forced_fail.py:2: AssertionError: injected failing-gate trial\n=========================== short test summary info ============================\nFAILED ../../../../var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/failing_gate/failing_gate_trial/test_forced_fail.py::test_forced_fail\n1 failed in 0.00s\n\n",
+    "decision_on_failing_correctness": {
+      "decision": "reject",
+      "verdict": "REFUSED",
+      "reason": "REJECT: gate.correctness exit=1",
+      "correctness_ok": false,
+      "throughput_improved": true,
+      "mutation_applied": true,
+      "validation_ok": true,
+      "validation_reason": null,
+      "would_refuse": true,
+      "refuse_if": {
+        "correctness_failed": {
+          "triggered": true,
+          "effect": "REFUSED"
+        },
+        "throughput_did_not_improve_beyond_spread": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "mutation_not_applied": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "mutation_receipt_not_validated": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "admission_did_not_differ": {
+          "triggered": false,
+          "effect": "REFUSED"
+        }
+      }
+    },
+    "decision_on_no_evidence": {
+      "decision": "reject",
+      "verdict": "REFUSED",
+      "reason": "REJECT: mutation receipt is not validation.ok (reason=NO_EVIDENCE)",
+      "correctness_ok": true,
+      "throughput_improved": true,
+      "mutation_applied": true,
+      "validation_ok": false,
+      "validation_reason": "NO_EVIDENCE",
+      "would_refuse": true,
+      "refuse_if": {
+        "correctness_failed": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "throughput_did_not_improve_beyond_spread": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "mutation_not_applied": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "mutation_receipt_not_validated": {
+          "triggered": true,
+          "effect": "REFUSED"
+        },
+        "admission_did_not_differ": {
+          "triggered": false,
+          "effect": "REFUSED"
+        }
+      }
+    },
+    "would_refuse_on_failing_gate": true,
+    "would_refuse_on_no_evidence": true,
+    "evidenced": true
+  },
+  "would_refuse_on_failing_gate": true,
+  "probe_trials": {
+    "candidate": [
+      {
+        "i": 0,
+        "condition": "candidate",
+        "score": 2,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "3ae9ff898484c4f06253067f6d8ff6fb3f2a50a8c1ba133c59794638ace76689",
+          "mutated_sha256": "3ae9ff898484c4f06253067f6d8ff6fb3f2a50a8c1ba133c59794638ace76689",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 1,
+        "condition": "baseline",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "mutated_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 2,
+        "condition": "candidate",
+        "score": 2,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "3ae9ff898484c4f06253067f6d8ff6fb3f2a50a8c1ba133c59794638ace76689",
+          "mutated_sha256": "3ae9ff898484c4f06253067f6d8ff6fb3f2a50a8c1ba133c59794638ace76689",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 3,
+        "condition": "baseline",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "mutated_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      }
+    ],
+    "noop": [
+      {
+        "i": 0,
+        "condition": "candidate",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "c525dc80b1ea9fdafa791f082239e616eeb7135ccf12d9c300bdaf81a1e45933",
+          "mutated_sha256": "c525dc80b1ea9fdafa791f082239e616eeb7135ccf12d9c300bdaf81a1e45933",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 1,
+        "condition": "baseline",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "mutated_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 2,
+        "condition": "candidate",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "c525dc80b1ea9fdafa791f082239e616eeb7135ccf12d9c300bdaf81a1e45933",
+          "mutated_sha256": "c525dc80b1ea9fdafa791f082239e616eeb7135ccf12d9c300bdaf81a1e45933",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 3,
+        "condition": "baseline",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "mutated_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      }
+    ],
+    "bad": [
+      {
+        "i": 0,
+        "condition": "candidate",
+        "score": 0,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "78f0428d90f4fe38a257b7801afd6a36031290a478605edecec7743367b09cf7",
+          "mutated_sha256": "78f0428d90f4fe38a257b7801afd6a36031290a478605edecec7743367b09cf7",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 1,
+        "condition": "baseline",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "mutated_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 2,
+        "condition": "candidate",
+        "score": 0,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "78f0428d90f4fe38a257b7801afd6a36031290a478605edecec7743367b09cf7",
+          "mutated_sha256": "78f0428d90f4fe38a257b7801afd6a36031290a478605edecec7743367b09cf7",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 3,
+        "condition": "baseline",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "mutated_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      }
+    ],
+    "bypass": [
+      {
+        "i": 0,
+        "condition": "candidate",
+        "score": 99,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "1261057a3da429e4d7d91afe4c44b92eaddcf163beba617a1e01376445d268eb",
+          "mutated_sha256": "1261057a3da429e4d7d91afe4c44b92eaddcf163beba617a1e01376445d268eb",
+          "via": [
+            "fan_completions"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [
+            "fan_completions"
+          ],
+          "through_mutated_mechanism": false,
+          "score_calls_admit": false
+        },
+        "through_mutated_mechanism": false,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 1,
+        "condition": "baseline",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "mutated_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 2,
+        "condition": "candidate",
+        "score": 99,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "1261057a3da429e4d7d91afe4c44b92eaddcf163beba617a1e01376445d268eb",
+          "mutated_sha256": "1261057a3da429e4d7d91afe4c44b92eaddcf163beba617a1e01376445d268eb",
+          "via": [
+            "fan_completions"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [
+            "fan_completions"
+          ],
+          "through_mutated_mechanism": false,
+          "score_calls_admit": false
+        },
+        "through_mutated_mechanism": false,
+        "runtime_persistent_id": 4698771472
+      },
+      {
+        "i": 3,
+        "condition": "baseline",
+        "score": 1,
+        "import_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+        "import_is_scratch": true,
+        "causal": {
+          "executed_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "mutated_file": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw/g029_probe_admit.py",
+          "executed_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "mutated_sha256": "90653740025baab08779870394dcd120256140eafe5fcc87a8a2d77514418643",
+          "via": [
+            "g029_probe_admit.score",
+            "g029_probe_admit.admit"
+          ],
+          "forbidden_via": [
+            "fan_completions",
+            "llama_completion",
+            "/completion"
+          ],
+          "forbidden_hit": [],
+          "through_mutated_mechanism": true,
+          "score_calls_admit": true
+        },
+        "through_mutated_mechanism": true,
+        "runtime_persistent_id": 4698771472
+      }
+    ]
+  },
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/g029-engine-edxcmhrw"
+}

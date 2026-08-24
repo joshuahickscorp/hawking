@@ -1,0 +1,94 @@
+{
+  "suite": "hcli_p0_gates",
+  "generated_at": "2026-08-23T03:51:12Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "results": [
+    {
+      "gate": "P0-1",
+      "claim": "every compiled obligation carries a verify command that is capable of failing",
+      "defends": "tools/haider/hcli/controller.py:580 start_ultragoal",
+      "obligations": 57,
+      "unfailable": 57,
+      "distinct_unfailable": [
+        "python3 -c 'raise SystemExit(0)'"
+      ],
+      "ok": false
+    },
+    {
+      "gate": "P0-2",
+      "claim": "the mutation lock uses flock or O_EXCL, not check-then-replace",
+      "defends": "tools/haider/hcli/resources.py:481-505",
+      "uses_real_primitive": false,
+      "ok": false
+    },
+    {
+      "gate": "P0-3",
+      "claim": "a failed Grok terminal state blocks acceptance regardless of the verifier",
+      "defends": "tools/haider/hcli/executors.py:154-167",
+      "failed_state_guards_found": 0,
+      "guards": [],
+      "ok": false
+    },
+    {
+      "gate": "P0-6",
+      "claim": "HCLI mints a unique task id per dispatch rather than inheriting a 1s-resolution id",
+      "defends": "tools/haider/hcli/grok_bridge.py dispatch id",
+      "ok": false,
+      "reason": "GrokBridge exposes no task-id minting hook; ids come from grok-run at 1s resolution"
+    },
+    {
+      "gate": "P0-7",
+      "claim": "reported Grok activity tracks the real process table",
+      "defends": "tools/haider/hcli/max_policy.py grok_pool_snapshot",
+      "reported_active": 0,
+      "live_grok_processes": 8,
+      "conclusive": true,
+      "ok": false,
+      "note": null
+    },
+    {
+      "gate": "P0-8",
+      "claim": "Scheduler.complete consults a verifier outcome before completing a WorkUnit",
+      "defends": "tools/haider/hcli/scheduler.py:94-102",
+      "body_mentions_verifier": false,
+      "ok": false
+    },
+    {
+      "gate": "P0-11",
+      "claim": "the error path preserves the evidence list instead of emitting an empty one",
+      "defends": "tools/haider/hcli/engine.py:788",
+      "empty_evidence_arguments_at_lines": [
+        360,
+        788
+      ],
+      "ok": false
+    },
+    {
+      "gate": "P0-12",
+      "claim": "the WorkUnit DAG is derived from the obligations, not a fixed two-step template",
+      "defends": "tools/haider/hcli/controller.py start_ultragoal -> dag.json",
+      "obligations": 57,
+      "workunits": 2,
+      "workunit_ids": [
+        "implement",
+        "validate"
+      ],
+      "returned_workunit_ids": [
+        "implement",
+        "validate"
+      ],
+      "ok": false
+    }
+  ],
+  "green": [],
+  "red": [
+    "P0-1",
+    "P0-2",
+    "P0-3",
+    "P0-6",
+    "P0-7",
+    "P0-8",
+    "P0-11",
+    "P0-12"
+  ]
+}

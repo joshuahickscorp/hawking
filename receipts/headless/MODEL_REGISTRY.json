@@ -1,0 +1,245 @@
+{
+ "schema": "hawking.headless.model_registry.v1",
+ "parent": "qwen38-huihui-bf16-P0",
+ "rollback_parent": null,
+ "candidates": {
+  "qwen38-huihui-bf16-P0": {
+   "name": "qwen38-huihui-bf16-P0",
+   "role": "parent",
+   "registered_at": "2026-08-22T23:35:58Z",
+   "artifact": {
+    "kind": "dir",
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+    "bytes": 55586063333,
+    "gib": 51.769,
+    "file_count": 98,
+    "identity_kind": "sha256_over_sorted_name_size_manifest",
+    "identity": "c72e6dbb668f33b8c3a764d22d5a3b4c33f9940b3a2479a0fdde17c12f26553a",
+    "caveat": "structural identity, NOT a content hash of the weights"
+   },
+   "recipe": {
+    "source_repo": "huihui-ai/Huihui-Qwen3.8-27B-abliterated",
+    "dtype": "bf16",
+    "arch": "Qwen3_5ForConditionalGeneration",
+    "params": "28B",
+    "dense": true
+   },
+   "notes": "TRUE P0 (steer S001): direct parent of the production Q5_K GGUF. base Qwen/Qwen3.8-27B, abliterated with remove-refusals-with-transformers, first 15 layers retained.",
+   "source_sha": "f6c407f6897b4c45c765339b792fe726a1fe6fe8"
+  },
+  "qwen38-huihui-q5k-gguf": {
+   "name": "qwen38-huihui-q5k-gguf",
+   "role": "candidate",
+   "registered_at": "2026-08-22T23:36:09Z",
+   "artifact": {
+    "kind": "file",
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "bytes": 19535701280,
+    "gib": 18.194,
+    "identity_kind": "sha256_size_head_tail_8MiB",
+    "identity": "5821251efd19c3089f86f8cc88c6ee2a7f4957e89a6a0a72642ff839911b2bae",
+    "caveat": "detects truncation and corruption, NOT a full content hash"
+   },
+   "recipe": {
+    "derived_from": "qwen38-huihui-bf16-P0",
+    "quant": "Q5_K",
+    "runtime": "llama.cpp"
+   },
+   "notes": "the artifact HCLI production actually runs today, via llama.cpp",
+   "source_sha": "f6c407f6897b4c45c765339b792fe726a1fe6fe8"
+  },
+  "qwen38-huihui-mlx-4bit": {
+   "name": "qwen38-huihui-mlx-4bit",
+   "role": "rejected",
+   "registered_at": "2026-08-22T23:36:09Z",
+   "artifact": {
+    "kind": "dir",
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit",
+    "bytes": 15153237112,
+    "gib": 14.113,
+    "file_count": 10,
+    "identity_kind": "sha256_over_sorted_name_size_manifest",
+    "identity": "1abd2803cca36f93b3e2513b7de8ca6411f70f601c72017539cf39b9eb74e996",
+    "caveat": "structural identity, NOT a content hash of the weights"
+   },
+   "recipe": {
+    "derived_from": "qwen38-huihui-bf16-P0",
+    "quant": "4bit",
+    "bpw": 4.501,
+    "runtime": "mlx",
+    "command": "mlx_lm convert --hf-path <bf16> -q --q-bits 4"
+   },
+   "notes": "lineage-matched MLX 4-bit at 4.501 BPW; 1.477x decode over the Q5_K on identical weights",
+   "source_sha": "f6c407f6897b4c45c765339b792fe726a1fe6fe8"
+  },
+  "qwen38-gravity-uniform-q4-v1": {
+   "name": "qwen38-gravity-uniform-q4-v1",
+   "role": "candidate",
+   "registered_at": "2026-08-23T00:58:00Z",
+   "artifact": {
+    "kind": "dir",
+    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "bytes": 14297933604,
+    "gib": 13.316,
+    "file_count": 756,
+    "identity_kind": "sha256_over_sorted_name_size_manifest",
+    "identity": "859d08c002947d4a36d5e894058527de78b063b8e0af1dd57720c5e07c9d5f04",
+    "caveat": "structural identity, NOT a content hash of the weights"
+   },
+   "recipe": {
+    "derived_from": "qwen38-huihui-bf16-P0",
+    "quant": "uniform_q4",
+    "runtime": "hawking-native-gravity",
+    "codec": "uniform-q4-v1",
+    "pack_command": "ascension_qwen38_pack --source /Users/scammermike/models/qwen3.8-27b-abliterated-bf16 --root /Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "bar": "PASS"
+   },
+   "notes": "native Hawking .gravity runtime, uniform Q4, rebuilt from the huihui bf16 P0 parent (steer S001) after the historical artifact was reclaimed",
+   "source_sha": "7cd1a4b8e8c5b523d5fc134ab8a1b9a32fb2f37f"
+  }
+ },
+ "sealed_negative_science": [
+  {
+   "name": "qwen38-huihui-mlx-4bit",
+   "sealed_at": "2026-08-22T23:42:05Z",
+   "parent_at_the_time": "qwen38-huihui-bf16-P0",
+   "artifact_identity": {
+    "kind": "dir",
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit",
+    "bytes": 15153237112,
+    "gib": 14.113,
+    "file_count": 10,
+    "identity_kind": "sha256_over_sorted_name_size_manifest",
+    "identity": "1abd2803cca36f93b3e2513b7de8ca6411f70f601c72017539cf39b9eb74e996",
+    "caveat": "structural identity, NOT a content hash of the weights"
+   },
+   "recipe": {
+    "derived_from": "qwen38-huihui-bf16-P0",
+    "quant": "4bit",
+    "bpw": 4.501,
+    "runtime": "mlx",
+    "command": "mlx_lm convert --hf-path <bf16> -q --q-bits 4"
+   },
+   "reason_rejected": "capability regression: structured_output axis 1.0 -> 0.667 (json-kind-correct 0/5 vs 5/5 on llama.cpp; MLX has no response_format/json_schema/grammar per BACKEND_CAPABILITY.json). Performance was ELIGIBLE at +47.67% decode / +32.28% TOKEN_NS but capability blocks promotion per directive section 13.",
+   "reproduce": "python3 tools/headless/capability_suite.py --backend mlx --model-path ~/models/qwen3.8-27b-abliterated-mlx-huihui-4bit --label mlx-4bit",
+   "bytes_reclaimable": 15153237112,
+   "note": "the weights may be deleted; this record is what must survive so the next campaign does not pay to rediscover the same dead end"
+  }
+ ],
+ "history": [
+  {
+   "at": "2026-08-22T23:35:58Z",
+   "action": "register:parent",
+   "name": "qwen38-huihui-bf16-P0"
+  },
+  {
+   "at": "2026-08-22T23:36:09Z",
+   "action": "register:candidate",
+   "name": "qwen38-huihui-q5k-gguf"
+  },
+  {
+   "at": "2026-08-22T23:36:09Z",
+   "action": "register:candidate",
+   "name": "qwen38-huihui-mlx-4bit"
+  },
+  {
+   "at": "2026-08-22T23:36:10Z",
+   "candidate": "qwen38-huihui-mlx-4bit",
+   "incumbent": "qwen38-huihui-q5k-gguf",
+   "change_axis": "runtime",
+   "performance": {
+    "allowed": true,
+    "change_axis": "runtime",
+    "held_equal": [
+     "context",
+     "workers_resident",
+     "workers_decoding",
+     "source_sha"
+    ],
+    "decode_tps_gain_pct": 47.67,
+    "complete_token_ns_gain_pct": 32.28,
+    "measurement_spread_pct": 0.2,
+    "gain_within_noise": false,
+    "verdict": "ELIGIBLE \u2014 gain exceeds measurement noise; capability gates still apply",
+    "note": "Eligibility here is PERFORMANCE only. Directive \u00a713 still requires Doctor and Tabula capability verdicts before a child becomes the parent, and \u00a710 forbids a child promoting itself."
+   },
+   "capability": null,
+   "allowed": false,
+   "reasons": [
+    "no capability receipt CAPABILITY_mlx-4bit.json for the candidate \u2014 \u00a713 requires a capability verdict, and 'feels about the same' is not one",
+    "no capability receipt CAPABILITY_llamacpp-q5k.json for the incumbent"
+   ],
+   "rule": "\u00a710 a child never promotes itself; \u00a713 Doctor/Tabula capability is required; \u00a725 promotions without comparable measurements are forbidden",
+   "action": "promote"
+  },
+  {
+   "at": "2026-08-22T23:41:50Z",
+   "candidate": "qwen38-huihui-mlx-4bit",
+   "incumbent": "qwen38-huihui-q5k-gguf",
+   "change_axis": "runtime",
+   "performance": {
+    "allowed": true,
+    "change_axis": "runtime",
+    "held_equal": [
+     "context",
+     "workers_resident",
+     "workers_decoding",
+     "source_sha"
+    ],
+    "decode_tps_gain_pct": 47.67,
+    "complete_token_ns_gain_pct": 32.28,
+    "measurement_spread_pct": 0.2,
+    "gain_within_noise": false,
+    "verdict": "ELIGIBLE \u2014 gain exceeds measurement noise; capability gates still apply",
+    "note": "Eligibility here is PERFORMANCE only. Directive \u00a713 still requires Doctor and Tabula capability verdicts before a child becomes the parent, and \u00a710 forbids a child promoting itself."
+   },
+   "capability": {
+    "candidate_overall": {
+     "passed": 35,
+     "total": 43,
+     "rate": 0.814
+    },
+    "incumbent_overall": {
+     "passed": 40,
+     "total": 43,
+     "rate": 0.9302
+    },
+    "regressions": [
+     "structured_output: 1.0 -> 0.667"
+    ]
+   },
+   "allowed": false,
+   "reasons": [
+    "capability gate: regressions on structured_output: 1.0 -> 0.667"
+   ],
+   "rule": "\u00a710 a child never promotes itself; \u00a713 Doctor/Tabula capability is required; \u00a725 promotions without comparable measurements are forbidden",
+   "action": "promote"
+  },
+  {
+   "at": "2026-08-22T23:42:05Z",
+   "action": "reject",
+   "name": "qwen38-huihui-mlx-4bit",
+   "reason": "capability regression: structured_output axis 1.0 -> 0.667 (json-kind-correct 0/5 vs 5/5 on llama.cpp; MLX has no response_format/json_schema/grammar per BACKEND_CAPABILITY.json). Performance was ELIGIBLE at +47.67% decode / +32.28% TOKEN_NS but capability blocks promotion per directive section 13."
+  },
+  {
+   "at": "2026-08-23T00:13:45Z",
+   "action": "register:candidate",
+   "name": "qwen38-gravity-uniform-q4-v1"
+  },
+  {
+   "at": "2026-08-23T00:36:23Z",
+   "action": "register:candidate",
+   "name": "qwen38-gravity-uniform-q4-v1"
+  },
+  {
+   "at": "2026-08-23T00:37:37Z",
+   "action": "register:candidate",
+   "name": "qwen38-gravity-uniform-q4-v1"
+  },
+  {
+   "at": "2026-08-23T00:58:00Z",
+   "action": "register:candidate",
+   "name": "qwen38-gravity-uniform-q4-v1"
+  }
+ ]
+}

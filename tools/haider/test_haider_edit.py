@@ -135,6 +135,39 @@ class ScopedEditValidationTests(unittest.TestCase):
         self.assertTrue(ok, f"expected ok, got err={err}")
 
 
+
+    def test_dot_git_config_rejected(self):
+        git_dir = os.path.join(self.root, ".git")
+        os.makedirs(git_dir, exist_ok=True)
+
+        path = os.path.join(git_dir, "config")
+
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("[core]\n")
+
+        ok, err, full_path, original = haider.validate_scoped_edit(
+            self.guard,
+            ".git/config",
+            "[core]",
+            "[core]\nfoo = bar",
+        )
+
+        self.assertFalse(ok)
+        self.assertIn(".git", err)
+        self.assertIsNone(full_path)
+
+    def test_nested_dot_git_rejected(self):
+        ok, err, _, _ = haider.validate_scoped_edit(
+            self.guard,
+            "foo/.git/config",
+            "x",
+            "y",
+        )
+
+        self.assertFalse(ok)
+        self.assertIn(".git", err)
+
+
 class ExtractEditJsonTests(unittest.TestCase):
     def test_direct_json(self):
         result = haider._extract_edit_json('{"path":"a.py","old_text":"x","new_text":"y"}')

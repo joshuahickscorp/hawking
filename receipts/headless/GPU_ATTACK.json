@@ -1,0 +1,64 @@
+{
+ "schema": "hawking.headless.gpu_attack.v1",
+ "obligation": "G006 \u2014 attack the decode ceiling, or prove it with numbers",
+ "generated_at": "2026-08-22T23:20:19Z",
+ "operator_ask": "run parallel models like ports without aggregate being similar \u2014 i.e. N runtimes should aggregate to meaningfully more than one",
+ "baseline_tps": 27.900814587942833,
+ "baseline_source": ".haider/bootstrap-director-v6/worker-equilibrium.json best_aggregate_tps at active_decode_limit=2, aggregate_scaling_vs_1=1.208",
+ "reps": 3,
+ "spread_pct": 0.8,
+ "measurement_is_clean_room": true,
+ "clean_room_caveat": null,
+ "topologies": {
+  "process": {
+   "best_k": 2,
+   "aggregate_tps": 27.546,
+   "spread_pct": 0.1,
+   "scaling_vs_1": 1.2075,
+   "what_it_is": "N separate llama-server processes, one slot each"
+  },
+  "slot": {
+   "best_k": 6,
+   "aggregate_tps": 31.541,
+   "spread_pct": 0.7,
+   "scaling_vs_1": 1.3823,
+   "what_it_is": "one llama-server with N continuous-batching slots"
+  }
+ },
+ "slot_over_process_at_best": 1.145,
+ "achieved_tps": 31.541,
+ "achieved_topology": "slot",
+ "achieved_k": 6,
+ "mechanism": "continuous batching: one pass over the weights per step serves N sequences, so the per-token weight streaming that dominates decode on this box is amortised instead of multiplied",
+ "bandwidth_accounting": {
+  "model_bytes": 19535701280,
+  "single_decoder_tps": 22.813,
+  "implied_weight_stream_GB_per_s": 445.7,
+  "m3_ultra_peak_GB_per_s": 819,
+  "single_decoder_pct_of_peak": 54.4,
+  "note": "PROCESS topology multiplies this traffic by k because each process streams the full weight set per token. SLOT topology does not: one pass over the weights serves every slot in the step."
+ },
+ "runtime_axis": {
+  "llama_cpp_single_stream_tps": 24.118578993622144,
+  "mlx_single_stream_tps": 35.506,
+  "mlx_over_llama": 1.472,
+  "bytes_ratio_llama_over_mlx": 1.215,
+  "confound_declared": "The two arms are DIFFERENT abliterations of the same base model (huihui-ai leaves the first 15 layers unablated; PocketAiHub projects layers 24-63). Architecture and per-token weight-streaming shape are identical, so the SPEED comparison is valid. Any quality claim across these arms would be confounded and must not be made from this receipt.",
+  "reading": "MLX moves 1.215x fewer bytes but runs 1.472x faster, so roughly 21% of the gain is kernel/dispatch efficiency rather than density."
+ },
+ "outcome": "IMPROVED",
+ "best_available_today": {
+  "config": "MLX single stream",
+  "tps": 35.506,
+  "vs_baseline_pct": 27.3,
+  "note": "A SINGLE MLX stream beats every llama.cpp concurrency configuration measured. The concurrency axis is worth at most 1.38x; the runtime axis is worth 1.47x on its own."
+ },
+ "open_frontier": [
+  "MLX + concurrency is UNMEASURED. If mlx_lm.server batches the way llama.cpp slots do, 35.506 x 1.38 would be around 49.0 tok/s. That product is a guess, not a measurement, and must not be quoted as one until the server path is benchmarked.",
+  "MLX has no response_format/json_schema/grammar (BACKEND_CAPABILITY.json), so an MLX backend trades constrained decoding for speed. It keeps enable_thinking and prompt_cache, which are the parts that actually rescued production.",
+  "Lower BPW is untouched here: a 2026-08-18 receipt measured 33.1 tok/s complete-wall at 4.256 BPW on a native runtime, against this 19.5 GB Q5_K artifact."
+ ],
+ "gain_pct_vs_baseline": 13.0,
+ "verdict": "slot topology at k=6 reaches 31.541 tok/s against a 27.9 tok/s baseline (+13.0%), which exceeds the 0.8% measurement spread.",
+ "what_changes_in_hcli": "RuntimePool's unit of concurrency must become a SLOT, not a process. Spawning N separate llama-servers on N ports is the worst available topology on a bandwidth-bound box: each process streams the full weight set per token. The pool should run few processes with many slots, and runtime identity becomes (process, slot) rather than just (process)."
+}

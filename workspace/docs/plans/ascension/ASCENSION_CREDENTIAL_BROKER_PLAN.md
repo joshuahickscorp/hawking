@@ -70,7 +70,7 @@ already ran successfully:
 | Rotation controller (N-1 seal/evict before N) | `lab/operators/condense_controller.py` (`GravityController`) | Phase machine; one heavy lease; `seal_and_evict`; no double source windows |
 | Operational reserve / live disk sample | `lab/operators/glm52_grounding.py` | free/used disk + RAM/swap floors; refuse when reserve violated |
 | Range restream gate | `lab/operators/glm52_range_stream_executor.py` + tools CLI | Owner-gated schedule/policy; Xet high-performance env; sealed terminal receipts |
-| Reclaim after cloud seal | `lab/operators/frankenstein_v0_seal.py` | `reclaim_may_evict_superseded` only after confirmed cloud seal |
+| Reclaim after cloud seal | `hawking-experiments/frankenstein/operators/frankenstein_v0_seal.py` | `reclaim_may_evict_superseded` only after confirmed cloud seal |
 
 Thin CLI wrappers that already point at these bodies:
 

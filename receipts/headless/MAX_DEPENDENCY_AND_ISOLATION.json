@@ -1,0 +1,36 @@
+{
+  "gates": [
+    "MAX_DEPENDENCY_SCHEDULING",
+    "BACKEND_FAILURE_ISOLATION"
+  ],
+  "generated_at": "2026-08-23T08:48:35Z",
+  "results": [
+    {
+      "name": "dependency ordering respected under concurrency",
+      "ok": true,
+      "detail": "violations=[] statuses={'A': 'completed', 'B': 'completed', 'C': 'completed', 'D': 'completed', 'E': 'completed', 'F': 'completed'} order=['A', 'D', 'E', 'F', 'B', 'C']"
+    },
+    {
+      "name": "the run was actually concurrent (otherwise ordering is vacuous)",
+      "ok": true,
+      "detail": "max simultaneous units observed=4"
+    },
+    {
+      "name": "an injected engine failure does not stop independent units",
+      "ok": true,
+      "detail": "statuses={'boom': 'failed', 'ok1': 'completed', 'ok2': 'completed', 'ok3': 'completed', 'boom.repair.1': 'completed'}"
+    },
+    {
+      "name": "a failing CPU verifier fails only its own unit",
+      "ok": true,
+      "detail": "statuses={'badver': 'failed', 'goodver': 'completed', 'engine_ok': 'completed', 'badver.repair.1': 'completed'}"
+    },
+    {
+      "name": "a Grok backend outage fails only its own unit",
+      "ok": true,
+      "detail": "statuses={'grokfail': 'failed', 'ok1': 'completed', 'ok2': 'completed', 'grokfail.repair.1': 'failed'}"
+    }
+  ],
+  "failed": [],
+  "result": "PASS"
+}

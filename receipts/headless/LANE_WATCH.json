@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-08-24T04:04:58Z",
+  "running": [
+    "n005dispatch",
+    "n016prefill"
+  ],
+  "needs_harvest": [],
+  "headroom": {
+    "load1": 7.1845703125,
+    "ncpu": 28,
+    "disk_gib": 295.3,
+    "room_for_more": true
+  }
+}

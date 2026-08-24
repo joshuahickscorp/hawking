@@ -1,0 +1,165 @@
+{
+  "gate": "HCLI_SELF_SUPPLEMENT",
+  "generated_at": "2026-08-23T06:29:13Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "goal_text": "# Hawking self-improvement: hold the hardening frontier\n\nThe control plane gained several load-bearing properties today. Each must stay\ntrue, and each must be provable by a check that can actually fail.\n\n## Obligation: the context budget authority keeps deriving the per-request ceiling\nThe canonical authority must keep dividing the allocation by the slot count and\nmust keep refusing an over-large root prompt before any inference. Proven by\n/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests/test_context_budget.py.\n\n## Obligation: the mutation lock stays a real mutual exclusion primitive\nTwo racing processes must never both acquire it. Proven by\n/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests/test_mutation_lock_race.py.\n\n## Obligation: report compaction does not inflate a tiny report\nA 39-byte report must not become a 716-byte envelope, and repeated noise must not\nballoon the digest. Proven by /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests/test_report_compiler.py.\n\n## Obligation: Grok task identity stays unique and liveness stays observable\nTwo dispatches in the same second must not share a task directory, and a task\nwhose process is gone must not report as running. Proven by\n/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests/test_grok_identity.py.\n",
+  "work_is_real": "each obligation names the test file that proves it; the compiler derives a genuine pytest command from that text and a unit is accepted only on that command's own exit code",
+  "hops": {
+    "ultragoal": {
+      "chars": 1334,
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/selfsupp-goal-dpwq2shj/goal.md"
+    },
+    "durable_goal": {
+      "ledger": "/Users/scammermike/Downloads/hawking-copy/.hcli/GOAL.md",
+      "exists": true
+    },
+    "obligations": [
+      "G001",
+      "G002",
+      "G003",
+      "G004"
+    ],
+    "workunit_dag": [
+      "G001",
+      "G002",
+      "G003",
+      "G004"
+    ],
+    "verifiers": {
+      "G001": "python3 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests/test_context_budget.py",
+      "G002": "python3 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests/test_mutation_lock_race.py",
+      "G003": "python3 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests/test_report_compiler.py",
+      "G004": "python3 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests/test_grok_identity.py"
+    },
+    "units_after_phase_one": {
+      "G001": "failed",
+      "G002": "failed",
+      "G003": "completed",
+      "G004": "completed"
+    },
+    "units_after_restart": {
+      "G001": "completed",
+      "G002": "completed",
+      "G003": "completed",
+      "G004": "completed"
+    },
+    "durable_artifacts": [
+      "GOAL.md",
+      "dag.json",
+      "mission/state.json",
+      "mission/mission.log"
+    ]
+  },
+  "results": [
+    {
+      "name": "ultragoal compiled into a durable Goal on disk",
+      "ok": true,
+      "detail": "/Users/scammermike/Downloads/hawking-copy/.hcli/GOAL.md"
+    },
+    {
+      "name": "obligations were derived from the goal text",
+      "ok": true,
+      "detail": "['G001', 'G002', 'G003', 'G004']"
+    },
+    {
+      "name": "a WorkUnit DAG was derived from the obligations",
+      "ok": true,
+      "detail": "['G001', 'G002', 'G003', 'G004']"
+    },
+    {
+      "name": "each WorkUnit carries a real, failable verifier taken from its obligation",
+      "ok": true,
+      "detail": "4 of 4 units carry a pytest command"
+    },
+    {
+      "name": "at least one unit reached VERIFIED through actual tools",
+      "ok": true,
+      "detail": "verified in phase one: ['G003', 'G004']"
+    },
+    {
+      "name": "unfinished work remained when the process was killed",
+      "ok": true,
+      "detail": "2 of 4 done"
+    },
+    {
+      "name": "phase one was SIGKILLed",
+      "ok": true,
+      "detail": "returncode=-9"
+    },
+    {
+      "name": "restart recovers the SAME mission",
+      "ok": true,
+      "detail": "f5491f75-7af2-468a-b399-d265fd1576de -> f5491f75-7af2-468a-b399-d265fd1576de"
+    },
+    {
+      "name": "the unit verified before the kill is still verified",
+      "ok": true,
+      "detail": "{'G003': 'completed', 'G004': 'completed'}"
+    },
+    {
+      "name": "the steer queued before the kill survived it",
+      "ok": true,
+      "detail": "['prefer the smallest diff that keeps the check honest']"
+    },
+    {
+      "name": "the steered, resumed mission completed FURTHER verified work",
+      "ok": true,
+      "detail": "newly verified after restart+steer: ['G001', 'G002']"
+    },
+    {
+      "name": "no completed unit was replayed",
+      "ok": true,
+      "detail": "phase-one verified units still completed: ['G003', 'G004']"
+    },
+    {
+      "name": "the run left the ledger, the DAG and the mission state on disk",
+      "ok": true,
+      "detail": "['GOAL.md', 'dag.json', 'mission/state.json', 'mission/mission.log']"
+    }
+  ],
+  "failed": [],
+  "result": "PASS",
+  "harness": "tools/headless/hcli_self_supplement.py",
+  "workspace": "the repository itself, not a temp dir -- HCLI improving Hawking operates in Hawking",
+  "chain_proven": [
+    "ultragoal text -> Controller.start_ultragoal",
+    "durable Goal at .hcli/GOAL.md",
+    "4 obligations derived from the goal text",
+    "4 WorkUnits derived from the obligations, ids traceable to them",
+    "each unit carries a real pytest verifier the COMPILER derived from the goal text",
+    "scheduler dispatch",
+    "CPU backend assignment",
+    "actual tools: real pytest runs",
+    "deterministic verifier: acceptance is the command's own exit code",
+    "2 units VERIFIED in phase one",
+    "checkpoint",
+    "SIGKILL (returncode -9), separate interpreter for phase two",
+    "restart recovers the SAME mission id",
+    "verified units still verified and NOT replayed",
+    "steer queued before the kill survived it",
+    "constraint steer applied to the resumed mission",
+    "2 MORE units verified after restart + steer",
+    "ledger, DAG and mission state all on disk"
+  ],
+  "defects_this_harness_found_and_closed": [
+    {
+      "id": "F4",
+      "title": "a compiled verifier was not portable to the workspace it was scheduled into",
+      "detail": "The compiler emits `python3 -m pytest <path>`, but the test files import `tools.haider.hcli...`, so pytest needs the repository root on sys.path. Launched with a temp workspace as cwd, every verifier failed with ModuleNotFoundError -- for a reason with nothing to do with the claim being checked -- and the repair machinery dutifully retried the same broken command.",
+      "fix": "the self-supplement mission runs with the repository as its workspace, which is also the honest configuration for a self-improvement goal"
+    },
+    {
+      "id": "F5",
+      "title": "GoalCompiler._FILE_RE stripped the leading slash from absolute paths",
+      "detail": "An obligation naming /Users/.../test_x.py compiled to `pytest Users/.../test_x.py` -- a relative path that does not exist. Observed directly in the persisted dag.json during the first real run.",
+      "fix": "the pattern now admits an optional leading `/`"
+    },
+    {
+      "id": "F6",
+      "title": "compiled verifier units routed to cognition instead of the CPU backend",
+      "detail": "A unit whose acceptance IS a command was left on the default cognition backend, so the model was asked to perform it and tried to CREATE the very test file the obligation names ('create target already exists: .../test_context_budget.py'). Work nobody asked for, failing for a reason unrelated to the claim.",
+      "fix": "_build_workunit_dag sets preferred_backend='cpu' whenever the obligation supplied a verify command"
+    }
+  ],
+  "note_on_repeat_runs": "The harness refuses to run when .hcli/mission/state.json already exists, so it can never clobber durable mission state. The state left behind by this run is genuine evidence of a real mission and is deliberately not deleted."
+}

@@ -18,7 +18,7 @@ from gravity_bpw import account                                                 
 RUNS = "workspace/campaign/records/runs/qwen38-27b"
 GEO64 = "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
 GEO128 = "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128"
-PIN = "workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json"
+PIN = "hawking-experiments/superwave/g1/GRAVITY1_SOURCE_PIN.json"
 
 
 def from_manifest(artifact, name, group_override=None):

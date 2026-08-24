@@ -1,0 +1,68 @@
+{
+ "schema": "hawking.headless.gpu_memory_gate.v1",
+ "obligation": "G004 \u2014 MemGate. Correction to the admission model.",
+ "generated_at": "2026-08-22T23:08:34Z",
+ "headline": "On Apple Silicon the binding admission constraint for model runtimes is the METAL WORKING-SET BUDGET, not free system RAM. Free RAM says a 7th runtime is safe; the GPU starts failing at the 6th.",
+ "what_was_measured": {
+  "admission_ladder_ctx8192": [
+   {
+    "runtime": 0,
+    "rss_gib": 19.1,
+    "marginal_free_ram_gib": 9.89,
+    "free_after_gib": 47.9
+   },
+   {
+    "runtime": 1,
+    "rss_gib": 19.1,
+    "marginal_free_ram_gib": 1.93,
+    "free_after_gib": 46.0
+   },
+   {
+    "runtime": 2,
+    "rss_gib": 19.1,
+    "marginal_free_ram_gib": 1.22,
+    "free_after_gib": 44.8
+   },
+   {
+    "runtime": 3,
+    "rss_gib": 19.1,
+    "marginal_free_ram_gib": 1.8,
+    "free_after_gib": 43.0
+   },
+   {
+    "runtime": 4,
+    "rss_gib": 19.2,
+    "marginal_free_ram_gib": 1.52,
+    "free_after_gib": 41.4
+   },
+   {
+    "runtime": 5,
+    "rss_gib": 19.2,
+    "marginal_free_ram_gib": 1.56,
+    "free_after_gib": 39.9
+   }
+  ],
+  "swap_growth_gib": 0.0,
+  "failure_observed": "with 6 resident, concurrent decode began failing: `ggml_metal_synchronize: error: command buffer failed with status 5` / `error: Insufficient Memory (00000008:kIOGPUCommandBufferCallbackErrorOutOfMemory)` in runtime-1 and runtime-5 logs. The concurrency curve degraded to ok=2/3 at k=3, ok=3/4 at k=4 and ok=3/5 at k=5.",
+  "free_ram_at_failure_gib": 39.9
+ },
+ "mechanism": "llama.cpp mmaps the weight file, so the PAGES genuinely are shared between processes \u2014 that is what the ~1.5 GiB marginal free-RAM cost is seeing, and it is a true measurement of host memory. But each process wraps those shared pages in its OWN MTLBuffers, and Metal charges every process separately against the device working set. GPU accounting does not share. So the host-memory view and the GPU view disagree by roughly 13x per runtime, and only the GPU view can refuse.",
+ "the_numbers": {
+  "recommendedMaxWorkingSetSize_gib": 77.76,
+  "maxBufferLength_gib": 58.32,
+  "iogpu_wired_limit_mb": 0,
+  "model_gib": 18.19,
+  "per_runtime_gpu_gib": 19.79,
+  "resident_capacity_with_10pct_headroom": 3,
+  "resident_capacity_no_headroom": 3.93
+ },
+ "vindicates_the_operator": "The directive's stated fact \u2014 'memory-safe resident runtime capacity: 4' \u2014 is CORRECT and was reached by the right constraint. 77.76 GiB / 19.79 GiB per runtime = 3.93. The free-RAM reasoning that suggested ~25 runtimes would fit was wrong.",
+ "corrects": "An earlier draft of the RuntimePool contract instructed the implementer to gate on the marginal free-RAM delta and explicitly warned AGAINST using RSS. That is backwards for GPU admission: RSS (19.1 GiB, roughly the whole model) is much closer to the true per-process GPU cost than the free-RAM delta (1.5 GiB) is. The contract has been corrected.",
+ "required_gate": [
+  "admit while (admitted+1) * (model_bytes + per_runtime_overhead) <= recommendedMaxWorkingSetSize * (1 - headroom)",
+  "headroom is not optional: Metal needs room for transient command-buffer allocations, and without it the failure appears mid-decode rather than at spawn",
+  "re-read the budget at admission time \u2014 iogpu.wired_limit_mb can raise it, and another process's allocations lower what is actually available",
+  "free RAM and swap remain worth checking as a SECOND gate; they are just not the first one"
+ ],
+ "reproduce": "python3 tools/headless/metal_budget.py"
+}

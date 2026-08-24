@@ -16,7 +16,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from lab.layout import PROFILES_ROOT, odyssey_path, resolve_workspace_path
+from lab.layout import PROMETHEUS_CONFIG_ROOT, odyssey_path, resolve_workspace_path
 from tools.odyssey._paths import CHECKPOINTS
 from tools.odyssey import hidden_memberships, tournament
 
@@ -28,7 +28,7 @@ OBJECTIVE_SCHEMA = "hawking.odyssey.objective.runtime.v1"
 
 
 def load_profile(name: str = "math-v1") -> dict[str, Any]:
-    path = PROFILES_ROOT / "prometheus" / f"{name}.json"
+    path = PROMETHEUS_CONFIG_ROOT / f"{name}.json"
     return json.loads(path.read_text())
 
 
@@ -94,7 +94,7 @@ PROFILE_HALO_SCHEMA = "hawking.odyssey.profile_support_halo.runtime.v1"
 def profile_support_halo_contract() -> dict[str, Any]:
     manifest = json.loads(odyssey_path("profiles", "ODYSSEY_PROFILE_MANIFEST.json").read_text())
     selected = manifest["selected_for_odyssey"]
-    path = PROFILES_ROOT / "prometheus" / f"{selected}.json"
+    path = PROMETHEUS_CONFIG_ROOT / f"{selected}.json"
     observed = hashlib.sha256(path.read_bytes()).hexdigest()
     expected = next(p["sha256"] for p in manifest["profiles"] if p["name"] == selected)
     seal = json.loads(odyssey_path("evaluation", "SUPPORT_HALO_SEAL.json").read_text())
@@ -224,7 +224,7 @@ def create_checkpoint(
     CHECKPOINTS.mkdir(parents=True, exist_ok=True)
     obj = objective_weights()
     data_m = odyssey_path("data", "ODYSSEY_DATA_MANIFEST.json").read_bytes()
-    prof = (PROFILES_ROOT / "prometheus" / "math-v1.json").read_bytes()
+    prof = (PROMETHEUS_CONFIG_ROOT / "math-v1.json").read_bytes()
     sov = odyssey_path("sovereignty", "SOVEREIGNTY.json").read_bytes()
     body = {
         "schema": CKPT_SCHEMA,

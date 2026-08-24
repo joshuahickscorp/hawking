@@ -1,0 +1,14 @@
+{
+  "schema": "hawking.headless.qwen38_gravity_native_raw.v1",
+  "runs": [
+    "/Users/scammermike/Downloads/hawking-copy/receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run1.json",
+    "/Users/scammermike/Downloads/hawking-copy/receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run2.json",
+    "/Users/scammermike/Downloads/hawking-copy/receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run3.json"
+  ],
+  "generated_text": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. They want \"ordinary prose\" (not pseudocode or formal notation) and \"at length\" (thorough, detailed). Let me think through this carefully.\n\nI need to cover:\n1. What a for-loop looks like in source code\n2. How the compiler parses it into an AST\n3. How the AST is lowered to an IR (intermediate representation)\n4. How the IR is broken into basic blocks\n5. What a basic block actually is (straight-line code",
+  "per_run_complete_wall_tps": [
+    32.907049924108115,
+    32.89284333961039,
+    32.94607962243793
+  ]
+}

@@ -64,12 +64,16 @@ class OperatorRecord:
         }
 
 def _loc(name: str) -> int:
-    path = OPS_ROOT / f"{name}.py"
-    if path.is_file():
-        return len(path.read_text(encoding="utf-8", errors="ignore").splitlines())
-    alt = Path(__file__).resolve().parents[1] / "tools" / "condense" / f"{name}.py"
-    if alt.is_file():
-        return len(alt.read_text(encoding="utf-8", errors="ignore").splitlines())
+    repo = Path(__file__).resolve().parents[1]
+    candidates = (
+        OPS_ROOT / f"{name}.py",
+        repo / "tools" / "condense" / f"{name}.py",
+        repo / "hawking-experiments" / "frankenstein" / "operators" / f"{name}.py",
+        repo / "hawking-experiments" / "frankenstein" / "condense" / f"{name}.py",
+    )
+    for path in candidates:
+        if path.is_file():
+            return len(path.read_text(encoding="utf-8", errors="ignore").splitlines())
     return 0
 
 def _m(
@@ -103,7 +107,7 @@ IRREDUCIBLE_MODULES: tuple[OperatorRecord, ...] = (
     _m("glm52_xet_autotune", EV, "plan.xet", "Xet autotune planner.", sealed=True),
     _m("deepseek_v4_xet_autotune", EV, "measure.deepseek_v4_public_xet", "Fresh-process public Xet throughput matrix and frozen profile.", sealed=True, path="tools/condense/deepseek_v4_xet_autotune.py"),
     _m("deepseek_v4_xet_sustained", EV, "measure.deepseek_v4_public_xet_sustained", "Long-form independent HTTP/2 versus direct-presigned public-path confirmation.", sealed=True, path="tools/condense/deepseek_v4_xet_sustained.py"),
-    _m("frankenstein_pipeline", OP, "plan.frankenstein_pipeline", "Fail-closed Kimi-to-GLM-to-DeepSeek staged pipeline preflight.", sealed=True, path="tools/condense/frankenstein_pipeline.py"),
+    _m("frankenstein_pipeline", OP, "plan.frankenstein_pipeline", "Fail-closed Kimi-to-GLM-to-DeepSeek staged pipeline preflight.", sealed=True, path="hawking-experiments/frankenstein/operators/frankenstein_pipeline.py"),
     _m("kimi_k3_source_admission", EV, "precheck.kimi_k3_source", "Official metadata-only Kimi K3 immutable source admission.", sealed=True, path="tools/condense/kimi_k3_source_admission.py"),
     _m("deepseek_v4_gravity", OP, "pack.deepseek_v4_stream", "DeepSeek-V4 Gravity stream and restart-safe content-addressed source windows.", sci=True, path="tools/condense/deepseek_v4_gravity.py"),
     _m("deepseek_v4_native_codec", NA, "codec.deepseek_v4_native", "Bounded DeepSeek-V4 FP4/FP8 byte-format codec.", sealed=True, sci=True, path="tools/condense/deepseek_v4_native_codec.py"),

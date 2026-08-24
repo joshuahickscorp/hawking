@@ -15,7 +15,7 @@ the part that is true today, from data already on disk, with no runtime:
 
 GATED, requiring a served runtime and an evaluated prompt set (Forge F0/F3):
 false_refusal_rate, boundary_error_rate. Never fabricated, never zeroed -- named
-in gated_stages with a reason, same discipline as tools/prometheus/prometheus.py.
+in gated_stages with a reason, same discipline as hawking-experiments/prometheus/tools/prometheus.py.
 """
 from __future__ import annotations
 

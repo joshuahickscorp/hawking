@@ -1,0 +1,953 @@
+{
+  "schema": "hawking.headless.c3lowranksparse_design.v1",
+  "generated_at": "2026-08-23T19:22:49Z",
+  "commit": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "question": "A cheap dominant (HGRAVS01 low-rank) plus sparse exceptions, executed as ONE fused operator rather than two passes \u2014 does the fusion traffic save move a Qwen3.8 decode token on this M3 Ultra?",
+  "answer": "NOT_WORTH_BUILDING. Fusion guaranteed save is 1,310,720 B = 2199.6 ns at 595.9 GB/s (0.0072% of 30.606 ms). The approximation family is already refuted as a byte/quality lever except as a Q80 down_proj COMPONENT; the novel fusion claim is dead on accounting. Do not write the shader.",
+  "anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "roof_gb_s": 595.9,
+    "honest_decode_gb_s": 411.51,
+    "dispatches": 964,
+    "cbs": 1,
+    "gemv_mac_flops": 51243909120,
+    "executable_dram": 13988022948,
+    "reconstructs_dense_dispatched": "NO \u00d7 38",
+    "reachable_dead_unknown": [
+      508,
+      4,
+      4
+    ],
+    "mlx_4bit_tps": 35.51,
+    "llama_q5k_tps_archived": 24.12,
+    "parameter_count": 26895998464,
+    "artifact_bytes": 14297933604
+  },
+  "prior_science": {
+    "hits": [
+      {
+        "status": "REFUTED",
+        "error_ratio": 2.93,
+        "mean_flat_q3_out_rel_fro": 0.1839276241211841,
+        "mean_lowrank_out_rel_fro": 0.5393288880586624,
+        "rank_at_q3_budget": 803,
+        "mac_ratio": 0.2029641544117647,
+        "note": "matched-bit low-rank 2.93\u00d7 q3 error at rank 803; numbers from archaeology index / G034 receipt, not re-fit",
+        "name": "G034",
+        "path": "receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json",
+        "resolved": true,
+        "file_keys": [
+          "schema",
+          "obligation",
+          "method",
+          "per_tensor",
+          "mean_flat_q3",
+          "mean_lowrank",
+          "mean_mac_ratio",
+          "verdict",
+          "note",
+          "commit",
+          "correction",
+          "untested_members_now_tested"
+        ],
+        "file_present": true
+      },
+      {
+        "name": "G070",
+        "path": "receipts/ascent-2026-08-16/G070_CORRECTION_TOPOLOGY.json",
+        "resolved": true,
+        "status": "RAN (math half; kernel cost kills SCATTERED)",
+        "scattered_index_share": 0.5973083614523894,
+        "mean_error_reduction": {
+          "SCATTERED": 30.365487730625308,
+          "ROW": 6.433955027861397,
+          "COLUMN": 30.91161317277594,
+          "BLOCK": 17.53261754013727,
+          "LOW-RANK": 22.53539880265316
+        },
+        "headline": "The best correction topology is the one that carries NO index at all. A single function-fitted binary PLANE at 1.25 b/elem beats every index-carrying topology at 1.0 b/elem on every site (57.8% mean reduction against COLUMN's 30.9% and SCATTERED's 30.4% across all budgets), and unlike them it already has a kernel measured UNDER the decode budget (binary_planes_k2, 0.6647 ps/element, -17.9%).",
+        "down_proj_site": "post_swiglu (correct X)",
+        "down_proj_0.25": {
+          "SCATTERED": {
+            "error_reduction_pct": 27.726865663997202,
+            "index_overhead_frac": 0.6097531786151961,
+            "count": 163040
+          },
+          "ROW": {
+            "error_reduction_pct": 9.481241587111349,
+            "index_overhead_frac": 3.784778071384804e-05,
+            "count": 23
+          },
+          "COLUMN": {
+            "error_reduction_pct": 29.978092041192916,
+            "index_overhead_frac": 0.0006081076229319853,
+            "count": 271
+          },
+          "BLOCK": {
+            "error_reduction_pct": 11.76482230181267,
+            "index_overhead_frac": 0.018216451009114582,
+            "count": 6409
+          },
+          "LOW-RANK": {
+            "error_reduction_pct": 12.710663454136789,
+            "index_overhead_frac": 0.0,
+            "count": 22
+          }
+        }
+      },
+      {
+        "name": "NEGATIVE_SCIENCE_REGISTER",
+        "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+        "resolved": true,
+        "pulled": {
+          "NS-006": {
+            "class": "REFUTED",
+            "mechanism": "Assume lower storage BPW is faster per token (density is velocity)"
+          },
+          "NS-009": {
+            "class": "REFUTED",
+            "mechanism": "Evaluate or fit compression on Gaussian / synthetic proxy activations"
+          },
+          "NS-012": {
+            "class": "INSUFFICIENT",
+            "mechanism": "Single-family representation across gate_proj / up_proj / down_proj"
+          },
+          "NS-019": {
+            "class": "REFUTED",
+            "mechanism": "Reconstruct down_proj W then multiply (representation\u2192algebra still open)"
+          },
+          "NS-020": {
+            "class": "REFUTED",
+            "mechanism": "Collapse command-buffer / encoder / dispatch topology to win complete-token wall"
+          },
+          "NS-030": {
+            "class": "REFUTED",
+            "mechanism": "Fuse Q80 down_proj L@(R@x) into one Metal dispatch by recomputing R in every threadgroup"
+          },
+          "NS-031": {
+            "class": "REFUTED",
+            "mechanism": "Run rice_q1 serial bitstream expand on the per-token path"
+          },
+          "NS-032": {
+            "class": "REFUTED",
+            "mechanism": "Blame 10-of-512 gather vs sequential access for the Q80 bandwidth gap"
+          }
+        }
+      },
+      {
+        "name": "NS-030 fusion_negative",
+        "path": "receipts/ascent-2026-08-16/q80-decode-throughput.json",
+        "resolved": true,
+        "fused_median_ns": 173209,
+        "simd3_two_dispatch_ns": 13500,
+        "ratio": 12.830296296296297,
+        "verdict": "Redundant-R fusion lost by 5-13x. Each of 64-256 TGs recomputes R[160x512]. Two well-parallelized dispatches with a 640-byte device mid is the token path. Metal has no grid-wide barrier, so true single-pass without recompute is not available."
+      },
+      {
+        "name": "q80-lowrank-algebra",
+        "path": "receipts/ascent-2026-08-16/q80-lowrank-algebra.json",
+        "resolved": true,
+        "down_already_factored": true,
+        "up_already_fused": true,
+        "down_codec": "hgravs01_r160_b3",
+        "up_codec": "binary + rice_q1_rms sparse residual @ 2%",
+        "mid_bytes": 640
+      },
+      {
+        "name": "QWEN38_BPW_DESCENT",
+        "path": "receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT.json",
+        "resolved": true,
+        "hgravs_not_in_codec_catalog": true,
+        "lowrank_is_different_on_dense": "Q80 expert 512x2048 at rank 160 is 31% of rows. Qwen3.8 down 5120x17408 at rank 160 is 3.1% of rows = 0.13 BPW. Consumed as L@(R@x) this is CHEAP algebra, not Q80's reconstruction wall.",
+        "down_proj_binary_hold_min": 0.7297274499934864,
+        "down_proj_q3_hold_min": 0.9726688096733602,
+        "note": "HGRAVS01 was named as cheap algebra at 0.13 BPW COMPONENT; it was not scored as a hold-cosine candidate in the catalog (binary/rice/q2/q3/q4/hadamard/ternary only)."
+      },
+      {
+        "name": "QWEN80_DOWN_PROJ_FRONTIER",
+        "path": "receipts/QWEN80_DOWN_PROJ_FRONTIER_SWEEP.json",
+        "resolved": true,
+        "W_shape": [
+          2048,
+          512
+        ],
+        "inversion": "binary_g cosine 0.8265 FAIL vs hgravs01_r192_b3 cosine 0.9132 at 1.537 BPW \u2014 low-rank BEATS binary on down_proj",
+        "X": "post-SwiGLU (not hidden)"
+      },
+      {
+        "name": "NOETIC_KERNEL_CENSUS.low_rank_plus_sparse_correction",
+        "path": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+        "resolved": true,
+        "verdict": "PARTIAL",
+        "why": "Low-rank EXISTS: HGRAVS01 y=L@(R@x) via two factor kernels (DISPATCHED on mixed) or q80_hgravs01_two_stage_matvec (REACHABLE; threadgroup mid[160], '640 B, not dense W'). Sparse correction EXISTS separately: q80_sparse_q1_apply_csr (DISPATCHED) and fused binary+CSR q80_binary_group_csr_matvec_tg256 (DISPATCHED). qwen30_quality_repack_sparse_gate_up_swiglu is binary-base + sparse residual, not low-rank. No kernel does UV + sparse in one representation. Mixed decode assigns low-rank to down_proj and binary+sparse to up_proj \u2014 different organs. NNS-015: hybrid low-rank+correction is Pareto-dominated by q3 as a byte lever.",
+        "dispatched_reconstructs_dense_NO": 38,
+        "reachable": 508,
+        "missing_family_cost": {
+          "id": "low_rank_plus_sparse_correction",
+          "status": "fuse_the_existing_pieces",
+          "estimate": "Add the CSR residual loop that q80_binary_group_csr_matvec already has onto q80_hgravs01_two_stage_matvec after L consumes mid. ~80\u2013150 lines Metal, ABI for indices/row_ptr/residual_signs. Pieces are DISPATCHED separately today. NNS-015: hybrid correction is Pareto-dominated by q3 as a byte lever; distillation of the MLP function was named as the surviving avenue and has not been run."
+        }
+      },
+      {
+        "name": "NOETIC_OPERATION_CENSUS",
+        "path": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+        "resolved": true,
+        "gemv_mac_flops": 51243909120,
+        "executable_dram": 13988022948,
+        "dense_w_materialized": 0
+      },
+      {
+        "name": "NOETIC_MLP_DISTILL_PROBE",
+        "path": "/Users/scammermike/.claude-grok/worktrees/n16mlp-20260823-142304/receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+        "resolved": true,
+        "decision": "NO-GO",
+        "deciding_number": 0.4206259548664093,
+        "headline_width": 2560,
+        "byte_ratio": 0.7239819004524887
+      },
+      {
+        "name": "lane-bootstrap/census",
+        "path": "/Users/scammermike/.claude-grok/worktrees/n16mlp-20260823-142304/.lane-bootstrap/census",
+        "resolved": true,
+        "files": [
+          "n15neg.md",
+          "n16clos.md",
+          "n1arch.md"
+        ],
+        "n1arch_mechanisms": 35,
+        "n15neg_closures": 31,
+        "n16clos": "NR/NX IR gap (LowRank + SparseResidual = schema-change)"
+      }
+    ],
+    "missing": [],
+    "n_hits": 11,
+    "n_missing": 0,
+    "family_status": {
+      "as_byte_quality_lever_on_gate_up_attn": "REFUTED",
+      "as_mlp_function_distillation": "NO-GO",
+      "as_matched_bit_lowrank_replacement": "REFUTED (G034)",
+      "as_qn_plus_lowrank_residual": "REFUTED (Phase B hybrid, Pareto-dominated by q3)",
+      "as_single_dispatch_LRx_recompute_R": "REFUTED (NS-030)",
+      "as_down_proj_dominant_lowrank": "LIVE on Q80 (HGRAVS01 dispatched); UNMEASURED hold-cosine on Qwen3.8 5120\u00d717408",
+      "as_fused_lowrank_plus_csr": "NOT PREVIOUSLY BUILT (kernel census PARTIAL). Fusion traffic is the only unmeasured claim.",
+      "continue": "Do not redesign the approximation. Design the fusion, price its traffic, and kill it if that number cannot move a token."
+    },
+    "traps_respected": [
+      "223 sub-0.5 local_bpw rows, healthy=0 (G1/G034)",
+      "Q80 storage 0.6462 vs ACTIVE 2.518 \u2014 report both or neither",
+      "G035 shared_beats_independent=false",
+      "GLM 0.167 expert BPW; HGRAVS01 0.13 is a down_proj COMPONENT",
+      "MLP distillation NO-GO +0.4206 at 72% of q3 active bytes",
+      "never synthetic X; cosine scale-invariant (0.01*W = 1.000000); null \u2248 0.898",
+      "representation\u2192dense W\u2192GEMM is an ORACLE, not production"
+    ]
+  },
+  "geometry": {
+    "layers": 64,
+    "dn_layers": 48,
+    "gqa_layers": 16,
+    "hidden": 5120,
+    "intermediate": 17408,
+    "vocab": 248320
+  },
+  "kernel_caps": {
+    "kXCap": 512,
+    "kRankCap": 160,
+    "kSimdWidth": 32,
+    "two_stage_kernel": "q80_hgravs01_two_stage_matvec",
+    "two_stage_refuses_if": "right_rows > kRankCap || right_cols > kXCap",
+    "source": "crates/hawking-core/shaders/q80_mixed_decode.metal"
+  },
+  "accounting": {
+    "site": {
+      "organ": "mlp.down_proj",
+      "why_this_organ": "NS-012 / Q80 frontier: down_proj inverts the ranking (HGRAVS01 beats binary) and must be fit on post-SwiGLU X. gate/up already have fused binary\u00b1CSR. Attention/lm_head were not inverted. Scope is 64 down_proj GEMVs, not the other 337.",
+      "rows": 5120,
+      "cols": 17408,
+      "rank": 160,
+      "bits": 3,
+      "group": 64,
+      "layers": 64,
+      "elements_per_launch": 89128960,
+      "elements_per_token": 5704253440,
+      "x_is": "post-SwiGLU silu(X@Wg.T)*(X@Wu.T), length intermediate"
+    },
+    "incumbent_down": {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "bytes_per_launch": 47349760,
+      "bytes_per_token": 3030384640,
+      "mac_flops_per_launch": 178257920,
+      "mac_flops_per_token": 11408506880,
+      "dispatches_per_token": 64,
+      "occupancy": {
+        "rows": 5120,
+        "rows_per_threadgroup": 2,
+        "threadgroup_size": 128,
+        "threadgroups": 2560,
+        "threads": 327680,
+        "gpu_cores": 60,
+        "threadgroups_per_core_if_spread": 42.666666666666664,
+        "fills_all_cores": true
+      },
+      "reconstructs_dense": "NO",
+      "bandwidth_floor_ns_at_roof": 5085391.240140963
+    },
+    "factors": {
+      "R_shape": [
+        160,
+        17408
+      ],
+      "L_shape": [
+        5120,
+        160
+      ],
+      "R_bytes_per_launch": 1131520,
+      "L_bytes_per_launch": 399360,
+      "LR_bytes_per_launch": 1530880,
+      "LR_bytes_per_token": 97976320,
+      "LR_complete_bpw_including_both_factors": 0.13740808823529413,
+      "trap_0_13_bpw_is": "0.1374 BPW at rank-160 3-bit g64 counting L AND R. The '0.13 BPW' slogan is this component, not a model EBPW, and is not 3.1% of 4.25 (that arithmetic drops R).",
+      "q80_right_bytes_check": {
+        "formula_160x512_b3": 33280,
+        "receipt_down_packed_right": 33280,
+        "match": true
+      },
+      "L_last_group_padded": true,
+      "L_groups_per_row": 3
+    },
+    "activations": {
+      "x_bytes": 69632,
+      "y_bytes": 20480,
+      "mid_bytes": 640,
+      "x_fits_two_stage_kXCap": false,
+      "x_fits_32kib_threadgroup": false,
+      "kXCap": 512,
+      "kRankCap": 160,
+      "qwen38_n_vs_kXCap": "17408 > 512"
+    },
+    "sparse_by_density": {
+      "0.0": {
+        "density": 0.0,
+        "nnz": 0,
+        "nnz_per_row": 0.0,
+        "index_bits_per_nnz": 32,
+        "value_bits_per_nnz": 1,
+        "index_share_of_csr_payload": 0.0,
+        "indices_bytes": 0,
+        "row_ptr_bytes": 20484,
+        "signs_bytes": 0,
+        "scale_bytes": 2,
+        "active_bytes": 20486,
+        "csr_bytes_per_token": 1311104,
+        "sp_macs_per_launch": 0,
+        "sp_macs_per_token": 0,
+        "fused_weight_bytes_per_launch": 1551366,
+        "fused_weight_bytes_per_token": 99287424,
+        "fusion_guaranteed_dram_save_per_launch": 20480,
+        "fusion_guaranteed_dram_save_per_token": 1310720,
+        "fusion_optimistic_x_plus_y_save_per_launch": 90112,
+        "fusion_optimistic_x_plus_y_save_per_token": 5767168,
+        "vs_q4_weight_bytes_per_token": 2931097216
+      },
+      "0.005": {
+        "density": 0.005,
+        "nnz": 445645,
+        "nnz_per_row": 87.0400390625,
+        "index_bits_per_nnz": 32,
+        "value_bits_per_nnz": 1,
+        "index_share_of_csr_payload": 0.9590094965923739,
+        "indices_bytes": 1782580,
+        "row_ptr_bytes": 20484,
+        "signs_bytes": 55706,
+        "scale_bytes": 2,
+        "active_bytes": 1858772,
+        "csr_bytes_per_token": 118961408,
+        "sp_macs_per_launch": 891290,
+        "sp_macs_per_token": 57042560,
+        "fused_weight_bytes_per_launch": 3389652,
+        "fused_weight_bytes_per_token": 216937728,
+        "fusion_guaranteed_dram_save_per_launch": 20480,
+        "fusion_guaranteed_dram_save_per_token": 1310720,
+        "fusion_optimistic_x_plus_y_save_per_launch": 90112,
+        "fusion_optimistic_x_plus_y_save_per_token": 5767168,
+        "vs_q4_weight_bytes_per_token": 2813446912
+      },
+      "0.02": {
+        "density": 0.02,
+        "nnz": 1782579,
+        "nnz_per_row": 348.1599609375,
+        "index_bits_per_nnz": 32,
+        "value_bits_per_nnz": 1,
+        "index_share_of_csr_payload": 0.9670027971316686,
+        "indices_bytes": 7130316,
+        "row_ptr_bytes": 20484,
+        "signs_bytes": 222823,
+        "scale_bytes": 2,
+        "active_bytes": 7373625,
+        "csr_bytes_per_token": 471912000,
+        "sp_macs_per_launch": 3565158,
+        "sp_macs_per_token": 228170112,
+        "fused_weight_bytes_per_launch": 8904505,
+        "fused_weight_bytes_per_token": 569888320,
+        "fusion_guaranteed_dram_save_per_launch": 20480,
+        "fusion_guaranteed_dram_save_per_token": 1310720,
+        "fusion_optimistic_x_plus_y_save_per_launch": 90112,
+        "fusion_optimistic_x_plus_y_save_per_token": 5767168,
+        "vs_q4_weight_bytes_per_token": 2460496320
+      }
+    },
+    "headline_density": 0.02,
+    "flops": {
+      "convention": "IEEE FMA counted as 2 (matches G143 / operation census)",
+      "incumbent_gemv_mac_flops_per_token": 51243909120,
+      "incumbent_down_mac_flops_per_token": 11408506880,
+      "lr_mac_flops_per_launch": 7208960,
+      "lr_mac_flops_per_token": 461373440,
+      "lr_mac_ratio_vs_dense_down": 0.04044117647058824,
+      "fused_2pct_mac_flops_per_token": 40524945792,
+      "token_gemv_after_lr_only": 40296775680,
+      "delta_vs_incumbent_gemv_fused_2pct": -10718963328
+    },
+    "dispatches": {
+      "incumbent_total": 964,
+      "incumbent_cbs": 1,
+      "incumbent_down": 64,
+      "fused_down": 128,
+      "twopass_down": 192,
+      "token_if_fused_replaces_down": 1028,
+      "token_if_twopass_replaces_down": 1092,
+      "fusion_saves_vs_twopass": 64,
+      "sync": "device mid[rank] between R and L; no grid-wide barrier exists (NS-030)"
+    },
+    "occupancy": {
+      "q4_down": {
+        "rows": 5120,
+        "rows_per_threadgroup": 2,
+        "threadgroup_size": 128,
+        "threadgroups": 2560,
+        "threads": 327680,
+        "gpu_cores": 60,
+        "threadgroups_per_core_if_spread": 42.666666666666664,
+        "fills_all_cores": true
+      },
+      "R_stage": {
+        "rows": 160,
+        "rows_per_threadgroup": 8,
+        "threadgroup_size": 256,
+        "threadgroups": 20,
+        "threads": 5120,
+        "gpu_cores": 60,
+        "threadgroups_per_core_if_spread": 0.3333333333333333,
+        "fills_all_cores": false
+      },
+      "L_stage": {
+        "rows": 5120,
+        "rows_per_threadgroup": 8,
+        "threadgroup_size": 256,
+        "threadgroups": 640,
+        "threads": 163840,
+        "gpu_cores": 60,
+        "threadgroups_per_core_if_spread": 10.666666666666666,
+        "fills_all_cores": true
+      }
+    },
+    "roofline": {
+      "roof_gb_s": 595.9,
+      "honest_decode_gb_s": 411.51,
+      "q4_down_floor_ns": 5085391.240140963,
+      "lr_floor_ns": 164417.3854673603,
+      "csr_2pct_floor_ns": 791931.5321362645,
+      "fused_weight_floor_ns": 956348.9176036248,
+      "fusion_guaranteed_save_ns": 2199.5636851820777,
+      "fusion_optimistic_save_ns": 9678.080214801143,
+      "token_ns": 30606000.0,
+      "fusion_guaranteed_save_frac_of_token": 7.18670745991661e-05,
+      "fusion_optimistic_save_frac_of_token": 0.00031621512823633085,
+      "ns030_q80_fused_over_two_dispatch": 12.830296296296297
+    },
+    "token_after_replace_down": {
+      "note": "Quality-conditional bandwidth scaling. Not a TPS claim.",
+      "dram_incumbent": 13988022948,
+      "dram_lr_only": 11055614628,
+      "dram_fused_2pct": 11527526628,
+      "scaled_ms_lr_only_if_dram_bound": 24.18984745467176,
+      "scaled_ms_fused_2pct_if_dram_bound": 25.22239785337304
+    }
+  },
+  "operator": {
+    "name": "fused_hgravs01_csr_matvec",
+    "scope": "mlp.down_proj \u00d7 64 on Qwen3.8; other organs out of scope",
+    "math": "W \u2208 R^{5120\u00d717408}, x \u2208 R^{17408} (post-SwiGLU). R \u2208 R^{160\u00d717408}, L \u2208 R^{5120\u00d7160} packed HGRAVS01 3-bit g64. S stored CSR: row_ptr, col_idx, 1-bit residual signs, f16 scale. y = L (R x) + S_csr x, with S_csr the residual after the low-rank fit, not a second copy of W.",
+    "production_path": {
+      "label": "PRODUCTION",
+      "never_materialises_W": true,
+      "dispatches": [
+        {
+          "name": "R_stage",
+          "kernel_reuse": "q80_hgravs01_factor_matvec_simd3",
+          "compute": "mid[r] = R @ x",
+          "temporary": "device mid[160] f32 = 640 B (not dense W)",
+          "grid": "ceil(160/8)*256, TG 256"
+        },
+        {
+          "name": "L_plus_CSR",
+          "kernel": "NEW: q80_hgravs01_factor_csr_matvec_simd3 (~80\u2013150 lines on the binary_group_csr template)",
+          "compute": "y_i = L_i\u00b7mid + \u03a3_{k\u2208row i} sign_k * scale * x[col_k]",
+          "csr_loop": "serial on simd lane 0 after L reduction (same add-order contract as q80_binary_group_csr_matvec)",
+          "grid": "ceil(5120/8)*256, TG 256"
+        }
+      ],
+      "forbidden": "q80_hgravs01_two_stage_matvec as a single dispatch: NS-030 lost 5\u201313\u00d7 on Q80 because every TG recomputes R[160\u00d7512]; on Qwen3.8 it additionally refuses at bind (n=17408 > kXCap=512, x=69632 B > 32 KiB threadgroup)."
+    },
+    "correctness_oracle": {
+      "label": "ORACLE \u2014 not a production implementation",
+      "may_materialise_W": true,
+      "definition": "W_hat = decode_f32(L) @ decode_f32(R) + csr_to_dense(S); y_oracle = W_hat @ x. CPU references already in-tree: hgravs01_two_stage_matvec_f32 (q80_mixed_decode.rs) and binary_rice_q1_matvec_f32. Production y is compared to y_oracle; the oracle path is the labelled correctness check and must never be bound as a decode kernel (dense-reconstruction law; NS-019).",
+      "existing_numeric_gates": {
+        "packed_two_stage_vs_decoded_factor": 0.0,
+        "reconstruct_LR_then_Wx_vs_two_stage": 1.811981201171875e-05,
+        "up_reconstruct_vs_fused": 1.0251998901367188e-05,
+        "source": "receipts/ascent-2026-08-16/q80-lowrank-algebra.json"
+      }
+    },
+    "not_this_operator": [
+      "qN base + low-rank residual (Phase B hybrid \u2014 REFUTED, adds bytes)",
+      "thinner SwiGLU distillation (NNS-015 / n16 \u2014 NO-GO +0.4206)",
+      "shared basis (G035 shared_beats_independent=false)",
+      "reconstruct W then GEMM (NS-019; reconstructs_dense = YES)"
+    ]
+  },
+  "bytes": {
+    "item": 2,
+    "incumbent_down_q4": 3030384640,
+    "lr": 97976320,
+    "csr_2pct": 471912000,
+    "fused_2pct": 569888320,
+    "fusion_guaranteed_save": 1310720,
+    "fusion_optimistic_save": 5767168,
+    "complete_bpw_lr": 0.13740808823529413,
+    "storage_and_active": "CSR expanded is ACTIVE (NS-031). Factor bodies are both storage and active."
+  },
+  "operations": {
+    "item": 3,
+    "incumbent_gemv_gflop": 51.24,
+    "incumbent_dispatches": 964,
+    "convention": "IEEE FMA counted as 2 (matches G143 / operation census)",
+    "incumbent_gemv_mac_flops_per_token": 51243909120,
+    "incumbent_down_mac_flops_per_token": 11408506880,
+    "lr_mac_flops_per_launch": 7208960,
+    "lr_mac_flops_per_token": 461373440,
+    "lr_mac_ratio_vs_dense_down": 0.04044117647058824,
+    "fused_2pct_mac_flops_per_token": 40524945792,
+    "token_gemv_after_lr_only": 40296775680,
+    "delta_vs_incumbent_gemv_fused_2pct": -10718963328
+  },
+  "dispatch_topology": {
+    "item": 4,
+    "incumbent_total": 964,
+    "incumbent_cbs": 1,
+    "incumbent_down": 64,
+    "fused_down": 128,
+    "twopass_down": 192,
+    "token_if_fused_replaces_down": 1028,
+    "token_if_twopass_replaces_down": 1092,
+    "fusion_saves_vs_twopass": 64,
+    "sync": "device mid[rank] between R and L; no grid-wide barrier exists (NS-030)"
+  },
+  "metal": {
+    "device_probe": {
+      "source": "MTLCreateSystemDefaultDevice returned nil (sandbox/no GPU)",
+      "error": "no metal device"
+    },
+    "simdgroup_width": 32,
+    "threadgroup_q4": 128,
+    "threadgroup_factor": 256,
+    "max_threads_per_threadgroup_documented": 1024,
+    "threadgroup_memory_bytes_used_in_design": {
+      "R_and_L_two_dispatch": "none beyond 8-float reduction (like simd3 today)",
+      "forbidden_two_stage": {
+        "mid": 640,
+        "x_tg": 69632,
+        "sum": 70272,
+        "cap": 32768,
+        "fits": false,
+        "cap_source": "DOCUMENTED Apple GPU 32 KiB (this process got no MTLDevice); kernel-encoded kXCap=512 \u2261 2 KiB of x"
+      }
+    },
+    "access": {
+      "R_codes_scales": "row-major grouped; 8-wide LSB unpack; coalesced sequential",
+      "L_codes_scales": "row-major; 160 cols, 8-wide; coalesced (the simd3 8-unpack exists specifically because L is 160-col)",
+      "x_in_R": "length 17408, sequential, 69632 B \u2014 cache-resident vs SLC",
+      "x_in_CSR": "gather x[col] from the same 69632 B vector. Not a 50 MiB weight gather. G070/NS-032 10-of-512 expert gather (150.2 GB/s) is a different pattern (large tensors). Here the working set is 70 KiB.",
+      "CSR_indices_signs": "streamed in row order \u2014 coalesced. Index share of expanded CSR is ~97% (u32 index vs 1-bit sign).",
+      "y": "one thread/simdgroup owns a row; no atomic_fetch_add (that is strand_outlier_correct, G070 kernel-cost death)",
+      "lane0_serial_csr": "at 2% density, 348.2 nnz/row serial on lane 0 while 255 threads idle. That occupancy tax is the sparse half's real cost on this hardware, not DRAM coalescing of x."
+    },
+    "register_pressure": "L FMA loop is the existing simd3 8-unpack (8 q, 8 scales, 8 x). CSR runs after simd_sum on lane 0 \u2014 it does not widen the FMA live set. No extra TG memory.",
+    "occupancy_hole": {
+      "rows": 160,
+      "rows_per_threadgroup": 8,
+      "threadgroup_size": 256,
+      "threadgroups": 20,
+      "threads": 5120,
+      "gpu_cores": 60,
+      "threadgroups_per_core_if_spread": 0.3333333333333333,
+      "fills_all_cores": false
+    },
+    "ns030": {
+      "fused_ns": 173209,
+      "simd3_two_dispatch_ns": 13500,
+      "loss_x": 12.830296296296297,
+      "law": "Metal has no grid-wide barrier. True single-pass without recompute is not available."
+    },
+    "feasibility": {
+      "two_dispatch_R_then_fused_L_CSR": "FEASIBLE \u2014 pieces are DISPATCHED separately on Q80; glue is the binary_group_csr residual loop on the L factor kernel",
+      "one_dispatch_recompute_R": "INFEASIBLE / REFUTED (NS-030) and geometrically refused (x > kXCap)",
+      "qwen38_two_stage_as_written": "WILL NO-OP: right_cols=17408 > kXCap=512"
+    }
+  },
+  "layout": {
+    "magic": "HGRAVS01 factor bodies (left, right) + HGRAVR02-class CSR residual (bind-time expanded)",
+    "R": {
+      "shape": [
+        160,
+        17408
+      ],
+      "layout": "fp16 scales[groups] || packed unsigned 3-bit codes, group 64, q=code-3, value=q*scale",
+      "bytes": 1131520
+    },
+    "L": {
+      "shape": [
+        5120,
+        160
+      ],
+      "layout": "same codec; last group of 32 elements padded to 64",
+      "bytes": 399360
+    },
+    "mid": {
+      "shape": [
+        160
+      ],
+      "layout": "device f32[rank], 640 B, reused per down_proj",
+      "bytes": 640,
+      "not": "not dense W"
+    },
+    "csr": {
+      "row_ptr": "uint32[rows+1]",
+      "col_idx": "uint32[nnz] (expanded at bind; NS-031 forbids per-token rice)",
+      "signs": "1 bit/nnz LSB-packed",
+      "scale": "fp16 rms/absmax of residual",
+      "nnz_at_2pct": 1782579,
+      "active_bytes_per_launch": 7373625,
+      "index_share": 0.9670027971316686
+    },
+    "not_stored": "parent dense W, decoded f32 W, rice bitstream on the token path",
+    "nr_today": "LowRank and SparseResidual are schema-change families in the sealed NR (n16clos: expressible-as-is 0). Packing this representation is a new NR node, not a field on grouped_absmax."
+  },
+  "microbenchmark": {
+    "goal": "Discriminate fused LR+CSR from the incumbent Q4 down_proj AND from two-pass LR+CSR BEFORE anyone writes q80_hgravs01_factor_csr_matvec_simd3.",
+    "no_new_kernel": true,
+    "geometry": {
+      "rows": 5120,
+      "cols": 17408,
+      "rank": 160,
+      "nnz_per_row_2pct": 348.1599609375
+    },
+    "arms": [
+      {
+        "id": "A",
+        "name": "incumbent Q4",
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "file": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "grid": "ceil(5120/2)*128, TG 128",
+        "bytes": 47349760
+      },
+      {
+        "id": "B",
+        "name": "two-dispatch HGRAVS01 (no sparse)",
+        "kernel": "q80_hgravs01_factor_matvec_simd3 \u00d7 2",
+        "file": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+        "R_grid": "ceil(160/8)*256, TG 256  (20 TGs / 60 cores)",
+        "L_grid": "ceil(5120/8)*256, TG 256",
+        "temporary": "device mid[160] f32",
+        "bytes": 1530880
+      },
+      {
+        "id": "C",
+        "name": "two-pass LR + CSR (the fusion baseline)",
+        "kernel": "B then q80_sparse_q1_apply_csr_simd",
+        "nnz_per_row_sweep": [
+          0,
+          4,
+          32,
+          128,
+          348
+        ],
+        "bytes_extra": 7373625
+      }
+    ],
+    "fused_arm_not_built": {
+      "id": "D",
+      "name": "fused L+CSR (the candidate)",
+      "upper_bound": "GPU(C) \u2212 GPU(CSR-only). Fusion cannot beat two-pass by more than the CSR kernel's time plus y re-read. If that quantity is < 1% of GPU(A), stop \u2014 the novel part cannot move the token."
+    },
+    "how_to_run_today": "Reuse crates/hawking-core/examples/ascension_qwen80_mixed_decode_throughput.rs timing authority (MTLCommandBuffer GPUStartTime/GPUEndTime after wait). Bind the existing kernels at Qwen3.8 down_proj geometry (5120\u00d717408, rank 160). Do not add a shader. Packed bytes may be random HGRAVS01-shaped; this arm is traffic/occupancy, not quality. Quality is arm E.",
+    "arm_E_quality_kill": {
+      "name": "SVD energy of ONE real down_proj on real post-SwiGLU X",
+      "capture": "Phase-B capture_diverse2 / n16: real BF16 parent, not Gaussian (NS-009)",
+      "metric": "held-out output rel-fro of rank-160 vs grouped-absmax q3 (3.25 b/elem)",
+      "null": "constant-mean cosine 0.898; do not GO on cosine",
+      "kill_if": "rel-fro_r160 / rel-fro_q3 is in the G034 neighbourhood (2.93\u00d7) OR 2% scattered residual (G070 down 0.25 b/elem reduced a *q3* residual by 27.7%, not a rank-160 hole). Either r160 is already enough (sparse is waste) or it is not (sparse 2% cannot close). Both kill the fused family."
+    },
+    "kill_rules": [
+      "GPU(B) >= GPU(A): LR occupancy eats the byte win on this launch geometry (20 TGs on 60 cores for R).",
+      "GPU(CSR @ 2%) < 0.01 * GPU(A): fusing CSR cannot move the token; fusion-specific value is dead.",
+      "GPU(C) >= GPU(A): adding sparse makes two-pass slower than incumbent even before quality.",
+      "arm E fails q3 held-out: do not write the fused shader."
+    ],
+    "predicted_from_accounting": {
+      "gpuA_bandwidth_floor_ns_all_64": 5085391.240140963,
+      "gpuB_bandwidth_floor_ns_all_64": 164417.3854673603,
+      "gpuCSR_2pct_floor_ns_all_64": 791931.5321362645,
+      "fusion_guaranteed_save_ns_all_64": 2199.5636851820777,
+      "fusion_save_frac_of_token": 7.18670745991661e-05,
+      "prediction": "Fusion save is 64 * 20_480 B y-reread = 1,310,720 B = 2199.6 ns at 595.9 GB/s = 0.0072% of the 30.606 ms token. CSR @ 2% itself is hundreds of \u00b5s of *weight* traffic that fusion does not remove."
+    }
+  },
+  "s011": {
+    "rule": "S011 \u00a74 (lane contract): a design that does not reduce at least one of bytes, operations, dispatches, materialization, synchronization or traffic is INCOMPLETE.",
+    "axes": {
+      "bytes": {
+        "vs_incumbent_down": "REDUCE",
+        "incumbent": 3030384640,
+        "fused_2pct": 569888320,
+        "lr_only": 97976320
+      },
+      "operations": {
+        "vs_incumbent_gemv": "REDUCE",
+        "incumbent_gemv": 51243909120,
+        "fused_2pct_gemv": 40524945792
+      },
+      "dispatches": {
+        "vs_incumbent": "INCREASE",
+        "incumbent": 964,
+        "fused": 1028,
+        "vs_twopass": "REDUCE",
+        "twopass": 1092,
+        "fusion_saves": 64
+      },
+      "materialization": {
+        "vs_incumbent": "SAME (both 0 dense W)",
+        "incumbent": 0,
+        "fused": 0,
+        "oracle_would_write": 22817013760
+      },
+      "synchronization": {
+        "vs_incumbent": "SAME 1 CB; extra device mid[640 B] between two dispatches",
+        "cbs": 1
+      },
+      "traffic": {
+        "vs_incumbent_weights": "REDUCE (quality-conditional)",
+        "vs_twopass_activations": "REDUCE (guaranteed y re-read only)",
+        "fusion_guaranteed_bytes": 1310720,
+        "fusion_optimistic_bytes": 5767168
+      }
+    },
+    "reduced": [
+      "bytes",
+      "operations",
+      "dispatches",
+      "traffic"
+    ],
+    "complete": true,
+    "caveat": "Bytes and operations REDUCE only if down_proj is replaced. That replacement is a quality bet this family has already lost on gate/up and at matched bits. The *novel* axis (fusion vs two-pass) reduces dispatches by 64 and traffic by 1,310,720 B guaranteed. Complete on paper, not worth the kernel."
+  },
+  "expected_value": {
+    "verdict": "NOT_WORTH_BUILDING",
+    "what_it_would_win": [
+      "If r160 on Qwen3.8 down were q3-healthy, replacing 64 Q4 down GEMVs cuts 3,030,384,640 B \u2192 97,976,320 B of down weights (0.1374 BPW complete, not the 0.13 slogan) and cuts down MACs to 0.040\u00d7. Bandwidth scaling of the whole token would be ~24.19 ms (41.3 tok/s), which would beat MLX 35.51 \u2014 *if* quality and R-stage occupancy hold. That win is LR-on-down, already named in QWEN38_BPW_DESCENT, not fusion.",
+      "Fusion vs two-pass saves 64 dispatches and 1,310,720 B of y re-read (2199.6 ns at the 595.9 GB/s roof, 0.0072% of the token)."
+    ],
+    "what_it_risks": [
+      "Quality: G034 rank-803 at *matched q3 bits* is 2.93\u00d7 q3 error. r160 is 0.137 BPW, 5\u00d7 below q3 and 3.1% of 5120 rows. G1-SHARE captured 41.9% energy at r512 on gate. Qwen3.8 BPW descent never scored HGRAVS01 hold-cosine on 5120\u00d717408.",
+      "Q80 inversion does not transfer: QWEN38_BPW_DESCENT measured Q80 expert 512\u00d72048 at rank 160 as 31% of rows; Qwen3.8 down 5120\u00d717408 at rank 160 is 3.1% of rows on a 34\u00d7 wider K. Frontier W is [2048,512] \u2014 r160/512 = 31%, r160/5120 = 3.1%.",
+      "Phase B hybrid: q3+LR correction generalizes but ADDS bytes (107% of q3). q2+LR cannot catch q3 inside a reasonable budget. Sparse 2% on a rank-160 hole is that experiment with a worse dominant.",
+      "MLP distillation, the named surviving avenue after Phase B, is NO-GO at +0.4206 held-out / 72% bytes.",
+      "R-stage occupancy: 20 TGs on 60 cores (0.33 TG/core). NS-019: remaining cost of factored down is occupancy, not reconstruct-W.",
+      "CSR lane-0 serial at ~348 nnz/row is occupancy poison the Q80 2% recipe does not pay (there nnz/row ~4 on 512-col experts).",
+      "G070: SCATTERED spends 60% of budget on coordinates; a function-fitted binary PLANE at 1.25 b/elem beat every index-carrying topology. CSR-of-exceptions is the topology G070 already killed on kernel cost when it used atomics; lane-0 serial is the other way to lose occupancy.",
+      "NS-006: fewer stored bytes is not a faster token if reconstruction/occupancy eats the win. G043 already classified compact q3 as NET-LOSS on this vehicle.",
+      "Writing the fused shader would add a representation the sealed NR cannot account (n16clos: LowRank + SparseResidual = schema-change). Injection of uncounted structure leaves complete_bpw stuck at 4.253."
+    ],
+    "cheapest_kill": "Arm E of the microbenchmark: one-layer SVD / r160 functional rel-fro on real post-SwiGLU X versus q3, plus isolated q80_sparse_q1_apply_csr_simd at 348 nnz/row on 5120 outputs. Do not write Metal until both numbers exist. Predicted fusion save 2199.6 ns already kills the fusion-specific claim; arm E kills the representation claim.",
+    "s011": {
+      "rule": "S011 \u00a74 (lane contract): a design that does not reduce at least one of bytes, operations, dispatches, materialization, synchronization or traffic is INCOMPLETE.",
+      "axes": {
+        "bytes": {
+          "vs_incumbent_down": "REDUCE",
+          "incumbent": 3030384640,
+          "fused_2pct": 569888320,
+          "lr_only": 97976320
+        },
+        "operations": {
+          "vs_incumbent_gemv": "REDUCE",
+          "incumbent_gemv": 51243909120,
+          "fused_2pct_gemv": 40524945792
+        },
+        "dispatches": {
+          "vs_incumbent": "INCREASE",
+          "incumbent": 964,
+          "fused": 1028,
+          "vs_twopass": "REDUCE",
+          "twopass": 1092,
+          "fusion_saves": 64
+        },
+        "materialization": {
+          "vs_incumbent": "SAME (both 0 dense W)",
+          "incumbent": 0,
+          "fused": 0,
+          "oracle_would_write": 22817013760
+        },
+        "synchronization": {
+          "vs_incumbent": "SAME 1 CB; extra device mid[640 B] between two dispatches",
+          "cbs": 1
+        },
+        "traffic": {
+          "vs_incumbent_weights": "REDUCE (quality-conditional)",
+          "vs_twopass_activations": "REDUCE (guaranteed y re-read only)",
+          "fusion_guaranteed_bytes": 1310720,
+          "fusion_optimistic_bytes": 5767168
+        }
+      },
+      "reduced": [
+        "bytes",
+        "operations",
+        "dispatches",
+        "traffic"
+      ],
+      "complete": true,
+      "caveat": "Bytes and operations REDUCE only if down_proj is replaced. That replacement is a quality bet this family has already lost on gate/up and at matched bits. The *novel* axis (fusion vs two-pass) reduces dispatches by 64 and traffic by 1,310,720 B guaranteed. Complete on paper, not worth the kernel."
+    },
+    "controls": {
+      "incumbent_native": 32.73,
+      "mlx_4bit_live": 35.51,
+      "llama_q5k_archived": 24.12,
+      "fusion_cannot_close_mlx_gap": "MLX lead is 2.78 tok/s. Fusion save 0.0072% of token \u2261 0.0024 tok/s. Three orders smaller."
+    }
+  },
+  "what_i_watched_fail": [
+    {
+      "what": "NS-030 single-dispatch y=L@(R@x) by recomputing R per threadgroup",
+      "result": "LOST 12.83\u00d7 (173209 vs 13500 ns)",
+      "why": "Metal has no grid-wide barrier. Token path is two simd3 dispatches + 640 B device mid."
+    },
+    {
+      "what": "q80_hgravs01_two_stage_matvec on Qwen3.8 down_proj",
+      "result": "WILL NO-OP",
+      "why": "right_cols=17408 > kXCap=512; x=69632 B does not fit in threadgroup memory."
+    },
+    {
+      "what": "Phase B qN + activation-aware low-rank residual (the hybrid this family looks like)",
+      "result": "REFUTED Pareto-dominated by q3",
+      "why": "q3+r64 err 0.1743 < q3 0.2216 but 107% of q3 bytes. q2+r256 err 0.3955 at 101% bytes cannot catch q3."
+    },
+    {
+      "what": "MLP function distillation (the named surviving avenue after Phase B / NNS-015)",
+      "result": "NO-GO",
+      "why": "deciding number 0.4206 = L31 I'=2560 hold rel-fro gap vs q3 at 0.724 of q3 fused active bytes. Doctor UNHEALTHY."
+    },
+    {
+      "what": "G034 matched-bit low-rank replacing a dense map",
+      "result": "REFUTED",
+      "why": "mean out rel-fro 0.539 vs q3 0.184 (ratio 2.93). MAC 0.20\u00d7 is not acceptance."
+    },
+    {
+      "what": "G070 scattered correction as the sparse half",
+      "result": "index-cost + kernel-cost death",
+      "why": "SCATTERED spends 59.7% of every budget on coordinates. strand_outlier_correct atomics serialise a row. Binary PLANE at 1.25 b/elem reduced error 57.8% vs SCATTERED 30.4%. On down_proj 0.25 b/elem, COLUMN beat SCATTERED and LOW-RANK (29.98 / 27.73 / 12.71 %)."
+    },
+    {
+      "what": "G035 G-SHARE",
+      "result": "shared_beats_independent=False",
+      "why": "Do not smuggle a shared R across layers into this fused operator."
+    },
+    {
+      "what": "223 structured-operator rows with local_bpw < 0.5",
+      "result": "healthy=0",
+      "why": "A low BPW without a health verdict is a trap. HGRAVS 0.13 and GLM 0.167 are components."
+    },
+    {
+      "what": "Q80 0.6462 storage BPW as EBPW",
+      "result": "CATEGORY_ERROR",
+      "why": "ACTIVE 2.518. Report both or neither."
+    },
+    {
+      "what": "Cosine as a GO metric",
+      "result": "BLIND",
+      "why": "0.01*W scores 1.0. Raw activation cosine null \u2248 0.898. Doctor/rel-fro only."
+    },
+    {
+      "what": "Synthetic / Gaussian X",
+      "result": "NS-009 REFUTED",
+      "why": "Ranking inverted on real X. down_proj needs post-SwiGLU, not hidden."
+    },
+    {
+      "what": "Reconstruct down_proj W then multiply",
+      "result": "NS-019 REFUTED",
+      "why": "Token path already y=L@(R@x). Remaining cost is occupancy of the two-stage factor matvec."
+    },
+    {
+      "what": "Per-token rice bitstream expand",
+      "result": "NS-031 REFUTED",
+      "why": "CSR is bind-time expanded. Production sparse half reads indices/row_ptr/signs."
+    },
+    {
+      "what": "MTLCreateSystemDefaultDevice in this process",
+      "result": "MTLCreateSystemDefaultDevice returned nil (sandbox/no GPU)",
+      "why": "Sandbox often returns nil. Caps taken from the two_stage kernel (kXCap, kRankCap) and documented 32 KiB."
+    },
+    {
+      "what": "Fusion traffic as a token lever (the actual novel claim)",
+      "result": "DEAD ON ACCOUNTING",
+      "why": "1,310,720 B = 2199.6 ns at 595.9 GB/s = 0.0072% of 30.606 ms. MLX lead is 2.78 tok/s; this is 0.0024 tok/s."
+    },
+    {
+      "what": "Writing a fused UV+CSR kernel because census said PARTIAL / 80\u2013150 lines",
+      "result": "WOULD BE THE WRONG CHEAP",
+      "why": "Kernel census estimated glue cost, not token value. Pieces already DISPATCHED. NNS-015 quality avenue closed by n16."
+    }
+  ],
+  "write_scope": {
+    "write": [
+      "tools/headless/c3lowranksparse_design.py",
+      "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+    ],
+    "denied_porcelain_counts": {
+      "crates": 0,
+      "workspace": 0,
+      "visionmcp": 0,
+      "app": 0,
+      "lab": 0,
+      "tools/haider": 0,
+      "ramanujan": 0
+    },
+    "denied_trees_modified": false
+  },
+  "self_check": {
+    "geometry_5120x17408x64": true,
+    "q4_down_bytes_match_census": true,
+    "q80_right_pack_identity": true,
+    "oracle_labelled": true,
+    "production_never_materialises_W": true,
+    "s011_complete": true,
+    "fusion_save_derived_not_guessed": true,
+    "verdict_is_not_worth_building": true,
+    "eight_items_present": true,
+    "x_exceeds_kXCap": true,
+    "R_does_not_fill_60_cores": true,
+    "dispatches_anchor_964": true,
+    "reconstructs_dense_incumbent_NO": true
+  },
+  "written_to": "/Users/scammermike/.claude-grok/worktrees/c3lowranksparse-20260823-150603/receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+}

@@ -1,0 +1,1759 @@
+{
+  "schema": "hawking.headless.generated_weights_retest.v1",
+  "generated_at": "2026-08-23T20:11:48Z",
+  "git_head": "88fcb5b858c73234dd181d3407bcab70b0f60672",
+  "obligation": "G042 generated/implicit weights: locate what was tested, classify PROPERTY_OF_IDEA vs ARTIFACT_OF_METHOD, fill the slot if artifact.",
+  "parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+  "capture": {
+    "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/phaseB/capture_diverse2",
+    "site": "post_attn_norm",
+    "n_tokens": 11269,
+    "n_train": 7699,
+    "n_hold": 2212,
+    "split_rule": "last 3 prompts/family = hold",
+    "families": [
+      "prose",
+      "code",
+      "math",
+      "multilingual",
+      "instruction",
+      "dialogue"
+    ],
+    "source_note": "Phase-B capture_diverse2: real BF16 parent MLX full-model forward. Not Gaussian. Not Q5_K llama-server."
+  },
+  "organ": {
+    "layer": 31,
+    "name": "model.language_model.layers.31.mlp.gate_proj.weight",
+    "shape": [
+      17408,
+      5120
+    ],
+    "numel": 89128960,
+    "why": "G032/G034 site: L31.gate_proj, contraction 5120 tiles 64 and 1024."
+  },
+  "g042": {
+    "g042_path": "receipts/ascent-2026-08-16/G042_BPW_FAMILY.json",
+    "g042_load_error": null,
+    "g042_obligation": "G042 -- extended BPW family per candidate",
+    "g042_definition": "structure computed rather than stored. ZERO for every live candidate: the one generated transform tested (Hadamard) was refuted, and the channel scale is folded into existing tensors rather than generated at runtime",
+    "g042_candidate_zeros": [
+      {
+        "candidate": "uniform-q4-v1",
+        "GENERATED_BPW_EQUIVALENT": 0.0,
+        "SHARED_BPW": 0.0,
+        "CORRECTION_BPW": 0.0
+      },
+      {
+        "candidate": "mixed-q3mlp-q3attn-v1",
+        "GENERATED_BPW_EQUIVALENT": 0.0,
+        "SHARED_BPW": 0.0,
+        "CORRECTION_BPW": 0.0
+      },
+      {
+        "candidate": "compact-q3attn-r1p2-v1",
+        "GENERATED_BPW_EQUIVALENT": 0.0,
+        "SHARED_BPW": 0.0,
+        "CORRECTION_BPW": 0.0
+      },
+      {
+        "candidate": "g032-chanscale-a025-compact",
+        "GENERATED_BPW_EQUIVALENT": 0.0,
+        "SHARED_BPW": 0.0,
+        "CORRECTION_BPW": 0.0
+      }
+    ],
+    "tool_path": "tools/gravity_bpw_family.py",
+    "tool_literal_zero_present": true,
+    "tool_zero_is_row_assignment": true,
+    "nr_path": "tools/nr_container.py",
+    "nr_generated_structures_hardcoded_empty": true,
+    "nr_has_active_bytes_field": false,
+    "g032_hadamard": {
+      "obligation": "G032 -- structured transform that lowers achievable bits at equal function",
+      "transform": {
+        "family": "block-diagonal Sylvester-Hadamard, right-multiplied on the contraction axis",
+        "block": 1024,
+        "exactly_function_preserving": "H is orthogonal, so W x == (W H)(H^T x) in exact arithmetic. Both 5120 and 17408 are 1024*odd, so the block tiles with no padding.",
+        "stored_bytes": 0,
+        "stored_bytes_reason": "Sylvester-Hadamard is generated from its size, not stored.",
+        "runtime_cost": "one in-place FWHT per activation vector per bound tensor, O(n log n) adds, no multiplies. NOT YET MEASURED ON DEVICE.",
+        "fold_at_pack_time": "W H is packed instead of W. The H^T x half is the part that costs runtime and is what a device measurement must price."
+      },
+      "summary": {
+        "mean_delta_hold": 0.00033819033592939903,
+        "mean_delta_rel_fro_pct": -2.8218641941444904,
+        "mean_delta_entropy_bits": 0.025883768994956233
+      },
+      "what_it_tested": "Block-diagonal Sylvester-Hadamard as a codec REPARAMETERIZATION of STORED W: pack (W H) at the same bit width, apply H^T x at runtime. H is generated from its size (zero stored bytes) and is NOT model-specific. W is still stored in full. Function is exactly preserved in exact arithmetic. Metrics were hold-cosine, rel-fro, and code entropy vs untransformed grouped-absmax \u2014 not a fit of a generator that produces W from a latent."
+    },
+    "g031_family": {
+      "family": "G-XFORM structured transforms (Hadamard member)",
+      "verdict": "KILLED (this member)",
+      "settling_check": "Settled for Hadamard. The family is NOT settled: permutation, sign, channel scale, Kronecker and RoPE-commuting members are untested, and the ONE property Hadamard did deliver -- collapsing worst-case hold spread 185x, from 0.003139 to 0.000017 -- is worth chasing in a member that does not cost entropy.",
+      "hidden_cost": "Raises order-0 code entropy 0.0237-0.0334 bits/elem at every width, so under an entropy-coded route it is a net LOSS on bits. The runtime FWHT is additionally unpriced and lands on the ALU budget that is already binding."
+    },
+    "g034_lowrank": {
+      "obligation": "G034 -- structured operator replacing a dense linear map",
+      "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.93x the output error of flat q3 on every tensor tested. It reduces operations to 0.203x dense, but the acceptance requires bytes AND operations WITH function preserved.",
+      "mean_flat_q3": 0.1839276241211841,
+      "mean_lowrank": 0.5393288880586624,
+      "mean_mac_ratio": 0.2029641544117647,
+      "method": "Rank chosen so the factorization costs EXACTLY the same bits/elem as flat q3 (3.2500), f16 factors. Error in FUNCTION space on the thick v2 capture. MAC count reported because the acceptance requires reducing BOTH bytes and operations.",
+      "note": "G034 fitted stored low-rank factors at matched q3 bits in function space. That IS a generated W (W = UV). G042 did not record those factor bytes on the GENERATED axis; it recorded 0."
+    },
+    "g096_pointer": {
+      "obligation": "G096 -- define the Gravity op vocabulary as an instruction set",
+      "excerpt": null,
+      "mentions_generated": true
+    },
+    "fitted_a_generator": false,
+    "what_g042_tested": "Eight BPW axes on already-built artifacts (uniform-q4-v1 and three siblings). STORED/ACTIVE/DRAM/CACHE/STATE were walked or derived. GENERATED, CORRECTION and SHARED were hardcoded 0.0. No generator was fitted. The Hadamard citation is G032, a stored-W reparameterization.",
+    "what_g042_did_not_test": "A latent/procedural generator for W (or for Wx) with generator bytes, seed, generated-state cache and reconstruction cost on the same receipt. NR cannot express that tuple.",
+    "classification": "ARTIFACT_OF_METHOD",
+    "classification_scope": "G042's GENERATED_BPW_EQUIVALENT=0 and the index line 'generated/implicit weights REFUTED' as a class-level closure. The pipeline had no slot that could hold a non-zero generated structure, so the zero is not a measurement of the class. G032 Hadamard and G034 matched-bit UV remain PROPERTY_OF_IDEA refutations of those specific members.",
+    "evidence_artifact_of_method": [
+      "tools/gravity_bpw_family.py assigns GENERATED_BPW_EQUIVALENT: 0.0 as a literal in the candidate row; it never reads a generator, never measures generated-state bytes, never prices FWHT runtime.",
+      "G042 definition text cites G032 Hadamard as the reason for the zero, but G032 stored W at full size and generated only H, which carries no parent information (C5: do not put H in generated_structures and claim GENERATED_BPW).",
+      "tools/nr_container.py serialize() emits generated_structures: [] for every candidate and explains the emptiness by pointing at G042's zero \u2014 a closed loop.",
+      "NR has no field for active_bytes != stored_bytes of a generated structure; a generator that stores 0.05 BPW and reconstructs a 16 BPW cache cannot be represented.",
+      "G031 settling_check on G-XFORM: settled for Hadamard; the family is NOT settled (permutation, Kronecker, \u2026 untested as XFORM members). A class-level REFUTED on generated/implicit weights does not follow from one transform.",
+      "G034 DID fit a generator (UV at matched bits) and REFUTED it as a quality lever. That result never landed on G042's GENERATED axis."
+    ],
+    "evidence_property_of_idea_members": [
+      "G032 Hadamard member: mean_delta_hold +0.000338, mean_delta_entropy +0.0259 bits/elem at Q4. Bytes do not drop. Entropy rises. KILLED as a bit-saving generated transform of stored W. That member is PROPERTY_OF_IDEA.",
+      "G034 low-rank operator at matched 3.25 b/elem: 2.93\u00d7 q3 output error. PROPERTY_OF_IDEA for matched-bit UV as a drop-in for grouped-absmax. Not a measurement of GENERATED_BPW, and it did not account reconstruct-and-cache vs fused-apply."
+    ],
+    "load_errors": {}
+  },
+  "kronecker_selfcheck": {
+    "ok": true,
+    "max_apply_err": 7.152557373046875e-07,
+    "max_rearrange_err": 0.0
+  },
+  "scale_trap": {
+    "linear_gate_proj": {
+      "rel_fro": 0.9900001287460327,
+      "cosine": 1.0,
+      "gain": 0.009999989531934261,
+      "worst_unit": 0.9999984502792358,
+      "organ": "L31.gate_proj linear"
+    },
+    "rejects_scaled_artifact": true,
+    "pass_if": "cosine~1 and gain~0.01 and rel_fro~0.99 on 0.01*W"
+  },
+  "null_baseline": {
+    "hold_constant_mean_cosine": 0.6862502098083496,
+    "hold_scalar_constant": {
+      "rel_fro": 0.8349342942237854,
+      "cosine": 0.5526453256607056,
+      "gain": 0.15624535083770752,
+      "worst_unit": -0.9749138951301575
+    },
+    "hold_random_W_matched_frobenius": {
+      "rel_fro": 1.2660397291183472,
+      "cosine": 0.0006437305128201842,
+      "gain": 0.2415539175271988,
+      "worst_unit": -0.8699774146080017
+    },
+    "note": "Raw activation cosine near the null is not fidelity. Folklore 0.898 is not assumed; these are measured on this organ and this capture."
+  },
+  "q3_incumbent": {
+    "hold": {
+      "rel_fro": 0.2036774605512619,
+      "cosine": 0.9796873331069946,
+      "gain": 0.7509675621986389,
+      "worst_unit": 0.8081030249595642,
+      "cosine_minus_null": 0.293437123298645
+    },
+    "accounting": {
+      "generator_bytes": 36208640,
+      "seed_bytes": 0,
+      "index_bytes": 0,
+      "metadata_bytes": 0,
+      "cache_f16_bytes": 178257920,
+      "cache_f32_bytes": 356515840,
+      "cache_regenerable_from_generator": true,
+      "storage_bytes_total": 36208640,
+      "storage_bpw": 3.25,
+      "active_bytes_fused": 36208640,
+      "active_bpw_fused": 3.25,
+      "active_bytes_cache_f16": 178257920,
+      "active_bpw_cache_f16": 16.0,
+      "active_bytes_cache_f32": 356515840,
+      "active_bpw_cache_f32": 32.0,
+      "reconstruct_flops_once": 89128960.0,
+      "reconstruct_wall_s": 0.0,
+      "fused_flops_per_token": 178257920.0,
+      "dense_flops_per_token": 178257920.0,
+      "fused_apply_ns_per_token": null,
+      "cache_apply_ns_per_token": null,
+      "fused_possible": true,
+      "notes": [
+        "q3 fused streams codes+scales (storage=active=3.25). Decoded-f16/f32 cache is what a naive dequant-then-GEMV pays."
+      ],
+      "unaccounted": []
+    },
+    "health_verdict": "HEALTHY (incumbent reference)",
+    "probe_isotropic": {
+      "rel_fro": 0.257651150226593,
+      "cosine": 0.9685400724411011,
+      "gain": 0.9064332246780396,
+      "worst_unit": 0.9024820923805237
+    }
+  },
+  "generated_structures": [
+    {
+      "name": "svd_w_r12_bpw0.05",
+      "family": "svd_weight_space",
+      "stored_bytes": 540688,
+      "active_bytes_fused": 540672,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 540672,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 2139095040.0,
+      "reconstruction_wall_s": 0.0,
+      "storage_bpw": 0.04853084788602941,
+      "active_bpw_fused": 0.04852941176470588,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.7233648896217346,
+        "cosine": 0.6879008412361145,
+        "gain": 0.05782249569892883,
+        "worst_unit": -0.47554218769073486,
+        "cosine_minus_null": 0.0016506314277648926
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0485 < 0.5 with quality below q3 (rel_fro 0.7234 vs q3 0.2037); a low number is not a result"
+    },
+    {
+      "name": "svd_a_r12_bpw0.05",
+      "family": "svd_activation_aware",
+      "stored_bytes": 540688,
+      "active_bytes_fused": 540672,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 540672,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 2139095040.0,
+      "reconstruction_wall_s": 0.0,
+      "storage_bpw": 0.04853084788602941,
+      "active_bpw_fused": 0.04852941176470588,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.6664724946022034,
+        "cosine": 0.7436597943305969,
+        "gain": 0.10947313159704208,
+        "worst_unit": 0.022485915571451187,
+        "cosine_minus_null": 0.057409584522247314
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0485 < 0.5 with quality below q3 (rel_fro 0.6665 vs q3 0.2037); a low number is not a result"
+    },
+    {
+      "name": "svd_w_r62_bpw0.25",
+      "family": "svd_weight_space",
+      "stored_bytes": 2793488,
+      "active_bytes_fused": 2793472,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 2793472,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 11051991040.0,
+      "reconstruction_wall_s": 0.0,
+      "storage_bpw": 0.2507367302389706,
+      "active_bpw_fused": 0.25073529411764706,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.6609073877334595,
+        "cosine": 0.7476791739463806,
+        "gain": 0.15106764435768127,
+        "worst_unit": -0.22275987267494202,
+        "cosine_minus_null": 0.061428964138031006
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.6609 vs q3 0.2037); a low number is not a result"
+    },
+    {
+      "name": "svd_a_r62_bpw0.25",
+      "family": "svd_activation_aware",
+      "stored_bytes": 2793488,
+      "active_bytes_fused": 2793472,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 2793472,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 11051991040.0,
+      "reconstruction_wall_s": 0.0,
+      "storage_bpw": 0.2507367302389706,
+      "active_bpw_fused": 0.25073529411764706,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.5983737111091614,
+        "cosine": 0.79998379945755,
+        "gain": 0.26282280683517456,
+        "worst_unit": 0.1963692158460617,
+        "cosine_minus_null": 0.11373358964920044
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.5984 vs q3 0.2037); a low number is not a result"
+    },
+    {
+      "name": "svd_w_r247_bpw1.0",
+      "family": "svd_weight_space",
+      "stored_bytes": 11128848,
+      "active_bytes_fused": 11128832,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 11128832,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 44029706240.0,
+      "reconstruction_wall_s": 0.0,
+      "storage_bpw": 0.9988984949448529,
+      "active_bpw_fused": 0.9988970588235294,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.581368088722229,
+        "cosine": 0.8110299110412598,
+        "gain": 0.25990530848503113,
+        "worst_unit": -0.1642875373363495,
+        "cosine_minus_null": 0.12477970123291016
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.5814 vs 0.2037, gain 0.2599 vs 0.7510); storage_bpw=0.9989 active_bpw=0.9989"
+    },
+    {
+      "name": "svd_a_r247_bpw1.0",
+      "family": "svd_activation_aware",
+      "stored_bytes": 11128848,
+      "active_bytes_fused": 11128832,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 11128832,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 44029706240.0,
+      "reconstruction_wall_s": 0.0,
+      "storage_bpw": 0.9988984949448529,
+      "active_bpw_fused": 0.9988970588235294,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.515815019607544,
+        "cosine": 0.8568493723869324,
+        "gain": 0.3903076946735382,
+        "worst_unit": 0.33951741456985474,
+        "cosine_minus_null": 0.17059916257858276
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.5158 vs 0.2037, gain 0.3903 vs 0.7510); storage_bpw=0.9989 active_bpw=0.9989"
+    },
+    {
+      "name": "svd_w_r804_bpw3.25",
+      "family": "svd_weight_space",
+      "stored_bytes": 36225040,
+      "active_bytes_fused": 36225024,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 36225024,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 143319367680.0,
+      "reconstruction_wall_s": 0.0,
+      "storage_bpw": 3.2514720243566178,
+      "active_bpw_fused": 3.251470588235294,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.4903423488140106,
+        "cosine": 0.8694186210632324,
+        "gain": 0.38437098264694214,
+        "worst_unit": 0.20789943635463715,
+        "cosine_minus_null": 0.1831684112548828
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.4903 vs 0.2037, gain 0.3844 vs 0.7510); storage_bpw=3.2515 active_bpw=3.2515"
+    },
+    {
+      "name": "svd_a_r804_bpw3.25",
+      "family": "svd_activation_aware",
+      "stored_bytes": 36225040,
+      "active_bytes_fused": 36225024,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 36225024,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 143319367680.0,
+      "reconstruction_wall_s": 0.0,
+      "storage_bpw": 3.2514720243566178,
+      "active_bpw_fused": 3.251470588235294,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.41443032026290894,
+        "cosine": 0.9102388024330139,
+        "gain": 0.5750217437744141,
+        "worst_unit": 0.49031540751457214,
+        "cosine_minus_null": 0.2239885926246643
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.4144 vs 0.2037, gain 0.5750 vs 0.7510); storage_bpw=3.2515 active_bpw=3.2515"
+    },
+    {
+      "name": "dct_p973x286_bpw0.05",
+      "family": "dct_prefix_coefficients",
+      "stored_bytes": 556572,
+      "active_bytes_fused": 178257920,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 556556,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 2353841548.37138,
+      "reconstruction_wall_s": 0.6864190101623535,
+      "storage_bpw": 0.049956557329963236,
+      "active_bpw_fused": null,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.9821816086769104,
+        "cosine": 0.3457537889480591,
+        "gain": 0.01040421612560749,
+        "worst_unit": -0.7528330683708191,
+        "cosine_minus_null": -0.3404964208602905
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0500 < 0.5 with quality below q3 (rel_fro 0.9822 vs q3 0.2037); a low number is not a result"
+    },
+    {
+      "name": "dct_p2176x640_bpw0.25",
+      "family": "dct_prefix_coefficients",
+      "stored_bytes": 2785296,
+      "active_bytes_fused": 178257920,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 2785280,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 2353841548.37138,
+      "reconstruction_wall_s": 0.6349549293518066,
+      "storage_bpw": 0.25000143612132353,
+      "active_bpw_fused": null,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.9558472633361816,
+        "cosine": 0.41121339797973633,
+        "gain": 0.021428508684039116,
+        "worst_unit": -0.8278027176856995,
+        "cosine_minus_null": -0.2750368118286133
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.2500 < 0.5 with quality below q3 (rel_fro 0.9558 vs q3 0.2037); a low number is not a result"
+    },
+    {
+      "name": "dct_p4352x1280_bpw1.0",
+      "family": "dct_prefix_coefficients",
+      "stored_bytes": 11141136,
+      "active_bytes_fused": 178257920,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 11141120,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 2353841548.37138,
+      "reconstruction_wall_s": 0.6891920566558838,
+      "storage_bpw": 1.0000014361213236,
+      "active_bpw_fused": null,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.9023088812828064,
+        "cosine": 0.5009124875068665,
+        "gain": 0.06025610491633415,
+        "worst_unit": -0.7568193674087524,
+        "cosine_minus_null": -0.18533772230148315
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.9023 vs 0.2037, gain 0.0603 vs 0.7510); storage_bpw=1.0000 active_bpw=16.0000"
+    },
+    {
+      "name": "dct_p7846x2307_bpw3.25",
+      "family": "dct_prefix_coefficients",
+      "stored_bytes": 36201460,
+      "active_bytes_fused": 178257920,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 36201444,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 2353841548.37138,
+      "reconstruction_wall_s": 0.5867211818695068,
+      "storage_bpw": 3.249355540556066,
+      "active_bpw_fused": null,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.7961026430130005,
+        "cosine": 0.633378803730011,
+        "gain": 0.1254226118326187,
+        "worst_unit": -0.43032100796699524,
+        "cosine_minus_null": -0.05287140607833862
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.7961 vs 0.2037, gain 0.1254 vs 0.7510); storage_bpw=3.2494 active_bpw=16.0000"
+    },
+    {
+      "name": "kron_k13_bpw0.05",
+      "family": "kronecker_sum",
+      "stored_bytes": 567456,
+      "active_bytes_fused": 567424,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 567424,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 2317352960.0,
+      "reconstruction_wall_s": 0.05838799476623535,
+      "storage_bpw": 0.05093347886029412,
+      "active_bpw_fused": 0.05093060661764706,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.8734981417655945,
+        "cosine": 0.5502508282661438,
+        "gain": 0.056821390986442566,
+        "worst_unit": -0.9674134254455566,
+        "cosine_minus_null": -0.1359993815422058
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0509 < 0.5 with quality below q3 (rel_fro 0.8735 vs q3 0.2037); a low number is not a result"
+    },
+    {
+      "name": "kron_k64_bpw0.25",
+      "family": "kronecker_sum",
+      "stored_bytes": 2793504,
+      "active_bytes_fused": 2793472,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 2793472,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 11408506880.0,
+      "reconstruction_wall_s": 0.05833005905151367,
+      "storage_bpw": 0.2507381663602941,
+      "active_bpw_fused": 0.25073529411764706,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.8545491099357605,
+        "cosine": 0.5654347538948059,
+        "gain": 0.03868089243769646,
+        "worst_unit": -0.9167391061782837,
+        "cosine_minus_null": -0.1208154559135437
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.8545 vs q3 0.2037); a low number is not a result"
+    },
+    {
+      "name": "kron_k255_bpw1.0",
+      "family": "kronecker_sum",
+      "stored_bytes": 11130272,
+      "active_bytes_fused": 11130240,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 11130240,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 45455769600.0,
+      "reconstruction_wall_s": 0.08444857597351074,
+      "storage_bpw": 0.9990263097426471,
+      "active_bpw_fused": 0.9990234375,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.8051047325134277,
+        "cosine": 0.6184064149856567,
+        "gain": 0.07717934995889664,
+        "worst_unit": -0.6019659638404846,
+        "cosine_minus_null": -0.06784379482269287
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.8051 vs 0.2037, gain 0.0772 vs 0.7510); storage_bpw=0.9990 active_bpw=0.9990"
+    },
+    {
+      "name": "kron_k830_bpw3.25",
+      "family": "kronecker_sum",
+      "stored_bytes": 36227872,
+      "active_bytes_fused": 36227840,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 36227840,
+      "seed_bytes": 0,
+      "reconstruction_flops_once": 147954073600.0,
+      "reconstruction_wall_s": 0.08345890045166016,
+      "storage_bpw": 3.2517262178308823,
+      "active_bpw_fused": 3.2517233455882355,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 0.7023385763168335,
+        "cosine": 0.7220799326896667,
+        "gain": 0.1936609447002411,
+        "worst_unit": -0.2896941602230072,
+        "cosine_minus_null": 0.03582972288131714
+      },
+      "health_verdict": "UNHEALTHY: cosine 0.7221 sits on the null 0.6863; not fidelity"
+    },
+    {
+      "name": "seed_xorshift_8B",
+      "family": "seed_prng_canary",
+      "stored_bytes": 16,
+      "active_bytes_fused": 178257920,
+      "active_bytes_cache_f16": 178257920,
+      "generated_cache_bytes_f16": 178257920,
+      "cache_regenerable": true,
+      "generator_bytes": 0,
+      "seed_bytes": 8,
+      "reconstruction_flops_once": 89128960.0,
+      "reconstruction_wall_s": 0.36956095695495605,
+      "storage_bpw": 1.4361213235294117e-06,
+      "active_bpw_fused": null,
+      "active_bpw_cache_f16": 16.0,
+      "hold": {
+        "rel_fro": 1.2710988521575928,
+        "cosine": -0.00432428065687418,
+        "gain": 0.18169668316841125,
+        "worst_unit": -0.8741297721862793,
+        "cosine_minus_null": -0.6905744904652238
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0000 < 0.5 with quality below q3 (rel_fro 1.2711 vs q3 0.2037); a low number is not a result"
+    }
+  ],
+  "nr_today_cannot_express": {
+    "generated_structures": [],
+    "GENERATED_BPW_EQUIVALENT": 0.0,
+    "missing": "active_bytes != stored_bytes for a generated structure",
+    "this_receipt_expresses": true
+  },
+  "candidates": [
+    {
+      "family": "svd_weight_space",
+      "name": "svd_w_r12_bpw0.05",
+      "hold": {
+        "rel_fro": 0.7233648896217346,
+        "cosine": 0.6879008412361145,
+        "gain": 0.05782249569892883,
+        "worst_unit": -0.47554218769073486,
+        "cosine_minus_null": 0.0016506314277648926
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9748696088790894,
+        "cosine": 0.2149592638015747,
+        "gain": 0.028304899111390114,
+        "worst_unit": -0.0992991030216217
+      },
+      "accounting": {
+        "generator_bytes": 540672,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 540688,
+        "storage_bpw": 0.04853084788602941,
+        "active_bytes_fused": 540672,
+        "active_bpw_fused": 0.04852941176470588,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 2139095040.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 540672.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 3373.967803623965,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "Fused-apply streams U,V (active=storage). Reconstruct-and-cache materialises W_hat in f16/f32; that cache is generated-state and is ACTIVE even though it is regenerable (not extra disk if U,V live)."
+        ],
+        "unaccounted": [
+          "No hashed Metal kernel for fused UV-GEMV. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0485 < 0.5 with quality below q3 (rel_fro 0.7234 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "rank": 12,
+        "target_storage_bpw": 0.05,
+        "fit": "rsvd(W)",
+        "train_used": false
+      }
+    },
+    {
+      "family": "svd_activation_aware",
+      "name": "svd_a_r12_bpw0.05",
+      "hold": {
+        "rel_fro": 0.6664724946022034,
+        "cosine": 0.7436597943305969,
+        "gain": 0.10947313159704208,
+        "worst_unit": 0.022485915571451187,
+        "cosine_minus_null": 0.057409584522247314
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9755086302757263,
+        "cosine": 0.21175014972686768,
+        "gain": 0.04392600804567337,
+        "worst_unit": -0.12234926968812943
+      },
+      "accounting": {
+        "generator_bytes": 540672,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 540688,
+        "storage_bpw": 0.04853084788602941,
+        "active_bytes_fused": 540672,
+        "active_bpw_fused": 0.04852941176470588,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 2139095040.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 540672.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 3429.907786695263,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "Factors fitted in the metric of G=X_train^T X_train (real activations). Hold never used in the fit. Fused vs cache as above."
+        ],
+        "unaccounted": [
+          "No hashed Metal kernel for fused UV-GEMV. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0485 < 0.5 with quality below q3 (rel_fro 0.6665 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "rank": 12,
+        "target_storage_bpw": 0.05,
+        "fit": "rsvd(W @ sqrtG), G=X_train.T@X_train",
+        "train_used": true,
+        "train_spot_n": 1024,
+        "train_spot": {
+          "rel_fro": 0.6563611626625061,
+          "cosine": 0.7528659701347351,
+          "gain": 0.1869816929101944,
+          "worst_unit": 0.14591354131698608
+        },
+        "gram": {
+          "min_eval_clipped": 556.0859556204878,
+          "max_eval_raw": 5560859.556204877,
+          "ridge_floor": 556.0859556204878,
+          "cond_after_ridge": 9999.999999999998
+        }
+      }
+    },
+    {
+      "family": "svd_weight_space",
+      "name": "svd_w_r62_bpw0.25",
+      "hold": {
+        "rel_fro": 0.6609073877334595,
+        "cosine": 0.7476791739463806,
+        "gain": 0.15106764435768127,
+        "worst_unit": -0.22275987267494202,
+        "cosine_minus_null": 0.061428964138031006
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9404602646827698,
+        "cosine": 0.33658289909362793,
+        "gain": 0.07534140348434448,
+        "worst_unit": -0.088394895195961
+      },
+      "accounting": {
+        "generator_bytes": 2793472,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 2793488,
+        "storage_bpw": 0.2507367302389706,
+        "active_bytes_fused": 2793472,
+        "active_bpw_fused": 0.25073529411764706,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 11051991040.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 2793472.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 3084.0283923295697,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "Fused-apply streams U,V (active=storage). Reconstruct-and-cache materialises W_hat in f16/f32; that cache is generated-state and is ACTIVE even though it is regenerable (not extra disk if U,V live)."
+        ],
+        "unaccounted": [
+          "No hashed Metal kernel for fused UV-GEMV. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.6609 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "rank": 62,
+        "target_storage_bpw": 0.25,
+        "fit": "rsvd(W)",
+        "train_used": false
+      }
+    },
+    {
+      "family": "svd_activation_aware",
+      "name": "svd_a_r62_bpw0.25",
+      "hold": {
+        "rel_fro": 0.5983737111091614,
+        "cosine": 0.79998379945755,
+        "gain": 0.26282280683517456,
+        "worst_unit": 0.1963692158460617,
+        "cosine_minus_null": 0.11373358964920044
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.948512077331543,
+        "cosine": 0.3129177689552307,
+        "gain": 0.09861360490322113,
+        "worst_unit": -0.04970143362879753
+      },
+      "accounting": {
+        "generator_bytes": 2793472,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 2793488,
+        "storage_bpw": 0.2507367302389706,
+        "active_bytes_fused": 2793472,
+        "active_bpw_fused": 0.25073529411764706,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 11051991040.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 2793472.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 2952.100570982231,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "Factors fitted in the metric of G=X_train^T X_train (real activations). Hold never used in the fit. Fused vs cache as above."
+        ],
+        "unaccounted": [
+          "No hashed Metal kernel for fused UV-GEMV. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.5984 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "rank": 62,
+        "target_storage_bpw": 0.25,
+        "fit": "rsvd(W @ sqrtG), G=X_train.T@X_train",
+        "train_used": true,
+        "train_spot_n": 1024,
+        "train_spot": {
+          "rel_fro": 0.5696918964385986,
+          "cosine": 0.8209205865859985,
+          "gain": 0.3414200246334076,
+          "worst_unit": 0.3527604043483734
+        },
+        "gram": {
+          "min_eval_clipped": 556.0859556204878,
+          "max_eval_raw": 5560859.556204877,
+          "ridge_floor": 556.0859556204878,
+          "cond_after_ridge": 9999.999999999998
+        }
+      }
+    },
+    {
+      "family": "svd_weight_space",
+      "name": "svd_w_r247_bpw1.0",
+      "hold": {
+        "rel_fro": 0.581368088722229,
+        "cosine": 0.8110299110412598,
+        "gain": 0.25990530848503113,
+        "worst_unit": -0.1642875373363495,
+        "cosine_minus_null": 0.12477970123291016
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.8744592070579529,
+        "cosine": 0.48361608386039734,
+        "gain": 0.17132259905338287,
+        "worst_unit": 0.019897079095244408
+      },
+      "accounting": {
+        "generator_bytes": 11128832,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 11128848,
+        "storage_bpw": 0.9988984949448529,
+        "active_bytes_fused": 11128832,
+        "active_bpw_fused": 0.9988970588235294,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 44029706240.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 11128832.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 8002.758888396389,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "Fused-apply streams U,V (active=storage). Reconstruct-and-cache materialises W_hat in f16/f32; that cache is generated-state and is ACTIVE even though it is regenerable (not extra disk if U,V live)."
+        ],
+        "unaccounted": [
+          "No hashed Metal kernel for fused UV-GEMV. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.5814 vs 0.2037, gain 0.2599 vs 0.7510); storage_bpw=0.9989 active_bpw=0.9989",
+      "extra": {
+        "rank": 247,
+        "target_storage_bpw": 1.0,
+        "fit": "rsvd(W)",
+        "train_used": false
+      }
+    },
+    {
+      "family": "svd_activation_aware",
+      "name": "svd_a_r247_bpw1.0",
+      "hold": {
+        "rel_fro": 0.515815019607544,
+        "cosine": 0.8568493723869324,
+        "gain": 0.3903076946735382,
+        "worst_unit": 0.33951741456985474,
+        "cosine_minus_null": 0.17059916257858276
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.8948200345039368,
+        "cosine": 0.4446874260902405,
+        "gain": 0.17196251451969147,
+        "worst_unit": 0.035715047270059586
+      },
+      "accounting": {
+        "generator_bytes": 11128832,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 11128848,
+        "storage_bpw": 0.9988984949448529,
+        "active_bytes_fused": 11128832,
+        "active_bpw_fused": 0.9988970588235294,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 44029706240.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 11128832.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 11870.809317066269,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "Factors fitted in the metric of G=X_train^T X_train (real activations). Hold never used in the fit. Fused vs cache as above."
+        ],
+        "unaccounted": [
+          "No hashed Metal kernel for fused UV-GEMV. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.5158 vs 0.2037, gain 0.3903 vs 0.7510); storage_bpw=0.9989 active_bpw=0.9989",
+      "extra": {
+        "rank": 247,
+        "target_storage_bpw": 1.0,
+        "fit": "rsvd(W @ sqrtG), G=X_train.T@X_train",
+        "train_used": true,
+        "train_spot_n": 1024,
+        "train_spot": {
+          "rel_fro": 0.4515601396560669,
+          "cosine": 0.8917990922927856,
+          "gain": 0.5245951414108276,
+          "worst_unit": 0.49357208609580994
+        },
+        "gram": {
+          "min_eval_clipped": 556.0859556204878,
+          "max_eval_raw": 5560859.556204877,
+          "ridge_floor": 556.0859556204878,
+          "cond_after_ridge": 9999.999999999998
+        }
+      }
+    },
+    {
+      "family": "svd_weight_space",
+      "name": "svd_w_r804_bpw3.25",
+      "hold": {
+        "rel_fro": 0.4903423488140106,
+        "cosine": 0.8694186210632324,
+        "gain": 0.38437098264694214,
+        "worst_unit": 0.20789943635463715,
+        "cosine_minus_null": 0.1831684112548828
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.7585915923118591,
+        "cosine": 0.6508941650390625,
+        "gain": 0.3064256012439728,
+        "worst_unit": 0.2959635555744171
+      },
+      "accounting": {
+        "generator_bytes": 36225024,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 36225040,
+        "storage_bpw": 3.2514720243566178,
+        "active_bytes_fused": 36225024,
+        "active_bpw_fused": 3.251470588235294,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 143319367680.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 36225024.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 25250.058062037766,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "Fused-apply streams U,V (active=storage). Reconstruct-and-cache materialises W_hat in f16/f32; that cache is generated-state and is ACTIVE even though it is regenerable (not extra disk if U,V live)."
+        ],
+        "unaccounted": [
+          "No hashed Metal kernel for fused UV-GEMV. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.4903 vs 0.2037, gain 0.3844 vs 0.7510); storage_bpw=3.2515 active_bpw=3.2515",
+      "extra": {
+        "rank": 804,
+        "target_storage_bpw": 3.25,
+        "fit": "rsvd(W)",
+        "train_used": false
+      }
+    },
+    {
+      "family": "svd_activation_aware",
+      "name": "svd_a_r804_bpw3.25",
+      "hold": {
+        "rel_fro": 0.41443032026290894,
+        "cosine": 0.9102388024330139,
+        "gain": 0.5750217437744141,
+        "worst_unit": 0.49031540751457214,
+        "cosine_minus_null": 0.2239885926246643
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.7876825332641602,
+        "cosine": 0.615287184715271,
+        "gain": 0.3242782950401306,
+        "worst_unit": 0.14025963842868805
+      },
+      "accounting": {
+        "generator_bytes": 36225024,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 36225040,
+        "storage_bpw": 3.2514720243566178,
+        "active_bytes_fused": 36225024,
+        "active_bpw_fused": 3.251470588235294,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 143319367680.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 36225024.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 25260.728694646743,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "Factors fitted in the metric of G=X_train^T X_train (real activations). Hold never used in the fit. Fused vs cache as above."
+        ],
+        "unaccounted": [
+          "No hashed Metal kernel for fused UV-GEMV. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.4144 vs 0.2037, gain 0.5750 vs 0.7510); storage_bpw=3.2515 active_bpw=3.2515",
+      "extra": {
+        "rank": 804,
+        "target_storage_bpw": 3.25,
+        "fit": "rsvd(W @ sqrtG), G=X_train.T@X_train",
+        "train_used": true,
+        "train_spot_n": 1024,
+        "train_spot": {
+          "rel_fro": 0.30795058608055115,
+          "cosine": 0.9509321451187134,
+          "gain": 0.7165380120277405,
+          "worst_unit": 0.7305861115455627
+        },
+        "gram": {
+          "min_eval_clipped": 556.0859556204878,
+          "max_eval_raw": 5560859.556204877,
+          "ridge_floor": 556.0859556204878,
+          "cond_after_ridge": 9999.999999999998
+        }
+      }
+    },
+    {
+      "family": "dct_prefix_coefficients",
+      "name": "dct_p973x286_bpw0.05",
+      "hold": {
+        "rel_fro": 0.9821816086769104,
+        "cosine": 0.3457537889480591,
+        "gain": 0.01040421612560749,
+        "worst_unit": -0.7528330683708191,
+        "cosine_minus_null": -0.3404964208602905
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9978548288345337,
+        "cosine": 0.06529505550861359,
+        "gain": 0.030382368713617325,
+        "worst_unit": -0.20600026845932007
+      },
+      "accounting": {
+        "generator_bytes": 556556,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 556572,
+        "storage_bpw": 0.049956557329963236,
+        "active_bytes_fused": 178257920,
+        "active_bpw_fused": null,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 2353841548.37138,
+        "reconstruct_wall_s": 0.6864190101623535,
+        "fused_flops_per_token": 0.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": 43872.03651138499,
+        "fused_possible": false,
+        "notes": [
+          "DCT basis is generated from size (like Hadamard) and is NOT parent information \u2014 not charged. Prefix coefficients ARE parent information. There is no fused DCT-GEMV for an arbitrary prefix of C; apply path reconstructs W_hat and streams the cache. That is the storage/active split G042/NR could not represent. Top-k-by-magnitude would add index_bytes = n_coeffs * log2(mn) bits \u2248 919,469 B and is not run."
+        ],
+        "unaccounted": [
+          "IDCT reconstruction kernel not hashed. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0500 < 0.5 with quality below q3 (rel_fro 0.9822 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "p": 973,
+        "q": 286,
+        "n_coeffs": 278278,
+        "target_storage_bpw": 0.05,
+        "reconstruct_wall_s": 0.6864190101623535,
+        "basis_is_model_specific": false
+      }
+    },
+    {
+      "family": "dct_prefix_coefficients",
+      "name": "dct_p2176x640_bpw0.25",
+      "hold": {
+        "rel_fro": 0.9558472633361816,
+        "cosine": 0.41121339797973633,
+        "gain": 0.021428508684039116,
+        "worst_unit": -0.8278027176856995,
+        "cosine_minus_null": -0.2750368118286133
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9910663962364197,
+        "cosine": 0.13305184245109558,
+        "gain": 0.07112470269203186,
+        "worst_unit": -0.12524354457855225
+      },
+      "accounting": {
+        "generator_bytes": 2785280,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 2785296,
+        "storage_bpw": 0.25000143612132353,
+        "active_bytes_fused": 178257920,
+        "active_bpw_fused": null,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 2353841548.37138,
+        "reconstruct_wall_s": 0.6349549293518066,
+        "fused_flops_per_token": 0.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": 44026.706792131255,
+        "fused_possible": false,
+        "notes": [
+          "DCT basis is generated from size (like Hadamard) and is NOT parent information \u2014 not charged. Prefix coefficients ARE parent information. There is no fused DCT-GEMV for an arbitrary prefix of C; apply path reconstructs W_hat and streams the cache. That is the storage/active split G042/NR could not represent. Top-k-by-magnitude would add index_bytes = n_coeffs * log2(mn) bits \u2248 4,597,347 B and is not run."
+        ],
+        "unaccounted": [
+          "IDCT reconstruction kernel not hashed. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.2500 < 0.5 with quality below q3 (rel_fro 0.9558 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "p": 2176,
+        "q": 640,
+        "n_coeffs": 1392640,
+        "target_storage_bpw": 0.25,
+        "reconstruct_wall_s": 0.6349549293518066,
+        "basis_is_model_specific": false
+      }
+    },
+    {
+      "family": "dct_prefix_coefficients",
+      "name": "dct_p4352x1280_bpw1.0",
+      "hold": {
+        "rel_fro": 0.9023088812828064,
+        "cosine": 0.5009124875068665,
+        "gain": 0.06025610491633415,
+        "worst_unit": -0.7568193674087524,
+        "cosine_minus_null": -0.18533772230148315
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9663179516792297,
+        "cosine": 0.25704216957092285,
+        "gain": 0.14335466921329498,
+        "worst_unit": -0.008251596242189407
+      },
+      "accounting": {
+        "generator_bytes": 11141120,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 11141136,
+        "storage_bpw": 1.0000014361213236,
+        "active_bytes_fused": 178257920,
+        "active_bpw_fused": null,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 2353841548.37138,
+        "reconstruct_wall_s": 0.6891920566558838,
+        "fused_flops_per_token": 0.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": 104384.76290021624,
+        "fused_possible": false,
+        "notes": [
+          "DCT basis is generated from size (like Hadamard) and is NOT parent information \u2014 not charged. Prefix coefficients ARE parent information. There is no fused DCT-GEMV for an arbitrary prefix of C; apply path reconstructs W_hat and streams the cache. That is the storage/active split G042/NR could not represent. Top-k-by-magnitude would add index_bytes = n_coeffs * log2(mn) bits \u2248 18,389,387 B and is not run."
+        ],
+        "unaccounted": [
+          "IDCT reconstruction kernel not hashed. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.9023 vs 0.2037, gain 0.0603 vs 0.7510); storage_bpw=1.0000 active_bpw=16.0000",
+      "extra": {
+        "p": 4352,
+        "q": 1280,
+        "n_coeffs": 5570560,
+        "target_storage_bpw": 1.0,
+        "reconstruct_wall_s": 0.6891920566558838,
+        "basis_is_model_specific": false
+      }
+    },
+    {
+      "family": "dct_prefix_coefficients",
+      "name": "dct_p7846x2307_bpw3.25",
+      "hold": {
+        "rel_fro": 0.7961026430130005,
+        "cosine": 0.633378803730011,
+        "gain": 0.1254226118326187,
+        "worst_unit": -0.43032100796699524,
+        "cosine_minus_null": -0.05287140607833862
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.8905966281890869,
+        "cosine": 0.4545724391937256,
+        "gain": 0.3177761435508728,
+        "worst_unit": 0.192900612950325
+      },
+      "accounting": {
+        "generator_bytes": 36201444,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 16,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 36201460,
+        "storage_bpw": 3.249355540556066,
+        "active_bytes_fused": 178257920,
+        "active_bpw_fused": null,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 2353841548.37138,
+        "reconstruct_wall_s": 0.5867211818695068,
+        "fused_flops_per_token": 0.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": 42789.77568283219,
+        "fused_possible": false,
+        "notes": [
+          "DCT basis is generated from size (like Hadamard) and is NOT parent information \u2014 not charged. Prefix coefficients ARE parent information. There is no fused DCT-GEMV for an arbitrary prefix of C; apply path reconstructs W_hat and streams the cache. That is the storage/active split G042/NR could not represent. Top-k-by-magnitude would add index_bytes = n_coeffs * log2(mn) bits \u2248 59,765,508 B and is not run."
+        ],
+        "unaccounted": [
+          "IDCT reconstruction kernel not hashed. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.7961 vs 0.2037, gain 0.1254 vs 0.7510); storage_bpw=3.2494 active_bpw=16.0000",
+      "extra": {
+        "p": 7846,
+        "q": 2307,
+        "n_coeffs": 18100722,
+        "target_storage_bpw": 3.25,
+        "reconstruct_wall_s": 0.5867211818695068,
+        "basis_is_model_specific": false
+      }
+    },
+    {
+      "family": "kronecker_sum",
+      "name": "kron_k13_bpw0.05",
+      "hold": {
+        "rel_fro": 0.8734981417655945,
+        "cosine": 0.5502508282661438,
+        "gain": 0.056821390986442566,
+        "worst_unit": -0.9674134254455566,
+        "cosine_minus_null": -0.1359993815422058
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9938592314720154,
+        "cosine": 0.10493522882461548,
+        "gain": 0.04253106191754341,
+        "worst_unit": -0.23534099757671356
+      },
+      "accounting": {
+        "generator_bytes": 567424,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 32,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 567456,
+        "storage_bpw": 0.05093347886029412,
+        "active_bytes_fused": 567424,
+        "active_bpw_fused": 0.05093060661764706,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 2317352960.0,
+        "reconstruct_wall_s": 0.05838799476623535,
+        "fused_flops_per_token": 35143680.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": 984023.1045245262,
+        "cache_apply_ns_per_token": 104422.70292727038,
+        "fused_possible": true,
+        "notes": [
+          "W \u2248 \u03a3_i A_i \u2297 B_i. Factors are model-specific. Structured apply is fused (active=storage) but at large k is MORE flops than dense GEMV; a rational runtime would reconstruct-and-cache, paying 16 BPW active. k=13 fused_flops/token=3.514e+07 vs dense 1.783e+08."
+        ],
+        "unaccounted": [
+          "No hashed Kronecker-GEMV kernel. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0509 < 0.5 with quality below q3 (rel_fro 0.8735 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "k": 13,
+        "target_storage_bpw": 0.05,
+        "tile": [
+          136,
+          128,
+          40,
+          128
+        ],
+        "fused_vs_cache_rel": 0.00019216325017623603,
+        "fused_flops_gt_dense": false
+      }
+    },
+    {
+      "family": "kronecker_sum",
+      "name": "kron_k64_bpw0.25",
+      "hold": {
+        "rel_fro": 0.8545491099357605,
+        "cosine": 0.5654347538948059,
+        "gain": 0.03868089243769646,
+        "worst_unit": -0.9167391061782837,
+        "cosine_minus_null": -0.1208154559135437
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9823926687240601,
+        "cosine": 0.185026615858078,
+        "gain": 0.08489052951335907,
+        "worst_unit": -0.1809854358434677
+      },
+      "accounting": {
+        "generator_bytes": 2793472,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 32,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 2793504,
+        "storage_bpw": 0.2507381663602941,
+        "active_bytes_fused": 2793472,
+        "active_bpw_fused": 0.25073529411764706,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 11408506880.0,
+        "reconstruct_wall_s": 0.05833005905151367,
+        "fused_flops_per_token": 173015040.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": 67695.78668135632,
+        "fused_possible": true,
+        "notes": [
+          "W \u2248 \u03a3_i A_i \u2297 B_i. Factors are model-specific. Structured apply is fused (active=storage) but at large k is MORE flops than dense GEMV; a rational runtime would reconstruct-and-cache, paying 16 BPW active. k=64 fused_flops/token=1.730e+08 vs dense 1.783e+08."
+        ],
+        "unaccounted": [
+          "No hashed Kronecker-GEMV kernel. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.8545 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "k": 64,
+        "target_storage_bpw": 0.25,
+        "tile": [
+          136,
+          128,
+          40,
+          128
+        ],
+        "fused_vs_cache_rel": null,
+        "fused_flops_gt_dense": false
+      }
+    },
+    {
+      "family": "kronecker_sum",
+      "name": "kron_k255_bpw1.0",
+      "hold": {
+        "rel_fro": 0.8051047325134277,
+        "cosine": 0.6184064149856567,
+        "gain": 0.07717934995889664,
+        "worst_unit": -0.6019659638404846,
+        "cosine_minus_null": -0.06784379482269287
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.9433282017707825,
+        "cosine": 0.3312285840511322,
+        "gain": 0.18940338492393494,
+        "worst_unit": 0.06161675974726677
+      },
+      "accounting": {
+        "generator_bytes": 11130240,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 32,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 11130272,
+        "storage_bpw": 0.9990263097426471,
+        "active_bytes_fused": 11130240,
+        "active_bpw_fused": 0.9990234375,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 45455769600.0,
+        "reconstruct_wall_s": 0.08444857597351074,
+        "fused_flops_per_token": 689356800.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": 92103.08033562051,
+        "fused_possible": true,
+        "notes": [
+          "W \u2248 \u03a3_i A_i \u2297 B_i. Factors are model-specific. Structured apply is fused (active=storage) but at large k is MORE flops than dense GEMV; a rational runtime would reconstruct-and-cache, paying 16 BPW active. k=255 fused_flops/token=6.894e+08 vs dense 1.783e+08."
+        ],
+        "unaccounted": [
+          "No hashed Kronecker-GEMV kernel. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY vs q3 (hold rel_fro 0.8051 vs 0.2037, gain 0.0772 vs 0.7510); storage_bpw=0.9990 active_bpw=0.9990",
+      "extra": {
+        "k": 255,
+        "target_storage_bpw": 1.0,
+        "tile": [
+          136,
+          128,
+          40,
+          128
+        ],
+        "fused_vs_cache_rel": null,
+        "fused_flops_gt_dense": true
+      }
+    },
+    {
+      "family": "kronecker_sum",
+      "name": "kron_k830_bpw3.25",
+      "hold": {
+        "rel_fro": 0.7023385763168335,
+        "cosine": 0.7220799326896667,
+        "gain": 0.1936609447002411,
+        "worst_unit": -0.2896941602230072,
+        "cosine_minus_null": 0.03582972288131714
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.845072865486145,
+        "cosine": 0.534331202507019,
+        "gain": 0.37128791213035583,
+        "worst_unit": 0.26176661252975464
+      },
+      "accounting": {
+        "generator_bytes": 36227840,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 32,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 36227872,
+        "storage_bpw": 3.2517262178308823,
+        "active_bytes_fused": 36227840,
+        "active_bpw_fused": 3.2517233455882355,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 147954073600.0,
+        "reconstruct_wall_s": 0.08345890045166016,
+        "fused_flops_per_token": 2243788800.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": 48406.94758603198,
+        "fused_possible": true,
+        "notes": [
+          "W \u2248 \u03a3_i A_i \u2297 B_i. Factors are model-specific. Structured apply is fused (active=storage) but at large k is MORE flops than dense GEMV; a rational runtime would reconstruct-and-cache, paying 16 BPW active. k=830 fused_flops/token=2.244e+09 vs dense 1.783e+08."
+        ],
+        "unaccounted": [
+          "No hashed Kronecker-GEMV kernel. Probe does not claim tok/s."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: cosine 0.7221 sits on the null 0.6863; not fidelity",
+      "extra": {
+        "k": 830,
+        "target_storage_bpw": 3.25,
+        "tile": [
+          136,
+          128,
+          40,
+          128
+        ],
+        "fused_vs_cache_rel": null,
+        "fused_flops_gt_dense": true
+      }
+    },
+    {
+      "family": "seed_prng_canary",
+      "name": "seed_xorshift_8B",
+      "hold": {
+        "rel_fro": 1.2710988521575928,
+        "cosine": -0.00432428065687418,
+        "gain": 0.18169668316841125,
+        "worst_unit": -0.8741297721862793,
+        "cosine_minus_null": -0.6905744904652238
+      },
+      "probe_isotropic": null,
+      "accounting": {
+        "generator_bytes": 0,
+        "seed_bytes": 8,
+        "index_bytes": 0,
+        "metadata_bytes": 8,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 16,
+        "storage_bpw": 1.4361213235294117e-06,
+        "active_bytes_fused": 178257920,
+        "active_bpw_fused": null,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 89128960.0,
+        "reconstruct_wall_s": 0.36956095695495605,
+        "fused_flops_per_token": 0.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": false,
+        "notes": [
+          "The seed is model information (it regenerates this particular draw only because we chose the draw; a seed that actually reproduced W would be a compression of W and would have Kolmogorov complexity ~|W|). Charged: 8-byte seed + the f16/f32 cache you must hold to GEMV. Storage BPW of the seed alone is ~0 and is not a result."
+        ],
+        "unaccounted": [
+          "PRNG algorithm identity is methodology (shared), not charged. If the seed were a learned key that regenerated W, the unaccounted Kolmogorov content would be the hole this canary exists to name."
+        ]
+      },
+      "health_verdict": "UNHEALTHY: local storage_bpw=0.0000 < 0.5 with quality below q3 (rel_fro 1.2711 vs q3 0.2037); a low number is not a result",
+      "extra": {
+        "seed": 3237998146,
+        "target_storage_bpw": 0.0
+      }
+    },
+    {
+      "family": "incumbent_q3",
+      "name": "q3_g64",
+      "hold": {
+        "rel_fro": 0.2036774605512619,
+        "cosine": 0.9796873331069946,
+        "gain": 0.7509675621986389,
+        "worst_unit": 0.8081030249595642,
+        "cosine_minus_null": 0.293437123298645
+      },
+      "probe_isotropic": {
+        "rel_fro": 0.257651150226593,
+        "cosine": 0.9685400724411011,
+        "gain": 0.9064332246780396,
+        "worst_unit": 0.9024820923805237
+      },
+      "accounting": {
+        "generator_bytes": 36208640,
+        "seed_bytes": 0,
+        "index_bytes": 0,
+        "metadata_bytes": 0,
+        "cache_f16_bytes": 178257920,
+        "cache_f32_bytes": 356515840,
+        "cache_regenerable_from_generator": true,
+        "storage_bytes_total": 36208640,
+        "storage_bpw": 3.25,
+        "active_bytes_fused": 36208640,
+        "active_bpw_fused": 3.25,
+        "active_bytes_cache_f16": 178257920,
+        "active_bpw_cache_f16": 16.0,
+        "active_bytes_cache_f32": 356515840,
+        "active_bpw_cache_f32": 32.0,
+        "reconstruct_flops_once": 89128960.0,
+        "reconstruct_wall_s": 0.0,
+        "fused_flops_per_token": 178257920.0,
+        "dense_flops_per_token": 178257920.0,
+        "fused_apply_ns_per_token": null,
+        "cache_apply_ns_per_token": null,
+        "fused_possible": true,
+        "notes": [
+          "q3 fused streams codes+scales (storage=active=3.25). Decoded-f16/f32 cache is what a naive dequant-then-GEMV pays."
+        ],
+        "unaccounted": []
+      },
+      "health_verdict": "HEALTHY (incumbent reference)",
+      "extra": {
+        "storage_bits": 289669120
+      }
+    }
+  ],
+  "second_site": {
+    "layer": 0,
+    "name": "model.language_model.layers.0.mlp.gate_proj.weight",
+    "q3_hold": {
+      "rel_fro": 0.1900957226753235,
+      "cosine": 0.9814710021018982,
+      "gain": 0.8858605027198792,
+      "worst_unit": 0.9501661062240601
+    },
+    "rows": [
+      {
+        "layer": 0,
+        "rank": 62,
+        "target_bpw": "0.25",
+        "hold": {
+          "rel_fro": 0.74716717004776,
+          "cosine": 0.649858832359314,
+          "gain": 0.3102853000164032,
+          "worst_unit": 0.26676881313323975,
+          "cosine_minus_null": 0.27863237261772156
+        },
+        "q3_hold_rel_fro": 0.1900957226753235,
+        "beats_q3": false
+      },
+      {
+        "layer": 0,
+        "rank": 804,
+        "target_bpw": "3.25",
+        "hold": {
+          "rel_fro": 0.38897469639778137,
+          "cosine": 0.9250509142875671,
+          "gain": 0.7525981664657593,
+          "worst_unit": 0.8153809905052185,
+          "cosine_minus_null": 0.5538244545459747
+        },
+        "q3_hold_rel_fro": 0.1900957226753235,
+        "beats_q3": false
+      }
+    ],
+    "note": "A local win is not a composed win. Both sites lose locally."
+  },
+  "unaccounted": [
+    "No Metal/shader binary is hashed for UV-GEMV, Kronecker-GEMV or IDCT. A shipped kernel with learned constants would be model-specific; a generic kernel is shared runtime. This probe does not claim tok/s, so the missing kernel is named rather than converted into a TPS lever.",
+    "Generator Python source is methodology, not parent information.",
+    "64-layer composition is not run. Two sites (L31, L0) both lose locally, so there is no local win to compose. A local win would still not be a composed win.",
+    "If a seed regenerated W exactly, Kolmogorov complexity of that seed is unaccounted by byte counting; the seed canary is garbage quality, so the hole is named without being used as a BPW win."
+  ],
+  "watched_fail": [
+    "0.01*W cosine=1.000000 (blind) gain=0.010000 rel_fro=0.990000 (rejects). Cosine is not a GO metric.",
+    "svd_w_r12_bpw0.05: UNHEALTHY: local storage_bpw=0.0485 < 0.5 with quality below q3 (rel_fro 0.7234 vs q3 0.2037); a low number is not a result",
+    "svd_a_r12_bpw0.05: UNHEALTHY: local storage_bpw=0.0485 < 0.5 with quality below q3 (rel_fro 0.6665 vs q3 0.2037); a low number is not a result",
+    "svd_w_r62_bpw0.25: UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.6609 vs q3 0.2037); a low number is not a result",
+    "svd_a_r62_bpw0.25: UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.5984 vs q3 0.2037); a low number is not a result",
+    "svd_a_r62_bpw0.25 train_spot rel_fro=0.5697 < hold 0.5984 (activation-aware overfit on fit-set X)",
+    "svd_w_r247_bpw1.0: UNHEALTHY vs q3 (hold rel_fro 0.5814 vs 0.2037, gain 0.2599 vs 0.7510); storage_bpw=0.9989 active_bpw=0.9989",
+    "svd_a_r247_bpw1.0: UNHEALTHY vs q3 (hold rel_fro 0.5158 vs 0.2037, gain 0.3903 vs 0.7510); storage_bpw=0.9989 active_bpw=0.9989",
+    "svd_a_r247_bpw1.0 train_spot rel_fro=0.4516 < hold 0.5158 (activation-aware overfit on fit-set X)",
+    "svd_w_r804_bpw3.25: UNHEALTHY vs q3 (hold rel_fro 0.4903 vs 0.2037, gain 0.3844 vs 0.7510); storage_bpw=3.2515 active_bpw=3.2515",
+    "svd_a_r804_bpw3.25: UNHEALTHY vs q3 (hold rel_fro 0.4144 vs 0.2037, gain 0.5750 vs 0.7510); storage_bpw=3.2515 active_bpw=3.2515",
+    "svd_a_r804_bpw3.25 train_spot rel_fro=0.3080 < hold 0.4144 (activation-aware overfit on fit-set X)",
+    "dct_p973x286_bpw0.05: UNHEALTHY: local storage_bpw=0.0500 < 0.5 with quality below q3 (rel_fro 0.9822 vs q3 0.2037); a low number is not a result",
+    "dct_p2176x640_bpw0.25: UNHEALTHY: local storage_bpw=0.2500 < 0.5 with quality below q3 (rel_fro 0.9558 vs q3 0.2037); a low number is not a result",
+    "dct_p4352x1280_bpw1.0: UNHEALTHY vs q3 (hold rel_fro 0.9023 vs 0.2037, gain 0.0603 vs 0.7510); storage_bpw=1.0000 active_bpw=16.0000",
+    "dct_p7846x2307_bpw3.25: UNHEALTHY vs q3 (hold rel_fro 0.7961 vs 0.2037, gain 0.1254 vs 0.7510); storage_bpw=3.2494 active_bpw=16.0000",
+    "kron_k13_bpw0.05: UNHEALTHY: local storage_bpw=0.0509 < 0.5 with quality below q3 (rel_fro 0.8735 vs q3 0.2037); a low number is not a result",
+    "kron_k64_bpw0.25: UNHEALTHY: local storage_bpw=0.2507 < 0.5 with quality below q3 (rel_fro 0.8545 vs q3 0.2037); a low number is not a result",
+    "kron_k255_bpw1.0: UNHEALTHY vs q3 (hold rel_fro 0.8051 vs 0.2037, gain 0.0772 vs 0.7510); storage_bpw=0.9990 active_bpw=0.9990",
+    "kron_k830_bpw3.25: UNHEALTHY: cosine 0.7221 sits on the null 0.6863; not fidelity",
+    "seed_xorshift_8B: UNHEALTHY: local storage_bpw=0.0000 < 0.5 with quality below q3 (rel_fro 1.2711 vs q3 0.2037); a low number is not a result",
+    "L0.gate_proj activation-aware SVD also loses to q3 at 0.25 and 3.25 BPW; no local win exists to compose.",
+    "G042 recorded GENERATED_BPW_EQUIVALENT=0.0 as a program constant. That is the method artifact this probe exists to name.",
+    "Null cosine (constant-mean)=0.6863; random-W cosine=0.0006. A cosine sitting on the null is not fidelity."
+  ],
+  "verdict": {
+    "g042_classification": "ARTIFACT_OF_METHOD",
+    "g042_classification_scope": "G042's GENERATED_BPW_EQUIVALENT=0 and the index line 'generated/implicit weights REFUTED' as a class-level closure. The pipeline had no slot that could hold a non-zero generated structure, so the zero is not a measurement of the class. G032 Hadamard and G034 matched-bit UV remain PROPERTY_OF_IDEA refutations of those specific members.",
+    "hadamard_member": "PROPERTY_OF_IDEA (G032 stands)",
+    "matched_bit_uv": "PROPERTY_OF_IDEA as a q3 replacement (G034 stands; replicated with cache vs fused)",
+    "decision": "SLOT_FILLED_NO_WIN",
+    "wins": [],
+    "cache_smugglers": [],
+    "deciding_number": 0.21075285971164703,
+    "deciding_note": "G042's GENERATED_BPW=0 is ARTIFACT_OF_METHOD (no slot). Filling the slot with SVD factors, DCT coefficients, Kronecker sums and a seed canary on L31.gate_proj with real post_attn_norm X does not beat q3 on hold rel_fro at fewer storage AND active bytes. G032 Hadamard stands. G034 matched-bit UV stands, now with cache-vs-fused accounting: a storage-BPW win that reconstructs W is an active-BPW loss.",
+    "original_refutation_stands_for": [
+      "G032 block Hadamard as a bit-saving generated transform of stored W",
+      "generated/implicit weights as a cheaper-than-q3 quality lever on this organ (this retest)"
+    ],
+    "original_refutation_does_not_stand_for": [
+      "GENERATED_BPW_EQUIVALENT=0 as a measurement of the class",
+      "NR generated_structures: [] meaning the class was tested and found empty"
+    ]
+  },
+  "wall_s": 48.56544017791748
+}

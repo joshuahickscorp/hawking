@@ -1,0 +1,1552 @@
+{
+ "schema": "hawking.headless.git_storage_ledger.v1",
+ "generated_at": "2026-08-24T05:47:50Z",
+ "head": "11258b4b5a32b7504928cebe354465701331eb05",
+ "branch": "grok/n019store-20260824-013128",
+ "observer": {
+  "repo": "/Users/scammermike/.claude-grok/worktrees/n019store-20260824-013128",
+  "script": "/Users/scammermike/.claude-grok/worktrees/n019store-20260824-013128/tools/headless/git_storage_ledger.py",
+  "sparse_checkout": true,
+  "note": "This worktree is sparse. A path missing on disk is not evidence it is missing from git. Measurements use git cat-file / ls-tree / rev-list, not the worktree."
+ },
+ "discipline": {
+  "s020_26_lfs": "LFS is not a magic fix; it does not remove old blobs from history.",
+  "s020_27_no_rewrite": "This ledger PREPARES a history plan. executed is false. No rewrite, no force-push, no branch delete, no git gc.",
+  "git_equals_knowledge": true,
+  "local_equals_bulk_evidence": true
+ },
+ "current_git": {
+  "git_common_dir": "/Users/scammermike/Downloads/hawking/.git",
+  "du_bytes": 5799248540,
+  "du_gib": 5.401,
+  "size_pack_kib": 5644305,
+  "size_pack_bytes": 5779768320,
+  "size_pack_gib": 5.383,
+  "loose_count": 40,
+  "loose_size_bytes": 577536,
+  "in_pack": 73901,
+  "packs": 1,
+  "prune_packable": 0,
+  "garbage": 3,
+  "size_garbage_kib": 1,
+  "pack_files": [
+   {
+    "name": "pack-70eef348ed01f3008f9c19422e9b93c6d9c369fa.idx",
+    "bytes": 2272972
+   },
+   {
+    "name": "pack-70eef348ed01f3008f9c19422e9b93c6d9c369fa.pack",
+    "bytes": 5777495564
+   },
+   {
+    "name": "pack-70eef348ed01f3008f9c19422e9b93c6d9c369fa.rev",
+    "bytes": 295656
+   }
+  ],
+  "pack_files_bytes": 5780064192,
+  "warnings": [],
+  "prior_steer_32g": {
+   "claimed_gib": 32,
+   "measured_now_gib": 5.401,
+   "note": "Do not trust the stale 32G figure. Measured this session."
+  }
+ },
+ "unreachable_objects": {
+  "count": 0,
+  "measured": true,
+  "command": "git fsck --unreachable --no-reflogs",
+  "note": "Measured this session against the shared object store: no unreachable objects printed. prune-packable=0. The 32 GiB -> 5.4 GiB drop from deleting 899 dead grok/* branches is already reflected in this single 5.38 GiB pack. This lane does not run git gc."
+ },
+ "tracked_checkout": {
+  "head_tree_files": 8075,
+  "head_tree_bytes": 987597439,
+  "head_tree_gib": 0.92,
+  "this_sparse_worktree_bytes": 81455679,
+  "this_sparse_worktree_gib": 0.076,
+  "note": "head_tree_bytes is the full HEAD tree (git ls-tree -r -l), not the sparse checkout. this_sparse_worktree_bytes is what is materialized here."
+ },
+ "current_largest_blobs": [
+  {
+   "path": "workspace/superwave/g1/claude-evidence/g1_functional_exceptions.json",
+   "bytes": 29013511,
+   "sha": "b16f5aab98157a3d8bfcaa523a0b96715b11841c"
+  },
+  {
+   "path": "workspace/superwave/g1/claude-evidence/g1_attention_2bpw_stack.json",
+   "bytes": 10359514,
+   "sha": "4ebb418d5cc642852a00df59edce62c381852c8c"
+  },
+  {
+   "path": "ramanujan/scaffold/data/corpora/d2_state_transitions.jsonl",
+   "bytes": 9445889,
+   "sha": "49192116b4cf629820f59cb94bd84e4007ac6947"
+  },
+  {
+   "path": "workspace/campaign/evidence/models/glm52/GLM52_ROUTE_POPULATION_CENSUS.json",
+   "bytes": 8606793,
+   "sha": "9a5b4f0f9f9a60616b597b3e0ee5be8f1addc295"
+  },
+  {
+   "path": "ramanujan/scaffold/data/corpora/d1_proof_traces.jsonl",
+   "bytes": 7356989,
+   "sha": "c57b2cf4b59c66d86ac3b2ffdae9fd43937923c2"
+  },
+  {
+   "path": "workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN30_PRODUCTION_HASH_SCAN_SUCCESSOR_CAPTURE_20260809T144246Z/child-capture/flat-runtime-range-map.json",
+   "bytes": 6736494,
+   "sha": "29a69d9c232c6783cad700848a67c63caed48e0b"
+  },
+  {
+   "path": "ramanujan/scaffold/data/corpora/d3_premise_pairs.jsonl",
+   "bytes": 6268853,
+   "sha": "5f5a3fe283072073b3f45f98174e2a66416bbe9b"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:halo:rt04_multi.json",
+   "bytes": 5985590,
+   "sha": "868341417b937771312039c08e311a8546393ecb"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:halo:lc02_needle.json",
+   "bytes": 5974951,
+   "sha": "18d07610e77ffc9e9369676655a9f263f4ab2cc6"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:halo:rt03_table.json",
+   "bytes": 5962345,
+   "sha": "510efae48dd328409b72226b6c44902f6e945ed6"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:thesis:r11_count_words.json",
+   "bytes": 5908940,
+   "sha": "cdc0991b1d698d66d626fca818267d34c3b7c0cf"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:thesis:r04_reverse_words.json",
+   "bytes": 5908854,
+   "sha": "80899bd2af237df7edee8b6ac864713c88db704e"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:thesis:t15_word_count.json",
+   "bytes": 5908803,
+   "sha": "e3aff117abe5ade7625198356ecce9fa4a9a57d5"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:thesis:t09_flatten.json",
+   "bytes": 5908782,
+   "sha": "8a85ca6738f9ceda587fd700c7c4f8f1b6bc6158"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:thesis:t01_add.json",
+   "bytes": 5908626,
+   "sha": "2036f8dfc220f81531d4aa04c7308ec757135c0b"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:halo:cd04_gcd.json",
+   "bytes": 5908549,
+   "sha": "65c9c5a4144ee2cbd26bde38eac1b061cb8df515"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:halo:lc01_needle.json",
+   "bytes": 5903080,
+   "sha": "d719cb57f5675c6c499232553885c663951a0ab3"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d2:Mathlib.Algebra.Algebra.Basic.algebraMap_comp_natCast:step1.json",
+   "bytes": 5900958,
+   "sha": "2f9c720223219a800af24e68dfcb36beac7c8e2f"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d2:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul':step0.json",
+   "bytes": 5900938,
+   "sha": "6700ce92d84efe0c2b1148be5abaf0ee748adfe8"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1.json",
+   "bytes": 5900909,
+   "sha": "b3e2deabf9e051f4e483375a3a060412266ce051"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1.json",
+   "bytes": 5900908,
+   "sha": "fb18d48c187f41beb6fed1d396fa514486526c55"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d2:Mathlib.Algebra.AffineMonoid.Irreducible.Submonoid.closure_irreducible:step11.json",
+   "bytes": 5900906,
+   "sha": "897b024b3f0298d23b03d81eede6b9124504b88c"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_iff_forall_one_tmul_eq:step3.json",
+   "bytes": 5900893,
+   "sha": "42ecf14f236cb4b3351013bd46c365270f8c2f83"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2.json",
+   "bytes": 5900867,
+   "sha": "c4b0c7e78b9948c746aed5402af1368adfb8928d"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2.json",
+   "bytes": 5900866,
+   "sha": "03b026ad0888dfcc758f54893e118f4e138d9b64"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:halo:gr01_wolves.json",
+   "bytes": 5885139,
+   "sha": "b0404f414e05de4c435d541dd7fe05b8f44845bf"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d3:Mathlib.Algebra.AddConstMap.Basic.rel_map_of_Icc.json",
+   "bytes": 5866703,
+   "sha": "7b551c531e02e4319f527def4d3e12d5d2dcf2f5"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d3:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff.json",
+   "bytes": 5866610,
+   "sha": "33d30978ebfad6e8abde44f89dc10a9d6a660587"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d3:Mathlib.Algebra.Algebra.Basic.algebraMap_comp_natCast.json",
+   "bytes": 5866298,
+   "sha": "33ed66173168f7746692b4bf488178b1476b4840"
+  },
+  {
+   "path": "receipts/dsv4f_fullseq_capture_L1_frozen_export/traces/pfv0:d3:Mathlib.Algebra.Algebra.Basic.algebraMap_eq_zero_iff.json",
+   "bytes": 5866276,
+   "sha": "1f726228372fcde6d0fa6ea9bdbc11b61d40582d"
+  }
+ ],
+ "current_ge_10m": [
+  {
+   "path": "workspace/superwave/g1/claude-evidence/g1_functional_exceptions.json",
+   "bytes": 29013511
+  },
+  {
+   "path": "workspace/superwave/g1/claude-evidence/g1_attention_2bpw_stack.json",
+   "bytes": 10359514
+  }
+ ],
+ "current_ge_50m": [],
+ "historical": {
+  "method": "git rev-list --all --objects | git cat-file --batch-check='%(objecttype) %(objectsize) %(objectsize:disk) %(objectname) %(rest)'",
+  "n_blob_objects": 49004,
+  "unique_logical_bytes": 41175001231,
+  "unique_disk_bytes": 5772463180,
+  "unique_logical_gib": 38.347,
+  "unique_disk_gib": 5.376,
+  "duplication": {
+   "note": "rev-list --objects emits each reachable sha once, so unique_blob_count == n_blob_objects. Duplication is many unique hashes at one path (append-only logs) plus zlib/pack compression of similar JSON.",
+   "logical_to_disk_ratio": 7.133,
+   "pack_vs_unique_disk_note": "objectsize:disk is per-object zlib. The single pack may be slightly smaller via cross-object deltas. unique_disk is the honest per-family upper bound on bytes a rewrite of that family can reclaim."
+  },
+  "top_historical_paths": [
+   {
+    "path": "workspace/campaign/odyssey/RUN_LOG.jsonl",
+    "unique_logical_bytes": 30887615792,
+    "unique_disk_bytes": 1550154,
+    "n_unique_blobs": 844
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-diagnostics/all-layer-activation-v1/runs/main_20260809T204844Z/capture-result.json",
+    "unique_logical_bytes": 154816052,
+    "unique_disk_bytes": 24084716,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "unique_logical_bytes": 91978836,
+    "unique_disk_bytes": 113829,
+    "n_unique_blobs": 737
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/uniform-q4-group64-v1/QWEN80_UNIFORM_Q4_GROUP64_V1_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "unique_logical_bytes": 89059159,
+    "unique_disk_bytes": 9074894,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_48_LAYER_PAYLOAD_SCHEDULE_AUTHORITY_20260809T033554Z.json",
+    "unique_logical_bytes": 88551859,
+    "unique_disk_bytes": 7439742,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "receipts/q30-archive/qwen30-receipts.tar.xz",
+    "unique_logical_bytes": 79023012,
+    "unique_disk_bytes": 79046991,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "unique_logical_bytes": 77842421,
+    "unique_disk_bytes": 7238830,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json",
+    "unique_logical_bytes": 69437322,
+    "unique_disk_bytes": 157337,
+    "n_unique_blobs": 855
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_GRAVITY_PROGRESS.jsonl",
+    "unique_logical_bytes": 61348282,
+    "unique_disk_bytes": 8957607,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T101400Z/independent-preflight-input.json",
+    "unique_logical_bytes": 61034900,
+    "unique_disk_bytes": 2182,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T105021Z/independent-preflight-input.json",
+    "unique_logical_bytes": 61034900,
+    "unique_disk_bytes": 2183,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T112200Z/independent-preflight-input.json",
+    "unique_logical_bytes": 61034900,
+    "unique_disk_bytes": 2183,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T112500Z/independent-preflight-input.json",
+    "unique_logical_bytes": 61034900,
+    "unique_disk_bytes": 2095,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T112900Z/independent-preflight-input.json",
+    "unique_logical_bytes": 61034900,
+    "unique_disk_bytes": 8949146,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T114233Z/independent-preflight-input.json",
+    "unique_logical_bytes": 61034900,
+    "unique_disk_bytes": 2185,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_JOINT_OUTER_CPU_PREFLIGHT_20260809T100802Z/independent-preflight-input.json",
+    "unique_logical_bytes": 61034646,
+    "unique_disk_bytes": 2250,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "evidence/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
+    "unique_logical_bytes": 54605274,
+    "unique_disk_bytes": 2044608,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-index.v1/expert_ids.npy",
+    "unique_logical_bytes": 48495488,
+    "unique_disk_bytes": 18754334,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/tensors/7866b85ef9fdbeac35f2f699fd08c8b431545344f6f1cd1600c342dcec2a3a6e.hq30g",
+    "unique_logical_bytes": 43757608,
+    "unique_disk_bytes": 41871966,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/tensors/fcd443ac9b03e52a95700c47160a158afd6efde971065f92a4a1dec5532d0b84.hq30g",
+    "unique_logical_bytes": 43757608,
+    "unique_disk_bytes": 42525189,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "HAWKING_BEHAVIOUR_TO_CODE_MAP.json",
+    "unique_logical_bytes": 42691823,
+    "unique_disk_bytes": 2653111,
+    "n_unique_blobs": 3
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_GRAVITY_PROGRESS_INDEX.json",
+    "unique_logical_bytes": 41872690,
+    "unique_disk_bytes": 6352287,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "target-parallel/release/deps/libhawking_core.rlib",
+    "unique_logical_bytes": 41415840,
+    "unique_disk_bytes": 16290517,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "crates/dismantle-core/src/kernels/mod.rs",
+    "unique_logical_bytes": 39851382,
+    "unique_disk_bytes": 38446,
+    "n_unique_blobs": 147
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/QWEN30_ACTIVATION_WEIGHTED_SVD_V1_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "unique_logical_bytes": 38229755,
+    "unique_disk_bytes": 2269064,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-index.v1/key_row_ids.npy",
+    "unique_logical_bytes": 35888608,
+    "unique_disk_bytes": 20911770,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-index.v1/path_blob.npy",
+    "unique_logical_bytes": 34882213,
+    "unique_disk_bytes": 2400614,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "target-fast/release-fast/deps/libhawking_core.rlib",
+    "unique_logical_bytes": 30989376,
+    "unique_disk_bytes": 9971079,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_MECHANISM_INDEX.sqlite",
+    "unique_logical_bytes": 29245440,
+    "unique_disk_bytes": 2338466,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/superwave/g1/claude-evidence/g1_functional_exceptions.json",
+    "unique_logical_bytes": 29013511,
+    "unique_disk_bytes": 7065111,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "crates/dismantle-core/src/model/qwen_dense.rs",
+    "unique_logical_bytes": 28885261,
+    "unique_disk_bytes": 54387,
+    "n_unique_blobs": 123
+   },
+   {
+    "path": "HAWKING_GRAPH_VIEWER.html",
+    "unique_logical_bytes": 24554861,
+    "unique_disk_bytes": 718737,
+    "n_unique_blobs": 4
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/scientific-optimizer/experiments/qwen30-blocked_native_runtime-02b45bc859a17381ec40.json",
+    "unique_logical_bytes": 23936713,
+    "unique_disk_bytes": 2354994,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/scientific-optimizer/experiments/qwen30-blocked_native_runtime-a25eaaef9c6b39f4225f.json",
+    "unique_logical_bytes": 23936481,
+    "unique_disk_bytes": 2354955,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/scientific-optimizer/experiments/qwen30-blocked_native_runtime-5018d8adb6fc6ec324f9.json",
+    "unique_logical_bytes": 23935710,
+    "unique_disk_bytes": 2354713,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "crates/hawking-core/src/metal/mod.rs",
+    "unique_logical_bytes": 21000328,
+    "unique_disk_bytes": 90619,
+    "n_unique_blobs": 108
+   },
+   {
+    "path": "crates/hawking-core/src/gravity_glm_resident.rs",
+    "unique_logical_bytes": 18961979,
+    "unique_disk_bytes": 199249,
+    "n_unique_blobs": 63
+   },
+   {
+    "path": "reports/condense/storage_stripdown/qwen_final_evidence/parent_logits/code_py.npy",
+    "unique_logical_bytes": 16409216,
+    "unique_disk_bytes": 15023396,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "target-fast/release-fast/incremental/hawking_core-2cc16lmkwgu63/s-hldoc4vps2-0vj09kr-b0iw7uyjs89s5r79cvbrgr50a/metadata.rmeta",
+    "unique_logical_bytes": 16401005,
+    "unique_disk_bytes": 3613454,
+    "n_unique_blobs": 1
+   },
+   {
+    "path": "target-fast/release-fast/incremental/hawking_core-2cc16lmkwgu63/s-hldo14zfei-0dadveq-ah7ivuk52wku027b59fukx4jj/metadata.rmeta",
+    "unique_logical_bytes": 16357296,
+    "unique_disk_bytes": 5602115,
+    "n_unique_blobs": 1
+   }
+  ]
+ },
+ "families": [
+  {
+   "id": "HQ30G",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "**/*.hq30g",
+   "n_paths": 18540,
+   "n_unique_blobs": 18540,
+   "unique_logical_bytes": 4221993404,
+   "unique_disk_bytes": 4095322650,
+   "largest_blob_bytes": 43757608,
+   "logical_to_disk_ratio": 1.03,
+   "in_head": false,
+   "gitignore_rule": "workspace/campaign/records/ascension-sandbox/physical/**/tensors/",
+   "in_rewrite_plan": true,
+   "why": "Packed Q30 tensor bodies from one 2026-08-09 commit. Incompressible. This is the remaining bulk of the 5.38 GiB pack (~3.91 GiB disk). Not in HEAD. physical/**/tensors/ is already gitignored.",
+   "example_paths": [
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/tensors/00000560014cf813af3d895b0603adaa187efec3c200a8c56a864ffb32537dbc.hq30g",
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/tensors/00002a22f297cac74fb7b0ab96c5afa03f6d036fbb74cc4aeec1cf4c1d6e12f0.hq30g",
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/tensors/00015add4a8c99e2c36ea0a2a96bacee16d6956b176b95ed66a97376541b36d6.hq30g",
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/tensors/000681a3af8abf3dd839d49292278ddddef5c797ffd6ade868e0d98472395c70.hq30g",
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/tensors/000956d492d95863005c3abbed066aaaeda7798c3a29be2739f4c64b887bda7b.hq30g"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "PHYSICAL_OTHER",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "workspace/campaign/records/ascension-sandbox/physical/",
+   "n_paths": 2922,
+   "n_unique_blobs": 2928,
+   "unique_logical_bytes": 1699767031,
+   "unique_disk_bytes": 454754493,
+   "largest_blob_bytes": 154816052,
+   "logical_to_disk_ratio": 3.74,
+   "in_head": true,
+   "gitignore_rule": "workspace/campaign/records/ascension-sandbox/physical/**/capture-result.json",
+   "in_rewrite_plan": true,
+   "why": "Leftover physical JSON after tensors/payloads are split out: capture-result, preflight inputs, complete-binary gravity dumps (~434 MiB disk). Compact *RECEIPT.json / *HANDOFF.json / *STATUS.json should stay if a rewrite ever runs.",
+   "example_paths": [
+    "workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN30_GQA_METAL_COMPONENT_PROBE.json",
+    "workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN30_PACKED_MATVEC_REDUCTION_EXACTNESS_CPU.json",
+    "workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_BINARY_SIGN_SCALE_MATVEC_METAL_COMPONENT_PROBE.json",
+    "workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_DUAL_ROUTE_METAL_COMPONENT_PROBE.json",
+    "workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_NEXT_GATED_DELTANET_METAL_COMPONENT_PROBE.json"
+   ],
+   "reachable_history": "PRESENT",
+   "preserve_globs": [
+    "**/*RECEIPT.json",
+    "**/*HANDOFF.json",
+    "**/*STATUS.json",
+    "**/*SELECTION*.json"
+   ],
+   "head_ge_1m_paths": 34,
+   "head_ge_1m_bytes": 38896896
+  },
+  {
+   "id": "TARGET_FAST",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "target-fast/",
+   "n_paths": 2952,
+   "n_unique_blobs": 2952,
+   "unique_logical_bytes": 1373012396,
+   "unique_disk_bytes": 449405641,
+   "largest_blob_bytes": 30989376,
+   "logical_to_disk_ratio": 3.06,
+   "in_head": false,
+   "gitignore_rule": "**/target/",
+   "in_rewrite_plan": true,
+   "why": "Committed Rust build output (~429 MiB disk). **/target/ is gitignored; this tree name is not. Rewrite candidate.",
+   "example_paths": [
+    "target-fast/.rustc_info.json",
+    "target-fast/CACHEDIR.TAG",
+    "target-fast/release-fast/.fingerprint/aho-corasick-279ef79730e382df/dep-lib-aho_corasick",
+    "target-fast/release-fast/.fingerprint/aho-corasick-279ef79730e382df/invoked.timestamp",
+    "target-fast/release-fast/.fingerprint/aho-corasick-279ef79730e382df/lib-aho_corasick"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "PT_CHECKPOINTS",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "**/*.pt",
+   "n_paths": 98,
+   "n_unique_blobs": 109,
+   "unique_logical_bytes": 523527483,
+   "unique_disk_bytes": 289443019,
+   "largest_blob_bytes": 10602858,
+   "logical_to_disk_ratio": 1.81,
+   "in_head": true,
+   "gitignore_rule": "workspace/campaign/phaseB/ckpt/",
+   "in_rewrite_plan": true,
+   "why": "Historical training checkpoints (~276 MiB disk). HEAD still carries small frankenstein latent_v0 fixtures (KEEP exception; gitignore comment says so) plus one 5.7 MiB ROLLBACK.pt fixture. phaseB/ckpt/ is gitignored.",
+   "example_paths": [
+    "workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_BALANCED.pt",
+    "workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_MATH.pt",
+    "workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/CURRENT.pt",
+    "workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/ROLLBACK.pt",
+    "workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints/real_C_LATENT_BRIDGES/BEST_BALANCED.pt"
+   ],
+   "reachable_history": "PRESENT",
+   "keep_in_head_exception": "workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints/",
+   "head_ge_1m_paths": 1,
+   "head_ge_1m_bytes": 5736394
+  },
+  {
+   "id": "NPY_CAPTURES",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "**/*.npy",
+   "n_paths": 81,
+   "n_unique_blobs": 81,
+   "unique_logical_bytes": 244910271,
+   "unique_disk_bytes": 103651029,
+   "largest_blob_bytes": 48495488,
+   "logical_to_disk_ratio": 2.36,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": true,
+   "why": "Capture indexes and logits dumps. Regenerable. ~99 MiB disk in history.",
+   "example_paths": [
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L00.npy",
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L01.npy",
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L02.npy",
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L03.npy",
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L04.npy"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "TARGET_PARALLEL",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "target-parallel/",
+   "n_paths": 719,
+   "n_unique_blobs": 719,
+   "unique_logical_bytes": 303197360,
+   "unique_disk_bytes": 100124189,
+   "largest_blob_bytes": 41415840,
+   "logical_to_disk_ratio": 3.03,
+   "in_head": false,
+   "gitignore_rule": "target-parallel/",
+   "in_rewrite_plan": true,
+   "why": "Committed build output (~96 MiB disk). Gitignored going forward.",
+   "example_paths": [
+    "target-parallel/.rustc_info.json",
+    "target-parallel/release/.fingerprint/aho-corasick-76d4f64f33347c63/lib-aho_corasick",
+    "target-parallel/release/.fingerprint/aho-corasick-76d4f64f33347c63/lib-aho_corasick.json",
+    "target-parallel/release/.fingerprint/base64-0335d7d9835f4ec7/lib-base64",
+    "target-parallel/release/.fingerprint/base64-0335d7d9835f4ec7/lib-base64.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "RECEIPT_TARBALLS",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "receipts/**/*.tar.xz",
+   "n_paths": 1,
+   "n_unique_blobs": 1,
+   "unique_logical_bytes": 79023012,
+   "unique_disk_bytes": 79046991,
+   "largest_blob_bytes": 79023012,
+   "logical_to_disk_ratio": 1.0,
+   "in_head": false,
+   "gitignore_rule": "receipts/**/*.tar.xz",
+   "in_rewrite_plan": true,
+   "why": "qwen30-receipts.tar.xz (75.4 MiB) untracked this session; extracted receipts stay. Still in history.",
+   "example_paths": [
+    "receipts/q30-archive/qwen30-receipts.tar.xz"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "HGRAVS01",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "**/*.hgravs01",
+   "n_paths": 327,
+   "n_unique_blobs": 327,
+   "unique_logical_bytes": 94419915,
+   "unique_disk_bytes": 74235943,
+   "largest_blob_bytes": 289404,
+   "logical_to_disk_ratio": 1.27,
+   "in_head": false,
+   "gitignore_rule": "workspace/campaign/records/ascension-sandbox/physical/**/*.hgravs01",
+   "in_rewrite_plan": true,
+   "why": "Physical gravity payloads. Already gitignored. Still in history (~71 MiB disk).",
+   "example_paths": [
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/selected-payloads/000acb7c029f27cdf0f975aed049ed957f751af102dad14fb66e7657781e5a58.hgravs01",
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/selected-payloads/007ab3edb02a51d3e177b7e1ad526ae8516b57d1d4754ae43420123dbe3acd03.hgravs01",
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/selected-payloads/00ec260834ac50ae69f2c38b0aebfd2a80800bd07a51a69d95a8b6c8ee6ceea6.hgravs01",
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/selected-payloads/0125c25255978a4550a38825e114b098181fbe29958862b3e804cf986a180553.hgravs01",
+    "workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/activation-weighted-svd-v1/selected-payloads/014dcbac3e811685881401e49b929ddf58c26fa701d0890c62b8ef800ace537b.hgravs01"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "FULLSEQ_TRACES",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "receipts/dsv4f_fullseq_capture_*/traces/",
+   "n_paths": 246,
+   "n_unique_blobs": 246,
+   "unique_logical_bytes": 502234515,
+   "unique_disk_bytes": 34856249,
+   "largest_blob_bytes": 5985590,
+   "logical_to_disk_ratio": 14.41,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": true,
+   "why": "Largest CURRENT tracked family (~476 MiB in HEAD, ~5.9 MiB/file). Huge traces must not keep growing in git. Compact receipt + CAS bytes. Still in HEAD today \u2014 copy to local store before any future untrack.",
+   "example_paths": [
+    "receipts/dsv4f_fullseq_capture_L0/traces/v0_agent_01.json",
+    "receipts/dsv4f_fullseq_capture_L0/traces/v0_agent_02.json",
+    "receipts/dsv4f_fullseq_capture_L0/traces/v0_code_01.json",
+    "receipts/dsv4f_fullseq_capture_L0/traces/v0_code_02.json",
+    "receipts/dsv4f_fullseq_capture_L0/traces/v0_code_03.json"
+   ],
+   "reachable_history": "PRESENT",
+   "rewrite_optional_until_cas_copy": true,
+   "head_ge_1m_paths": 85,
+   "head_ge_1m_bytes": 498580032
+  },
+  {
+   "id": "OTHER",
+   "class": "KEEP_GIT",
+   "glob": "*",
+   "n_paths": 3429,
+   "n_unique_blobs": 5050,
+   "unique_logical_bytes": 141174742,
+   "unique_disk_bytes": 16803459,
+   "largest_blob_bytes": 7122018,
+   "logical_to_disk_ratio": 8.4,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Remainder (configs, schemas, lab, app, small files). Default is knowledge.",
+   "example_paths": [
+    ".agent_env.example",
+    ".github/workflows/ci.yml",
+    ".gitignore",
+    "Cargo.lock",
+    "Cargo.toml"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 10,
+   "head_ge_1m_bytes": 26788213
+  },
+  {
+   "id": "SUPERWAVE_G1",
+   "class": "LFS_CANDIDATE",
+   "glob": "workspace/superwave/g1/",
+   "n_paths": 343,
+   "n_unique_blobs": 343,
+   "unique_logical_bytes": 81074650,
+   "unique_disk_bytes": 15209863,
+   "largest_blob_bytes": 29013511,
+   "logical_to_disk_ratio": 5.33,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Currently tracked 10\u201329 MiB JSON dumps (g1_functional_exceptions.json is the largest HEAD blob at 29.0 MiB). This is the shape of thing people reach for Git LFS for. S020 \u00a726: LFS does not remove old blobs. Prefer CAS + git manifest over adopting LFS.",
+   "example_paths": [
+    "workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json",
+    "workspace/superwave/g1/README.md",
+    "workspace/superwave/g1/claude-batch/batch_gate.out",
+    "workspace/superwave/g1/claude-batch/cap-c-mlpq3attnq4.out",
+    "workspace/superwave/g1/claude-batch/cap-c-q3r1p35.out"
+   ],
+   "reachable_history": "PRESENT",
+   "lfs_rejected": "S020 \u00a726 \u2014 LFS is not a magic fix; it does not strip history. Future tracking should be local CAS, not LFS.",
+   "head_ge_1m_paths": 12,
+   "head_ge_1m_bytes": 61799647
+  },
+  {
+   "id": "CRATES_SOURCE",
+   "class": "KEEP_GIT",
+   "glob": "crates/",
+   "n_paths": 1749,
+   "n_unique_blobs": 5638,
+   "unique_logical_bytes": 289525950,
+   "unique_disk_bytes": 12630710,
+   "largest_blob_bytes": 833085,
+   "logical_to_disk_ratio": 22.92,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Source. Large unique-logical on a few generated/kernel files is history of source, not bulk evidence.",
+   "example_paths": [
+    "crates/hawking-adapters/Cargo.toml",
+    "crates/hawking-adapters/generated/HAWKING_ADAPTER_ABI.json",
+    "crates/hawking-adapters/generated/HAWKING_ADAPTER_CAPABILITY_MATRIX.json",
+    "crates/hawking-adapters/generated/HAWKING_ADAPTER_MIGRATION_MAP.json",
+    "crates/hawking-adapters/generated/HAWKING_ADAPTER_REGISTRY.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "TOOLS_SOURCE",
+   "class": "KEEP_GIT",
+   "glob": "tools/",
+   "n_paths": 2344,
+   "n_unique_blobs": 4363,
+   "unique_logical_bytes": 83206066,
+   "unique_disk_bytes": 11349012,
+   "largest_blob_bytes": 789213,
+   "logical_to_disk_ratio": 7.33,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Source.",
+   "example_paths": [
+    "tools/adapters/verify_grades.py",
+    "tools/agentos/agentos.py",
+    "tools/agentos/genesis_body/Cargo.lock",
+    "tools/agentos/genesis_body/Cargo.toml",
+    "tools/agentos/genesis_body/src/main.rs"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "HAWKING_GENERATED_GRAPHS",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "HAWKING_*.json",
+   "n_paths": 121,
+   "n_unique_blobs": 268,
+   "unique_logical_bytes": 148522198,
+   "unique_disk_bytes": 5773220,
+   "largest_blob_bytes": 21623295,
+   "logical_to_disk_ratio": 25.73,
+   "in_head": false,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Generated graph/ledger dumps (behaviour-to-code map, viewer). Regenerable. Do not add new ones.",
+   "example_paths": [
+    "HAWKING_ANALYSIS_REPORT.json",
+    "HAWKING_BEHAVIOUR_TO_CODE_MAP.json",
+    "HAWKING_CLUSTER_MAP.json",
+    "HAWKING_GRAPH_PAYLOAD.json",
+    "HAWKING_GRAPH_VIEWER.html"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "RECEIPTS_ASCENT",
+   "class": "PRESERVE",
+   "glob": "receipts/ascent-*/",
+   "n_paths": 704,
+   "n_unique_blobs": 795,
+   "unique_logical_bytes": 57446269,
+   "unique_disk_bytes": 4928474,
+   "largest_blob_bytes": 3756364,
+   "logical_to_disk_ratio": 11.66,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Unique science. Never rewrite out, never delete. This lane must not modify those trees.",
+   "example_paths": [
+    "receipts/ascent-2026-08-16/ASCENT_STATE.json",
+    "receipts/ascent-2026-08-16/BACKLOG_IS_STALE.json",
+    "receipts/ascent-2026-08-16/BACKLOG_MINE.json",
+    "receipts/ascent-2026-08-16/BACKLOG_MINE_REPORT.md",
+    "receipts/ascent-2026-08-16/BLOCKED_CENSUS.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 11,
+   "head_ge_1m_bytes": 35910391
+  },
+  {
+   "id": "RAMANUJAN",
+   "class": "KEEP_GIT",
+   "glob": "ramanujan/",
+   "n_paths": 151,
+   "n_unique_blobs": 190,
+   "unique_logical_bytes": 56133541,
+   "unique_disk_bytes": 4804063,
+   "largest_blob_bytes": 9445889,
+   "logical_to_disk_ratio": 11.68,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Research corpora currently ~25 MiB. Compact enough to remain knowledge in git.",
+   "example_paths": [
+    "ramanujan/README.md",
+    "ramanujan/__init__.py",
+    "ramanujan/container/BUILD_RECEIPT.json",
+    "ramanujan/container/Dockerfile",
+    "ramanujan/container/README.md"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 5,
+   "head_ge_1m_bytes": 25835987
+  },
+  {
+   "id": "GLM52",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*GLM52_*",
+   "n_paths": 160,
+   "n_unique_blobs": 197,
+   "unique_logical_bytes": 88393500,
+   "unique_disk_bytes": 4123868,
+   "largest_blob_bytes": 54605274,
+   "logical_to_disk_ratio": 21.43,
+   "in_head": true,
+   "gitignore_rule": "/workspace/campaign/evidence/models/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json",
+   "in_rewrite_plan": false,
+   "why": "GLM52_SHARD_DEPENDENCY_GRAPH.json already gitignored (52 MiB). Remaining GLM52 dumps follow the same rule: hash in git, bytes local.",
+   "example_paths": [
+    "workspace/campaign/evidence/models/glm52/GLM52_90GB_FULL_SHARD_LOWER_BOUND.json",
+    "workspace/campaign/evidence/models/glm52/GLM52_ACTIVATION_AWARE_REPLICATION.json",
+    "workspace/campaign/evidence/models/glm52/GLM52_ADAPTER_TWIN.json",
+    "workspace/campaign/evidence/models/glm52/GLM52_ARCHITECTURE_CONTRACT.json",
+    "workspace/campaign/evidence/models/glm52/GLM52_BASIS_PILOT_CONTROLLER_RESEAL.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 1,
+   "head_ge_1m_bytes": 8606793
+  },
+  {
+   "id": "FRANKENSTEIN_NON_PT",
+   "class": "KEEP_GIT",
+   "glob": "workspace/campaign/evidence/models/frankenstein/",
+   "n_paths": 1749,
+   "n_unique_blobs": 1761,
+   "unique_logical_bytes": 21771739,
+   "unique_disk_bytes": 3639846,
+   "largest_blob_bytes": 1349391,
+   "logical_to_disk_ratio": 5.98,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Non-weight frankenstein evidence (json, scripts). Knowledge. .pt bodies classified separately.",
+   "example_paths": [
+    "workspace/campaign/evidence/models/frankenstein/BASE_DSV4F_BASELINE_FREEZE.json",
+    "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_ARCHITECTURE_OPTIONS.md",
+    "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_DIRECT_RUN_MANIFEST_FIXTURE.json",
+    "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_DIRECT_STREAMING_SCHEDULE_FIXTURE.json",
+    "workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_DIRECT_STREAMING_SCHEDULE_PILOT.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 1,
+   "head_ge_1m_bytes": 1349391
+  },
+  {
+   "id": "DOCS",
+   "class": "KEEP_GIT",
+   "glob": "docs/",
+   "n_paths": 588,
+   "n_unique_blobs": 829,
+   "unique_logical_bytes": 14225608,
+   "unique_disk_bytes": 3442766,
+   "largest_blob_bytes": 155561,
+   "logical_to_disk_ratio": 4.13,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Canonical docs.",
+   "example_paths": [
+    "docs/HQ80BR1_KERNEL_DESIGN_SUPERSEDED.md",
+    "docs/QWEN80_MIXED_1P5_PACKED_FORMAT.md",
+    "docs/CURRENT_ARCHITECTURE.md",
+    "docs/NOETIC_ASCENSION_HANDOFF.md",
+    "docs/ultragoals/HAIDER_HCLI_SUPER_AGENT_OS.md"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "RECEIPTS_HEADLESS",
+   "class": "KEEP_GIT",
+   "glob": "receipts/headless/",
+   "n_paths": 184,
+   "n_unique_blobs": 379,
+   "unique_logical_bytes": 49113707,
+   "unique_disk_bytes": 3292092,
+   "largest_blob_bytes": 4777530,
+   "logical_to_disk_ratio": 14.92,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Compact manifests, ledgers, negative science, digests. Knowledge.",
+   "example_paths": [
+    "receipts/headless/ACCEPTANCE_VACUITY.json",
+    "receipts/headless/AFFINE2_G64_LSFIT.json",
+    "receipts/headless/AFFINE2_NATIVE_MLP.json",
+    "receipts/headless/AGENTOS_GROK_WORKUNITS.json",
+    "receipts/headless/AGENTOS_SINGLE_WRITER.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 6,
+   "head_ge_1m_bytes": 15092935
+  },
+  {
+   "id": "RECEIPTS_OTHER",
+   "class": "KEEP_GIT",
+   "glob": "receipts/",
+   "n_paths": 260,
+   "n_unique_blobs": 287,
+   "unique_logical_bytes": 47706466,
+   "unique_disk_bytes": 2255572,
+   "largest_blob_bytes": 4953334,
+   "logical_to_disk_ratio": 21.15,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Receipts not in ascent/ or headless/. Compact knowledge unless a specific family (tarballs, traces) already split out.",
+   "example_paths": [
+    "receipts/DSV4F_ACTIVATION_X_LAYER_TILE_BATCH.json",
+    "receipts/DSV4F_NATIVE_INDEX_ADMISSION_COLD_TOKEN.json",
+    "receipts/DSV4F_NATIVE_PLUS_ZEROCOPY_COMBINED.json",
+    "receipts/DSV4F_P4B_POSITION1_COMPLETE_ATTENTION_METAL-v1-reseal-darwin-dd.json",
+    "receipts/DSV4F_RESIDUAL_COMPOSITION_ORACLE.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 9,
+   "head_ge_1m_bytes": 37251323
+  },
+  {
+   "id": "RUN_LOG",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "workspace/campaign/odyssey/RUN_LOG.jsonl",
+   "n_paths": 1,
+   "n_unique_blobs": 844,
+   "unique_logical_bytes": 30887615792,
+   "unique_disk_bytes": 1550154,
+   "largest_blob_bytes": 69045983,
+   "logical_to_disk_ratio": 19925.51,
+   "in_head": false,
+   "gitignore_rule": "workspace/campaign/odyssey/RUN_LOG.jsonl",
+   "in_rewrite_plan": true,
+   "why": "Append-only campaign log. 844 unique blobs, 28.8 GiB logical, ~1.5 MiB on disk after zlib. Untracked and gitignored in 8ad51461a. Live file remains on disk at the well-known path. GitHub 50 MiB warning was the reason (largest blob ~65.9 MiB), not pack size.",
+   "example_paths": [
+    "workspace/campaign/odyssey/RUN_LOG.jsonl"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "REPORTS_CONDENSE",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "reports/condense/",
+   "n_paths": 468,
+   "n_unique_blobs": 515,
+   "unique_logical_bytes": 5459747,
+   "unique_disk_bytes": 1522696,
+   "largest_blob_bytes": 898063,
+   "logical_to_disk_ratio": 3.59,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Condense measurement dumps including parent logits npy.",
+   "example_paths": [
+    "reports/condense/deepseek_v4_telegram_monitor/state.json",
+    "reports/condense/breakthrough/HAWKING_1000TPS_ROOFLINE.json",
+    "reports/condense/breakthrough/HAWKING_RUNTIME_GRAPH.json",
+    "reports/condense/breakthrough/HAWKING_TPS_MILESTONES.jsonl",
+    "reports/condense/breakthrough/MANDATE_1_3_ADVERSARIAL_VERIFICATION.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "ODYSSEY_COMPLETIONS",
+   "class": "KEEP_GIT",
+   "glob": "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json",
+   "n_paths": 1,
+   "n_unique_blobs": 855,
+   "unique_logical_bytes": 69437322,
+   "unique_disk_bytes": 157337,
+   "largest_blob_bytes": 83951,
+   "logical_to_disk_ratio": 441.33,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Campaign completions index. Knowledge. Same odyssey preserve rule.",
+   "example_paths": [
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "ODYSSEY_STATE",
+   "class": "KEEP_GIT",
+   "glob": "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+   "n_paths": 1,
+   "n_unique_blobs": 737,
+   "unique_logical_bytes": 91978836,
+   "unique_disk_bytes": 113829,
+   "largest_blob_bytes": 158176,
+   "logical_to_disk_ratio": 808.04,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": false,
+   "why": "Campaign state. Knowledge. Highly compressible; keep in git. This lane must not modify workspace/campaign/odyssey.",
+   "example_paths": [
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json"
+   ],
+   "reachable_history": "PRESENT",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "FULLSEQ_EXPORTS",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "receipts/dsv4f_fullseq_capture_*/",
+   "n_paths": 50,
+   "n_unique_blobs": 50,
+   "unique_logical_bytes": 129711,
+   "unique_disk_bytes": 26015,
+   "largest_blob_bytes": 31428,
+   "logical_to_disk_ratio": 4.99,
+   "in_head": true,
+   "gitignore_rule": null,
+   "in_rewrite_plan": true,
+   "why": "Sibling fullseq export bodies (activations, etc.). Same rule as traces.",
+   "example_paths": [
+    "receipts/dsv4f_fullseq_capture_L0/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json",
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/DSV4F_FULLSEQ_CAPTURE_RECEIPT.json",
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L00.export.json",
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L01.export.json",
+    "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L02.export.json"
+   ],
+   "reachable_history": "PRESENT",
+   "rewrite_optional_until_cas_copy": true,
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "HQ80SEG",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*.hq80seg",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "*.hq80seg",
+   "in_rewrite_plan": false,
+   "why": "Gitignored this session. Reachable history: ABSENT (dropped with the 899 dead grok/* branches + repack). The 20 GiB named in 8ad51461a is no longer in `rev-list --all`.",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Gitignored this session. Reachable history: ABSENT (dropped with the 899 dead grok/* branches + repack). The 20 GiB named in 8ad51461a is no longer in `rev-list --all`.",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "HQ38SEG",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*.hq38seg",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "*.hq38seg",
+   "in_rewrite_plan": false,
+   "why": "Gitignored this session. Reachable history ABSENT.",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Gitignored this session. Reachable history ABSENT.",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "HQSEG",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*.hqseg",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "*.hqseg",
+   "in_rewrite_plan": false,
+   "why": "Gitignored this session. Reachable history ABSENT.",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Gitignored this session. Reachable history ABSENT.",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "F16",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*.f16",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "*.f16",
+   "in_rewrite_plan": false,
+   "why": "Activation captures. Gitignored. Reachable history ABSENT.",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Activation captures. Gitignored. Reachable history ABSENT.",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "SAFETENSORS",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*.safetensors",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "*.safetensors",
+   "in_rewrite_plan": false,
+   "why": "Model shards. Gitignored. Not a git family; live copies live under ~/models and campaign records/runs (ARTIFACT_LEDGER).",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Model shards. Gitignored. Not a git family; live copies live under ~/models and campaign records/runs (ARTIFACT_LEDGER).",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "GGUF",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*.gguf",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "*.gguf",
+   "in_rewrite_plan": false,
+   "why": "Runtime weights. Gitignored. Live parent is outside git (~/models).",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Runtime weights. Gitignored. Live parent is outside git (~/models).",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "NPZ",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*.npz",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "*.npz",
+   "in_rewrite_plan": false,
+   "why": "Already gitignored derived calibration artifacts.",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Already gitignored derived calibration artifacts.",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "METAL_CACHE",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "**/*.{metallib,air}",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "*.metallib",
+   "in_rewrite_plan": false,
+   "why": "Runtime/Metal caches. Gitignored.",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Runtime/Metal caches. Gitignored.",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "TARGET_ROOT",
+   "class": "HISTORY_REWRITE_CANDIDATE",
+   "glob": "target/",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "/target",
+   "in_rewrite_plan": true,
+   "why": "If any target/ blobs remain in history they are build output.",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "If any target/ blobs remain in history they are build output.",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  },
+  {
+   "id": "PHASEB",
+   "class": "MOVE_LOCAL_FUTURE",
+   "glob": "workspace/campaign/phaseB/",
+   "n_paths": 0,
+   "n_unique_blobs": 0,
+   "unique_logical_bytes": 0,
+   "unique_disk_bytes": 0,
+   "largest_blob_bytes": 0,
+   "logical_to_disk_ratio": null,
+   "in_head": false,
+   "gitignore_rule": "workspace/campaign/phaseB/ckpt/",
+   "in_rewrite_plan": false,
+   "why": "Heavy ckpt/ and capture dirs gitignored this session.",
+   "example_paths": [],
+   "reachable_history": "ABSENT",
+   "absent_reason": "Heavy ckpt/ and capture dirs gitignored this session.",
+   "head_ge_1m_paths": 0,
+   "head_ge_1m_bytes": 0
+  }
+ ],
+ "classes_used": [
+  "HISTORY_REWRITE_CANDIDATE",
+  "KEEP_GIT",
+  "LFS_CANDIDATE",
+  "MOVE_LOCAL_FUTURE",
+  "PRESERVE"
+ ],
+ "history_compaction_plan": {
+  "executed": false,
+  "s020_27": "Do not execute this rewrite from this lane. S020 \u00a727.",
+  "s020_26": "LFS is not a magic fix. Pointers going forward do not delete the old blobs already in the pack.",
+  "tool_if_ever_executed": "git filter-repo (a prior run's metadata lives under .git/filter-repo from 2026-07-01) or an equivalent path-glob strip. This ledger does not run it.",
+  "commits_on_HEAD": 3397,
+  "commits_reachable_all_refs": 4721,
+  "hq30g_introducing_commit": "801c98b674a3eae2dfdc95d784814a11f1d1f30f 2026-08-09 16:25:52 -0400 Pack a Q30 candidate selected on surplus-over-null, under the BPW ceiling",
+  "hq30g_descendants_on_HEAD": 1492,
+  "run_log_first_commit": "990e0d626c30a2d028c8bec65b347d6feea83719 2026-08-19 01:48:48 -0400 odyssey-i: autonomous run-loop (gated select->render->launch->harvest, dry-run default, worker/disk/clean_box gates honored)",
+  "run_log_descendants_on_HEAD": 968,
+  "commits_rewritten": {
+   "note": "Any strip of a blob in commit C rewrites C and every descendant. hq30g entered on 2026-08-09 (801c98b67); RUN_LOG entered 2026-08-19. A Phase A rewrite rewrites every HEAD commit after 801c98b67 (1492 descendants measured) plus that commit itself. Phase B rewrites every commit after the first RUN_LOG commit (968 descendants measured) \u2014 most of odyssey-i.",
+   "phase_a_rewrites_head_descendants": 1492,
+   "phase_b_rewrites_head_descendants": 968
+  },
+  "phases": [
+   {
+    "id": "A_PACKED_WEIGHTS_BUILD_CAPTURES",
+    "family_ids": [
+     "HQ30G",
+     "PHYSICAL_OTHER",
+     "TARGET_FAST",
+     "TARGET_PARALLEL",
+     "TARGET_ROOT",
+     "NPY_CAPTURES",
+     "RECEIPT_TARBALLS",
+     "HGRAVS01",
+     "PT_CHECKPOINTS"
+    ],
+    "paths_affected": [
+     "**/*.hq30g",
+     "workspace/campaign/records/ascension-sandbox/physical/",
+     "target-fast/",
+     "target-parallel/",
+     "target/",
+     "**/*.npy",
+     "receipts/**/*.tar.xz",
+     "**/*.hgravs01",
+     "**/*.pt"
+    ],
+    "unique_disk_bytes_reclaimed_upper_bound": 5645983955,
+    "predicted_pack_bytes": 133784365,
+    "predicted_pack_gib": 0.125,
+    "purpose": "Reclaim the actual pack bulk: hq30g tensors, physical dumps, committed target/, tarball, npy, hgravs01, historical .pt.",
+    "predicted_new_git_size_note": "Upper-bound savings = sum of unique_disk for these families. Delta bases can make the realised saving smaller. Do not cite this as measured post-rewrite size \u2014 executed is false."
+   },
+   {
+    "id": "B_RUN_LOG",
+    "family_ids": [
+     "RUN_LOG"
+    ],
+    "paths_affected": [
+     "workspace/campaign/odyssey/RUN_LOG.jsonl"
+    ],
+    "unique_disk_bytes_reclaimed_upper_bound": 1550154,
+    "predicted_pack_bytes": 5778218166,
+    "predicted_pack_gib": 5.381,
+    "purpose": "Strip RUN_LOG.jsonl from history. Disk savings are ~1.5 MiB; the point is the 65.9 MiB GitHub blob warning and 844 unique versions. SHA breakage cost is high relative to bytes reclaimed. Optional after Phase A."
+   },
+   {
+    "id": "C_FULLSEQ_TRACES_AFTER_CAS_COPY",
+    "family_ids": [
+     "FULLSEQ_TRACES",
+     "FULLSEQ_EXPORTS"
+    ],
+    "paths_affected": [
+     "receipts/dsv4f_fullseq_capture_*/traces/",
+     "receipts/dsv4f_fullseq_capture_*/"
+    ],
+    "unique_disk_bytes_reclaimed_upper_bound": 34882264,
+    "predicted_pack_bytes": 5744886056,
+    "predicted_pack_gib": 5.35,
+    "purpose": "Currently tracked (~476 MiB logical in HEAD). Copy bytes into artifacts/sha256/\u2026 first, land compact manifests, then untrack. A history strip is optional and must not run until the CAS copy is verified.",
+    "blocked_on": "CAS copy of every HEAD trace + manifest in git"
+   }
+  ],
+  "remote_and_refs": {
+   "origin": "git@github.com:joshuahickscorp/hawking.git",
+   "origin_main": "8ad51461a938339030e1d12a26dd4851392e5760",
+   "origin_odyssey_i": "8ad51461a938339030e1d12a26dd4851392e5760",
+   "local_heads": 158,
+   "tags": 76,
+   "remote_refs": 26,
+   "implication": "A rewrite changes every rewritten commit's SHA. origin/main and origin/odyssey-i (currently the same 8ad51461a tip, modulo this worktree's parent 11258b4b5a32b7504928cebe354465701331eb05) would need a force-push, which this lane must not do. All 76 tags and every branch containing 801c98b67 would move. Downstream clones would be rewritten. Do not force-push. Do not delete branches as part of executing this plan."
+  },
+  "rollback": {
+   "before_any_rewrite": [
+    "git bundle create $SAFE/hawking-pre-rewrite-$(date -u +%Y%m%dT%H%M%SZ).bundle --all",
+    "git clone --mirror $(git rev-parse --git-common-dir) $SAFE/hawking.git-mirror",
+    "record SHA of origin/main origin/odyssey-i and every tag in a text ledger next to the bundle"
+   ],
+   "restore": [
+    "Stop. Do not gc.",
+    "git clone $SAFE/hawking.git-mirror $RECOVERY",
+    "or: git clone hawking-pre-rewrite-*.bundle $RECOVERY",
+    "Verify recovery HEAD matches the recorded pre-rewrite SHA before replacing any live remote."
+   ],
+   "why_bundle_and_mirror": "A bundle is a single-file snapshot of every ref. A mirror clone preserves refs/ exactly. Keep both. The previous filter-repo run (2026-07-01) left .git/filter-repo/commit-map \u2014 a second rewrite composes and that map is not a rollback."
+  },
+  "not_in_plan": [
+   "receipts/ascent-* (PRESERVE)",
+   "receipts/headless compact JSON (KEEP_GIT)",
+   "crates/, tools/, docs/, lab/ source (KEEP_GIT)",
+   "workspace/campaign/odyssey/ODYSSEY_STATE.json (KEEP_GIT; this lane must not modify odyssey)",
+   "frankenstein latent_v0 small fixtures in HEAD (keep_in_head_exception)"
+  ]
+ },
+ "existing_stores": {
+  "systems": {
+   "artifacts_gitignore_root": {
+    "path": "artifacts/",
+    "role": "EXISTING Hawking artifact root (gitignored). Calibration parquet/npz and future CAS bytes live here. CONSOLIDATE onto this root.",
+    "on_disk_this_worktree": false,
+    "in_gitignore": true
+   },
+   "hawking_experiments": {
+    "path": "hawking-experiments/",
+    "role": "Campaign SOURCE archive (git), not a blob CAS. Only README.md at HEAD. Do not dump weights here.",
+    "in_git": true
+   },
+   "workspace_ops_local": {
+    "path": "workspace/ops/local/",
+    "role": "Local weights/checkpoints/models (gitignored). Machine-local, not the experiment CAS.",
+    "gitignored": [
+     "/workspace/ops/local/weights/",
+     "/workspace/ops/local/checkpoints/",
+     "/workspace/ops/local/models/"
+    ]
+   },
+   "artifact_ledger_weights": {
+    "path": "receipts/headless/ARTIFACT_LEDGER.json",
+    "role": "Census of machine-local model files (>=1 GiB) under ~/models, HF hub, campaign runs. Paired with tools/headless/storage_manager.py. Different layer from git history."
+   },
+   "gravity_codec": {
+    "path": "crates/hawking-core/src/artifact.rs",
+    "role": "Gravity shard codec (GRAVITY\\0), not a content store."
+   },
+   "hide_runtime_blobs": {
+    "path": ".hide/blobs",
+    "role": "HCLI runtime blob dir. Not the experiment CAS. Leave it."
+   },
+   "visionmcp_artifacts": {
+    "path": "visionmcp/artifacts",
+    "role": "visionmcp product artifacts. Tree is gitignored via visionmcp/. Not this CAS."
+   }
+  },
+  "probes": {
+   "repo_artifacts_dir": false,
+   "main_artifacts_dir": false,
+   "copy_artifacts_dir": false,
+   "main_run_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/RUN_LOG.jsonl",
+   "git_common_dir": "/Users/scammermike/Downloads/hawking/.git",
+   "sha256_cas_dirs_under_repo_maxdepth3": "ABSENT \u2014 no artifacts/sha256 layout on disk yet; policy adopts artifacts/sha256/ as the layout under the EXISTING /artifacts/ root"
+  }
+ },
+ "cas": {
+  "root": "artifacts/",
+  "layout": "artifacts/sha256/ab/abcdef...",
+  "git_stores": "manifest",
+  "local_stores": "bytes",
+  "do_not_invent_a_second_root": true,
+  "hawking_experiments_is_not_the_cas": true
+ },
+ "gitignore": {
+  "source": "HEAD:.gitignore",
+  "must_hold": [
+   "/artifacts/",
+   "*.safetensors",
+   "*.gguf",
+   "*.bin",
+   "*.hq80seg",
+   "*.hq38seg",
+   "*.hqseg",
+   "**/ranspack/out/segments/",
+   "**/quality-candidates/**/segments/",
+   "*.f16",
+   "workspace/campaign/phaseB/ckpt/",
+   "workspace/campaign/phaseB/capture_diverse/",
+   "workspace/campaign/phaseB/capture_diverse2/",
+   "workspace/campaign/odyssey/RUN_LOG.jsonl",
+   "receipts/**/*.tar.xz",
+   "*.npz",
+   "*.parquet",
+   "*.metallib",
+   "*.air",
+   "*.log",
+   "target-parallel/",
+   "/workspace/ops/local/weights/",
+   "/workspace/ops/local/checkpoints/",
+   "/workspace/ops/local/models/",
+   "workspace/campaign/records/ascension-sandbox/physical/**/selected-payloads/",
+   "workspace/campaign/records/ascension-sandbox/physical/**/*.hgravs01",
+   "workspace/campaign/records/ascension-sandbox/physical/**/tensors/",
+   "workspace/campaign/records/ascension-sandbox/physical/**/capture-result.json",
+   "/workspace/campaign/evidence/models/glm52/GLM52_SHARD_DEPENDENCY_GRAPH.json"
+  ],
+  "missing_from_head": [],
+  "session_block_commit": "8ad51461a938339030e1d12a26dd4851392e5760",
+  "tracked_despite_gitignore_examples": [
+   "crates/hawking-core/tests/fixtures/gravity_pq/*.bin (KEEP_GIT fixtures; *.bin is a weight rule)",
+   "crates/hawking-core/reports/w4a8_activation_dist.csv",
+   "workspace/superwave/g1/claude-wall/*.log"
+  ],
+  "note": "gitignore does not untrack. 8ad51461a ran git rm --cached for RUN_LOG and the q30 tarball only."
+ },
+ "refs": {
+  "local_heads": 158,
+  "tags": 76,
+  "commits_HEAD": 3397,
+  "commits_all": 4721
+ },
+ "elapsed_s": 4.19
+}

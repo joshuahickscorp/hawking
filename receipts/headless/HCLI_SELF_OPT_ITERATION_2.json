@@ -1,0 +1,892 @@
+{
+  "schema": "hawking.headless.hcli_self_opt.iteration.v1",
+  "iteration": 2,
+  "goal": "Raise RuntimePool admission via the measured high-water path so llama-server's 2 slots / ACTIVE_DECODE_LIMIT=2 serve real completions, without spawning a second 27B process.",
+  "baseline_pytest": {
+    "expected": "433 passed, 1 skipped",
+    "observed": "432 passed, 2 skipped",
+    "deviation": "one extra skip: tools/haider/hcli/tests/test_mlx_backend.py:246 mlx_lm.server --help did not answer in this environment. The other skip is the always-skipped live grok-run audit. Suite otherwise green (exit 0). Same class of deviation iteration 1 recorded; not a failed tree-state apply.",
+    "suite_green": true
+  },
+  "grok_run": null,
+  "priors_bound_the_prize": {
+    "active_decode_limit": 2,
+    "active_decode_limit_source": "receipts/headless/MACHINE_GENOME.json",
+    "aggregate_at_four_slot_decoders": 1.2161,
+    "aggregate_at_four_source": "receipts/headless/DECODE_TOPOLOGY.json summary.slot.4.scaling_vs_1",
+    "contract_envelope_near": 1.26,
+    "recommendedMaxWorkingSetSize_gib": 77.76,
+    "per_runtime_gib": 19.79,
+    "two_server_tps": 3.986,
+    "one_server_tps": 33.47,
+    "note": "The honest ceiling is well under 2x. A measured no-improvement is the expected outcome as often as not; rejecting is a success."
+  },
+  "mission": {
+    "id": "fa668fa1-0ca8-4c3c-9403-3229398db66f",
+    "phase": "completed",
+    "accepted_count": 10
+  },
+  "workunits": [
+    {
+      "id": "sense",
+      "role": "sense",
+      "status": "completed",
+      "resource_class": "CPU_HEAVY",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage sense --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   sense: observed_max_gpu_decode=2 max_concurrent_model_calls=2 spread=0.0002s unmeasured_admitted_n=1 stored_admitted_n=2 llama=ok slots=2\n"
+      },
+      "dependencies": []
+    },
+    {
+      "id": "bottleneck",
+      "role": "bottleneck",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage bottleneck --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   bottleneck: _overlap_admit_cap default 1 agrees with peak=2 / decode=2 / unmeasured_admitted_n=1\n"
+      },
+      "dependencies": [
+        "sense"
+      ]
+    },
+    {
+      "id": "hypotheses",
+      "role": "hypotheses",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage hypotheses --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   hypotheses: 3 candidates, locations resolve\n"
+      },
+      "dependencies": [
+        "bottleneck"
+      ]
+    },
+    {
+      "id": "screen",
+      "role": "screen",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage screen --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   screen: survived=['H1_highwater'] rejected=['H2_default_cap', 'H3_process_second_server']\n"
+      },
+      "dependencies": [
+        "hypotheses"
+      ]
+    },
+    {
+      "id": "mutate",
+      "role": "mutate",
+      "status": "completed",
+      "resource_class": "MUTATION",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage mutate --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   mutate: applied via Engine.execute status=unverified receipt=/Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/.hcli/receipts/78c5fefa-97ea-4f9e-9c39-5330128b9bc1.json controller=9ec3547b758e->707d1417d3b6\n"
+      },
+      "dependencies": [
+        "screen"
+      ]
+    },
+    {
+      "id": "gate.correctness",
+      "role": "gate.correctness",
+      "status": "completed",
+      "resource_class": "TEST",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage gate.correctness --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   gate.correctness: exit=0 passed=432 skipped=2 wall=139.5s\n"
+      },
+      "dependencies": [
+        "mutate"
+      ]
+    },
+    {
+      "id": "gate.perf",
+      "role": "gate.perf",
+      "status": "completed",
+      "resource_class": "CPU_HEAVY",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage gate.perf --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   gate.perf: alternating=True original_median_tps=22.57524202591853 mutated_median_tps=25.3131986445145 spread=0.012938974250577218 improved=True\n"
+      },
+      "dependencies": [
+        "gate.correctness"
+      ]
+    },
+    {
+      "id": "decide",
+      "role": "decide",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage decide --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   decide: promote — Both gates passed and paired throughput improved beyond spread (original median tps=22.57524202591853 mutated median tps=25.3131986445145 spread=0.012938974250577218).\n"
+      },
+      "dependencies": [
+        "gate.perf"
+      ]
+    },
+    {
+      "id": "priors",
+      "role": "priors",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage priors --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   priors: hardware envelope unchanged (limit=2, four-decoder aggregate=1.2161, recommendedMaxWorkingSetSize=77.76GiB); citing sense peak=2 unmeasured_admitted_n=1 perf mutated median tps=25.3131986445145\n"
+      },
+      "dependencies": [
+        "decide"
+      ]
+    },
+    {
+      "id": "next",
+      "role": "next",
+      "status": "completed",
+      "resource_class": "LIGHT_CONTROL",
+      "preferred_backend": "cpu",
+      "assigned_backend": "cpu",
+      "attempts": 1,
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage next --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+        "output": "ok   next: Iteration 3: admission-2 slot completions delivered median 25.3131986445145 tok/s against serial 22.57524202591853 (spread 0.012938974250577218), past the measured spread. Next: spend that width on prefix-cache locality / KV split cost rather than a third runtime — the four-decoder aggregate ceiling is still 1.2161x. (citing gate.perf.mutated.median=25.3131986445145)\n"
+      },
+      "dependencies": [
+        "priors"
+      ]
+    }
+  ],
+  "stages": {
+    "sense": {
+      "llama_server": {
+        "port": 52484,
+        "health": "ok",
+        "total_slots": 2,
+        "error": null,
+        "slots_processing": 0,
+        "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+        "slot_count": 2
+      },
+      "probe": {
+        "ok": true,
+        "mission_status": "completed",
+        "mission_id": "64daf51f-781d-4a3f-b3b6-ec2ec5a9c080",
+        "accepted": 2,
+        "observed_max_gpu_decode": 2,
+        "max_concurrent_model_calls": 2,
+        "enter_spread_s": 0.00019283400615677238,
+        "enters": [
+          {
+            "thread": "hcli-wu-g0",
+            "t_rel_s": 0.0,
+            "peak_during": 1
+          },
+          {
+            "thread": "hcli-wu-g1",
+            "t_rel_s": 0.00019283400615677238,
+            "peak_during": 2
+          }
+        ],
+        "wall_s": 0.39849687500100117,
+        "delay_s": 0.35,
+        "active_decode_limit": 2,
+        "active_decode_limit_source": "env:ACTIVE_DECODE_LIMIT",
+        "units": {
+          "g0": {
+            "status": "completed",
+            "verification": {
+              "ok": true,
+              "exit_code": 0,
+              "command": "python3 -c \"import pathlib,sys; sys.exit(0 if pathlib.Path('.').exists() else 1)\"",
+              "output": "",
+              "acceptance_source": "workunit_verifier"
+            },
+            "attempts": 1
+          },
+          "g1": {
+            "status": "completed",
+            "verification": {
+              "ok": true,
+              "exit_code": 0,
+              "command": "python3 -c \"import pathlib,sys; sys.exit(0 if pathlib.Path('.').exists() else 1)\"",
+              "output": "",
+              "acceptance_source": "workunit_verifier"
+            },
+            "attempts": 1
+          }
+        },
+        "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-probe-voia88gd"
+      },
+      "max_concurrent_model_calls": 2,
+      "observed_max_gpu_decode": 2,
+      "enter_spread_s": 0.00019283400615677238,
+      "delay_s": 0.35,
+      "unmeasured_admission": {
+        "ok": true,
+        "admitted_n": 1,
+        "overlap_admit_cap": 1,
+        "requested_n": 2,
+        "stored": null,
+        "loaded": null,
+        "default_cap": 1,
+        "narrowed": {
+          "requested": 2,
+          "admitted": 1,
+          "reason": "observed model-call overlap",
+          "source": "measured default"
+        },
+        "refusal_reason": null,
+        "n_slots_backend": 1
+      },
+      "stored_admission": {
+        "ok": true,
+        "admitted_n": 2,
+        "overlap_admit_cap": 2,
+        "requested_n": 2,
+        "stored": 2,
+        "loaded": 2,
+        "default_cap": 1,
+        "narrowed": null,
+        "refusal_reason": null,
+        "n_slots_backend": 2
+      },
+      "unmeasured_admitted_n": 1,
+      "stored_admitted_n": 2,
+      "stage_ok": true
+    },
+    "bottleneck": {
+      "name": "RuntimePool._admit narrows requested_n to _overlap_admit_cap, which is 1 unless constructor observed_overlap, HCLI_OBSERVED_MODEL_OVERLAP, or workspace .hcli/model_overlap.json says otherwise. Iteration 1 made _call_model overlap, but unmeasured admission is still 1, so the pool still plans a single slot and does not spend llama-server's 2 slots / ACTIVE_DECODE_LIMIT=2 on real completions. Extra process runtimes are the 19.79 GiB cost; extra SLOT runtimes share weights.",
+      "location": "tools/haider/hcli/runtime.py:651-710",
+      "resolved": {
+        "ok": true,
+        "spec": "tools/haider/hcli/runtime.py:651-710",
+        "path": "tools/haider/hcli/runtime.py",
+        "start": 651,
+        "end": 710,
+        "n_lines": 1331,
+        "snippet": [
+          "    def _overlap_admit_cap(self) -> int:",
+          "        \"\"\"How many runtimes in-flight model calls have been observed to need.",
+          "",
+          "        Constructor `observed_overlap` wins, then HCLI_OBSERVED_MODEL_OVERLAP,",
+          "        then the workspace high-water file, then the measured default of 1.",
+          "        \"\"\"",
+          "        if self.observed_overlap is not None:",
+          "            try:",
+          "                return max(1, int(self.observed_overlap))",
+          "            except (TypeError, ValueError):",
+          "                pass",
+          "        raw = os.environ.get(\"HCLI_OBSERVED_MODEL_OVERLAP\")",
+          "        if raw is not None and str(raw).strip() != \"\":",
+          "            try:",
+          "                return max(1, int(str(raw).strip()))",
+          "            except ValueError:",
+          "                pass",
+          "        loaded = load_observed_overlap(self.workspace)",
+          "        if loaded is not None:",
+          "            return max(1, int(loaded))",
+          "        return DEFAULT_OVERLAP_ADMIT_CAP",
+          "",
+          "    def _admit(self, n: int) -> int:",
+          "        \"\"\"Plan how many logical runtimes to try. Not a memory gate.",
+          "",
+          "        Width follows measured model-call overlap, not the caller's requested",
+          "        constant. A mission that never has two completions in flight does not",
+          "        get extra 19.79 GiB processes (or extra KV slots) sitting idle.",
+          "        \"\"\"",
+          "        want = max(0, int(n))",
+          "        want = min(want, int(self.resident_limit))",
+          "        raw = os.environ.get(\"HCLI_MAX_RUNTIMES\")",
+          "        if raw:",
+          "            try:",
+          "                want = min(want, max(0, int(raw)))",
+          "            except ValueError:",
+          "                pass",
+          "        cap = self._overlap_admit_cap()",
+          "        self.overlap_admit_cap = cap",
+          "        if cap < want:",
+          "            # Say so. Narrowing admission from what the caller asked for is a",
+          "            # real decision with a real consequence -- each runtime this drops",
+          "            # is ~19.79 GiB of Metal working set NOT reserved -- and a decision",
+          "            # nobody can see is the shape this campaign keeps finding: a caller",
+          "            # asks for 5, gets 1, and nothing in the record says why.",
+          "            self.admission_narrowed = {",
+          "                \"requested\": int(n),",
+          "                \"admitted\": int(cap),",
+          "                \"reason\": \"observed model-call overlap\",",
+          "                \"source\": (",
+          "                    \"constructor\" if self.observed_overlap is not None",
+          "                    else \"HCLI_OBSERVED_MODEL_OVERLAP\"",
+          "                    if os.environ.get(\"HCLI_OBSERVED_MODEL_OVERLAP\")",
+          "                    else \"workspace high-water file\"",
+          "                    if load_observed_overlap(self.workspace) is not None",
+          "                    else \"measured default\"",
+          "                ),",
+          "            }",
+          "        want = min(want, cap)",
+          "        return want"
+        ]
+      },
+      "agrees_with_sense": true,
+      "sense_max_concurrent_model_calls": 2,
+      "sense_observed_max_gpu_decode": 2,
+      "unmeasured_admitted_n": 1,
+      "contradiction": null,
+      "stage_ok": true
+    },
+    "hypotheses": {
+      "candidates": [
+        {
+          "id": "H1_highwater",
+          "title": "Raise admission via the measured high-water path: Controller passes workspace and observed_overlap=load_observed_overlap",
+          "location": "tools/haider/hcli/controller.py:605-609",
+          "secondary_location": "tools/haider/hcli/runtime.py:651-671",
+          "change": "ensure_runtime_pool currently constructs RuntimePool without workspace, so Engine._enter_model_call's store_observed_overlap(self.root) is not the file _overlap_admit_cap reads. Pass workspace=self.workspace_root, repo_root=self.workspace_root, and observed_overlap=load_observed_overlap(self.workspace_root) so a measured peak of 2 lifts admission to 2 on the next start.",
+          "resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/controller.py:605-609",
+            "path": "tools/haider/hcli/controller.py",
+            "start": 605,
+            "end": 609,
+            "n_lines": 1160,
+            "snippet": [
+              "        if self.runtime_pool is None:",
+              "            pool = RuntimePool(",
+              "                model_path,",
+              "                requested_n=self.runtime_count,",
+              "            )"
+            ]
+          },
+          "secondary_resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/runtime.py:651-671",
+            "path": "tools/haider/hcli/runtime.py",
+            "start": 651,
+            "end": 671,
+            "n_lines": 1331,
+            "snippet": [
+              "    def _overlap_admit_cap(self) -> int:",
+              "        \"\"\"How many runtimes in-flight model calls have been observed to need.",
+              "",
+              "        Constructor `observed_overlap` wins, then HCLI_OBSERVED_MODEL_OVERLAP,",
+              "        then the workspace high-water file, then the measured default of 1.",
+              "        \"\"\"",
+              "        if self.observed_overlap is not None:",
+              "            try:",
+              "                return max(1, int(self.observed_overlap))",
+              "            except (TypeError, ValueError):",
+              "                pass",
+              "        raw = os.environ.get(\"HCLI_OBSERVED_MODEL_OVERLAP\")",
+              "        if raw is not None and str(raw).strip() != \"\":",
+              "            try:",
+              "                return max(1, int(str(raw).strip()))",
+              "            except ValueError:",
+              "                pass",
+              "        loaded = load_observed_overlap(self.workspace)",
+              "        if loaded is not None:",
+              "            return max(1, int(loaded))",
+              "        return DEFAULT_OVERLAP_ADMIT_CAP"
+            ]
+          }
+        },
+        {
+          "id": "H2_default_cap",
+          "title": "Hard-code DEFAULT_OVERLAP_ADMIT_CAP = 2",
+          "location": "tools/haider/hcli/runtime.py:50",
+          "change": "Change the measured default of 1 to 2 so every unmeasured pool admits two runtimes without a high-water file.",
+          "resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/runtime.py:50",
+            "path": "tools/haider/hcli/runtime.py",
+            "start": 50,
+            "end": 50,
+            "n_lines": 1331,
+            "snippet": [
+              "DEFAULT_OVERLAP_ADMIT_CAP = 1"
+            ]
+          }
+        },
+        {
+          "id": "H3_process_second_server",
+          "title": "Force PROCESS topology and spawn a second 27B llama-server",
+          "location": "tools/haider/hcli/runtime.py:1069-1072",
+          "change": "Set topology=process and requested_n=2 so two independent llama-server processes decode at once.",
+          "resolved": {
+            "ok": true,
+            "spec": "tools/haider/hcli/runtime.py:1069-1072",
+            "path": "tools/haider/hcli/runtime.py",
+            "start": 1069,
+            "end": 1072,
+            "n_lines": 1331,
+            "snippet": [
+              "            if self.topology == \"slot\":",
+              "                self._start_slot(planned, timeout)",
+              "            else:",
+              "                self._start_process(planned, timeout)"
+            ]
+          }
+        }
+      ],
+      "count": 3,
+      "stage_ok": true
+    },
+    "screen": {
+      "verdicts": [
+        {
+          "id": "H1_highwater",
+          "verdict": "SURVIVE",
+          "reason": "Raises admission via the measured high-water path the runtime already implements. Cheap check: unmeasured admitted_n=1; after store_observed_overlap(peak) admitted_n=2. Controller currently drops workspace on the floor, so Engine's store never becomes the pool's cap. Scratch apply+py_compile ok=True (compiled), applicable=applicable.",
+          "scratch_apply_ok": true,
+          "scratch_detail": "compiled",
+          "applicable": "applicable",
+          "unmeasured_admitted_n": 1,
+          "stored_admitted_n": 2
+        },
+        {
+          "id": "H2_default_cap",
+          "verdict": "REJECTED",
+          "reason": "REJECTED as correctness against the unmeasured invariant. test_unmeasured_overlap_admits_one_runtime requires DEFAULT_OVERLAP_ADMIT_CAP=1: a mission that has never overlapped must not reserve a second slot (or a 19.79 GiB process). Cheap disproof already in hand: unmeasured admitted_n=1 with default_cap=1. Raising the default would make that probe admit 2 without evidence."
+        },
+        {
+          "id": "H3_process_second_server",
+          "verdict": "REJECTED",
+          "reason": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one — an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2.",
+          "two_server_tps": 3.986,
+          "one_server_tps": 33.47
+        }
+      ],
+      "rejected_count": 2,
+      "survived": [
+        "H1_highwater"
+      ],
+      "stage_ok": true
+    },
+    "mutate": {
+      "path": "Engine.execute mutation path",
+      "already_applied": false,
+      "applicable": "applicable",
+      "files_before": {
+        "controller.py": "9ec3547b758ede65f81183ca08cd59b9d324e44d93642dcf12ed8119919e30c5"
+      },
+      "applied": true,
+      "blocked": null,
+      "engine_receipt": {
+        "path": "/Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/.hcli/receipts/78c5fefa-97ea-4f9e-9c39-5330128b9bc1.json",
+        "status": "unverified",
+        "rolled_back": false,
+        "kind": "mutation",
+        "validation": {
+          "checks": [
+            {
+              "exit_code": 0,
+              "kind": "py_compile",
+              "path": "tools/haider/hcli/controller.py",
+              "stderr": "",
+              "stdout": ""
+            }
+          ],
+          "files": [
+            {
+              "changed": true,
+              "path": "tools/haider/hcli/controller.py",
+              "sha256_after": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1",
+              "sha256_before": "9ec3547b758ede65f81183ca08cd59b9d324e44d93642dcf12ed8119919e30c5"
+            }
+          ],
+          "ok": false,
+          "reason": "NO_EVIDENCE",
+          "red_before_green": null,
+          "red_before_green_advisory": true,
+          "red_before_green_reason": "pre_mutation_pass_not_run"
+        },
+        "files": [
+          {
+            "changed": true,
+            "path": "tools/haider/hcli/controller.py",
+            "sha256_after": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1",
+            "sha256_before": "9ec3547b758ede65f81183ca08cd59b9d324e44d93642dcf12ed8119919e30c5"
+          }
+        ]
+      },
+      "engine_result_status": "unverified",
+      "rolled_back": false,
+      "operations": [
+        {
+          "op": "replace",
+          "path": "tools/haider/hcli/controller.py",
+          "old_text": "from .runtime import RuntimePool\n",
+          "new_text": "from .runtime import RuntimePool, load_observed_overlap\n"
+        },
+        {
+          "op": "replace",
+          "path": "tools/haider/hcli/controller.py",
+          "old_text": "        if self.runtime_pool is None:\n            pool = RuntimePool(\n                model_path,\n                requested_n=self.runtime_count,\n            )\n",
+          "new_text": "        if self.runtime_pool is None:\n            pool = RuntimePool(\n                model_path,\n                requested_n=self.runtime_count,\n                workspace=self.workspace_root,\n                repo_root=self.workspace_root,\n                observed_overlap=load_observed_overlap(self.workspace_root),\n            )\n"
+        }
+      ],
+      "engine_error": null,
+      "validation": null,
+      "engine_receipt_path": "/Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/.hcli/receipts/78c5fefa-97ea-4f9e-9c39-5330128b9bc1.json",
+      "files_after": {
+        "controller.py": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1"
+      },
+      "snap_original": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/snap/original",
+      "snap_mutated": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/snap/mutated",
+      "stage_ok": true
+    },
+    "gate.correctness": {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-m",
+        "pytest",
+        "tools/haider/hcli/tests",
+        "-q"
+      ],
+      "exit_code": 0,
+      "passed_gate": true,
+      "wall_s": 139.5457987080008,
+      "output_tail": "........................................................................ [ 16%]\n........................................................................ [ 33%]\n.........................s.............................................. [ 49%]\n...........................s............................................ [ 66%]\n........................................................................ [ 82%]\n........................................................................ [ 99%]\n..                                                                       [100%]\n432 passed, 2 skipped in 139.40s (0:02:19)\n\n",
+      "hcli_swap_ceiling_gib": "64",
+      "passed": 432,
+      "skipped": 2,
+      "stage_ok": true
+    },
+    "gate.perf": {
+      "alternating": true,
+      "order": [
+        "mutated",
+        "original",
+        "mutated",
+        "original"
+      ],
+      "n_predict": 96,
+      "warmup": {
+        "n_predict": 16,
+        "ok": true,
+        "wall_s": 1.221099292000872,
+        "predicted_per_second": 25.621234879468105,
+        "delivered_tps": 13.10294756930264
+      },
+      "metric": "aggregate_tps = total predicted_n / wall_s for two sequences of n_predict",
+      "trials": [
+        {
+          "i": 0,
+          "condition": "mutated",
+          "width": 2,
+          "aggregate_tps": 25.300259670263923,
+          "tokens": 192,
+          "wall_s": 7.588854916997661,
+          "admitted_n": 2,
+          "ok": true,
+          "mode": "parallel_two_sequences",
+          "ok_streams": 2,
+          "child_exit": 0,
+          "error": null
+        },
+        {
+          "i": 1,
+          "condition": "original",
+          "width": 1,
+          "aggregate_tps": 22.572572804605382,
+          "tokens": 192,
+          "wall_s": 8.505897916998947,
+          "admitted_n": 1,
+          "ok": true,
+          "mode": "serial_two_sequences",
+          "ok_streams": 2,
+          "child_exit": 0,
+          "error": null
+        },
+        {
+          "i": 2,
+          "condition": "mutated",
+          "width": 2,
+          "aggregate_tps": 25.3131986445145,
+          "tokens": 192,
+          "wall_s": 7.584975834004581,
+          "admitted_n": 2,
+          "ok": true,
+          "mode": "parallel_two_sequences",
+          "ok_streams": 2,
+          "child_exit": 0,
+          "error": null
+        },
+        {
+          "i": 3,
+          "condition": "original",
+          "width": 1,
+          "aggregate_tps": 22.57524202591853,
+          "tokens": 192,
+          "wall_s": 8.504892208002275,
+          "admitted_n": 1,
+          "ok": true,
+          "mode": "serial_two_sequences",
+          "ok_streams": 2,
+          "child_exit": 0,
+          "error": null
+        }
+      ],
+      "mutated": {
+        "n": 2,
+        "values": [
+          25.300259670263923,
+          25.3131986445145
+        ],
+        "min": 25.300259670263923,
+        "max": 25.3131986445145,
+        "median": 25.3131986445145,
+        "spread": 0.012938974250577218
+      },
+      "original": {
+        "n": 2,
+        "values": [
+          22.572572804605382,
+          22.57524202591853
+        ],
+        "min": 22.572572804605382,
+        "max": 22.57524202591853,
+        "median": 22.57524202591853,
+        "spread": 0.0026692213131482845
+      },
+      "spread": 0.012938974250577218,
+      "spread_mutated": 0.012938974250577218,
+      "spread_original": 0.0026692213131482845,
+      "throughput_improved": true,
+      "improvement_predicate": "mutated.median > original.median + max(spread_mutated, spread_original, 0)",
+      "llama_before": {
+        "port": 52484,
+        "health": "ok",
+        "total_slots": 2,
+        "error": null,
+        "slots_processing": 0,
+        "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+        "slot_count": 2
+      },
+      "llama_after": {
+        "port": 52484,
+        "health": "ok",
+        "total_slots": 2,
+        "error": null,
+        "slots_processing": 0,
+        "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+        "slot_count": 2
+      },
+      "spawned_second_server": false,
+      "stage_ok": true
+    },
+    "decide": {
+      "decision": "promote",
+      "reason": "Both gates passed and paired throughput improved beyond spread (original median tps=22.57524202591853 mutated median tps=25.3131986445145 spread=0.012938974250577218).",
+      "correctness_ok": true,
+      "throughput_improved": true,
+      "mutation_applied": true,
+      "counterfactual_refuse_on_failing_gate": {
+        "if_correctness_failed": "REFUSED",
+        "if_perf_throughput_unimproved": "REFUSED",
+        "predicate": "promote IFF mutation.applied AND gate.correctness.passed_gate AND gate.perf.throughput_improved (mutated.median > original.median + spread); else reject",
+        "would_refuse_on_failing_gate": true
+      },
+      "restored_original": false,
+      "refuse_if": {
+        "correctness_failed": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "throughput_did_not_improve_beyond_spread": {
+          "triggered": false,
+          "effect": "REFUSED"
+        },
+        "mutation_not_applied": {
+          "triggered": false,
+          "effect": "REFUSED"
+        }
+      },
+      "stage_ok": true
+    },
+    "priors": {
+      "unchanged_hardware_envelope": {
+        "active_decode_limit": 2,
+        "source": "receipts/headless/MACHINE_GENOME.json ACTIVE_DECODE_LIMIT",
+        "aggregate_at_four_slot_decoders": 1.2161,
+        "source_four": "receipts/headless/DECODE_TOPOLOGY.json summary.slot.4.scaling_vs_1",
+        "contract_envelope": 1.26,
+        "genome_aggregate_scaling_vs_1": 1.1934,
+        "recommendedMaxWorkingSetSize_gib": 77.76,
+        "per_runtime_gib": 19.79,
+        "two_server_tps": 3.986,
+        "one_server_tps": 33.47,
+        "note": "Decode concurrency tops out near 1.2161x aggregate at four decoders. A second runtime costs ~19.79 GiB of Metal working set. Two resident 27B servers collapsed tok/s from 33.47 to 3.986. These numbers did not change this run."
+      },
+      "updated": {
+        "unmeasured_runtimepool_admit_cap_is_1_while_call_model_overlaps": {
+          "before": true,
+          "after": true,
+          "citing": {
+            "sense_max_concurrent_model_calls": 2,
+            "sense_unmeasured_admitted_n": 1,
+            "sense_stored_admitted_n": 2,
+            "gate_perf_mutated_median_tps": 25.3131986445145,
+            "gate_perf_original_median_tps": 22.57524202591853,
+            "gate_perf_spread": 0.012938974250577218,
+            "decision": "promote"
+          }
+        }
+      },
+      "citing": {
+        "sense_max_concurrent_model_calls": 2,
+        "sense_unmeasured_admitted_n": 1,
+        "sense_stored_admitted_n": 2,
+        "gate_perf_mutated_median_tps": 25.3131986445145,
+        "gate_perf_original_median_tps": 22.57524202591853,
+        "gate_perf_spread": 0.012938974250577218,
+        "decision": "promote"
+      },
+      "stage_ok": true
+    },
+    "next": {
+      "target": "Iteration 3: admission-2 slot completions delivered median 25.3131986445145 tok/s against serial 22.57524202591853 (spread 0.012938974250577218), past the measured spread. Next: spend that width on prefix-cache locality / KV split cost rather than a third runtime — the four-decoder aggregate ceiling is still 1.2161x.",
+      "citation": {
+        "field": "gate.perf.mutated.median",
+        "value": 25.3131986445145
+      },
+      "llama_total_slots": 2,
+      "original_median_tps": 22.57524202591853,
+      "spread": 0.012938974250577218,
+      "stage_ok": true
+    }
+  },
+  "mutation_receipt": {
+    "path": "/Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/.hcli/receipts/78c5fefa-97ea-4f9e-9c39-5330128b9bc1.json",
+    "status": "unverified",
+    "rolled_back": false,
+    "kind": "mutation",
+    "validation": {
+      "checks": [
+        {
+          "exit_code": 0,
+          "kind": "py_compile",
+          "path": "tools/haider/hcli/controller.py",
+          "stderr": "",
+          "stdout": ""
+        }
+      ],
+      "files": [
+        {
+          "changed": true,
+          "path": "tools/haider/hcli/controller.py",
+          "sha256_after": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1",
+          "sha256_before": "9ec3547b758ede65f81183ca08cd59b9d324e44d93642dcf12ed8119919e30c5"
+        }
+      ],
+      "ok": false,
+      "reason": "NO_EVIDENCE",
+      "red_before_green": null,
+      "red_before_green_advisory": true,
+      "red_before_green_reason": "pre_mutation_pass_not_run"
+    },
+    "files": [
+      {
+        "changed": true,
+        "path": "tools/haider/hcli/controller.py",
+        "sha256_after": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1",
+        "sha256_before": "9ec3547b758ede65f81183ca08cd59b9d324e44d93642dcf12ed8119919e30c5"
+      }
+    ]
+  },
+  "decision": "promote",
+  "decision_reason": "Both gates passed and paired throughput improved beyond spread (original median tps=22.57524202591853 mutated median tps=25.3131986445145 spread=0.012938974250577218).",
+  "watched_fail": [
+    {
+      "title": "Baseline pytest was 432 passed, 2 skipped, not 433/1",
+      "detail": "one extra skip: tools/haider/hcli/tests/test_mlx_backend.py:246 mlx_lm.server --help did not answer in this environment. The other skip is the always-skipped live grok-run audit. Suite otherwise green (exit 0). Same class of deviation iteration 1 recorded; not a failed tree-state apply."
+    },
+    {
+      "title": "grok-run is not required and may be absent",
+      "detail": "which(grok-run)=None. Every loop stage is cpu-backed so the DAG does not depend on grok-run."
+    },
+    {
+      "title": "Default HCLI_CPU_TIMEOUT=120 is below the suite wall",
+      "detail": "gate.correctness runs python3 -m pytest tools/haider/hcli/tests which took ~142s on this box. The loop sets HCLI_CPU_TIMEOUT=600 so the WorkUnit verifier is not killed mid-suite."
+    },
+    {
+      "title": "A second 27B llama-server is forbidden",
+      "detail": "Native run: 3.986 tok/s with two model servers resident vs 33.47 with one. Completions attach to the live server on :52484."
+    },
+    {
+      "title": "Host swap (~16 GiB) trips the default 2 GiB MemGate ceiling",
+      "detail": "The live 27B server leaves ~16 GiB of swap in use. A first admit probe that used the default swap ceiling reported admitted_n=0 even though overlap_admit_cap was 1/2. The probe now injects a 64 GiB swap ceiling so it isolates _overlap_admit_cap rather than the host swap gate."
+    },
+    {
+      "title": "current-tree overlap vs unmeasured RuntimePool admission",
+      "detail": "observed_max_gpu_decode=2 max_concurrent_model_calls=2 enter_spread_s=0.00019283400615677238 unmeasured_admitted_n=1 stored_admitted_n=2 llama_slots=2"
+    },
+    {
+      "title": "H2_default_cap rejected",
+      "detail": "REJECTED as correctness against the unmeasured invariant. test_unmeasured_overlap_admits_one_runtime requires DEFAULT_OVERLAP_ADMIT_CAP=1: a mission that has never overlapped must not reserve a second slot (or a 19.79 GiB process). Cheap disproof already in hand: unmeasured admitted_n=1 with default_cap=1. Raising the default would make that probe admit 2 without evidence."
+    },
+    {
+      "title": "H3_process_second_server rejected",
+      "detail": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one — an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2."
+    }
+  ],
+  "mission_result": {
+    "status": "completed",
+    "reason": null,
+    "cancelled": false,
+    "mission_id": "fa668fa1-0ca8-4c3c-9403-3229398db66f",
+    "accepted": 10,
+    "no_progress_warning": null
+  },
+  "mission_wall_s": 175.32598887500353,
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr"
+}

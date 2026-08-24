@@ -1,0 +1,77 @@
+{
+  "gates": [
+    "HCLI_RESTART_RESUME",
+    "AGENTOS_STEERING_DURABLE"
+  ],
+  "generated_at": "2026-08-23T08:49:00Z",
+  "method": "phase one runs in a child process and is SIGKILLed mid-mission; phase two is a separate interpreter that only sees the workspace",
+  "results": [
+    {
+      "name": "phase one was SIGKILLed with state on disk",
+      "ok": true,
+      "detail": "returncode=-9 mission=restart-fixed-id"
+    },
+    {
+      "name": "the killed process left its mutation lock behind",
+      "ok": true,
+      "detail": "record={'acquired_at': 1787474939.944126, 'pid': 86501, 'start_time': '1787474939.865268', 'unit_id': 'stuck'}"
+    },
+    {
+      "name": "a lock held by a dead pid is recoverable",
+      "ok": true,
+      "detail": "acquire after crash"
+    },
+    {
+      "name": "mission id survives the kill",
+      "ok": true,
+      "detail": "restart-fixed-id -> restart-fixed-id"
+    },
+    {
+      "name": "every WorkUnit id survives the kill",
+      "ok": true,
+      "detail": "['done1', 'later', 'stuck'] -> ['done1', 'later', 'stuck']"
+    },
+    {
+      "name": "the completed unit is still completed",
+      "ok": true,
+      "detail": "done1=completed"
+    },
+    {
+      "name": "a unit left running by a SIGKILL is recovered as INTERRUPTED",
+      "ok": true,
+      "detail": "stuck=interrupted (external task id 'external-grok-task-1' preserved: True)"
+    },
+    {
+      "name": "the external backend task id survives the kill",
+      "ok": true,
+      "detail": "'external-grok-task-1'"
+    },
+    {
+      "name": "a steer queued before the kill survives it",
+      "ok": true,
+      "detail": "steers=['prefer the smaller diff']"
+    },
+    {
+      "name": "a constraint steer reaches a not-yet-run WorkUnit's compiled context",
+      "ok": true,
+      "detail": "steering section present=True"
+    },
+    {
+      "name": "steering does not rewrite already-verified history",
+      "ok": true,
+      "detail": "changed fields on the completed unit: []"
+    },
+    {
+      "name": "the completed unit was NOT replayed after restart",
+      "ok": true,
+      "detail": "units executed after restart: ['later', 'stuck']"
+    },
+    {
+      "name": "the resumed mission completes further verified work",
+      "ok": true,
+      "detail": "final={'done1': 'completed', 'later': 'completed', 'stuck': 'completed'}"
+    }
+  ],
+  "failed": [],
+  "result": "PASS"
+}

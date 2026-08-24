@@ -1,0 +1,434 @@
+{
+  "schema": "hawking.headless.control_plane_performance.v1",
+  "gate": "CONTROL_PLANE_PERFORMANCE",
+  "generated_at": "2026-08-23T22:37:38Z",
+  "git_head": "0a9b6e9035bc9761416974427c5d6d2dcd2031b9",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/g030perf2-20260823-181230",
+  "python": {
+    "executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "version": "3.14.6"
+  },
+  "sparse_checkout": {
+    "materialized_by": "git archive HEAD hcli tools/haider tools/headless | tar -x  (git sparse-checkout add is forbidden in this sandbox)",
+    "verified_against": "git ls-tree -r --name-only HEAD | grep '^(hcli/|tools/haider|tools/headless)'",
+    "hcli_on_disk": true,
+    "tools_haider_on_disk": true,
+    "tools_headless_on_disk": true,
+    "note": "A missing path in this worktree is not evidence it is absent from git. Census paths that still say tools/haider/hcli/engine.py are pre-migration; the live module is hcli/engine.py."
+  },
+  "method": {
+    "wall": "time.perf_counter around the named call (in-process) or subprocess (CLI/suite)",
+    "cold": "CLI: first of 5 fresh Python processes. In-process workers: first call in a fresh interpreter (n=3 interpreters). Suite: one wall; not split cold/warm.",
+    "warm": "CLI: remaining 4 processes (page cache / dyld). In-process: 5 subsequent calls in the same interpreter (15 samples across 3 processes).",
+    "no_model_inference": true,
+    "anti_goodhart": "A 20% LOC cut that inlines untrusted pytest into Engine is a failure. py_compile became in-process compile(); contained pytest stays a killable session. grok-run dry_run still spawns grok-run so the printed inner command is grok-run's, not a second Python reconstruction."
+  },
+  "scope_guard": {
+    "wrote": [
+      "hcli/__init__.py",
+      "hcli/engine.py",
+      "hcli/mutation.py",
+      "tools/haider/hcli/tests/test_control_plane_performance.py",
+      "tools/headless/test_hcli_help_imports.py",
+      "receipts/headless/CONTROL_PLANE_PERFORMANCE.json"
+    ],
+    "did_not_modify": [
+      "receipts/ascent-2026-08-16",
+      "workspace/campaign",
+      "hcli/grok_bridge.py",
+      "tools/headless/metal_budget.py"
+    ],
+    "restored_after_suite": [
+      "receipts/headless/DOCTOR_V2_PRESCRIPTION.json",
+      "receipts/headless/GRAVITY_COMPILER_SEARCH.json",
+      "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
+      "receipts/headless/NOETIC_CLOSURE.json",
+      "receipts/headless/NOETIC_IR.json",
+      "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+      "receipts/headless/NOETIC_ZERO_PARENT.json"
+    ],
+    "restored_why": "pytest of tools/headless rewrites those receipts; they are not this gate. Restored from git show HEAD:<path> (git restore is blocked by index.lock in this sandbox)."
+  },
+  "judgement": {
+    "grok_bridge_dry_run": {
+      "decision": "REFUSED_IN_PROCESS_RECONSTRUCTION",
+      "ledger_rank": 1,
+      "ledger_ms": 425.209,
+      "why": [
+        "GrokBridge._launch already constructs the grok-run argv in Python (handle.command_run). The 425ms is not argv construction; it is Node grok-run starting under GROK_DRYRUN=1.",
+        "dry_run's value is that it shows the command grok-run WILL ACTUALLY RUN: the inner `grok` argv (resolved_command) plus a task dir grok-run allocates. That translation lives in grok-run, not this repo.",
+        "GrokBridge never invents a task id; it parses grok-run's `task dir:` line. Skipping the spawn would require inventing one.",
+        "SUBPROCESS_CENSUS.migration_plan.do_not includes 'Do not in-process grok-run.'",
+        "find_grok_run / shutil.which is 0.051ms median (tool_discovery). Already fast; not optimized."
+      ],
+      "measured_here": {
+        "command": "PYTHONPATH=. python3 -c 'from hcli.grok_bridge import GrokBridge; GrokBridge(ws).consult(\"ping\", background=False, dry_run=True)'  # 1 fresh process, 1 cold + 5 warm",
+        "before": {
+          "cold_ms": 494.79,
+          "warm_ms": {
+            "n": 5,
+            "samples": [
+              476.051,
+              474.927,
+              481.414,
+              462.075,
+              487.129
+            ],
+            "median": 476.051,
+            "min": 462.075,
+            "max": 487.129
+          }
+        },
+        "after": {
+          "cold_ms": 438.485,
+          "warm_ms": {
+            "n": 5,
+            "samples": [
+              437.381,
+              434.472,
+              432.271,
+              433.595,
+              433.834
+            ],
+            "median": 433.834,
+            "min": 432.271,
+            "max": 437.381
+          }
+        },
+        "code_changed": false,
+        "delta_is": "machine/Node variance, not a grok_bridge edit"
+      }
+    },
+    "runtime_admission_and_metal_device": {
+      "decision": "ALREADY_DONE_NOT_REDONE",
+      "ledger_rank": [
+        3,
+        4
+      ],
+      "why": "metal_budget.metal_device() is cached (227.8ms cold, 0.0003ms warm; force=True still re-probes). Guarded by tools/headless/test_metal_budget_cache.py. This lane did not touch tools/headless/metal_budget.py or hcli/machine.py."
+    }
+  },
+  "changed_lines": {
+    "cli_startup": {
+      "id": "cli_startup",
+      "label": "python3 -m hcli --help",
+      "what_changed": "hcli/__init__.py no longer imports Controller/Workspace/Event/EventBus. PEP 562 __getattr__ keeps `from hcli import Controller` working. argparse --help still sys.exits before App.",
+      "command": "PYTHONPATH=. PYTHONDONTWRITEBYTECODE=1 python3 -m hcli --help",
+      "command_modules": "PYTHONPATH=. PYTHONDONTWRITEBYTECODE=1 python3 -c 'import runpy,sys; sys.argv=[\"hcli\",\"--help\"];\ntry:\n runpy.run_module(\"hcli\", run_name=\"__main__\")\nexcept SystemExit:\n pass\nprint(sorted(m for m in sys.modules if m==\"hcli\" or m.startswith(\"hcli.\")))'",
+      "command_importtime": "PYTHONPATH=. PYTHONDONTWRITEBYTECODE=1 python3 -X importtime -m hcli --help",
+      "before": {
+        "process_ms": {
+          "n": 5,
+          "samples": [
+            85.127,
+            91.024,
+            87.959,
+            89.914,
+            88.77
+          ],
+          "min": 85.127,
+          "max": 91.024,
+          "mean": 88.559,
+          "median": 88.77,
+          "stdev": 2.242
+        },
+        "cold_ms": 85.127,
+        "warm_ms": {
+          "n": 4,
+          "samples": [
+            91.024,
+            87.959,
+            89.914,
+            88.77
+          ],
+          "median": 89.342,
+          "min": 87.959,
+          "max": 91.024
+        },
+        "hcli_modules": [
+          "hcli",
+          "hcli.backends",
+          "hcli.cli",
+          "hcli.config",
+          "hcli.context_budget",
+          "hcli.controller",
+          "hcli.dag_store",
+          "hcli.engine",
+          "hcli.events",
+          "hcli.executors",
+          "hcli.goal",
+          "hcli.machine",
+          "hcli.max_policy",
+          "hcli.mission",
+          "hcli.models",
+          "hcli.persist",
+          "hcli.report_compiler",
+          "hcli.resources",
+          "hcli.runtime",
+          "hcli.scheduler",
+          "hcli.session",
+          "hcli.steering",
+          "hcli.workspace",
+          "hcli.workunit"
+        ],
+        "sys_modules_count": 205,
+        "importtime_hcli_cumulative_us": 54645,
+        "heavy_loaded": []
+      },
+      "after": {
+        "process_ms": {
+          "n": 5,
+          "samples": [
+            42.238,
+            42.425,
+            43.021,
+            42.708,
+            43.314
+          ],
+          "min": 42.238,
+          "max": 43.314,
+          "mean": 42.741,
+          "median": 42.708,
+          "stdev": 0.436
+        },
+        "cold_ms": 42.238,
+        "warm_ms": {
+          "n": 4,
+          "samples": [
+            42.425,
+            43.021,
+            42.708,
+            43.314
+          ],
+          "median": 42.865,
+          "min": 42.425,
+          "max": 43.314
+        },
+        "hcli_modules": [
+          "hcli",
+          "hcli.cli"
+        ],
+        "sys_modules_count": 116,
+        "importtime_hcli_cumulative_us": 6913,
+        "heavy_loaded": []
+      },
+      "heavy_packages_proved_absent": {
+        "names": [
+          "mlx",
+          "mlx_lm",
+          "torch",
+          "numpy",
+          "scipy",
+          "cv2",
+          "open3d",
+          "visionmcp",
+          "PIL",
+          "prompt_toolkit"
+        ],
+        "before": false,
+        "after": false,
+        "note": "STARTUP_CENSUS already showed these absent from --help. This lane re-proved it and additionally removed the Controller graph (engine/backends/runtime/machine/tui never load on --help). MLX is used via mlx_lm.server subprocess at backend start, not import."
+      },
+      "delta_median_ms": 46.062
+    },
+    "verifier_dispatch": {
+      "id": "verifier_dispatch",
+      "label": "command_is_admissible + Engine._validate (2 .py files + 1 pytest file)",
+      "what_changed": "Engine._validate uses compile() in-process (kind remains 'py_compile' on the receipt). Engine._pytest_importable uses importlib.util.find_spec('pytest'). Contained pytest is still _run_contained_subprocess (start_new_session + killpg). mutation.validate_python_syntax shares compile_python_file.",
+      "command": "PYTHONPATH=. python3 -c 'from hcli.engine import Engine; from hcli.events import EventBus; from hcli.verifier_pipeline import command_is_admissible; from hcli.workspace import Workspace; ... engine._validate([calc.py, test_calc.py], [\"test_calc.py\"])'  # 3 fresh interpreters; first call=cold, next 5=warm",
+      "fixture": "calc.py `def add`; test_calc.py asserts add(2,3)==5; command_is_admissible('python3 -m pytest test_calc.py -q') then Engine._validate",
+      "before": {
+        "cold_ms": {
+          "n": 3,
+          "samples": [
+            332.753,
+            325.649,
+            329.876
+          ],
+          "min": 325.649,
+          "max": 332.753,
+          "mean": 329.426,
+          "median": 329.876,
+          "stdev": 3.573
+        },
+        "warm_ms": {
+          "n": 15,
+          "samples": [
+            233.529,
+            232.593,
+            233.878,
+            214.799,
+            219.9,
+            226.899,
+            230.035,
+            230.441,
+            230.605,
+            233.303,
+            224.465,
+            218.671,
+            236.446,
+            236.428,
+            229.59
+          ],
+          "min": 214.799,
+          "max": 236.446,
+          "mean": 228.772,
+          "median": 230.441,
+          "stdev": 6.589
+        },
+        "validate_ok": true
+      },
+      "after": {
+        "cold_ms": {
+          "n": 3,
+          "samples": [
+            141.816,
+            145.355,
+            150.275
+          ],
+          "min": 141.816,
+          "max": 150.275,
+          "mean": 145.815,
+          "median": 145.355,
+          "stdev": 4.249
+        },
+        "warm_ms": {
+          "n": 15,
+          "samples": [
+            143.377,
+            143.427,
+            143.288,
+            138.873,
+            146.177,
+            143.515,
+            140.456,
+            145.134,
+            140.642,
+            150.158,
+            147.402,
+            146.359,
+            146.309,
+            142.503,
+            148.828
+          ],
+          "min": 138.873,
+          "max": 150.158,
+          "mean": 144.43,
+          "median": 143.515,
+          "stdev": 3.171
+        },
+        "validate_ok": true
+      },
+      "delta_cold_median_ms": 184.521,
+      "delta_warm_median_ms": 86.926,
+      "remaining_cost_is": "the contained pytest subprocess (isolation boundary). Warm \u2248 cold after the py_compile/import-pytest ceremony is gone, which is the expected shape."
+    }
+  },
+  "subprocess_starts_per_workunit": {
+    "shape": "Engine._validate of 2 mutated .py files + 1 admitted pytest file (same fixture as verifier_dispatch)",
+    "command": "PYTHONPATH=. python3 -c 'wrap subprocess.Popen; engine._validate([calc.py, test_calc.py], [\"test_calc.py\"]); print(argv list)'",
+    "count_method": "Unique child processes: wrap subprocess.Popen (subprocess.run uses Popen internally; counting both double-counts). argv inspected.",
+    "before": {
+      "n_spawns": 4,
+      "argv": [
+        [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "-m",
+          "py_compile",
+          "<ws>/calc.py"
+        ],
+        [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "-m",
+          "py_compile",
+          "<ws>/test_calc.py"
+        ],
+        [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "-c",
+          "import pytest"
+        ],
+        [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "-m",
+          "pytest",
+          "test_calc.py",
+          "--tb=short",
+          "-p",
+          "no:cacheprovider",
+          "--color=no"
+        ]
+      ]
+    },
+    "after": {
+      "n_spawns": 1,
+      "argv": [
+        [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "-m",
+          "pytest",
+          "test_calc.py",
+          "--tb=short",
+          "-p",
+          "no:cacheprovider",
+          "--color=no"
+        ]
+      ]
+    },
+    "kept": "contained pytest (ISOLATION_BOUNDARY: untrusted/model-written tests, start_new_session + killpg)",
+    "removed": [
+      "python -m py_compile per .py file",
+      "python -c 'import pytest' once per Engine"
+    ]
+  },
+  "suite": {
+    "command": "PYTHONPATH=. PYTHONDONTWRITEBYTECODE=1 python3 -m pytest tools/haider tools/headless -q --tb=line --disable-warnings",
+    "collect_command": "PYTHONPATH=. python3 -m pytest tools/haider tools/headless --collect-only -q",
+    "before": {
+      "collected": 825,
+      "passed": 818,
+      "skipped": 7,
+      "wall_s": 400.78,
+      "time_real_s": 400.98,
+      "exit_code": 0,
+      "summary_line": "818 passed, 7 skipped in 400.78s (0:06:40)"
+    },
+    "after": {
+      "collected": 839,
+      "passed": 832,
+      "skipped": 7,
+      "wall_s": 346.69,
+      "time_real_s": 347.08,
+      "exit_code": 0,
+      "summary_line": "832 passed, 7 skipped in 346.69s (0:05:46)"
+    },
+    "test_count_floor": 823,
+    "test_count_met": true,
+    "delta_passed": 14,
+    "delta_wall_s": 54.09,
+    "weaker": false,
+    "note": "14 new tests (syntax in-process, pytest boundary, find_spec, --help module set, from hcli import Controller). Same 7 skips (live-artifact / models-not-present). Suite got faster and the test count rose. 832 >= 823."
+  },
+  "already_fast": [
+    {
+      "id": "tool_discovery",
+      "median_ms": 0.051,
+      "why": "shutil.which; not optimized"
+    },
+    {
+      "id": "dag_load",
+      "median_ms": 0.158,
+      "why": "CONTROL_PLANE_LATENCY fast_path; not optimized"
+    },
+    {
+      "id": "scheduler_cycle",
+      "median_ms": 0.549,
+      "why": "CONTROL_PLANE_LATENCY fast_path; not optimized"
+    },
+    {
+      "id": "metal_device_cached",
+      "why": "already cached this campaign; see tools/headless/test_metal_budget_cache.py"
+    }
+  ],
+  "what_i_watched_fail": []
+}

@@ -1,0 +1,239 @@
+{
+  "gate": "HCLI_COMMAND_INGRESS_UNIFIED",
+  "generated_at": "2026-08-23T03:55:42Z",
+  "workspace": "/Users/scammermike/Downloads/hawking-copy",
+  "path_exercised": "Controller.handle_command -> CommandHandler.handle -> EventBus -> TUI._on_event -> TUI.render_transcript  (the same wiring App._run_interactive uses)",
+  "turns": [
+    {
+      "command": "/help",
+      "wall_s": 0.0003,
+      "handler_returned_chars": 553,
+      "handler_returned_none": false,
+      "cleared_transcript": false,
+      "rendered_entries": 1,
+      "rendered_chars": 553,
+      "rendered_text": "Commands:\n  /help - show this help\n  /status - show session status\n  /models - list available models\n  /model - select model\n  /goal - set active goal\n  /ultragoal - create or show the durable Goal + ledger + DAG\n  /mission - run a persistent mission\n  /steer - queue steering instruction\n  /grok - delegate, audit, consult, or inspect a Grok task\n  /cancel - cancel the active mission\n  /context - show context summary\n  /compact - compact context\n  /clear - clear transcript (does not forget the mission)\n  /resume - resume session\n  /exit - exit HCLI",
+      "error": null,
+      "status_line": "idle",
+      "visible": true
+    },
+    {
+      "command": "/status",
+      "wall_s": 0.0003,
+      "handler_returned_chars": 1394,
+      "handler_returned_none": false,
+      "cleared_transcript": false,
+      "rendered_entries": 1,
+      "rendered_chars": 174,
+      "rendered_text": "workspace: /Users/scammermike/Downloads/hawking-copy\nmodel: Qwen 27B Q5_K\nruntimes: 0/1\nengine: idle\ngrok: admitted=2 active=0 queued=0 done=0 failed=0\nmutation: owner=(free)",
+      "error": null,
+      "status_line": "idle",
+      "visible": true
+    },
+    {
+      "command": "/models",
+      "wall_s": 0.0,
+      "handler_returned_chars": 258,
+      "handler_returned_none": false,
+      "cleared_transcript": false,
+      "rendered_entries": 1,
+      "rendered_chars": 131,
+      "rendered_text": "Available models:\n     1. Qwen 27B Q5_K  /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+      "error": null,
+      "status_line": "idle",
+      "visible": true
+    },
+    {
+      "command": "/mission",
+      "wall_s": 0.0,
+      "handler_returned_chars": 22,
+      "handler_returned_none": false,
+      "cleared_transcript": false,
+      "rendered_entries": 1,
+      "rendered_chars": 22,
+      "rendered_text": "Usage: /mission <goal>",
+      "error": null,
+      "status_line": "idle",
+      "visible": true
+    },
+    {
+      "command": "/context",
+      "wall_s": 0.0,
+      "handler_returned_chars": 55,
+      "handler_returned_none": false,
+      "cleared_transcript": false,
+      "rendered_entries": 1,
+      "rendered_chars": 55,
+      "rendered_text": "session d8ff28e2-8a0b-4da8-91e0-26982afad480 messages=0",
+      "error": null,
+      "status_line": "idle",
+      "visible": true
+    },
+    {
+      "command": "/ultragoal",
+      "wall_s": 0.0001,
+      "handler_returned_chars": 1394,
+      "handler_returned_none": false,
+      "cleared_transcript": false,
+      "rendered_entries": 1,
+      "rendered_chars": 51,
+      "rendered_text": "No durable ultragoal. Usage: /ultragoal <goal text>",
+      "error": null,
+      "status_line": "idle",
+      "visible": true
+    },
+    {
+      "command": "/steer probe steering line",
+      "wall_s": 0.0004,
+      "handler_returned_chars": 211,
+      "handler_returned_none": false,
+      "cleared_transcript": false,
+      "rendered_entries": 1,
+      "rendered_chars": 35,
+      "rendered_text": "\u2713 Steer queued: probe steering line",
+      "error": null,
+      "status_line": "idle",
+      "visible": true
+    },
+    {
+      "command": "/grok status",
+      "wall_s": 0.0019,
+      "handler_returned_chars": 29,
+      "handler_returned_none": false,
+      "cleared_transcript": false,
+      "rendered_entries": 1,
+      "rendered_chars": 29,
+      "rendered_text": "Usage: /grok status <task-id>",
+      "error": null,
+      "status_line": "idle",
+      "visible": true
+    },
+    {
+      "command": "/clear",
+      "wall_s": 0.0,
+      "handler_returned_chars": 101,
+      "handler_returned_none": false,
+      "cleared_transcript": true,
+      "rendered_entries": 0,
+      "rendered_chars": 0,
+      "rendered_text": "",
+      "error": null,
+      "status_line": "Transcript cleared",
+      "visible": true
+    }
+  ],
+  "invisible_commands": [],
+  "all_visible": true,
+  "clear_canary": {
+    "canary": "clear_preserves_mission",
+    "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-clear-canary-jdtmacft",
+    "durable_before": {
+      "goal": "keep this durable goal alive across a transcript clear",
+      "mission_id": "3b374561-dd97-460b-b866-4f9996eb0bc7",
+      "goal_md_bytes": 316,
+      "goal_md_sha": "0947b52aeff5ff988a4d577a3f410a9eb590def156ade0f4e4da18db727f714b",
+      "steer_count": 1
+    },
+    "durable_after": {
+      "goal": "keep this durable goal alive across a transcript clear",
+      "mission_id": "3b374561-dd97-460b-b866-4f9996eb0bc7",
+      "goal_md_bytes": 316,
+      "goal_md_sha": "0947b52aeff5ff988a4d577a3f410a9eb590def156ade0f4e4da18db727f714b",
+      "steer_count": 1
+    },
+    "preserved": {
+      "goal": true,
+      "mission_id": true,
+      "goal_md_bytes": true,
+      "goal_md_sha": true,
+      "steer_count": true
+    },
+    "transcript_entries_before": 4,
+    "transcript_entries_after": 0,
+    "transcript_was_cleared": true,
+    "clear_rendered_chars": 0,
+    "clear_status_line": "Transcript cleared",
+    "ok": true
+  },
+  "installed_shim": {
+    "why": "The operator binary runs from ~/.local/share/hcli/current, not the working tree.",
+    "install_command": "PYTHONPATH=tools/haider python3 -m hcli install-shims --home <tmp>",
+    "throwaway_home": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/9a281634-79df-4ef9-bd4c-2dca7eddc269/scratchpad/hclihome.1qCE",
+    "no_mutation_of_real_home": true,
+    "turns": [
+      {
+        "command": "/help",
+        "rc": 0,
+        "stdout_bytes": 554,
+        "first_line": "Commands:",
+        "visible": true
+      },
+      {
+        "command": "/status",
+        "rc": 0,
+        "stdout_bytes": 249,
+        "first_line": "workspace: /private/tmp/claude-503/-Users-scammermike-Downloads-hawking/9a281634-79df-4ef9-bd4c-2dca7eddc269/scratchpad/",
+        "visible": true
+      },
+      {
+        "command": "/models",
+        "rc": 0,
+        "stdout_bytes": 21,
+        "first_line": "No models discovered",
+        "visible": true
+      },
+      {
+        "command": "/mission",
+        "rc": 0,
+        "stdout_bytes": 23,
+        "first_line": "Usage: /mission <goal>",
+        "visible": true
+      },
+      {
+        "command": "/context",
+        "rc": 0,
+        "stdout_bytes": 56,
+        "first_line": "session b4e88d3d-78e7-4f13-8163-cedac8e53518 messages=0",
+        "visible": true
+      },
+      {
+        "command": "/ultragoal",
+        "rc": 0,
+        "stdout_bytes": 52,
+        "first_line": "No durable ultragoal. Usage: /ultragoal <goal text>",
+        "visible": true
+      },
+      {
+        "command": "/clear",
+        "rc": 0,
+        "stdout_bytes": 19,
+        "first_line": "Transcript cleared",
+        "visible": true
+      }
+    ],
+    "all_visible": true
+  },
+  "operator_binary_staleness": {
+    "installed_snapshot": "/Users/scammermike/.local/share/hcli/current",
+    "modules_differing_from_working_tree": [
+      "controller.py",
+      "commands.py",
+      "tui.py",
+      "app.py"
+    ],
+    "consequence": "The blank /help and /mission in the directive are a property of the installed snapshot, not the working tree.",
+    "scope_note": "Refreshing the real operator binary writes to ~/.local, OUTSIDE the directive's write scope. Not done; reported."
+  },
+  "status_truthfulness_canary": {
+    "status_grok_line": "grok: admitted=2 active=0 queued=0 done=0 failed=0",
+    "actual_live_grok_processes": 9,
+    "lies": true,
+    "note": "P0-7 demonstrated: /status reports Grok active=0 from WorkUnit flags while real grok processes run."
+  },
+  "fixes_applied_this_session": [
+    "tui.py _on_event: added a 'warning' arm so a handler that emits only a warning can no longer render blank",
+    "tui.py _on_event: transcript_cleared puts its acknowledgement on the STATUS LINE and still empties the transcript. An earlier attempt appended the note into the transcript; that broke test_command_ingress.py::test_clear_wipes_transcript_keeps_goal_mission_dag_receipts, which encodes the correct invariant, so it was reverted rather than the test adjusted.",
+    "app.py _run_headless: slash commands route through handle_command instead of controller.execute (previously `hcli /help` was sent to the model) and print the same text the TUI renders"
+  ],
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77"
+}

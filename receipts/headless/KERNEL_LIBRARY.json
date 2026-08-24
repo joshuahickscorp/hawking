@@ -1,0 +1,2623 @@
+{
+ "schema": "hawking.headless.kernel_library.v1",
+ "generated_at": "2026-08-24T18:31:28Z",
+ "git_head": "bab8f140631fb7463f4cdb548eebbeb9bac0b54f",
+ "generated_by": "tools/headless/genome_libraries.py",
+ "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
+ "hand_authored": false,
+ "did_not_load_a_model": true,
+ "did_not_touch_gpu": true,
+ "did_not_run_cargo_or_metal_benchmarks": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_modify_odyssey_state": true,
+ "unmeasured_is_absent": true,
+ "s023": [
+  "\u00a713",
+  "\u00a770"
+ ],
+ "one_line": "17 qualified KernelGenomes. Competence from KERNEL_COMPETENCE.json where indexed, else organ autopsies; never guessed CLEAR.",
+ "screen_of_record": {
+  "kernels_screened": 624,
+  "by_verdict": {
+   "DEFECTIVE": 89,
+   "SUSPECT": 452,
+   "CLEAR": 83
+  },
+  "law": "A REPRESENTATION CANNOT BE CONDEMNED UNTIL ITS NATIVE KERNEL IS COMPETENT. A candidate may not be recorded REFUTED on speed until this screen passes for its kernel.",
+  "source": "receipts/headless/KERNEL_COMPETENCE.json"
+ },
+ "qualified_verdict_counts": {
+  "DEFECTIVE": 0,
+  "SUSPECT": 17,
+  "CLEAR": 0,
+  "ABSENT": 0
+ },
+ "kernels": [
+  {
+   "kernel_identity": "q2f_group64_matvec",
+   "organ_identity": "mlp_down",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "q2f_group64_matvec family named by N034; 4-level fitted g64 codes.",
+   "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "4542d714c647a16db12586d3c20940e11e79ee660cf3b0ebca02a4dcab4e4bd5",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/affine2_group32_matvec.metal)",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "bytes": 62217,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "group_size": 64,
+    "geo": false
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "may_condemn_representation": false,
+    "file": "affine2_group32_matvec.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "command": "KERNEL_COMPETENCE.per_file.kernels[q2f_group64_matvec].verdict",
+    "absent_reason": null
+   },
+   "measurements": {
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "q2f_group64_matvec shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names q2f_group64_matvec"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   ]
+  },
+  {
+   "kernel_identity": "q2f_group64_matvec_geo_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "geo_tpr64 specialization of q2f_group64_matvec.",
+   "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "4542d714c647a16db12586d3c20940e11e79ee660cf3b0ebca02a4dcab4e4bd5",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/affine2_group32_matvec.metal)",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "bytes": 62217,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "group_size": 64,
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "may_condemn_representation": false,
+    "file": "affine2_group32_matvec.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "command": "KERNEL_COMPETENCE.per_file.kernels[q2f_group64_matvec_geo_tpr64_tg128].verdict",
+    "absent_reason": null
+   },
+   "measurements": {
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "q2f_group64_matvec_geo_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names q2f_group64_matvec_geo_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   ]
+  },
+  {
+   "kernel_identity": "affine2_group32_matvec_geo_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "affine2 geo_tpr64; KERNEL_COMPETENCE specialized-arm control.",
+   "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "4542d714c647a16db12586d3c20940e11e79ee660cf3b0ebca02a4dcab4e4bd5",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/affine2_group32_matvec.metal)",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "bytes": 62217,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "group_size": 32,
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "may_condemn_representation": false,
+    "file": "affine2_group32_matvec.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "command": "KERNEL_COMPETENCE.per_file.kernels[affine2_group32_matvec_geo_tpr64_tg128].verdict",
+    "absent_reason": null
+   },
+   "measurements": {
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "affine2_group32_matvec_geo_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names affine2_group32_matvec_geo_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   ]
+  },
+  {
+   "kernel_identity": "affine2_group64_matvec_geo_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "affine2 geo_tpr64 g64 shift specialization.",
+   "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "4542d714c647a16db12586d3c20940e11e79ee660cf3b0ebca02a4dcab4e4bd5",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/affine2_group32_matvec.metal)",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "bytes": 62217,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "group_size": 64,
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "may_condemn_representation": false,
+    "file": "affine2_group32_matvec.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "command": "KERNEL_COMPETENCE.per_file.kernels[affine2_group64_matvec_geo_tpr64_tg128].verdict",
+    "absent_reason": null
+   },
+   "measurements": {
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "affine2_group64_matvec_geo_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names affine2_group64_matvec_geo_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   ]
+  },
+  {
+   "kernel_identity": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "NOETIC_PARENT_A production kernel (KernelGenome.production_kernel).",
+   "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "0d1090c19f7b34d779994085a0e6954942d7ebb72efc67a4cc8dc370a06ef50e",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/q80_mixed_decode.metal)",
+    "source": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "bytes": 185263,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "group_size": 32,
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "may_condemn_representation": false,
+    "file": "q80_mixed_decode.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "command": "KERNEL_COMPETENCE.per_file.kernels[qwen_affine_q2_group32_matvec_geo_tpr64_tg128].verdict",
+    "absent_reason": null
+   },
+   "measurements": {
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names qwen_affine_q2_group32_matvec_geo_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   ]
+  },
+  {
+   "kernel_identity": "qwen80_add_residual_rmsnorm_tg",
+   "organ_identity": "gqa_attention",
+   "representation_identity": "q4_control",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "qwen80_add_residual_rmsnorm named by N034; residual+RMSNorm fusion.",
+   "shader": "crates/hawking-core/shaders/qwen80_device_activations.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "d389f1acef6923caf8fcb93d52db5c77c803ccd2da2a31cb58280c98becb7315",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/qwen80_device_activations.metal)",
+    "source": "crates/hawking-core/shaders/qwen80_device_activations.metal",
+    "bytes": 30488,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "geo": false
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/qwen80_device_activations.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 2,
+    "may_condemn_representation": false,
+    "file": "qwen80_device_activations.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "command": "KERNEL_COMPETENCE.per_file.kernels[qwen80_add_residual_rmsnorm_tg].verdict",
+    "absent_reason": null
+   },
+   "measurements": {
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "qwen80_add_residual_rmsnorm_tg shares organ gqa_attention with ['qwen80_residual_rmsnorm_tg', 'qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128', 'qwen38_gqa_qk_norm_rope_cache_tg', 'mha_decode_f32', 'qwen38_attention_apply_sigmoid_gate', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    },
+    "dispatch_fusion": {
+     "parent_dispatches": 756,
+     "n005_residual_rmsnorm_dispatches": 628,
+     "reduction": {
+      "measured": true,
+      "gpu_ran": true,
+      "parent_dispatches": 756,
+      "candidate_dispatches": 628,
+      "theoretical_candidate": 628,
+      "token_ids_before": [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       264,
+       11346,
+       11,
+       18541,
+       9546,
+       323,
+       15673,
+       314,
+       1204,
+       264,
+       18826
+      ],
+      "token_ids_after": [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       264,
+       11346,
+       11,
+       18541,
+       9546,
+       323,
+       15673,
+       314,
+       1204,
+       264,
+       18826
+      ],
+      "token_ids_bad": [
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733,
+       234733
+      ],
+      "token_ids_unchanged": true,
+      "tok_s_before": 28.917252187690444,
+      "tok_s_after": 34.60637268662541,
+      "tok_s_note": "tok/s 28.917 \u2192 34.606 (+19.67%). Do not expect a dispatch cut to buy throughput proportionally; the incumbent is bandwidth-bound (GPU_LEDGER 468.9 GB/s, 95.6% of wall).",
+      "parity": {
+       "dense_w_materialized": 0,
+       "fused_dispatches": 1,
+       "fused_gpu_ns": 13249,
+       "fusion": "add_residual_rmsnorm",
+       "kernel": "qwen80_add_residual_rmsnorm_tg",
+       "layer": 0,
+       "max_abs_diff": 0.0,
+       "max_abs_diff_norm": 0.0,
+       "max_abs_diff_residual": 0.0,
+       "unfused_dispatches": 2,
+       "unfused_gpu_ns": 14666
+      },
+      "bad_parity": {
+       "dense_w_materialized": 0,
+       "fused_dispatches": 1,
+       "fused_gpu_ns": 10874,
+       "fusion": "add_residual_rmsnorm_plainweight",
+       "kernel": "qwen80_add_residual_rmsnorm_tg_plainweight",
+       "layer": 0,
+       "max_abs_diff": 2.267829656600952,
+       "max_abs_diff_norm": 2.267829656600952,
+       "max_abs_diff_residual": 0.0,
+       "unfused_dispatches": 2,
+       "unfused_gpu_ns": 12749
+      },
+      "noop_control": {
+       "id": "parent_756",
+       "dispatches": 756,
+       "must_not_score": true,
+       "did_not_score": true,
+       "token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+       ]
+      },
+      "bad_control": {
+       "id": "add_rmsnorm_plainweight",
+       "kernel": "qwen80_add_residual_rmsnorm_tg_plainweight",
+       "must_be_rejected": true,
+       "rejected": true,
+       "max_abs_diff_norm": 2.267829656600952,
+       "token_ids": [
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733,
+        234733
+       ]
+      },
+      "sentinel": {
+       "kernel": "qwen80_add_residual_rmsnorm_tg",
+       "probe_sentinel_kernel_present": true,
+       "dispatch_count_628": true
+      },
+      "kernel_identity": {
+       "good": "qwen80_add_residual_rmsnorm_tg",
+       "bad": "qwen80_add_residual_rmsnorm_tg_plainweight",
+       "parent_kernels_rep0": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_ba_to_decay_beta_f32",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "qwen_next_add_residual",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+        "sample_argmax_f32"
+       ],
+       "candidate_kernels_rep0": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_add_residual_rmsnorm_tg",
+        "qwen80_ba_to_decay_beta_f32",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+        "sample_argmax_f32"
+       ]
+      },
+      "coherence_after": {
+       "coherent": true,
+       "reason": "emits varied tokens",
+       "repeated_single_token": false,
+       "whitespace_only": false,
+       "two_token_cycle": false,
+       "n_unique_ids": 15,
+       "n_new_tokens": 16
+      },
+      "dense_w_materialized": 0,
+      "expanded_to_q4": 0,
+      "expanded_to_float_gemv": 0,
+      "decode": {
+       "before": {
+        "tok_s_reps": [
+         28.877157473076846,
+         29.095451508065747,
+         28.928956028710058,
+         28.964073384318628,
+         28.78682944979013,
+         28.989076067724056,
+         28.779221402147652
+        ],
+        "tok_s_mean": 28.917252187690444,
+        "new_token_ids": [
+         248068,
+         198,
+         760,
+         1156,
+         6587,
+         264,
+         11346,
+         11,
+         18541,
+         9546,
+         323,
+         15673,
+         314,
+         1204,
+         264,
+         18826
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "dispatches_last_step_reps": [
+         756,
+         756,
+         756,
+         756,
+         756,
+         756,
+         756
+        ],
+        "dispatched_kernels_rep0": [
+         "mha_decode_f32",
+         "qwen38_attention_apply_sigmoid_gate",
+         "qwen38_gated_delta_decode_vi_simd",
+         "qwen38_gqa_qk_norm_rope_cache_tg",
+         "qwen38_qkvz_rearrange_conv_l2_f32",
+         "qwen80_ba_to_decay_beta_f32",
+         "qwen80_deltanet_gated_rmsnorm_tg",
+         "qwen80_residual_rmsnorm_tg",
+         "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+         "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+         "qwen_next_add_residual",
+         "qwen_uniform_q4_embedding_lookup",
+         "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+         "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+         "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+         "sample_argmax_f32"
+        ],
+        "dense_w_materialized": 0,
+        "coherence": {
+         "coherent": true,
+         "reason": "emits varied tokens",
+         "repeated_single_token": false,
+         "whitespace_only": false,
+         "two_token_cycle": false,
+         "n_unique_ids": 15,
+         "n_new_tokens": 16
+        },
+        "fallbacks_reps": [
+         0,
+         0,
+         0,
+         0,
+         0,
+         0,
+         0
+        ]
+       },
+       "after": {
+        "tok_s_reps": [
+         34.54874545374786,
+         34.595854616760754,
+         34.54861614585215,
+         34.67735702695039,
+         34.618014306268286,
+         34.61709882749001,
+         34.63892242930846
+        ],
+        "tok_s_mean": 34.60637268662541,
+        "new_token_ids": [
+         248068,
+         198,
+         760,
+         1156,
+         6587,
+         264,
+         11346,
+         11,
+         18541,
+         9546,
+         323,
+         15673,
+         314,
+         1204,
+         264,
+         18826
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "dispatches_last_step_reps": [
+         628,
+         628,
+         628,
+         628,
+         628,
+         628,
+         628
+        ],
+        "dispatched_kernels_rep0": [
+         "mha_decode_f32",
+         "qwen38_attention_apply_sigmoid_gate",
+         "qwen38_gated_delta_decode_vi_simd",
+         "qwen38_gqa_qk_norm_rope_cache_tg",
+         "qwen38_qkvz_rearrange_conv_l2_f32",
+         "qwen80_add_residual_rmsnorm_tg",
+         "qwen80_ba_to_decay_beta_f32",
+         "qwen80_deltanet_gated_rmsnorm_tg",
+         "qwen80_residual_rmsnorm_tg",
+         "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+         "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+         "qwen_uniform_q4_embedding_lookup",
+         "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+         "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+         "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+         "sample_argmax_f32"
+        ],
+        "dense_w_materialized": 0,
+        "coherence": {
+         "coherent": true,
+         "reason": "emits varied tokens",
+         "repeated_single_token": false,
+         "whitespace_only": false,
+         "two_token_cycle": false,
+         "n_unique_ids": 15,
+         "n_new_tokens": 16
+        },
+        "fallbacks_reps": [
+         0,
+         0,
+         0,
+         0,
+         0,
+         0,
+         0
+        ]
+       },
+       "bad": {
+        "tok_s_reps": [
+         34.63514001968837
+        ],
+        "tok_s_mean": 34.63514001968837,
+        "new_token_ids": [
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733,
+         234733
+        ],
+        "generated_text_verbatim": "alisiertealisiertealisiertealisiertealisiertealisiertealisiertealisiertealisiertealisiertealisiertealisiertealisiertealisiertealisiertealisierte",
+        "dispatches_last_step_reps": [
+         628
+        ],
+        "dispatched_kernels_rep0": [
+         "mha_decode_f32",
+         "qwen38_attention_apply_sigmoid_gate",
+         "qwen38_gated_delta_decode_vi_simd",
+         "qwen38_gqa_qk_norm_rope_cache_tg",
+         "qwen38_qkvz_rearrange_conv_l2_f32",
+         "qwen80_add_residual_rmsnorm_tg_plainweight",
+         "qwen80_ba_to_decay_beta_f32",
+         "qwen80_deltanet_gated_rmsnorm_tg",
+         "qwen80_residual_rmsnorm_tg",
+         "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+         "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+         "qwen_uniform_q4_embedding_lookup",
+         "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+         "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+         "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+         "sample_argmax_f32"
+        ],
+        "dense_w_materialized": 0,
+        "coherence": {
+         "coherent": false,
+         "reason": "16 copies of the same token (234733)",
+         "repeated_single_token": true,
+         "whitespace_only": false,
+         "two_token_cycle": false,
+         "n_unique_ids": 1,
+         "n_new_tokens": 16
+        },
+        "fallbacks_reps": [
+         0
+        ]
+       }
+      },
+      "dispatch_probes": [
+       {
+        "id": "parent_756",
+        "probe": {
+         "bad_kernel_present": false,
+         "fuse_add_rmsnorm": false,
+         "fuse_add_rmsnorm_bad": false,
+         "fuse_dn_inproj": true,
+         "fuse_gqa_qkv": true,
+         "gpu_ns": 54341791,
+         "kernel_names": [
+          "mha_decode_f32",
+          "qwen38_attention_apply_sigmoid_gate",
+          "qwen38_gated_delta_decode_vi_simd",
+          "qwen38_gqa_qk_norm_rope_cache_tg",
+          "qwen38_qkvz_rearrange_conv_l2_f32",
+          "qwen80_ba_to_decay_beta_f32",
+          "qwen80_deltanet_gated_rmsnorm_tg",
+          "qwen80_residual_rmsnorm_tg",
+          "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+          "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+          "qwen_next_add_residual",
+          "qwen_uniform_q4_embedding_lookup",
+          "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+          "sample_argmax_f32"
+         ],
+         "matches_theoretical": true,
+         "measured": 756,
+         "mlp_fusion": "swiglu",
+         "sampled": 8678,
+         "sentinel_kernel_present": false,
+         "theoretical": 756,
+         "wait_ns": 112666750
+        },
+        "role": "noop_control"
+       },
+       {
+        "id": "add_rmsnorm_628",
+        "probe": {
+         "bad_kernel_present": false,
+         "fuse_add_rmsnorm": true,
+         "fuse_add_rmsnorm_bad": false,
+         "fuse_dn_inproj": true,
+         "fuse_gqa_qkv": true,
+         "gpu_ns": 32360333,
+         "kernel_names": [
+          "mha_decode_f32",
+          "qwen38_attention_apply_sigmoid_gate",
+          "qwen38_gated_delta_decode_vi_simd",
+          "qwen38_gqa_qk_norm_rope_cache_tg",
+          "qwen38_qkvz_rearrange_conv_l2_f32",
+          "qwen80_add_residual_rmsnorm_tg",
+          "qwen80_ba_to_decay_beta_f32",
+          "qwen80_deltanet_gated_rmsnorm_tg",
+          "qwen80_residual_rmsnorm_tg",
+          "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+          "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+          "qwen_uniform_q4_embedding_lookup",
+          "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+          "sample_argmax_f32"
+         ],
+         "matches_theoretical": true,
+         "measured": 628,
+         "mlp_fusion": "swiglu",
+         "sampled": 8678,
+         "sentinel_kernel_present": true,
+         "theoretical": 628,
+         "wait_ns": 33123958
+        },
+        "role": "candidate"
+       },
+       {
+        "id": "add_rmsnorm_bad",
+        "probe": {
+         "bad_kernel_present": true,
+         "fuse_add_rmsnorm": true,
+         "fuse_add_rmsnorm_bad": true,
+         "fuse_dn_inproj": true,
+         "fuse_gqa_qkv": true,
+         "gpu_ns": 32714208,
+         "kernel_names": [
+          "mha_decode_f32",
+          "qwen38_attention_apply_sigmoid_gate",
+          "qwen38_gated_delta_decode_vi_simd",
+          "qwen38_gqa_qk_norm_rope_cache_tg",
+          "qwen38_qkvz_rearrange_conv_l2_f32",
+          "qwen80_add_residual_rmsnorm_tg_plainweight",
+          "qwen80_ba_to_decay_beta_f32",
+          "qwen80_deltanet_gated_rmsnorm_tg",
+          "qwen80_residual_rmsnorm_tg",
+          "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+          "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+          "qwen_uniform_q4_embedding_lookup",
+          "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+          "sample_argmax_f32"
+         ],
+         "matches_theoretical": true,
+         "measured": 628,
+         "mlp_fusion": "swiglu",
+         "sampled": 8887,
+         "sentinel_kernel_present": false,
+         "theoretical": 628,
+         "wait_ns": 33207583
+        },
+        "role": "bad_control"
+       }
+      ],
+      "verdict": "dispatches 756 \u2192 628; token ids unchanged; BAD plainweight control rejected (ids differ); NO-OP 756 control did not score; tok/s 28.917 \u2192 34.606 (+19.67%). Do not expect a dispatch cut to buy throughput proportionally; the incumbent is bandwidth-bound (GPU_LEDGER 468.9 GB/s, 95.6% of wall).",
+      "reason_if_unmeasured": null
+     },
+     "note": "Residual+RMSNorm fusion cut 756 -> 628 (DISPATCH_LEDGER / N005).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names qwen80_add_residual_rmsnorm_tg"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/qwen80_device_activations.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/DISPATCH_LEDGER.json"
+   ]
+  },
+  {
+   "kernel_identity": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+   "organ_identity": "deltanet",
+   "representation_identity": "q4_control",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "DeltaNet widen_f4 (DELTANET_ORGAN): 6.36 -> 5.52 ms.",
+   "shader": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "fd86dd516f94936c442814311ba20ebcff638d60c6c7702ccb5fdc3e8c89bfab",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/qwen38_device_activations.metal)",
+    "source": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+    "bytes": 39561,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "geo": false,
+    "vector_width": "float4"
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "file": "qwen38_device_activations.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/DELTANET_ORGAN.json",
+    "command": "kernel_autopsy.new_kernels[qwen38_gated_delta_decode_vi_simd_ba_f4].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "deltanet_widen_f4": {
+     "recovered_isolated_ns": 836125.0,
+     "recovered_fraction_of_deltanet_25p9_share": 0.21634672070075528,
+     "token_ids_unchanged": true,
+     "parity_rec_out": 0.0,
+     "parity_rec_state": 0.0,
+     "source": "receipts/headless/DELTANET_ORGAN.json"
+    },
+    "one_line": "N025 DeltaNet 25.9% of the 356.7\u2192778.8 gap (6.55 ms isolated, 325.5 GB/s). Re-measured baseline 6.36 ms, 339.9 GB/s. widen_f4: 5.52 ms / 391.4 GB/s (separated, recovered 21.6% of the 25.9% share; token ids unchanged). coalesce_tg32: 5.64 ms / 382.9 GB/s (separated, recovered 18.5% of the 25.9% share; token ids unchanged). dense_w_materialized=0.",
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "qwen38_gated_delta_decode_vi_simd_ba_f4 shares organ deltanet with ['qwen80_residual_rmsnorm_tg', 'qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128', 'qwen38_qkvz_rearrange_conv_l2_f32', 'qwen80_ba_to_decay_beta_f32', 'qwen38_gated_delta_decode_vi_simd', 'qwen80_deltanet_gated_rmsnorm_tg', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "see deltanet_widen_f4.recovered_isolated_ns (a delta, not a body ns)"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": 0.0,
+    "kind": "CITED",
+    "unit": "max_abs_diff",
+    "command": "DELTANET_ORGAN.measurement.changes[widen_f4].parity_rec_out",
+    "source": "receipts/headless/DELTANET_ORGAN.json",
+    "absent_reason": null
+   },
+   "citations": [
+    "crates/hawking-core/shaders/qwen38_device_activations.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/DELTANET_ORGAN.json"
+   ]
+  },
+  {
+   "kernel_identity": "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+   "organ_identity": "mlp_gate_up",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "gate_up_swiglu fused operator, q2f g64 geo.",
+   "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "4542d714c647a16db12586d3c20940e11e79ee660cf3b0ebca02a4dcab4e4bd5",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/affine2_group32_matvec.metal)",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "bytes": 62217,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "group_size": 64,
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "geo": true,
+    "fused_swiglu": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "may_condemn_representation": false,
+    "file": "affine2_group32_matvec.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "command": "KERNEL_COMPETENCE.per_file.kernels[q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128].verdict",
+    "absent_reason": null
+   },
+   "measurements": {
+    "mlp_gate_up": {
+     "answer_head": "N024 ruled out the MLP tile; this lane did not retune qmvfast/wide64/tgx. The attempted cut is S022 \u00a79 norm+projection: RMSNorm writes group-64 x-sums and fused gate_up_swiglu defers bias*sum(x) out of the inner loop. Ranking metric is COMPLETE_TOKEN_NS, not GB/s. Isolated fused gate_up_swiglu median 251833.0 ns; acc_only 258291.0 ns; decode_probe 47125.0 ns; addr_probe 51750.0 ns; launch64 936554",
+     "isolated_gemv_keys": [
+      "kind",
+      "parity",
+      "parity_all_ok",
+      "dropbias_rejected",
+      "occupancy",
+      "shape",
+      "arms",
+      "non_load_profile",
+      "separation",
+      "dense_w_materialized",
+      "did_not_load_second_27b"
+     ],
+     "reduced_complete_token_ns": false,
+     "source": "receipts/headless/MLP_GATE_UP.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128 shares organ mlp_gate_up with ['qwen80_residual_rmsnorm_tg', 'qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": 2.9802322387695312e-08,
+    "kind": "CITED",
+    "unit": "max_abs_diff",
+    "command": "NOETIC_PARENT_A.capability_evidence.parity_fused_vs_unfused.mlp_gate_up_swiglu_max_abs_diff",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": null
+   },
+   "citations": [
+    "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/MLP_GATE_UP.json"
+   ]
+  },
+  {
+   "kernel_identity": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+   "organ_identity": "mlp_gate_up",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "ORGAN_ROOF_LEDGER production mlp_gate_up kernel.",
+   "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "0d1090c19f7b34d779994085a0e6954942d7ebb72efc67a4cc8dc370a06ef50e",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/q80_mixed_decode.metal)",
+    "source": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "bytes": 185263,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "group_size": 64,
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "geo": true,
+    "fused_swiglu": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "may_condemn_representation": false,
+    "file": "q80_mixed_decode.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "command": "KERNEL_COMPETENCE.per_file.kernels[qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128].verdict",
+    "absent_reason": null
+   },
+   "measurements": {
+    "mlp_gate_up": {
+     "answer_head": "N024 ruled out the MLP tile; this lane did not retune qmvfast/wide64/tgx. The attempted cut is S022 \u00a79 norm+projection: RMSNorm writes group-64 x-sums and fused gate_up_swiglu defers bias*sum(x) out of the inner loop. Ranking metric is COMPLETE_TOKEN_NS, not GB/s. Isolated fused gate_up_swiglu median 251833.0 ns; acc_only 258291.0 ns; decode_probe 47125.0 ns; addr_probe 51750.0 ns; launch64 936554",
+     "isolated_gemv_keys": [
+      "kind",
+      "parity",
+      "parity_all_ok",
+      "dropbias_rejected",
+      "occupancy",
+      "shape",
+      "arms",
+      "non_load_profile",
+      "separation",
+      "dense_w_materialized",
+      "did_not_load_second_27b"
+     ],
+     "reduced_complete_token_ns": false,
+     "source": "receipts/headless/MLP_GATE_UP.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128 shares organ mlp_gate_up with ['qwen80_residual_rmsnorm_tg', 'qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": 2.9802322387695312e-08,
+    "kind": "CITED",
+    "unit": "max_abs_diff",
+    "command": "NOETIC_PARENT_A.capability_evidence.parity_fused_vs_unfused.mlp_gate_up_swiglu_max_abs_diff",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": null
+   },
+   "citations": [
+    "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/MLP_GATE_UP.json"
+   ]
+  },
+  {
+   "kernel_identity": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+   "organ_identity": "mlp_gate_up",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "MLP_GATE_UP attempted fused SwiGLU body.",
+   "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "4542d714c647a16db12586d3c20940e11e79ee660cf3b0ebca02a4dcab4e4bd5",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/affine2_group32_matvec.metal)",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "bytes": 62217,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "group_size": 64,
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "geo": true,
+    "fused_swiglu": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "file": "affine2_group32_matvec.metal",
+    "kind": "CITED",
+    "source": "receipts/headless/MLP_GATE_UP.json",
+    "command": "kernel_autopsy.new_kernels[affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "mlp_gate_up": {
+     "answer_head": "N024 ruled out the MLP tile; this lane did not retune qmvfast/wide64/tgx. The attempted cut is S022 \u00a79 norm+projection: RMSNorm writes group-64 x-sums and fused gate_up_swiglu defers bias*sum(x) out of the inner loop. Ranking metric is COMPLETE_TOKEN_NS, not GB/s. Isolated fused gate_up_swiglu median 251833.0 ns; acc_only 258291.0 ns; decode_probe 47125.0 ns; addr_probe 51750.0 ns; launch64 936554",
+     "isolated_gemv_keys": [
+      "kind",
+      "parity",
+      "parity_all_ok",
+      "dropbias_rejected",
+      "occupancy",
+      "shape",
+      "arms",
+      "non_load_profile",
+      "separation",
+      "dense_w_materialized",
+      "did_not_load_second_27b"
+     ],
+     "reduced_complete_token_ns": false,
+     "source": "receipts/headless/MLP_GATE_UP.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128 shares organ mlp_gate_up with ['qwen80_residual_rmsnorm_tg', 'qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": 2.9802322387695312e-08,
+    "kind": "CITED",
+    "unit": "max_abs_diff",
+    "command": "NOETIC_PARENT_A.capability_evidence.parity_fused_vs_unfused.mlp_gate_up_swiglu_max_abs_diff",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": null
+   },
+   "citations": [
+    "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/MLP_GATE_UP.json"
+   ]
+  },
+  {
+   "kernel_identity": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "ternary",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "BYTES_FRONTIER ternary geo, hidden=5120.",
+   "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "533d6e1f70c4a710f8adc5bd2f32a7c1dd729c36a164a645b44fd3dd28885945",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/bytes_frontier.metal)",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "bytes": 27943,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "specialized_cols": 5120,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "file": null,
+    "kind": "CITED",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "command": "kernel_autopsy.new_kernels[ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "bytes_frontier_family": {
+     "representation_id": "ternary_5in8_g64",
+     "active_bpw": 1.85,
+     "complete_token_ns": 59417374,
+     "note": "COMPLETE_TOKEN_NS is the 192-GEMV MLP graph plus N021 non-MLP residual, not an isolated single-dispatch kernel time.",
+     "source": "receipts/headless/BYTES_FRONTIER.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/bytes_frontier.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "kernel_identity": "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128",
+   "organ_identity": "mlp_gate_up",
+   "representation_identity": "ternary",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "BYTES_FRONTIER ternary geo, intermediate=17408.",
+   "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "533d6e1f70c4a710f8adc5bd2f32a7c1dd729c36a164a645b44fd3dd28885945",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/bytes_frontier.metal)",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "bytes": 27943,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "specialized_cols": 17408,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "file": null,
+    "kind": "CITED",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "command": "kernel_autopsy.new_kernels[ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "bytes_frontier_family": {
+     "representation_id": "ternary_5in8_g64",
+     "active_bpw": 1.85,
+     "complete_token_ns": 59417374,
+     "note": "COMPLETE_TOKEN_NS is the 192-GEMV MLP graph plus N021 non-MLP residual, not an isolated single-dispatch kernel time.",
+     "source": "receipts/headless/BYTES_FRONTIER.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128 shares organ mlp_gate_up with ['qwen80_residual_rmsnorm_tg', 'qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/bytes_frontier.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "kernel_identity": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "binary",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "BYTES_FRONTIER binary geo; the family that DID move token_ns.",
+   "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "533d6e1f70c4a710f8adc5bd2f32a7c1dd729c36a164a645b44fd3dd28885945",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/bytes_frontier.metal)",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "bytes": 27943,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "specialized_cols": 5120,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "file": null,
+    "kind": "CITED",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "command": "kernel_autopsy.new_kernels[binary_g64_matvec_geo_c5120_tpr64_tg128].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "bytes_frontier_family": {
+     "representation_id": "binary_g64",
+     "active_bpw": 1.25,
+     "complete_token_ns": 23431791,
+     "note": "COMPLETE_TOKEN_NS is the 192-GEMV MLP graph plus N021 non-MLP residual, not an isolated single-dispatch kernel time.",
+     "source": "receipts/headless/BYTES_FRONTIER.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "binary_g64_matvec_geo_c5120_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names binary_g64_matvec_geo_c5120_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/bytes_frontier.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "kernel_identity": "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "shared_basis",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "BYTES_FRONTIER shared-binary k=2 group dots.",
+   "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "533d6e1f70c4a710f8adc5bd2f32a7c1dd729c36a164a645b44fd3dd28885945",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/bytes_frontier.metal)",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "bytes": 27943,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "specialized_cols": 5120,
+    "geo": false
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 2,
+    "file": null,
+    "kind": "CITED",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "command": "kernel_autopsy.new_kernels[shared_binary_k2_group_dots_c5120_g64_tpr64_tg128].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "bytes_frontier_family": {
+     "representation_id": "shared_binary_k2",
+     "active_bpw": 0.53125,
+     "complete_token_ns": 111626166,
+     "note": "COMPLETE_TOKEN_NS is the 192-GEMV MLP graph plus N021 non-MLP residual, not an isolated single-dispatch kernel time.",
+     "source": "receipts/headless/BYTES_FRONTIER.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names shared_binary_k2_group_dots_c5120_g64_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/bytes_frontier.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "kernel_identity": "shared_binary_k2_scale_contract_gpr80",
+   "organ_identity": "mlp_down",
+   "representation_identity": "shared_basis",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "BYTES_FRONTIER shared-binary k=2 scale contract.",
+   "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "533d6e1f70c4a710f8adc5bd2f32a7c1dd729c36a164a645b44fd3dd28885945",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/bytes_frontier.metal)",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "bytes": 27943,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "geo": false
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 2,
+    "file": null,
+    "kind": "CITED",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "command": "kernel_autopsy.new_kernels[shared_binary_k2_scale_contract_gpr80].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "bytes_frontier_family": {
+     "representation_id": "shared_binary_k2",
+     "active_bpw": 0.53125,
+     "complete_token_ns": 111626166,
+     "note": "COMPLETE_TOKEN_NS is the 192-GEMV MLP graph plus N021 non-MLP residual, not an isolated single-dispatch kernel time.",
+     "source": "receipts/headless/BYTES_FRONTIER.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "shared_binary_k2_scale_contract_gpr80 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names shared_binary_k2_scale_contract_gpr80"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/bytes_frontier.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "kernel_identity": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "binary_sparse_residual",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "BYTES_FRONTIER binary + 2% CSR fused.",
+   "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "533d6e1f70c4a710f8adc5bd2f32a7c1dd729c36a164a645b44fd3dd28885945",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/bytes_frontier.metal)",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "bytes": 27943,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "specialized_cols": 5120,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "file": null,
+    "kind": "CITED",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "command": "kernel_autopsy.new_kernels[binary_sparse_fused_geo_c5120_tpr64_tg128].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "bytes_frontier_family": {
+     "representation_id": "binary_residual_sparse_2pct",
+     "active_bpw": 2.216250359030331,
+     "complete_token_ns": 37147375,
+     "note": "COMPLETE_TOKEN_NS is the 192-GEMV MLP graph plus N021 non-MLP residual, not an isolated single-dispatch kernel time.",
+     "source": "receipts/headless/BYTES_FRONTIER.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "binary_sparse_fused_geo_c5120_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names binary_sparse_fused_geo_c5120_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/bytes_frontier.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "kernel_identity": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+   "organ_identity": "mlp_down",
+   "representation_identity": "q2_affine",
+   "machine_identity": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "command": "NOETIC_PARENT_A.MachineGenome",
+    "device_measured_sustained_gb_s": {
+     "value": 778.8,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+     "absent_reason": null,
+     "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+     "source": "receipts/headless/BANDWIDTH_ROOF.json"
+    },
+    "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+     "parent_machinegenome_measured_roof_gb_s": 595.9,
+     "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+     "source": "receipts/headless/NOETIC_PARENT_A.json"
+    }
+   },
+   "why_qualified": "BYTES_FRONTIER q2f baseline in the same harness.",
+   "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+   "shader_sha256": {
+    "kind": "MEASURED",
+    "value": "533d6e1f70c4a710f8adc5bd2f32a7c1dd729c36a164a645b44fd3dd28885945",
+    "unit": "sha256",
+    "command": "sha256(crates/hawking-core/shaders/bytes_frontier.metal)",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "bytes": 27943,
+    "absent_reason": null
+   },
+   "compiled_identity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "metallib_digest",
+    "command": "compiled metallib identity",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "NOETIC_PARENT_A records no on-disk .metallib (compiled from source via newLibraryWithSource). Not guessed."
+   },
+   "specialization": {
+    "kind": "DERIVED",
+    "command": "parse Metal kernel name",
+    "source": "kernel id",
+    "tile_rows_per_simdgroup": 64,
+    "tile_geometry": "tpr64",
+    "threadgroup": 128,
+    "specialized_cols": 5120,
+    "geo": true
+   },
+   "memory_layout": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "layout",
+    "command": "kernel memory layout",
+    "source": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "absent_reason": "No sealed per-kernel memory-layout receipt; not inferred from the shader text"
+   },
+   "competence": {
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "file": null,
+    "kind": "CITED",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "command": "kernel_autopsy.new_kernels[q2f_g64_matvec_geo_c5120_tpr64_tg128].verdict",
+    "note": "Not in the sealed KERNEL_COMPETENCE.json per_file index (that screen predates this kernel). Verdict copied from the organ receipt that screened it.",
+    "absent_reason": null
+   },
+   "measurements": {
+    "bytes_frontier_family": {
+     "representation_id": "q2_4level_fitted_g64",
+     "active_bpw": 2.25,
+     "complete_token_ns": 27547874,
+     "note": "COMPLETE_TOKEN_NS is the 192-GEMV MLP graph plus N021 non-MLP residual, not an isolated single-dispatch kernel time.",
+     "source": "receipts/headless/BYTES_FRONTIER.json"
+    },
+    "isolated_bytes": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bytes",
+     "command": "isolated kernel traffic",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "q2f_g64_matvec_geo_c5120_tpr64_tg128 shares organ mlp_down with ['qwen_affine_q2_group32_matvec_geo_tpr64_tg128', 'qwen_next_add_residual']; organ traffic is not this kernel's isolated bytes. Not guessed by division."
+    },
+    "isolated_latency": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "isolated kernel GPU ns",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "No isolated GPU ns for this kernel in the seeded receipts"
+    }
+   },
+   "supported_capability_regime": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "regime",
+    "command": "supported capability regime",
+    "source": "receipts/headless/NOETIC_PARENT_A.json",
+    "absent_reason": "No per-kernel Doctor/capability regime was measured. Parent capability is UNMEASURED."
+   },
+   "parity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "max_abs_diff",
+    "command": "parity",
+    "source": "receipts/headless/KERNEL_COMPETENCE.json",
+    "absent_reason": "No sealed parity number names q2f_g64_matvec_geo_c5120_tpr64_tg128"
+   },
+   "citations": [
+    "crates/hawking-core/shaders/bytes_frontier.metal",
+    "receipts/headless/KERNEL_COMPETENCE.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  }
+ ],
+ "n_kernels": 17
+}

@@ -1,0 +1,1641 @@
+{
+  "schema": "hawking.headless.noetic_ascension_handoff.v1",
+  "generated_at": "2026-08-24T06:04:09Z",
+  "builder": "tools/headless/noetic_ascension_handoff.py",
+  "loop": "tools/headless/noetic_ascension_loop.py",
+  "git_head": "1abd178a3c0eec8ec39731c171f4e220ff8749a4",
+  "branch": "odyssey-i",
+  "sparse": {
+    "on": false,
+    "roots": [],
+    "hcli_materialized_in_worktree": true,
+    "docs_materialized_in_worktree": true,
+    "hcli_verified_via": "git archive HEAD hcli (see NOETIC_ASCENSION_LOOP.json hcli_source)",
+    "docs_verified_via": "git show HEAD:docs/CURRENT_ARCHITECTURE.md",
+    "note": "A missing path in this worktree is not evidence it is absent from the repository. git sparse-checkout add is blocked here."
+  },
+  "verdict": "REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN",
+  "gate": "REJECTED",
+  "did_not_promote": true,
+  "did_not_load_second_27b": true,
+  "faking_the_shift": "forbidden by S006 \u00a733; no promotion is claimed here",
+  "g014_dependency": "G014 (NOETIC_SELF_OPTIMIZATION_LIVE) is CONDITIONAL on this promotion. Since this records the honest negative, G014 is satisfied by stating that dependency explicitly. A substitute self-optimization run on the OLD parent would not satisfy it and is not offered here.",
+  "canonical_hcli_launch": {
+    "value": "python3 -m hcli",
+    "evidence_path": "docs/CURRENT_ARCHITECTURE.md",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import subprocess\nt = subprocess.check_output(['git','show','HEAD:docs/CURRENT_ARCHITECTURE.md'], text=True)\nassert 'python3 -m hcli is the product entry' in t or '`python3 -m hcli` is the product entry' in t\nh = __import__('json').loads(__import__('pathlib').Path('receipts/headless/NOETIC_ASCENSION_HANDOFF.json').read_text())\nassert h['canonical_hcli_launch']['value'] == 'python3 -m hcli'"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import subprocess\nt = subprocess.check_output(['\"'\"'git'\"'\"','\"'\"'show'\"'\"','\"'\"'HEAD:docs/CURRENT_ARCHITECTURE.md'\"'\"'], text=True)\nassert '\"'\"'python3 -m hcli is the product entry'\"'\"' in t or '\"'\"'`python3 -m hcli` is the product entry'\"'\"' in t\nh = __import__('\"'\"'json'\"'\"').loads(__import__('\"'\"'pathlib'\"'\"').Path('\"'\"'receipts/headless/NOETIC_ASCENSION_HANDOFF.json'\"'\"').read_text())\nassert h['\"'\"'canonical_hcli_launch'\"'\"']['\"'\"'value'\"'\"'] == '\"'\"'python3 -m hcli'\"'\"''",
+    "source_field": "docs/CURRENT_ARCHITECTURE.md (via git show HEAD: ; file is not always materialized)",
+    "namespace_canonical_package": "hcli",
+    "namespace_canonical_path": "hcli/",
+    "architecture_canon_document": "docs/CURRENT_ARCHITECTURE.md",
+    "core_authorities_canonical_package": "hcli",
+    "verified_against_head": true,
+    "also_cites": [
+      "receipts/headless/ARCHITECTURE_CANON.json",
+      "receipts/headless/NAMESPACE_MIGRATION.json",
+      "receipts/headless/CORE_AUTHORITIES.json"
+    ]
+  },
+  "parent": {
+    "value": {
+      "artifact": "qwen38-gravity-uniform-q4-v1",
+      "complete_ebpw": 4.252735126866492,
+      "parent_params": 26895998464,
+      "q4_incumbent": {
+        "complete_physical_bpw": 4.252735126866492,
+        "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+        "schema": "hawking.ascent.qwen38_language_uniform_q4.v1"
+      },
+      "zero_parent_verdict": "PASS",
+      "production_does_not_load_parent_weights": true
+    },
+    "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nh = json.loads(Path('receipts/headless/NOETIC_ASCENSION_HANDOFF.json').read_text())\nr = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\nhv = h\nfor part in [\"parent\", \"value\", \"complete_ebpw\"]:\n    hv = hv[int(part)] if isinstance(hv, list) else hv[part]\nrv = r\nfor part in [\"incumbent\", \"complete_ebpw\"]:\n    rv = rv[int(part)] if isinstance(rv, list) else rv[part]\nassert hv == rv, (hv, rv)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nh = json.loads(Path('\"'\"'receipts/headless/NOETIC_ASCENSION_HANDOFF.json'\"'\"').read_text())\nr = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\nhv = h\nfor part in [\"parent\", \"value\", \"complete_ebpw\"]:\n    hv = hv[int(part)] if isinstance(hv, list) else hv[part]\nrv = r\nfor part in [\"incumbent\", \"complete_ebpw\"]:\n    rv = rv[int(part)] if isinstance(rv, list) else rv[part]\nassert hv == rv, (hv, rv)'",
+    "source_field": "incumbent",
+    "also_cites": [
+      "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "receipts/headless/NOETIC_ZERO_PARENT.json"
+    ]
+  },
+  "strongest_candidate": {
+    "value": {
+      "id": "affine2_g64_fused_swiglu_qkv_dn",
+      "source_receipt": "receipts/headless/NOETIC_FUSED_SUBBIT.json",
+      "complete_ebpw": 3.139300850311054,
+      "tok_s": 34.87340648509909,
+      "dispatches_per_token": 756,
+      "coherent": true,
+      "native_kernel_ran": true,
+      "beats_parent_on_both_axes": true,
+      "text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+    },
+    "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nh = json.loads(Path('receipts/headless/NOETIC_ASCENSION_HANDOFF.json').read_text())\nr = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\nhv = h\nfor part in [\"strongest_candidate\", \"value\", \"id\"]:\n    hv = hv[int(part)] if isinstance(hv, list) else hv[part]\nrv = r\nfor part in [\"best_coherent_candidate\", \"id\"]:\n    rv = rv[int(part)] if isinstance(rv, list) else rv[part]\nassert hv == rv, (hv, rv)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nh = json.loads(Path('\"'\"'receipts/headless/NOETIC_ASCENSION_HANDOFF.json'\"'\"').read_text())\nr = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\nhv = h\nfor part in [\"strongest_candidate\", \"value\", \"id\"]:\n    hv = hv[int(part)] if isinstance(hv, list) else hv[part]\nrv = r\nfor part in [\"best_coherent_candidate\", \"id\"]:\n    rv = rv[int(part)] if isinstance(rv, list) else rv[part]\nassert hv == rv, (hv, rv)'",
+    "source_field": "best_coherent_candidate",
+    "qualification_failure": {
+      "id": "affine2_g64_fused_swiglu_qkv_dn",
+      "ebpw": 3.139300850311054,
+      "tok_s": 34.87340648509909,
+      "reason": "coherent but same operator family as the incumbent, and no throughput win"
+    }
+  },
+  "closure": {
+    "value": {
+      "claim": "The artifact is a compiled program whose whole closure is hashed, not a model file sitting next to loose helpers.",
+      "n_hashed_members": 757,
+      "closure_sha256": "1fa9dc4bb4bf290a956b0ee4eb8a7ded3730b5b8154139fe191170d1583a9cde",
+      "io_executor_read_but_not_hashed": 0,
+      "live_decode_read_but_not_hashed": 0
+    },
+    "evidence_path": "receipts/headless/NOETIC_CLOSURE.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_CLOSURE.json').read_text())\ncur = d\nfor part in [\"closure_sha256\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"1fa9dc4bb4bf290a956b0ee4eb8a7ded3730b5b8154139fe191170d1583a9cde\\\"\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_CLOSURE.json'\"'\"').read_text())\ncur = d\nfor part in [\"closure_sha256\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"1fa9dc4bb4bf290a956b0ee4eb8a7ded3730b5b8154139fe191170d1583a9cde\\\"\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "closure_sha256 + compare.*.n_read_but_not_hashed"
+  },
+  "families_tested": {
+    "value": {
+      "executable_mixes": [
+        {
+          "id": "mix_a_l0_down_binary_g1024",
+          "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+          "complete_ebpw": 4.242016986754093,
+          "tok_s": 32.80705947204907,
+          "coherent": true,
+          "native_kernel_ran": true
+        },
+        {
+          "id": "mix_b_all_down_binary_g1024",
+          "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+          "complete_ebpw": 3.566774159673004,
+          "tok_s": 32.83600467913067,
+          "coherent": false,
+          "native_kernel_ran": true
+        },
+        {
+          "id": "mix_c_all_mlp_binary_g64",
+          "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+          "complete_ebpw": 2.343974955991431,
+          "tok_s": 33.44218765414758,
+          "coherent": false,
+          "native_kernel_ran": true
+        },
+        {
+          "id": "mix_all_mlp_hgravu01_q3_g64",
+          "source_receipt": "receipts/headless/NOETIC_Q3_MLP_Q4_ATTN.json",
+          "complete_ebpw": 3.616489579525877,
+          "tok_s": 31.98505658156509,
+          "coherent": "COHERENT: varied tokens, not a single-token copy and not whitespace-only. The q3-MLP / q4-attn mix is both material and coherent on this 16-token sample.",
+          "native_kernel_ran": true
+        },
+        {
+          "id": "mix_all_mlp_affine_g32",
+          "source_receipt": "receipts/headless/AFFINE2_NATIVE_MLP.json",
+          "complete_ebpw": 3.457428992214862,
+          "tok_s": 32.07808521067725,
+          "coherent": null,
+          "native_kernel_ran": true
+        },
+        {
+          "id": "mix_all_mlp_affine_g64_ls",
+          "source_receipt": "receipts/headless/AFFINE2_G64_LSFIT.json",
+          "complete_ebpw": 3.139300850311054,
+          "tok_s": 26.83964318075738,
+          "coherent": "LS-fitted affine2 g64 generated 16 tokens that match neither the incumbent nor the g32 stutter. Verbatim: '<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler'. Coherence judge: {'coherent': True, 'reason': 'emits varied tokens', 'repeated_single_token': False, 'whitespace_only': False, 'two_token_cycle': False, 'n_unique_ids': 15, 'n_new_tokens': 16}.",
+          "native_kernel_ran": true
+        },
+        {
+          "id": "affine2_g64_fused_swiglu_qkv_dn",
+          "source_receipt": "receipts/headless/NOETIC_FUSED_SUBBIT.json",
+          "complete_ebpw": 3.139300850311054,
+          "tok_s": 34.87340648509909,
+          "coherent": true,
+          "native_kernel_ran": true
+        }
+      ],
+      "ir_executed_families": [
+        "grouped_absmax_q4",
+        "ternary_group64",
+        "binary_sign_codes",
+        "low_rank_uv",
+        "product_quantization"
+      ],
+      "mixes_not_run": [
+        {
+          "id": "mix_d_activation_aware_ternary_all_mlp",
+          "risk": "highest listed",
+          "status": "NOT_RUN_NO_NATIVE_KERNEL",
+          "reason": "FRACTIONAL_BIT_CANON ternary 5-in-8 at g64 is 1.85 bpw locally. The native runtime has no ternary fused kernel. Packing it as reconstruct-then-GEMV would be an ORACLE path. Whole-model mean-abs ternary already failed (NOETIC_COMPOSITION_WHOLEMODEL_TERNARY: hidden rel_l2 0.7360, argmax 10895 vs teacher 9714). This lane reports the binary mixes the HGRAVB01 kernel can run."
+        }
+      ],
+      "first_noetic_chosen": "mix_a_l0_down_binary_g1024",
+      "q3_chosen": "mix_all_mlp_hgravu01_q3_g64",
+      "affine_chosen": "mix_all_mlp_affine_g32"
+    },
+    "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\nids = [c['id'] for c in d['candidates']]\nexp = json.loads(\"[\\\"mix_a_l0_down_binary_g1024\\\", \\\"mix_b_all_down_binary_g1024\\\", \\\"mix_c_all_mlp_binary_g64\\\", \\\"mix_all_mlp_hgravu01_q3_g64\\\", \\\"mix_all_mlp_affine_g32\\\", \\\"mix_all_mlp_affine_g64_ls\\\", \\\"affine2_g64_fused_swiglu_qkv_dn\\\"]\")\nassert ids == exp, (ids, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\nids = [c['\"'\"'id'\"'\"'] for c in d['\"'\"'candidates'\"'\"']]\nexp = json.loads(\"[\\\"mix_a_l0_down_binary_g1024\\\", \\\"mix_b_all_down_binary_g1024\\\", \\\"mix_c_all_mlp_binary_g64\\\", \\\"mix_all_mlp_hgravu01_q3_g64\\\", \\\"mix_all_mlp_affine_g32\\\", \\\"mix_all_mlp_affine_g64_ls\\\", \\\"affine2_g64_fused_swiglu_qkv_dn\\\"]\")\nassert ids == exp, (ids, exp)'",
+    "source_field": "candidates[].id",
+    "also_cites": [
+      "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "receipts/headless/NOETIC_Q3_MLP_Q4_ATTN.json",
+      "receipts/headless/AFFINE2_NATIVE_MLP.json",
+      "receipts/headless/NOETIC_IR.json"
+    ]
+  },
+  "organ_results": {
+    "value": {
+      "fractional_bit_canon_decision": "CANON",
+      "fractional_deciding_number": 0.3209715361396472,
+      "fractional_deciding_number_meaning": "best \u22642 bpw CANON structure is ternary_aa_g64: storage_bpw=1.850000 active_fused_bpw=1.850000 active_cached_f16_bpw=16 mean_rel_fro=0.320972 mean_cosine=0.938961 vs mean null-surplus +0.529032",
+      "doctor_organs_need_different_prescriptions": true,
+      "doctor_organs": [
+        {
+          "organ_id": "qwen38.L0.mlp",
+          "kind": "mlp_swiglu",
+          "layer": 0,
+          "physical_computation": "in-register grouped-absmax q3 matvec, group 64. Same kernel family as shipping Q4; first coherent low-bpw point on this MLP (3.25 bpw).",
+          "candidate_id": "flat_q3_g64"
+        },
+        {
+          "organ_id": "qwen38.L3.attention_gqa",
+          "kind": "attention_gqa",
+          "layer": 3,
+          "physical_computation": "same grouped-absmax q4 matvec with group 128 (4.125 bpw). This is the recorded attention floor: a 2.9% scale-overhead save, not a new bit regime. Hessian-optimal scales make the mass HEALTHY; composed GQA still gated at Q4.",
+          "candidate_id": "q4_g128"
+        }
+      ],
+      "fractional_organs_out": [
+        {
+          "layer": 0,
+          "organ": "gate_proj",
+          "q3_rel_fro": 0.19009530544281006,
+          "ternary_aa_g64": {
+            "storage_bpw": 1.85,
+            "local_survives": true,
+            "rel_fro": 0.33664456009864807,
+            "health": "SURVIVES_LE_2BPW"
+          }
+        },
+        {
+          "layer": 0,
+          "organ": "up_proj",
+          "q3_rel_fro": 0.19767498970031738,
+          "ternary_aa_g64": {
+            "storage_bpw": 1.85,
+            "local_survives": true,
+            "rel_fro": 0.34532681107521057,
+            "health": "SURVIVES_LE_2BPW"
+          }
+        },
+        {
+          "layer": 0,
+          "organ": "down_proj",
+          "q3_rel_fro": 0.16727054119110107,
+          "ternary_aa_g64": {
+            "storage_bpw": 1.85,
+            "local_survives": true,
+            "rel_fro": 0.15829388797283173,
+            "health": "SURVIVES_LE_2BPW"
+          }
+        },
+        {
+          "layer": 31,
+          "organ": "gate_proj",
+          "q3_rel_fro": 0.20366989076137543,
+          "ternary_aa_g64": {
+            "storage_bpw": 1.85,
+            "local_survives": true,
+            "rel_fro": 0.29043275117874146,
+            "health": "SURVIVES_LE_2BPW"
+          }
+        },
+        {
+          "layer": 31,
+          "organ": "up_proj",
+          "q3_rel_fro": 0.2584523856639862,
+          "ternary_aa_g64": {
+            "storage_bpw": 1.85,
+            "local_survives": true,
+            "rel_fro": 0.3949378728866577,
+            "health": "SURVIVES_LE_2BPW"
+          }
+        },
+        {
+          "layer": 31,
+          "organ": "down_proj",
+          "q3_rel_fro": 0.2322213053703308,
+          "ternary_aa_g64": {
+            "storage_bpw": 1.85,
+            "local_survives": true,
+            "rel_fro": 0.40019333362579346,
+            "health": "SURVIVES_LE_2BPW"
+          }
+        }
+      ],
+      "attention_floor_decision": "ORGAN_FLOOR_DID_NOT_MOVE_BELOW_4.125",
+      "dense_subbit_decision": "NO-GO",
+      "organ_census_forward_status": "MEASURED"
+    },
+    "evidence_path": "receipts/headless/DOCTOR_V2_PRESCRIPTION.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/DOCTOR_V2_PRESCRIPTION.json').read_text())\ncur = d\nfor part in [\"organs_need_different_prescriptions\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"true\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/DOCTOR_V2_PRESCRIPTION.json'\"'\"').read_text())\ncur = d\nfor part in [\"organs_need_different_prescriptions\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"true\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "organs_need_different_prescriptions",
+    "also_cites": [
+      "receipts/headless/FRACTIONAL_BIT_CANON.json",
+      "receipts/headless/ATTENTION_FLOOR_REFIT.json",
+      "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+      "receipts/headless/NOETIC_ORGAN_CENSUS.json"
+    ]
+  },
+  "route_metrics": {
+    "value": {
+      "route_decisions_per_token_discrete": 0,
+      "route_decisions_per_token_continuous": 2688,
+      "native_tokens_per_second": 32.907049924108115
+    },
+    "evidence_path": "receipts/headless/NOETIC_ROUTE_LEDGER.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_ROUTE_LEDGER.json').read_text())\ncur = d\nfor part in [\"route_decisions_per_token\", \"discrete\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"0\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_ROUTE_LEDGER.json'\"'\"').read_text())\ncur = d\nfor part in [\"route_decisions_per_token\", \"discrete\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"0\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "route_decisions_per_token.discrete.value"
+  },
+  "density_metrics": {
+    "value": {
+      "blocker_id": "DENSITY_IS_NOT_THE_BINDING_CONSTRAINT",
+      "bytes_reduction_fraction": 0.4474385738410269,
+      "throughput_gain_fraction": 0.01935949738621434,
+      "reading": "44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.",
+      "cheapest_ebpw": 2.343974955991431,
+      "dearest_ebpw": 4.242016986754093,
+      "cheapest_tok_s": 33.44218765414758,
+      "dearest_tok_s": 32.80705947204907,
+      "source_dispatch_count": 964,
+      "executable_dispatch_count": 964
+    },
+    "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"blocker\", \"measured\", \"reading\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.\\\"\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"blocker\", \"measured\", \"reading\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.\\\"\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "blocker.measured",
+    "also_cites": [
+      "receipts/headless/NOETIC_NATIVE_OPERATOR.json"
+    ]
+  },
+  "accounting_metrics": {
+    "value": {
+      "MODEL_SPECIFIC_BYTES": 14297933604,
+      "SHARED_RUNTIME_BYTES": 528173,
+      "MACHINE_SPECIFIC_BYTES": 3098,
+      "GENERATED_CACHE_BYTES": 1230635008,
+      "TEMPORARY_BYTES": 1691396,
+      "RESIDENT_BYTES": 15530791279,
+      "ACTIVE_BYTES": 13622266960
+    },
+    "evidence_path": "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json').read_text())\ncur = d\nfor part in [\"artifact_accounting\", \"buckets\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"{\\\"MODEL_SPECIFIC_BYTES\\\": 14297933604, \\\"SHARED_RUNTIME_BYTES\\\": 528173, \\\"MACHINE_SPECIFIC_BYTES\\\": 3098, \\\"GENERATED_CACHE_BYTES\\\": 1230635008, \\\"TEMPORARY_BYTES\\\": 1691396, \\\"RESIDENT_BYTES\\\": 15530791279, \\\"ACTIVE_BYTES\\\": 13622266960}\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json'\"'\"').read_text())\ncur = d\nfor part in [\"artifact_accounting\", \"buckets\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"{\\\"MODEL_SPECIFIC_BYTES\\\": 14297933604, \\\"SHARED_RUNTIME_BYTES\\\": 528173, \\\"MACHINE_SPECIFIC_BYTES\\\": 3098, \\\"GENERATED_CACHE_BYTES\\\": 1230635008, \\\"TEMPORARY_BYTES\\\": 1691396, \\\"RESIDENT_BYTES\\\": 15530791279, \\\"ACTIVE_BYTES\\\": 13622266960}\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "artifact_accounting.buckets"
+  },
+  "kernels": {
+    "value": {
+      "production_dispatches_per_token": 964,
+      "workhorse_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "reconciliation_counts": {
+        "REACHABLE": 508,
+        "DISPATCHED": 38,
+        "DEAD": 4,
+        "UNKNOWN": 4
+      },
+      "families": [
+        {
+          "id": "shared_basis_x_coefficients",
+          "verdict": "ABSENT",
+          "kernel": null
+        },
+        {
+          "id": "tensor_contraction",
+          "verdict": "ABSENT",
+          "kernel": null
+        },
+        {
+          "id": "fused_dictionary_lookup_accumulate",
+          "verdict": "EXISTS",
+          "kernel": "gravity_pq_matvec"
+        },
+        {
+          "id": "low_rank_plus_sparse_correction",
+          "verdict": "PARTIAL",
+          "kernel": "q80_hgravs01_factor_matvec_simd3"
+        },
+        {
+          "id": "structured_transform",
+          "verdict": "PARTIAL",
+          "kernel": "strand_rht_forward_cols"
+        },
+        {
+          "id": "routed_group_execution",
+          "verdict": "EXISTS",
+          "kernel": "gk_worklist_fp4"
+        },
+        {
+          "id": "recurrent_state_operator",
+          "verdict": "EXISTS",
+          "kernel": "qwen38_gated_delta_decode_vi_simd"
+        }
+      ],
+      "gravity_scoring_without_kernel_refused": true,
+      "gravity_kernel_win_refused": true,
+      "native_production_label": "NATIVE",
+      "native_production_path": "qwen38_uniform_q4_fused"
+    },
+    "evidence_path": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_KERNEL_CENSUS.json').read_text())\ncur = d\nfor part in [\"production_token\", \"production_dispatches_per_token\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"964\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_KERNEL_CENSUS.json'\"'\"').read_text())\ncur = d\nfor part in [\"production_token\", \"production_dispatches_per_token\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"964\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "production_token.production_dispatches_per_token",
+    "also_cites": [
+      "receipts/headless/GRAVITY_COMPILER_SEARCH.json",
+      "receipts/headless/NOETIC_NATIVE_OPERATOR.json"
+    ]
+  },
+  "composition": {
+    "value": {
+      "survival_rule": {
+        "scale_aware_over_null": 0.05,
+        "min_gain": 0.5,
+        "max_rel_l2": 0.5,
+        "scale_aware_definition": "mean_row_cosine * gain, gain = mean min(r,1/r) of per-row L2 norms",
+        "null": "constant-mean of the teacher reference, broadcast over rows (the GLM 0.898-class null, MEASURED per comparison, never assumed)"
+      },
+      "llama_server_note": "llama-server unreachable: URLError(ConnectionRefusedError(61, 'Connection refused'))",
+      "wholemodel": [
+        {
+          "receipt": "NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+          "last_survive": "ternary grouped-64",
+          "last_survive_bpw": 2.25,
+          "first_die": "binary grouped-64",
+          "first_die_bpw": 1.25,
+          "first_fail_free_layer": null,
+          "coherent_generation": "NOT_RUN"
+        },
+        {
+          "receipt": "NOETIC_COMPOSITION_WHOLEMODEL_Q3_G64.json",
+          "last_survive": "binary g1024 + rank-64 residual",
+          "last_survive_bpw": 1.5088235294117647,
+          "first_die": "rank-512 (no quantization)",
+          "first_die_bpw": 2.070588235294118,
+          "first_fail_free_layer": null,
+          "coherent_generation": "NOT_RUN"
+        },
+        {
+          "receipt": "NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+          "last_survive": null,
+          "last_survive_bpw": null,
+          "first_die": "q4 (artifact down_proj, undegraded)",
+          "first_die_bpw": 4.25,
+          "first_fail_free_layer": 3,
+          "coherent_generation": "NOT_RUN"
+        }
+      ],
+      "sign_codes_vs_lowrank_from_no_candidate": [
+        "Sign codes survive at 1.0156 bpw where pure low-rank dies at 2.0706 (NOETIC_COMPOSITION.json): operator class beats bit count.",
+        "Matched-bit low-rank carries 2.93x flat-q3 error (DENSE_SUBBIT_TRANSFER) and 4.39x (DOCTOR_V2_PRESCRIPTION): naive factorization is refuted on dense.",
+        "Sharing is refuted: G035 shared_beats_independent=false, Q80 experts mutually orthogonal at cosine 0.004.",
+        "Whole-model uniform sub-2-bit fails at 1.85 bpw and survives at 2.25 (NOETIC_COMPOSITION_WHOLEMODEL_*): the cliff is sharp and sits in between."
+      ]
+    },
+    "evidence_path": "receipts/headless/NOETIC_COMPOSITION.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json').read_text())\ncur = d\nfor part in [\"failure_boundary\", \"organ_degrade\", \"last_survive\", \"bpw\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"2.25\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json'\"'\"').read_text())\ncur = d\nfor part in [\"failure_boundary\", \"organ_degrade\", \"last_survive\", \"bpw\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"2.25\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "failure_boundary.organ_degrade",
+    "also_cites": [
+      "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+      "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q3_G64.json",
+      "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+    ]
+  },
+  "capability": {
+    "value": {
+      "llamacpp_q5k": {
+        "passed": 40,
+        "total": 43,
+        "rate": 0.9302
+      },
+      "mlx_4bit": {
+        "passed": 35,
+        "total": 43,
+        "rate": 0.814
+      },
+      "native_production_label": "NATIVE",
+      "gravity_capability_contract": {
+        "id": "gravity_compiler_search.v1",
+        "a_candidate_is": "representation AND kernel AND layout AND runtime graph",
+        "scoring_without_a_kernel": "REFUSED \u2014 no default",
+        "kernel_must_be_declared_in_shaders": true,
+        "reconstruct_then_gemm_is": "ORACLE, never production",
+        "composed_behaviour_is_part_of_identity": true,
+        "report_stored_and_active_bpw": true,
+        "do_not_load_second_27b": true,
+        "absent_is_never_zero": true,
+        "executable_today_families": [
+          "grouped_absmax_q4",
+          "binary_pm_csr",
+          "hgravs01_factors",
+          "pq_codebook_lookup",
+          "moe_worklists",
+          "recurrent_state_op"
+        ],
+        "q80_decode_was_dispatch_bound": {
+          "pct_of_ceiling": 0.79,
+          "ceiling_gb_s": 700.0,
+          "gpu_idle_pct": 51.0,
+          "reading": "A representation win that adds dispatches can lose outright. Q80 sat at 0.79% of a 700 GB/s ceiling with 51% GPU idle."
+        }
+      }
+    },
+    "evidence_path": "receipts/headless/CAPABILITY_llamacpp-q5k.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/CAPABILITY_llamacpp-q5k.json').read_text())\ncur = d\nfor part in [\"overall\", \"passed\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"40\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/CAPABILITY_llamacpp-q5k.json'\"'\"').read_text())\ncur = d\nfor part in [\"overall\", \"passed\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"40\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "overall",
+    "also_cites": [
+      "receipts/headless/CAPABILITY_mlx-4bit.json"
+    ]
+  },
+  "production_performance": {
+    "value": {
+      "complete_decode_tps": 32.907049924108115,
+      "complete_decode_bar": "PASS",
+      "complete_decode_not_re_run": "A llama-server is already resident on 52484. A native run with two 27B servers was measured at 3.986 tok/s vs 33.47 with one. This process did not spawn a second 27B.",
+      "output_collapsed": "QWEN38_GRAVITY_NATIVE bar is FAIL on coherence (replacement characters). The timing is of a collapsed greedy loop; it is still the wall of this executable.",
+      "executable_bpw": 4.252735126866492,
+      "parent_parameter_count": 26895998464,
+      "machine_genome_single_decoder_tps": 21.289,
+      "machine_genome_best_aggregate_tps": 25.407,
+      "conventional_live_mlx_decode_tps": 38.05867772872637,
+      "q3_tok_s": 31.98505658156509,
+      "affine_tok_s": 32.07808521067725,
+      "native_operator_shape_reading": "Executable does 1.50\u00d7 the FLOPs and 3.49\u00d7 the operations of the dense source, for 7.34\u00d7 fewer DRAM bytes, at an identical 964 dispatch count."
+    },
+    "evidence_path": "receipts/headless/NOETIC_METRICS.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_METRICS.json').read_text())\ncur = d\nfor part in [\"time\", \"COMPLETE_DECODE_TPS\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"32.907049924108115\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_METRICS.json'\"'\"').read_text())\ncur = d\nfor part in [\"time\", \"COMPLETE_DECODE_TPS\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"32.907049924108115\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "time.COMPLETE_DECODE_TPS.value",
+    "also_cites": [
+      "receipts/headless/MACHINE_GENOME.json",
+      "receipts/headless/CONVENTIONAL_CONTROL_SET.json",
+      "receipts/headless/GRAVITY_COMPILER_SEARCH.json"
+    ]
+  },
+  "negative_science": {
+    "value": {
+      "obligation": "Every representation idea this project already killed, classified PROPERTY_OF_IDEA vs ARTIFACT_OF_METHOD, with a reopen condition and whether that condition holds TODAY. A refutation of a measurement is not a refutation of an idea.",
+      "counts": {
+        "entries": 31,
+        "property_of_idea": 21,
+        "artifact_of_method": 10,
+        "seeds": 8,
+        "seeds_confirmed": 4,
+        "seeds_corrected": 4,
+        "live_opportunities": 9,
+        "evidence_paths_missing": [],
+        "numbers_unconfirmed": []
+      },
+      "live_opportunity_ids": [
+        "NNS-001",
+        "NNS-004",
+        "NNS-005",
+        "NNS-006",
+        "NNS-009",
+        "NNS-010",
+        "NNS-011",
+        "NNS-015",
+        "NNS-016"
+      ],
+      "nns015": {
+        "id": "NNS-015",
+        "kind": "PROPERTY_OF_IDEA",
+        "callout": "LIVE AVENUE \u2014 PHASE_B_HYBRID left distillation as the sole surviving MLP-byte path and it has not been run.",
+        "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
+        "why_today": "no distilled-operator Doctor receipt; PHASE_B_HYBRID.reopen_if still open"
+      }
+    },
+    "evidence_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_NEGATIVE_SCIENCE.json').read_text())\nids = [x.get('id') for x in (d.get('live_opportunities_being_sat_on') or [])]\nassert 'NNS-015' in ids, ids"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_NEGATIVE_SCIENCE.json'\"'\"').read_text())\nids = [x.get('\"'\"'id'\"'\"') for x in (d.get('\"'\"'live_opportunities_being_sat_on'\"'\"') or [])]\nassert '\"'\"'NNS-015'\"'\"' in ids, ids'",
+    "source_field": "live_opportunities_being_sat_on"
+  },
+  "open_hypotheses": {
+    "value": [
+      {
+        "id": "H-NON-MATVEC",
+        "from": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+        "field": "next_representation_family",
+        "value": {
+          "family": "non-matvec operator that survives composition",
+          "why": "Every candidate so far is a grouped-code matvec \u2014 the incumbent's own operator, narrower. S006 \u00a71 is explicit that Noetic is not better quantization. The next family must change the OPERATOR, not the code width, and the binding constraint to attack is DISPATCH COUNT, not bytes.",
+          "evidence_that_narrows_it": [
+            "Sign codes survive at 1.0156 bpw where pure low-rank dies at 2.0706 (NOETIC_COMPOSITION.json): operator class beats bit count.",
+            "Matched-bit low-rank carries 2.93x flat-q3 error (DENSE_SUBBIT_TRANSFER) and 4.39x (DOCTOR_V2_PRESCRIPTION): naive factorization is refuted on dense.",
+            "Sharing is refuted: G035 shared_beats_independent=false, Q80 experts mutually orthogonal at cosine 0.004.",
+            "Whole-model uniform sub-2-bit fails at 1.85 bpw and survives at 2.25 (NOETIC_COMPOSITION_WHOLEMODEL_*): the cliff is sharp and sits in between."
+          ],
+          "reopen_condition": "A representation whose executable reduces DISPATCHES per token, or fuses operators so the 964-dispatch graph shrinks, rather than one that only reduces bytes."
+        }
+      },
+      {
+        "id": "H-GROK-THROTTLE",
+        "from": "receipts/headless/AGENTOS_GROK_WORKUNITS.json",
+        "field": "still_open",
+        "value": [
+          "Throttle/rate-limit signals are still not measured, so Grok admission is a configured number rather than a health-derived one (S002 P21-P22). Recorded, not claimed."
+        ]
+      },
+      {
+        "id": "H-SHARED-BASIS-KERNEL-ABSENT",
+        "from": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+        "field": "families[id=shared_basis_x_coefficients].verdict",
+        "value": "ABSENT"
+      },
+      {
+        "id": "H-TT-NODE-ABSENT",
+        "from": "receipts/headless/NOETIC_IR.json",
+        "field": "cannot_express",
+        "value": [
+          {
+            "what": "tensor_train / Tucker / tensor-ring as an executing node",
+            "why": "G034/C2: 373/373 rows unhealthy, healthy=true count 0 at sub-0.5 BPW. G096 NEVER BUILT a TT node in NR. Kernel census tensor_contraction = ABSENT. A node nothing executed, that the experiment closed, is speculative \u2014 left out.",
+            "receipts": [
+              "receipts/headless/C2TENSOROP_DESIGN.json",
+              "receipts/headless/NOETIC_KERNEL_CENSUS.json"
+            ]
+          },
+          {
+            "what": "shared_basis as an executing operator",
+            "why": "The node is in the IR so accounting cannot go blind, but there is no executor: zero shaders mention shared_basis. Execute raises UnexecutableNode. This is the honest form of the G103 hole: we charge the 1 GB and we refuse to claim it ran.",
+            "receipts": [
+              "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+            ]
+          },
+          {
+            "what": "UV + sparse as one fused representation",
+            "why": "C3: no kernel does UV + sparse in one representation. Mixed decode assigns low-rank to down_proj and binary+sparse to up_proj \u2014 different organs. Fusion traffic save is 2199.6 ns. NOT_WORTH_BUILDING.",
+            "receipts": [
+              "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+            ]
+          },
+          {
+            "what": "structured Hadamard as a weight-side operator without materialising W",
+            "why": "strand_rht_forward_cols transforms x then a bitslice GEMV consumes tx (feature=tq). G032 Block-diagonal Sylvester-Hadamard was a reparameterization with GENERATED_BPW_EQUIVALENT=0.0. Kernel census structured_transform = PARTIAL.",
+            "receipts": [
+              "receipts/headless/NOETIC_KERNEL_CENSUS.json"
+            ]
+          },
+          {
+            "what": "a sidecar file that never became a node (the remaining G103 hole)",
+            "why": "account() sums payload bytes + referenced pool objects. A path string with no nbytes (NR's basis.bin next to tensors/) is still invisible. Closing THAT is the executable-closure hash over files the loader actually opens (NOETIC_EXECUTABLE_CLOSURE.json), not another schema field. This IR does not walk directories and does not load a 27B to find stragglers.",
+            "receipts": [
+              "receipts/headless/NOETIC_CLOSURE_GAP.json",
+              "receipts/headless/NOETIC_EXECUTABLE_CLOSURE.json"
+            ]
+          },
+          {
+            "what": "whole-model Metal dispatch of a 27B from this document",
+            "why": "Do not load a second 27B. The production kernel is cited, not relaunched. Semantic execution here is a CPU interpreter of the same function on micro-sites.",
+            "receipts": [
+              "receipts/headless/NOETIC_NATIVE_OPERATOR.json"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"next_representation_family\", \"family\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"non-matvec operator that survives composition\\\"\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"next_representation_family\", \"family\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"non-matvec operator that survives composition\\\"\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "next_representation_family.family"
+  },
+  "grok_lane_results": {
+    "value": {
+      "gate": "AGENTOS_GROK_WORKUNITS",
+      "result": "PASS",
+      "closed": [
+        {
+          "defect": "P0-6 task-id collision",
+          "detail": "GrokBridge.consult hardcoded the slug 'consult', so grok-run's one-second-resolution id let two dispatches share one task directory. In the recorded mixed-max run grok1 and grok2 both resolved to consult-20260822-224557: two WorkUnits accepted off ONE Grok execution, and grok2's prompt was never sent.",
+          "fix": "unique_task_slug(prefix) -> '<prefix>-<pid>x<counter>x<micros>'; grok-run is outside this repo's mutation scope so uniqueness has to come from the caller.",
+          "evidence": "tests/test_grok_identity.py: 500 slugs distinct in one second; 1600 distinct across 8 threads. Gate P0-6 GREEN, and RED against the restored constant slug (50 dispatches, 1 distinct)."
+        },
+        {
+          "defect": "no per-task liveness signal",
+          "detail": "grok-run status reads a status FILE and carries no pid, and nothing in the process table carries a task id -- verified: `ps -axww -o command | grep claude-grok/tasks` returns nothing. A task whose process died reported `running` forever and held its scheduler slot for the full wait timeout.",
+          "fix": "extract_background_pid parses the pid grok-run prints once at launch and persists it in the receipt; status() downgrades `running` with a dead pid to `stale-running` with a reason, and never rewrites a terminal state.",
+          "evidence": "tests/test_grok_identity.py: dead pid -> stale-running, live pid -> running, done stays done."
+        },
+        {
+          "defect": "P0-5 restart duplicated a live Grok task instead of adopting it",
+          "detail": "DagStore.load flipped every leftover `running` unit to `failed`; it then re-readied under its retry budget and the executor launched a SECOND consult for work that was still running -- a duplicate plus an orphan, on every restart.",
+          "fix": "DagStore.load takes a `grok_liveness` callable and adopts a unit whose backend task is genuinely alive, recording it on `adopted_running` for polling. Scheduler.from_workspace now supplies GrokBridge.status by default, so the reconciliation is on rather than optional.",
+          "evidence": "tests/test_dag_store.py::TestGrokRestartAdoption -- live task stays `running` and Scheduler.dispatch does NOT assign it again; `stale-running` reloads as `failed` and is retry-eligible; with NO liveness checker the unit reloads `failed`, because unobservable must never mean adopted."
+        },
+        {
+          "defect": "`status=done` did not mean success",
+          "detail": "The on-disk task consult-20260822-223811 carries status=done AND exit_code=1 with a sandbox initialisation error and an empty output file. A caller reading only `state` would have treated that as a success.",
+          "fix": "success is now an explicit field requiring a terminal-good state AND exit code 0, rather than every caller recomputing it."
+        },
+        {
+          "defect": "receipt completeness",
+          "detail": "retries, verifier command, verifier outcome and grok_state were not persisted; one receipt still read `running` while grok-run reported `done`.",
+          "fix": "status() refreshes the receipt, and retries come from grok-run's telemetry.json when present -- recorded as null plus a reason when absent, never as a fabricated 0."
+        }
+      ],
+      "still_open": [
+        "Throttle/rate-limit signals are still not measured, so Grok admission is a configured number rather than a health-derived one (S002 P21-P22). Recorded, not claimed."
+      ],
+      "test_suite": "tests/test_dag_store.py + test_grok_bridge.py + test_grok_identity.py -> 48 passed, 1 skipped"
+    },
+    "evidence_path": "receipts/headless/AGENTOS_GROK_WORKUNITS.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/AGENTOS_GROK_WORKUNITS.json').read_text())\ncur = d\nfor part in [\"result\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"PASS\\\"\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/AGENTOS_GROK_WORKUNITS.json'\"'\"').read_text())\ncur = d\nfor part in [\"result\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"PASS\\\"\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "result + closed + still_open"
+  },
+  "next_agentos_workunits": {
+    "value": [
+      {
+        "id": "gravity.non_matvec_operator",
+        "role": "experiment",
+        "description": "A representation whose executable reduces DISPATCHES per token, or fuses operators so the 964-dispatch graph shrinks, rather than one that only reduces bytes.",
+        "preferred_backend": "tool",
+        "resource_class": "LIGHT_CONTROL",
+        "source_receipt": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+        "source_field": "next_representation_family.reopen_condition",
+        "verifier": "not yet written: the experiment does not exist. A verifier will be a command that fails unless dispatch-count per token drops below the recorded 964 while remaining coherent.",
+        "status": "not_done"
+      },
+      {
+        "id": "grok.throttle_measurement",
+        "role": "observe",
+        "description": "Throttle/rate-limit signals are still not measured, so Grok admission is a configured number rather than a health-derived one (S002 P21-P22). Recorded, not claimed.",
+        "preferred_backend": "tool",
+        "resource_class": "LIGHT_CONTROL",
+        "source_receipt": "receipts/headless/AGENTOS_GROK_WORKUNITS.json",
+        "source_field": "still_open[0]",
+        "status": "not_done"
+      },
+      {
+        "id": "doctor.distilled_mlp_operator",
+        "role": "experiment",
+        "description": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
+        "preferred_backend": "tool",
+        "resource_class": "LIGHT_CONTROL",
+        "source_receipt": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+        "source_field": "live_opportunities_being_sat_on[id=NNS-015]",
+        "status": "not_done"
+      }
+    ],
+    "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"next_representation_family\", \"family\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"non-matvec operator that survives composition\\\"\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"next_representation_family\", \"family\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"non-matvec operator that survives composition\\\"\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "next_representation_family + AGENTOS_GROK_WORKUNITS.still_open + NNS-015"
+  },
+  "rollback_command": {
+    "value": {
+      "command": "rm -f receipts/headless/NOETIC_ASCENSION_HANDOFF.json receipts/headless/NOETIC_ASCENSION_LOOP.json receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json docs/NOETIC_ASCENSION_HANDOFF.md; git checkout HEAD -- tools/headless/noetic_ascension_loop.py tools/headless/noetic_ascension_handoff.py tools/headless/test_noetic_ascension_handoff.py",
+      "what_it_reverts": "this lane's new files only. Historical receipts/ are never_delete.",
+      "never_delete": {
+        "receipts/": "historical science; 0 proposed DELETE of receipt files",
+        "this_lane": "writes two paths and unlinks none",
+        "workspace/": "precious corpora; 0 proposed DELETE"
+      },
+      "does_not_touch": [
+        "hcli/",
+        "receipts/ascent-2026-08-16",
+        "workspace/campaign",
+        "any receipt this lane did not create"
+      ]
+    },
+    "evidence_path": "receipts/headless/CODE_ENTROPY.json",
+    "reproducing_command": [
+      "python3",
+      "-c",
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/CODE_ENTROPY.json').read_text())\ncur = d\nfor part in [\"never_delete\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"{\\\"receipts/\\\": \\\"historical science; 0 proposed DELETE of receipt files\\\", \\\"this_lane\\\": \\\"writes two paths and unlinks none\\\", \\\"workspace/\\\": \\\"precious corpora; 0 proposed DELETE\\\"}\")\nassert cur == exp, (cur, exp)"
+    ],
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/CODE_ENTROPY.json'\"'\"').read_text())\ncur = d\nfor part in [\"never_delete\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"{\\\"receipts/\\\": \\\"historical science; 0 proposed DELETE of receipt files\\\", \\\"this_lane\\\": \\\"writes two paths and unlinks none\\\", \\\"workspace/\\\": \\\"precious corpora; 0 proposed DELETE\\\"}\")\nassert cur == exp, (cur, exp)'",
+    "source_field": "never_delete"
+  },
+  "demonstration": {
+    "receipt": "receipts/headless/NOETIC_ASCENSION_LOOP.json",
+    "science_update": "receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json",
+    "gate": "REJECTED",
+    "durable_reproduce": [
+      "python3",
+      "tools/headless/noetic_ascension_loop.py"
+    ],
+    "mission": {
+      "status": "completed",
+      "reason": null,
+      "cancelled": false,
+      "mission_id": "a277d13a-19a5-4695-b0da-7a2dd047a46d",
+      "accepted": 8,
+      "no_progress_warning": null
+    },
+    "stages_required": [
+      "HCLI",
+      "AgentOS",
+      "resident",
+      "Doctor",
+      "Gravity experiment",
+      "tools",
+      "verifier",
+      "accepted or rejected",
+      "updated science"
+    ],
+    "steps": [
+      {
+        "stage": "HCLI",
+        "name": "extract_hcli_from_HEAD",
+        "command_pretty": "git archive --format=tar HEAD hcli | tar -x -C <scratch>/extract",
+        "durable_reproduce": null,
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": null,
+        "verification_ok": null,
+        "reason": null,
+        "notes": "HEAD:hcli (git archive, not the working tree)"
+      },
+      {
+        "stage": "HCLI",
+        "name": "python3 -m hcli /help",
+        "command_pretty": "python3 -m hcli --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws /help",
+        "durable_reproduce": null,
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": null,
+        "verification_ok": null,
+        "reason": null,
+        "notes": "canonical product entry from docs/CURRENT_ARCHITECTURE.md"
+      },
+      {
+        "stage": "HCLI",
+        "name": "python3 -m hcli /status",
+        "command_pretty": "python3 -m hcli --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws /status",
+        "durable_reproduce": null,
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": null,
+        "verification_ok": null,
+        "reason": null,
+        "notes": "observes this process's pool; does not spawn a resident"
+      },
+      {
+        "stage": "AgentOS",
+        "name": "agentos.boot",
+        "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/agentos_boot.py",
+        "durable_reproduce": [
+          "python3",
+          "tools/headless/noetic_ascension_loop.py"
+        ],
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": "completed",
+        "verification_ok": true,
+        "reason": null,
+        "notes": null
+      },
+      {
+        "stage": "resident",
+        "name": "resident.observe",
+        "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/resident_observe.py",
+        "durable_reproduce": [
+          "python3",
+          "tools/headless/noetic_ascension_loop.py"
+        ],
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": "completed",
+        "verification_ok": true,
+        "reason": null,
+        "notes": null
+      },
+      {
+        "stage": "Doctor",
+        "name": "doctor.read",
+        "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/doctor_read.py",
+        "durable_reproduce": [
+          "python3",
+          "tools/headless/noetic_ascension_loop.py"
+        ],
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": "completed",
+        "verification_ok": true,
+        "reason": null,
+        "notes": null
+      },
+      {
+        "stage": "Gravity experiment",
+        "name": "gravity.experiment",
+        "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gravity_experiment.py",
+        "durable_reproduce": [
+          "python3",
+          "tools/headless/noetic_ascension_loop.py"
+        ],
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": "completed",
+        "verification_ok": true,
+        "reason": null,
+        "notes": null
+      },
+      {
+        "stage": "tools",
+        "name": "tools.scoreboard",
+        "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/tools_scoreboard.py",
+        "durable_reproduce": [
+          "python3",
+          "tools/headless/noetic_ascension_loop.py"
+        ],
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": "completed",
+        "verification_ok": true,
+        "reason": null,
+        "notes": null
+      },
+      {
+        "stage": "verifier",
+        "name": "verifier.settle",
+        "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/verifier_settle.py",
+        "durable_reproduce": [
+          "python3",
+          "tools/headless/noetic_ascension_loop.py"
+        ],
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": "completed",
+        "verification_ok": true,
+        "reason": null,
+        "notes": null
+      },
+      {
+        "stage": "accepted or rejected",
+        "name": "gate.reject",
+        "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gate_reject.py",
+        "durable_reproduce": [
+          "python3",
+          "tools/headless/noetic_ascension_loop.py"
+        ],
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": "completed",
+        "verification_ok": true,
+        "reason": null,
+        "notes": null
+      },
+      {
+        "stage": "updated science",
+        "name": "science.update",
+        "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/science_update.py",
+        "durable_reproduce": [
+          "python3",
+          "tools/headless/noetic_ascension_loop.py"
+        ],
+        "exit_code": 0,
+        "status": "RUN",
+        "workunit_status": "completed",
+        "verification_ok": true,
+        "reason": null,
+        "notes": null
+      }
+    ]
+  },
+  "claims": [
+    {
+      "id": "F001",
+      "kind": "fact",
+      "statement": "the qualified parent is qwen38-gravity-uniform-q4-v1 at complete_ebpw=4.252735126866492",
+      "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"incumbent\", \"complete_ebpw\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"4.252735126866492\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"incumbent\", \"complete_ebpw\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"4.252735126866492\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field incumbent.complete_ebpw",
+        "source": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      }
+    },
+    {
+      "id": "C002",
+      "kind": "capability",
+      "statement": "production Noetic inference does not load parent weights (NOETIC_ZERO_PARENT verdict='PASS')",
+      "evidence_path": "receipts/headless/NOETIC_ZERO_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_ZERO_PARENT.json').read_text())\ncur = d\nfor part in [\"verdict\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"PASS\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_ZERO_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"verdict\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"PASS\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field verdict",
+        "source": "receipts/headless/NOETIC_ZERO_PARENT.json"
+      }
+    },
+    {
+      "id": "F003",
+      "kind": "fact",
+      "statement": "strongest coherent candidate is affine2_g64_fused_swiglu_qkv_dn at complete_ebpw=3.139300850311054 tok_s=34.87340648509909",
+      "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"best_coherent_candidate\", \"id\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"affine2_g64_fused_swiglu_qkv_dn\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"best_coherent_candidate\", \"id\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"affine2_g64_fused_swiglu_qkv_dn\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field best_coherent_candidate.id",
+        "source": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      }
+    },
+    {
+      "id": "C004",
+      "kind": "capability",
+      "statement": "NOETIC_CLOSURE hashed 757 members; io_executor read-but-not-hashed=0",
+      "evidence_path": "receipts/headless/NOETIC_CLOSURE.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_CLOSURE.json').read_text())\ncur = d\nfor part in [\"n_hashed_members\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"757\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_CLOSURE.json'\"'\"').read_text())\ncur = d\nfor part in [\"n_hashed_members\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"757\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field n_hashed_members",
+        "source": "receipts/headless/NOETIC_CLOSURE.json"
+      }
+    },
+    {
+      "id": "F005",
+      "kind": "fact",
+      "statement": "7 executable mixes were scored against the parent; IR executed families=['grouped_absmax_q4', 'ternary_group64', 'binary_sign_codes', 'low_rank_uv', 'product_quantization']",
+      "evidence_path": "receipts/headless/NOETIC_IR.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_IR.json').read_text())\ncur = d\nfor part in [\"executed_families\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"[\\\"grouped_absmax_q4\\\", \\\"ternary_group64\\\", \\\"binary_sign_codes\\\", \\\"low_rank_uv\\\", \\\"product_quantization\\\"]\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_IR.json'\"'\"').read_text())\ncur = d\nfor part in [\"executed_families\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"[\\\"grouped_absmax_q4\\\", \\\"ternary_group64\\\", \\\"binary_sign_codes\\\", \\\"low_rank_uv\\\", \\\"product_quantization\\\"]\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field executed_families",
+        "source": "receipts/headless/NOETIC_IR.json"
+      }
+    },
+    {
+      "id": "N006",
+      "kind": "not_done",
+      "statement": "FIRST_NOETIC_EXECUTABLE records mix_d_activation_aware_ternary_all_mlp as NOT_RUN_NO_NATIVE_KERNEL",
+      "evidence_path": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/FIRST_NOETIC_EXECUTABLE.json').read_text())\ncur = d\nfor part in [\"mixes_not_run\", \"0\", \"status\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"NOT_RUN_NO_NATIVE_KERNEL\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/FIRST_NOETIC_EXECUTABLE.json'\"'\"').read_text())\ncur = d\nfor part in [\"mixes_not_run\", \"0\", \"status\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"NOT_RUN_NO_NATIVE_KERNEL\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field mixes_not_run[0].status",
+        "source": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json"
+      }
+    },
+    {
+      "id": "C007",
+      "kind": "capability",
+      "statement": "Doctor v2: MLP and attention organs need different physical computations (organs_need_different_prescriptions=true)",
+      "evidence_path": "receipts/headless/DOCTOR_V2_PRESCRIPTION.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/DOCTOR_V2_PRESCRIPTION.json').read_text())\ncur = d\nfor part in [\"organs_need_different_prescriptions\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"true\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/DOCTOR_V2_PRESCRIPTION.json'\"'\"').read_text())\ncur = d\nfor part in [\"organs_need_different_prescriptions\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"true\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field organs_need_different_prescriptions",
+        "source": "receipts/headless/DOCTOR_V2_PRESCRIPTION.json"
+      }
+    },
+    {
+      "id": "C008",
+      "kind": "capability",
+      "statement": "FRACTIONAL_BIT_CANON decision='CANON' deciding_number=0.3209715361396472",
+      "evidence_path": "receipts/headless/FRACTIONAL_BIT_CANON.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/FRACTIONAL_BIT_CANON.json').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"CANON\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/FRACTIONAL_BIT_CANON.json'\"'\"').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"CANON\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field verdict.decision",
+        "source": "receipts/headless/FRACTIONAL_BIT_CANON.json"
+      }
+    },
+    {
+      "id": "W009",
+      "kind": "watched_fail",
+      "statement": "ATTENTION_FLOOR_REFIT decision='ORGAN_FLOOR_DID_NOT_MOVE_BELOW_4.125'",
+      "evidence_path": "receipts/headless/ATTENTION_FLOOR_REFIT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/ATTENTION_FLOOR_REFIT.json').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"ORGAN_FLOOR_DID_NOT_MOVE_BELOW_4.125\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/ATTENTION_FLOOR_REFIT.json'\"'\"').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"ORGAN_FLOOR_DID_NOT_MOVE_BELOW_4.125\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field verdict.decision",
+        "source": "receipts/headless/ATTENTION_FLOOR_REFIT.json"
+      }
+    },
+    {
+      "id": "W010",
+      "kind": "watched_fail",
+      "statement": "DENSE_SUBBIT_TRANSFER decision='NO-GO'",
+      "evidence_path": "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/DENSE_SUBBIT_TRANSFER.json').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"NO-GO\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/DENSE_SUBBIT_TRANSFER.json'\"'\"').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"NO-GO\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field verdict.decision",
+        "source": "receipts/headless/DENSE_SUBBIT_TRANSFER.json"
+      }
+    },
+    {
+      "id": "W011",
+      "kind": "watched_fail",
+      "statement": "44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.",
+      "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"blocker\", \"measured\", \"bytes_reduction_fraction\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"0.4474385738410269\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"blocker\", \"measured\", \"bytes_reduction_fraction\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"0.4474385738410269\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field blocker.measured.bytes_reduction_fraction",
+        "source": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      }
+    },
+    {
+      "id": "F012",
+      "kind": "fact",
+      "statement": "SOURCE and EXECUTABLE dispatch_count are 964 and 964 (NOETIC_NATIVE_OPERATOR columns.dispatch_count)",
+      "evidence_path": "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_NATIVE_OPERATOR.json').read_text())\ncur = d\nfor part in [\"columns\", \"dispatch_count\", \"SOURCE\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"964\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_NATIVE_OPERATOR.json'\"'\"').read_text())\ncur = d\nfor part in [\"columns\", \"dispatch_count\", \"SOURCE\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"964\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field columns.dispatch_count.SOURCE.value",
+        "source": "receipts/headless/NOETIC_NATIVE_OPERATOR.json"
+      }
+    },
+    {
+      "id": "F013",
+      "kind": "fact",
+      "statement": "the decode path makes no learned discrete per-token route decision (value=0)",
+      "evidence_path": "receipts/headless/NOETIC_ROUTE_LEDGER.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_ROUTE_LEDGER.json').read_text())\ncur = d\nfor part in [\"route_decisions_per_token\", \"discrete\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"0\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_ROUTE_LEDGER.json'\"'\"').read_text())\ncur = d\nfor part in [\"route_decisions_per_token\", \"discrete\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"0\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field route_decisions_per_token.discrete.value",
+        "source": "receipts/headless/NOETIC_ROUTE_LEDGER.json"
+      }
+    },
+    {
+      "id": "F014",
+      "kind": "fact",
+      "statement": "kernel census production_dispatches_per_token=964",
+      "evidence_path": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_KERNEL_CENSUS.json').read_text())\ncur = d\nfor part in [\"production_token\", \"production_dispatches_per_token\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"964\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_KERNEL_CENSUS.json'\"'\"').read_text())\ncur = d\nfor part in [\"production_token\", \"production_dispatches_per_token\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"964\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field production_token.production_dispatches_per_token",
+        "source": "receipts/headless/NOETIC_KERNEL_CENSUS.json"
+      }
+    },
+    {
+      "id": "W015",
+      "kind": "watched_fail",
+      "statement": "Gravity search refuses to score a candidate with no kernel (refused=True)",
+      "evidence_path": "receipts/headless/GRAVITY_COMPILER_SEARCH.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/GRAVITY_COMPILER_SEARCH.json').read_text())\ncur = d\nfor part in [\"demonstration_scoring_without_kernel\", \"refused\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"true\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/GRAVITY_COMPILER_SEARCH.json'\"'\"').read_text())\ncur = d\nfor part in [\"demonstration_scoring_without_kernel\", \"refused\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"true\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field demonstration_scoring_without_kernel.refused",
+        "source": "receipts/headless/GRAVITY_COMPILER_SEARCH.json"
+      }
+    },
+    {
+      "id": "F016",
+      "kind": "fact",
+      "statement": "WHOLEMODEL_Q2F last_survive is 'ternary grouped-64' at bpw=2.25",
+      "evidence_path": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json').read_text())\ncur = d\nfor part in [\"failure_boundary\", \"organ_degrade\", \"last_survive\", \"bpw\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"2.25\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json'\"'\"').read_text())\ncur = d\nfor part in [\"failure_boundary\", \"organ_degrade\", \"last_survive\", \"bpw\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"2.25\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field failure_boundary.organ_degrade.last_survive.bpw",
+        "source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json"
+      }
+    },
+    {
+      "id": "N017",
+      "kind": "not_done",
+      "statement": "WHOLEMODEL coherent_generation rungs are NOT_RUN (llama-server unreachable at the time of those receipts)",
+      "evidence_path": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json').read_text())\nr = next(x for x in d['rungs'] if x.get('rung')=='coherent_generation')\nassert r['status'] == 'NOT_RUN', r"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json'\"'\"').read_text())\nr = next(x for x in d['\"'\"'rungs'\"'\"'] if x.get('\"'\"'rung'\"'\"')=='\"'\"'coherent_generation'\"'\"')\nassert r['\"'\"'status'\"'\"'] == '\"'\"'NOT_RUN'\"'\"', r'",
+      "derived_from": {
+        "how": "rungs[rung=coherent_generation].status",
+        "source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+      }
+    },
+    {
+      "id": "C018",
+      "kind": "capability",
+      "statement": "llamacpp-q5k capability suite overall.passed=40 / 43",
+      "evidence_path": "receipts/headless/CAPABILITY_llamacpp-q5k.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/CAPABILITY_llamacpp-q5k.json').read_text())\ncur = d\nfor part in [\"overall\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"{\\\"passed\\\": 40, \\\"total\\\": 43, \\\"rate\\\": 0.9302}\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/CAPABILITY_llamacpp-q5k.json'\"'\"').read_text())\ncur = d\nfor part in [\"overall\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"{\\\"passed\\\": 40, \\\"total\\\": 43, \\\"rate\\\": 0.9302}\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field overall",
+        "source": "receipts/headless/CAPABILITY_llamacpp-q5k.json"
+      }
+    },
+    {
+      "id": "C019",
+      "kind": "capability",
+      "statement": "mlx-4bit capability suite overall.passed=35 / 43",
+      "evidence_path": "receipts/headless/CAPABILITY_mlx-4bit.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/CAPABILITY_mlx-4bit.json').read_text())\ncur = d\nfor part in [\"overall\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"{\\\"passed\\\": 35, \\\"total\\\": 43, \\\"rate\\\": 0.814}\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/CAPABILITY_mlx-4bit.json'\"'\"').read_text())\ncur = d\nfor part in [\"overall\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"{\\\"passed\\\": 35, \\\"total\\\": 43, \\\"rate\\\": 0.814}\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field overall",
+        "source": "receipts/headless/CAPABILITY_mlx-4bit.json"
+      }
+    },
+    {
+      "id": "F020",
+      "kind": "fact",
+      "statement": "production complete-decode tok/s=32.907049924108115 (bar='PASS'; timing of a collapsed greedy loop)",
+      "evidence_path": "receipts/headless/NOETIC_METRICS.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_METRICS.json').read_text())\ncur = d\nfor part in [\"time\", \"COMPLETE_DECODE_TPS\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"32.907049924108115\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_METRICS.json'\"'\"').read_text())\ncur = d\nfor part in [\"time\", \"COMPLETE_DECODE_TPS\", \"value\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"32.907049924108115\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field time.COMPLETE_DECODE_TPS.value",
+        "source": "receipts/headless/NOETIC_METRICS.json"
+      }
+    },
+    {
+      "id": "N021",
+      "kind": "not_done",
+      "statement": "NNS-015 remains a live opportunity: a distilled/generated MLP operator has not been run (NOETIC_NEGATIVE_SCIENCE)",
+      "evidence_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_NEGATIVE_SCIENCE.json').read_text())\nhit = next(x for x in d['live_opportunities_being_sat_on'] if x.get('id')=='NNS-015')\nassert 'has not been run' in (hit.get('reopen_condition') or '').lower() or 'has not been run' in (hit.get('why_today') or '').lower() or 'not been run' in json.dumps(hit).lower()"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_NEGATIVE_SCIENCE.json'\"'\"').read_text())\nhit = next(x for x in d['\"'\"'live_opportunities_being_sat_on'\"'\"'] if x.get('\"'\"'id'\"'\"')=='\"'\"'NNS-015'\"'\"')\nassert '\"'\"'has not been run'\"'\"' in (hit.get('\"'\"'reopen_condition'\"'\"') or '\"'\"''\"'\"').lower() or '\"'\"'has not been run'\"'\"' in (hit.get('\"'\"'why_today'\"'\"') or '\"'\"''\"'\"').lower() or '\"'\"'not been run'\"'\"' in json.dumps(hit).lower()'",
+      "derived_from": {
+        "how": "live_opportunities_being_sat_on[id=NNS-015]",
+        "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+      }
+    },
+    {
+      "id": "N022",
+      "kind": "not_done",
+      "statement": "next representation family is 'non-matvec operator that survives composition'; reopen_condition='A representation whose executable reduces DISPATCHES per token, or fuses operators so the 964-dispatch graph shrinks, rather than one that only reduces bytes.'",
+      "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"next_representation_family\", \"reopen_condition\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"A representation whose executable reduces DISPATCHES per token, or fuses operators so the 964-dispatch graph shrinks, rather than one that only reduces bytes.\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"next_representation_family\", \"reopen_condition\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"A representation whose executable reduces DISPATCHES per token, or fuses operators so the 964-dispatch graph shrinks, rather than one that only reduces bytes.\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field next_representation_family.reopen_condition",
+        "source": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      }
+    },
+    {
+      "id": "C023",
+      "kind": "capability",
+      "statement": "AGENTOS_GROK_WORKUNITS result='PASS' with 5 closed defects",
+      "evidence_path": "receipts/headless/AGENTOS_GROK_WORKUNITS.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/AGENTOS_GROK_WORKUNITS.json').read_text())\ncur = d\nfor part in [\"result\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"PASS\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/AGENTOS_GROK_WORKUNITS.json'\"'\"').read_text())\ncur = d\nfor part in [\"result\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"PASS\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field result",
+        "source": "receipts/headless/AGENTOS_GROK_WORKUNITS.json"
+      }
+    },
+    {
+      "id": "F024",
+      "kind": "fact",
+      "statement": "CODE_ENTROPY.never_delete forbids deleting receipts/",
+      "evidence_path": "receipts/headless/CODE_ENTROPY.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/CODE_ENTROPY.json').read_text())\nnd = d.get('never_delete') or {}\nassert 'receipts/' in nd, nd"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/CODE_ENTROPY.json'\"'\"').read_text())\nnd = d.get('\"'\"'never_delete'\"'\"') or {}\nassert '\"'\"'receipts/'\"'\"' in nd, nd'",
+      "derived_from": {
+        "how": "json field never_delete['receipts/']",
+        "source": "receipts/headless/CODE_ENTROPY.json"
+      }
+    },
+    {
+      "id": "F025",
+      "kind": "fact",
+      "statement": "canonical HCLI launch is python3 -m hcli (docs/CURRENT_ARCHITECTURE.md at HEAD)",
+      "evidence_path": "docs/CURRENT_ARCHITECTURE.md",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import subprocess\nr = subprocess.run(['git','cat-file','-e','HEAD:docs/CURRENT_ARCHITECTURE.md'])\nassert r.returncode == 0\nt = subprocess.check_output(['git','show','HEAD:docs/CURRENT_ARCHITECTURE.md'], text=True)\nassert 'python3 -m hcli' in t"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import subprocess\nr = subprocess.run(['\"'\"'git'\"'\"','\"'\"'cat-file'\"'\"','\"'\"'-e'\"'\"','\"'\"'HEAD:docs/CURRENT_ARCHITECTURE.md'\"'\"'])\nassert r.returncode == 0\nt = subprocess.check_output(['\"'\"'git'\"'\"','\"'\"'show'\"'\"','\"'\"'HEAD:docs/CURRENT_ARCHITECTURE.md'\"'\"'], text=True)\nassert '\"'\"'python3 -m hcli'\"'\"' in t'",
+      "derived_from": {
+        "how": "git show HEAD:docs/CURRENT_ARCHITECTURE.md substring",
+        "source": "docs/CURRENT_ARCHITECTURE.md"
+      }
+    },
+    {
+      "id": "F026",
+      "kind": "fact",
+      "statement": "NAMESPACE_MIGRATION canonical_package_name='hcli' canonical_physical_path='hcli/'",
+      "evidence_path": "receipts/headless/NAMESPACE_MIGRATION.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NAMESPACE_MIGRATION.json').read_text())\ncur = d\nfor part in [\"canonical_physical_path\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"hcli/\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NAMESPACE_MIGRATION.json'\"'\"').read_text())\ncur = d\nfor part in [\"canonical_physical_path\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"hcli/\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field canonical_physical_path",
+        "source": "receipts/headless/NAMESPACE_MIGRATION.json"
+      }
+    },
+    {
+      "id": "W027",
+      "kind": "watched_fail",
+      "statement": "campaign verdict is REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN; the demonstration gate is REJECTED. No candidate is promoted.",
+      "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"verdict\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"verdict\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field verdict",
+        "source": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      }
+    },
+    {
+      "id": "C028",
+      "kind": "capability",
+      "statement": "the demonstration loop receipt records gate=REJECTED and a mission that HCLI drove to completion",
+      "evidence_path": "receipts/headless/NOETIC_ASCENSION_LOOP.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_ASCENSION_LOOP.json').read_text())\nassert d.get('gate') == 'REJECTED', d.get('gate')\nassert (d.get('mission') or {}).get('status') == 'completed', d.get('mission')\nassert d.get('did_not_load_second_27b') is True\nstages = {s.get('stage') for s in (d.get('steps') or [])}\nfor need in ('HCLI','AgentOS','resident','Doctor','Gravity experiment','tools','verifier','accepted or rejected','updated science'):\n    assert need in stages, (need, stages)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_ASCENSION_LOOP.json'\"'\"').read_text())\nassert d.get('\"'\"'gate'\"'\"') == '\"'\"'REJECTED'\"'\"', d.get('\"'\"'gate'\"'\"')\nassert (d.get('\"'\"'mission'\"'\"') or {}).get('\"'\"'status'\"'\"') == '\"'\"'completed'\"'\"', d.get('\"'\"'mission'\"'\"')\nassert d.get('\"'\"'did_not_load_second_27b'\"'\"') is True\nstages = {s.get('\"'\"'stage'\"'\"') for s in (d.get('\"'\"'steps'\"'\"') or [])}\nfor need in ('\"'\"'HCLI'\"'\"','\"'\"'AgentOS'\"'\"','\"'\"'resident'\"'\"','\"'\"'Doctor'\"'\"','\"'\"'Gravity experiment'\"'\"','\"'\"'tools'\"'\"','\"'\"'verifier'\"'\"','\"'\"'accepted or rejected'\"'\"','\"'\"'updated science'\"'\"'):\n    assert need in stages, (need, stages)'",
+      "derived_from": {
+        "how": "NOETIC_ASCENSION_LOOP.json gate + stages",
+        "source": "receipts/headless/NOETIC_ASCENSION_LOOP.json"
+      }
+    },
+    {
+      "id": "F029",
+      "kind": "fact",
+      "statement": "science update receipt records gate=REJECTED and did_not_promote=true",
+      "evidence_path": "receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json').read_text())\nassert d.get('gate') == 'REJECTED'\nassert d.get('did_not_promote') is True\nassert d.get('verdict') == 'NO_CANDIDATE_YET_BEATS_PARENT'"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json'\"'\"').read_text())\nassert d.get('\"'\"'gate'\"'\"') == '\"'\"'REJECTED'\"'\"'\nassert d.get('\"'\"'did_not_promote'\"'\"') is True\nassert d.get('\"'\"'verdict'\"'\"') == '\"'\"'NO_CANDIDATE_YET_BEATS_PARENT'\"'\"''",
+      "derived_from": {
+        "how": "NOETIC_ASCENSION_SCIENCE_UPDATE.json",
+        "source": "receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json"
+      }
+    },
+    {
+      "id": "N030",
+      "kind": "not_done",
+      "statement": "G014 (NOETIC_SELF_OPTIMIZATION_LIVE) is CONDITIONAL on this promotion. Since this records the honest negative, G014 is satisfied by stating that dependency explicitly. A substitute self-optimization run on the OLD parent would not satisfy it and is not offered here.",
+      "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"g014_dependency\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"G014 (NOETIC_SELF_OPTIMIZATION_LIVE) is CONDITIONAL on this promotion. Since this records the honest negative, G014 is satisfied by stating that dependency explicitly. A substitute self-optimization run on the OLD parent would not satisfy it and is not offered here.\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"g014_dependency\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"G014 (NOETIC_SELF_OPTIMIZATION_LIVE) is CONDITIONAL on this promotion. Since this records the honest negative, G014 is satisfied by stating that dependency explicitly. A substitute self-optimization run on the OLD parent would not satisfy it and is not offered here.\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field g014_dependency",
+        "source": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      }
+    }
+  ],
+  "what_i_watched_fail": [
+    {
+      "id": "W009",
+      "kind": "watched_fail",
+      "statement": "ATTENTION_FLOOR_REFIT decision='ORGAN_FLOOR_DID_NOT_MOVE_BELOW_4.125'",
+      "evidence_path": "receipts/headless/ATTENTION_FLOOR_REFIT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/ATTENTION_FLOOR_REFIT.json').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"ORGAN_FLOOR_DID_NOT_MOVE_BELOW_4.125\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/ATTENTION_FLOOR_REFIT.json'\"'\"').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"ORGAN_FLOOR_DID_NOT_MOVE_BELOW_4.125\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field verdict.decision",
+        "source": "receipts/headless/ATTENTION_FLOOR_REFIT.json"
+      }
+    },
+    {
+      "id": "W010",
+      "kind": "watched_fail",
+      "statement": "DENSE_SUBBIT_TRANSFER decision='NO-GO'",
+      "evidence_path": "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/DENSE_SUBBIT_TRANSFER.json').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"NO-GO\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/DENSE_SUBBIT_TRANSFER.json'\"'\"').read_text())\ncur = d\nfor part in [\"verdict\", \"decision\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"NO-GO\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field verdict.decision",
+        "source": "receipts/headless/DENSE_SUBBIT_TRANSFER.json"
+      }
+    },
+    {
+      "id": "W011",
+      "kind": "watched_fail",
+      "statement": "44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.",
+      "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"blocker\", \"measured\", \"bytes_reduction_fraction\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"0.4474385738410269\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"blocker\", \"measured\", \"bytes_reduction_fraction\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"0.4474385738410269\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field blocker.measured.bytes_reduction_fraction",
+        "source": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      }
+    },
+    {
+      "id": "W015",
+      "kind": "watched_fail",
+      "statement": "Gravity search refuses to score a candidate with no kernel (refused=True)",
+      "evidence_path": "receipts/headless/GRAVITY_COMPILER_SEARCH.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/GRAVITY_COMPILER_SEARCH.json').read_text())\ncur = d\nfor part in [\"demonstration_scoring_without_kernel\", \"refused\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"true\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/GRAVITY_COMPILER_SEARCH.json'\"'\"').read_text())\ncur = d\nfor part in [\"demonstration_scoring_without_kernel\", \"refused\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"true\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field demonstration_scoring_without_kernel.refused",
+        "source": "receipts/headless/GRAVITY_COMPILER_SEARCH.json"
+      }
+    },
+    {
+      "id": "W027",
+      "kind": "watched_fail",
+      "statement": "campaign verdict is REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN; the demonstration gate is REJECTED. No candidate is promoted.",
+      "evidence_path": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+      "reproducing_command": [
+        "python3",
+        "-c",
+        "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json').read_text())\ncur = d\nfor part in [\"verdict\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN\\\"\")\nassert cur == exp, (cur, exp)"
+      ],
+      "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json'\"'\"').read_text())\ncur = d\nfor part in [\"verdict\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN\\\"\")\nassert cur == exp, (cur, exp)'",
+      "derived_from": {
+        "how": "json field verdict",
+        "source": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      }
+    }
+  ],
+  "counts": {
+    "claims": 30,
+    "by_kind": {
+      "fact": 12,
+      "capability": 8,
+      "not_done": 5,
+      "watched_fail": 5
+    }
+  },
+  "source_receipts": [
+    "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+    "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+    "receipts/headless/NOETIC_Q3_MLP_Q4_ATTN.json",
+    "receipts/headless/AFFINE2_NATIVE_MLP.json",
+    "receipts/headless/NOETIC_COMPOSITION.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q3_G64.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/FRACTIONAL_BIT_CANON.json",
+    "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+    "receipts/headless/ATTENTION_FLOOR_REFIT.json",
+    "receipts/headless/DOCTOR_V2_PRESCRIPTION.json",
+    "receipts/headless/GRAVITY_COMPILER_SEARCH.json",
+    "receipts/headless/NOETIC_IR.json",
+    "receipts/headless/NOETIC_CLOSURE.json",
+    "receipts/headless/NOETIC_ZERO_PARENT.json",
+    "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+    "receipts/headless/CONVENTIONAL_CONTROL_SET.json",
+    "receipts/headless/CORE_AUTHORITIES.json",
+    "receipts/headless/CODE_ENTROPY.json",
+    "receipts/headless/NAMESPACE_MIGRATION.json",
+    "receipts/headless/ARCHITECTURE_CANON.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/AGENTOS_GROK_WORKUNITS.json",
+    "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+    "receipts/headless/NOETIC_ROUTE_LEDGER.json",
+    "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+    "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+    "receipts/headless/NOETIC_METRICS.json",
+    "receipts/headless/MACHINE_GENOME.json",
+    "receipts/headless/CAPABILITY_llamacpp-q5k.json",
+    "receipts/headless/CAPABILITY_mlx-4bit.json"
+  ],
+  "missing_source_receipts_on_disk": [],
+  "haider_copy": ".haider/NOETIC_ASCENSION_HANDOFF.json",
+  "honesty": "No Noetic candidate beats the parent. The blocker is measured: 44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound. The next family is 'non-matvec operator that survives composition'. A handoff that read as a success would misdirect whoever picks this up.",
+  "refusal_demo": {
+    "fired": true,
+    "lines": [
+      "REFUSED (no reproducing_command): refusing claim 'MALFORMED_NO_COMMAND': missing reproducing_command",
+      "REFUSED (no evidence_path): refusing claim 'MALFORMED_NO_EVIDENCE': missing evidence_path",
+      "REFUSED (empty statement): refusing claim 'MALFORMED_NO_STATEMENT': missing statement"
+    ],
+    "reproduce": [
+      "python3",
+      "tools/headless/noetic_ascension_handoff.py",
+      "--refuse-only"
+    ]
+  }
+}

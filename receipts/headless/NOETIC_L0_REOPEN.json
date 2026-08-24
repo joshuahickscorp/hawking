@@ -1,0 +1,440 @@
+{
+  "schema": "hawking.headless.noetic_l0_reopen.v1",
+  "obligation": "Reopen NNS-016 / NNS-010: L0 already beats the incumbent 0.0301 vs 0.2252 and sits 1.328 decades off its own Shannon bound. Define L0 from the record, judge the comparison, find the skip, reproduce the bound, state REUSABLE_NOW.",
+  "generated_at": "2026-08-23T18:32:34Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/n14l0-20260823-142251",
+  "definition": {
+    "l0": "layer 0 (the first transformer block), foundry parent qwen3-235b-a22b:F1",
+    "mechanism": "F-b Kronecker / tensor-product factorisation of a SINGLE expert tensor: W ≈ Σ_r A_r ⊗ B_r. Frobenius-optimal rank-R approximation is the rank-R SVD of the Van Loan rearrangement R(W). Rank is capped by the S64 2.5 bpw gate rung.",
+    "incumbent": "scale-invariant shared_grammar VQ (family=shared_grammar, dim=8, k=1024, stages=2) at the same S64 rung, complete_bpw 2.500735 (under-billed by 0.003906 row-scale BPW; direction unchanged).",
+    "primary_receipts": [
+      {
+        "rel": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json"
+      },
+      {
+        "rel": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS.json",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS.json"
+      },
+      {
+        "rel": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+        "found": true,
+        "how": "git",
+        "path": "HEAD:tools/foundry/NEGATIVE_TRANSFER_ATLAS.json"
+      },
+      {
+        "rel": "workspace/campaign/records/reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json"
+      },
+      {
+        "rel": "workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC.json",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC.json"
+      },
+      {
+        "rel": "workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC_ADVERSARIAL.json",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC_ADVERSARIAL.json"
+      }
+    ],
+    "not_from_census_paraphrase": true,
+    "module": "tools/condense/qwen_generated_params.py (target_module of LANE_F adversarial; not in this HEAD — untracked at measurement time)"
+  },
+  "comparison": {
+    "verdict": "VALID",
+    "left_0_0301": {
+      "value": 0.0301,
+      "measures": "Kronecker relative Frobenius error of expert-3 gate_proj at layer 0 at 2.487061 complete BPW (rank 191 of split (1,2048,1536,2))",
+      "source": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json",
+      "field": "new_measurements/kron_rel_error_at_2.487061_bpw_gate_proj_expert3/layer_0",
+      "precision_note": "stored to 4 decimal places in the adversarial receipt"
+    },
+    "right_0_2252": {
+      "value": 0.2252168506383896,
+      "rounded_4dp": 0.2252,
+      "measures": "incumbent shared_grammar VQ mean relative Frobenius error on layer-0 gate_proj, experts 3 and 7, at 2.500735 complete BPW",
+      "source": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json",
+      "field": "new_measurements/codec_rival_rel_error_layer0_experts_3_7/gate_proj"
+    },
+    "same_metric": "relative Frobenius (weight-space reconstruction)",
+    "same_organ": "gate_proj",
+    "same_layer": 0,
+    "same_parent": "qwen3-235b-a22b:F1",
+    "kronecker_cheaper_complete_bpw": true,
+    "kronecker_wins_gate": true,
+    "kronecker_wins_down": false,
+    "error_reduction_factor": 7.4823,
+    "invalid_if_we_had": "compared Kronecker gate rel_error to Shannon down rel_error, or to a Q80 cosine margin of -0.0301, or to the layer-46 incumbent 0.239"
+  },
+  "skip_reason": {
+    "status": "FOUND",
+    "act": "Lane F measured layer 46 only (LANE_F_GENERATED_PARAMS.json 'layer' field), declared F-b DEAD as a family, and never wrote a layer-0 row into that payload.",
+    "rationale_in_record": "The verifier records the lane's excuse: layer 0 was skipped under an exemption written for cross-expert / cross-layer TYING methods. F-b is a single-tensor factorisation, so the exemption does not apply.",
+    "where": [
+      {
+        "path": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS.json",
+        "what": "measured layer=46 only; F-b verdict was a family-level DEAD; no layer-0 caveat field in the original payload (has_l0_caveat=False)",
+        "original_verdict": "DEAD: at the S64 rungs the Frobenius-OPTIMAL Kronecker factorisation loses to the incumbent scale-invariant VQ on every organ tested"
+      },
+      {
+        "path": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json",
+        "what": "REFUTED AS GENERALIZED. The per-tensor numbers reproduce exactly, but the failure is LAYER-DEPENDENT, not structural. On layer 0 gate_proj the optimal Kronecker at 2.487061 BPW reaches rel_error 0.0301 against the incumbent codec's 0.2252 at 2.500735 BPW - a 7.5x WIN for Kronecker at a cheaper complete rate. The lane excused not sampling layer 0 on the grounds that its hypotheses are about cross-expert/cross-layer TYING; F-b is a single-tensor factorisation with no tying, so that excuse does not cover it.",
+        "field": "per_submethod/F_b_kronecker"
+      },
+      {
+        "path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+        "what": "layer 0 gate_proj: 0.0301 vs the incumbent codec's 0.2252, at 2.487061 vs 2.500735 complete BPW - a 7.5x error reduction at a CHEAPER rate. The lane skipped layer 0 under an exemption written for cross-expert TYING methods, which does not apply to a single-tensor factorisation.",
+        "field": "entries/kronecker_factorisation/the_exception"
+      }
+    ],
+    "original_payload_has_explicit_l0_caveat": false,
+    "tying_entry": {
+      "verdict": "DEAD, and the row-norm rescue hypothesis is falsified.",
+      "why_the_exemption_was_written": "raw and row-normalized mean |off-diagonal cosine| agree to 3 significant figures (gate 0.00166 vs 0.00168; down 0.00039 both). The 15-decade row-norm span was NOT what killed the raw-space cosine test - the experts are genuinely mutually orthogonal in both spaces. Best single shared template explains 0.2513 of 4 experts' energy against an orthogonal null of exactly 0.2500. Same-expert-index cross-layer tying is indistinguishable from a different-index control at 1e-7.",
+      "why_it_does_not_cover_F_b": "F-a and F-c are cross-expert / cross-layer tying. F-b is a single-tensor factorisation with no tying. The layer-0 outlier is a different SOURCE, which is exactly when a non-tying method can still win."
+    }
+  },
+  "shannon": {
+    "claim": "L0 is 1.328 decades off its own Shannon bound",
+    "organ_of_the_1_328": "down_proj (NOT the Kronecker-win organ, which is gate_proj)",
+    "reproduced": true,
+    "recorded_gap_decades": 1.3278,
+    "aggregate_max_gap_decades": 1.3278,
+    "atlas_rounding": 1.328,
+    "formula": "gap_decades = log10(measured_mse / shannon_lower_bound_mse) = 2 * log10(rel_meas / rel_slb)",
+    "bound": "D(R) >= (1/(2 π e)) * 2^(2h) * 2^(-2R) with h = Kozachenko–Leonenko differential entropy of the coded-space chunks, R = 0.625 bits/dim (down, 1 stage, k=1024, dim=16)",
+    "not_the_gaussian_floor": "sqrt(2^-2R) is the Gaussian D(R), an UPPER bound on distortion among equal-variance sources. Matching it does not prove the true floor.",
+    "L0_down": {
+      "h_knn_bits_per_dim": -0.963481,
+      "h_gaussian_at_same_variance": 2.050787,
+      "non_gaussianity_bits": 3.014268,
+      "rate_bits_per_dim": 0.625,
+      "measured_mse": 0.1376949,
+      "shannon_lower_bound_mse": 0.00647388,
+      "recomputed_slb_mse": 0.006473882200314405,
+      "measured_rel_error": 0.370124,
+      "shannon_lower_bound_rel_error": 0.080255,
+      "gap_decades_from_mse": 1.3278,
+      "gap_decades_from_2log10_rel": 1.3278,
+      "wrong_formula_log10_rel": 0.6639
+    },
+    "L0_gate_is_a_different_cell": {
+      "gap_to_shannon_decades": 0.7915,
+      "non_gaussianity_bits": 0.668634,
+      "measured_rel_error": 0.276642,
+      "shannon_lower_bound_rel_error": 0.111211,
+      "note": "NNS-010's 1.328 decades is L0 down. NNS-016's 0.0301 vs 0.2252 is L0 gate. Same layer, different organs, different claims."
+    },
+    "correction": "Arithmetic reproduces 1.3278, atlas-rounded to 1.328. QUALIFIED: A2 adversarial shows h does not converge for this near-degenerate source, so 1.328 is not achievable headroom. Direction stands (Lane A is not closed at layer 0).",
+    "a2_column_scale_partial": {
+      "verdict": "PARTIAL_WIN_BELOW_BAR",
+      "l0_down_gap_closed_fraction": 0.4221,
+      "falsification_bar": "close >= half of the 1.328-decade L0 down gap at equal-or-lower bits",
+      "note": "column-scale closed ~42% of the L0-down gap, below the 50% bar"
+    }
+  },
+  "scope": {
+    "what_l0_is": "Layer 0 of qwen3-235b-a22b (foundry parent F1), not a codec named L0 and not Qwen3.8 layer-0 of a different campaign.",
+    "model": "qwen3-235b-a22b (foundry F1)",
+    "layers": "layer 0 of 94 (atlas: ~1 percent of total bits)",
+    "tensors_kronecker_win": "mlp.experts[3].gate_proj.weight at layer 0 only (shape 1536x4096, Van Loan split (1,2048,1536,2), rank 191)",
+    "tensors_incumbent": "same layer-0 gate_proj, mean relative Frobenius of the shared_grammar VQ (dim=8, k=1024, stages=2) fitted on experts 3 and 7",
+    "organs_win": [
+      "gate_proj"
+    ],
+    "organs_lose": [
+      "down_proj (L0 Kronecker 0.6525 vs incumbent 0.4261)"
+    ],
+    "depth_transfer": {
+      "gate_kron_rel_error": {
+        "L0": 0.0301,
+        "L1": 0.6611,
+        "L2": 0.7567,
+        "L46": 0.8534
+      },
+      "note": "error rises monotonically with depth; the win does not transfer"
+    },
+    "bpw_kind": "complete/storage, not active",
+    "metric": "weight-space relative Frobenius, not activation cosine, not generation",
+    "kernel": "NONE in the sealed NR (grouped_absmax + raw_f32 only). No Kronecker consume path.",
+    "narrowing": "One parent, one layer, one organ, one expert tensor, weight-space only, storage BPW only. Same class of narrowing as HGRAVS01 0.13 down_proj-only and GLM 0.167 expert-only."
+  },
+  "health": {
+    "local_bpw": 2.487061,
+    "band": "not_sub_0.5 — this is the S64 2.5-bpw rung, not the 223-row <0.5 trap",
+    "doctor_gate": "UNSCORED",
+    "generation": "UNSCORED",
+    "honesty_on_receipt": "weight-space reconstruction error only; NOT a capability claim",
+    "law_applied": "A low number is not a result until paired with a health verdict. 0.0301 is reconstruction quality, not doctor-gate healthy."
+  },
+  "bpw": {
+    "storage_complete_bpw_kronecker_gate": 2.487061,
+    "storage_complete_bpw_incumbent_gate": 2.500735,
+    "active_bpw": "NOT_MEASURED",
+    "law_applied": "Storage BPW is not active BPW. Report both or neither. Kronecker vs VQ here is complete/storage accounting only; there is no decode-traffic number.",
+    "rival_underbill_bpw": 0.00390625,
+    "rival_underbill_note": "qwen_subhalfbit_search.expert_bits (used for the codec rival) omits the M01' per-row bf16 scale that qwen_structural_plan.ledger bills as a separate 'scales' component (ROW_SCALE_BITS=16/row). The rival ships those scales (codec_baseline calls apply_refit, which decodes as direction*s2[:,None]). Under-bill: gate 1536*16/6291456 = 0.003906 BPW, down 4096*16/6291456 = 0.010417 BPW. Corrected rival rates: gate 2.504641, down 0.636151.",
+    "direction_unaffected": "Kronecker remains strictly cheaper after adding the rival's row scales",
+    "whole_model_s64_complete_bpw": 0.948410027
+  },
+  "activations": {
+    "synthetic": false,
+    "proxy_laundering_found": false,
+    "notes": [
+      "All tensors read from models/qwen3-235b-a22b via SafetensorsIndexReader; measure() hard-refuses on source_present()==False.",
+      "No activation/calibration proxy is used anywhere: codec_baseline passes importance=None, so the 'activation-aware' half of the codec is OFF and only the scale-invariant VQ is exercised - which is what the report says.",
+      "Weight-space framing is stated in the module docstring, the report payload and the claim. No capability language is smuggled in."
+    ],
+    "law_applied": "Never evaluate compression on synthetic activations. This measurement is weight-space on real Qwen3-235B shards (SafetensorsIndexReader); activation-aware half of the codec is OFF (importance=None).",
+    "consequence": "Clean of the Gaussian-proxy trap, and also NOT a function-space win. Promotion still needs real routed X / doctor-gate."
+  },
+  "scale_control": {
+    "artifact": "0.01 * W (deliberate magnitude wipe, direction preserved)",
+    "cosine": 1.0,
+    "cosine_rounded": 1.0,
+    "cosine_accepts_scaled_artifact": true,
+    "rel_frobenius": 0.9900000000000001,
+    "rel_frobenius_rounded": 0.99,
+    "rel_frobenius_rejects_scaled_artifact": true,
+    "metric_used_by_l0_kronecker": "relative Frobenius of the Van Loan rank-R reconstruction (kron_rel_error = sqrt(tail_energy / total_energy))",
+    "law": "Cosine is scale-invariant and scored 1.000000 on 0.01·W across a whole campaign. Any metric used here must reject that artifact. Relative Frobenius does: ||0.01 W - W|| / ||W|| = 0.99.",
+    "watched_fail": "cosine(W, 0.01*W) == 1.0, so a cosine-only reopen would have accepted a magnitude-blind fake. The Kronecker number is not cosine."
+  },
+  "reusable": {
+    "REUSABLE_NOW": false,
+    "live_named_lever": true,
+    "why_not_reusable_as_a_pack": [
+      "no Kronecker decode kernel; reconstruct-W then GEMV is the NS-019 trap",
+      "no function-space / doctor-gate / generation score",
+      "active BPW not measured",
+      "win is gate_proj L0 only; down_proj L0 loses; L>=1 dead at these rungs",
+      "layer 0 is 1/94 of the model (~1 percent of bits) even if fully exploited",
+      "original honesty line: weight-space reconstruction error only; NOT a capability claim",
+      "G031: families that buy bits by spending decode ALU sit on an already-exhausted budget"
+    ],
+    "why_still_live": "The depth-kill ('structurally dead, nothing here should be built on') was refuted by the verifier on the one layer the lane did not sample. The tying exemption does not cover a single-tensor factorisation. Do not transfer 'Lane A is closed' or 'Kronecker is dead' onto layer 0 gate.",
+    "smallest_experiment": {
+      "name": "L0_GATE_KRON_DOCTOR_VS_VQ",
+      "what": "Pack only model.layers.0.mlp.experts.{e}.gate_proj.weight as the Van Loan Kronecker at rank 191 (2.487061 complete BPW). Score function-space (doctor-gate _gain or output rel_fro on REAL routed activations from the Qwen3-235B parent, never a Gaussian proxy) against the incumbent shared_grammar VQ at the same complete rate. Include the 0.01·W scale reject, report storage AND active BPW, and emit a health verdict.",
+      "promotes_if": "function-space beats VQ at ≤ incumbent complete BPW, scale artifact is rejected, health=healthy, and the consume path is A⊗B matvec (not reconstruct W).",
+      "kills_if": "function-space does not beat VQ, OR original-space Frobenius ranking flips the way A2's gate metric flipped, OR the decode path materializes dense W, OR doctor-gate is unhealthy, OR active BPW erases the storage win.",
+      "not_this_experiment": "Do not re-run weight-space SVD at layer 46. Do not score cosine. Do not transfer a Qwen3.8 PHASE_A coherent-point kill."
+    }
+  },
+  "starting_receipts_audit": {
+    "CLAMP25": {
+      "rel": "receipts/QWEN80_PRESCRIPTION_CLAMP25.json",
+      "located": {
+        "rel": "receipts/QWEN80_PRESCRIPTION_CLAMP25.json",
+        "found": true,
+        "how": "disk",
+        "path": "/Users/scammermike/.claude-grok/worktrees/n14l0-20260823-142251/receipts/QWEN80_PRESCRIPTION_CLAMP25.json",
+        "bytes": 828970
+      },
+      "hits": [
+        {
+          "needle": "0.0301",
+          "count": 2,
+          "context": "{\"band\": 3, \"bits\": 1, \"component\": \"up_proj\", \"eff_bpw\": 1.34, \"elems\": 1048576, \"holdout_cosine\": 0.8302963375310116, \"layer\": 46, \"margin_to_layer_target\": -0.030103662468988435, \"name\": \"model.layers.46.mlp.experts.93.up_proj.weight\"}, {\"band\": 3, \"bits\": 2, \"component\": \"down_proj\", \"eff_bpw\": 2.34, \"elems\": 1048576, \"h"
+        }
+      ]
+    },
+    "DOCTOR6_MEASURED_BAR": {
+      "rel": "receipts/QWEN80_DOCTOR6_PRESCRIPTION_MEASURED_BAR.json",
+      "located": {
+        "rel": "receipts/QWEN80_DOCTOR6_PRESCRIPTION_MEASURED_BAR.json",
+        "found": true,
+        "how": "disk",
+        "path": "/Users/scammermike/.claude-grok/worktrees/n14l0-20260823-142251/receipts/QWEN80_DOCTOR6_PRESCRIPTION_MEASURED_BAR.json",
+        "bytes": 870564
+      },
+      "hits": [
+        {
+          "needle": "0.0301",
+          "count": 2,
+          "context": "{\"band\": 3, \"bits\": 1, \"component\": \"up_proj\", \"eff_bpw\": 1.34, \"elems\": 1048576, \"holdout_cosine\": 0.8302963375310116, \"layer\": 46, \"margin_to_layer_target\": -0.030103662468988435, \"name\": \"model.layers.46.mlp.experts.93.up_proj.weight\"}, {\"band\": 3, \"bits\": 2, \"component\": \"down_proj\", \"eff_bpw\": 2.34, \"elems\": 1048576, \"h"
+        }
+      ]
+    },
+    "DOCTOR6_V1": {
+      "rel": "receipts/QWEN80_DOCTOR6_PRESCRIPTION_V1.json",
+      "located": {
+        "rel": "receipts/QWEN80_DOCTOR6_PRESCRIPTION_V1.json",
+        "found": true,
+        "how": "disk",
+        "path": "/Users/scammermike/.claude-grok/worktrees/n14l0-20260823-142251/receipts/QWEN80_DOCTOR6_PRESCRIPTION_V1.json",
+        "bytes": 422554
+      },
+      "hits": [
+        {
+          "needle": "0.0301",
+          "count": 2,
+          "context": ", \"cosine_after\": 0.7561067350461375, \"cosine_before\": null, \"reason\": \"over_budget local_bpw=1.0161 > 0.98\", \"rung\": \"l1_rotation\", \"surplus_over_incumbent\": -0.03013842417562529}, {\"component_bpw\": 0.50830078125, \"cosine_after\": 0.6851985760521744, \"cosine_before\": null, \"reason\": \"below_incumbent_or_unhelpful: cos=0.6852 "
+        }
+      ]
+    },
+    "PHASE_A_EXHAUSTION": {
+      "rel": "receipts/ascent-2026-08-18/PHASE_A_EXHAUSTION.json",
+      "located": {
+        "rel": "receipts/ascent-2026-08-18/PHASE_A_EXHAUSTION.json",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-18/PHASE_A_EXHAUSTION.json",
+        "bytes": 2907
+      },
+      "hits": []
+    },
+    "G031_FAMILY_REVIEW": {
+      "rel": "receipts/ascent-2026-08-16/G031_FAMILY_REVIEW.json",
+      "located": {
+        "rel": "receipts/ascent-2026-08-16/G031_FAMILY_REVIEW.json",
+        "found": true,
+        "how": "git",
+        "path": "HEAD:receipts/ascent-2026-08-16/G031_FAMILY_REVIEW.json",
+        "bytes": 18302
+      },
+      "hits": []
+    }
+  },
+  "numbers": {
+    "0.0301": {
+      "value": 0.0301,
+      "measures": "Kronecker relative Frobenius error of expert-3 gate_proj at layer 0 at 2.487061 complete BPW (rank 191 of split (1,2048,1536,2))",
+      "source": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json",
+      "field": "new_measurements/kron_rel_error_at_2.487061_bpw_gate_proj_expert3/layer_0",
+      "precision_note": "stored to 4 decimal places in the adversarial receipt"
+    },
+    "0.2252": {
+      "value": 0.2252168506383896,
+      "rounded_4dp": 0.2252,
+      "measures": "incumbent shared_grammar VQ mean relative Frobenius error on layer-0 gate_proj, experts 3 and 7, at 2.500735 complete BPW",
+      "source": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json",
+      "field": "new_measurements/codec_rival_rel_error_layer0_experts_3_7/gate_proj"
+    },
+    "error_reduction_factor": 7.4823,
+    "atlas_says_7.5x": true,
+    "complete_bpw_kronecker": 2.487061,
+    "complete_bpw_incumbent": 2.500735,
+    "bit_accounting_recomputed": {
+      "formula": "191*(1*2048 + 1536*2)*16 + 512",
+      "bits": 15647232,
+      "n_weights": 6291456,
+      "bpw_exact": 2.487060546875,
+      "bpw_6dp": 2.487061,
+      "matches_receipt": true
+    },
+    "depth_incumbent_is_a_different_number": {
+      "L46_gate_codec_rival_rel_error": 0.23911502957344055,
+      "L0_gate_codec_rival_rel_error": 0.2252168506383896,
+      "note": "Archaeology's incumbent_at_same_rung=0.239 is the layer-46 rival, not the 0.2252 L0 rival. Do not mix them."
+    }
+  },
+  "what_i_watched_fail": [
+    "L0 down_proj Kronecker LOSES (0.6525 vs incumbent 0.4260842502117157). A whole-layer celebration of 0.0301 vs 0.2252 would have been an organ error.",
+    "Wrong Shannon formula log10(rel_meas/rel_slb) = 0.6639, not 1.328. The receipt uses log10(MSE_meas/MSE_slb) = 2·log10(rel ratio) = 1.3278.",
+    "LANE_A2 adversarial: Kozachenko–Leonenko h on L0 down does not converge in n (n=10k/20k/40k h={'n=10000': -0.8353, 'n=20000': -0.9635, 'n=40000': -1.0587}). 1.328 decades is a function of max_n=20000, not a measured constant. Direction (non-Gaussian, real gap) stands; the number is not achievable headroom.",
+    "cosine(W, 0.01*W) = 1.0 (accepts). rel_frobenius = 0.99 (rejects). The L0 Kronecker metric is the one that rejects.",
+    "CLAMP25 contains the substring 0.0301, but it is a Q80 cosine-margin collision, not Kronecker rel_error. context={\"band\": 3, \"bits\": 1, \"component\": \"up_proj\", \"eff_bpw\": 1.34, \"elems\": 1048576, \"holdout_cosine\": 0.8302963375310116, \"layer\": 46, \"margin_to_layer_target\": -0.030103662468988435, \"name\": \"model.layers.46.mlp.experts.93.up_proj.weight\"}, {\"band\": 3, \"bits\": 2, \"component\": \"down_proj\", \"eff_bpw\": 2.34, \"elems\": 1048576, \"h",
+    "DOCTOR6_MEASURED_BAR contains the substring 0.0301, but it is a Q80 cosine-margin collision, not Kronecker rel_error. context={\"band\": 3, \"bits\": 1, \"component\": \"up_proj\", \"eff_bpw\": 1.34, \"elems\": 1048576, \"holdout_cosine\": 0.8302963375310116, \"layer\": 46, \"margin_to_layer_target\": -0.030103662468988435, \"name\": \"model.layers.46.mlp.experts.93.up_proj.weight\"}, {\"band\": 3, \"bits\": 2, \"component\": \"down_proj\", \"eff_bpw\": 2.34, \"elems\": 1048576, \"h",
+    "DOCTOR6_V1 contains the substring 0.0301, but it is a Q80 cosine-margin collision, not Kronecker rel_error. context=, \"cosine_after\": 0.7561067350461375, \"cosine_before\": null, \"reason\": \"over_budget local_bpw=1.0161 > 0.98\", \"rung\": \"l1_rotation\", \"surplus_over_incumbent\": -0.03013842417562529}, {\"component_bpw\": 0.50830078125, \"cosine_after\": 0.6851985760521744, \"cosine_before\": null, \"reason\": \"below_incumbent_or_unhelpful: cos=0.6852 ",
+    "PHASE_A_EXHAUSTION refutes low_rank/TT/Kronecker at the Qwen3.8 coherent point (99% energy needs 92–95% of ranks). Different parent, no 0.0301. Text=REFUTED. down_proj/gate_proj near-full-rank (my SVD: 99% energy needs 92-95% of ranks; low-rank costs MORE params than full). Function-space matched 3.25 b/elem is 2.93x Q3 error (G033/G034 + struct-mlp lane). Comprehensively refuted at the coherent point.",
+    "G031 names Kronecker as an untested G-XFORM *member* on Qwen3.8 Hadamard. That is a different Kronecker (structured transform vs Van Loan factorisation of one F1 expert tensor) and carries no 0.0301."
+  ],
+  "evidence_resolved": {
+    "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json": {
+      "rel": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+      "bytes": 13271
+    },
+    "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS.json": {
+      "rel": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS.json",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS.json",
+      "bytes": 14520
+    },
+    "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json": {
+      "rel": "workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/LANE_F_GENERATED_PARAMS_ADVERSARIAL.json",
+      "bytes": 10818
+    },
+    "workspace/campaign/records/reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json": {
+      "rel": "workspace/campaign/records/reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/SHANNON_BOUND_ADVERSARIAL.json",
+      "bytes": 7130
+    },
+    "workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC.json": {
+      "rel": "workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC.json",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC.json",
+      "bytes": 5818
+    },
+    "workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC_ADVERSARIAL.json": {
+      "rel": "workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC_ADVERSARIAL.json",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/reports/subbit_reset/LANE_A2_LAYER0_CODEC_ADVERSARIAL.json",
+      "bytes": 7203
+    },
+    "receipts/ascent-2026-08-18/PHASE_A_EXHAUSTION.json": {
+      "rel": "receipts/ascent-2026-08-18/PHASE_A_EXHAUSTION.json",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-18/PHASE_A_EXHAUSTION.json",
+      "bytes": 2907
+    },
+    "receipts/ascent-2026-08-16/G031_FAMILY_REVIEW.json": {
+      "rel": "receipts/ascent-2026-08-16/G031_FAMILY_REVIEW.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/G031_FAMILY_REVIEW.json",
+      "bytes": 18302
+    },
+    "receipts/QWEN80_PRESCRIPTION_CLAMP25.json": {
+      "rel": "receipts/QWEN80_PRESCRIPTION_CLAMP25.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/n14l0-20260823-142251/receipts/QWEN80_PRESCRIPTION_CLAMP25.json",
+      "bytes": 828970
+    },
+    "receipts/QWEN80_DOCTOR6_PRESCRIPTION_MEASURED_BAR.json": {
+      "rel": "receipts/QWEN80_DOCTOR6_PRESCRIPTION_MEASURED_BAR.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/n14l0-20260823-142251/receipts/QWEN80_DOCTOR6_PRESCRIPTION_MEASURED_BAR.json",
+      "bytes": 870564
+    },
+    "receipts/QWEN80_DOCTOR6_PRESCRIPTION_V1.json": {
+      "rel": "receipts/QWEN80_DOCTOR6_PRESCRIPTION_V1.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/n14l0-20260823-142251/receipts/QWEN80_DOCTOR6_PRESCRIPTION_V1.json",
+      "bytes": 422554
+    }
+  },
+  "self_checks": {
+    "bit_accounting_matches": true,
+    "shannon_arithmetic_matches": true,
+    "scale_control_rejects": true,
+    "cosine_still_blind": true,
+    "comparison_valid": true,
+    "skip_found": true,
+    "down_proj_does_not_win": true
+  }
+}

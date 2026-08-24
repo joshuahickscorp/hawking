@@ -1,0 +1,800 @@
+{
+ "schema": "hawking.headless.organ_bandwidth.v1",
+ "generated_at": "2026-08-24T16:15:47Z",
+ "git_head": "324d108a099f08c2b41ebfab552d8bb9ca9ca4d6",
+ "obligation": "N025 \u2014 TOKEN-GRAPH ORGAN BANDWIDTH + DISPATCH CONTINUATION: attribute the 356.7\u2192778.8 gap; attempt one cut below 628",
+ "one_line": "Production 358.2 GB/s vs 778.8 roof (N018 356.7; gap 422.1 GB/s). Largest share of the roof-gap is mlp_gate_up (35.6% of extra ns vs 778.8, 9.89 ms/token, 360.7 GB/s). Gap rank: mlp_gate_up, deltanet, mlp_down, gqa_attention. Dispatch 628 \u2192 580 (DeltaNet state update (ba_to_decay into gated-delta)); token ids unchanged. Did not re-attack the MLP tile. dense_w_materialized=0.",
+ "question": "Which organ holds the largest share of the 422 GB/s gap, and is there a measured dispatch reduction below 628 with token ids unchanged?",
+ "answer": "Production 358.2 GB/s vs 778.8 roof (N018 356.7; gap 422.1 GB/s). Largest share of the roof-gap is mlp_gate_up (35.6% of extra ns vs 778.8, 9.89 ms/token, 360.7 GB/s). Gap rank: mlp_gate_up, deltanet, mlp_down, gqa_attention. Dispatch 628 \u2192 580 (DeltaNet state update (ba_to_decay into gated-delta)); token ids unchanged. Did not re-attack the MLP tile. dense_w_materialized=0.",
+ "reading": "mlp_gate_up holds the largest share of the 356.7\u2192778.8 roof-gap (35.6% of extra ns, 360.7 GB/s). N024 showed the affine2 MLP tile is not the DRAM wall (isolated load-only 1012 GB/s); this lane did not retile. The leftover in mlp_gate_up is non-load work on the fused SwiGLU path plus 64 launches. DeltaNet is second. Q4 remainder (unfused o_proj + out_proj geo_tpr64) sits closer to the roof and is not the next tile target.",
+ "roof_gb_s": 778.8,
+ "n018_production_gb_s": 356.7,
+ "gap_gb_s": 422.09999999999997,
+ "prior_not_rederived": {
+  "n017_dram_roof_gb_s": 778.8,
+  "n018_production_decode_gb_s": 356.7,
+  "parent_active_bytes_per_token": 9878901136,
+  "parent_dispatches_per_token": 756,
+  "n005_residual_rmsnorm_dispatches": 628,
+  "did_not_retry_mlp_tile": true
+ },
+ "did_not_load_second_27b": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "occupancy": {
+  "ps_matches": [
+   "12402  22224 /Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp9wq3pmxx/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}"
+  ],
+  "loaded_a_second_27b": false,
+  "note": "A second Qwen3.8-27B would show RSS in the 10+ GiB class and is refused."
+ },
+ "parent_immutable": {
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "outside_worktree": true,
+  "catalog_present": true
+ },
+ "organs_named": [
+  "embedding",
+  "gqa_attention",
+  "deltanet",
+  "mlp_gate_up",
+  "mlp_down",
+  "q4_remainder",
+  "lm_head",
+  "sampling"
+ ],
+ "organ_bytes_from_dispatch_ledger": {
+  "embedding": {
+   "n": 1,
+   "weight_read": 2720,
+   "activation_read": 0,
+   "activation_write": 20480,
+   "total_traffic": 23200,
+   "operators": [
+    "embed_lookup"
+   ]
+  },
+  "gqa_attention": {
+   "n": 96,
+   "weight_read": 624263168,
+   "activation_read": 8912896,
+   "activation_write": 2883584,
+   "total_traffic": 636059648,
+   "operators": [
+    "input_rmsnorm",
+    "gqa_qkv_concat",
+    "qk_norm_rope_cache",
+    "mha_decode",
+    "sigmoid_gate",
+    "mixer_residual"
+   ]
+  },
+  "deltanet": {
+   "n": 336,
+   "weight_read": 2161674240,
+   "activation_read": 168726528,
+   "activation_write": 169119744,
+   "total_traffic": 2499520512,
+   "operators": [
+    "input_rmsnorm",
+    "dn_qkvz_ba_concat",
+    "qkvz_rearrange_conv_l2",
+    "ba_to_decay_beta",
+    "gated_delta",
+    "gated_rmsnorm",
+    "mixer_residual"
+   ]
+  },
+  "mlp_gate_up": {
+   "n": 128,
+   "weight_read": 3566469120,
+   "activation_read": 2621440,
+   "activation_write": 5767168,
+   "total_traffic": 3574857728,
+   "operators": [
+    "post_attention_rmsnorm",
+    "gate_up_swiglu"
+   ]
+  },
+  "mlp_down": {
+   "n": 128,
+   "weight_read": 1782579200,
+   "activation_read": 7077888,
+   "activation_write": 2621440,
+   "total_traffic": 1792278528,
+   "operators": [
+    "down_proj",
+    "mlp_residual"
+   ]
+  },
+  "q4_remainder": {
+   "n": 64,
+   "weight_read": 1069547520,
+   "activation_read": 1572864,
+   "activation_write": 1310720,
+   "total_traffic": 1072431104,
+   "operators": [
+    "out_proj",
+    "o_proj"
+   ]
+  },
+  "lm_head": {
+   "n": 2,
+   "weight_read": 675450880,
+   "activation_read": 40960,
+   "activation_write": 1013760,
+   "total_traffic": 676505600,
+   "operators": [
+    "final_rmsnorm",
+    "lm_head"
+   ]
+  },
+  "sampling": {
+   "n": 1,
+   "weight_read": 0,
+   "activation_read": 993280,
+   "activation_write": 4,
+   "total_traffic": 993284,
+   "operators": [
+    "argmax"
+   ]
+  }
+ },
+ "organ_attribution": {
+  "kind": "MEASURED",
+  "missing_organs": [],
+  "production_gpu_ns_median": 27579625,
+  "production_gpu_ns_reps": [
+   27842499.0,
+   27833375.0,
+   27622833.0,
+   27525999.0,
+   27517625.0,
+   27579625.0,
+   27552000.0
+  ],
+  "production_achieved_gb_s": 358.1956294184566,
+  "production_active_bytes": 9878901136,
+  "n018_anchor_gb_s": 356.7,
+  "roof_gb_s": 778.8,
+  "gap_gb_s_356p7_to_778p8": 422.09999999999997,
+  "isolated_sum_ns": 27194331.0,
+  "scale_onto_production": 1.0141681735064563,
+  "scale_note": "isolated organ CBs overcount vs 1-CB production; scale onto production GPU ns",
+  "organs": {
+   "embedding": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     9750.0,
+     9750.0,
+     8375.0,
+     8750.0,
+     7291.0,
+     8999.0,
+     7333.0
+    ],
+    "gpu_ns_min": 7291,
+    "gpu_ns_median_isolated": 8750,
+    "gpu_ns_max": 9750,
+    "n_reps": 7,
+    "dispatches": 1,
+    "weight_read_bytes": 2720,
+    "traffic_bytes": 23200,
+    "scaled_gpu_ns": 8873.971518181492,
+    "roof_ns_at_778p8": 3.4925526450950177,
+    "gap_ns_vs_roof": 8870.478965536397,
+    "achieved_gb_s": 0.3065143937443467,
+    "roof_gb_s": 778.8,
+    "operators": [
+     "embed_lookup"
+    ],
+    "dense_w_materialized": 0,
+    "fraction_of_roof_gap": 0.0005955956606360438
+   },
+   "gqa_attention": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     2974750.0,
+     2922541.0,
+     2959708.0,
+     1759250.0,
+     1755374.0,
+     1755125.0,
+     1756041.0
+    ],
+    "gpu_ns_min": 1755125,
+    "gpu_ns_median_isolated": 1759250,
+    "gpu_ns_max": 2974750,
+    "n_reps": 7,
+    "dispatches": 96,
+    "weight_read_bytes": 624263168,
+    "traffic_bytes": 636059648,
+    "scaled_gpu_ns": 1784175.3592412332,
+    "roof_ns_at_778p8": 801570.580380072,
+    "gap_ns_vs_roof": 982604.7788611612,
+    "achieved_gb_s": 349.88890792970267,
+    "roof_gb_s": 778.8,
+    "operators": [
+     "input_rmsnorm",
+     "gqa_qkv_concat",
+     "qk_norm_rope_cache",
+     "mha_decode",
+     "sigmoid_gate",
+     "mixer_residual"
+    ],
+    "dense_w_materialized": 0,
+    "fraction_of_roof_gap": 0.06597559665985386
+   },
+   "deltanet": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     6782791.0,
+     6546374.0,
+     6542624.0,
+     6542250.0,
+     6734791.0,
+     6657291.0,
+     6547625.0
+    ],
+    "gpu_ns_min": 6542250,
+    "gpu_ns_median_isolated": 6547625,
+    "gpu_ns_max": 6782791,
+    "n_reps": 7,
+    "dispatches": 336,
+    "weight_read_bytes": 2161674240,
+    "traffic_bytes": 2499520512,
+    "scaled_gpu_ns": 6640392.887055211,
+    "roof_ns_at_778p8": 2775647.4576271186,
+    "gap_ns_vs_roof": 3864745.429428092,
+    "achieved_gb_s": 325.5340876311656,
+    "roof_gb_s": 778.8,
+    "operators": [
+     "input_rmsnorm",
+     "dn_qkvz_ba_concat",
+     "qkvz_rearrange_conv_l2",
+     "ba_to_decay_beta",
+     "gated_delta",
+     "gated_rmsnorm",
+     "mixer_residual"
+    ],
+    "dense_w_materialized": 0,
+    "fraction_of_roof_gap": 0.25949282064400503
+   },
+   "mlp_gate_up": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     9745749.0,
+     9887249.0,
+     9746124.0,
+     9748249.0,
+     9749333.0,
+     9883999.0,
+     9757041.0
+    ],
+    "gpu_ns_min": 9745749,
+    "gpu_ns_median_isolated": 9749333,
+    "gpu_ns_max": 9887249,
+    "n_reps": 7,
+    "dispatches": 128,
+    "weight_read_bytes": 3566469120,
+    "traffic_bytes": 3574857728,
+    "scaled_gpu_ns": 9887463.24151622,
+    "roof_ns_at_778p8": 4579441.602465332,
+    "gap_ns_vs_roof": 5308021.639050888,
+    "achieved_gb_s": 360.70618245384145,
+    "roof_gb_s": 778.8,
+    "operators": [
+     "post_attention_rmsnorm",
+     "gate_up_swiglu"
+    ],
+    "dense_w_materialized": 0,
+    "fraction_of_roof_gap": 0.3563995435944036
+   },
+   "mlp_down": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     5612583.0,
+     5619291.0,
+     5820333.0,
+     5680500.0,
+     5689375.0,
+     5674124.0,
+     5678999.0
+    ],
+    "gpu_ns_min": 5612583,
+    "gpu_ns_median_isolated": 5678999,
+    "gpu_ns_max": 5820333,
+    "n_reps": 7,
+    "dispatches": 128,
+    "weight_read_bytes": 1782579200,
+    "traffic_bytes": 1792278528,
+    "scaled_gpu_ns": 5759460.043174991,
+    "roof_ns_at_778p8": 2288879.301489471,
+    "gap_ns_vs_roof": 3470580.7416855204,
+    "achieved_gb_s": 309.5045692889859,
+    "roof_gb_s": 778.8,
+    "operators": [
+     "down_proj",
+     "mlp_residual"
+    ],
+    "dense_w_materialized": 0,
+    "fraction_of_roof_gap": 0.23302719477334596
+   },
+   "q4_remainder": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     2080833.0,
+     2162999.0,
+     2144250.0,
+     2097249.0,
+     2071916.0,
+     2094374.0,
+     2095583.0
+    ],
+    "gpu_ns_min": 2071916,
+    "gpu_ns_median_isolated": 2095583,
+    "gpu_ns_max": 2162999,
+    "n_reps": 7,
+    "dispatches": 64,
+    "weight_read_bytes": 1069547520,
+    "traffic_bytes": 1072431104,
+    "scaled_gpu_ns": 2125273.58354118,
+    "roof_ns_at_778p8": 1373327.5808936828,
+    "gap_ns_vs_roof": 751946.0026474972,
+    "achieved_gb_s": 503.2516887627687,
+    "roof_gb_s": 778.8,
+    "operators": [
+     "out_proj",
+     "o_proj"
+    ],
+    "dense_w_materialized": 0,
+    "fraction_of_roof_gap": 0.050488342055652086
+   },
+   "lm_head": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     1020041.0,
+     1019083.0,
+     1019791.0,
+     1021083.0,
+     1018041.0,
+     1020166.0,
+     1021166.0
+    ],
+    "gpu_ns_min": 1018041,
+    "gpu_ns_median_isolated": 1020041,
+    "gpu_ns_max": 1021166,
+    "n_reps": 7,
+    "dispatches": 2,
+    "weight_read_bytes": 675450880,
+    "traffic_bytes": 676505600,
+    "scaled_gpu_ns": 1034493.1178716992,
+    "roof_ns_at_778p8": 867296.9696969697,
+    "gap_ns_vs_roof": 167196.14817472943,
+    "achieved_gb_s": 652.9293122699839,
+    "roof_gb_s": 778.8,
+    "operators": [
+     "final_rmsnorm",
+     "lm_head"
+    ],
+    "dense_w_materialized": 0,
+    "fraction_of_roof_gap": 0.011226146943679514
+   },
+   "sampling": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     348500.0,
+     336999.0,
+     334750.0,
+     334124.0,
+     332583.0,
+     334583.0,
+     340375.0
+    ],
+    "gpu_ns_min": 332583,
+    "gpu_ns_median_isolated": 334750,
+    "gpu_ns_max": 348500,
+    "n_reps": 7,
+    "dispatches": 1,
+    "weight_read_bytes": 0,
+    "traffic_bytes": 993284,
+    "scaled_gpu_ns": 339492.7960812862,
+    "roof_ns_at_778p8": 0.0,
+    "gap_ns_vs_roof": 339492.7960812862,
+    "achieved_gb_s": 0.0,
+    "roof_gb_s": 778.8,
+    "operators": [
+     "argmax"
+    ],
+    "dense_w_materialized": 0,
+    "fraction_of_roof_gap": 0.022794759668423873
+   }
+  },
+  "ranked_by_ns": [
+   {
+    "organ": "mlp_gate_up",
+    "scaled_gpu_ns": 9887463.24151622,
+    "achieved_gb_s": 360.70618245384145,
+    "rank": 1
+   },
+   {
+    "organ": "deltanet",
+    "scaled_gpu_ns": 6640392.887055211,
+    "achieved_gb_s": 325.5340876311656,
+    "rank": 2
+   },
+   {
+    "organ": "mlp_down",
+    "scaled_gpu_ns": 5759460.043174991,
+    "achieved_gb_s": 309.5045692889859,
+    "rank": 3
+   },
+   {
+    "organ": "q4_remainder",
+    "scaled_gpu_ns": 2125273.58354118,
+    "achieved_gb_s": 503.2516887627687,
+    "rank": 4
+   },
+   {
+    "organ": "gqa_attention",
+    "scaled_gpu_ns": 1784175.3592412332,
+    "achieved_gb_s": 349.88890792970267,
+    "rank": 5
+   },
+   {
+    "organ": "lm_head",
+    "scaled_gpu_ns": 1034493.1178716992,
+    "achieved_gb_s": 652.9293122699839,
+    "rank": 6
+   },
+   {
+    "organ": "sampling",
+    "scaled_gpu_ns": 339492.7960812862,
+    "achieved_gb_s": 0.0,
+    "rank": 7
+   },
+   {
+    "organ": "embedding",
+    "scaled_gpu_ns": 8873.971518181492,
+    "achieved_gb_s": 0.3065143937443467,
+    "rank": 8
+   }
+  ],
+  "ranked_by_fraction_of_roof_gap": [
+   {
+    "organ": "mlp_gate_up",
+    "gap_ns_vs_roof": 5308021.639050888,
+    "fraction_of_roof_gap": 0.3563995435944036,
+    "achieved_gb_s": 360.70618245384145,
+    "rank": 1
+   },
+   {
+    "organ": "deltanet",
+    "gap_ns_vs_roof": 3864745.429428092,
+    "fraction_of_roof_gap": 0.25949282064400503,
+    "achieved_gb_s": 325.5340876311656,
+    "rank": 2
+   },
+   {
+    "organ": "mlp_down",
+    "gap_ns_vs_roof": 3470580.7416855204,
+    "fraction_of_roof_gap": 0.23302719477334596,
+    "achieved_gb_s": 309.5045692889859,
+    "rank": 3
+   },
+   {
+    "organ": "gqa_attention",
+    "gap_ns_vs_roof": 982604.7788611612,
+    "fraction_of_roof_gap": 0.06597559665985386,
+    "achieved_gb_s": 349.88890792970267,
+    "rank": 4
+   },
+   {
+    "organ": "q4_remainder",
+    "gap_ns_vs_roof": 751946.0026474972,
+    "fraction_of_roof_gap": 0.050488342055652086,
+    "achieved_gb_s": 503.2516887627687,
+    "rank": 5
+   },
+   {
+    "organ": "sampling",
+    "gap_ns_vs_roof": 339492.7960812862,
+    "fraction_of_roof_gap": 0.022794759668423873,
+    "achieved_gb_s": 0.0,
+    "rank": 6
+   },
+   {
+    "organ": "lm_head",
+    "gap_ns_vs_roof": 167196.14817472943,
+    "fraction_of_roof_gap": 0.011226146943679514,
+    "achieved_gb_s": 652.9293122699839,
+    "rank": 7
+   },
+   {
+    "organ": "embedding",
+    "gap_ns_vs_roof": 8870.478965536397,
+    "fraction_of_roof_gap": 0.0005955956606360438,
+    "achieved_gb_s": 0.3065143937443467,
+    "rank": 8
+   }
+  ],
+  "largest_ns_organ": "mlp_gate_up",
+  "largest_roof_gap_organ": "mlp_gate_up",
+  "next_optimization_target": "mlp_gate_up",
+  "noop_empty": {
+   "role": "no_op_control",
+   "gpu_ns_reps": [
+    125.0,
+    125.0,
+    41.0,
+    83.0,
+    83.0,
+    125.0,
+    125.0
+   ],
+   "gpu_ns_median": 125,
+   "must_not_score_as_an_organ": true,
+   "did_not_score": true
+  },
+  "dense_w_materialized": 0,
+  "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy"
+ },
+ "dispatch_reduction": {
+  "kind": "measured_reduction",
+  "measured": true,
+  "gpu_ran": true,
+  "parent_dispatches": 756,
+  "baseline_dispatches": 628,
+  "candidate_dispatches": 580,
+  "theoretical_candidate": 580,
+  "token_ids_before": [
+   248068,
+   198,
+   760,
+   1156,
+   6587,
+   264,
+   11346,
+   11,
+   18541,
+   9546,
+   323,
+   15673,
+   314,
+   1204,
+   264,
+   18826
+  ],
+  "token_ids_after": [
+   248068,
+   198,
+   760,
+   1156,
+   6587,
+   264,
+   11346,
+   11,
+   18541,
+   9546,
+   323,
+   15673,
+   314,
+   1204,
+   264,
+   18826
+  ],
+  "token_ids_bad": [
+   248068,
+   198,
+   760,
+   1156,
+   6587,
+   728,
+   310,
+   10033,
+   1204,
+   264,
+   364,
+   58621,
+   1083,
+   6557,
+   9714,
+   321
+  ],
+  "token_ids_unchanged": true,
+  "tok_s_before": 34.72243320922957,
+  "tok_s_after": 35.09793390536789,
+  "gpu_ns_before_reps": [
+   27634124.0,
+   27636750.0,
+   27631458.0,
+   27610125.0,
+   27660374.0,
+   27618583.0,
+   27640999.0
+  ],
+  "gpu_ns_after_reps": [
+   27404874.0,
+   27346166.0,
+   27303499.0,
+   27391749.0,
+   27325000.0,
+   27255875.0,
+   27452125.0
+  ],
+  "gpu_ns_separated": true,
+  "parity": {
+   "dense_w_materialized": 0,
+   "fused_dispatches": 1,
+   "fused_gpu_ns": 59375,
+   "fusion": "ba_delta",
+   "kernel": "qwen38_gated_delta_decode_vi_simd_ba",
+   "layer": 0,
+   "max_abs_diff": 0.0,
+   "max_abs_diff_rec_out": 0.0,
+   "unfused_dispatches": 2,
+   "unfused_gpu_ns": 68541
+  },
+  "bad_parity": {
+   "dense_w_materialized": 0,
+   "fused_dispatches": 1,
+   "fused_gpu_ns": 62250,
+   "fusion": "ba_delta_identity",
+   "kernel": "qwen38_gated_delta_decode_vi_simd_ba_plain",
+   "layer": 0,
+   "max_abs_diff": 0.01594470627605915,
+   "max_abs_diff_rec_out": 0.01594470627605915,
+   "unfused_dispatches": 2,
+   "unfused_gpu_ns": 253375
+  },
+  "noop_control": {
+   "id": "add_rmsnorm_628",
+   "dispatches": 628,
+   "must_not_score": true,
+   "did_not_score": true,
+   "token_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    6587,
+    264,
+    11346,
+    11,
+    18541,
+    9546,
+    323,
+    15673,
+    314,
+    1204,
+    264,
+    18826
+   ]
+  },
+  "bad_control": {
+   "id": "ba_delta_identity",
+   "kernel": "qwen38_gated_delta_decode_vi_simd_ba_plain",
+   "must_be_rejected": true,
+   "rejected": true,
+   "max_abs_diff": 0.01594470627605915,
+   "token_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    6587,
+    728,
+    310,
+    10033,
+    1204,
+    264,
+    364,
+    58621,
+    1083,
+    6557,
+    9714,
+    321
+   ]
+  },
+  "sentinel": {
+   "kernel": "qwen38_gated_delta_decode_vi_simd_ba",
+   "probe_sentinel_kernel_present": true,
+   "dispatch_count_580": true
+  },
+  "coherence_after": {
+   "coherent": true,
+   "reason": "emits varied tokens",
+   "repeated_single_token": false,
+   "whitespace_only": false,
+   "two_token_cycle": false,
+   "n_unique_ids": 15,
+   "n_new_tokens": 16
+  },
+  "dense_w_materialized": 0,
+  "note": "dispatches 628 \u2192 580 (ba_to_decay folded into gated-delta, saved 48). Token ids unchanged vs 628. Do not expect a dispatch cut to buy throughput proportionally.",
+  "why": null,
+  "motif": "DeltaNet state update (ba_to_decay into gated-delta)",
+  "launches_saved": 48,
+  "from": 628,
+  "to": 580
+ },
+ "no_further_or_the_cut": {
+  "kind": "measured_reduction",
+  "from": 628,
+  "to": 580,
+  "token_ids_unchanged": true,
+  "note": "dispatches 628 \u2192 580 (ba_to_decay folded into gated-delta, saved 48). Token ids unchanged vs 628. Do not expect a dispatch cut to buy throughput proportionally.",
+  "why": null,
+  "motif": "DeltaNet state update (ba_to_decay into gated-delta)"
+ },
+ "kernel_autopsy": {
+  "exit_code": 0,
+  "ok": true,
+  "any_new_kernel_defective": false,
+  "stdout_tail": "files 43  kernels 624  {'DEFECTIVE': 89, 'SUSPECT': 452, 'CLEAR': 83}\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::q2f_group64_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group64_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE bandwidth_roof.metal::roof_seq_simd8x8  runtime_integer_divide -> tpg\n  DEFECTIVE common.metal::rope_q_f32_inplace  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_q_interleaved_concat  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_f32_batched_multiseq  runtime_integer_divide -> per_slot\n  DEFECTIVE common.metal::rope_qk_f32_batched_multiseq  runtime_integer_divide -> q_per_slot\n  DEFECTIVE common.metal::embed_lookup_f32_batched  runtime_integer_divide -> hidden\n  DEFECTIVE common.metal::rope_qk_f32_b1_bias  runtime_integer_divide -> pairs_per_head\nreceipt: /Users/scammermike/.claude-grok/worktrees/n025organ-20260824-115231/receipts/headless/KERNEL_COMPETENCE.json\n",
+  "stderr_tail": "",
+  "new_kernels": [
+   {
+    "file": "qwen38_device_activations.metal",
+    "kernel": "qwen38_gated_delta_decode_vi_simd_ba",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "tid",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "arrier(mem_flags::mem_threadgroup);\n    if (tid == 0u) {\n        output[value_base + vi] = scr"
+     }
+    ]
+   },
+   {
+    "file": "qwen38_device_activations.metal",
+    "kernel": "qwen38_gated_delta_decode_vi_simd_ba_plain",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "tid",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "arrier(mem_flags::mem_threadgroup);\n    if (tid == 0u) {\n        output[value_base + vi] = scr"
+     }
+    ]
+   }
+  ],
+  "missing": []
+ },
+ "shader_evidence": {
+  "shader_present": true,
+  "shader_path": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+  "kernel_needles": {
+   "qwen38_gated_delta_decode_vi_simd_ba": 20075,
+   "qwen38_gated_delta_decode_vi_simd_ba_plain": 22943
+  },
+  "all_kernels_declared": true,
+  "wired": true,
+  "default_off": true,
+  "organ_isolate": true,
+  "does_not_write_dense_w": true,
+  "production_756_untouched": true
+ },
+ "compile": {
+  "returncode": 0,
+  "skipped": true,
+  "bin_present": true,
+  "note": "reused existing raw; cargo not re-invoked"
+ },
+ "run": null,
+ "dense_w_materialized": 0,
+ "causal_benchmark_law": {
+  "kernel_identity": "qwen38_gated_delta_decode_vi_simd_ba",
+  "dispatch_count": "628 no-op / 580 candidate / identity bad control",
+  "sentinel": "fused kernel name present on the 580 probe; rec_out parity vs unfused",
+  "noop_control": "add_rmsnorm 628 graph (must not score as the <628 cut)",
+  "bad_control": "qwen38_gated_delta_decode_vi_simd_ba_plain"
+ },
+ "elapsed_s": 0.2033478749799542
+}

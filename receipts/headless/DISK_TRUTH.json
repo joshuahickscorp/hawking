@@ -1,0 +1,860 @@
+{
+ "schema": "hawking.headless.disk_truth.v1",
+ "generated_at": "2026-08-22T22:51:50Z",
+ "primary_repo": {
+  "path": "/Users/scammermike/Downloads/hawking-copy",
+  "head": "4d373884bed950382bf429bbf1dc023e3f1c63cd",
+  "branch": "odyssey-i",
+  "commit_count": "5",
+  "dirty_entries": 373,
+  "remote": "origin\tfile:///Users/scammermike/Downloads/hawking (fetch)"
+ },
+ "recovery_tree": {
+  "path": "/Users/scammermike/Downloads/hawking",
+  "head": "a9c2cc8fcaf4b117a6ddda47e65ede8a63558c5c",
+  "branch": "odyssey-i",
+  "commit_count": "3332",
+  "role": "read-only archaeology; never a mutation target"
+ },
+ "hcli": {
+  "entrypoint": "/Users/scammermike/.local/bin/hcli",
+  "entrypoint_body": "#!/bin/sh\nBASE=\"$HOME/.local/share/hcli/current\"\nexport PYTHONPATH=\"$BASE${PYTHONPATH:+:$PYTHONPATH}\"\nexec \"/Users/scammermike/.venvs/hawking-aider/bin/python3\" -m hcli \"$@\"\n",
+  "jhcli_present": false,
+  "source_of_truth": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli",
+   "file_count": 28,
+   "tree_sha256": "a2c9f758b92c4cf4497d2229f4c7d734ddaac90efb032ce80b50a542513233e6"
+  },
+  "installed_build": {
+   "present": true,
+   "path": "/Users/scammermike/.local/share/hcli/current/hcli",
+   "file_count": 23,
+   "tree_sha256": "2936eba3332bfbfac537b317a7828dc156264b152a438644d010212387f56a64"
+  },
+  "installed_symlink_target": "/Users/scammermike/.local/share/hcli/build-20260821-155332-openrouter",
+  "source_vs_installed": {
+   "identical": false,
+   "only_in_source": [
+    "tests/test_config_persist.py",
+    "tests/test_grammar.py",
+    "tests/test_install_shims.py",
+    "tests/test_models_sidecars.py",
+    "tests/test_receipt_diagnostics.py"
+   ],
+   "only_in_installed": [],
+   "differing_files": [
+    "cli.py",
+    "config.py",
+    "controller.py",
+    "engine.py",
+    "models.py",
+    "tests/test_parallel_engine.py"
+   ],
+   "meaning": "If not identical, `hcli` on PATH is NOT running the source in this repo. Every claim about HCLI behaviour must then name which tree it was measured against."
+  },
+  "source_files": {
+   "__init__.py": {
+    "sha256": "5b22e5de56aee137673ae164110fb687311428f66794d67b9ba5dfe8e42b466d",
+    "bytes": 262
+   },
+   "__main__.py": {
+    "sha256": "5e6030836f3887617683db2e78ed3b28aed2f9a96f389b6bd9202e707ea538d6",
+    "bytes": 86
+   },
+   "app.py": {
+    "sha256": "70a14c03d60f740a3938616d057de694e20309b118a455a145d82e1082d8ffe1",
+    "bytes": 2483
+   },
+   "cli.py": {
+    "sha256": "cbb5d535e1ba3d3bb057274c995e24397a70a17319907a552e0cf225556001b1",
+    "bytes": 8569
+   },
+   "commands.py": {
+    "sha256": "d3a02aa3ef090a3133d69b67811badef95f7751359b8376b34eb3891310b8c8b",
+    "bytes": 3340
+   },
+   "config.py": {
+    "sha256": "31d58a23031a99a17c6e32cc6ba4ae84cd9341f9177260a13531b7cd221e29a5",
+    "bytes": 1815
+   },
+   "context.py": {
+    "sha256": "65997c7af61f5d5b022e8f921743d4832a93af3755bcc9c83dad9bfd8ce210ff",
+    "bytes": 892
+   },
+   "controller.py": {
+    "sha256": "41f62424b152330dc39b6bbd88e3ed6f4c24e1736cb29702ab17bd7e04107352",
+    "bytes": 11616
+   },
+   "engine.py": {
+    "sha256": "8180f3331d0442059c84fc4e1bcfe5484c34e05e36f3932d5c7d24998cdead7d",
+    "bytes": 50437
+   },
+   "events.py": {
+    "sha256": "cae1bccaa745ca866c752e5a043d53a39c5ec9110ec547a9ecced8615ff12ef6",
+    "bytes": 3074
+   },
+   "goal.py": {
+    "sha256": "339cfc2c65649533eadfd8462b4073858ba5e2db9496d81819dfc734640d11aa",
+    "bytes": 7046
+   },
+   "index.py": {
+    "sha256": "dbce195e73e4b4deb8fd57469d7e07e1748b4c9424a755e586cd56e2d0134485",
+    "bytes": 1713
+   },
+   "machine.py": {
+    "sha256": "293226e904d00d3cc89ceee2f8a3d414ac3d90269dc9b151c76140a0b232a39a",
+    "bytes": 3986
+   },
+   "models.py": {
+    "sha256": "bc7cfc9dd9eabdaa79f6aa1b69ca26da2eb4184a8b81cffeb69e83548b7c8bb4",
+    "bytes": 12992
+   },
+   "mutation.py": {
+    "sha256": "e3749a7c5fdab02e8778f41f7807e8525ad31b8cb7f9609acbbae3684ab6ad43",
+    "bytes": 5137
+   },
+   "runtime.py": {
+    "sha256": "800af5f9f1e99c7be9a6b59822172a03564967bc03e480b33b2b3a5111786e29",
+    "bytes": 7173
+   },
+   "scheduler.py": {
+    "sha256": "1364547209b3a859f5472d4cd06e247d798395b1d75bc01ccfd134c4067a1bf2",
+    "bytes": 936
+   },
+   "session.py": {
+    "sha256": "811009811cc082ffeb9965af5083deea52d743f0d73c3a3819855d3f17ed508e",
+    "bytes": 2004
+   },
+   "steering.py": {
+    "sha256": "7be3638126a29a038fd66035b13dda5bb43e7145bf25e37c497bfed49d3fe701",
+    "bytes": 2757
+   },
+   "tests/test_config_persist.py": {
+    "sha256": "322ee004eaea3bc1b37eb49551435dd49024897d8500d1beb3c5513840a0060b",
+    "bytes": 3779
+   },
+   "tests/test_grammar.py": {
+    "sha256": "d184db4df25828a312ceed5161c1fa70c2db94030e077a462044e727792379a6",
+    "bytes": 4090
+   },
+   "tests/test_install_shims.py": {
+    "sha256": "7fab686864d3f491c036f0c35aa691bcfedaba6edfa650a234b2e3c75f9d5e50",
+    "bytes": 1399
+   },
+   "tests/test_models_sidecars.py": {
+    "sha256": "07faa6fbbdb2ede74593d6b147bd697ebd019834f800a55c561684c3e1170bb7",
+    "bytes": 2928
+   },
+   "tests/test_parallel_engine.py": {
+    "sha256": "18404862c18078d5b1dbe13bf450bfbb4aa7637c23b42eb9bfbf17a6fe1a08e2",
+    "bytes": 4690
+   },
+   "tests/test_receipt_diagnostics.py": {
+    "sha256": "84d7375525bd4fb1fda29337cab8acb7b63fcbcfd7cd27c66ba4f9318486d51a",
+    "bytes": 2912
+   },
+   "tui.py": {
+    "sha256": "efb29ec890fa25f00827c80c0331117d878c43c155baf2bb723d7a96ea37799a",
+    "bytes": 4190
+   },
+   "workspace.py": {
+    "sha256": "d6463563d516729490eb8d4aea3287edfe97adf1b7ee46039a569a39ffb43404",
+    "bytes": 863
+   },
+   "workunit.py": {
+    "sha256": "62554411acd7d4eba04bcd00fdead5dd0a55e174552c20ea2bde623502f06612",
+    "bytes": 2763
+   }
+  }
+ },
+ "tests": {
+  "hcli_package_tests": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests",
+   "file_count": 6,
+   "tree_sha256": "46eec18cb82568d5a199a664b62e76c31009d8a3029f94213788cca60a4472df",
+   "files": {
+    "test_config_persist.py": {
+     "sha256": "322ee004eaea3bc1b37eb49551435dd49024897d8500d1beb3c5513840a0060b",
+     "bytes": 3779
+    },
+    "test_grammar.py": {
+     "sha256": "d184db4df25828a312ceed5161c1fa70c2db94030e077a462044e727792379a6",
+     "bytes": 4090
+    },
+    "test_install_shims.py": {
+     "sha256": "7fab686864d3f491c036f0c35aa691bcfedaba6edfa650a234b2e3c75f9d5e50",
+     "bytes": 1399
+    },
+    "test_models_sidecars.py": {
+     "sha256": "07faa6fbbdb2ede74593d6b147bd697ebd019834f800a55c561684c3e1170bb7",
+     "bytes": 2928
+    },
+    "test_parallel_engine.py": {
+     "sha256": "18404862c18078d5b1dbe13bf450bfbb4aa7637c23b42eb9bfbf17a6fe1a08e2",
+     "bytes": 4690
+    },
+    "test_receipt_diagnostics.py": {
+     "sha256": "84d7375525bd4fb1fda29337cab8acb7b63fcbcfd7cd27c66ba4f9318486d51a",
+     "bytes": 2912
+    }
+   }
+  },
+  "headless_tools": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking-copy/tools/headless",
+   "file_count": 8,
+   "tree_sha256": "088e2a496cfe8cb80f8dbb64b9b74e64120343ef1e80ea76677200fe25166f2e",
+   "files": {
+    "artifact_census.py": {
+     "sha256": "8c9a50aa1bb3e7c2a2279880b5fe6a5ef770a568c38279619af1444c6eb95225",
+     "bytes": 8598
+    },
+    "decode_topology_probe.py": {
+     "sha256": "cade86931223eacee67894ff56f4656b4c6c44fddd6a3cd216392523daddc26e",
+     "bytes": 14732
+    },
+    "disk_truth.py": {
+     "sha256": "52ff5a4aee6afb213ea0dce331c6d6e10e6474f564ff84d723e24da68a3a0eff",
+     "bytes": 10763
+    },
+    "hcli_foundation_test.py": {
+     "sha256": "bbb9e7000750970592929f49189bfed8878814f0462e0cb9d6faec9ac778903b",
+     "bytes": 9634
+    },
+    "machine_probe.py": {
+     "sha256": "ce27ebce464b58a7339793858ea8469c93fb4570bfc10f283c4b9cb55452a125",
+     "bytes": 19855
+    },
+    "runtime_ab.py": {
+     "sha256": "fdb9cd901cdade01b7931e0492b9364db53fdb2bd3e9cc87211a55b1c0d9cf3c",
+     "bytes": 13430
+    },
+    "structured_output_probe.py": {
+     "sha256": "c11cafebc573775c393e2afa1307c50994e20e792d23b99a24c000582610c1b6",
+     "bytes": 11720
+    },
+    "write_g003_rootcause.py": {
+     "sha256": "75d465fae40edf128e3f77981c1b79c601d4cfff173445827abaa3f1d68f2a53",
+     "bytes": 10177
+    }
+   }
+  }
+ },
+ "receipts": {
+  "hcli_project_receipts": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking-copy/.hcli/receipts",
+   "total": 27,
+   "completed": 3,
+   "not_completed": 23,
+   "failed_without_error_field": 23,
+   "rows": [
+    {
+     "file": "0cf8ae33-02df-4b99-8735-6836ca15b102.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:27:59.215433+00:00",
+     "finished": "2026-08-22T18:33:13.591736+00:00"
+    },
+    {
+     "file": "0e3afc7f-2704-4ad0-ba95-690a680ecc66.json",
+     "status": "completed",
+     "kind": "answer",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 4,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T17:35:02.289843+00:00",
+     "finished": "2026-08-22T17:38:23.366180+00:00"
+    },
+    {
+     "file": "127a6fd5-e00f-4da2-a21b-2d14bcc28464.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 4,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T17:38:34.492951+00:00",
+     "finished": "2026-08-22T17:43:17.556408+00:00"
+    },
+    {
+     "file": "1846f472-4167-4303-a739-63a9e2f75ba3.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T04:33:56.643295+00:00",
+     "finished": "2026-08-22T04:38:41.124655+00:00"
+    },
+    {
+     "file": "21485d8d-cc1b-4f8c-9418-852019131225.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T04:45:07.063957+00:00",
+     "finished": "2026-08-22T04:49:50.727580+00:00"
+    },
+    {
+     "file": "31337b22-b23b-4685-b657-2f2633aa119d.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 4,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T17:21:51.919510+00:00",
+     "finished": "2026-08-22T17:26:35.655488+00:00"
+    },
+    {
+     "file": "3f1260d2-a79e-4194-ae30-94c9218915a7.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:33:29.421207+00:00",
+     "finished": "2026-08-22T18:38:43.440580+00:00"
+    },
+    {
+     "file": "45e55af7-6390-4672-ac18-cdf4cd08276f.json",
+     "status": "completed",
+     "kind": "answer",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 1,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-21T19:53:33.415650+00:00",
+     "finished": "2026-08-21T19:53:41.176426+00:00"
+    },
+    {
+     "file": "4b678fe7-8a9a-4f1b-8ffd-4f39283723f0.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:38:59.587667+00:00",
+     "finished": "2026-08-22T18:44:13.612056+00:00"
+    },
+    {
+     "file": "541d9b76-39c3-4d61-89a0-de620640da49.json",
+     "status": "completed",
+     "kind": "answer",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 1,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-21T19:34:05.221120+00:00",
+     "finished": "2026-08-21T19:34:37.872807+00:00"
+    },
+    {
+     "file": "57cbcfcb-56e0-4ba5-9cec-bca240d8ef11.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:44:29.728610+00:00",
+     "finished": "2026-08-22T18:49:43.491265+00:00"
+    },
+    {
+     "file": "73f5bf59-5f2c-41c4-94db-9975085ae674.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T04:58:17.695035+00:00",
+     "finished": "2026-08-22T05:03:05.694333+00:00"
+    },
+    {
+     "file": "7ac07836-1d08-46e9-953a-4106d1adec31.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T04:23:27.482156+00:00",
+     "finished": "2026-08-22T04:26:29.970727+00:00"
+    },
+    {
+     "file": "7b27d038-c28f-4b80-ab18-bdd9da757da8.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T04:18:07.032500+00:00",
+     "finished": "2026-08-22T04:22:49.395242+00:00"
+    },
+    {
+     "file": "7e744eaf-af0f-4877-8047-5eda9726da79.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:49:59.841064+00:00",
+     "finished": "2026-08-22T18:55:14.666694+00:00"
+    },
+    {
+     "file": "8434f4dd-6d78-428e-8485-6a80ba52f27a.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T04:39:16.835541+00:00",
+     "finished": "2026-08-22T04:44:01.367687+00:00"
+    },
+    {
+     "file": "8e68591c-477a-4472-9aac-34d4d041fe46.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 1,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-21T19:16:41.538976+00:00",
+     "finished": "2026-08-21T19:16:43.658511+00:00"
+    },
+    {
+     "file": "938e3e42-08a9-4b31-aea2-94525f2cdb63.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T17:12:06.945133+00:00",
+     "finished": "2026-08-22T17:13:49.808359+00:00"
+    },
+    {
+     "file": "94668faa-3ed3-4fcb-9c39-ed1a386a12ae.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:05:58.386211+00:00",
+     "finished": "2026-08-22T18:11:12.137052+00:00"
+    },
+    {
+     "file": "be85b128-7c37-42b6-9331-a3b85a45be22.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 4,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T17:14:51.661061+00:00",
+     "finished": "2026-08-22T17:15:21.409627+00:00"
+    },
+    {
+     "file": "bfcaddbb-d7e9-4998-8a37-909d27ea08a0.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:22:29.069245+00:00",
+     "finished": "2026-08-22T18:27:42.668171+00:00"
+    },
+    {
+     "file": "c025a6dd-c2b4-4bdd-accc-db22f64515c1.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 4,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T17:16:01.740027+00:00",
+     "finished": "2026-08-22T17:20:45.182088+00:00"
+    },
+    {
+     "file": "de17f94a-c9df-48e9-a3d3-b5628e47728b.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:16:58.934615+00:00",
+     "finished": "2026-08-22T18:22:13.051586+00:00"
+    },
+    {
+     "file": "e51f734e-89ae-4c0c-acf7-df56dac9dcaf.json",
+     "parse": "FAILED",
+     "bytes": 0
+    },
+    {
+     "file": "ea98884f-d00c-424d-821f-f63c9d7e1d50.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T18:11:28.782816+00:00",
+     "finished": "2026-08-22T18:16:42.599238+00:00"
+    },
+    {
+     "file": "faae4402-18c8-4f90-becb-d02d2e55cd30.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 4,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T17:28:12.086083+00:00",
+     "finished": "2026-08-22T17:32:55.012027+00:00"
+    },
+    {
+     "file": "fff3f9c5-290b-473a-9482-8541e84a243e.json",
+     "status": "failed",
+     "kind": "error",
+     "ops": 0,
+     "tests": 0,
+     "has_error_field": false,
+     "runtimes": 3,
+     "model": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+     "started": "2026-08-22T04:51:27.374826+00:00",
+     "finished": "2026-08-22T04:56:12.128136+00:00"
+    }
+   ]
+  },
+  "headless_receipts": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking-copy/receipts/headless",
+   "count": 6,
+   "empty_files": 0
+  },
+  "recovery_ascent_2026_08_18": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-18",
+   "count": 50,
+   "empty_files": 0
+  },
+  "recovery_ascent_2026_08_16": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16",
+   "count": 409,
+   "empty_files": 0
+  },
+  "recovery_odyssey_i": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking/receipts/odyssey-i",
+   "count": 148,
+   "empty_files": 0
+  }
+ },
+ "director_state": {
+  "worker_equilibrium": {
+   "active_decode_limit": 2,
+   "aggregate_scaling_vs_1": 1.208183569742941,
+   "best_aggregate_tps": 27.900814587942833,
+   "bootstrap_workers": 3,
+   "calibration_status": "PASS",
+   "created": "2026-08-22T14:04:11-0400",
+   "epoch_unix": 1787421851.8476312,
+   "gpu_saturation_suspected": true,
+   "machine_key": {
+    "ctx": 32768,
+    "hw_model": "Mac15,14",
+    "llama": "/opt/homebrew/bin/llama-server",
+    "llama_mtime_ns": 1780636795515250123,
+    "mem_bytes": 103079215104,
+    "model_mtime_ns": 1787187979283620068,
+    "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "model_sha256": "917453854fc640903f89bda0b29eb7ea661cb13b9c5c9efd20a68f3ff2e9277f",
+    "model_size": 19535701280,
+    "repo_head": "3a95210c7aa4e217275d7e695e6718fef7c7813e"
+   },
+   "note": "resident_limit is memory-safe lane capacity; active_decode_limit is simultaneous GPU decode equilibrium.",
+   "resident_limit": 4,
+   "results": [
+    {
+     "aggregate_tps": 23.093191537010508,
+     "free_after_pct": 69.0,
+     "free_before_pct": 94.0,
+     "free_loaded_pct": 71.0,
+     "group_wall_s": 12.081482957990374,
+     "n": 1,
+     "per_worker_mean_tps": 23.093629824344674,
+     "per_worker_tps": [
+      23.093629824344674
+     ],
+     "pressure_ok": true,
+     "quality_ok": true,
+     "status": "OK",
+     "swap_after_mb": 533.0,
+     "swap_before_mb": 533.0,
+     "swap_growth_mb": 0.0,
+     "total_completion_tokens": 279,
+     "workers": [
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65052,
+       "quality_ok": true,
+       "tps": 23.093629824344674,
+       "wall_s": 12.081253667012788
+      }
+     ]
+    },
+    {
+     "aggregate_tps": 27.900814587942833,
+     "free_after_pct": 66.0,
+     "free_before_pct": 91.0,
+     "free_loaded_pct": 66.0,
+     "gain_over_best_pct": 20.818356974294105,
+     "group_wall_s": 19.99941608303925,
+     "n": 2,
+     "per_worker_mean_tps": 13.961188303089177,
+     "per_worker_tps": [
+      13.950523958669832,
+      13.97185264750852
+     ],
+     "pressure_ok": true,
+     "quality_ok": true,
+     "status": "OK",
+     "swap_after_mb": 533.0,
+     "swap_before_mb": 533.0,
+     "swap_growth_mb": 0.0,
+     "total_completion_tokens": 558,
+     "workers": [
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65066,
+       "quality_ok": true,
+       "tps": 13.950523958669832,
+       "wall_s": 19.999248832988087
+      },
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65067,
+       "quality_ok": true,
+       "tps": 13.97185264750852,
+       "wall_s": 19.968719040974975
+      }
+     ]
+    },
+    {
+     "aggregate_tps": 27.3991772881658,
+     "free_after_pct": 61.0,
+     "free_before_pct": 91.0,
+     "free_loaded_pct": 62.0,
+     "gain_over_best_pct": -1.7979306596797806,
+     "group_wall_s": 30.548362499976065,
+     "n": 3,
+     "per_worker_mean_tps": 9.138950024129374,
+     "per_worker_tps": [
+      9.137780061772744,
+      9.13315172791342,
+      9.145918282701954
+     ],
+     "pressure_ok": true,
+     "quality_ok": true,
+     "status": "OK",
+     "swap_after_mb": 533.0,
+     "swap_before_mb": 533.0,
+     "swap_growth_mb": 0.0,
+     "total_completion_tokens": 837,
+     "workers": [
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65089,
+       "quality_ok": true,
+       "tps": 9.137780061772744,
+       "wall_s": 30.53257991699502
+      },
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65090,
+       "quality_ok": true,
+       "tps": 9.13315172791342,
+       "wall_s": 30.548052666999865
+      },
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65091,
+       "quality_ok": true,
+       "tps": 9.145918282701954,
+       "wall_s": 30.505411416990682
+      }
+     ]
+    },
+    {
+     "aggregate_tps": 12.281854450969213,
+     "free_after_pct": 64.0,
+     "free_before_pct": 92.0,
+     "free_loaded_pct": 59.0,
+     "gain_over_best_pct": -55.98030153472027,
+     "group_wall_s": 90.86575683299452,
+     "n": 4,
+     "per_worker_mean_tps": 3.098204829794221,
+     "per_worker_tps": [
+      3.096561155604869,
+      3.107855408146952,
+      3.117916878373747,
+      3.0704858770513157
+     ],
+     "pressure_ok": true,
+     "quality_ok": true,
+     "status": "OK",
+     "swap_after_mb": 533.0,
+     "swap_before_mb": 533.0,
+     "swap_growth_mb": 0.0,
+     "total_completion_tokens": 1116,
+     "workers": [
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65124,
+       "quality_ok": true,
+       "tps": 3.096561155604869,
+       "wall_s": 90.09994829102652
+      },
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65125,
+       "quality_ok": true,
+       "tps": 3.107855408146952,
+       "wall_s": 89.77251620800234
+      },
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65126,
+       "quality_ok": true,
+       "tps": 3.117916878373747,
+       "wall_s": 89.48282166698482
+      },
+      {
+       "completion_tokens": 279,
+       "content_tail": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96",
+       "port": 65127,
+       "quality_ok": true,
+       "tps": 3.0704858770513157,
+       "wall_s": 90.86509795900201
+      }
+     ]
+    }
+   ],
+   "single_worker_tps": 23.093191537010508,
+   "version": 1
+  },
+  "negative_science_lines": 5,
+  "epoch_run_dirs": 45
+ },
+ "genomes": {
+  "MachineGenome": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking-copy/.haider/bootstrap-director-v6/worker-equilibrium.json",
+   "bytes": 8460,
+   "mtime": "2026-08-22T18:04:11Z"
+  },
+  "RuntimeGenome": {
+   "present": false,
+   "searched": [
+    "/Users/scammermike/Downloads/hawking-copy/receipts/headless/RUNTIME_GENOME.json"
+   ]
+  },
+  "RepresentationGenome": {
+   "present": false,
+   "searched": [
+    "/Users/scammermike/Downloads/hawking-copy/receipts/headless/REPRESENTATION_GENOME.json"
+   ]
+  },
+  "KernelGenome": {
+   "present": false,
+   "searched": [
+    "/Users/scammermike/Downloads/hawking-copy/receipts/headless/KERNEL_GENOME.json"
+   ]
+  },
+  "VerificationGenome": {
+   "present": false,
+   "searched": [
+    "/Users/scammermike/Downloads/hawking-copy/receipts/headless/VERIFICATION_GENOME.json"
+   ]
+  },
+  "StorageGenome/ArtifactLedger": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking-copy/receipts/headless/ARTIFACT_LEDGER.json",
+   "bytes": 63773,
+   "mtime": "2026-08-22T22:46:35Z"
+  },
+  "PerformanceLedger": {
+   "present": false,
+   "searched": [
+    "/Users/scammermike/Downloads/hawking-copy/receipts/headless/PERFORMANCE_LEDGER.jsonl"
+   ]
+  },
+  "NegativeScience": {
+   "present": true,
+   "path": "/Users/scammermike/Downloads/hawking-copy/.haider/bootstrap-director-v6/negative-science.jsonl",
+   "bytes": 1537,
+   "mtime": "2026-08-22T19:24:10Z"
+  }
+ },
+ "live_processes_at_census": {
+  "llama_server": "7031 llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 51771 -c 32768 -ngl 999 --host 127.0.0.1 --jinja\n10803 /opt/homebrew/bin/llama-server --model /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --host 127.0.0.1 --port 8080 --ctx-size 32768",
+  "mlx": "",
+  "hcli": "8271 bash /Users/scammermike/.claude-grok/bin/grok-run delegate --task hcli-foundation --contract contract-hcli-foundation.md --repo /Users/scammermike/Downloads/hawking-copy --no-worktree --profile power --background\n10871 bash /Users/scammermike/.claude-grok/bin/grok-run wait --id hcli-foundation-20260822-183133 --timeout 5400",
+  "odyssey": ""
+ },
+ "disk": "/dev/disk3s5   926Gi   725Gi   175Gi    81%    3.7M  1.8G    0%   /System/Volumes/Data"
+}

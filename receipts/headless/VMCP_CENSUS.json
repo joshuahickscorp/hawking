@@ -1,0 +1,46 @@
+{
+  "gate": "VMCP_CENSUS",
+  "result": "PASS",
+  "generated_at": "2026-08-23T07:07:42Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "method": "read-only Grok recon lane over the working tree, required to RUN rather than read: every VERIFIED_EXISTING carries a physical proof, not a file that defines a name",
+  "scale": {
+    "files": 10106,
+    "python_modules": 1770,
+    "package": "visionmcp 0.8.0a2",
+    "root": "visionmcp/src"
+  },
+  "verified_existing": {
+    "EvidenceGraph": "causal graph, attestations, durable SQLite store, MCP resources, live ingest; `support_for` fails closed. Constructed and queried in the lane.",
+    "WorldIR v1": "Entity, Resource, SpatialIR, Provenance, frozen schema hash ee28e5a9 (worldir/schema.py:16); resource roundtrip ran.",
+    "ProjectStore + ArtifactStore CAS": "a real project was created with project.json, project.db and 5 CAS objects; CaptureBus.verify returned valid=True.",
+    "Core MCP surface": "create_core_server builds 15 tools; imports with no torch, cv2 or open3d.",
+    "CaptureBus.observe": "content-addressed capture with reuse and verify.",
+    "content_digest / receipt verification": "receipts/public.py, DigestBoundEvaluator."
+  },
+  "absent_or_partial_by_name": {
+    "DEEP_DIGEST": "ABSENT as a named type; CONSOLIDATE onto existing content_digest / canonical_digest",
+    "DIRECTOR_STATE": "ABSENT \u2014 searched names and `class .*Director`; only critics and camera graphs",
+    "ASSET_LATTICE / DECODE_LATTICE / ENTITY_GENOME / RENDER_GENOME / SPATIAL_GENOME / REPAIR_VECTOR / PERFORMANCE_LEDGER": "PARTIAL \u2014 the concepts exist under other names in WorldIR, kernels and ocular; no lattice types",
+    "TRUTH_LEDGER": "CONSOLIDATE \u2014 EvidenceGraph + receipts + capability ledger already cover claim truth"
+  },
+  "do_not_build": [
+    "EvidenceGraph",
+    "WorldIR v1",
+    "ProjectStore + ArtifactStore CAS",
+    "the core MCP 15-tool surface",
+    "CaptureBus.observe",
+    "content_digest / receipt verification",
+    "the capability ledger"
+  ],
+  "the_duplicate_control_plane_risk": {
+    "finding": "visionmcp's LABORATORY profile contains a real queue, retry and deliver_promoted. The lane's words: 'The laboratory server is the second AgentOS.'",
+    "consequence": "integrate against profile='core' only. The core profile exposes no enqueue and no workflow.*, which is why it is safe for a WorkUnit to call."
+  },
+  "the_seam": {
+    "acquire": "visionmcp.perception.bus.CaptureBus.observe (perception/bus.py:86-94), MCP vision.observe",
+    "verify": "CaptureBus.verify, and EvidenceGraph.support_for (graph.py:728-733) after ingest_scene_evidence_graph for field-level support",
+    "host": "visionmcp.mcp.factory.create_server(profile='core')"
+  },
+  "correction_to_the_directive": "V4 section 11 reads 'build the eye'. The physical situation is integrate-and-harden: the substrate is already 1770 modules with a working evidence graph. Building alongside it would produce exactly the duplicate control plane both directives forbid."
+}

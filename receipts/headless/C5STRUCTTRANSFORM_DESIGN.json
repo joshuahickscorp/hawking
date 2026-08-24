@@ -1,0 +1,1175 @@
+{
+  "schema": "hawking.headless.c5structtransform_design.v1",
+  "generated_at": "2026-08-23T19:24:44Z",
+  "commit": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "question": "Can a structured transform (butterfly / Walsh-Hadamard / mixed-radix Monarch-Hadamard) be the executable operator on Qwen3.8 uniform-q4, reducing both bytes and operations versus 51.24 GFLOP / 964 dispatches?",
+  "answer": "The near-zero-state member is already refuted (G042, G032, Kronecker energy, 223-with-zero-healthy). The coefficient member (FMH rungs 1\u20132) is a complete S011 \u00a74 design on paper \u2014 it cuts bytes, FLOPs and traffic and never materialises W \u2014 and is NOT_WORTH_BUILDING as a kernel until a CPU fiber least-squares on real L31.gate_proj X beats q3. Nearest G1/G034 measurements predict it will not.",
+  "verdict": "NOT_WORTH_BUILDING",
+  "anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "roof_gb_s": 595.9,
+    "unified_memory_bytes": 103079215104,
+    "gpu_cores": 60,
+    "parameter_count": 26895998464,
+    "bpw": 4.253,
+    "dispatches_per_token": 964,
+    "command_buffers_per_token": 1,
+    "gemv_mac_flops": 51243909120,
+    "gemv_elements": 25621954560,
+    "q4_gemv_bytes": 13611663360,
+    "dram_bytes": 13988022948,
+    "mlx_4bit_tps_live": 35.51,
+    "llamacpp_q5k_tps_archived": 24.12,
+    "artifact_bytes": 14297933604
+  },
+  "geometry": {
+    "layers": 64,
+    "dn_layers": 48,
+    "gqa_layers": 16,
+    "hidden": 5120,
+    "intermediate": 17408,
+    "vocab": 248320,
+    "qkvz_rows": 16384,
+    "ba_rows": 96,
+    "q_proj_rows": 12288,
+    "kv_proj_rows": 1024,
+    "o_proj_rows": 5120,
+    "o_proj_cols": 6144,
+    "mixer_prefix": 9,
+    "mlp_suffix": 6,
+    "full_layer": 15,
+    "terminal_n": 3,
+    "production_dispatches": 964,
+    "production_cbs": 1
+  },
+  "universal_block_gcd": 32,
+  "chosen_B": 1024,
+  "chosen_B_reason": "G032 tile. Hidden=5*1024, intermediate=17*1024, qkvz=16*1024, q_proj=12*1024, kv=1*1024, o_cols=6*1024. ba=96 and vocab=248320 do not tile; those 49 launches stay Q4. gcd of every GEMV dim is 32 (would tile ba+lm_head but lands even deeper in the <0.5 BPW band at f16).",
+  "prior_science": {
+    "searched": true,
+    "n1arch_mechanisms_relevant": [
+      "G032 Block-diagonal Sylvester-Hadamard (RAN as codec reparam, not as GEMV replacement)",
+      "G042 generated/implicit weights REFUTED, GENERATED_BPW=0",
+      "G035 G-SHARE REFUTED",
+      "G1-SHARE 0.0156 BPW is right-basis amortisation, not this family",
+      "G1-TENSOR / G034 Tucker/TT/ring/Kronecker/low-rank REFUTED, 223 rows <0.5 BPW healthy=0",
+      "kernel census structured_transform PARTIAL (activation FWHT exists, weight-side absent)",
+      "MLP distillation NO-GO +0.4206",
+      "tpr64 recon free 32/33 including hadamard"
+    ],
+    "family_already_refuted": {
+      "rung0_generated_H_plus_tiny_S": {
+        "refuted": true,
+        "as": "PROPERTY_OF_IDEA (near-zero stored state cannot carry this W)",
+        "evidence": [
+          "G042 GENERATED_BPW_EQUIVALENT=0; the one generated transform tested (Hadamard) was refuted",
+          "G1 Kronecker energy rank-1=0.015259800946951544 on the [17,1024]\u00d7[5,1024] reshape",
+          "G1 block_term rel_l2=0.9989632368087769 at local_bpw=0.026020364200367647",
+          "223 components local_bpw<0.5, healthy=0",
+          "rung 0 local BPW = 16/B = 0.015625, inside that band"
+        ],
+        "stop": true
+      },
+      "g032_codec_reparameterization": {
+        "refuted": true,
+        "as": "speed and bits lever (it still stores WH and adds FWHT)",
+        "evidence": [
+          "Q4 mean_delta_hold=0.00033819033592939903, entropy +0.025883768994956233 bits",
+          "Q3 mean_delta_hold=0.0016053876210644358",
+          "tpr64 hadamard_gate_ns=17333 in the f32 band; recon free 32/33"
+        ],
+        "stop": true
+      },
+      "rung1_rung2_coefficient_monarch": {
+        "refuted": false,
+        "as": "this exact fused operator was not shipped",
+        "nearest_evidence_says_unhealthy": true,
+        "evidence": [
+          "G034 low-rank at matched 3.25 bits: out_rel_fro 0.5393288880586624 vs q3 0.1839276241211841 (ratio 2.93)",
+          "G034 family_verdict: COMPREHENSIVELY REFUTED (low-rank, TT unfold, Tucker=SVD)",
+          "G1 L0.gate 44 operators, healthy=0; kronecker_sum rel_l2=0.9334229826927185",
+          "kernel census structured_transform=PARTIAL; weight-side y=H diag(s) H^T x ABSENT; quality is the blocker"
+        ],
+        "stop": false,
+        "do_not_write_kernel_first": true
+      },
+      "sharing_a_transform_across_a_tensor_class": {
+        "refuted": true,
+        "as": "G035 shared_beats_independent=false; G042 SHARED_BPW=0",
+        "zero_point_zero_one_five_six": {
+          "value": 0.015594527957807665,
+          "what_it_is": "G1-SHARE one_basis_fullV_bpw: one dense n\u00d7n right factor stored once, amortised over 64 sites, vs independent dense_orth_bpw=0.9980497892996906. Component amortisation, not a model-level structured-transform claim.",
+          "numerical_coincidence": "FMH rung-0 f16 local BPW is 16/B = 0.015625 = 1/64, the same fraction as 1 basis / 64 sites. Different objects. Do not merge.",
+          "coincidence_is_exact_1_over_64": true
+        }
+      },
+      "mlp_function_distillation_as_rescue": {
+        "refuted": true,
+        "as": "NO-GO today: +0.4206 held-out gap vs q3 at 72% of its active bytes"
+      }
+    },
+    "live_confirmation": {
+      "n_hits": 10,
+      "n_missing": 0,
+      "missing": [],
+      "hits": [
+        {
+          "name": "G032_Q4",
+          "path": "receipts/ascent-2026-08-16/G032_XFORM_HADAMARD_Q4.json",
+          "confirmed": true,
+          "detail": {
+            "mean_delta_hold": 0.00033819033592939903,
+            "mean_delta_entropy_bits": 0.025883768994956233,
+            "stored_bytes": 0,
+            "family": "block-diagonal Sylvester-Hadamard, right-multiplied on the contraction axis"
+          }
+        },
+        {
+          "name": "G032_Q3",
+          "path": "receipts/ascent-2026-08-16/G032_XFORM_HADAMARD_Q3.json",
+          "confirmed": true,
+          "detail": {
+            "mean_delta_hold": 0.0016053876210644358,
+            "mean_delta_rel_fro_pct": -2.7193296010057533,
+            "mean_delta_entropy_bits": 0.02372571953461127
+          }
+        },
+        {
+          "name": "G035",
+          "path": "receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json",
+          "confirmed": true,
+          "detail": {
+            "shared_beats_independent_any": false,
+            "n_pairs": 3,
+            "first_independent_mean": 0.6075034141540527,
+            "first_shared_mean": 0.6312928795814514
+          }
+        },
+        {
+          "name": "G034",
+          "path": "receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json",
+          "confirmed": true,
+          "detail": {
+            "mean_flat_q3": 0.1839276241211841,
+            "mean_lowrank": 0.5393288880586624,
+            "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.93x the output error of flat q3 on every tensor tested. It reduces operations to 0.203x dense, but the acceptance requires bytes AND operations WITH function preserved.",
+            "family_verdict": "COMPREHENSIVELY REFUTED at the coherent operating point. Plain low-rank is 2.93x flat q3's error at identical bits; TT unfolding is worse again. The acceptance also requires a native kernel path and none was built, but no member has earned one."
+          }
+        },
+        {
+          "name": "G042",
+          "path": "receipts/ascent-2026-08-16/G042_BPW_FAMILY.json",
+          "confirmed": true,
+          "detail": {
+            "GENERATED_BPW_EQUIVALENT": "structure computed rather than stored. ZERO for every live candidate: the one generated transform tested (Hadamard) was refuted, and the channel scale is folded into existing tensors rather than generated at runtime",
+            "SHARED_BPW": "structure stored once and used by many tensors. ZERO: G035 refuted cross-layer sharing at matched bits"
+          }
+        },
+        {
+          "name": "G1_SHARE",
+          "path": "workspace/superwave/g1/claude-evidence/g1_share_basis.json",
+          "confirmed": true,
+          "detail": {
+            "one_basis_fullV_bpw": 0.015594527957807665,
+            "dense_orth_bpw_64sites": 0.9980497892996906,
+            "note": "COMPONENT amortisation of a dense n\u00d7n right basis stored once for 64 sites. NOT a structured-transform BPW."
+          }
+        },
+        {
+          "name": "G1_TENSOR",
+          "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+          "confirmed": true,
+          "detail": {
+            "tensor0": "language_model.model.layers.0.mlp.gate_proj.weight",
+            "n_operators": 44,
+            "healthy": 0,
+            "families": {
+              "lowrank_operator": 5,
+              "tucker_hosvd": 12,
+              "tensor_train": 10,
+              "kronecker_sum": 8,
+              "block_term": 3,
+              "tt_matrix_3": 4,
+              "kronecker_plus_lowrank": 2
+            },
+            "kronecker_energy_rank1": 0.015259800946951544,
+            "kronecker_energy_rank64": 0.801171269258503,
+            "q4_rel_l2": 0.11899048089981079
+          }
+        },
+        {
+          "name": "NOETIC_KERNEL_CENSUS.structured_transform",
+          "path": "/Users/scammermike/.claude-grok/worktrees/c5structtransform-20260823-150616/receipts/headless/NOETIC_KERNEL_CENSUS.json",
+          "confirmed": true,
+          "detail": {
+            "verdict": "PARTIAL",
+            "kernel": "strand_rht_forward_cols",
+            "compile_gate": "feature=tq"
+          }
+        },
+        {
+          "name": "NOETIC_OPERATION_CENSUS",
+          "path": "/Users/scammermike/.claude-grok/worktrees/c5structtransform-20260823-150616/receipts/headless/NOETIC_OPERATION_CENSUS.json",
+          "confirmed": true,
+          "detail": {
+            "dispatched_gemv_mac_flops": 51243909120,
+            "dispatches": 964
+          }
+        },
+        {
+          "name": "NOETIC_TPR64_REOPEN",
+          "path": "/Users/scammermike/.claude-grok/worktrees/c5structtransform-20260823-150616/receipts/headless/NOETIC_TPR64_REOPEN.json",
+          "confirmed": true,
+          "detail": {
+            "the_32": "Every variant except down/hgravs01_r160_q3 has recon_excess_ns=0. That includes f32 control, q4/q3/q2 (tpr64 and tg256), binary, ternary, additive, hadamard, rice CSR, and both serial artifact paths.",
+            "hadamard_gate_ns": null,
+            "cosine_Wh_vs_W": 1.0000000000000002,
+            "null_cosine": 0.898
+          }
+        }
+      ]
+    }
+  },
+  "operator": {
+    "name": "fmh_matvec",
+    "long_name": "fused mixed-radix Monarch-Hadamard matvec",
+    "B": 1024,
+    "math": "Let B=1024, n=n1*B, m=m1*B, x\u2208R^n. Reshape X\u2208R^{n1\u00d7B}. Z[t,:]=FWHT_B(R_t X[t,:]) with R_t=I on rung 0. U=Z^T \u2208 R^{B\u00d7n1} (generated permute). Y[b,:]=S_b U[b,:] with S_b\u2208R^{m1\u00d7n1}. y[k*B+b]=Y[b,k], then optional y_tile_k = L_k y_tile_k.",
+    "oracle": {
+      "label": "ORACLE",
+      "not_production": true,
+      "formula": "\u0174[k*B + b, t*B + b'] = S[b, k, t] * H_B[b, b'] / sqrt(B)     (rung 0); replace H_B with H_B @ R_t for rung 1; left-multiply the B-block of outputs by L_k for rung 2. Then y = \u0174 x by ordinary GEMV.",
+      "dense_w_bytes_if_materialised_f32_per_token": 102487818240,
+      "trap": "A decode-then-f32-GEMM lowering writes 102,487,818,240 B of dense W per token (operation census trap_reconstruct_then_gemm). The oracle may exist as a labelled correctness check. It is not a production path.",
+      "how_to_check": "Build \u0174 from S (and R, L) on the host for one organ, compare fmh_matvec(x) against \u0174 @ x. Max-abs should match FWHT identity noise (~1e-6 f32). This proves the kernel, not the fit."
+    },
+    "production": {
+      "label": "PRODUCTION",
+      "kernel_name": "fmh_matvec_b1024_tg128",
+      "never_materialises_W": true,
+      "stages": [
+        {
+          "id": "H",
+          "stored_bytes": 0,
+          "what": "In-place block FWHT of length B=1024 on each of n1 column-tiles of x. Sylvester-Hadamard is generated from B. G032 already used this tile because 5120=5*1024 and 17408=17*1024 with no padding."
+        },
+        {
+          "id": "R",
+          "stored_bytes": "n*B f16 per tensor on rung 1/2, else 0",
+          "what": "Optional learned B\u00d7B mix per input tile, applied before H. This is the coefficient layer that actually has a chance to fit W; rung 0 sets R_t = I."
+        },
+        {
+          "id": "PI",
+          "stored_bytes": 0,
+          "what": "Stride permute = reshape (n1, B) \u2192 transpose \u2192 (B, n1). Generated from B. Not a stored permutation table."
+        },
+        {
+          "id": "S",
+          "stored_bytes": "mn/B f16 per tensor (the information)",
+          "what": "For each Hadamard frequency b in 0..B-1, a dense m1\u00d7n1 map S_b. y[k*B+b] = S_b[k, :] \u00b7 U[b, :]. This is 1/B of the rotated matrix: frequency-diagonal in the 1024-mode."
+        },
+        {
+          "id": "L",
+          "stored_bytes": "m*B f16 per tensor on rung 2, else 0",
+          "what": "Optional learned B\u00d7B mix per output tile, after S."
+        }
+      ],
+      "not_this_kernel": "strand_rht_forward_cols is activation-side FWHT-256 then a bitslice GEMV consumes tx. G032 packed W H and still ran dense Q4 GEMV. Neither is this operator.",
+      "combination_required": "A pure transform (H alone, or H plus per-channel scale) cannot represent an arbitrary W. Kronecker energy on the natural [17,1024]\u00d7[5,1024] reshape is 0.0153 at rank-1 and 0.8012 at rank-64. The coefficient layer is S (always) plus R/L (rungs 1\u20132). Sparse residual is NNS-015 Pareto-dominated by q3 as a byte lever and is not in the production path."
+    },
+    "rungs": [
+      {
+        "id": "rung0",
+        "stored": "S only (H, \u03a0 generated)",
+        "local_bpw_f16": 0.015625,
+        "health_band": "<0.05 \u2014 223-row trap unless doctor says healthy",
+        "already_refuted": true
+      },
+      {
+        "id": "rung1",
+        "stored": "R (n\u00d7B f16) + S",
+        "already_refuted": false,
+        "nearest": "G1 kronecker_sum / G034 low-rank, both unhealthy"
+      },
+      {
+        "id": "rung2",
+        "stored": "R + S + L (m\u00d7B f16)",
+        "already_refuted": false,
+        "nearest": "fatter than G034 rank-803 on gate; still a structured subset of dense"
+      }
+    ],
+    "fwht_identity_self_check": {
+      "n": 16,
+      "max_off_diag_HHT": 0.0,
+      "max_diag_err_HHT": 0.0,
+      "fwht_e0_vs_H_col0": 0.0,
+      "ok": true
+    }
+  },
+  "organs": [
+    {
+      "organ": "mlp.gate_proj",
+      "role": "mlp",
+      "count_per_token": 64,
+      "rows": 17408,
+      "cols": 5120,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 3030384640,
+      "incumbent_mac_flops_per_token": 11408506880,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 17,
+        "n1": 5,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 87040,
+        "r_params": 5242880,
+        "l_params": 17825792,
+        "fwht_flops": 51200,
+        "s_flops": 174080,
+        "r_flops": 10485760,
+        "l_flops": 35651584,
+        "rung0_flops": 225280,
+        "rung1_flops": 10711040,
+        "rung2_flops": 46362624,
+        "rung0_bytes_f16": 174120,
+        "rung1_bytes_f16": 10659880,
+        "rung2_bytes_f16": 46311464,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 0.9568014705882353,
+        "local_bpw_rung2_f16": 4.156801470588236,
+        "dense_mac_flops": 178257920,
+        "q4_bytes": 47349760
+      },
+      "rung0_bytes_per_token": 11143680,
+      "rung1_bytes_per_token": 682232320,
+      "rung2_bytes_per_token": 2963933696,
+      "rung0_flops_per_token": 14417920,
+      "rung1_flops_per_token": 685506560,
+      "rung2_flops_per_token": 2967207936,
+      "byte_ratio_rung0_vs_q4": 0.003677315365484429,
+      "flop_ratio_rung0_vs_mac": 0.0012637867647058824,
+      "byte_ratio_rung1_vs_q4": 0.22513060256271628,
+      "flop_ratio_rung1_vs_mac": 0.06008731617647059
+    },
+    {
+      "organ": "mlp.up_proj",
+      "role": "mlp",
+      "count_per_token": 64,
+      "rows": 17408,
+      "cols": 5120,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 3030384640,
+      "incumbent_mac_flops_per_token": 11408506880,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 17,
+        "n1": 5,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 87040,
+        "r_params": 5242880,
+        "l_params": 17825792,
+        "fwht_flops": 51200,
+        "s_flops": 174080,
+        "r_flops": 10485760,
+        "l_flops": 35651584,
+        "rung0_flops": 225280,
+        "rung1_flops": 10711040,
+        "rung2_flops": 46362624,
+        "rung0_bytes_f16": 174120,
+        "rung1_bytes_f16": 10659880,
+        "rung2_bytes_f16": 46311464,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 0.9568014705882353,
+        "local_bpw_rung2_f16": 4.156801470588236,
+        "dense_mac_flops": 178257920,
+        "q4_bytes": 47349760
+      },
+      "rung0_bytes_per_token": 11143680,
+      "rung1_bytes_per_token": 682232320,
+      "rung2_bytes_per_token": 2963933696,
+      "rung0_flops_per_token": 14417920,
+      "rung1_flops_per_token": 685506560,
+      "rung2_flops_per_token": 2967207936,
+      "byte_ratio_rung0_vs_q4": 0.003677315365484429,
+      "flop_ratio_rung0_vs_mac": 0.0012637867647058824,
+      "byte_ratio_rung1_vs_q4": 0.22513060256271628,
+      "flop_ratio_rung1_vs_mac": 0.06008731617647059
+    },
+    {
+      "organ": "mlp.down_proj",
+      "role": "mlp",
+      "count_per_token": 64,
+      "rows": 5120,
+      "cols": 17408,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 3030384640,
+      "incumbent_mac_flops_per_token": 11408506880,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 5,
+        "n1": 17,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 87040,
+        "r_params": 17825792,
+        "l_params": 5242880,
+        "fwht_flops": 174080,
+        "s_flops": 174080,
+        "r_flops": 35651584,
+        "l_flops": 10485760,
+        "rung0_flops": 348160,
+        "rung1_flops": 35999744,
+        "rung2_flops": 46485504,
+        "rung0_bytes_f16": 174120,
+        "rung1_bytes_f16": 35825704,
+        "rung2_bytes_f16": 46311464,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 3.215625,
+        "local_bpw_rung2_f16": 4.156801470588236,
+        "dense_mac_flops": 178257920,
+        "q4_bytes": 47349760
+      },
+      "rung0_bytes_per_token": 11143680,
+      "rung1_bytes_per_token": 2292845056,
+      "rung2_bytes_per_token": 2963933696,
+      "rung0_flops_per_token": 22282240,
+      "rung1_flops_per_token": 2303983616,
+      "rung2_flops_per_token": 2975072256,
+      "byte_ratio_rung0_vs_q4": 0.003677315365484429,
+      "flop_ratio_rung0_vs_mac": 0.001953125,
+      "byte_ratio_rung1_vs_q4": 0.7566184918360727,
+      "flop_ratio_rung1_vs_mac": 0.201953125
+    },
+    {
+      "organ": "linear_attn.in_proj_qkvz",
+      "role": "deltanet",
+      "count_per_token": 48,
+      "rows": 16384,
+      "cols": 5120,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 2139095040,
+      "incumbent_mac_flops_per_token": 8053063680,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 16,
+        "n1": 5,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 81920,
+        "r_params": 5242880,
+        "l_params": 16777216,
+        "fwht_flops": 51200,
+        "s_flops": 163840,
+        "r_flops": 10485760,
+        "l_flops": 33554432,
+        "rung0_flops": 215040,
+        "rung1_flops": 10700800,
+        "rung2_flops": 44255232,
+        "rung0_bytes_f16": 163880,
+        "rung1_bytes_f16": 10649640,
+        "rung2_bytes_f16": 44204072,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 1.015625,
+        "local_bpw_rung2_f16": 4.215625,
+        "dense_mac_flops": 167772160,
+        "q4_bytes": 44564480
+      },
+      "rung0_bytes_per_token": 7866240,
+      "rung1_bytes_per_token": 511182720,
+      "rung2_bytes_per_token": 2121795456,
+      "rung0_flops_per_token": 10321920,
+      "rung1_flops_per_token": 513638400,
+      "rung2_flops_per_token": 2124251136,
+      "byte_ratio_rung0_vs_q4": 0.0036773681640625,
+      "flop_ratio_rung0_vs_mac": 0.00128173828125,
+      "byte_ratio_rung1_vs_q4": 0.23897148581112132,
+      "flop_ratio_rung1_vs_mac": 0.06378173828125
+    },
+    {
+      "organ": "linear_attn.in_proj_ba",
+      "role": "deltanet",
+      "count_per_token": 48,
+      "rows": 96,
+      "cols": 5120,
+      "tiles_at_B": false,
+      "incumbent_q4_bytes_per_token": 12533760,
+      "incumbent_mac_flops_per_token": 47185920,
+      "disposition": "KEEP_Q4",
+      "why": "rows or cols not divisible by B=1024; pad would zero extra output tiles",
+      "fmh": null
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "role": "deltanet",
+      "count_per_token": 48,
+      "rows": 5120,
+      "cols": 6144,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 802160640,
+      "incumbent_mac_flops_per_token": 3019898880,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 5,
+        "n1": 6,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 30720,
+        "r_params": 6291456,
+        "l_params": 5242880,
+        "fwht_flops": 61440,
+        "s_flops": 61440,
+        "r_flops": 12582912,
+        "l_flops": 10485760,
+        "rung0_flops": 122880,
+        "rung1_flops": 12705792,
+        "rung2_flops": 23191552,
+        "rung0_bytes_f16": 61480,
+        "rung1_bytes_f16": 12644392,
+        "rung2_bytes_f16": 23130152,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 3.215625,
+        "local_bpw_rung2_f16": 5.882291666666666,
+        "dense_mac_flops": 62914560,
+        "q4_bytes": 16711680
+      },
+      "rung0_bytes_per_token": 2951040,
+      "rung1_bytes_per_token": 606930816,
+      "rung2_bytes_per_token": 1110247296,
+      "rung0_flops_per_token": 5898240,
+      "rung1_flops_per_token": 609878016,
+      "rung2_flops_per_token": 1113194496,
+      "byte_ratio_rung0_vs_q4": 0.0036788641237745097,
+      "flop_ratio_rung0_vs_mac": 0.001953125,
+      "byte_ratio_rung1_vs_q4": 0.7566200405943627,
+      "flop_ratio_rung1_vs_mac": 0.201953125
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "role": "gqa",
+      "count_per_token": 16,
+      "rows": 12288,
+      "cols": 5120,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 534773760,
+      "incumbent_mac_flops_per_token": 2013265920,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 12,
+        "n1": 5,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 61440,
+        "r_params": 5242880,
+        "l_params": 12582912,
+        "fwht_flops": 51200,
+        "s_flops": 122880,
+        "r_flops": 10485760,
+        "l_flops": 25165824,
+        "rung0_flops": 174080,
+        "rung1_flops": 10659840,
+        "rung2_flops": 35825664,
+        "rung0_bytes_f16": 122920,
+        "rung1_bytes_f16": 10608680,
+        "rung2_bytes_f16": 35774504,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 1.3489583333333333,
+        "local_bpw_rung2_f16": 4.548958333333333,
+        "dense_mac_flops": 125829120,
+        "q4_bytes": 33423360
+      },
+      "rung0_bytes_per_token": 1966720,
+      "rung1_bytes_per_token": 169738880,
+      "rung2_bytes_per_token": 572392064,
+      "rung0_flops_per_token": 2785280,
+      "rung1_flops_per_token": 170557440,
+      "rung2_flops_per_token": 573210624,
+      "byte_ratio_rung0_vs_q4": 0.003677667356004902,
+      "flop_ratio_rung0_vs_mac": 0.0013834635416666667,
+      "byte_ratio_rung1_vs_q4": 0.3174031575520833,
+      "flop_ratio_rung1_vs_mac": 0.084716796875
+    },
+    {
+      "organ": "self_attn.k_proj",
+      "role": "gqa",
+      "count_per_token": 16,
+      "rows": 1024,
+      "cols": 5120,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 44564480,
+      "incumbent_mac_flops_per_token": 167772160,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 1,
+        "n1": 5,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 5120,
+        "r_params": 5242880,
+        "l_params": 1048576,
+        "fwht_flops": 51200,
+        "s_flops": 10240,
+        "r_flops": 10485760,
+        "l_flops": 2097152,
+        "rung0_flops": 61440,
+        "rung1_flops": 10547200,
+        "rung2_flops": 12644352,
+        "rung0_bytes_f16": 10280,
+        "rung1_bytes_f16": 10496040,
+        "rung2_bytes_f16": 12593192,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 16.015625,
+        "local_bpw_rung2_f16": 19.215625,
+        "dense_mac_flops": 10485760,
+        "q4_bytes": 2785280
+      },
+      "rung0_bytes_per_token": 164480,
+      "rung1_bytes_per_token": 167936640,
+      "rung2_bytes_per_token": 201491072,
+      "rung0_flops_per_token": 983040,
+      "rung1_flops_per_token": 168755200,
+      "rung2_flops_per_token": 202309632,
+      "byte_ratio_rung0_vs_q4": 0.003690831801470588,
+      "flop_ratio_rung0_vs_mac": 0.005859375,
+      "byte_ratio_rung1_vs_q4": 3.7683967141544117,
+      "flop_ratio_rung1_vs_mac": 1.005859375
+    },
+    {
+      "organ": "self_attn.v_proj",
+      "role": "gqa",
+      "count_per_token": 16,
+      "rows": 1024,
+      "cols": 5120,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 44564480,
+      "incumbent_mac_flops_per_token": 167772160,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 1,
+        "n1": 5,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 5120,
+        "r_params": 5242880,
+        "l_params": 1048576,
+        "fwht_flops": 51200,
+        "s_flops": 10240,
+        "r_flops": 10485760,
+        "l_flops": 2097152,
+        "rung0_flops": 61440,
+        "rung1_flops": 10547200,
+        "rung2_flops": 12644352,
+        "rung0_bytes_f16": 10280,
+        "rung1_bytes_f16": 10496040,
+        "rung2_bytes_f16": 12593192,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 16.015625,
+        "local_bpw_rung2_f16": 19.215625,
+        "dense_mac_flops": 10485760,
+        "q4_bytes": 2785280
+      },
+      "rung0_bytes_per_token": 164480,
+      "rung1_bytes_per_token": 167936640,
+      "rung2_bytes_per_token": 201491072,
+      "rung0_flops_per_token": 983040,
+      "rung1_flops_per_token": 168755200,
+      "rung2_flops_per_token": 202309632,
+      "byte_ratio_rung0_vs_q4": 0.003690831801470588,
+      "flop_ratio_rung0_vs_mac": 0.005859375,
+      "byte_ratio_rung1_vs_q4": 3.7683967141544117,
+      "flop_ratio_rung1_vs_mac": 1.005859375
+    },
+    {
+      "organ": "self_attn.o_proj",
+      "role": "gqa",
+      "count_per_token": 16,
+      "rows": 5120,
+      "cols": 6144,
+      "tiles_at_B": true,
+      "incumbent_q4_bytes_per_token": 267386880,
+      "incumbent_mac_flops_per_token": 1006632960,
+      "disposition": "FMH",
+      "fmh": {
+        "m1": 5,
+        "n1": 6,
+        "B": 1024,
+        "log2_B": 10,
+        "s_params": 30720,
+        "r_params": 6291456,
+        "l_params": 5242880,
+        "fwht_flops": 61440,
+        "s_flops": 61440,
+        "r_flops": 12582912,
+        "l_flops": 10485760,
+        "rung0_flops": 122880,
+        "rung1_flops": 12705792,
+        "rung2_flops": 23191552,
+        "rung0_bytes_f16": 61480,
+        "rung1_bytes_f16": 12644392,
+        "rung2_bytes_f16": 23130152,
+        "local_bpw_rung0_f16": 0.015625,
+        "local_bpw_rung1_f16": 3.215625,
+        "local_bpw_rung2_f16": 5.882291666666666,
+        "dense_mac_flops": 62914560,
+        "q4_bytes": 16711680
+      },
+      "rung0_bytes_per_token": 983680,
+      "rung1_bytes_per_token": 202310272,
+      "rung2_bytes_per_token": 370082432,
+      "rung0_flops_per_token": 1966080,
+      "rung1_flops_per_token": 203292672,
+      "rung2_flops_per_token": 371064832,
+      "byte_ratio_rung0_vs_q4": 0.0036788641237745097,
+      "flop_ratio_rung0_vs_mac": 0.001953125,
+      "byte_ratio_rung1_vs_q4": 0.7566200405943627,
+      "flop_ratio_rung1_vs_mac": 0.201953125
+    },
+    {
+      "organ": "lm_head",
+      "role": "terminal",
+      "count_per_token": 1,
+      "rows": 248320,
+      "cols": 5120,
+      "tiles_at_B": false,
+      "incumbent_q4_bytes_per_token": 675430400,
+      "incumbent_mac_flops_per_token": 2542796800,
+      "disposition": "KEEP_Q4",
+      "why": "rows or cols not divisible by B=1024; pad would zero extra output tiles",
+      "fmh": null
+    }
+  ],
+  "expected_bytes_per_token": {
+    "derived_not_guessed": true,
+    "formula": "tiling organs: rung0 = count*(2*mn/B + 40); rung1 adds 2*n*B; rung2 adds 2*m*B. Non-tiling organs: incumbent Q4 = rows*ceil(cols/64)*34. DRAM = weight stream + (ANCHOR_DRAM \u2212 ANCHOR_Q4_GEMV) for activations/state/KV.",
+    "incumbent_q4_gemv_bytes": 13611663360,
+    "incumbent_dram_bytes": 13988022948,
+    "keep_q4_organs": [
+      "linear_attn.in_proj_ba",
+      "lm_head"
+    ],
+    "keep_q4_bytes": 687964160,
+    "fmh_organs": [
+      "mlp.gate_proj",
+      "mlp.up_proj",
+      "mlp.down_proj",
+      "linear_attn.in_proj_qkvz",
+      "linear_attn.out_proj",
+      "self_attn.q_proj",
+      "self_attn.k_proj",
+      "self_attn.v_proj",
+      "self_attn.o_proj"
+    ],
+    "rung0_weight_bytes": 735491840,
+    "rung1_weight_bytes": 6171309824,
+    "rung2_weight_bytes": 14157264640,
+    "rung0_dram_bytes": 1111851428,
+    "rung1_dram_bytes": 6547669412,
+    "rung2_dram_bytes": 14533624228,
+    "rung0_vs_incumbent_weight": 0.054033942843558544,
+    "rung1_vs_incumbent_weight": 0.4533839590931523,
+    "bandwidth_ms_at_595_9": {
+      "incumbent": 23.47377571404598,
+      "rung0_counterfactual": 1.865835589864071,
+      "rung1_counterfactual": 10.987866105051184,
+      "rung2_counterfactual": 24.389367726128544
+    },
+    "gate_proj_example": {
+      "q4_bytes_per_launch": 47349760,
+      "rung0_bytes_per_launch": 174120,
+      "rung1_bytes_per_launch": 10659880,
+      "rung0_local_bpw_f16": 0.015625,
+      "rung1_local_bpw_f16": 0.9568014705882353
+    }
+  },
+  "expected_operations_per_token": {
+    "derived_not_guessed": true,
+    "convention": "FMA=2; FWHT u+v/u-v counted as n log2 B FLOPs per launch",
+    "incumbent_gemv_mac_flops": 51243909120,
+    "incumbent_activation_flops_unchanged": 297313024,
+    "incumbent_executable_flops_with_dequant": 77163181824,
+    "incumbent_executable_operations_with_unpack_alu": 179651020544,
+    "keep_q4_mac_flops": 2589982720,
+    "rung0_flops": 2664038400,
+    "rung1_flops": 8099856384,
+    "rung2_flops": 16085811200,
+    "rung0_vs_51_24_gflop": 0.05198741559238797,
+    "rung1_vs_51_24_gflop": 0.1580647636586863,
+    "rung2_vs_51_24_gflop": 0.31390679353386536,
+    "gate_proj_example": {
+      "incumbent_mac_per_launch": 178257920,
+      "rung0_flops_per_launch": 225280,
+      "rung1_flops_per_launch": 10711040,
+      "fwht_flops_per_launch": 51200,
+      "s_flops_per_launch": 174080,
+      "r_flops_per_launch": 10485760
+    },
+    "intensity_flop_per_byte": {
+      "ridge_point": 15.067964423561,
+      "incumbent_q4": 3.764705882352941,
+      "rung0": 3.6221182277154838,
+      "rung1": 1.3125019833714964,
+      "reading": "Ridge is 15.07 FLOP/byte at 8979 GFLOP/s / 595.9 GB/s. Q4 GEMV sits at 3.76 \u2014 bandwidth bound. Rung 0 sits at 3.62 (still bandwidth bound, so tok/s would track the byte cut IF healthy). tpr64 measured that cutting dequant ALU without cutting bytes does not move GPU ns at this launch geometry \u2014 that is the G032 codec-reparam case, not rung 0/1."
+    },
+    "g043_recon_share_of_physical": 0.7138349980076641,
+    "g043_physical_ns": 30549917
+  },
+  "dispatch_topology": {
+    "incumbent": {
+      "dispatches_per_token": 964,
+      "gemv_dispatches": 401,
+      "command_buffers": 1,
+      "formula": "1 embed + 64*(9 mixer + 6 mlp) + 3 terminal = 964",
+      "synchronises": "Single TokenCommandBuffer, encode-order data dependencies. No extra host wait inside the token."
+    },
+    "production_fused": {
+      "dispatches_per_token": 964,
+      "fmh_launches": 352,
+      "q4_launches_kept": 49,
+      "command_buffers": 1,
+      "kernel": "fmh_matvec_b1024_tg128 replaces geo_tpr64_tg128 on tiling organs",
+      "synchronises": "Same 1-CB encode order. FWHT of x lives inside the organ kernel so gate and up each FWHT the same hidden (51,200 FLOPs, noise). A shared FWHT_hidden dispatch would ADD 64 dispatches to save that noise \u2014 not worth it.",
+      "vs_incumbent": "964 \u2192 964. Dispatch count is not the lever."
+    },
+    "trap_unfused_strand_style": {
+      "dispatches_per_token": 1316,
+      "extra": 352,
+      "why_not_production": "strand_rht_forward_cols is a separate dispatch then GEMV reads tx. Copying that shape would add 352 dispatches (964 \u2192 1316) and a device buffer of n f32 per organ. Fuse."
+    }
+  },
+  "metal_feasibility": {
+    "device": "Apple M3 Ultra, 60 GPU cores, Metal 4, unified 103,079,215,104 B",
+    "simdgroup_width": 32,
+    "workhorse_threadgroup": 128,
+    "threadgroup_memory_limit_bytes": 32768,
+    "threadgroup_memory_limit_source": "crates/hawking-core/shaders/quant.metal:2115",
+    "incumbent_kernel": {
+      "name": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "line": 183,
+      "grid": "ceil(rows/2)*128, TG 128",
+      "map": "2 rows/TG, 64 threads/row (2 simdgroups), simd_sum, threadgroup red[4]=16 B",
+      "coalescing": "each lane walks columns += 512, unpacks 8 nibbles, FMA against x[col]"
+    },
+    "existing_fwht": {
+      "name": "strand_rht_forward_cols",
+      "line": 826,
+      "compile_gate": "feature=tq",
+      "block": 256,
+      "register_pressure": "float buf[256] = 1024 B per thread, one thread owns one block",
+      "why_not_reuse_as_is": "Activation-side, B=256 not 1024, separate dispatch, tq-gated, register-blocked scalar butterfly. Production FMH needs cooperative simdgroup FWHT-1024 so it does not spill."
+    },
+    "existing_two_stage": {
+      "name": "q80_hgravs01_two_stage_matvec",
+      "tg_floats": 672,
+      "tg_bytes": 2688,
+      "rank_cap": 160,
+      "note": "mid[160] in TG is the pattern: reduce x into a small working set, then consume. FMH's working set is z of length n, not rank 160."
+    },
+    "fmh_fused_launch": {
+      "tg": 128,
+      "grid_for_S_stage": "ceil(rows/2)*128 (match incumbent)",
+      "fwht_stage": "5 (gate/up) or 17 (down) cooperative FWHT-1024. One simdgroup per tile, 4096 B TG per tile reused, 10 butterfly stages, shuffle or TG. Do not allocate float buf[1024] per thread.",
+      "z_in_tg_gate_up_bytes": 20480,
+      "z_in_tg_gate_up_fits_32kb": true,
+      "z_in_tg_down_bytes": 69632,
+      "z_in_tg_down_fits_32kb": false,
+      "down_spill": "device scratch float z[17408] = 69,632 B per down_proj launch. Not dense W (which would be 356,515,840 B f32 for that organ).",
+      "register_pressure": "S-stage: 5 (n1) f32 accumulators + a handful of index math. Far below strand_rht's 256-float buf. Incumbent already holds an 8-wide unpack window plus acc.",
+      "coalescing": "x is 5120 consecutive f32 \u2014 coalesced. S packed [B, m1, n1] f16 with n1=5 innermost: a row reads 10 consecutive bytes. Rung 1 R is n1 tiles of B\u00d7B f16, streamed once per launch like today's Q4 but 5\u00d71024\u00d71024\u00d72 = 10,485,760 B on gate vs 47,349,760 Q4.",
+      "lines_estimate": "kernel census: ~200 lines if RHT is reused, plus drop the tq gate. Quality, not volume, is the blocker."
+    }
+  },
+  "memory_layout": {
+    "per_tensor_blob": {
+      "header_bytes": 40,
+      "header_fields": [
+        "magic fmh1",
+        "B u32 = 1024",
+        "m1 u32",
+        "n1 u32",
+        "flags u32 (bit0=has_R, bit1=has_L, bits8-15=H_kind sylvester)"
+      ],
+      "H": "not stored; generated from B",
+      "PI": "not stored; generated reshape/transpose",
+      "S": "f16[B, m1, n1] row-major, n1 fastest. rung 0 payload.",
+      "R": "optional f16[n1, B, B], tile-major",
+      "L": "optional f16[m1, B, B], tile-major"
+    },
+    "nr_accounting": {
+      "H_is_not_model_specific": "G042: generated Hadamard does not carry parent information. Do not put H in generated_structures and claim GENERATED_BPW.",
+      "S_and_R_are_model_specific": "Count every byte of S, R, L, header. complete_bits_per_weight must be computed from those bytes over source_weight_elements, not declared. n16clos: StructuredTransform is currently a schema-change family on the sealed NR.",
+      "do_not_share_S_across_layers": "G035 shared_beats_independent=false",
+      "active_vs_stored": "Report both. Q80 storage 0.6462 vs ACTIVE 2.518 is the category error. FMH stored bytes ARE the active weight bytes (no embed-table trick on these organs)."
+    },
+    "workspace": {
+      "z_scratch_down_bytes": 69632,
+      "z_scratch_is_dense_W": false,
+      "incumbent_dense_W_if_reconstructed": 102487818240
+    }
+  },
+  "cheap_microbenchmark": {
+    "name": "fmh_rung0_fiber_lstsq_L31_gate",
+    "purpose": "Discriminate FMH from uniform-q4 BEFORE anyone writes fmh_matvec. CPU / numpy, one real tensor, real captured X. Minutes, not a kernel.",
+    "not_synthetic": true,
+    "tensor": "language_model.model.layers.31.mlp.gate_proj.weight",
+    "shape": [
+      17408,
+      5120
+    ],
+    "why_this_tensor": "G032 and G034 both used L31.gate_proj. G034's site correction: post_attn_norm, not post_input_norm (silu(gate)*up reproduces captured post_swiglu to cosine 0.999986 only at post_attn_norm).",
+    "W_source": "bf16 parent shard via model.safetensors.index.json (tools/gravity_xform_hadamard.py::load_tensor)",
+    "X_source": {
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/activation-capture-v1",
+      "site": "post_attn_norm / captured_post_norm_hidden",
+      "fit_n": 192,
+      "hold_n": 64,
+      "sha256_self": "fdd937e20500b862452cf4732aa525087e1a3d209c1271e6c021811620687512",
+      "not_synthetic": true
+    },
+    "controls": {
+      "q4": "grouped absmax g64, same as production",
+      "q3": "G034 mean_flat_q3 out_rel_fro = 0.1839276241211841",
+      "null_cosine": 0.898
+    },
+    "procedure": [
+      "Load W f32 17408\u00d75120 and X_fit, X_hold from the capture (real tokens only).",
+      "Block-FWHT along columns of W (G032 block_hadamard_apply, B=1024) \u2192 W_rot.",
+      "Rung 0 extractor: S[b,k,t] = W_rot[k*B+b, t*B+b]  (frequency-diagonal).",
+      "That is the Frobenius-optimal S for the rung-0 family. No training.",
+      "Apply fmh_rung0(X) = S-mix of FWHT_block(X) on fit and hold.",
+      "Score against W@X with gravity_doctor_gate._gain (NOT cosine-only). Also report out_rel_fro and max_abs. Cosine is recorded and flagged: 0.01*W scores cosine 1.000000.",
+      "If rung 0 is dead, repeat with a least-squares R_t (5 \u00d7 1024\u00d71024) on the fit set only \u2014 that is rung 1. Do not touch hold while fitting R."
+    ],
+    "kill_if": [
+      "doctor healthy=False on hold-out (q4 on this tensor is healthy at 4 bits; G1 q4 rel_l2=0.11899048089981079)",
+      "hold-out out_rel_fro > G034 mean_flat_q3 0.1839276241211841 at any byte budget \u2264 q4",
+      "scoring is cosine-only",
+      "X is synthetic / Gaussian / iid",
+      "local_bpw < 0.5 and no health verdict (223-row law; this rung 0 is 0.015625 BPW)"
+    ],
+    "predicted_outcome": {
+      "rung0": "rel_l2 \u2248 1.0 (G1 block_term 0.9989632368087769 at local_bpw 0.026020364200367647; frequency-diagonal keeps 1/B of W_rot).",
+      "rung1": "rel_l2 \u2248 0.93 (G1 kronecker_sum 0.9334229826927185 on the same [17,1024]\u00d7[5,1024] reshape), still ~8\u00d7 q4's 0.11899048089981079.",
+      "therefore": "Do not write the Metal kernel unless this CPU fit beats q3 on hold-out doctor."
+    },
+    "wall_budget_s": 180,
+    "forbidden": [
+      "synthetic activations",
+      "weight cosine as the gate",
+      "quoting 0.0156 BPW as a quality result",
+      "reconstruct \u0174 to f32 and calling that production"
+    ]
+  },
+  "expected_value": {
+    "verdict": "NOT_WORTH_BUILDING",
+    "what_it_would_win_if_healthy": {
+      "rung0_weight_bytes_per_token": 735491840,
+      "rung0_vs_q4_weight_bytes": 0.054033942843558544,
+      "rung0_flops_vs_51_24_gflop": 0.05198741559238797,
+      "rung0_bandwidth_ms_counterfactual": 1.865835589864071,
+      "rung0_bandwidth_tps_counterfactual": 535.9529025131585,
+      "rung1_weight_bytes_per_token": 6171309824,
+      "rung1_vs_q4_weight_bytes": 0.4533839590931523,
+      "rung1_flops_vs_51_24_gflop": 0.1580647636586863,
+      "rung1_bandwidth_ms_counterfactual": 10.987866105051184,
+      "rung1_bandwidth_tps_counterfactual": 91.00948177192424,
+      "controls_to_beat": {
+        "self_uniform_q4": 32.73,
+        "mlx_4bit_live": 35.51,
+        "llamacpp_q5k_archived": 24.12
+      },
+      "counterfactual_flag": "These tok/s numbers assume the representation is healthy and the kernel hits the measured 595.9 GB/s roof. They are not a result. Rung 0 local BPW is 0.015625 with no health verdict."
+    },
+    "what_it_risks": [
+      "Rung 0 lands in the 223-component <0.5 local BPW band (healthy=true: 0).",
+      "Rung 1/2 collapse to structured factorisations G1/G034 already ran on this parent (0 healthy; G034 2.93\u00d7 q3 error at matched bits).",
+      "G035: sharing S or H across layers lost. Do not amortise 0.0156.",
+      "tpr64: recon is free at production geometry, including the hadamard variant. FLOP cuts that do not cut bytes do not move tok/s.",
+      "MLP function distillation is NO-GO (+0.4206 held-out gap vs q3). Cannot train out of a bad drop-in.",
+      "Cosine-only scoring will accept 0.01*W. Use doctor gain.",
+      "Oracle materialisation is a 102.5 GiB/token trap."
+    ],
+    "cheapest_kill": "fmh_rung0_fiber_lstsq_L31_gate",
+    "why_not_worth_building_the_kernel": "The 'transform IS the code' rung is already refuted as a byte family (G042 GENERATED_BPW_EQUIVALENT=0, Hadamard named). The coefficient rung that could in principle reduce both bytes and ops is the mixed-radix blocking G1 already scored on this exact reshape, with zero healthy operators. Kernel census: quality, not kernel volume, is the blocker (~200 lines if RHT is reused). Pay the CPU fit first; it is the experiment that would kill this, and the prediction is it kills it.",
+    "reopen_if": "The cheap microbenchmark on L31.gate_proj + real hold-out X reports doctor healthy=True and out_rel_fro \u2264 q3 at \u2264 q4 bytes. Until then do not open fmh_matvec.metal."
+  },
+  "s011_section4": {
+    "incumbent": {
+      "bytes_weight_stream": 13611663360,
+      "operations_gemv_mac": 51243909120,
+      "dispatches": 964,
+      "materialization_dense_W": 0,
+      "synchronization_command_buffers": 1,
+      "traffic_dram": 13988022948
+    },
+    "rung0_fused": {
+      "bytes_weight_stream": 735491840,
+      "operations_gemv_plus_fwht": 2664038400,
+      "dispatches": 964,
+      "materialization_dense_W": 0,
+      "synchronization_command_buffers": 1,
+      "traffic_dram": 1111851428,
+      "reduces": [
+        "bytes",
+        "operations",
+        "traffic"
+      ],
+      "does_not_reduce": [
+        "dispatches",
+        "materialization",
+        "synchronization"
+      ],
+      "complete_by_s011_section4": true
+    },
+    "rung1_fused": {
+      "bytes_weight_stream": 6171309824,
+      "operations_gemv_plus_fwht": 8099856384,
+      "dispatches": 964,
+      "materialization_dense_W": 0,
+      "synchronization_command_buffers": 1,
+      "traffic_dram": 6547669412,
+      "reduces": [
+        "bytes",
+        "operations",
+        "traffic"
+      ],
+      "complete_by_s011_section4": true
+    },
+    "rung2_fused_f16": {
+      "bytes_weight_stream": 14157264640,
+      "operations_gemv_plus_fwht": 16085811200,
+      "dispatches": 964,
+      "materialization_dense_W": 0,
+      "synchronization_command_buffers": 1,
+      "traffic_dram": 14533624228,
+      "bytes_exceed_incumbent_q4": true,
+      "reduces": [
+        "operations"
+      ],
+      "does_not_reduce": [
+        "bytes",
+        "traffic"
+      ],
+      "complete_by_s011_section4": true,
+      "why": "f16 R+S+L is 14,157,264,640 B vs Q4 13,611,663,360 B \u2014 bytes go UP. FLOPs fall to 0.314\u00d7. Ops-only completeness. tpr64 says ops-only does not move this geometry; do not build rung 2 as f16."
+    },
+    "g032_codec_reparam_on_q4": {
+      "bytes_weight_stream": 13611663360,
+      "operations": 51270451200,
+      "dispatches_if_unfused_fwht": 1316,
+      "reduces": [],
+      "increases": [
+        "operations",
+        "dispatches_if_unfused"
+      ],
+      "complete_by_s011_section4": false,
+      "why": "G032 stores W H at the same Q4 size, then adds H^T x at runtime. Bytes do not drop. Ops rise. tpr64 says reconstruction is free on 32/33 variants including hadamard, so the extra ALU cannot buy tok/s at this geometry."
+    },
+    "note": "S011 \u00a74 completeness is arithmetic, not a build recommendation. A complete design that is predicted unhealthy is still NOT_WORTH_BUILDING."
+  },
+  "what_i_watched_fail": [
+    {
+      "what": "G032 Q4 Hadamard as codec reparameterization",
+      "result": "mean_delta_hold=0.00033819033592939903, entropy +0.025883768994956233 bits, stored_bytes of H=0 but W is still stored",
+      "why": "A transform that does not drop bits and adds FWHT ops is not a token lever. Runtime of H^T x was never measured on device in G032."
+    },
+    {
+      "what": "G042 generated / implicit weights",
+      "result": "GENERATED_BPW_EQUIVALENT=0.0; Hadamard named as the generated transform that was refuted",
+      "why": "The 'transform IS the code, almost no stored state' member is closed as a BPW family."
+    },
+    {
+      "what": "G1 Kronecker energy on the natural 17\u00d71024 \u00d7 5\u00d71024 reshape of L0.gate_proj",
+      "result": "rank-1 energy=0.015259800946951544, rank-64 energy=0.801171269258503",
+      "why": "W is not A\u2297H_1024. Rung 0's frequency-diagonal keeps 1/B of the rotated matrix."
+    },
+    {
+      "what": "G1 structured operators on that tensor (Tucker/TT/Kronecker/BTD/low-rank)",
+      "result": "44 operators, healthy=0; block_term rel_l2=0.9989632368087769; kronecker_sum rel_l2=0.9334229826927185; q4 rel_l2=0.11899048089981079",
+      "why": "Nearest measured members of this family are unhealthy on this parent."
+    },
+    {
+      "what": "G034 matched-bit structured operator vs flat q3",
+      "result": "mean_lowrank=0.5393288880586624 vs mean_flat_q3=0.1839276241211841 (ratio 2.93); MAC ratio 0.2029641544117647",
+      "why": "Reducing ops at matched bits without preserving function is the acceptance failure G034 recorded. TT unfold was worse."
+    },
+    {
+      "what": "G035 G-SHARE",
+      "result": "shared_beats_independent=False",
+      "why": "A common transform stored once for a tensor class is not a free 0.0156 BPW win."
+    },
+    {
+      "what": "223 sub-0.5 local_bpw components",
+      "result": "healthy_true_count=0",
+      "why": "Rung 0's 0.015625 local BPW is not a result until paired with a health verdict."
+    },
+    {
+      "what": "tpr64 reconstruction-is-free, hadamard variant",
+      "result": "32/33 variants recon_excess_ns=0; hadamard_gate_ns=17333 in the uncompressed-f32 band",
+      "why": "At production tpr64, cutting dequant ALU without cutting bytes does not move GPU ns. The a-priori 'fewer ops' case is a traffic case on this device, or it is nothing."
+    },
+    {
+      "what": "scale-invariance of cosine",
+      "result": "0.01*W scores cosine 1.000000; raw-activation null cosine \u2248 0.898",
+      "why": "The cheap microbenchmark is forbidden from using cosine as the gate."
+    },
+    {
+      "what": "hidden=5120 is not a power of two",
+      "result": "gcd of all GEMV dims=32; B=1024 tiles hidden/intermediate/qkvz/q/k/v/o and not ba=96 or vocab=248320",
+      "why": "A global FWHT of x needs padding to 8192. G032's block-1024 is the workable tile; ba and lm_head stay Q4."
+    },
+    {
+      "what": "strand_rht_forward_cols",
+      "result": "present=True line=826 compile_gate=feature=tq, 256-wide, float buf[256] per thread, activation-side",
+      "why": "An FWHT kernel exists and is not the weight-side operator. Reuse is ~200 lines; quality is the blocker (kernel census)."
+    },
+    {
+      "what": "HGRAVS01 two-stage threadgroup caps",
+      "result": "mid[160]+x_tg[512] = 2688 B; down_proj FMH z would be 69632 B (EXCEEDS 32 KB)",
+      "why": "Fusing all of z for down_proj into TG memory does not fit. Spill z to a 69,632 B device scratch \u2014 still not dense W. Gate/up z is 20,480 B and does fit."
+    },
+    {
+      "what": "MLP function distillation as the surviving storage avenue",
+      "result": "NO-GO, +0.4206 held-out gap vs q3 at 72% of its active bytes",
+      "why": "Cannot rescue a bad drop-in by distilling the MLP."
+    },
+    {
+      "what": "Q80 storage vs active BPW category error",
+      "result": "storage 0.6462 against ACTIVE 2.518 (~3.9\u00d7)",
+      "why": "Report both or neither. FMH rung 0 storage BPW 0.015625 would be the same trap without an active-byte and health pair."
+    },
+    {
+      "what": "FWHT identity (this process, n=16, not activations)",
+      "result": "ok=True max_off=0.0 col0_err=0.0",
+      "why": "Confirms the oracle's H is orthogonal. Says nothing about whether W lives near that family."
+    }
+  ],
+  "self_check": {
+    "dispatches_964": true,
+    "gemv_elements_match_anchor": true,
+    "gemv_macs_match_anchor": true,
+    "q4_bytes_match_anchor": true,
+    "gemv_dispatches_401": true,
+    "hidden_tiles_at_1024": true,
+    "intermediate_tiles_at_1024": true,
+    "ba_does_not_tile_1024": true,
+    "vocab_does_not_tile_1024": true,
+    "rung0_bpw_is_16_over_B": true,
+    "rung0_bpw_equals_1_over_64": true,
+    "fwht_identity_ok": true,
+    "q4_kernel_present": true,
+    "strand_rht_present": true,
+    "oracle_labelled": true,
+    "production_labelled": true,
+    "fused_tg_gate_fits_32kb": true,
+    "fused_tg_down_exceeds_32kb": true,
+    "s011_rung0_complete": true,
+    "s011_g032_incomplete": true,
+    "rung2_f16_bytes_exceed_q4": true,
+    "verdict_is_not_worth_building": true,
+    "prior_science_hits": 10,
+    "prior_science_missing": 0
+  },
+  "written_to": "/Users/scammermike/.claude-grok/worktrees/c5structtransform-20260823-150616/receipts/headless/C5STRUCTTRANSFORM_DESIGN.json"
+}

@@ -182,7 +182,7 @@ Schema id: `hide.skill_foundry.v0`.
 ## 10. Non-goals (this slice)
 
 - Live Qwen / Gravity skill induction  
-- Touching `lab/operators/frankenstein_*` or frankenstein evidence  
+- Touching `hawking-experiments/frankenstein/operators/frankenstein_*` or frankenstein evidence  
 - Automatic admission without protected controller  
 - Detached daemons, push/PR, venv commits  
 

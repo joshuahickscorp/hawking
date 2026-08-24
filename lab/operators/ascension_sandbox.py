@@ -66,11 +66,9 @@ DEFAULT_ROOT = REPO_ROOT / "workspace" / "campaign" / "records" / "ascension-san
 DEFAULT_BIBLE = REPO_ROOT.parent / "bible.md"
 PROTO_ROOT = (
     REPO_ROOT
-    / "workspace"
-    / "campaign"
-    / "evidence"
-    / "models"
+    / "hawking-experiments"
     / "frankenstein"
+    / "data"
     / "proto-v0-seal-refresh"
 )
 
@@ -167,7 +165,7 @@ def build_preflight_config(
 
     repo = Path(repo_root).expanduser().resolve()
     bible = Path(bible_path).expanduser().resolve()
-    proto = repo / "workspace" / "campaign" / "evidence" / "models" / "frankenstein" / "proto-v0-seal-refresh"
+    proto = repo / "hawking-experiments" / "frankenstein" / "data" / "proto-v0-seal-refresh"
     cloud = proto / "cloud-package"
     return {
         "schema": CONFIG_SCHEMA,
@@ -181,8 +179,8 @@ def build_preflight_config(
             "cloud_manifest": str(cloud / "PROTO_V0_CLOUD_MANIFEST.json"),
             "restore_script": str(cloud / "restore_proto_frankenstein_v0.sh"),
             "active_storage_paths_must_be_absent": [
-                str(repo / "workspace" / "campaign" / "evidence" / "models" / "frankenstein" / "latent_v0_checkpoints"),
-                str(repo / "workspace" / "campaign" / "evidence" / "models" / "frankenstein" / "bridge_train_real" / "checkpoints"),
+                str(repo / "hawking-experiments" / "frankenstein" / "data" / "latent_v0_checkpoints"),
+                str(repo / "hawking-experiments" / "frankenstein" / "data" / "bridge_train_real" / "checkpoints"),
             ],
         },
         "sandbox": {
@@ -288,11 +286,9 @@ def evidence_retractions(
         candidates.append(Path(terminal_value).expanduser().parent / "RETRACTED.json")
     candidates.append(
         Path(repo_root).expanduser().resolve()
-        / "workspace"
-        / "campaign"
-        / "evidence"
-        / "models"
+        / "hawking-experiments"
         / "frankenstein"
+        / "data"
         / "proto-v0-real-fix"
         / "RETRACTED.json"
     )

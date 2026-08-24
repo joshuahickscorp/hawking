@@ -1,0 +1,625 @@
+{
+  "schema": "hawking.headless.noetic_scoreboard.v1",
+  "obligation": "N015 (S017 \u00a73, \u00a742, \u00a744)",
+  "git_head": "9967e64a8abe",
+  "parent_params": 26895998464,
+  "columns": "S017 \u00a744",
+  "honesty": "Every cell states MEASURED, DERIVED or ABSENT. An unmeasured cell is never rendered as 0 \u2014 a plausible zero makes an unmeasured candidate look cheap, which is the specific way a scoreboard lies.",
+  "candidates": [
+    {
+      "id": "mix_a_l0_down_binary_g1024",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "note": "",
+      "EBPW": {
+        "value": 4.242016986754093,
+        "state": "MEASURED"
+      },
+      "RESIDENT_GB": {
+        "value": 13.2822,
+        "state": "DERIVED"
+      },
+      "ACTIVE_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "GPU ledger measured only the q4 incumbent; per-candidate ACTIVE bytes is the missing measurement that would explain why 44.7% fewer STORED bits bought 1.9%"
+      },
+      "DRAM_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "same: per-candidate DRAM bytes not measured"
+      },
+      "FLOP_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "per-candidate FLOP census not yet run"
+      },
+      "DISPATCHES_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "not measured"
+      },
+      "ROUTES_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "ROUTING_NS_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "COMPLETE_TOKEN_NS": {
+        "value": 30481244,
+        "state": "DERIVED"
+      },
+      "TPS": {
+        "value": 32.80705947204907,
+        "state": "MEASURED"
+      },
+      "AGGREGATE_TPS_C2": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "AGGREGATE_TPS_C4": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "VERIFIED_WUS_PER_HOUR": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "production bench (N007) not yet landed"
+      },
+      "CAPABILITY": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "no capability suite has been run on any candidate"
+      },
+      "passed_screen": true,
+      "survived_chain": null,
+      "generated_coherently": true,
+      "coherent": true
+    },
+    {
+      "id": "mix_b_all_down_binary_g1024",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "note": "",
+      "EBPW": {
+        "value": 3.566774159673004,
+        "state": "MEASURED"
+      },
+      "RESIDENT_GB": {
+        "value": 11.1679,
+        "state": "DERIVED"
+      },
+      "ACTIVE_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "GPU ledger measured only the q4 incumbent; per-candidate ACTIVE bytes is the missing measurement that would explain why 44.7% fewer STORED bits bought 1.9%"
+      },
+      "DRAM_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "same: per-candidate DRAM bytes not measured"
+      },
+      "FLOP_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "per-candidate FLOP census not yet run"
+      },
+      "DISPATCHES_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "not measured"
+      },
+      "ROUTES_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "ROUTING_NS_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "COMPLETE_TOKEN_NS": {
+        "value": 30454375,
+        "state": "DERIVED"
+      },
+      "TPS": {
+        "value": 32.83600467913067,
+        "state": "MEASURED"
+      },
+      "AGGREGATE_TPS_C2": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "AGGREGATE_TPS_C4": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "VERIFIED_WUS_PER_HOUR": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "production bench (N007) not yet landed"
+      },
+      "CAPABILITY": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "no capability suite has been run on any candidate"
+      },
+      "passed_screen": true,
+      "survived_chain": null,
+      "generated_coherently": false,
+      "coherent": false
+    },
+    {
+      "id": "mix_c_all_mlp_binary_g64",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "note": "",
+      "EBPW": {
+        "value": 2.343974955991431,
+        "state": "MEASURED"
+      },
+      "RESIDENT_GB": {
+        "value": 7.3392,
+        "state": "DERIVED"
+      },
+      "ACTIVE_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "GPU ledger measured only the q4 incumbent; per-candidate ACTIVE bytes is the missing measurement that would explain why 44.7% fewer STORED bits bought 1.9%"
+      },
+      "DRAM_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "same: per-candidate DRAM bytes not measured"
+      },
+      "FLOP_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "per-candidate FLOP census not yet run"
+      },
+      "DISPATCHES_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "not measured"
+      },
+      "ROUTES_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "ROUTING_NS_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "COMPLETE_TOKEN_NS": {
+        "value": 29902350,
+        "state": "DERIVED"
+      },
+      "TPS": {
+        "value": 33.44218765414758,
+        "state": "MEASURED"
+      },
+      "AGGREGATE_TPS_C2": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "AGGREGATE_TPS_C4": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "VERIFIED_WUS_PER_HOUR": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "production bench (N007) not yet landed"
+      },
+      "CAPABILITY": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "no capability suite has been run on any candidate"
+      },
+      "passed_screen": true,
+      "survived_chain": null,
+      "generated_coherently": false,
+      "coherent": false
+    },
+    {
+      "id": "mix_all_mlp_hgravu01_q3_g64",
+      "source_receipt": "receipts/headless/NOETIC_Q3_MLP_Q4_ATTN.json",
+      "note": "text identical to the q4 incumbent",
+      "EBPW": {
+        "value": 3.616489579525877,
+        "state": "MEASURED"
+      },
+      "RESIDENT_GB": {
+        "value": 11.3236,
+        "state": "DERIVED"
+      },
+      "ACTIVE_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "GPU ledger measured only the q4 incumbent; per-candidate ACTIVE bytes is the missing measurement that would explain why 44.7% fewer STORED bits bought 1.9%"
+      },
+      "DRAM_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "same: per-candidate DRAM bytes not measured"
+      },
+      "FLOP_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "per-candidate FLOP census not yet run"
+      },
+      "DISPATCHES_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "not measured"
+      },
+      "ROUTES_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "ROUTING_NS_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "COMPLETE_TOKEN_NS": {
+        "value": 31264600,
+        "state": "DERIVED"
+      },
+      "TPS": {
+        "value": 31.98505658156509,
+        "state": "MEASURED"
+      },
+      "AGGREGATE_TPS_C2": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "AGGREGATE_TPS_C4": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "VERIFIED_WUS_PER_HOUR": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "production bench (N007) not yet landed"
+      },
+      "CAPABILITY": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "no capability suite has been run on any candidate"
+      },
+      "passed_screen": true,
+      "survived_chain": true,
+      "generated_coherently": true,
+      "coherent": true
+    },
+    {
+      "id": "affine2_g32_all_mlp",
+      "source_receipt": "receipts/headless/AFFINE2_NATIVE_MLP.json",
+      "note": "degraded: malformed think-tag and a stutter",
+      "EBPW": {
+        "value": 3.457428992214862,
+        "state": "MEASURED"
+      },
+      "RESIDENT_GB": {
+        "value": 10.8256,
+        "state": "DERIVED"
+      },
+      "ACTIVE_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "GPU ledger measured only the q4 incumbent; per-candidate ACTIVE bytes is the missing measurement that would explain why 44.7% fewer STORED bits bought 1.9%"
+      },
+      "DRAM_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "same: per-candidate DRAM bytes not measured"
+      },
+      "FLOP_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "per-candidate FLOP census not yet run"
+      },
+      "DISPATCHES_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "not measured"
+      },
+      "ROUTES_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "ROUTING_NS_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "COMPLETE_TOKEN_NS": {
+        "value": 31173931,
+        "state": "DERIVED"
+      },
+      "TPS": {
+        "value": 32.07808521067725,
+        "state": "MEASURED"
+      },
+      "AGGREGATE_TPS_C2": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "AGGREGATE_TPS_C4": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "VERIFIED_WUS_PER_HOUR": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "production bench (N007) not yet landed"
+      },
+      "CAPABILITY": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "no capability suite has been run on any candidate"
+      },
+      "passed_screen": true,
+      "survived_chain": true,
+      "generated_coherently": false,
+      "coherent": false
+    },
+    {
+      "id": "NOETIC_PARENT_A (affine2_g64_LS + fused graph)",
+      "source_receipt": "receipts/headless/NOETIC_FUSED_SUBBIT.json",
+      "note": "LEADER. Frontier candidate, NOT resident-promoted. Artifact bytes were reaped with a lane worktree; N001 rebuilds and seals.",
+      "EBPW": {
+        "value": 3.139300850311054,
+        "state": "MEASURED"
+      },
+      "RESIDENT_GB": {
+        "value": 9.8295,
+        "state": "DERIVED"
+      },
+      "ACTIVE_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "GPU ledger measured only the q4 incumbent; per-candidate ACTIVE bytes is the missing measurement that would explain why 44.7% fewer STORED bits bought 1.9%"
+      },
+      "DRAM_GB_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "same: per-candidate DRAM bytes not measured"
+      },
+      "FLOP_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "per-candidate FLOP census not yet run"
+      },
+      "DISPATCHES_PER_TOKEN": {
+        "value": 756,
+        "state": "MEASURED"
+      },
+      "ROUTES_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "ROUTING_NS_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "COMPLETE_TOKEN_NS": {
+        "value": 28675145,
+        "state": "DERIVED"
+      },
+      "TPS": {
+        "value": 34.87340648509909,
+        "state": "MEASURED"
+      },
+      "AGGREGATE_TPS_C2": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "AGGREGATE_TPS_C4": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "VERIFIED_WUS_PER_HOUR": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "production bench (N007) not yet landed"
+      },
+      "CAPABILITY": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "no capability suite has been run on any candidate"
+      },
+      "passed_screen": true,
+      "survived_chain": true,
+      "generated_coherently": true,
+      "coherent": true
+    },
+    {
+      "id": "q4 incumbent (control)",
+      "source_receipt": "receipts/headless/NOETIC_DISPATCH_FUSION.json",
+      "note": "immutable control",
+      "EBPW": {
+        "value": 4.252735126866492,
+        "state": "MEASURED"
+      },
+      "RESIDENT_GB": {
+        "value": 13.3158,
+        "state": "DERIVED"
+      },
+      "ACTIVE_GB_PER_TOKEN": {
+        "value": 12.6867,
+        "state": "MEASURED"
+      },
+      "DRAM_GB_PER_TOKEN": {
+        "value": 13.0283,
+        "state": "DERIVED"
+      },
+      "FLOP_PER_TOKEN": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "per-candidate FLOP census not yet run"
+      },
+      "DISPATCHES_PER_TOKEN": {
+        "value": 964,
+        "state": "MEASURED"
+      },
+      "ROUTES_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "ROUTING_NS_PER_TOKEN": {
+        "value": 0,
+        "state": "MEASURED"
+      },
+      "COMPLETE_TOKEN_NS": {
+        "value": 29658629,
+        "state": "DERIVED"
+      },
+      "TPS": {
+        "value": 33.717,
+        "state": "MEASURED"
+      },
+      "AGGREGATE_TPS_C2": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "AGGREGATE_TPS_C4": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "concurrency bench (N007) not yet landed"
+      },
+      "VERIFIED_WUS_PER_HOUR": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "production bench (N007) not yet landed"
+      },
+      "CAPABILITY": {
+        "value": null,
+        "state": "ABSENT",
+        "reason": "no capability suite has been run on any candidate"
+      },
+      "passed_screen": true,
+      "survived_chain": true,
+      "generated_coherently": true,
+      "coherent": true
+    }
+  ],
+  "frontier_points": {
+    "LOWEST_SCREEN_SURVIVOR": "mix_c_all_mlp_binary_g64",
+    "LOWEST_CHAIN_SURVIVOR": "NOETIC_PARENT_A (affine2_g64_LS + fused graph)",
+    "LOWEST_GENERATION_COHERENT": "NOETIC_PARENT_A (affine2_g64_LS + fused graph)",
+    "LOWEST_CAPABILITY_SURVIVOR": {
+      "value": null,
+      "state": "ABSENT",
+      "reason": "no capability suite has been run on ANY candidate; coherence on a 16-token greedy sample is not capability"
+    },
+    "FASTEST_COHERENT": "NOETIC_PARENT_A (affine2_g64_LS + fused graph)",
+    "FASTEST_PRODUCTION": {
+      "value": null,
+      "state": "ABSENT",
+      "reason": "production is verified useful work per wall second; the concurrency bench (N007) has not been built"
+    },
+    "note": "S017 \u00a73: these MAY BE DIFFERENT ARTIFACTS. They are not collapsed."
+  },
+  "coverage": {
+    "cells": 98,
+    "absent": 52,
+    "absent_fraction": 0.5306,
+    "blocking_obligations": [
+      "N004 GPU ledger -> ACTIVE_GB/TOKEN, DRAM_GB/TOKEN",
+      "N007 production bench -> AGGREGATE_TPS_C2/C4, VERIFIED_WUS/HOUR, FASTEST_PRODUCTION",
+      "capability suite -> CAPABILITY, LOWEST_CAPABILITY_SURVIVOR"
+    ]
+  },
+  "phase_transition_map": {
+    "state": "PARTIAL",
+    "family": "uniform grouped-code on the whole MLP",
+    "measured_points": [
+      {
+        "bpw_body": 1.85,
+        "codec": "ternary g64",
+        "composed": "FAILS",
+        "argmax": "flips"
+      },
+      {
+        "bpw_body": 3.06,
+        "codec": "q2f_g64 AS ACTUALLY BILLED (7 levels)",
+        "composed": "SURVIVES",
+        "argmax": "agrees",
+        "correction": "recorded at the time as 2.25 bpw. The codec emitted SEVEN levels, not four: log2(7)+16/64 = 3.06. The survival is real; the PRICE was wrong by 0.81 bpw."
+      },
+      {
+        "bpw_body": 2.25,
+        "codec": "TRUE bias-free 4-level g64",
+        "composed": "not run",
+        "generation": "DEGRADED",
+        "measured_ebpw": 2.9802,
+        "note": "the honest 2-bit point: decodes natively at 2.9802 EBPW but emits ' IR' then EOS. Cheaper than the leader and NOT coherent."
+      },
+      {
+        "bpw_body": 2.5,
+        "codec": "affine2 g64 LS (leader: 4-level + bias)",
+        "composed": "SURVIVES",
+        "generation": "COHERENT",
+        "measured_ebpw": 3.1393,
+        "note": "the 0.25-bpw bias is what separates degraded from coherent at 2 bits"
+      },
+      {
+        "bpw_body": 3.25,
+        "codec": "q3 g64",
+        "composed": "SURVIVES",
+        "argmax": "agrees"
+      }
+    ],
+    "knee": "CORRECTED. The composed knee sits between 1.85 (argmax flips) and the 3.06-bpw arm that survives -- NOT 2.25, which was a mis-billing. At GENERATION the boundary is tighter: a TRUE 4-level 2.25-bpw body degrades (' IR' then EOS) while the same codec plus a 0.25-bpw bias (2.50 body) is coherent.",
+    "collapse_boundary": 1.85,
+    "coherent_plateau": "SUPERSEDED -- it rested on the mis-billed 2.25 point.",
+    "correction_note": "The composition arm billed at 2.25 bpw emitted SEVEN levels and really cost ~3.06 bpw. The survival was real; the price was not.",
+    "missing": "only ONE family is mapped for the MLP. S017 \u00a742 wants a curve per family; N008 screened five structurally distinct ones at matched bytes."
+  },
+  "implied_whole_model_floor": {
+    "state": "DERIVED",
+    "per_organ": [
+      {
+        "organ": "deltanet",
+        "elements": 5562296832,
+        "share": 0.2068,
+        "floor_bpw": 4.125
+      },
+      {
+        "organ": "gqa",
+        "elements": 1677811712,
+        "share": 0.0624,
+        "floor_bpw": 4.25
+      },
+      {
+        "organ": "mlp",
+        "elements": 17112760320,
+        "share": 0.6363,
+        "floor_bpw": 2.5
+      },
+      {
+        "organ": "embedding_output",
+        "elements": 2543129600,
+        "share": 0.0946,
+        "floor_bpw": 4.125
+      }
+    ],
+    "implied_whole_model_ebpw": 3.0989,
+    "leader_today": 3.139300850311054,
+    "incumbent": 4.252735126866492,
+    "research_pressure": 1.0,
+    "floor_even_if_mlp_were_free_ebpw": 1.5082,
+    "reading": "Per-organ quantization cannot reach ~1 EBPW. The leader is already within 6% of the implied floor, and the non-MLP organs alone would still cost more than 1.5 EBPW with the MLP at zero bits. Reaching ~1 requires STRUCTURE that breaks these floors, not narrower codes."
+  }
+}

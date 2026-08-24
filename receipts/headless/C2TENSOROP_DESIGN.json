@@ -1,0 +1,1621 @@
+{
+  "schema": "hawking.headless.c2tensorop_design.v1",
+  "generated_at": "2026-08-23T19:20:57Z",
+  "commit": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "elapsed_s": 4.871,
+  "receipt": "/Users/scammermike/.claude-grok/worktrees/c2tensorop-20260823-150556/receipts/headless/C2TENSOROP_DESIGN.json",
+  "question": "Can a tensor-train / Tucker / tensor-ring contraction sequence replace W's FUNCTION on the Qwen3.8 uniform-q4 decode path while moving fewer bytes AND doing less work, without materialising dense W?",
+  "answer": "No. The family already ran as tensor_train / tt_matrix_unfolding / tt_gemv_f16 (G1+G034). 373/373 rows unhealthy; 223 unique sub-0.5-BPW rows with healthy=true 0, and this family is among them. Native contraction was the scoring path. At matched 3.25 b/elem TT unfolding is worse than SVD which is 2.93\u00d7 q3 error. STOP. NOT_WORTH_BUILDING.",
+  "anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "roof_gb_s": 595.9,
+    "parameter_count": 26895998464,
+    "bpw": 4.253,
+    "dispatches_per_token": 964,
+    "command_buffers_per_token": 1,
+    "gemv_mac_flops": 51243909120,
+    "mlx_4bit_tps_live": 35.51,
+    "llamacpp_q5k_tps_archived": 24.12,
+    "reconstructs_dense_on_38": "NO"
+  },
+  "prior_science": {
+    "search": {
+      "phrase_tensor_train": {
+        "pattern": "tensor train",
+        "fixed": true,
+        "files": 0,
+        "hits": 0,
+        "exit_code": 1,
+        "sample": []
+      },
+      "identifiers": {
+        "tensor_train": {
+          "pattern": "tensor_train",
+          "fixed": true,
+          "files": 4,
+          "hits": 6,
+          "exit_code": 0,
+          "sample": [
+            {
+              "path": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+              "count": 2
+            },
+            {
+              "path": "tools/headless/noetic_kernel_census.py",
+              "count": 2
+            },
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "count": 1
+            },
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "count": 1
+            }
+          ]
+        },
+        "tt_matrix_unfolding": {
+          "pattern": "tt_matrix_unfolding",
+          "fixed": true,
+          "files": 1,
+          "hits": 1,
+          "exit_code": 0,
+          "sample": [
+            {
+              "path": "receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json",
+              "count": 1
+            }
+          ]
+        },
+        "tt_gemv_f16": {
+          "pattern": "tt_gemv_f16",
+          "fixed": true,
+          "files": 2,
+          "hits": 2,
+          "exit_code": 0,
+          "sample": [
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "count": 1
+            },
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "count": 1
+            }
+          ]
+        },
+        "tt_apply": {
+          "pattern": "tt_apply",
+          "fixed": true,
+          "files": 1,
+          "hits": 3,
+          "exit_code": 0,
+          "sample": [
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "count": 3
+            }
+          ]
+        },
+        "tucker_hosvd": {
+          "pattern": "tucker_hosvd",
+          "fixed": true,
+          "files": 2,
+          "hits": 2,
+          "exit_code": 0,
+          "sample": [
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "count": 1
+            },
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "count": 1
+            }
+          ]
+        },
+        "tensor_ring": {
+          "pattern": "tensor_ring",
+          "fixed": true,
+          "files": 4,
+          "hits": 4,
+          "exit_code": 0,
+          "sample": [
+            {
+              "path": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+              "count": 1
+            },
+            {
+              "path": "tools/headless/noetic_kernel_census.py",
+              "count": 1
+            },
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "count": 1
+            },
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "count": 1
+            }
+          ]
+        },
+        "tt_matrix_3": {
+          "pattern": "tt_matrix_3",
+          "fixed": true,
+          "files": 2,
+          "hits": 2,
+          "exit_code": 0,
+          "sample": [
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+              "count": 1
+            },
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "count": 1
+            }
+          ]
+        },
+        "tt_svd_4": {
+          "pattern": "tt_svd_4",
+          "fixed": true,
+          "files": 1,
+          "hits": 3,
+          "exit_code": 0,
+          "sample": [
+            {
+              "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.py",
+              "count": 3
+            }
+          ]
+        }
+      },
+      "reading": "Phrase-grep 'tensor train' files=0 hits=0. Identifier tensor_train files=4 hits=6. The mechanism ran as family=tensor_train (G1, 80 rows) and tt_matrix_unfolding (G034). HGRAVS01 y=L@(R@x) is the 2-core cousin that already exists as a Metal kernel, scoped to Q80 down_proj, rank\u2264160, x\u2264512."
+    },
+    "g1": {
+      "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json",
+      "schema": "hawking.gravity1.tensor_operators.v1",
+      "selfcheck": "PASS",
+      "wall_s": 1446.1435189247131,
+      "family_rows": 373,
+      "healthy_true": 0,
+      "healthy_false": 373,
+      "families": {
+        "block_term": {
+          "n": 24,
+          "healthy_true": 0,
+          "rel_l2_min": 0.9735837578773499,
+          "rel_l2_max": 0.9999805092811584,
+          "observed_max": 0.6339372396469116,
+          "flop_ratio_min": 0.008352481617647059,
+          "flop_ratio_max": 0.062890625,
+          "n_flop_ratio_gt_1": 0,
+          "kernel": "btd_gemv_f16  sum of R Tucker applies, fused over terms",
+          "n_sequential_contractions": 5
+        },
+        "cp": {
+          "n": 6,
+          "healthy_true": 0,
+          "rel_l2_min": 0.9707381725311279,
+          "rel_l2_max": 0.9988527297973633,
+          "observed_max": 0.23107290267944336,
+          "flop_ratio_min": 0.01875,
+          "flop_ratio_max": 0.3,
+          "n_flop_ratio_gt_1": 0,
+          "kernel": "cp_gemv_f16  s_r = c_r^T X d_r ; y = (A*s) B^T",
+          "n_sequential_contractions": 2
+        },
+        "kronecker_plus_lowrank": {
+          "n": 16,
+          "healthy_true": 0,
+          "rel_l2_min": 0.8114572167396545,
+          "rel_l2_max": 0.9785528779029846,
+          "observed_max": 0.9106078147888184,
+          "flop_ratio_min": 0.25073529411764706,
+          "flop_ratio_max": 2.1375,
+          "n_flop_ratio_gt_1": 7,
+          "kernel": "mix_kron_lr_gemv_f16  kronecker_sum then axpy low-rank GEMV",
+          "n_sequential_contractions": 4
+        },
+        "kronecker_sum": {
+          "n": 63,
+          "healthy_true": 0,
+          "rel_l2_min": 0.3299769163131714,
+          "rel_l2_max": 0.9998276233673096,
+          "observed_max": 0.9643950462341309,
+          "flop_ratio_min": 0.015165441176470588,
+          "flop_ratio_max": 6.9,
+          "n_flop_ratio_gt_1": 30,
+          "kernel": "kronecker_sum_gemv_f16  fused loop over k terms of y += A_k @ X @ B_k.T",
+          "n_sequential_contractions": 2
+        },
+        "lowrank_operator": {
+          "n": 40,
+          "healthy_true": 0,
+          "rel_l2_min": 0.6447209715843201,
+          "rel_l2_max": 0.9933062195777893,
+          "observed_max": 0.9354087114334106,
+          "flop_ratio_min": 0.002022058823529412,
+          "flop_ratio_max": 0.3,
+          "n_flop_ratio_gt_1": 0,
+          "kernel": "lr_gemv_f16  y = A @ (Vh @ x)   two GEMVs",
+          "n_sequential_contractions": null
+        },
+        "tensor_ring": {
+          "n": 16,
+          "healthy_true": 0,
+          "rel_l2_min": 0.9647935032844543,
+          "rel_l2_max": 0.9998146891593933,
+          "observed_max": 0.6026335954666138,
+          "flop_ratio_min": 0.017708333333333333,
+          "flop_ratio_max": 0.6,
+          "n_flop_ratio_gt_1": 0,
+          "kernel": "tr_gemv_f16  cyclic 4-core contraction",
+          "n_sequential_contractions": 4
+        },
+        "tensor_train": {
+          "n": 80,
+          "healthy_true": 0,
+          "rel_l2_min": 0.9203007817268372,
+          "rel_l2_max": 0.9993985295295715,
+          "observed_max": 0.9046992063522339,
+          "flop_ratio_min": 0.0021426930147058825,
+          "flop_ratio_max": 0.1078125,
+          "n_flop_ratio_gt_1": 0,
+          "kernel": "tt_gemv_f16  4 sequential core contractions",
+          "n_sequential_contractions": 4
+        },
+        "tt_matrix_3": {
+          "n": 32,
+          "healthy_true": 0,
+          "rel_l2_min": 0.9602190256118774,
+          "rel_l2_max": 0.998711884021759,
+          "observed_max": 0.6439789533615112,
+          "flop_ratio_min": 0.09604779411764706,
+          "flop_ratio_max": 6.95,
+          "n_flop_ratio_gt_1": 9,
+          "kernel": "ttm3_gemv_f16  3 sequential TTM core contractions",
+          "n_sequential_contractions": 3
+        },
+        "tucker_hosvd": {
+          "n": 96,
+          "healthy_true": 0,
+          "rel_l2_min": 0.9006733298301697,
+          "rel_l2_max": 0.9999804496765137,
+          "observed_max": 0.7638392448425293,
+          "flop_ratio_min": 0.0010440602022058823,
+          "flop_ratio_max": 0.1912109375,
+          "n_flop_ratio_gt_1": 0,
+          "kernel": "tucker_gemv_f16  5 contractions (2 factor GEMMs, core, 2 expand GEMMs)",
+          "n_sequential_contractions": 5
+        }
+      },
+      "raw_local_bpw_lt_0_5": 301,
+      "raw_lt05_healthy_true": 0,
+      "archaeology_unique_lt_0_5": 223,
+      "archaeology_unique_healthy_true": 0,
+      "archaeology_bands": {
+        "<0.05": 120,
+        "<0.25": 45,
+        "<0.50": 23,
+        "<0.10": 35
+      },
+      "tensor_family_unique_lt_0_5": 177,
+      "tensor_family_unique_healthy_true": 0,
+      "named_examples": {
+        "tucker_R4_bpw": 0.0003626206341911765,
+        "tensor_train_r8_bpw": 0.0023157456341911763,
+        "tensor_ring_r4_bpw": 0.002802734375,
+        "kronecker_k1_bpw": 0.003923483455882353,
+        "lowrank_r8_bpw": 0.03235796760110294
+      },
+      "scoring_was_native_contraction": "g1_tensor_operators.py: 'Does not require reconstructing a dense W at consume time; reconstruction is used only as an equivalent scoring device (the map is linear).' Named consume kernels (tt_gemv_f16, tucker_gemv_f16, tr_gemv_f16, ttm3_gemv_f16) were the IMPLIED MAP. Going native is not a new design. It is G1."
+    },
+    "g034": {
+      "path": "receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json",
+      "verdict": "REFUTED at the coherent operating point: at identical bits the low-rank operator is 2.93x the output error of flat q3 on every tensor tested. It reduces operations to 0.203x dense, but the acceptance requires bytes AND operations WITH function preserved.",
+      "family_verdict": "COMPREHENSIVELY REFUTED at the coherent operating point. Plain low-rank is 2.93x flat q3's error at identical bits; TT unfolding is worse again. The acceptance also requires a native kernel path and none was built, but no member has earned one.",
+      "mean_flat_q3": 0.1839276241211841,
+      "mean_lowrank": 0.5393288880586624,
+      "error_ratio": 2.93,
+      "mean_mac_ratio": 0.2029641544117647,
+      "tt_unfold": {
+        "verdict": "REFUTED, and WORSE than the plain low-rank it was meant to improve on. At matched 3.25 bits/elem: L31.gate_proj flat q3 0.19812, plain low-rank 0.49264, TT unfold 0.72519. L63.down_proj 0.23992 / 0.59341 / 0.81464. The extra 146 ranks the balanced shape buys do not compensate.",
+        "why": "The regrouping SCATTERS structure rather than exposing it. A weight matrix's low-rank structure lives in its natural index pairing -- output channel against input channel -- and interleaving those indices produces a matrix with a FLATTER spectrum, so the same parameter budget captures less.",
+        "rows": [
+          {
+            "tensor": "L31.gate_proj",
+            "scheme": "flat q3 (reference)",
+            "bits_per_elem": 3.25,
+            "out_rel_fro": 0.1981181580972974,
+            "rank": null
+          },
+          {
+            "tensor": "L31.gate_proj",
+            "scheme": "plain low-rank r=803",
+            "bits_per_elem": 3.25,
+            "out_rel_fro": 0.49263978004455566,
+            "rank": 803
+          },
+          {
+            "tensor": "L31.gate_proj",
+            "scheme": "TT unfold 10880x8192 r=949",
+            "bits_per_elem": 3.25,
+            "out_rel_fro": 0.7251943349838257,
+            "rank": 949
+          },
+          {
+            "tensor": "L63.down_proj",
+            "scheme": "flat q3 (reference)",
+            "bits_per_elem": 3.25,
+            "out_rel_fro": 0.2399187021584067,
+            "rank": null
+          },
+          {
+            "tensor": "L63.down_proj",
+            "scheme": "plain low-rank r=803",
+            "bits_per_elem": 3.25,
+            "out_rel_fro": 0.5934067964553833,
+            "rank": 803
+          },
+          {
+            "tensor": "L63.down_proj",
+            "scheme": "TT unfold 10880x8192 r=949",
+            "bits_per_elem": 3.25,
+            "out_rel_fro": 0.8146367073059082,
+            "rank": 949
+          }
+        ]
+      }
+    },
+    "named_traps_not_redone": {
+      "G035_GSHARE": "shared_beats_independent=false (sharing refuted; this is G035, not G062)",
+      "Q80_storage_vs_active": {
+        "storage_bpw": 0.6462,
+        "active_bpw": 2.518,
+        "factor": 3.9,
+        "law": "report both or neither"
+      },
+      "GLM_0_167_expert_bpw": "activation-aware experts; Gaussian-proxy inversion",
+      "HGRAVS01_0_13": "two-stage L@(R@x) on down_proj ONLY; NS-019 reconstruct-W refuted; NS-030 fused-recompute-R-per-TG refuted",
+      "tpr64_free": "reconstruction is free on 32/33 variants \u2014 not a reason to rebuild W",
+      "MLP_distill_NO_GO": {
+        "held_out_gap_vs_q3": 0.4206,
+        "active_byte_fraction": 0.72,
+        "law": "MLP storage avenue closed by measurement as of today"
+      },
+      "cosine_scale_trap": "0.01*W scored 1.000000; raw activation cosine null ~0.898",
+      "synthetic_X": "NS-009: never evaluate on synthetic activations"
+    },
+    "family_already_refuted": true,
+    "stop": "G1-TENSOR: 373/373 operator rows doctor-gate unhealthy on real Qwen3.8 GEMV tensors, including 80 tensor_train + 96 tucker_hosvd + 16 tensor_ring + 32 tt_matrix_3. Archaeology unique (family,tag,bpw) with local_bpw_f16<0.5: 223 (healthy=true: 0) \u2014 this family IS among those 223. G034: at matched 3.25 b/elem, TT unfolding is WORSE than plain low-rank (L31.gate 0.725 vs 0.493 vs q3 0.198). Native contraction was the scoring path. STOP. Do not design a workaround variant."
+  },
+  "eight": {
+    "1_mathematical_operator": {
+      "name": "tt_gemv_f16 \u2014 4 sequential TT-core contractions, batch=1",
+      "status": "ALREADY_SCORED_AND_REFUTED",
+      "why_this_operator_and_not_another": "This is the consume path G1 already named. Designing a 'new' Tucker mixture or a higher-rank TT would be designing around a refutation.",
+      "representation": "Reshape W \u2208 R^{m\u00d7n} as a 4-way tensor T[i0,i1,j0,j1] with m=I0\u00b7I1, n=J0\u00b7J1, inner I1=J1=128 (G1 matching_kron_pairs). TT-SVD cores: c0[I0,r1], c1[r1,I1,r2], c2[r2,J0,r3], c3[r3,J1], stored f16. W is never stored and never written.",
+      "contraction_order": [
+        "x \u2192 reshape (J0, J1)",
+        "A[j0,r3] = \u2211_{j1} x[j0,j1] c3[r3,j1]     size J0\u00b7r3",
+        "H[r2]     = \u2211_{j0,r3} c2[r2,j0,r3] A       size r2",
+        "C[r1,i1]  = \u2211_{r2} c1[r1,i1,r2] H          size r1\u00b7I1",
+        "Y[i0,i1]  = \u2211_{r1} c0[i0,r1] C             size I0\u00b7I1 \u2192 (m,)"
+      ],
+      "production_path": "Named kernel tt_gemv_f16 does NOT exist in crates/hawking-core/shaders. Closest shipped kernel is q80_hgravs01_two_stage_matvec (Q80 down_proj only, rank cap 160, x cap 512, each threadgroup recomputes mid[rank] \u2014 NS-030). Qwen3.8 MLP has x=5120 and G034 rank 803; both caps are exceeded, so even that kernel is not a drop-in.",
+      "correctness_oracle": {
+        "label": "ORACLE \u2014 not a production implementation",
+        "procedure": "Fold cores to dense \u0174 = contract(c0,c1,c2,c3) \u2208 R^{m\u00d7n}, then y = \u0174 x (ordinary GEMV). Equivalence of the linear map. G1 used this as a scoring device only. Must never be presented as the decode path.",
+        "forbidden_production_lowering": "qwen_uniform_q4_decode_vector then f32 GEMM writes 102,487,818,240 bytes of dense W per token. reconstructs_dense=NO on all 38 decode-bound kernels today."
+      },
+      "ranks_tested_on_gate_proj": {
+        "reshape": "(136,128)x(40,128) and (68,256)x(20,256)",
+        "bonds": [
+          "(8,8,8)",
+          "(16,16,16)",
+          "(32,32,32)",
+          "(64,32,16)",
+          "(64,64,64)"
+        ],
+        "best_still_unhealthy": {
+          "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+          "cls": "mlp.gate_proj",
+          "shape": [
+            17408,
+            5120
+          ],
+          "has_X": true,
+          "family": "tensor_train",
+          "tag": "(136, 128)x(40, 128) r=(64, 64, 64)",
+          "ranks": [
+            64,
+            64,
+            64
+          ],
+          "local_bpw_f16": 0.12656896254595587,
+          "rel_l2": 0.9869111180305481,
+          "healthy": false,
+          "observed": 0.2803584933280945,
+          "probed": 0.16000348329544067,
+          "worst_unit": -0.7194437384605408,
+          "flops": 4259840,
+          "dense_flops": 178257920,
+          "flop_ratio": 0.02389705882352941,
+          "kernel": "tt_gemv_f16  4 sequential core contractions",
+          "n_sequential_contractions": 4,
+          "stored_bytes_f16": 1410120,
+          "q4_rel_l2": 0.11899048089981079,
+          "q4_observed": 0.9957399368286133
+        }
+      },
+      "selfcheck_g1_formulas": {
+        "tt_elems_68_256_20_256_r64": 1151232,
+        "expect_elems": 1151232,
+        "tt_bytes": 2302536,
+        "expect_bytes": 2302536,
+        "tt_flops": 5144576,
+        "expect_flops": 5144576,
+        "match": true
+      }
+    },
+    "2_expected_bytes_per_token": {
+      "incumbent_q4_gemv_bytes_per_token": 13611663360,
+      "incumbent_executable_dram_bytes_per_token": 13988022948,
+      "tt_r64_inner128_weight_bytes_per_token": 482868552,
+      "delta_vs_q4_gemv": -13128794808,
+      "ratio_vs_q4_gemv": 0.03547461755621908,
+      "g034_r_at_3p25bpw_weight_bytes_per_token": 10410645432,
+      "g034_ratio_vs_q4": 0.7648327141702099,
+      "kept_q4_organs": [
+        "linear_attn.in_proj_ba"
+      ],
+      "derivation": "Per organ, tt_bytes = (40+32+2\u00b7(I0 r1 + r1 I1 r2 + r2 J0 r3 + r3 J1)) \u00d7 count. Rank capped min(64, mode). Organs not divisible by 128 stay Q4. G034 path uses r = round(3.25 m n / (16(m+n))) f16 factors (matched q3 bits).",
+      "function_at_these_bytes": "TT r=64 on L0.gate: local_bpw_f16=0.12657, rel_l2=0.9869, observed=0.280, doctor healthy=false (G1). Q4 on the same tensor: bpw=4.125, rel_l2=0.119, observed=0.9957. G034 at 3.25 b/elem: mean out_rel_fro 0.539 vs q3 0.184 (2.93\u00d7). Byte win without function is a trap, not a result.",
+      "organs": [
+        {
+          "organ": "mlp.gate_proj",
+          "applied": true,
+          "shape": [
+            17408,
+            5120
+          ],
+          "count_per_token": 64,
+          "reshape": {
+            "I0": 136,
+            "I1": 128,
+            "J0": 40,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            64,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 1410120,
+          "tt_bytes_per_token": 90247680,
+          "tt_flops_per_launch": 4259840,
+          "tt_flops_per_token": 272629760,
+          "q4_bytes_per_token": 3030384640,
+          "dense_flops_per_token": 11408506880,
+          "flop_ratio_vs_dense": 0.02389705882352941,
+          "byte_ratio_vs_q4": 0.029780932363754325,
+          "intermediates": {
+            "x_elems": 5120,
+            "A_j0_r3": 2560,
+            "H_r2": 64,
+            "C_r1_I1": 8192,
+            "y_elems": 17408,
+            "peak_intermediate_elems": 8192,
+            "peak_intermediate_bytes_f32": 32768,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 64,
+          "dispatches_two_stage": 128,
+          "fused_recompute_flops_per_token": 547608330240,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "mlp.up_proj",
+          "applied": true,
+          "shape": [
+            17408,
+            5120
+          ],
+          "count_per_token": 64,
+          "reshape": {
+            "I0": 136,
+            "I1": 128,
+            "J0": 40,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            64,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 1410120,
+          "tt_bytes_per_token": 90247680,
+          "tt_flops_per_launch": 4259840,
+          "tt_flops_per_token": 272629760,
+          "q4_bytes_per_token": 3030384640,
+          "dense_flops_per_token": 11408506880,
+          "flop_ratio_vs_dense": 0.02389705882352941,
+          "byte_ratio_vs_q4": 0.029780932363754325,
+          "intermediates": {
+            "x_elems": 5120,
+            "A_j0_r3": 2560,
+            "H_r2": 64,
+            "C_r1_I1": 8192,
+            "y_elems": 17408,
+            "peak_intermediate_elems": 8192,
+            "peak_intermediate_bytes_f32": 32768,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 64,
+          "dispatches_two_stage": 128,
+          "fused_recompute_flops_per_token": 547608330240,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "mlp.down_proj",
+          "applied": true,
+          "shape": [
+            5120,
+            17408
+          ],
+          "count_per_token": 64,
+          "reshape": {
+            "I0": 40,
+            "I1": 128,
+            "J0": 136,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            40,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 1789128,
+          "tt_bytes_per_token": 114504192,
+          "tt_flops_per_launch": 4407296,
+          "tt_flops_per_token": 282066944,
+          "q4_bytes_per_token": 3030384640,
+          "dense_flops_per_token": 11408506880,
+          "flop_ratio_vs_dense": 0.024724264705882352,
+          "byte_ratio_vs_q4": 0.037785365754757785,
+          "intermediates": {
+            "x_elems": 17408,
+            "A_j0_r3": 8704,
+            "H_r2": 64,
+            "C_r1_I1": 5120,
+            "y_elems": 5120,
+            "peak_intermediate_elems": 8704,
+            "peak_intermediate_bytes_f32": 34816,
+            "fits_32kib_threadgroup": false,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 64,
+          "dispatches_two_stage": 128,
+          "fused_recompute_flops_per_token": 547608330240,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "linear_attn.in_proj_qkvz",
+          "applied": true,
+          "shape": [
+            16384,
+            5120
+          ],
+          "count_per_token": 48,
+          "reshape": {
+            "I0": 128,
+            "I1": 128,
+            "J0": 40,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            64,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 1409096,
+          "tt_bytes_per_token": 67636608,
+          "tt_flops_per_launch": 4128768,
+          "tt_flops_per_token": 198180864,
+          "q4_bytes_per_token": 2139095040,
+          "dense_flops_per_token": 8053063680,
+          "flop_ratio_vs_dense": 0.024609375,
+          "byte_ratio_vs_q4": 0.0316192626953125,
+          "intermediates": {
+            "x_elems": 5120,
+            "A_j0_r3": 2560,
+            "H_r2": 64,
+            "C_r1_I1": 8192,
+            "y_elems": 16384,
+            "peak_intermediate_elems": 8192,
+            "peak_intermediate_bytes_f32": 32768,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 48,
+          "dispatches_two_stage": 96,
+          "fused_recompute_flops_per_token": 386547056640,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "linear_attn.in_proj_ba",
+          "applied": false,
+          "reason": "96x5120 does not divide inner=128; keep incumbent Q4",
+          "count_per_token": 48,
+          "tt_bytes_per_token": 12533760,
+          "tt_flops_per_token": 47185920,
+          "q4_bytes_per_token": 12533760,
+          "dense_flops_per_token": 47185920,
+          "dispatches_fused": 48,
+          "dispatches_two_stage": 48
+        },
+        {
+          "organ": "linear_attn.out_proj",
+          "applied": true,
+          "shape": [
+            5120,
+            6144
+          ],
+          "count_per_token": 48,
+          "reshape": {
+            "I0": 40,
+            "I1": 128,
+            "J0": 48,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            40,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 1068232,
+          "tt_bytes_per_token": 51275136,
+          "tt_flops_per_launch": 2244608,
+          "tt_flops_per_token": 107741184,
+          "q4_bytes_per_token": 802160640,
+          "dense_flops_per_token": 3019898880,
+          "flop_ratio_vs_dense": 0.03567708333333333,
+          "byte_ratio_vs_q4": 0.06392128140318627,
+          "intermediates": {
+            "x_elems": 6144,
+            "A_j0_r3": 3072,
+            "H_r2": 64,
+            "C_r1_I1": 5120,
+            "y_elems": 5120,
+            "peak_intermediate_elems": 5120,
+            "peak_intermediate_bytes_f32": 20480,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 48,
+          "dispatches_two_stage": 96,
+          "fused_recompute_flops_per_token": 144955146240,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "self_attn.q_proj",
+          "applied": true,
+          "shape": [
+            12288,
+            5120
+          ],
+          "count_per_token": 16,
+          "reshape": {
+            "I0": 96,
+            "I1": 128,
+            "J0": 40,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            64,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 1405000,
+          "tt_bytes_per_token": 22480000,
+          "tt_flops_per_launch": 3604480,
+          "tt_flops_per_token": 57671680,
+          "q4_bytes_per_token": 534773760,
+          "dense_flops_per_token": 2013265920,
+          "flop_ratio_vs_dense": 0.028645833333333332,
+          "byte_ratio_vs_q4": 0.04203646790747549,
+          "intermediates": {
+            "x_elems": 5120,
+            "A_j0_r3": 2560,
+            "H_r2": 64,
+            "C_r1_I1": 8192,
+            "y_elems": 12288,
+            "peak_intermediate_elems": 8192,
+            "peak_intermediate_bytes_f32": 32768,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 16,
+          "dispatches_two_stage": 32,
+          "fused_recompute_flops_per_token": 96636764160,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "self_attn.k_proj",
+          "applied": true,
+          "shape": [
+            1024,
+            5120
+          ],
+          "count_per_token": 16,
+          "reshape": {
+            "I0": 8,
+            "I1": 128,
+            "J0": 40,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            8,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 475336,
+          "tt_bytes_per_token": 7605376,
+          "tt_flops_per_launch": 1130496,
+          "tt_flops_per_token": 18087936,
+          "q4_bytes_per_token": 44564480,
+          "dense_flops_per_token": 167772160,
+          "flop_ratio_vs_dense": 0.1078125,
+          "byte_ratio_vs_q4": 0.1706600413602941,
+          "intermediates": {
+            "x_elems": 5120,
+            "A_j0_r3": 2560,
+            "H_r2": 64,
+            "C_r1_I1": 1024,
+            "y_elems": 1024,
+            "peak_intermediate_elems": 2560,
+            "peak_intermediate_bytes_f32": 10240,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 16,
+          "dispatches_two_stage": 32,
+          "fused_recompute_flops_per_token": 8053063680,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "self_attn.v_proj",
+          "applied": true,
+          "shape": [
+            1024,
+            5120
+          ],
+          "count_per_token": 16,
+          "reshape": {
+            "I0": 8,
+            "I1": 128,
+            "J0": 40,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            8,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 475336,
+          "tt_bytes_per_token": 7605376,
+          "tt_flops_per_launch": 1130496,
+          "tt_flops_per_token": 18087936,
+          "q4_bytes_per_token": 44564480,
+          "dense_flops_per_token": 167772160,
+          "flop_ratio_vs_dense": 0.1078125,
+          "byte_ratio_vs_q4": 0.1706600413602941,
+          "intermediates": {
+            "x_elems": 5120,
+            "A_j0_r3": 2560,
+            "H_r2": 64,
+            "C_r1_I1": 1024,
+            "y_elems": 1024,
+            "peak_intermediate_elems": 2560,
+            "peak_intermediate_bytes_f32": 10240,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 16,
+          "dispatches_two_stage": 32,
+          "fused_recompute_flops_per_token": 8053063680,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "self_attn.o_proj",
+          "applied": true,
+          "shape": [
+            5120,
+            6144
+          ],
+          "count_per_token": 16,
+          "reshape": {
+            "I0": 40,
+            "I1": 128,
+            "J0": 48,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            40,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 1068232,
+          "tt_bytes_per_token": 17091712,
+          "tt_flops_per_launch": 2244608,
+          "tt_flops_per_token": 35913728,
+          "q4_bytes_per_token": 267386880,
+          "dense_flops_per_token": 1006632960,
+          "flop_ratio_vs_dense": 0.03567708333333333,
+          "byte_ratio_vs_q4": 0.06392128140318627,
+          "intermediates": {
+            "x_elems": 6144,
+            "A_j0_r3": 3072,
+            "H_r2": 64,
+            "C_r1_I1": 5120,
+            "y_elems": 5120,
+            "peak_intermediate_elems": 5120,
+            "peak_intermediate_bytes_f32": 20480,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 16,
+          "dispatches_two_stage": 32,
+          "fused_recompute_flops_per_token": 48318382080,
+          "fused_recompute_vs_dense": 48.0
+        },
+        {
+          "organ": "lm_head",
+          "applied": true,
+          "shape": [
+            248320,
+            5120
+          ],
+          "count_per_token": 1,
+          "reshape": {
+            "I0": 1940,
+            "I1": 128,
+            "J0": 40,
+            "J1": 128,
+            "inner": 128
+          },
+          "ranks": [
+            64,
+            64,
+            64
+          ],
+          "tt_bytes_per_launch": 1641032,
+          "tt_bytes_per_token": 1641032,
+          "tt_flops_per_launch": 33816576,
+          "tt_flops_per_token": 33816576,
+          "q4_bytes_per_token": 675430400,
+          "dense_flops_per_token": 2542796800,
+          "flop_ratio_vs_dense": 0.013298969072164948,
+          "byte_ratio_vs_q4": 0.002429609327622802,
+          "intermediates": {
+            "x_elems": 5120,
+            "A_j0_r3": 2560,
+            "H_r2": 64,
+            "C_r1_I1": 8192,
+            "y_elems": 248320,
+            "peak_intermediate_elems": 8192,
+            "peak_intermediate_bytes_f32": 32768,
+            "fits_32kib_threadgroup": true,
+            "materialises_dense_W": false,
+            "note": "Peak live tensor besides x/y is C[r1,I1]. This is where TT secretly materialises \u2014 not W, but a rank-by-mode slab that at r=64, I1=256 is 64 KiB and does not fit in 32 KiB threadgroup memory."
+          },
+          "dispatches_fused": 1,
+          "dispatches_two_stage": 2,
+          "fused_recompute_flops_per_token": 122054246400,
+          "fused_recompute_vs_dense": 48.0
+        }
+      ]
+    },
+    "3_expected_operations_per_token": {
+      "incumbent_gemv_mac_flops": 51243909120,
+      "incumbent_gemv_gflop": 51.24390912,
+      "incumbent_activation_flops": 297313024,
+      "tt_r64_gemv_flops": 1344012288,
+      "tt_r64_gflop": 1.344012288,
+      "tt_flop_ratio_vs_dense": 0.026227747084100677,
+      "g034_gemv_flops": 10410622976,
+      "g034_gflop": 10.410622976,
+      "g034_mac_ratio_mean_from_receipt": 0.2029641544117647,
+      "fused_recompute_tt_input_flops": 2457442713600,
+      "fused_recompute_tt_vs_dense": 47.95580110497237,
+      "fused_recompute_g034_flops": 5038272675840,
+      "fused_recompute_g034_vs_dense": 98.31944444444444,
+      "ttm3_compute_loss_example": {
+        "tensor": "language_model.model.layers.31.self_attn.v_proj.weight",
+        "tag": "I=(4, 16, 16) J=(8, 16, 40) r=(32, 32)",
+        "flop_ratio": 6.95,
+        "local_bpw_f16": 0.86573486328125,
+        "reading": "TTM3 at I=(4,16,16) J=(8,16,40) r=(32,32) on v_proj does 6.95\u00d7 the dense GEMV FLOPs. Storage can look like a win (0.87 bpw f16) while compute is a loss. S011 \u00a74 / G034: that is incomplete."
+      },
+      "incumbent_does_not_do_less_work": "Source and executable both perform 51.24 GFLOP of GEMV MACs. Q4 adds dequant ALU on top. A candidate that only lowers executable bytes is incomplete. TT r=64 does fewer MACs AND fewer bytes AND destroys function."
+    },
+    "4_dispatch_topology": {
+      "incumbent": {
+        "dispatches_per_token": 964,
+        "gemv_dispatches": 401,
+        "command_buffers": 1,
+        "formula": "1 embed + 64*(9 mixer + 6 mlp) + 3 terminal = 964"
+      },
+      "tt_fused_one_kernel_per_organ": {
+        "gemv_dispatches": 401,
+        "total_dispatches": 964,
+        "command_buffers": 1,
+        "sync": "Four sequential contractions inside one kernel need threadgroup barriers between stages. After the input cores, the live state is H[r2] (64 floats) which is grid-shared: every TG that owns output rows needs it. Providing H without a grid-wide barrier means every TG recomputes the input contraction (NS-030).",
+        "fused_recompute_is_a_compute_loss": true,
+        "fused_recompute_flops_vs_dense": 47.95580110497237
+      },
+      "tt_honest_two_stage": {
+        "gemv_dispatches": 754,
+        "total_dispatches": 1317,
+        "command_buffers": 1,
+        "sync": "Dispatch 1: contract c3,c2 against x \u2192 device buffer H[r2] (64 floats). Encoder dependency. Dispatch 2: expand c1,c0. No host wait if both sit in the same command buffer. Dispatch count rises 401 \u2192 754 GEMV (964 \u2192 1317 total)."
+      },
+      "g034_two_stage_lowrank": {
+        "gemv_dispatches": 802,
+        "total_dispatches": 1365,
+        "command_buffers": 1
+      },
+      "ns020": "NS-020: collapsing command-buffer / dispatch topology is not the token lever. Increasing it is worse. The honest native path adds a dependency per organ.",
+      "delta_vs_incumbent": {
+        "fused_total_minus_964": 0,
+        "two_stage_total_minus_964": 353,
+        "two_stage_increases_dispatches": true
+      }
+    },
+    "5_metal_feasibility": {
+      "device": "Apple M3 Ultra, 60 GPU cores, Metal 4, measured roof 595.9 GB/s",
+      "simdgroup_width": 32,
+      "incumbent_launch": {
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "threadgroup": 128,
+        "simdgroups_per_tg": 4,
+        "rows_per_tg": 2,
+        "threadgroup_memory": "float red[4] = 16 B",
+        "access": "lane consumes 8 packed Q4 weights, stride 512 along cols; sequential group-64, coalesced. Packed decode stays in registers. Grid ceil(rows/2)*128."
+      },
+      "hgravs01_fused_caps_do_not_fit_qwen38": {
+        "kernel": "q80_hgravs01_two_stage_matvec",
+        "threadgroup": 256,
+        "rank_cap": 160,
+        "x_cap": 512,
+        "threadgroup_memory": "mid[160] + x_tg[512] = 2688 B",
+        "qwen38_mlp_x": 5120,
+        "g034_rank": 803,
+        "x_exceeds_cap": true,
+        "rank_exceeds_cap": true,
+        "comment_in_shader": "Fused y=L@(R@x) in one dispatch. Each threadgroup recomputes mid[rank] into threadgroup memory (640 B, not dense W)."
+      },
+      "threadgroup_memory_bytes": 32768,
+      "peak_TT_intermediate": {
+        "organ": "mlp.gate_proj",
+        "C_bytes": 32768,
+        "A_bytes": 10240,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          64,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 136,
+          "I1": 128,
+          "J0": 40,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      "register_pressure": "Incumbent already does 8-wide unpack+FMA per lane. TT stages are smaller GEMVs; registers are not the limiter. Occupancy is: after contracting the input modes the live work is r2-wide (64), which cannot fill 60 cores \u00d7 32-wide simdgroups.",
+      "coalescing": "c3 is (r3,J1)=(64,128) \u2014 16 KiB, cached. x is 20 KiB. First two contractions are tiny and latency-bound, not bandwidth-bound. c0 expand streams I0\u00b7r1 f16 (gate: 136\u00b764\u00b72 = 17 KiB) \u2014 also cached. The working set of one organ's cores at r=64 is ~1.4 MiB. Cache residency is real; function is not. G094: cache-residency does not rank-correlate with token time (NX cache_resident_token_fraction=0.00493).",
+      "fused_recompute_blowup": {
+        "method": "n_tg = ceil(rows/2) incumbent TGs, each repeats the input-core contractions (2 J0 J1 r3 + 2 r2 J0 r3).",
+        "flops": 2457442713600,
+        "vs_dense": 47.95580110497237,
+        "ns030": "REFUTED on this GPU without a grid-wide barrier or a layout that does not recompute R per TG."
+      },
+      "feasibility_one_line": "A two-dispatch TT-GEMV is implementable (HGRAVS01 already does the 2-core form). A fused-recompute kernel is a compute loss on this geometry. Neither is worth building because the map is unhealthy at every rank G1 and G034 tested."
+    },
+    "6_memory_layout": {
+      "dtype": "f16 cores + f32 activations (same as G1 scoring / HGRAVS01 factors)",
+      "cores_per_matrix": {
+        "c0": "I0 \u00d7 r1, row-major, f16",
+        "c1": "r1 \u00d7 I1 \u00d7 r2, r2-inner, f16",
+        "c2": "r2 \u00d7 J0 \u00d7 r3, r3-inner, f16",
+        "c3": "r3 \u00d7 J1, f16"
+      },
+      "header": "40 B G1 blob + 32 B shape/rank ints",
+      "mid_buffer_two_stage": "r2 f32 = 256 B per organ, device, overwritten in-order",
+      "not_stored": "dense W, Tucker core at high rank as a reconstruct target",
+      "hgravs01_relative": "HGRAVS01 is c0,c3 collapsed to two matrices L[m,r], R[r,n] at r\u2264160, 3-bit group-64 packed. That is a 2-core TT. It ships for Q80 down_proj only. It is not a Qwen3.8 uniform-q4 bind, and 0.13 BPW on one organ is a component trap (the 223-row law).",
+      "nr_schema": "NOETIC_CLOSURE_GAP: TensorTrain is schema-change; G096 NEVER BUILT a TT node. Injecting a TensorTrain family into the sealed NR does not move complete_bits_per_weight (stays 4.2527). Accounting cannot see this family."
+    },
+    "7_cheap_microbenchmark": {
+      "purpose": "Discriminate this design from the incumbent BEFORE anyone writes the full kernel.",
+      "already_run": {
+        "what": "G1 tt_apply vs q4 vs dense on 8 real Qwen3.8 GEMV tensors, doctor gate on Y",
+        "wall_s": 1446.1435189247131,
+        "result": "373/373 unhealthy; 80/80 tensor_train unhealthy",
+        "path": "workspace/superwave/g1/claude-evidence/g1_tensor_operators.json"
+      },
+      "cheapest_kill_no_fit": {
+        "command": "python3 -c \"import json,subprocess; d=json.loads(subprocess.check_output(['git','show','HEAD:workspace/superwave/g1/claude-evidence/g1_tensor_operators.json'])); rows=[op for t in d['tensors'] for op in t['operators']]; h=sum(1 for op in rows if (op.get('gate') or {}).get('healthy')); print('rows',len(rows),'healthy',h); raise SystemExit(0 if h==0 else 1)\"",
+        "runtime": "<2 s (json parse)",
+        "kill_if": "healthy_true == 0 (already true)",
+        "this_script_is_that_kill": true
+      },
+      "one_tensor_refit_if_the_json_is_distrusted": {
+        "inputs": {
+          "W": "language_model.model.layers.0.mlp.gate_proj.weight from Qwen3.8 BF16 parent",
+          "X": "activation-capture-v1 hidden/L00.f32  (256 \u00d7 5120), real X, not Gaussian"
+        },
+        "method": "Copy tt_svd_4 + tt_apply + gate_from_axes from workspace/superwave/g1/claude-evidence/g1_tensor_operators.py. Fit (136,128)x(40,128) r=(64,64,64). Y_tt = tt_apply(X); Y = X @ W.T; Y_q4 = X @ q4(W).T. Score doctor axes with AXIS_MARGIN observed/probed 0.02, worst_unit 0.10 relative to q4. Count tt_flops vs 2*m*n. Do not use cosine as GO (0.01*W scored 1.000000; null ~0.898).",
+        "kill_if": "healthy is False OR flop_ratio >= 1",
+        "expected_already_measured": {
+          "rel_l2": 0.9869111180305481,
+          "observed": 0.2803584933280945,
+          "healthy": false,
+          "flop_ratio": 0.02389705882352941,
+          "local_bpw_f16": 0.12656896254595587,
+          "q4_observed": 0.9957399368286133
+        },
+        "runtime": "one SVD of 17408\u00d75120; seconds, not a campaign (G1 whole family 1446 s)"
+      },
+      "metal_only_if_cpu_gate_passes": {
+        "note": "CPU gate does not pass. Do not run this.",
+        "what_it_would_have_been": "Time two sequential f16 GEMVs (17408\u00d7803 and 803\u00d75120) against one geo_tpr64 q4 17408\u00d75120 on this GPU, same x. Kill if wall >= q4 wall OR if a (17408\u00d75120) buffer is written."
+      }
+    },
+    "8_expected_value": {
+      "verdict": "NOT_WORTH_BUILDING",
+      "design_status": "STOPPED_FAMILY_REFUTED",
+      "would_win": "At the ranks G1 actually fitted: fewer stored bytes and fewer MACs than Q4/dense, and intermediates that are not dense W. That is the trap the 223-row law exists to catch.",
+      "would_risk": [
+        "Shipping a map with rel_l2\u22481 (noise) because the FLOP sheet looked green",
+        "Resurrecting TT on the claim that 'G1 reconstructed W' \u2014 it did not; tt_apply is native",
+        "Fusing by recomputing the shared contraction per threadgroup (NS-030), which on this geometry is 48.0\u00d7 dense FLOPs",
+        "Quoting local_bpw_f16=0.13 without the health verdict (HGRAVS01 / 223-row law)",
+        "Raising rank until function appears, at which point G034 already measured 2.93\u00d7 q3 error at identical bits and TT unfolding worse than SVD"
+      ],
+      "cheapest_experiment_that_kills_it": "This script: parse G1 + G034. healthy_true=0 and TT-unfold error > low-rank error > q3. A Metal kernel cannot repair a map the doctor already rejected.",
+      "reopen_when": "A new organ family on real (not synthetic) X shows a peaked TT/Tucker spectrum \u2014 energy at r << min(m,n) capturing enough of the map that doctor-gate is healthy relative to q3/q4 AND flop_ratio < 1 AND the honest two-stage dispatch still moves fewer bytes than geo_tpr64 Q4. Do not retry the eight Qwen3.8 GEMV tensors G1 already scored. Do not retry TT unfolding of the natural (m,n) pairing; G034 showed the regrouping flattens the spectrum.",
+      "controls_not_beaten": {
+        "incumbent_native_q4": 32.73,
+        "mlx_4bit_live": 35.51,
+        "llamacpp_q5k_archived": 24.12,
+        "note": "A dead map has no tok/s. These controls are listed so a future reopen cannot claim victory on bytes alone."
+      },
+      "s011": {
+        "law": "G034: acceptance requires reducing BOTH bytes and operations WITH function preserved. A rank-r decomposition that needs more FLOPs than the dense GEMV it replaces is a storage win and a compute loss \u2014 incomplete. Storage compression alone is incomplete: the executable already stores fewer bytes and does not do less work (51.24 GFLOP GEMV, 964 dispatches, both source and executable).",
+        "axes": {
+          "bytes": {
+            "tt_r64": "REDUCED vs q4 (trap: function dead)",
+            "g034_3p25bpw": "REDUCED vs q4, MATCHED vs q3 bits (function 2.93\u00d7 q3 error)"
+          },
+          "operations": {
+            "tt_r64": "REDUCED vs dense (trap: function dead)",
+            "g034": "REDUCED mac_ratio=0.2029641544117647 (function dead)",
+            "ttm3_some_ranks": "INCREASED (flop_ratio up to 6.95) \u2014 incomplete even before function",
+            "fused_recompute": "INCREASED vs dense (NS-030)"
+          },
+          "dispatches": {
+            "fused": "same 401 GEMV if a fused kernel existed, but fusion is a compute loss",
+            "honest_two_stage": "INCREASED 401 \u2192 754 GEMV (ba_proj stays one dispatch; 96\u00d75120 does not divide inner=128)"
+          },
+          "materialization": {
+            "incumbent": "already 0 (38/38 reconstructs_dense=NO)",
+            "tt_native": "0 dense W; C[r1,I1] may spill (64 KiB > 32 KiB TG)",
+            "win": false
+          },
+          "synchronization": {
+            "honest_two_stage": "INCREASED (encoder dep per organ)",
+            "fused": "threadgroup barriers + implicit grid share of H"
+          },
+          "traffic": {
+            "tt_r64": "REDUCED vs q4 (trap: function dead)"
+          },
+          "function": {
+            "tt_r64": "NOT PRESERVED (rel_l2\u22480.99, doctor unhealthy)",
+            "g034_matched_bits": "NOT PRESERVED (2.93\u00d7 q3 out_rel_fro)",
+            "tt_unfold_vs_lowrank": "WORSE (0.725 vs 0.493 vs q3 0.198 on L31.gate)"
+          }
+        },
+        "complete_under_s011": false,
+        "reason": "No function-preserving reduction on any axis. The axes that move (bytes, ops, traffic) move only at ranks that kill the map. Dispatch and sync get worse on the honest Metal path. Materialization is already 0."
+      }
+    },
+    "token_scale_tt_r64": {
+      "weight_bytes": 482868552,
+      "gemv_flops": 1344012288,
+      "two_stage_total_dispatches": 1317,
+      "fused_total_dispatches": 964,
+      "function": "unhealthy at every G1 rank"
+    },
+    "token_scale_g034": {
+      "weight_bytes": 10410645432,
+      "gemv_flops": 10410622976,
+      "two_stage_total_dispatches": 1365,
+      "function": "2.93\u00d7 q3 out_rel_fro at matched 3.25 b/elem"
+    },
+    "g034_plans": [
+      {
+        "organ": "mlp.gate_proj",
+        "rank": 804,
+        "count_per_token": 64,
+        "bytes_per_token": 2318405120,
+        "flops_per_token": 2318401536,
+        "q4_bytes_per_token": 3030384640,
+        "dense_flops_per_token": 11408506880,
+        "mac_ratio": 0.20321691176470588,
+        "dispatches_two_stage": 128,
+        "fused_recompute_flops_per_token": 1146554941440,
+        "fused_recompute_vs_dense": 100.5,
+        "mid_bytes": 3216,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "mlp.up_proj",
+        "rank": 804,
+        "count_per_token": 64,
+        "bytes_per_token": 2318405120,
+        "flops_per_token": 2318401536,
+        "q4_bytes_per_token": 3030384640,
+        "dense_flops_per_token": 11408506880,
+        "mac_ratio": 0.20321691176470588,
+        "dispatches_two_stage": 128,
+        "fused_recompute_flops_per_token": 1146554941440,
+        "fused_recompute_vs_dense": 100.5,
+        "mid_bytes": 3216,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "mlp.down_proj",
+        "rank": 804,
+        "count_per_token": 64,
+        "bytes_per_token": 2318405120,
+        "flops_per_token": 2318401536,
+        "q4_bytes_per_token": 3030384640,
+        "dense_flops_per_token": 11408506880,
+        "mac_ratio": 0.20321691176470588,
+        "dispatches_two_stage": 128,
+        "fused_recompute_flops_per_token": 1146554941440,
+        "fused_recompute_vs_dense": 100.5,
+        "mid_bytes": 3216,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "linear_attn.in_proj_qkvz",
+        "rank": 792,
+        "count_per_token": 48,
+        "bytes_per_token": 1634994816,
+        "flops_per_token": 1634992128,
+        "q4_bytes_per_token": 2139095040,
+        "dense_flops_per_token": 8053063680,
+        "mac_ratio": 0.20302734375,
+        "dispatches_two_stage": 96,
+        "fused_recompute_flops_per_token": 797253304320,
+        "fused_recompute_vs_dense": 99.0,
+        "mid_bytes": 3168,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "linear_attn.in_proj_ba",
+        "rank": 19,
+        "count_per_token": 48,
+        "bytes_per_token": 9516672,
+        "flops_per_token": 9513984,
+        "q4_bytes_per_token": 12533760,
+        "dense_flops_per_token": 47185920,
+        "mac_ratio": 0.20162760416666667,
+        "dispatches_two_stage": 96,
+        "fused_recompute_flops_per_token": 112066560,
+        "fused_recompute_vs_dense": 2.375,
+        "mid_bytes": 76,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": false
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "rank": 567,
+        "count_per_token": 48,
+        "bytes_per_token": 613124736,
+        "flops_per_token": 613122048,
+        "q4_bytes_per_token": 802160640,
+        "dense_flops_per_token": 3019898880,
+        "mac_ratio": 0.20302734375,
+        "dispatches_two_stage": 96,
+        "fused_recompute_flops_per_token": 214035333120,
+        "fused_recompute_vs_dense": 70.875,
+        "mid_bytes": 2268,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "rank": 734,
+        "count_per_token": 16,
+        "bytes_per_token": 408880000,
+        "flops_per_token": 408879104,
+        "q4_bytes_per_token": 534773760,
+        "dense_flops_per_token": 2013265920,
+        "mac_ratio": 0.20309244791666667,
+        "dispatches_two_stage": 32,
+        "fused_recompute_flops_per_token": 184717148160,
+        "fused_recompute_vs_dense": 91.75,
+        "mid_bytes": 2936,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "self_attn.k_proj",
+        "rank": 173,
+        "count_per_token": 16,
+        "bytes_per_token": 34014080,
+        "flops_per_token": 34013184,
+        "q4_bytes_per_token": 44564480,
+        "dense_flops_per_token": 167772160,
+        "mac_ratio": 0.202734375,
+        "dispatches_two_stage": 32,
+        "fused_recompute_flops_per_token": 3628072960,
+        "fused_recompute_vs_dense": 21.625,
+        "mid_bytes": 692,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "self_attn.v_proj",
+        "rank": 173,
+        "count_per_token": 16,
+        "bytes_per_token": 34014080,
+        "flops_per_token": 34013184,
+        "q4_bytes_per_token": 44564480,
+        "dense_flops_per_token": 167772160,
+        "mac_ratio": 0.202734375,
+        "dispatches_two_stage": 32,
+        "fused_recompute_flops_per_token": 3628072960,
+        "fused_recompute_vs_dense": 21.625,
+        "mid_bytes": 692,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "rank": 567,
+        "count_per_token": 16,
+        "bytes_per_token": 204374912,
+        "flops_per_token": 204374016,
+        "q4_bytes_per_token": 267386880,
+        "dense_flops_per_token": 1006632960,
+        "mac_ratio": 0.20302734375,
+        "dispatches_two_stage": 32,
+        "fused_recompute_flops_per_token": 71345111040,
+        "fused_recompute_vs_dense": 70.875,
+        "mid_bytes": 2268,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      },
+      {
+        "organ": "lm_head",
+        "rank": 1019,
+        "count_per_token": 1,
+        "bytes_per_token": 516510776,
+        "flops_per_token": 516510720,
+        "q4_bytes_per_token": 675430400,
+        "dense_flops_per_token": 2542796800,
+        "mac_ratio": 0.20312701353092782,
+        "dispatches_two_stage": 2,
+        "fused_recompute_flops_per_token": 323888742400,
+        "fused_recompute_vs_dense": 127.375,
+        "mid_bytes": 4076,
+        "x_exceeds_hgravs_cap": true,
+        "rank_exceeds_hgravs_cap": true
+      }
+    ],
+    "intermediate_peaks": [
+      {
+        "organ": "mlp.gate_proj",
+        "C_bytes": 32768,
+        "A_bytes": 10240,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          64,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 136,
+          "I1": 128,
+          "J0": 40,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "mlp.up_proj",
+        "C_bytes": 32768,
+        "A_bytes": 10240,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          64,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 136,
+          "I1": 128,
+          "J0": 40,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "mlp.down_proj",
+        "C_bytes": 20480,
+        "A_bytes": 34816,
+        "H_bytes": 256,
+        "fits_tg": false,
+        "ranks": [
+          40,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 40,
+          "I1": 128,
+          "J0": 136,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "linear_attn.in_proj_qkvz",
+        "C_bytes": 32768,
+        "A_bytes": 10240,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          64,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 128,
+          "I1": 128,
+          "J0": 40,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "C_bytes": 20480,
+        "A_bytes": 12288,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          40,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 40,
+          "I1": 128,
+          "J0": 48,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "C_bytes": 32768,
+        "A_bytes": 10240,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          64,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 96,
+          "I1": 128,
+          "J0": 40,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "self_attn.k_proj",
+        "C_bytes": 4096,
+        "A_bytes": 10240,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          8,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 8,
+          "I1": 128,
+          "J0": 40,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "self_attn.v_proj",
+        "C_bytes": 4096,
+        "A_bytes": 10240,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          8,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 8,
+          "I1": 128,
+          "J0": 40,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "C_bytes": 20480,
+        "A_bytes": 12288,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          40,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 40,
+          "I1": 128,
+          "J0": 48,
+          "J1": 128,
+          "inner": 128
+        }
+      },
+      {
+        "organ": "lm_head",
+        "C_bytes": 32768,
+        "A_bytes": 10240,
+        "H_bytes": 256,
+        "fits_tg": true,
+        "ranks": [
+          64,
+          64,
+          64
+        ],
+        "reshape": {
+          "I0": 1940,
+          "I1": 128,
+          "J0": 40,
+          "J1": 128,
+          "inner": 128
+        }
+      }
+    ]
+  },
+  "what_i_watched_fail": [
+    {
+      "what": "literal grep 'tensor train'",
+      "result": "files=0 hits=0",
+      "why": "Zero tracked phrase hits. Identifier tensor_train files=4 hits=6. G1 scored 80 tensor_train rows; G034 scored tt_matrix_unfolding. A design that started from the phrase would have rediscovered a refuted family and called it new."
+    },
+    {
+      "what": "G1 structured operators on real Qwen3.8 GEMV tensors",
+      "result": "373/373 doctor-gate unhealthy",
+      "why": "Tucker 0.00036 bpw, TT 0.0023, TR 0.0028, Kronecker 0.0039, low-rank r=8 0.032 \u2014 all rel_l2\u22481. Tiny local BPW with no function. Archaeology unique sub-0.5: 223 (healthy=true: 0). This family is in that set."
+    },
+    {
+      "what": "G034 matched-bit TT unfolding vs plain low-rank vs q3",
+      "result": "COMPREHENSIVELY REFUTED at the coherent operating point. Plain low-rank is 2.93x flat q3's error at identical bits; TT unfolding is worse again. The acceptance also requires a native kernel path and none was built, but no member has earned one.",
+      "why": "L31.gate at 3.25 b/elem: q3 0.198, low-rank r=803 0.493, TT unfold r=949 0.725. The extra 146 ranks the balanced shape buys do not compensate. Regrouping scatters structure."
+    },
+    {
+      "what": "Native contraction as a way around G1",
+      "result": "ALREADY THE SCORING PATH",
+      "why": "g1_tensor_operators.py scored tt_apply / tucker_apply / tr_apply \u2014 the implied linear map \u2014 and used reconstruction only as an oracle. A Metal tt_gemv_f16 cannot make an unhealthy map healthy."
+    },
+    {
+      "what": "Fuse L@(R@x) by recomputing R in every threadgroup",
+      "result": "NS-030 REFUTED; also a compute loss on Qwen3.8 geometry",
+      "why": "TT input-core recompute across incumbent TGs is 48.0\u00d7 dense GEMV FLOPs. HGRAVS01 two_stage caps (rank 160, x 512) do not fit Qwen3.8 MLP (x=5120, G034 r=803)."
+    },
+    {
+      "what": "TT intermediate C[r1,I1] in threadgroup memory",
+      "result": "SPILLS at the ranks G1 actually ran",
+      "why": "r=64, I1=256 \u2192 16384 f32 = 64 KiB > 32 KiB TG. r=64, I1=128 \u2192 32768 B exactly, leaving no room for the reduction scratch the incumbent already uses. The intermediates are where tensor methods secretly materialise \u2014 here a rank-by-mode slab, not W, but still a device buffer and a barrier."
+    },
+    {
+      "what": "TTM3 as a 'balanced' contraction",
+      "result": "flop_ratio up to 6.95 vs dense",
+      "why": "Storage win, compute loss. Incomplete by S011 \u00a74 even before the doctor gate."
+    },
+    {
+      "what": "MLP function distillation as the surviving avenue",
+      "result": "NO-GO (+0.4206 held-out gap vs q3 at 72% of q3 active bytes)",
+      "why": "Closed by measurement today. Do not reopen it as a tensor-core workaround."
+    },
+    {
+      "what": "Cosine as a GO metric / synthetic X",
+      "result": "BLIND",
+      "why": "0.01*W scored 1.000000. Null baseline ~0.898. NS-009 killed Gaussian ranking."
+    },
+    {
+      "what": "Q80 0.6462 complete_physical_bpw as the decode number",
+      "result": "CATEGORY_ERROR (active 2.518)",
+      "why": "Report both or neither. Density is not velocity (G043 q3 net-loss)."
+    },
+    {
+      "what": "G035 / G-SHARE as a sharing win",
+      "result": "shared_beats_independent=false",
+      "why": "G062 is attractor compilation, not sharing. Do not cite G062 as a sharing refutation."
+    },
+    {
+      "what": "HGRAVS01 0.13 BPW as a tensor-train existence proof for Qwen3.8",
+      "result": "down_proj ONLY, Q80, rank 160",
+      "why": "A component number whose supporting structures were never counted is a trap. NS-019: do not reconstruct that down_proj."
+    }
+  ],
+  "write_scope": {
+    "write": [
+      "tools/headless/c2tensorop_design.py",
+      "receipts/headless/C2TENSOROP_DESIGN.json"
+    ],
+    "denied": [
+      "workspace",
+      "crates",
+      "visionmcp",
+      "app",
+      "lab",
+      "tools/haider",
+      "ramanujan"
+    ]
+  },
+  "verdict": "NOT_WORTH_BUILDING",
+  "design_status": "STOPPED_FAMILY_REFUTED"
+}

@@ -1,0 +1,64 @@
+{
+ "schema": "hawking.headless.backend_capability.v1",
+ "obligation": "G017 \u2014 RuntimeBackend capability matrix, so the engine degrades rather than errors",
+ "generated_at": "2026-08-22T23:16:39Z",
+ "why": "MLX decodes 1.472x faster than llama.cpp on this box (35.51 vs 24.12 tok/s, RUNTIME_AB.json). Before treating that as a free win, check whether MLX can still do the two things that actually rescued HCLI's production path: constrain the reasoning budget, and reuse a prompt prefix.",
+ "backends": {
+  "llama_server": {
+   "version": "version: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64",
+   "decode_tps_measured": 24.118578993622144,
+   "artifact_gib": 18.19,
+   "supports": {
+    "chat_template_kwargs_enable_thinking": true,
+    "response_format_json_schema": true,
+    "grammar_gbnf": true,
+    "prompt_prefix_cache": true,
+    "continuous_batching_slots": true,
+    "note": "chat_template_kwargs requires the server to be started with --jinja, else silently ignored"
+   }
+  },
+  "mlx_lm_server": {
+   "version": "0.31.3",
+   "decode_tps_measured": 35.506,
+   "artifact_gib": 14.98,
+   "server_source_loc": 1904,
+   "supports": {
+    "chat_template_kwargs_enable_thinking": true,
+    "response_format_json_schema": false,
+    "grammar_gbnf": false,
+    "prompt_prefix_cache": true,
+    "logit_bias": true,
+    "tools": true
+   },
+   "raw_symbol_scan": {
+    "response_format": false,
+    "json_schema": false,
+    "grammar": false,
+    "logit_bias": true,
+    "prompt_cache": true,
+    "enable_thinking": true,
+    "chat_template_kwargs": true,
+    "tools": true,
+    "stream": true,
+    "logprobs": true
+   },
+   "scan_method": "substring scan of mlx_lm.server source; a YES means the symbol appears, which is evidence of support but not proof of correct behaviour \u2014 probe it live before relying on it"
+  }
+ },
+ "the_gap": {
+  "finding": "MLX has NO constrained decoding: no response_format, no json_schema, no grammar.",
+  "is_it_fatal": "No, but it changes the engine contract.",
+  "evidence": "STRUCTURED_OUTPUT_PROBE.json measured the two arms separately on the real 7257-token mission. `no_think` ALONE produced valid JSON 2/2 (31.6s cold, 6.5s warm). `schema` ALONE failed 2/2 at finish_reason=length. So the reasoning-budget control is the NECESSARY condition and the schema is a structural guarantee on top of it, not a substitute. MLX has the necessary one.",
+  "consequence": "An MLX backend must report response_format as unsupported and the engine must degrade to prompt-only structured output with a bounded retry on parse failure, rather than erroring or silently sending a field the backend ignores. This is exactly what the RuntimeBackend.supports() probe exists for."
+ },
+ "what_mlx_keeps": [
+  "chat_template_kwargs / enable_thinking \u2014 the 44x fix works",
+  "prompt_cache \u2014 the ~25 s prefix reuse works",
+  "tools, logit_bias, streaming"
+ ],
+ "open_questions": [
+  "does mlx_lm.server expose multiple concurrent slots, or is it single-stream? the decode topology finding says concurrency is worth at most 1.21x anyway, so this may not matter",
+  "measured MLX numbers are single-stream via mlx_lm.generate, not through mlx_lm.server; the server path must be re-measured before it is trusted as a backend"
+ ],
+ "reproduce": "python3 tools/headless/backend_capability.py"
+}

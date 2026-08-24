@@ -1,0 +1,1396 @@
+{
+  "schema": "hawking.headless.noetic_deltanet_design.v1",
+  "generated_at": "2026-08-23T19:34:28Z",
+  "git_head": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/d1deltanet-20260823-151638",
+  "elapsed_s": 0.8460646659950726,
+  "question": "Can function currently encoded redundantly in static DeltaNet weights be represented more cheaply in STATE plus a transition operator?",
+  "verdict": {
+    "decision": "NOT_WORTH_BUILDING",
+    "decision_applies_to": "replacing DeltaNet static in_proj/out_proj with rec_state + a cheaper transition, on this model, as a production representation",
+    "n_static_tensors_that_duplicate_state": 0,
+    "why": [
+      "0 of 7 static tensors duplicate information S already carries. S stores the image of W, not W.",
+      "The organ's work is the projections: 11120148480 MAC-FLOP vs 113246208.0 state-update FLOP (98.19\u00d7). Isolated DN GEMV is 90.51% addressing.",
+      "Capacity: rec_state 150994944 B cannot store in_proj_qkvz 2.14 GB. Rank-1 update is many-to-one (shader algebra).",
+      "TOKEN_NS already has a native recurrent op. The 10.6% component is that op plus helpers, after GEMV and state-stream have been attributed out. Building another transition does not stop the 2.95 GB stream.",
+      "Prior science that would have to reverse first: G034/Phase-B, G035, G089 OOD, MLP distill NO-GO, 223 sub-0.5 local BPW with 0 healthy.",
+      "State CONTENT is reused; state TRAFFIC is re-read every token (stream_rec_state 0.467 ms). 'Reuse is free' is false on this machine."
+    ],
+    "what_would_reopen": "A native operator, scored on REAL held-out activations with a scale-aware gate (not cosine), that matches the incumbent q4 in_proj/out_proj on Doctor/function-space AND drops active bytes AND drops GEMV addressing time. Reconstruction of dense W as an oracle is not that operator.",
+    "beats_mlx_4bit": {
+      "status": "NULL",
+      "reason": "no candidate generate; incumbent 32.73 tok/s vs LIVE MLX 35.51"
+    },
+    "beats_llamacpp_q5k": {
+      "status": "NULL",
+      "reason": "ARCHIVED control 24.12 tok/s; artifact off disk; incumbent already above it"
+    }
+  },
+  "anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "roof_GB_s": 595.9,
+    "parameter_count": 26895998464,
+    "artifact_bytes": 14297933604,
+    "artifact_files": 756,
+    "tensors": 755,
+    "complete_physical_bpw": 4.252735126866492,
+    "dispatches_per_token": 964,
+    "command_buffers": 1,
+    "gemv_gflop": 51.24,
+    "mlx_4bit_tps": 35.51,
+    "llamacpp_q5k_tps_archived": 24.12,
+    "two_servers_tps": 3.986,
+    "one_server_tps": 33.47,
+    "null_cosine": 0.898,
+    "mlp_distill_nogo_gap": 0.4206,
+    "mlp_distill_byte_ratio": 0.724,
+    "historical_deltanet_share": 0.106,
+    "dense_reconstruction_is_oracle_not_production": true,
+    "source_and_executable_both_dispatch_964": true
+  },
+  "geometry": {
+    "status": "MEASURED",
+    "origin": "crates/hawking-core/src/model/qwen38_geometry.rs parsed this run",
+    "locate": {
+      "rel": "crates/hawking-core/src/model/qwen38_geometry.rs",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d1deltanet-20260823-151638/crates/hawking-core/src/model/qwen38_geometry.rs",
+      "bytes": 19679
+    },
+    "constants": {
+      "layers": 64,
+      "dn_layers": 48,
+      "gqa_layers": 16,
+      "hidden": 5120,
+      "intermediate": 17408,
+      "vocab": 248320,
+      "key_heads": 16,
+      "value_heads": 48,
+      "vpk": 3,
+      "key_dim": 128,
+      "value_dim": 128,
+      "conv_k": 4,
+      "gqa_heads": 24,
+      "gqa_kv_heads": 4,
+      "gqa_head_dim": 256
+    },
+    "qkvz_rows": 16384,
+    "ba_rows": 96,
+    "out_rows": 5120,
+    "out_cols": 6144,
+    "conv_channels": 10240,
+    "rec_elems_per_layer": 786432,
+    "conv_elems_per_layer": 30720,
+    "rec_elems_total": 37748736,
+    "conv_elems_total": 1474560,
+    "rec_resident_bytes": 150994944,
+    "conv_resident_bytes": 5898240,
+    "rec_rw_bytes": 301989888,
+    "conv_rw_bytes": 11796480,
+    "q4_qkvz_per_layer": 44564480,
+    "q4_ba_per_layer": 261120,
+    "q4_out_per_layer": 16711680,
+    "q4_linear_attn_payload": 2953789440,
+    "gemv_mac_flops_per_token": 11120148480,
+    "qkvz_mac_flops_per_token": 8053063680,
+    "ba_mac_flops_per_token": 47185920,
+    "out_mac_flops_per_token": 3019898880,
+    "state_update_flops_per_token": 113246208.0,
+    "gqa_kv_bytes_per_position": 131072,
+    "watched": []
+  },
+  "schedule": {
+    "status": "MEASURED",
+    "origin": "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs parsed this run",
+    "locate": {
+      "rel": "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d1deltanet-20260823-151638/crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs",
+      "bytes": 6909
+    },
+    "mixer_prefix_dispatches": 9,
+    "mlp_suffix_dispatches": 6,
+    "full_layer_dispatches": 15,
+    "dn_mixer_prefix_kernels": [
+      "qwen80_residual_rmsnorm_f32",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen38_qkvz_rearrange_conv_l2_f32",
+      "qwen80_ba_to_decay_beta_f32",
+      "qwen38_gated_delta_decode_vi",
+      "qwen80_deltanet_gated_rmsnorm_f32",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen_next_add_residual"
+    ],
+    "dn_mixer_prefix_count": 9,
+    "formula_total_dispatches": 964
+  },
+  "source_sites": {
+    "status": "MEASURED",
+    "sites": {
+      "encode_deltanet": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3092,
+        "pattern": "fn encode_deltanet\\(",
+        "text": "fn encode_deltanet(",
+        "locate": "disk"
+      },
+      "in_proj_qkvz_bind": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3113,
+        "pattern": "linear_attn\\.in_proj_qkvz\\.weight\"",
+        "text": "&qwen38_layer_name(layer, \"linear_attn.in_proj_qkvz.weight\"),",
+        "locate": "disk"
+      },
+      "in_proj_ba_bind": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3116,
+        "pattern": "linear_attn\\.in_proj_ba\\.weight\"",
+        "text": "&qwen38_layer_name(layer, \"linear_attn.in_proj_ba.weight\"),",
+        "locate": "disk"
+      },
+      "out_proj_bind": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3205,
+        "pattern": "linear_attn\\.out_proj\\.weight\"",
+        "text": "&qwen38_layer_name(layer, \"linear_attn.out_proj.weight\"),",
+        "locate": "disk"
+      },
+      "conv_weight_bind": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3120,
+        "pattern": "linear_attn\\.conv1d\\.weight\"",
+        "text": "let conv_w = self.f32(&qwen38_layer_name(layer, \"linear_attn.conv1d.weight\"))?;",
+        "locate": "disk"
+      },
+      "a_log_bind": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3147,
+        "pattern": "linear_attn\\.A_log\"",
+        "text": "let a_log = self.f32(&qwen38_layer_name(layer, \"linear_attn.A_log\"))?;",
+        "locate": "disk"
+      },
+      "dt_bias_bind": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3148,
+        "pattern": "linear_attn\\.dt_bias\"",
+        "text": "let dt_bias = self.f32(&qwen38_layer_name(layer, \"linear_attn.dt_bias\"))?;",
+        "locate": "disk"
+      },
+      "norm_bind": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3166,
+        "pattern": "linear_attn\\.norm\\.weight\"",
+        "text": "let norm_w = self.f32(&qwen38_layer_name(layer, \"linear_attn.norm.weight\"))?;",
+        "locate": "disk"
+      },
+      "encode_gated_delta": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 2005,
+        "pattern": "fn encode_gated_delta\\(",
+        "text": "fn encode_gated_delta(",
+        "locate": "disk"
+      },
+      "rec_state_set_buffer": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 2037,
+        "pattern": "set_buffer\\(0, Some\\(&self\\.workspace\\.rec_state\\)",
+        "text": "encoder.set_buffer(0, Some(&self.workspace.rec_state), rec_off);",
+        "locate": "disk"
+      },
+      "attach_zero_rec": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 1292,
+        "pattern": "zero_buffer\\(&workspace\\.rec_state\\)",
+        "text": "zero_buffer(&workspace.rec_state);",
+        "locate": "disk"
+      },
+      "reset_fn": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 1509,
+        "pattern": "pub fn reset\\(&mut self\\)",
+        "text": "pub fn reset(&mut self) {",
+        "locate": "disk"
+      },
+      "reset_zero_rec": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 1512,
+        "pattern": "zero_buffer\\(&self\\.workspace\\.rec_state\\)",
+        "text": "zero_buffer(&self.workspace.rec_state);",
+        "locate": "disk"
+      },
+      "step_fn": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3861,
+        "pattern": "pub fn step\\(&mut self, token: u32\\)",
+        "text": "pub fn step(&mut self, token: u32) -> Result<(u32, CommandBufferTiming)> {",
+        "locate": "disk"
+      },
+      "step_position_inc": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 3878,
+        "pattern": "self\\.position = self\\.position\\.saturating_add\\(1\\)",
+        "text": "self.position = self.position.saturating_add(1);",
+        "locate": "disk"
+      },
+      "stream_probe": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 2905,
+        "pattern": "pub fn measure_f32_stream\\(",
+        "text": "pub fn measure_f32_stream(",
+        "locate": "disk"
+      },
+      "rec_alloc": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": 715,
+        "pattern": "f32b\\(48 \\* layout\\.recurrent_state_elements",
+        "text": "let rec = f32b(48 * layout.recurrent_state_elements())?;",
+        "locate": "disk"
+      },
+      "causal_conv": {
+        "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "line": 8,
+        "pattern": "inline float qwen38_causal_conv_update_f32",
+        "text": "inline float qwen38_causal_conv_update_f32(",
+        "locate": "disk"
+      },
+      "conv_state_shift": {
+        "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "line": 23,
+        "pattern": "conv_state\\[state_base \\+ tap\\] = conv_state",
+        "text": "conv_state[state_base + tap] = conv_state[state_base + tap + 1u];",
+        "locate": "disk"
+      },
+      "gated_delta_vi": {
+        "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "line": 314,
+        "pattern": "kernel void qwen38_gated_delta_decode_vi\\(",
+        "text": "kernel void qwen38_gated_delta_decode_vi(",
+        "locate": "disk"
+      },
+      "gated_delta_simd": {
+        "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "line": 374,
+        "pattern": "kernel void qwen38_gated_delta_decode_vi_simd\\(",
+        "text": "kernel void qwen38_gated_delta_decode_vi_simd(",
+        "locate": "disk"
+      },
+      "state_decay_mul": {
+        "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "line": 342,
+        "pattern": "const float decayed = state\\[index\\] \\* d",
+        "text": "const float decayed = state[index] * d;",
+        "locate": "disk"
+      },
+      "state_rank1_update": {
+        "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "line": 353,
+        "pattern": "state\\[index\\] \\+= key\\[key_base \\+ ki\\] \\* delta",
+        "text": "state[index] += key[key_base + ki] * delta;",
+        "locate": "disk"
+      },
+      "state_query_readout": {
+        "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "line": 356,
+        "pattern": "state\\[index\\] \\* query\\[key_base \\+ ki\\]",
+        "text": "scratch[tid] = ki < key_dim ? state[index] * query[key_base + ki] : 0.0f;",
+        "locate": "disk"
+      },
+      "ba_to_decay": {
+        "file": "crates/hawking-core/shaders/qwen80_device_activations.metal",
+        "line": 188,
+        "pattern": "kernel void qwen80_ba_to_decay_beta_f32",
+        "text": "kernel void qwen80_ba_to_decay_beta_f32(",
+        "locate": "disk"
+      },
+      "decay_from_a_log": {
+        "file": "crates/hawking-core/shaders/qwen80_device_activations.metal",
+        "line": 207,
+        "pattern": "const float g = -exp\\(a_log\\[value_head\\]\\)",
+        "text": "const float g = -exp(a_log[value_head]) * softplus;",
+        "locate": "disk"
+      },
+      "gated_rmsnorm": {
+        "file": "crates/hawking-core/shaders/qwen80_device_activations.metal",
+        "line": 247,
+        "pattern": "kernel void qwen80_deltanet_gated_rmsnorm_tg",
+        "text": "kernel void qwen80_deltanet_gated_rmsnorm_tg(",
+        "locate": "disk"
+      },
+      "theoretical_state_bytes": {
+        "file": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+        "line": 118,
+        "pattern": "pub fn theoretical_state_bytes",
+        "text": "pub fn theoretical_state_bytes(seq_len: u64) -> StateByteBudget {",
+        "locate": "disk"
+      },
+      "seal_deltanet_arith": {
+        "file": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+        "line": 404,
+        "pattern": "let deltanet = \\(rearrange as f64 - kv_conv\\)",
+        "text": "let deltanet = (rearrange as f64 - kv_conv).max(0.0)",
+        "locate": "disk"
+      },
+      "kv_rec_cap": {
+        "file": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+        "line": 399,
+        "pattern": "let kv_rec = \\(rec_stream as f64\\)\\.min\\(gated as f64\\)",
+        "text": "let kv_rec = (rec_stream as f64).min(gated as f64);",
+        "locate": "disk"
+      },
+      "step_zeros_rec_state": {
+        "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "line": null,
+        "hits": [],
+        "text": "no zero_buffer(rec_state) in step() body",
+        "locate": "disk"
+      }
+    },
+    "decode_lines": 5879,
+    "metal_lines": 533
+  },
+  "artifact": {
+    "status": "MEASURED",
+    "origin": "walk /Users/scammermike/models/qwen38-gravity-uniform-q4-v1/manifest.json + tensor files this run",
+    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "present": true,
+    "manifest_schema": "hawking.ascent.qwen38_language_uniform_q4.v1",
+    "manifest_tensor_count": 755,
+    "manifest_source_weight_elements": 26895998464,
+    "linear_attn_files": 336,
+    "linear_attn_on_disk_bytes": 2961704064,
+    "q4_tensors": 144,
+    "f32_tensors": 192,
+    "q4_magic_ok": 144,
+    "q4_magic_bad": 0,
+    "by_suffix": {
+      "A_log": {
+        "n": 48,
+        "kind": "f32",
+        "shape": [
+          48
+        ],
+        "bytes_one": 200,
+        "elements_one": 48,
+        "bytes_all": 9600,
+        "elements_all": 2304
+      },
+      "conv1d.weight": {
+        "n": 48,
+        "kind": "f32",
+        "shape": [
+          10240,
+          4,
+          1
+        ],
+        "bytes_one": 163848,
+        "elements_one": 40960,
+        "bytes_all": 7864704,
+        "elements_all": 1966080
+      },
+      "dt_bias": {
+        "n": 48,
+        "kind": "f32",
+        "shape": [
+          48
+        ],
+        "bytes_one": 200,
+        "elements_one": 48,
+        "bytes_all": 9600,
+        "elements_all": 2304
+      },
+      "in_proj_ba.weight": {
+        "n": 48,
+        "kind": "q4",
+        "shape": [
+          96,
+          5120
+        ],
+        "bytes_one": 261160,
+        "elements_one": 491520,
+        "bytes_all": 12535680,
+        "elements_all": 23592960
+      },
+      "in_proj_qkvz.weight": {
+        "n": 48,
+        "kind": "q4",
+        "shape": [
+          16384,
+          5120
+        ],
+        "bytes_one": 44564520,
+        "elements_one": 83886080,
+        "bytes_all": 2139096960,
+        "elements_all": 4026531840
+      },
+      "norm.weight": {
+        "n": 48,
+        "kind": "f32",
+        "shape": [
+          128
+        ],
+        "bytes_one": 520,
+        "elements_one": 128,
+        "bytes_all": 24960,
+        "elements_all": 6144
+      },
+      "out_proj.weight": {
+        "n": 48,
+        "kind": "q4",
+        "shape": [
+          5120,
+          6144
+        ],
+        "bytes_one": 16711720,
+        "elements_one": 31457280,
+        "bytes_all": 802162560,
+        "elements_all": 1509949440
+      }
+    },
+    "a_log_loaded": {
+      "n_vectors": 48,
+      "len": 48,
+      "min": -5.5625,
+      "max": 4.9375,
+      "mean": -0.7593834665086534,
+      "pairwise": {
+        "status": "MEASURED",
+        "n": 48,
+        "n_pairs": 1128,
+        "mean_pairwise_scale_aware": 0.15953016156618074,
+        "min_pairwise_scale_aware": -0.7755776522870956,
+        "mean_pairwise_cosine": 0.1960639520124459,
+        "scale_trap_0p01": {
+          "cosine": 0.9999999999999999,
+          "relative_l2": 0.99,
+          "scale_ratio": 0.01,
+          "scale_match": 0.01,
+          "scale_aware": 0.009999999999999998,
+          "norm_true": 25.735690094281644,
+          "norm_pred": 0.25735690094281644,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "note": "cosine is reported as a contrast; the gate is scale_aware"
+      }
+    },
+    "dt_bias_pairwise": {
+      "status": "MEASURED",
+      "n": 48,
+      "n_pairs": 1128,
+      "mean_pairwise_scale_aware": 0.4548823246689645,
+      "min_pairwise_scale_aware": -0.23584563796875735,
+      "mean_pairwise_cosine": 0.5042563841170392,
+      "scale_trap_0p01": {
+        "cosine": 1.0000000000000002,
+        "relative_l2": 0.99,
+        "scale_ratio": 0.01,
+        "scale_match": 0.01,
+        "scale_aware": 0.010000000000000002,
+        "norm_true": 57.626220160617855,
+        "norm_pred": 0.5762622016061786,
+        "rejects_perfect_cosine_as_sufficient": true
+      },
+      "note": "cosine is reported as a contrast; the gate is scale_aware"
+    },
+    "header_note": "manifest bytes include the 40 B HQ30UQ4 header on every Q4 file and the 8 B count header on every f32v2 file. TOKEN_NS linear_attn_bytes is payload geometry without those headers."
+  },
+  "token_ns": {
+    "status": "MEASURED",
+    "origin": "CITED receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json (GPU timestamps not re-run); arithmetic recomputed this run",
+    "locate": {
+      "rel": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+      "bytes": 42951
+    },
+    "schema": "hawking.ascension.qwen38_token_ns_ledger.v1",
+    "measurement_label": "DIRTY_ENGINEERING",
+    "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "commit_of_ledger": "57ee82ccef7aba803416ec3562c8981277120fd4",
+    "median_wall_ns": 35227917,
+    "median_gpu_ns": 33912333,
+    "weight_bytes": {
+      "mlp_bytes": 9091153920,
+      "linear_attn_bytes": 2953789440,
+      "full_attn_bytes": 891289600,
+      "lm_head_bytes": 675430400,
+      "norms_bytes": 6475776,
+      "embed_row_bytes": 2720,
+      "embed_table_excluded_bytes": 675430440,
+      "active_bytes": 13618141856,
+      "note": "Q4 group-64 codes+f16 scales from geometry; norms are f32 scales. Embed table excluded except one gathered row."
+    },
+    "state_bytes": {
+      "conv_state_rw_bytes": 11796480,
+      "rec_state_rw_bytes": 301989888,
+      "gqa_kv_write_bytes": 131072,
+      "gqa_kv_read_bytes_at_pos": 2490368,
+      "total_rw_bytes": 316407808,
+      "rec_state_resident_bytes": 150994944,
+      "conv_state_resident_bytes": 5898240,
+      "note": "conv/recurrent state is read+written every DeltaNet layer; GQA writes one slot and reads seq_len slots"
+    },
+    "dispatches": {
+      "embed": 1,
+      "mixer_prefix": 576,
+      "mlp_suffix": 384,
+      "terminal": 3,
+      "total": 964,
+      "production_command_buffers": 1
+    },
+    "component_deltanet": {
+      "ns_per_token": 3732794.9326240737,
+      "pct_of_token_wall": 10.596127306147773,
+      "share": 0.10596127306147773,
+      "bytes_read": 4718592,
+      "bytes_written": 2162688,
+      "dispatches": 192,
+      "method": "isolated rearrange+ba+gated_delta+gated_rmsnorm+dn FMA remainder + 48/64 mixer residual, minus KV/state streams attributed out",
+      "effective_gb_s": 1.843465854461662,
+      "resource_class": "gpu"
+    },
+    "component_kv_state": {
+      "ns_per_token": 537665.0,
+      "pct_of_token_wall": 1.52624692513043,
+      "bytes_read": 159383552,
+      "bytes_written": 157024256,
+      "dispatches": 3,
+      "method": "measured sequential f32 stream of rec_state + conv_state + GQA cache, capped by fused parent GPU time",
+      "effective_gb_s": 588.4850380813332
+    },
+    "isolated": {
+      "dn_full_probe_ns": 5536666,
+      "dn_addr_probe_ns": 5011166,
+      "dn_decode_probe_ns": 5339083,
+      "dn_gemvs_ns": 5560749,
+      "dn_gemvs_dispatches": 144,
+      "rearrange_48_ns": 350999,
+      "ba_to_decay_48_ns": 139374,
+      "gated_delta_48_ns": 2146166,
+      "gated_rmsnorm_48_ns": 1295500,
+      "stream_rec_state_ns": 467374,
+      "stream_conv_state_ns": 19000,
+      "mixer_residual_64_ns": 118250
+    },
+    "dn_probe": {
+      "class": "dn",
+      "full_median_gpu_ns": 5536666,
+      "addr_median_gpu_ns": 5011166,
+      "decode_median_gpu_ns": 5339083,
+      "addr_frac_of_full": 0.9050872853807689,
+      "decode_minus_addr_frac": 0.05922643699294847,
+      "fma_remainder_frac": 0.03568627762628265
+    },
+    "recomputed_deltanet_ns": 3732794.9326240737,
+    "recomputed_matches_component": true,
+    "recomputed_abs_delta_ns": 0.0,
+    "organ_aggregation": {
+      "formula": "isolated_dn_full_probe + TOKEN_NS component deltanet",
+      "ns_per_token": 9269460.932624074,
+      "share_of_token_ns_wall": 0.2631282721775481,
+      "note": "This is the organ-census aggregation (GEMV + non-GEMV). It is NOT the TOKEN_NS component named deltanet. Mixing them is how 10.6% and 26.3% look like a contradiction."
+    },
+    "historical_10p6_reconciliation": {
+      "historical_share_quoted": 0.106,
+      "token_ns_component_share": 0.10596127306147773,
+      "matches_historical": true,
+      "organ_census_share": 0.2631282721775481,
+      "why_they_differ": "seal_components() puts DN Q4 GEMVs in weight_addressing / weight_decode_reconstruction (addr_probe 90.51% of isolated DN GEMV) and attributes rec/conv/GQA streams to kv_state. The component named deltanet is rearrange+ba+gated_delta+gated_rmsnorm+dn FMA remainder+48/64 mixer residual, MINUS those streams. 10.6% is that component. 26.3% adds the GEMV back. Same ledger, two sums.",
+      "do_not_use_native_30p606_as_this_denominator": "TOKEN_NS wall is 35227917 ns (DIRTY_ENGINEERING, 57ee82ccef7aba803416ec3562c8981277120fd4). Native complete-wall 30.606 ms is a later gravity run. component_ns / native_wall would be 0.121963; that mixed denominator is not a measurement and is not used."
+    },
+    "kv_state_byte_identity": {
+      "bytes_read_ledger": 159383552,
+      "bytes_read_from_geometry": 159383552,
+      "read_match": true,
+      "bytes_written_ledger": 157024256,
+      "bytes_written_from_geometry": 157024256,
+      "write_match": true,
+      "formula": "rec_resident + conv_resident + gqa_{read,write}"
+    },
+    "stream_as_fraction_of_gated_delta": 0.21777159828270506,
+    "dn_addr_frac_of_full": 0.9050872853807689
+  },
+  "g042_state_omission": {
+    "status": "MEASURED",
+    "origin": "CITED receipts/ascent-2026-08-16/G042_BPW_FAMILY.json; rec/conv BPW computed from geometry this run",
+    "locate": {
+      "rel": "receipts/ascent-2026-08-16/G042_BPW_FAMILY.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/G042_BPW_FAMILY.json",
+      "bytes": 5101
+    },
+    "definition_quotes_only_gqa": true,
+    "definition": "KV/state at a context length, same units. 16 GQA layers, 4 kv heads (QWEN38_GQA_KV_HEADS, READ from geometry rather than assumed), head_dim 256, K and V, f32 = 131,072 bytes per position, confirmed by the token_ns receipt's gqa_kv_write_bytes.",
+    "uniform_q4_v1_stated_state_bpw": {
+      "128": 0.004990248946498453,
+      "8192": 0.31937593257590097,
+      "131072": 5.1100149212144155
+    },
+    "gqa_ctx128_bpw": 0.004990248946498453,
+    "deltanet_rec_resident_bpw": 0.04491224051848607,
+    "deltanet_conv_resident_bpw": 0.0017543843952533623,
+    "deltanet_state_bpw_omitted": 0.046666624913739435,
+    "rec_over_gqa_at_ctx128": 9.3515625,
+    "generated_bpw_equivalent": 0.0,
+    "shared_bpw": 0.0,
+    "omission": "G042 STATE_BPW_EQUIVALENT charges 16 GQA layers \u00d7 131072 B/position and does not charge DeltaNet rec_state 150994944 B or conv_state 5898240 B, both context-independent. At ctx=128 the omitted DN state is ~9\u00d7 the GQA term the receipt does report."
+  },
+  "mlp_distill": {
+    "status": "MEASURED",
+    "origin": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+    "locate": {
+      "rel": "receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+      "bytes": 48459
+    },
+    "decision": "NO-GO",
+    "deciding_number": 0.4206259548664093,
+    "matches_contract_0p4206": true,
+    "byte_ratio_I2560": 0.7239819004524887,
+    "matches_contract_0p72": true,
+    "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding."
+  },
+  "organ_census_deltanet_token_ns": {
+    "locate": {
+      "rel": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d1deltanet-20260823-151638/receipts/headless/NOETIC_ORGAN_CENSUS.json",
+      "bytes": 35827
+    },
+    "ns_per_token": 9269460.932624074,
+    "share_of_token_ns": 0.2631282721775481
+  },
+  "per_token_cost": {
+    "bytes_weight_q4_payload": 2953789440,
+    "bytes_weight_on_disk": 2961704064,
+    "bytes_state_rec_resident": 150994944,
+    "bytes_state_conv_resident": 5898240,
+    "bytes_state_rec_rw": 301989888,
+    "bytes_state_conv_rw": 11796480,
+    "dispatches_component_deltanet": 192,
+    "dispatches_dn_gemv": 144,
+    "dispatches_dn_mixer_prefix": 432,
+    "share_token_ns_component": 0.10596127306147773,
+    "share_organ_aggregation": 0.2631282721775481,
+    "ns_component": 3732794.9326240737,
+    "ns_organ_aggregation": 9269460.932624074
+  },
+  "duplication_sites": [
+    {
+      "tensor": "linear_attn.in_proj_qkvz.weight",
+      "role": "static map hidden \u2192 (q,k,v,z) for the CURRENT token",
+      "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "line": 3113,
+      "text": "&qwen38_layer_name(layer, \"linear_attn.in_proj_qkvz.weight\"),",
+      "on_disk_bytes": 2139096960,
+      "duplicates_state": false,
+      "why": "Produces the rank-1 factors and the query of THIS token. rec_state (150994944 B) stores the decayed SUM of past k v^T (crates/hawking-core/shaders/qwen38_device_activations.metal:353: state += k * delta). That map is many-to-one: k_t, v_t, q_t are not recoverable from S_t. S cannot hold this matrix (2139096960 B on disk vs 150994944 B resident S)."
+    },
+    {
+      "tensor": "linear_attn.in_proj_ba.weight",
+      "role": "static map hidden \u2192 (beta, a) that parameterise THIS token's decay/beta",
+      "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "line": 3116,
+      "text": "&qwen38_layer_name(layer, \"linear_attn.in_proj_ba.weight\"),",
+      "on_disk_bytes": 12535680,
+      "duplicates_state": false,
+      "why": "ba is an activation of the current hidden. decay = exp(-exp(A_log) * softplus(a+dt_bias)) at crates/hawking-core/shaders/qwen80_device_activations.metal:207. S is multiplied by that decay; S does not store the ba map."
+    },
+    {
+      "tensor": "linear_attn.conv1d.weight",
+      "role": "FIR taps (k=4) on the qkvz channels",
+      "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+      "line": 8,
+      "text": "inline float qwen38_causal_conv_update_f32(",
+      "on_disk_bytes": 7864704,
+      "duplicates_state": false,
+      "why": "conv_state is the delay line of the last (k-1) activations per channel (crates/hawking-core/shaders/qwen38_device_activations.metal:23 shifts history and writes current). conv1d.weight is the 4 taps. Delay line \u2260 taps. conv_state resident 5898240 B; conv weights 7864704 B on disk."
+    },
+    {
+      "tensor": "linear_attn.A_log",
+      "role": "per-head static timescale of the transition",
+      "file": "crates/hawking-core/shaders/qwen80_device_activations.metal",
+      "line": 207,
+      "text": "const float g = -exp(a_log[value_head]) * softplus;",
+      "on_disk_bytes": 9600,
+      "duplicates_state": false,
+      "why": "48 f32 per layer. Already a parameter of the transition operator, not content of S. Could be folded into the kernel as a constant; that saves 9.6 kB, not 2.95 GB."
+    },
+    {
+      "tensor": "linear_attn.dt_bias",
+      "role": "per-head static bias on the a-logit before softplus",
+      "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "line": 3148,
+      "text": "let dt_bias = self.f32(&qwen38_layer_name(layer, \"linear_attn.dt_bias\"))?;",
+      "on_disk_bytes": 9600,
+      "duplicates_state": false,
+      "why": "Same class as A_log: a transition parameter, 9.6 kB, not S."
+    },
+    {
+      "tensor": "linear_attn.norm.weight",
+      "role": "gated RMSNorm affine on rec_out (the S@q readout), not on S",
+      "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "line": 3166,
+      "text": "let norm_w = self.f32(&qwen38_layer_name(layer, \"linear_attn.norm.weight\"))?;",
+      "on_disk_bytes": 24960,
+      "duplicates_state": false,
+      "why": "Kernel binds rec_out + z + norm.weight (crates/hawking-core/src/model/qwen38_hybrid_decode.rs:3166). Affine is 128 f32. Not a copy of the 786432-element S."
+    },
+    {
+      "tensor": "linear_attn.out_proj.weight",
+      "role": "static map rec_out (6144) \u2192 hidden (5120)",
+      "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "line": 3205,
+      "text": "&qwen38_layer_name(layer, \"linear_attn.out_proj.weight\"),",
+      "on_disk_bytes": 802162560,
+      "duplicates_state": false,
+      "why": "Mixes a READOUT of S into residual space. The matrix is not in S. Composing out_proj_L with in_proj_{L+1} produces a larger map (16384\u00d76144) and still leaves the residual path W@h to do, so it does not save bytes."
+    }
+  ],
+  "n_duplication_sites_true": 0,
+  "state_reuse": {
+    "content_persists_across_tokens": {
+      "value": true,
+      "origin": "MEASURED from source",
+      "evidence": "rec_state is allocated once (crates/hawking-core/src/model/qwen38_hybrid_decode.rs:715, 150994944 B), zeroed in attach (crates/hawking-core/src/model/qwen38_hybrid_decode.rs:1292) and reset (crates/hawking-core/src/model/qwen38_hybrid_decode.rs:1512), and NOT zeroed in step() (hits=[]). step() increments position (crates/hawking-core/src/model/qwen38_hybrid_decode.rs:3878) and re-encodes against the same buffer."
+    },
+    "bytes_reread_from_device_memory_every_token": {
+      "value": true,
+      "origin": "MEASURED from source + TOKEN_NS isolated stream",
+      "evidence": "encode_gated_delta binds rec_state every dispatch (crates/hawking-core/src/model/qwen38_hybrid_decode.rs:2037). The kernel loads state[index] from device (crates/hawking-core/shaders/qwen38_device_activations.metal:342). Isolated stream_rec_state = 467374 ns for a sequential f32 copy of the resident tensor; isolated gated_delta_48 = 2146166 ns. Stream is 0.2178 of gated_delta isolated time. There is no cross-token SRAM/register residency: each token is a new CB with 964 dispatches; threadgroup scratch is per-dispatch."
+    },
+    "rebuilt_from_static_weights_every_token": {
+      "value": false,
+      "origin": "MEASURED from source",
+      "evidence": "S_{t} = decay \u2299 S_{t-1} + rank-1; the buffer is the history."
+    },
+    "sram_persistence_across_tokens": {
+      "value": false,
+      "origin": "MEASURED from kernel + production shape",
+      "evidence": "Production shape is 1 CB / 964 dispatches (TOKEN_NS). gated_delta threadgroup scratch is 128 floats and dies at dispatch end. Resident S is 3.15 MiB per layer; it does not fit in a threadgroup."
+    },
+    "verdict": "State reuse of CONTENT is exploited (the organ is recurrent). State reuse of TRAFFIC is not free: the 151 MiB rec_state is re-read and re-written from unified memory every token. TOKEN_NS puts that traffic in kv_state (stream floor 0.467 ms rec + 0.019 ms conv), not in the 10.6% deltanet component."
+  },
+  "candidate": {
+    "name": "state_replaces_static_inproj",
+    "question_it_answers": "Can function currently encoded in linear_attn in_proj/out_proj be represented as rec_state plus a cheaper transition, so those GEMVs are not streamed?",
+    "dense_reconstruction_oracle_only": false,
+    "native_operator": {
+      "exists_today": false,
+      "closest_existing": {
+        "name": "qwen38_gated_delta_decode_vi_simd",
+        "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "line": 374,
+        "class": "DISPATCHED",
+        "what_it_already_does": "decay S, rank-1 update from current k,v,beta, query readout. It consumes activations that in_proj just produced. It does not replace in_proj."
+      },
+      "would_need": "A kernel that emits q,k,v,z,b,a (or a sufficient statistic) from rec_state plus a cheap feature of h, without streaming the Q4 in_proj/out_proj. No such kernel is in the 38 dispatched, the 4 helper-dispatched, or the REACHABLE set under recurrent_state_operator.",
+      "production_eligibility_today": "A representation is executable TODAY only if it is grouped-absmax Q4, binary\u00b1CSR, HGRAVS01 factors, PQ codebook lookup, MoE worklists, or a recurrent state op. The recurrent state op exists and already runs. Replacing in_proj is a new representation and is not executable today."
+    },
+    "incumbent": {
+      "q4_linear_attn_payload_bytes": 2953789440,
+      "q4_on_disk_bytes": 2953795200,
+      "f32_transition_on_disk_bytes": 7908864,
+      "rec_state_rw_bytes": 301989888,
+      "conv_state_rw_bytes": 11796480,
+      "dn_gemv_dispatches": 144,
+      "dn_transition_dispatches": 192,
+      "dn_mixer_prefix_dispatches": 432,
+      "gemv_mac_flops": 11120148480,
+      "state_update_flops": 113246208.0,
+      "isolated_dn_full_probe_ns": 5536666,
+      "isolated_gated_delta_ns": 2146166,
+      "isolated_stream_rec_ns": 467374,
+      "token_ns_deltanet_component_ns": 3732794.9326240737,
+      "origin": "geometry + artifact walk + TOKEN_NS isolated/component"
+    },
+    "candidate_if_it_existed_and_preserved_function": {
+      "q4_linear_attn_payload_bytes": 0,
+      "f32_transition_on_disk_bytes": 7908864,
+      "rec_state_rw_bytes": 301989888,
+      "conv_state_rw_bytes": 11796480,
+      "dn_gemv_dispatches": 0,
+      "dn_transition_dispatches": 192,
+      "gemv_mac_flops": 0,
+      "state_update_flops": 113246208.0,
+      "quality": {
+        "status": "NULL",
+        "reason": "No such operator. Prior science that would have to go the other way first: G034/Phase-B activation-aware low-rank, G089 out-of-distribution d_model compilation, MLP distill NO-GO +0.4206 vs q3 at 72% active bytes, organ-census rank_99 of DeltaNet post-LN hidden = 2082 of 5120. None of those is a green light to skip in_proj."
+      },
+      "tok_s": {
+        "status": "NULL",
+        "reason": "operator does not exist; no generate was run"
+      },
+      "hypothetical_arithmetic_NOT_a_measurement": {
+        "drop_isolated_dn_gemv_from_token_ns_wall_tps": 33.67995508171751,
+        "drop_isolated_dn_gemv_from_native_30p606ms_tps": 39.88937241013263,
+        "warning": "Isolated DN GEMV is a separate CB. Native 30.606 ms is a different run from TOKEN_NS 35.228 ms. Subtracting across those clocks is not a forecast. Even this optimistic subtraction on the TOKEN_NS wall lands below the LIVE MLX 4-bit control (35.51 tok/s) if you use that wall; on the native wall it would look like it beats MLX. That disagreement is why this block is labeled hypothetical and is not a result."
+      }
+    },
+    "secondary_not_the_question": {
+      "name": "fuse_rearrange_ba_delta_rmsnorm",
+      "what": "Four existing native kernels, 192 dispatches, already the 10.6% component. Fusing them does not drop the 2.95 GB Q4 stream.",
+      "bytes_saved": 0,
+      "dispatches_192_to_48": true,
+      "expected_ns": {
+        "status": "NULL",
+        "reason": "not timed; G024 said GEMV addressing is the lever, not fusion of isolated CBs"
+      },
+      "verdict": "NOT_THE_QUESTION"
+    },
+    "q80_state_codec_is_a_different_lever": "Compressing rec_state (Q80 q8/q4 group-64) shrinks the 151 MiB that TOKEN_NS already split into kv_state. It does not touch in_proj. The Q80 receipt's claim_boundary forbids TPS and used deterministic vectors, not real tokens."
+  },
+  "prior_science": {
+    "status": "MEASURED",
+    "git_grep": {
+      "patterns": [
+        "recurrent_state",
+        "joint state",
+        "STATE_BPW",
+        "gated_delta",
+        "deltanet",
+        "state_transition",
+        "G061",
+        "G060",
+        "G089"
+      ],
+      "globs": [
+        "receipts",
+        "tools/headless",
+        "tools/gravity_joint_state_weight.py",
+        "tools/foundry",
+        ".lane-bootstrap"
+      ],
+      "exit": 0,
+      "n_files": 26,
+      "files_head": [
+        "receipts/QWEN80_BIT_BUDGET_LEDGER.json",
+        "receipts/QWEN80_CAPTURE_SPEED.json",
+        "receipts/QWEN80_TOKEN_NS_LEDGER.before-opt.json",
+        "receipts/QWEN80_TOKEN_NS_LEDGER.json",
+        "receipts/QWEN80_UNIFORM_Q4_VELOCITY_PROFILE8.before-opt.json",
+        "receipts/QWEN80_UNIFORM_Q4_VELOCITY_PROFILE8.json",
+        "receipts/headless/DIRTY_TREE_PRESERVATION.json",
+        "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+        "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+        "receipts/headless/NOETIC_METRICS.json",
+        "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+        "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+        "receipts/headless/NOETIC_ROUTE_LEDGER.json",
+        "receipts/headless/NOETIC_TPR64_REOPEN.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run1.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run2.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE_RAW.run3.json",
+        "receipts/headless/RUNTIME_EXPERIMENT.json",
+        "tools/gravity_joint_state_weight.py",
+        "tools/headless/noetic_information_accounting.py",
+        "tools/headless/noetic_kernel_census.py",
+        "tools/headless/noetic_metrics.py",
+        "tools/headless/noetic_operation_census.py",
+        "tools/headless/noetic_organ_census.py",
+        "tools/headless/noetic_route_ledger.py",
+        "tools/headless/runtime_experiment.py"
+      ],
+      "files_truncated": 0
+    },
+    "census": {
+      "n1arch": {
+        "rel": ".lane-bootstrap/census/n1arch.md",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n1arch.md",
+        "bytes": 36748
+      },
+      "n15neg": {
+        "rel": ".lane-bootstrap/census/n15neg.md",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n15neg.md",
+        "bytes": 7481
+      },
+      "n16clos": {
+        "rel": ".lane-bootstrap/census/n16clos.md",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n16clos.md",
+        "bytes": 11868
+      },
+      "n1_hits": {
+        "G071": true,
+        "G061": true,
+        "G060": true,
+        "G089": true,
+        "G042": true,
+        "G035": true,
+        "G064": true,
+        "G034": true,
+        "StateTransition": false
+      }
+    },
+    "archaeology_index": "/Users/scammermike/.grok/noetic_archaeology/NOETIC_ARCHAEOLOGY_INDEX.json",
+    "kernel_census_recurrent_state_operator": {
+      "id": "recurrent_state_operator",
+      "spec": "recurrent / state operator (DeltaNet, RWKV WKV) with persistent GPU state",
+      "verdict": "EXISTS",
+      "kernel": {
+        "name": "qwen38_gated_delta_decode_vi_simd",
+        "present": true,
+        "class": "DISPATCHED",
+        "file": "qwen38_device_activations.metal",
+        "line": 374,
+        "compile_gate": null
+      },
+      "why": "DISPATCHED on the Qwen3.8 token: qwen38_gated_delta_decode_vi_simd (default) updates rec_state in place. Siblings: qwen38_gated_delta_decode_vi, qwen80_gated_delta_decode_tg, qwen_next_gated_delta_decode_single. Separate family: rwkv7_wkv_decode (REACHABLE; threadgroup-per-head, fixed head\u00d7head state, no growing KV). This is the mixer the NR assumes.",
+      "related": [
+        "qwen38_gated_delta_decode_vi",
+        "qwen80_gated_delta_decode_tg",
+        "rwkv7_wkv_decode",
+        "qwen_next_gated_delta_decode_single"
+      ]
+    },
+    "kernel_census_locate": {
+      "rel": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d1deltanet-20260823-151638/receipts/headless/NOETIC_KERNEL_CENSUS.json",
+      "bytes": 213728
+    },
+    "G061_joint_state_weight": {
+      "obligation": "G061 -- a factorization chosen because it induces a cheap state",
+      "organ": "GQA K at layer 63 (NOT DeltaNet rec_state)",
+      "joint_ties_with_independent": false,
+      "tokens": 1024,
+      "layer": 63,
+      "aggregate_rank64": {
+        "rank": 64,
+        "weight_svd": 0.34336135536432266,
+        "state_pca": 0.1479186825454235,
+        "query_weighted": 0.13681665062904358,
+        "best_over_weight": 2.5096459662303237
+      },
+      "kv_effective_rank_99pct_mean_of_256": 147,
+      "limitation": "one layer (L63) and its 4 kv heads. The effective ranks are consistent across those four heads (135-162 at 99%), but this is not a whole-model measurement.",
+      "locate": {
+        "rel": "receipts/ascent-2026-08-16/G061_JOINT_STATE_WEIGHT.json",
+        "found": true,
+        "how": "git",
+        "path": "HEAD:receipts/ascent-2026-08-16/G061_JOINT_STATE_WEIGHT.json",
+        "bytes": 8118
+      }
+    },
+    "G060_latent_kv": {
+      "obligation": "G060 -- does a latent KV win survive at the context an agent actually uses",
+      "organ": "GQA attention path (NOT DeltaNet)",
+      "ps_per_element_ratio": 252.5080559161721,
+      "verdict_corrected": "THE WIN SURVIVES, BUT IT IS THE SECOND LEVER. An earlier reading of these numbers would say latent KV does not help because bytes are not what the path pays for. That is wrong: the path costs 212.7 ps per ELEMENT, so removing 43% of the elements removes 43% of the context term and is a genuine 1.39x on the token at 8192. What the measurement actually establishes is ORDERING -- the kernel's 253x per-element inefficiency dominates the representation's 1.74x, and after the kernel is fixed latent KV is worth 1.003x. Fix the kernel first.",
+      "locate": {
+        "rel": "receipts/ascent-2026-08-16/G060_LATENT_KV_VERDICT.json",
+        "found": true,
+        "how": "git",
+        "path": "HEAD:receipts/ascent-2026-08-16/G060_LATENT_KV_VERDICT.json",
+        "bytes": 4377
+      }
+    },
+    "G089_latent_runtime": {
+      "obligation": "G089 -- can the source width be compiled down; answering the late-layer rank obstacle",
+      "verdict_keys": [
+        "in_distribution_the_mechanism_WORKS",
+        "out_of_distribution_it_does_not",
+        "answering_the_standing_obstacle",
+        "this_strengthens_G059_where_it_was_weakest",
+        "composition"
+      ],
+      "out_of_distribution": "The same basis retains only 81.0% of multilingual, 91.0% of adversarial and 94.2% of long. The in-minus-held gap narrows with rank but does not close: +0.138 at r=256, +0.100 at r=2048, +0.072 at r=3500. At the d_model width the same shape is sharper -- a prose-fitted basis holds 98.4% of held-out PROSE and 78.2% of CODE, a 20-point gap at its own full rank.",
+      "locate": {
+        "rel": "receipts/ascent-2026-08-16/G089_LATENT_RUNTIME_SPAN.json",
+        "found": true,
+        "how": "git",
+        "path": "HEAD:receipts/ascent-2026-08-16/G089_LATENT_RUNTIME_SPAN.json",
+        "bytes": 4917
+      }
+    },
+    "G043_state_update_flops": {
+      "state_update_basis": "DeltaNet recurrent state is 150,994,944 bytes resident (37,748,736 f32 elements) from QWEN38_TOKEN_NS_DN_VI_SIMD; the vi kernel does a decay multiply, a k*delta accumulate and a query product per element per token, so 3.0 ops/element.",
+      "STATE_UPDATE_FLOPS": 113246208.0,
+      "locate": {
+        "rel": "receipts/ascent-2026-08-16/G043_FLOP_FAMILY.json",
+        "found": true,
+        "how": "git",
+        "path": "HEAD:receipts/ascent-2026-08-16/G043_FLOP_FAMILY.json",
+        "bytes": 4999
+      }
+    },
+    "G035_shared_beats_independent": false,
+    "G035_corrected_verdict": "AXIS-DEPENDENT, which the original refutation did not distinguish. Sharing the COLUMN space (the contraction axis) LOSES on 3/3 pairs. Sharing the ROW space (the output axis) WINS, and wins 9x more for adjacent layers than distant ones. The blanket 'REFUTED AT MATCHED BITS' was drawn from the column basis alone and is too broad.",
+    "G035_locate": {
+      "rel": "receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json",
+      "bytes": 9203
+    },
+    "Q80_deltanet_state_codec": {
+      "model": {
+        "architecture": "Qwen3NextForCausalLM",
+        "id": "Qwen3-Coder-Next-80B"
+      },
+      "claim_boundary": {
+        "deterministic_component_vectors_are_not_prompts_or_tokens": true,
+        "no_complete_model_layer_graph_executed": true,
+        "no_model_capability_claim": true,
+        "no_native_full_runtime_or_hcli_endpoint": true,
+        "no_tokenizer_or_prompt_template_executed": true,
+        "no_tps_measurement_or_100_tps_or_tg3_claim": true,
+        "not_a_tournament_candidate_or_selection_action": true
+      },
+      "results": [
+        {
+          "codec": "fp16_reference",
+          "bits": 16,
+          "cosine": 0.9999990463256836,
+          "relative_l2": 0.00020750469411723316,
+          "physical_bytes": 1048608
+        },
+        {
+          "codec": "q8_group64",
+          "bits": 8,
+          "cosine": 0.9999792575836182,
+          "relative_l2": 0.006292399019002914,
+          "physical_bytes": 540704
+        },
+        {
+          "codec": "q4_group64",
+          "bits": 4,
+          "cosine": 0.9935689568519592,
+          "relative_l2": 0.11400775611400604,
+          "physical_bytes": 278560
+        },
+        {
+          "codec": "protected_residual_q4_group64_top1pct_fp16",
+          "bits": 4,
+          "cosine": 0.9946269392967224,
+          "relative_l2": 0.10412386804819107,
+          "physical_bytes": 310018
+        }
+      ],
+      "locate": {
+        "rel": "workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_DELTANET_STATE_CODEC_RECEIPT.json",
+        "found": true,
+        "how": "git",
+        "path": "HEAD:workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_DELTANET_STATE_CODEC_RECEIPT.json",
+        "bytes": 10422
+      },
+      "not_qwen38": true,
+      "not_real_tokens": true
+    },
+    "Q80_traffic_locate": {
+      "rel": "workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_DELTANET_RECURRENT_STATE_TRAFFIC_RECEIPT.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:workspace/campaign/records/ascension-sandbox/physical/qwen80/state-kv/QWEN80_DELTANET_RECURRENT_STATE_TRAFFIC_RECEIPT.json",
+      "bytes": 99452
+    },
+    "n16_state_transition": {
+      "present": true,
+      "excerpt": "StateTransition schema-change; none in NR (n16clos)",
+      "locate": {
+        "rel": ".lane-bootstrap/census/n16clos.md",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n16clos.md",
+        "bytes": 11868
+      }
+    },
+    "traffic_present": true,
+    "watched": [],
+    "reading": [
+      "A recurrent_state_operator already EXISTS and is DISPATCHED on the Qwen3.8 token (qwen38_gated_delta_decode_vi_simd).",
+      "G061 is a GQA-K subspace study at L63, not a DeltaNet rec_state study. Archaeology bundled it with G060 as 'joint state+weight factorisation'. Do not treat that row as a DeltaNet result.",
+      "G060 latent KV is the GQA attention path (253\u00d7 per-element vs GEMV). Different organ.",
+      "G089: compiling d_model away holds in-distribution and fails out of distribution. That is the cheap-encoder generalisation bound.",
+      "G042 STATE_BPW charges GQA KV only; DN rec_state is omitted (measured in g042_state_omission).",
+      "Q80 state codec compresses rec_state (fp16/q8/q4) on deterministic component vectors, on Q80, with a claim_boundary that forbids TPS and capability claims. It does not replace static in_proj.",
+      "n16clos: StateTransition is a schema-change family with no NR field. Generated-state cache is one of the five MISSED hiding scenarios.",
+      "G035 shared_beats_independent=false. Cross-layer sharing of the static maps around DeltaNet is closed.",
+      "223 tensor-operator rows <0.5 local BPW, healthy=true: 0 (G1/G034). A cheap in_proj is the same class of claim.",
+      "MLP function distillation NO-GO: +0.4206 held-out gap vs q3 at 72% of its active bytes. The surviving 'distill the function' avenue on MLP is closed; it is not a licence to distill in_proj instead without a new measurement."
+    ]
+  },
+  "numbers": {
+    "native_tps": {
+      "value": 32.73,
+      "origin": "ANCHOR_NOT_REDERIVED"
+    },
+    "native_ms_per_token": {
+      "value": 30.606,
+      "origin": "ANCHOR_NOT_REDERIVED"
+    },
+    "mlx_4bit_tps": {
+      "value": 35.51,
+      "origin": "ANCHOR_NOT_REDERIVED LIVE control"
+    },
+    "llamacpp_q5k_tps": {
+      "value": 24.12,
+      "origin": "ANCHOR_NOT_REDERIVED ARCHIVED; artifact off disk"
+    },
+    "token_ns_wall_ns": {
+      "value": 35227917,
+      "origin": "CITED receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+    },
+    "deltanet_component_ns": {
+      "value": 3732794.9326240737,
+      "origin": "CITED receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json"
+    },
+    "deltanet_component_share": {
+      "value": 0.10596127306147773,
+      "origin": "ARITHMETIC_ON_CITED (ns/wall)"
+    },
+    "organ_share_26p3": {
+      "value": 0.2631282721775481,
+      "origin": "CITED receipts/headless/NOETIC_ORGAN_CENSUS.json"
+    },
+    "linear_attn_q4_payload": {
+      "value": 2953789440,
+      "origin": "MEASURED geometry q4_matrix_bytes this run"
+    },
+    "rec_resident_bytes": {
+      "value": 150994944,
+      "origin": "MEASURED geometry this run"
+    },
+    "conv_resident_bytes": {
+      "value": 5898240,
+      "origin": "MEASURED geometry this run"
+    },
+    "dn_gemv_dispatches": {
+      "value": 144,
+      "origin": "MEASURED 48 layers \u00d7 3 Q4 GEMVs (schedule + isolated dn_gemvs)"
+    },
+    "dn_transition_dispatches": {
+      "value": 192,
+      "origin": "MEASURED TOKEN_NS component deltanet.dispatches = 48\u00d74"
+    },
+    "production_dispatches": {
+      "value": 964,
+      "origin": "MEASURED 1+64*(9+6)+3 from schedule.rs"
+    },
+    "state_update_flops": {
+      "value": 113246208.0,
+      "origin": "MEASURED 3 ops \u00d7 rec_elems; matches G043"
+    },
+    "gemv_mac_flops": {
+      "value": 11120148480,
+      "origin": "MEASURED 2*rows*cols*48 this run"
+    },
+    "mlp_distill_gap": {
+      "value": 0.4206259548664093,
+      "origin": "MEASURED"
+    },
+    "candidate_tok_s": {
+      "value": null,
+      "origin": "NULL operator does not exist"
+    }
+  },
+  "confirms": [
+    {
+      "field": "rec_resident_bytes",
+      "observed": 150994944,
+      "expected": 150994944,
+      "confirmed": true
+    },
+    {
+      "field": "conv_resident_bytes",
+      "observed": 5898240,
+      "expected": 5898240,
+      "confirmed": true
+    },
+    {
+      "field": "q4_linear_attn_payload",
+      "observed": 2953789440,
+      "expected": 2953789440,
+      "confirmed": true
+    },
+    {
+      "field": "state_update_flops",
+      "observed": 113246208.0,
+      "expected": 113246208.0,
+      "confirmed": true
+    },
+    {
+      "field": "qkvz_rows",
+      "observed": 16384,
+      "expected": 16384,
+      "confirmed": true
+    },
+    {
+      "field": "ba_rows",
+      "observed": 96,
+      "expected": 96,
+      "confirmed": true
+    },
+    {
+      "field": "formula_dispatches",
+      "observed": 964,
+      "expected": 964,
+      "confirmed": true
+    },
+    {
+      "field": "dn_prefix_len",
+      "observed": 9,
+      "expected": 9,
+      "confirmed": true
+    },
+    {
+      "field": "historical_10p6",
+      "observed": 0.10596127306147773,
+      "expected": 0.106,
+      "confirmed": true
+    },
+    {
+      "field": "recomputed_deltanet",
+      "observed": true,
+      "expected": true,
+      "confirmed": true
+    },
+    {
+      "field": "kv_read_identity",
+      "observed": true,
+      "expected": true,
+      "confirmed": true
+    },
+    {
+      "field": "kv_write_identity",
+      "observed": true,
+      "expected": true,
+      "confirmed": true
+    },
+    {
+      "field": "linear_attn_bytes_ledger",
+      "observed": 2953789440,
+      "expected": 2953789440,
+      "confirmed": true
+    },
+    {
+      "field": "linear_attn_files",
+      "observed": 336,
+      "expected": 336,
+      "confirmed": true
+    },
+    {
+      "field": "q4_magic",
+      "observed": 0,
+      "expected": 0,
+      "confirmed": true
+    },
+    {
+      "field": "a_log_0p01_cosine_near_1",
+      "observed": 0.9999999999999999,
+      "expected": 1.0,
+      "confirmed": true
+    },
+    {
+      "field": "a_log_0p01_scale_aware_near_0p01",
+      "observed": 0.009999999999999998,
+      "expected": 0.01,
+      "confirmed": true
+    },
+    {
+      "field": "duplication_count_is_zero",
+      "observed": 0,
+      "expected": 0,
+      "confirmed": true
+    },
+    {
+      "field": "organ_census_share_matches_reaggregation",
+      "observed": 0.2631282721775481,
+      "expected": 0.2631282721775481,
+      "confirmed": true
+    }
+  ],
+  "all_pinned_numbers_confirmed": true,
+  "what_i_watched_fail": [
+    {
+      "n": 1,
+      "what": "10.6% and 26.3% look like two measurements of the same organ",
+      "evidence": "TOKEN_NS component deltanet share=0.105961 on wall 35227917 ns. Organ aggregation (dn_full_probe + component) share=0.263128. seal_components at crates/hawking-core/src/model/qwen38_token_ns_ledger.rs:404 subtracts state streams and parks GEMV in weight_addressing. Recomputed component ns=3732794.933 vs ledger 3732794.933, match=True."
+    },
+    {
+      "n": 2,
+      "what": "G042 STATE_BPW_EQUIVALENT presents itself as KV/state and omits DeltaNet state",
+      "evidence": "Stated ctx=128 BPW=0.004990248946498453. Rec+conv BPW=0.046666624913739435 (9.3515625\u00d7 the GQA term). Definition names 16 GQA layers and 131072 B/position only."
+    },
+    {
+      "n": 3,
+      "what": "n1arch bundles G060/G061 as one REFUTED 'joint state+weight' row",
+      "evidence": "G061 measured GQA K at L63 (1024 tokens, holdout). joint_ties_with_independent=false; state_pca beats weight_svd at matched cache bytes. That is a latent-KV subspace result, not 'DeltaNet state replaces in_proj'. Using the archaeology adjective as a DeltaNet closure would be the same class of error as treating G098 POSITIVE as 'sharing works'."
+    },
+    {
+      "n": 4,
+      "what": "Q80 rec_state q4/q8 cosine looks like a win for 'state as representation'",
+      "evidence": "codec receipt model={'architecture': 'Qwen3NextForCausalLM', 'id': 'Qwen3-Coder-Next-80B'}, claim_boundary.deterministic_component_vectors_are_not_prompts_or_tokens=True, no_tps_measurement=true. Compressing S is not replacing W. Cosine on a reconstruction of S is the scale-blind metric the campaign already burned on."
+    },
+    {
+      "n": 5,
+      "what": "cosine(A_log, 0.01*A_log) on a REAL gravity tensor",
+      "evidence": "scale_trap_0p01={'cosine': 0.9999999999999999, 'relative_l2': 0.99, 'scale_ratio': 0.01, 'scale_match': 0.01, 'scale_aware': 0.009999999999999998, 'norm_true': 25.735690094281644, 'norm_pred': 0.25735690094281644, 'rejects_perfect_cosine_as_sufficient': True}. Cosine accepts a 100\u00d7 magnitude miss; scale_aware rejects it. This is the 0.01*W trap, measured on linear_attn.A_log from disk, not on a gaussian proxy."
+    },
+    {
+      "n": 6,
+      "what": ".lane-bootstrap/census is not in this sparse checkout",
+      "evidence": "n1arch locate={'rel': '.lane-bootstrap/census/n1arch.md', 'found': True, 'how': 'copy', 'path': '/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n1arch.md', 'bytes': 36748}. git ls-tree has the ascent receipts; the census markdown lives in hawking-copy extra_roots. Absence here is not absence in HEAD."
+    },
+    {
+      "n": 7,
+      "what": "organ-census deltanet physical.bytes counts 48 input_layernorm files",
+      "evidence": "manifest linear_attn files=336 (336 = 48\u00d77). Organ census tensor_count=384 = 336+48. TOKEN_NS puts those RMSNorms in 'normalization' (129 dispatches), not in the deltanet component. Another aggregation trap."
+    },
+    {
+      "n": 8,
+      "what": "search for a kernel that reads rec_state and skips in_proj",
+      "evidence": "gated_delta binds rec_state, repeated_q/k, conv_v, decay, beta, rec_out. in_proj is a separate Q4 GEMV onto workspace.qkvz / workspace.ba. No dispatched or helper kernel takes S to qkvz. recurrent_state_operator EXISTS and is already the incumbent transition, not a missing family."
+    },
+    {
+      "n": 9,
+      "what": "MLP distill NO-GO is a different organ; it is not a DeltaNet measurement",
+      "evidence": "mlp_distill status=MEASURED gap=0.4206259548664093 I2560_byte_ratio=0.7239819004524887 locate={'rel': 'receipts/headless/NOETIC_MLP_DISTILL_PROBE.json', 'found': True, 'how': 'copy', 'path': '/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_MLP_DISTILL_PROBE.json', 'bytes': 48459}. Cited so this lane does not reopen 'distill the function into a cheaper map' on in_proj without a new held-out run. It is not evidence about rec_state."
+    },
+    {
+      "n": 10,
+      "what": "two-server occupancy is not free; this process did not load gravity on GPU",
+      "evidence": "anchor two_servers_tps=3.986, one_server_tps=33.47. GPU numbers in this receipt are cited from TOKEN_NS, not re-generated."
+    }
+  ],
+  "write_scope": {
+    "write": [
+      "tools/headless/noetic_deltanet_design.py",
+      "receipts/headless/NOETIC_DELTANET_DESIGN.json"
+    ],
+    "deny": [
+      "workspace",
+      "crates",
+      "visionmcp",
+      "app",
+      "lab",
+      "tools/haider",
+      "ramanujan"
+    ]
+  },
+  "did_not": [
+    "load gravity onto the GPU",
+    "spawn a second 27B",
+    "evaluate on synthetic activations",
+    "present reconstruct-dense as production",
+    "re-time TOKEN_NS (cited; arithmetic recomputed)",
+    "re-run MLP distillation",
+    "re-run G034/G035/G061"
+  ],
+  "wrote_to": "/Users/scammermike/.claude-grok/worktrees/d1deltanet-20260823-151638/receipts/headless/NOETIC_DELTANET_DESIGN.json"
+}

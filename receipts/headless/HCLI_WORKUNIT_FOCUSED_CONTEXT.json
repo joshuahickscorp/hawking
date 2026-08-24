@@ -1,0 +1,42 @@
+{
+  "gate": "HCLI_WORKUNIT_FOCUSED_CONTEXT",
+  "result": "PASS",
+  "generated_at": "2026-08-23T04:29:37Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "defect": "mission.py:644 wrote `GOAL: {self.goal}` -- the entire root goal -- into every WorkUnit context, after which engine.py:1233 wrote it a second time under its own GOAL: header. `del compiled` at engine.py:1224 guaranteed the compiled IR could never replace the dump. Mission's own docstring claimed 'Each WorkUnit is a bounded, independent context'; that claim was false.",
+  "lane_measurement_live_tokenizer": {
+    "root_prompt_tokens": 10091,
+    "old_worker_prompt_tokens": 10245,
+    "new_worker_prompt_tokens": 443,
+    "worker_pct_of_root": 4.4,
+    "note": "measured by the lane against the live /tokenize endpoint before that server exited"
+  },
+  "my_independent_measurement": {
+    "method": "character count on the merged tree, live tokenizer no longer up",
+    "goal": "the real 17459-char directive",
+    "root_chars": 17459,
+    "worker_chars": 793,
+    "worker_pct_of_root": 4.54,
+    "contains_GOAL_header": false,
+    "contains_root_title": false,
+    "contains_unrelated_section_Explicit_exclusions": false,
+    "contains_unrelated_token_VisionMCP": false,
+    "doctrine_repeats": 0,
+    "names_its_own_workunit": true
+  },
+  "six_required_components": [
+    "INVARIANTS",
+    "PHASE",
+    "WORKUNIT",
+    "EVIDENCE_PATHS",
+    "NEIGHBORHOOD",
+    "ACCEPTANCE"
+  ],
+  "root_still_reachable": "ROOT_REF points at .hcli/mission/state.json#goal -- reference, not inlined text",
+  "integration_i_did_at_merge": [
+    "The lane wrote a NEW executors.py without being able to see the existing one; copying it would have deleted WorkUnitExecutor, _run_qwen, _run_cpu, _run_grok and select_backend_name -- the entire worker execution layer mission.py depends on. Its five new functions were appended alongside instead.",
+    "The lane replaced Mission's multi-backend dispatch with a single dispatch_workunit call, which would have deleted CPU and Grok routing. Multi-backend routing was kept, with the qwen branch sent through dispatch_workunit so a worker can no longer fall through to Engine.execute(prompt) -- the root-goal API.",
+    "test_goal.py hard-failed when the live tokenizer was unreachable. It now falls back to a character proxy and asserts both sides of the ratio use the same estimator, so an external service being down cannot fail the suite."
+  ],
+  "test_suite": "python3 -m pytest tools/haider/hcli/tests -q -> 308 passed, 1 skipped"
+}

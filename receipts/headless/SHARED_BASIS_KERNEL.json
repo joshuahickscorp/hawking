@@ -1,0 +1,1190 @@
+{
+  "schema": "hawking.headless.shared_basis_kernel.v1",
+  "generated_at": "2026-08-24T18:20:31Z",
+  "git_head": "e719eadd99b887c7e2f66ec37a39efd26d3f314e",
+  "obligation": "N033",
+  "question": "Does a COMPETENT native kernel for shared-binary-basis MLP (K=2, g=64) turn the 0.53-bpw / 6.34-GB-per-token byte win into COMPLETE_TOKEN_NS, or is there a measured residual against q2f at 27.55 ms?",
+  "answer": "Competent fused kernel dropped dispatches 384->192 and COMPLETE_TOKEN_NS 110201749->24554625 ns, beating q2f at 27547874 ns (delta 2993249 ns). The 0.53-bpw / 6.34-GB-per-token byte win now translates to token_ns. Tile search winner for c5120 is shared_binary_k2_fused_stream_c5120_tpr64_tg128 (streamed tpr64; TGM x+signs lost on occupancy, so the geometry the representation suggested was measured and rejected). K=2 cannot compose: died_at held_out_activation (2-layer gate L30/L31 rel_fro=0.5551774501800537 gain=0.49176134169101715). First healthy K on the 2-layer curve is K=8 rel_fro=0.4824 at 6.000 bpw over 2 layers (2.125 bpw if those bases amortized over 64 \u2014 untested, and adding layers at fixed K is a tighter constraint). S022 \u00a738: the token_ns win does not make a dead-on-activation rep promotable.",
+  "byte_win_translates_to_token_ns": true,
+  "did_not_load_second_27b": true,
+  "did_not_write_under_models": true,
+  "did_not_mutate_noetic_parent_a": true,
+  "dense_w_materialized": 0,
+  "dense_w_is_a_counter": true,
+  "timing_label": "DIRTY_ENGINEERING",
+  "kernel_competence": {
+    "ok": true,
+    "exit_code": 0,
+    "stdout": "files 45  kernels 678  {'DEFECTIVE': 89, 'SUSPECT': 494, 'CLEAR': 95}\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::q2f_group64_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group64_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE bandwidth_roof.metal::roof_seq_simd8x8  runtime_integer_divide -> tpg\n  DEFECTIVE common.metal::rope_q_f32_inplace  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_q_interleaved_concat  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_f32_batched_multiseq  runtime_integer_divide -> per_slot\n  DEFECTIVE common.metal::rope_qk_f32_batched_multiseq  runtime_integer_divide -> q_per_slot\n  DEFECTIVE common.metal::embed_lookup_f32_batched  runtime_integer_divide -> hidden\n  DEFECTIVE common.metal::rope_qk_f32_b1_bias  runtime_integer_divide -> pairs_per_head\nreceipt: /Users/scammermike/.claude-grok/worktrees/n033sharedbasis-20260824-135856/receipts/headless/KERNEL_COMPETENCE.json\n",
+    "shared_basis_kernels": {
+      "shared_binary_k2_fused_xsign_c5120_r8_tg256": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_xsign_c5120_r8_tg256_noop": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_stream_c5120_tpr32_tg256": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_stream_c5120_tpr64_tg128": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_serial_c5120": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_xsign_layers64_c5120_r8_tg256": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_xtile_c17408_r8_tg256": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_stream_c17408_tpr32_tg256": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_stream_c17408_tpr64_tg128": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_serial_c17408": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k2_fused_xtile_layers64_c17408_r8_tg256": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "shared_binary_k4_fused_stream_c5120_tpr32_tg256": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      }
+    },
+    "any_fused_defective": false,
+    "any_fused_not_clear": false
+  },
+  "kernel_autopsy": {
+    "file": "crates/hawking-core/shaders/shared_basis_kernel.metal",
+    "n_kernels": 12,
+    "all_clear": true,
+    "production_all_clear": true,
+    "production_no_runtime_div": true,
+    "production_no_runtime_loop": true,
+    "production_no_dynamic_inner_branch": true,
+    "production_no_bind_time_shape": true,
+    "kernels": [
+      {
+        "kernel": "shared_binary_k2_fused_xsign_c5120_r8_tg256",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 1,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_xsign_c5120_r8_tg256_noop",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 1,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_stream_c5120_tpr32_tg256",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 0,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 1,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_serial_c5120",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 0,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_xsign_layers64_c5120_r8_tg256",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 1,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_xtile_c17408_r8_tg256",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 2,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_stream_c17408_tpr32_tg256",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 0,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_stream_c17408_tpr64_tg128",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 1,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_serial_c17408",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 0,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k2_fused_xtile_layers64_c17408_r8_tg256",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 2,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      },
+      {
+        "kernel": "shared_binary_k4_fused_stream_c5120_tpr32_tg256",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "n_threadgroup_barriers": 0,
+        "has_constant_uint_rows": false,
+        "has_runtime_div_token": false,
+        "has_runtime_loop_token": false,
+        "has_dynamic_inner_branch": false,
+        "has_bind_time_shape": false
+      }
+    ],
+    "wanted_geometry": "32 threads/row (one simdgroup), 8 rows/TG of 256, x staged in TGM for c5120 (fits), x tiled 1024 for c17408 (69 KiB does not fit), K=2 and group 64 as literals, shift not divide."
+  },
+  "competent": true,
+  "geometry_search": {
+    "c17408": [
+      {
+        "dispatches": 1,
+        "gpu_ns": {
+          "all": [
+            164291,
+            161458,
+            183249,
+            167416,
+            174624,
+            171666,
+            176374
+          ],
+          "max": 183249,
+          "median": 171666,
+          "min": 161458,
+          "n": 7
+        },
+        "kernel": "shared_binary_k2_fused_xtile_c17408_r8_tg256",
+        "wall_ns": {
+          "all": [
+            737250,
+            441208,
+            471000,
+            446625,
+            460667,
+            464875,
+            456750
+          ],
+          "max": 737250,
+          "median": 460667,
+          "min": 441208,
+          "n": 7
+        }
+      },
+      {
+        "dispatches": 1,
+        "gpu_ns": {
+          "all": [
+            153500,
+            153000,
+            150999,
+            158124,
+            149625,
+            150041,
+            152916
+          ],
+          "max": 158124,
+          "median": 152916,
+          "min": 149625,
+          "n": 7
+        },
+        "kernel": "shared_binary_k2_fused_stream_c17408_tpr32_tg256",
+        "wall_ns": {
+          "all": [
+            428583,
+            442917,
+            432291,
+            449917,
+            424750,
+            432875,
+            435708
+          ],
+          "max": 449917,
+          "median": 432875,
+          "min": 424750,
+          "n": 7
+        }
+      },
+      {
+        "dispatches": 1,
+        "gpu_ns": {
+          "all": [
+            108916,
+            121458,
+            120499,
+            119083,
+            127749,
+            125999,
+            126083
+          ],
+          "max": 127749,
+          "median": 121458,
+          "min": 108916,
+          "n": 7
+        },
+        "kernel": "shared_binary_k2_fused_stream_c17408_tpr64_tg128",
+        "wall_ns": {
+          "all": [
+            829625,
+            453708,
+            418709,
+            399459,
+            398042,
+            407541,
+            394291
+          ],
+          "max": 829625,
+          "median": 407541,
+          "min": 394291,
+          "n": 7
+        }
+      }
+    ],
+    "c5120": [
+      {
+        "dispatches": 1,
+        "gpu_ns": {
+          "all": [
+            338958,
+            340041,
+            338166,
+            338500,
+            339124,
+            339541,
+            341749
+          ],
+          "max": 341749,
+          "median": 339124,
+          "min": 338166,
+          "n": 7
+        },
+        "kernel": "shared_binary_k2_fused_xsign_c5120_r8_tg256",
+        "wall_ns": {
+          "all": [
+            687208,
+            921833,
+            694583,
+            671042,
+            732167,
+            668833,
+            626000
+          ],
+          "max": 921833,
+          "median": 687208,
+          "min": 626000,
+          "n": 7
+        }
+      },
+      {
+        "dispatches": 1,
+        "gpu_ns": {
+          "all": [
+            117875,
+            115375,
+            114791,
+            117749,
+            115708,
+            118208,
+            114249
+          ],
+          "max": 118208,
+          "median": 115708,
+          "min": 114249,
+          "n": 7
+        },
+        "kernel": "shared_binary_k2_fused_stream_c5120_tpr32_tg256",
+        "wall_ns": {
+          "all": [
+            403916,
+            400917,
+            400250,
+            406167,
+            384459,
+            384292,
+            384875
+          ],
+          "max": 406167,
+          "median": 400250,
+          "min": 384292,
+          "n": 7
+        }
+      },
+      {
+        "dispatches": 1,
+        "gpu_ns": {
+          "all": [
+            108125,
+            108208,
+            109125,
+            110916,
+            111083,
+            111500,
+            111583
+          ],
+          "max": 111583,
+          "median": 110916,
+          "min": 108125,
+          "n": 7
+        },
+        "kernel": "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+        "wall_ns": {
+          "all": [
+            421292,
+            358000,
+            449667,
+            384667,
+            386709,
+            389875,
+            391167
+          ],
+          "max": 449667,
+          "median": 389875,
+          "min": 358000,
+          "n": 7
+        }
+      }
+    ],
+    "note": "Search is 1-layer full-row GEMV. Winner is used for the 64-layer unique-scale MLP graph. q2f tpr64 is an arm, not the default.",
+    "winner_c17408": {
+      "dispatches": 1,
+      "gpu_ns": {
+        "all": [
+          108916,
+          121458,
+          120499,
+          119083,
+          127749,
+          125999,
+          126083
+        ],
+        "max": 127749,
+        "median": 121458,
+        "min": 108916,
+        "n": 7
+      },
+      "kernel": "shared_binary_k2_fused_stream_c17408_tpr64_tg128",
+      "wall_ns": {
+        "all": [
+          829625,
+          453708,
+          418709,
+          399459,
+          398042,
+          407541,
+          394291
+        ],
+        "max": 829625,
+        "median": 407541,
+        "min": 394291,
+        "n": 7
+      }
+    },
+    "winner_c5120": {
+      "dispatches": 1,
+      "gpu_ns": {
+        "all": [
+          108125,
+          108208,
+          109125,
+          110916,
+          111083,
+          111500,
+          111583
+        ],
+        "max": 111583,
+        "median": 110916,
+        "min": 108125,
+        "n": 7
+      },
+      "kernel": "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+      "wall_ns": {
+        "all": [
+          421292,
+          358000,
+          449667,
+          384667,
+          386709,
+          389875,
+          391167
+        ],
+        "max": 449667,
+        "median": 389875,
+        "min": 358000,
+        "n": 7
+      }
+    }
+  },
+  "build": {
+    "command": [
+      "cargo",
+      "build",
+      "--profile",
+      "release-fast",
+      "-p",
+      "hawking-core",
+      "--example",
+      "shared_basis_kernel"
+    ],
+    "exit_code": 0,
+    "wall_s": 0.09360170899890363,
+    "ok": true,
+    "stderr_tail": "16_layer_major::TensorLoc` is more private than the item `qwen80_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1371:5\n     |\n1371 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen80_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen80_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1276:1\n     |\n1276 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n\nwarning: field `name` is never read\n   --> crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs:147:5\n    |\n146 | struct VerifiedTensor {\n    |        -------------- field in this struct\n147 |     name: String,\n    |     ^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: associated function `debug_slice` is never used\n   --> crates/hawking-core/src/model/mixtral.rs:963:8\n    |\n893 | impl MixtralEngine {\n    | ------------------ associated function in this implementation\n...\n963 |     fn debug_slice(label: &str, xs: &[f32], first: usize) {\n    |        ^^^^^^^^^^^\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1224:5\n     |\n1218 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1224 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1281:5\n     |\n1276 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1281 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: function `median_snap` is never used\n   --> crates/hawking-core/src/model/qwen80_mixed_token_ns_ledger.rs:206:4\n    |\n206 | fn median_snap(snaps: &[MixedExclusiveSnap]) -> MixedExclusiveSnap {\n    |    ^^^^^^^^^^^\n\nwarning: `hawking-core` (lib) generated 9 warnings (run `cargo fix --lib -p hawking-core` to apply 1 suggestion)\n    Finished `release-fast` profile [optimized] target(s) in 0.07s\n"
+  },
+  "run": {
+    "ok": true,
+    "exit_code": 0,
+    "wall_s": 5.1296700410021,
+    "stderr_tail": "shared_basis_kernel: compile fused\n  fused compiled in 0.001s\nshared_basis_kernel: compile two-pass\n  two-pass compiled in 0.000s\nparity shared_binary_k2_fused_xsign_c5120_r8_tg256: max_abs=0.0000e0 PASS\nparity shared_binary_k2_fused_stream_c5120_tpr32_tg256: max_abs=0.0000e0 PASS\nparity shared_binary_k2_fused_stream_c5120_tpr64_tg128: max_abs=0.0000e0 PASS\nparity shared_binary_k2_fused_serial_c5120: max_abs=0.0000e0 PASS\nparity shared_binary_k2_fused_xsign_c5120_r8_tg256_noop: max_abs=5.1082e0 (must_diverge) OK_DIVERGE\nparity two_pass: max_abs=0.0000e0 PASS\nparity shared_binary_k2_fused_xtile_c17408_r8_tg256: max_abs=0.0000e0 PASS\nparity shared_binary_k2_fused_stream_c17408_tpr32_tg256: max_abs=0.0000e0 PASS\nparity shared_binary_k2_fused_serial_c17408: max_abs=0.0000e0 PASS\ngeometry search (1-layer, full rows)\n  shared_binary_k2_fused_xsign_c5120_r8_tg256 median_gpu_ns=Some(339124)\n  shared_binary_k2_fused_stream_c5120_tpr32_tg256 median_gpu_ns=Some(115708)\n  shared_binary_k2_fused_stream_c5120_tpr64_tg128 median_gpu_ns=Some(110916)\n  shared_binary_k2_fused_xtile_c17408_r8_tg256 median_gpu_ns=Some(171666)\n  shared_binary_k2_fused_stream_c17408_tpr32_tg256 median_gpu_ns=Some(152916)\n  shared_binary_k2_fused_stream_c17408_tpr64_tg128 median_gpu_ns=Some(121458)\nwinners: c5120=shared_binary_k2_fused_stream_c5120_tpr64_tg128  c17408=shared_binary_k2_fused_stream_c17408_tpr64_tg128\ngraph two_pass layers=64\n  two_pass median_gpu_ns=Some(98392124)\ngraph fused_192 winner\n  fused median_gpu_ns=Some(12745000)\ngraph fused_stream ablation\n  stream median_gpu_ns=Some(13826499)\ngraph fused_serial bad control\n  serial median_gpu_ns=Some(314559999)\ngraph fused_noop (gate noop, up/down fused)\n  noop median_gpu_ns=Some(18824500)\ngraph fused_multilayer_3\n  multilayer median_gpu_ns=Some(14645833)\nwrote /Users/scammermike/.claude-grok/worktrees/n033sharedbasis-20260824-135856/receipts/headless/_SHARED_BASIS_KERNEL_raw.json\n",
+    "stdout_tail": "",
+    "raw_path": "/Users/scammermike/.claude-grok/worktrees/n033sharedbasis-20260824-135856/receipts/headless/_SHARED_BASIS_KERNEL_raw.json"
+  },
+  "parity": {
+    "ok": true,
+    "noop_diverges": true,
+    "rows": [
+      {
+        "dense_w_materialized": 0,
+        "id": "fused_shared_binary_k2_fused_xsign_c5120_r8_tg256",
+        "kernel": "shared_binary_k2_fused_xsign_c5120_r8_tg256",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "fused_shared_binary_k2_fused_stream_c5120_tpr32_tg256",
+        "kernel": "shared_binary_k2_fused_stream_c5120_tpr32_tg256",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "fused_shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+        "kernel": "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "fused_shared_binary_k2_fused_serial_c5120",
+        "kernel": "shared_binary_k2_fused_serial_c5120",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "fused_noop_c5120",
+        "kernel": "shared_binary_k2_fused_xsign_c5120_r8_tg256_noop",
+        "max_abs_diff": 5.10821533203125,
+        "must_match": false,
+        "ok": false,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "shared_k2_two_pass_c5120",
+        "kernel": "shared_binary_k2_group_dots + scale_contract_gpr80",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "fused_shared_binary_k2_fused_xtile_c17408_r8_tg256",
+        "kernel": "shared_binary_k2_fused_xtile_c17408_r8_tg256",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "fused_shared_binary_k2_fused_stream_c17408_tpr32_tg256",
+        "kernel": "shared_binary_k2_fused_stream_c17408_tpr32_tg256",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "fused_shared_binary_k2_fused_serial_c17408",
+        "kernel": "shared_binary_k2_fused_serial_c17408",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      }
+    ]
+  },
+  "before": {
+    "id": "two_pass_384",
+    "dispatches": 384,
+    "mlp_graph_gpu_ns": {
+      "n": 7,
+      "min": 98201999,
+      "median": 98392124,
+      "max": 98524000,
+      "all": [
+        98201999,
+        98272833,
+        98343749,
+        98470916,
+        98392124,
+        98393874,
+        98524000
+      ]
+    },
+    "COMPLETE_TOKEN_NS": {
+      "mlp_graph_gpu_ns": {
+        "n": 7,
+        "min": 98201999,
+        "median": 98392124,
+        "max": 98524000,
+        "all": [
+          98201999,
+          98272833,
+          98343749,
+          98470916,
+          98392124,
+          98393874,
+          98524000
+        ]
+      },
+      "composed": {
+        "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+        "mlp_graph_gpu_ns": 98392124,
+        "q2f_mlp_graph_gpu_ns": 15738249,
+        "n021_complete_gpu_ns": 27547874,
+        "non_mlp_ns": 11809625,
+        "complete_token_ns": 110201749
+      },
+      "min": 98201999,
+      "median": 110201749,
+      "max": 98524000,
+      "reps": 7
+    },
+    "n032_anchor_mlp_gpu_ns": 99816541,
+    "n032_anchor_complete_ns": 111626166
+  },
+  "after": {
+    "id": "fused_192",
+    "dispatches": 192,
+    "mlp_graph_gpu_ns": {
+      "n": 7,
+      "min": 12678125,
+      "median": 12745000,
+      "max": 12764166,
+      "all": [
+        12740125,
+        12753791,
+        12738374,
+        12678125,
+        12749166,
+        12764166,
+        12745000
+      ]
+    },
+    "COMPLETE_TOKEN_NS": {
+      "mlp_graph_gpu_ns": {
+        "n": 7,
+        "min": 12678125,
+        "median": 12745000,
+        "max": 12764166,
+        "all": [
+          12740125,
+          12753791,
+          12738374,
+          12678125,
+          12749166,
+          12764166,
+          12745000
+        ]
+      },
+      "composed": {
+        "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+        "mlp_graph_gpu_ns": 12745000,
+        "q2f_mlp_graph_gpu_ns": 15738249,
+        "n021_complete_gpu_ns": 27547874,
+        "non_mlp_ns": 11809625,
+        "complete_token_ns": 24554625
+      },
+      "min": 12678125,
+      "median": 24554625,
+      "max": 12764166,
+      "reps": 7
+    },
+    "kernels": [
+      "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+      "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+      "shared_binary_k2_fused_stream_c17408_tpr64_tg128"
+    ]
+  },
+  "controls": {
+    "serial": {
+      "gpu_ns": {
+        "n": 7,
+        "min": 314329999,
+        "median": 314559999,
+        "max": 314607625,
+        "all": [
+          314582958,
+          314559999,
+          314505499,
+          314464875,
+          314593250,
+          314329999,
+          314607625
+        ]
+      },
+      "overlap_with_fused": false,
+      "label": "SEPARATED"
+    },
+    "noop": {
+      "gpu_ns": {
+        "n": 7,
+        "min": 18810500,
+        "median": 18824500,
+        "max": 18846666,
+        "all": [
+          18824500,
+          18818249,
+          18820666,
+          18810500,
+          18846666,
+          18842999,
+          18827624
+        ]
+      },
+      "overlap_with_fused": false,
+      "label": "SEPARATED"
+    },
+    "stream_ablation": {
+      "gpu_ns": {
+        "n": 7,
+        "min": 13821874,
+        "median": 13826499,
+        "max": 13856291,
+        "all": [
+          13821874,
+          13855291,
+          13826499,
+          13856291,
+          13823250,
+          13844666,
+          13826499
+        ]
+      },
+      "overlap_with_fused": false
+    },
+    "overlap": false,
+    "label": "SEPARATED"
+  },
+  "multilayer_3_dispatch": {
+    "dispatches": 3,
+    "mlp_graph_gpu_ns": {
+      "n": 7,
+      "min": 14526125,
+      "median": 14645833,
+      "max": 15111749,
+      "all": [
+        14727791,
+        14630583,
+        14645833,
+        15111749,
+        14526125,
+        14559666,
+        14930874
+      ]
+    },
+    "COMPLETE_TOKEN_NS": {
+      "mlp_graph_gpu_ns": {
+        "n": 7,
+        "min": 14526125,
+        "median": 14645833,
+        "max": 15111749,
+        "all": [
+          14727791,
+          14630583,
+          14645833,
+          15111749,
+          14526125,
+          14559666,
+          14930874
+        ]
+      },
+      "composed": {
+        "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+        "mlp_graph_gpu_ns": 14645833,
+        "q2f_mlp_graph_gpu_ns": 15738249,
+        "n021_complete_gpu_ns": 27547874,
+        "non_mlp_ns": 11809625,
+        "complete_token_ns": 26455458
+      },
+      "median": 26455458,
+      "reps": 7
+    },
+    "note": "Signs reused across 64 layers in one kernel. Harness x is the same across layers; a real token's x is not. Reported as an amortization measurement, not as COMPLETE_TOKEN_NS of a sequential residual stream."
+  },
+  "dispatches": {
+    "before": 384,
+    "after_fused_per_gemv": 192,
+    "after_multilayer": 3,
+    "driven_down_from_384": true
+  },
+  "active_bytes_per_token": 1136394240.0,
+  "dram_bytes_per_token": 6342927320.0,
+  "active_bpw": 0.53125,
+  "dense_w": 0,
+  "q2f_baseline": {
+    "complete_token_ns": 27547874,
+    "mlp_graph_gpu_ns": 15738249,
+    "receipt": "receipts/headless/NATIVE_2BIT_MLP.json + BYTES_FRONTIER.json"
+  },
+  "toward_roof_729_7": {
+    "moved": true,
+    "delta_ns": 2993249,
+    "baseline_ns": 27547874,
+    "candidate_ns": 24554625,
+    "roof_ns": 1370426.2025489926,
+    "gap_closed_frac": 0.11434456953788533
+  },
+  "roof_tok_s": 729.7,
+  "roof_ns": 1370426.2025489926,
+  "parent_params": 26895998464,
+  "mlp_elements": 17112760320,
+  "composition": {
+    "ok": true,
+    "parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+    "capture": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/phaseB/capture_diverse2",
+    "split_rule": "prompt_hold: last 3 prompts/family",
+    "streamed_per_tensor": true,
+    "did_not_load_second_27b": true,
+    "did_not_mutate_noetic_parent_a": true,
+    "not_gaussian": true,
+    "row_slice": 1024,
+    "layers": [
+      30,
+      31
+    ],
+    "organ": "gate_proj",
+    "curve": [
+      {
+        "k": 1,
+        "n_layers_fitted": 2,
+        "row_slice": 1024,
+        "group": 64,
+        "storage_bpw_over_2_layers": 0.75,
+        "counterfactual_64_layer_bpw": 0.265625,
+        "mean_rel_fro": 0.6268434822559357,
+        "mean_gain": 0.40557220578193665,
+        "healthy": false,
+        "layers": [
+          {
+            "layer": 30,
+            "k": 1,
+            "rel_fro": 0.6233570575714111,
+            "cosine": 0.7888100147247314,
+            "gain": 0.4043557941913605,
+            "beats_null": true,
+            "weight_rel_fro": 0.8259919285774231,
+            "health": "UNHEALTHY_gain",
+            "n_hold": 2212
+          },
+          {
+            "layer": 31,
+            "k": 1,
+            "rel_fro": 0.6303299069404602,
+            "cosine": 0.7796805500984192,
+            "gain": 0.4067886173725128,
+            "beats_null": true,
+            "weight_rel_fro": 0.829903781414032,
+            "health": "UNHEALTHY_gain",
+            "n_hold": 2212
+          }
+        ]
+      },
+      {
+        "k": 2,
+        "n_layers_fitted": 2,
+        "row_slice": 1024,
+        "group": 64,
+        "storage_bpw_over_2_layers": 1.5,
+        "counterfactual_64_layer_bpw": 0.53125,
+        "mean_rel_fro": 0.5551774501800537,
+        "mean_gain": 0.49176134169101715,
+        "healthy": false,
+        "layers": [
+          {
+            "layer": 30,
+            "k": 2,
+            "rel_fro": 0.5456724166870117,
+            "cosine": 0.8406552076339722,
+            "gain": 0.5064423084259033,
+            "beats_null": true,
+            "weight_rel_fro": 0.7397164106369019,
+            "health": "UNHEALTHY_rel_fro",
+            "n_hold": 2212
+          },
+          {
+            "layer": 31,
+            "k": 2,
+            "rel_fro": 0.5646824836730957,
+            "cosine": 0.8262801170349121,
+            "gain": 0.477080374956131,
+            "beats_null": true,
+            "weight_rel_fro": 0.746564507484436,
+            "health": "UNHEALTHY_gain",
+            "n_hold": 2212
+          }
+        ]
+      },
+      {
+        "k": 4,
+        "n_layers_fitted": 2,
+        "row_slice": 1024,
+        "group": 64,
+        "storage_bpw_over_2_layers": 3.0,
+        "counterfactual_64_layer_bpw": 1.0625,
+        "mean_rel_fro": 0.5163615942001343,
+        "mean_gain": 0.5605315268039703,
+        "healthy": false,
+        "layers": [
+          {
+            "layer": 30,
+            "k": 4,
+            "rel_fro": 0.5048185586929321,
+            "cosine": 0.8648792505264282,
+            "gain": 0.5770218372344971,
+            "beats_null": true,
+            "weight_rel_fro": 0.6947929263114929,
+            "health": "UNHEALTHY_rel_fro",
+            "n_hold": 2212
+          },
+          {
+            "layer": 31,
+            "k": 4,
+            "rel_fro": 0.5279046297073364,
+            "cosine": 0.8502376079559326,
+            "gain": 0.5440412163734436,
+            "beats_null": true,
+            "weight_rel_fro": 0.7023276090621948,
+            "health": "UNHEALTHY_rel_fro",
+            "n_hold": 2212
+          }
+        ]
+      },
+      {
+        "k": 8,
+        "n_layers_fitted": 2,
+        "row_slice": 1024,
+        "group": 64,
+        "storage_bpw_over_2_layers": 6.0,
+        "counterfactual_64_layer_bpw": 2.125,
+        "mean_rel_fro": 0.48242688179016113,
+        "mean_gain": 0.6037944853305817,
+        "healthy": true,
+        "layers": [
+          {
+            "layer": 30,
+            "k": 8,
+            "rel_fro": 0.4713554382324219,
+            "cosine": 0.8834818005561829,
+            "gain": 0.6225494146347046,
+            "beats_null": true,
+            "weight_rel_fro": 0.6647363901138306,
+            "health": "SURVIVES_ABOVE_2BPW",
+            "n_hold": 2212
+          },
+          {
+            "layer": 31,
+            "k": 8,
+            "rel_fro": 0.4934983253479004,
+            "cosine": 0.8706188201904297,
+            "gain": 0.5850395560264587,
+            "beats_null": true,
+            "weight_rel_fro": 0.672146201133728,
+            "health": "SURVIVES_ABOVE_2BPW",
+            "n_hold": 2212
+          }
+        ]
+      }
+    ],
+    "short_chain": null,
+    "highest_rung_reached": "local_functional_probe",
+    "died_at": "held_out_activation",
+    "unreached_above": null,
+    "wall_s": 1.7101852089981548,
+    "reading": "K=2 at g=64 over 2 layers is 1.50 bpw (not the 0.53-bpw 64-layer operating point). The 0.53-bpw figure amortizes the same 2 bases over 64 layers; coefficient cost K*16/g = 0.50 does not vanish. If 2 adjacent layers already miss health, 64-layer share cannot rescue it (more layers, same K, is a tighter constraint)."
+  },
+  "composition_ladder": {
+    "rung": "local_functional_probe",
+    "status": "FAILED",
+    "died_at": "held_out_activation",
+    "why": "K=2 g=64 fitted on adjacent layers missed health on held-out real activations (rel_fro/gain). A cheaper rep that cannot preserve the activation is dead at this rung (S022 \u00a738)."
+  },
+  "k_tradeoff_curve": [
+    {
+      "k": 1,
+      "n_layers_fitted": 2,
+      "row_slice": 1024,
+      "group": 64,
+      "storage_bpw_over_2_layers": 0.75,
+      "counterfactual_64_layer_bpw": 0.265625,
+      "mean_rel_fro": 0.6268434822559357,
+      "mean_gain": 0.40557220578193665,
+      "healthy": false,
+      "layers": [
+        {
+          "layer": 30,
+          "k": 1,
+          "rel_fro": 0.6233570575714111,
+          "cosine": 0.7888100147247314,
+          "gain": 0.4043557941913605,
+          "beats_null": true,
+          "weight_rel_fro": 0.8259919285774231,
+          "health": "UNHEALTHY_gain",
+          "n_hold": 2212
+        },
+        {
+          "layer": 31,
+          "k": 1,
+          "rel_fro": 0.6303299069404602,
+          "cosine": 0.7796805500984192,
+          "gain": 0.4067886173725128,
+          "beats_null": true,
+          "weight_rel_fro": 0.829903781414032,
+          "health": "UNHEALTHY_gain",
+          "n_hold": 2212
+        }
+      ]
+    },
+    {
+      "k": 2,
+      "n_layers_fitted": 2,
+      "row_slice": 1024,
+      "group": 64,
+      "storage_bpw_over_2_layers": 1.5,
+      "counterfactual_64_layer_bpw": 0.53125,
+      "mean_rel_fro": 0.5551774501800537,
+      "mean_gain": 0.49176134169101715,
+      "healthy": false,
+      "layers": [
+        {
+          "layer": 30,
+          "k": 2,
+          "rel_fro": 0.5456724166870117,
+          "cosine": 0.8406552076339722,
+          "gain": 0.5064423084259033,
+          "beats_null": true,
+          "weight_rel_fro": 0.7397164106369019,
+          "health": "UNHEALTHY_rel_fro",
+          "n_hold": 2212
+        },
+        {
+          "layer": 31,
+          "k": 2,
+          "rel_fro": 0.5646824836730957,
+          "cosine": 0.8262801170349121,
+          "gain": 0.477080374956131,
+          "beats_null": true,
+          "weight_rel_fro": 0.746564507484436,
+          "health": "UNHEALTHY_gain",
+          "n_hold": 2212
+        }
+      ]
+    },
+    {
+      "k": 4,
+      "n_layers_fitted": 2,
+      "row_slice": 1024,
+      "group": 64,
+      "storage_bpw_over_2_layers": 3.0,
+      "counterfactual_64_layer_bpw": 1.0625,
+      "mean_rel_fro": 0.5163615942001343,
+      "mean_gain": 0.5605315268039703,
+      "healthy": false,
+      "layers": [
+        {
+          "layer": 30,
+          "k": 4,
+          "rel_fro": 0.5048185586929321,
+          "cosine": 0.8648792505264282,
+          "gain": 0.5770218372344971,
+          "beats_null": true,
+          "weight_rel_fro": 0.6947929263114929,
+          "health": "UNHEALTHY_rel_fro",
+          "n_hold": 2212
+        },
+        {
+          "layer": 31,
+          "k": 4,
+          "rel_fro": 0.5279046297073364,
+          "cosine": 0.8502376079559326,
+          "gain": 0.5440412163734436,
+          "beats_null": true,
+          "weight_rel_fro": 0.7023276090621948,
+          "health": "UNHEALTHY_rel_fro",
+          "n_hold": 2212
+        }
+      ]
+    },
+    {
+      "k": 8,
+      "n_layers_fitted": 2,
+      "row_slice": 1024,
+      "group": 64,
+      "storage_bpw_over_2_layers": 6.0,
+      "counterfactual_64_layer_bpw": 2.125,
+      "mean_rel_fro": 0.48242688179016113,
+      "mean_gain": 0.6037944853305817,
+      "healthy": true,
+      "layers": [
+        {
+          "layer": 30,
+          "k": 8,
+          "rel_fro": 0.4713554382324219,
+          "cosine": 0.8834818005561829,
+          "gain": 0.6225494146347046,
+          "beats_null": true,
+          "weight_rel_fro": 0.6647363901138306,
+          "health": "SURVIVES_ABOVE_2BPW",
+          "n_hold": 2212
+        },
+        {
+          "layer": 31,
+          "k": 8,
+          "rel_fro": 0.4934983253479004,
+          "cosine": 0.8706188201904297,
+          "gain": 0.5850395560264587,
+          "beats_null": true,
+          "weight_rel_fro": 0.672146201133728,
+          "health": "SURVIVES_ABOVE_2BPW",
+          "n_hold": 2212
+        }
+      ]
+    }
+  ],
+  "finding": {
+    "byte_win_translates_to_token_ns": true,
+    "reason": "Competent fused kernel dropped dispatches 384->192 and COMPLETE_TOKEN_NS 110201749->24554625 ns, beating q2f at 27547874 ns (delta 2993249 ns). The 0.53-bpw / 6.34-GB-per-token byte win now translates to token_ns. Tile search winner for c5120 is shared_binary_k2_fused_stream_c5120_tpr64_tg128 (streamed tpr64; TGM x+signs lost on occupancy, so the geometry the representation suggested was measured and rejected). K=2 cannot compose: died_at held_out_activation (2-layer gate L30/L31 rel_fro=0.5551774501800537 gain=0.49176134169101715). First healthy K on the 2-layer curve is K=8 rel_fro=0.4824 at 6.000 bpw over 2 layers (2.125 bpw if those bases amortized over 64 \u2014 untested, and adding layers at fixed K is a tighter constraint). S022 \u00a738: the token_ns win does not make a dead-on-activation rep promotable.",
+    "dispatch_drop": [
+      384,
+      192
+    ],
+    "kernel_was_the_failure": true
+  },
+  "elapsed_s": 7.11849937500665
+}

@@ -1,0 +1,36 @@
+{
+  "gate": "HCLI_MAX_CONTEXT_NONREGRESSION",
+  "result": "PASS",
+  "generated_at": "2026-08-23T04:36:08Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "method": "A true HEAD tree was materialised with `git archive HEAD tools/haider | tar -x` and the same admission resolution run against both trees in separate processes.",
+  "head": {
+    "resident_runtime_limit": 3,
+    "source": "machine_genome.json",
+    "topology": "slot",
+    "topology_source": "receipts/headless/DECODE_TOPOLOGY.json",
+    "total_ctx": 32768,
+    "per_request_ctx": 11008,
+    "budget_source": "pre-authority literal"
+  },
+  "merged": {
+    "resident_runtime_limit": 3,
+    "source": "machine_genome.json",
+    "topology": "slot",
+    "topology_source": "receipts/headless/DECODE_TOPOLOGY.json",
+    "total_ctx": 32768,
+    "per_request_ctx": 11008,
+    "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
+  },
+  "delta": "None in behaviour. Admitted concurrency, topology and per-slot usable context are identical; only the PROVENANCE changed, from a hardcoded literal to the authority's fallback rung. Supplying demand_tokens is what raises the allocation, and nothing does that implicitly.",
+  "regression_suite": {
+    "tools/headless/hcli_runtimepool_test.py": "PASS",
+    "tools/headless/hcli_scheduler_test.py": "PASS",
+    "tools/headless/hcli_dag_consolidation_test.py": "PASS",
+    "tools/headless/hcli_command_ingress_test.py": "PASS",
+    "tools/headless/hcli_verifier_pipeline_test.py": "PASS",
+    "tools/headless/hcli_validation_authority_test.py": "PASS",
+    "tools/headless/rollback_integrity_test.py": "PASS"
+  },
+  "tests_corrected_not_weakened": "hcli_scheduler_test.py and hcli_dag_consolidation_test.py called Scheduler.complete without a verifier outcome, which the new gate refuses. They now supply a passing outcome (PASSING_VERIFICATION) because they test scheduling and durability, not verifier bypass. hcli_dag_consolidation_test check 6 expected a hand-marked VERIFIED to survive reload; it now expects STALE plus an unchanged file and is_goal_met() False, which is strictly stronger."
+}

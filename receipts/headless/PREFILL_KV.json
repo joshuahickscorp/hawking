@@ -1,0 +1,1663 @@
+{
+ "schema": "hawking.headless.prefill_kv.v1",
+ "generated_at": "2026-08-24T05:32:26Z",
+ "git_head": "eb3525e36a999ac581e89fb948d2d9e4cfffdbaf",
+ "obligation": "N016 \u2014 PREFILL AND KV: decode-optimal is not production-optimal",
+ "question": "What does prefill cost at short / 4K / 16K / long context on the q4 incumbent and the sealed parent, and what is the production footprint MODEL_BYTES + SESSION_STATE_BYTES at c=1 and c=4?",
+ "answer": "Prefill on this body is the decode GEMV graph, teacher-forced. It is decode-optimal and not production-optimal for AgentOS long-context TTFT. A separate batched-prefill path is allowed and is not shipped here. q4 16K warm GPU 84.47 ms/token (MEASURED). q4 c=4 at 32K: SESSION_STATE_x_c 16.59 GiB exceeds MODEL_BYTES 13.32 GiB.",
+ "did_not_load_second_27b": true,
+ "did_not_mutate_sealed_parent": true,
+ "did_not_write_ascent_or_campaign": true,
+ "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+ "measurement_label": "DIRTY_ENGINEERING",
+ "measurement_label_reason": "GPU lock held for the walks; other CPU/memory lanes may still be live. Not offered as CLEAN_CANDIDATE or BASE_TRUE_TPS. Cold vs warm reported separately; OS page-cache cold is ABSENT.",
+ "incumbent": {
+  "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+  "name": "qwen38-gravity-uniform-q4-v1",
+  "payload_bytes": 14297694680,
+  "disk_bytes": 14297933604,
+  "n_files": 756,
+  "complete_physical_bpw": 4.252735126866492,
+  "parameter_count": 26895998464,
+  "tensor_count": 755
+ },
+ "sealed_parent": {
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "name": "NOETIC_PARENT_A",
+  "payload_bytes": 10554328856,
+  "disk_bytes": 10554568071,
+  "n_files": 757,
+  "complete_physical_bpw": 3.139300850311054,
+  "parameter_count": 26895998464,
+  "mix_id": "mix_all_mlp_affine_g64_ls",
+  "tensor_count": 755
+ },
+ "parent_identity_before": {
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+  "catalog_bytes": 224553,
+  "catalog_mtime_ns": 1787540041574753360,
+  "catalog_ino": 334772086,
+  "disk_bytes": 10554568071,
+  "n_files": 757,
+  "payload_bytes": 10554328856,
+  "mix_id": "mix_all_mlp_affine_g64_ls",
+  "complete_ebpw": 3.139300850311054,
+  "writable_check": "0o100644"
+ },
+ "parent_identity_after": {
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+  "catalog_bytes": 224553,
+  "catalog_mtime_ns": 1787540041574753360,
+  "catalog_ino": 334772086,
+  "disk_bytes": 10554568071,
+  "n_files": 757,
+  "payload_bytes": 10554328856,
+  "mix_id": "mix_all_mlp_affine_g64_ls",
+  "complete_ebpw": 3.139300850311054,
+  "writable_check": "0o100644"
+ },
+ "occupancy_before": {
+  "ps_matches": [
+   "12402  22208 /Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp9wq3pmxx/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}"
+  ],
+  "loaded_a_second_27b": false,
+  "note": "mlx_lm.server on a tiny tmp 4bit (~tens of MiB RSS) is not a 27B. A second Qwen3.8-27B would show RSS in the 10+ GiB class and is refused."
+ },
+ "occupancy_after": {
+  "ps_matches": [
+   "12402  22208 /Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp9wq3pmxx/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}"
+  ],
+  "loaded_a_second_27b": false,
+  "note": "mlx_lm.server on a tiny tmp 4bit (~tens of MiB RSS) is not a 27B. A second Qwen3.8-27B would show RSS in the 10+ GiB class and is refused."
+ },
+ "metal_probe": {
+  "name": "Apple M3 Ultra",
+  "hasUnifiedMemory": true,
+  "recommendedMaxWorkingSetSize": 83494174720,
+  "counterSets": [
+   {
+    "counters": [
+     "GPUTimestamp"
+    ],
+    "name": "timestamp"
+   }
+  ],
+  "supportsCounterSampling": {
+   "atBlitBoundary": false,
+   "atDispatchBoundary": false,
+   "atDrawBoundary": false,
+   "atStageBoundary": true,
+   "atTileDispatchBoundary": false
+  },
+  "command": "swift /tmp/n004_gpu_ledger_probe.swift"
+ },
+ "lengths": {
+  "short": "native compiler-prompt chat wrap (MEASURED prompt_len)",
+  "4k": 4096,
+  "16k": 16384,
+  "long": 32768
+ },
+ "prefill": {
+  "q4": {
+   "short": {
+    "length": "short",
+    "model": "q4",
+    "prompt_len": 34,
+    "admission_max_seq_len": 256,
+    "n_process_runs": 4,
+    "dispatches_per_step": 964,
+    "fallbacks": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "generated_text_head": "<think>\nThe user wants a detailed,",
+    "cold_prefill_wall_ns": {
+     "value": 1197492042.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_short_cw_run1.json ...",
+     "absent_reason": null,
+     "note": "cold prefill_wall_ns over 3 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 3,
+      "min": 1185071792.0,
+      "median": 1197492042.0,
+      "max": 1211273041.0,
+      "spread_pct": 2.188010281574798,
+      "all": [
+       1185071792.0,
+       1211273041.0,
+       1197492042.0
+      ]
+     }
+    },
+    "warm_prefill_wall_ns": {
+     "value": 1029733542.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_short_cw_run1.json ...",
+     "absent_reason": null,
+     "note": "warm prefill_wall_ns over 7 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 7,
+      "min": 1009716166.0,
+      "median": 1029733542.0,
+      "max": 1157252542.0,
+      "spread_pct": 14.327626515248543,
+      "all": [
+       1027721042.0,
+       1029733542.0,
+       1036035291.0,
+       1116445167.0,
+       1009716166.0,
+       1028059416.0,
+       1157252542.0
+      ]
+     }
+    },
+    "cold_first_step_gpu_ns": {
+     "value": 106361583.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_short_cw_run1.json ...",
+     "absent_reason": null,
+     "note": "graph-cold first prefill step GPUEnd\u2212GPUStart; never averaged into warm",
+     "spread": {
+      "n": 4,
+      "min": 88370875.0,
+      "median": 106361583.0,
+      "max": 106989083.0,
+      "spread_pct": 17.50463604890123,
+      "all": [
+       99922749.0,
+       106989083.0,
+       106361583.0,
+       88370875.0
+      ]
+     }
+    },
+    "warm_prefill_gpu_ns_per_token": {
+     "value": 28617916.0,
+     "kind": "MEASURED",
+     "unit": "ns/token",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_short_cw_run1.json ...",
+     "absent_reason": null,
+     "note": "mean GPU ns over prefill steps 1..N-1 (step 0 excluded as graph-cold)",
+     "spread": {
+      "n": 1,
+      "min": 28617916.0,
+      "median": 28617916.0,
+      "max": 28617916.0,
+      "spread_pct": 0.0,
+      "all": [
+       28617916.0
+      ]
+     }
+    },
+    "quadratic_fit": {
+     "ok": true,
+     "n": 33,
+     "intercept_ns": 28481494.607954543,
+     "slope_ns_per_position": 7574.482954545455,
+     "slope_us_per_position": 7.574482954545455,
+     "r2": 0.1885995093373941,
+     "mean_gpu_ns": 28610260.818181816,
+     "first_warm_index": 1,
+     "last_index": 33,
+     "formula": "gpu_ns(i) = intercept + slope * i  (i is 0-based position)",
+     "g118_equivalent_base_ms": 28.48149460795454,
+     "g118_equivalent_slope_us": 7.574482954545455
+    },
+    "runs_ok": [
+     true,
+     true,
+     true,
+     true
+    ],
+    "raw_paths": [
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_short_cw_run1.json",
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_short_cw_run2.json",
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_short_cw_run3.json",
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_short_gen_run0.json"
+    ]
+   },
+   "4k": {
+    "length": "4k",
+    "model": "q4",
+    "prompt_len": 4096,
+    "admission_max_seq_len": 4096,
+    "n_process_runs": 2,
+    "dispatches_per_step": 964,
+    "fallbacks": [
+     0,
+     0
+    ],
+    "generated_text_head": "<think>",
+    "cold_prefill_wall_ns": {
+     "value": 180388041208.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_4k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "cold prefill_wall_ns over 1 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 1,
+      "min": 180388041208.0,
+      "median": 180388041208.0,
+      "max": 180388041208.0,
+      "spread_pct": 0.0,
+      "all": [
+       180388041208.0
+      ]
+     }
+    },
+    "warm_prefill_wall_ns": {
+     "value": 181883186666.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_4k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "warm prefill_wall_ns over 1 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 1,
+      "min": 181883186666.0,
+      "median": 181883186666.0,
+      "max": 181883186666.0,
+      "spread_pct": 0.0,
+      "all": [
+       181883186666.0
+      ]
+     }
+    },
+    "cold_first_step_gpu_ns": {
+     "value": 96918875.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_4k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "graph-cold first prefill step GPUEnd\u2212GPUStart; never averaged into warm",
+     "spread": {
+      "n": 2,
+      "min": 96422291.0,
+      "median": 96918875.0,
+      "max": 96918875.0,
+      "spread_pct": 0.512370784328646,
+      "all": [
+       96422291.0,
+       96918875.0
+      ]
+     }
+    },
+    "warm_prefill_gpu_ns_per_token": {
+     "value": 42702333.0,
+     "kind": "MEASURED",
+     "unit": "ns/token",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_4k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "mean GPU ns over prefill steps 1..N-1 (step 0 excluded as graph-cold)",
+     "spread": {
+      "n": 2,
+      "min": 42700291.0,
+      "median": 42702333.0,
+      "max": 42702333.0,
+      "spread_pct": 0.004781940134277909,
+      "all": [
+       42702333.0,
+       42700291.0
+      ]
+     }
+    },
+    "quadratic_fit": {
+     "ok": true,
+     "n": 4095,
+     "intercept_ns": 28216864.288014323,
+     "slope_ns_per_position": 7051.978037906048,
+     "slope_us_per_position": 7.051978037906047,
+     "r2": 0.9886049813575826,
+     "mean_gpu_ns": 42659315.309645906,
+     "first_warm_index": 1,
+     "last_index": 4095,
+     "formula": "gpu_ns(i) = intercept + slope * i  (i is 0-based position)",
+     "g118_equivalent_base_ms": 28.21686428801432,
+     "g118_equivalent_slope_us": 7.051978037906047
+    },
+    "runs_ok": [
+     true,
+     true
+    ],
+    "raw_paths": [
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_4k_gen_run1.json",
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_4k_gen_run2.json"
+    ]
+   },
+   "16k": {
+    "length": "16k",
+    "model": "q4",
+    "prompt_len": 16384,
+    "admission_max_seq_len": 16384,
+    "n_process_runs": 1,
+    "dispatches_per_step": 964,
+    "fallbacks": [
+     0
+    ],
+    "generated_text_head": "!",
+    "cold_prefill_wall_ns": {
+     "value": 1945870324000.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_16k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "cold prefill_wall_ns over 1 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 1,
+      "min": 1945870324000.0,
+      "median": 1945870324000.0,
+      "max": 1945870324000.0,
+      "spread_pct": 0.0,
+      "all": [
+       1945870324000.0
+      ]
+     }
+    },
+    "warm_prefill_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_16k_gen_run1.json ...",
+     "absent_reason": "Only one fresh-process 16k walk for q4. In-process warm re-prefill of this length was not repeated (a second 16K/long walk is another full teacher-forced GEMV pass). Cold here is graph-cold on step 0 plus page-cache state of that process; OS_PAGE_CACHE_COLD is separately ABSENT because this box cannot purge the unified-memory page cache without disrupting the machine."
+    },
+    "cold_first_step_gpu_ns": {
+     "value": 96809083.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_16k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "graph-cold first prefill step GPUEnd\u2212GPUStart; never averaged into warm",
+     "spread": {
+      "n": 1,
+      "min": 96809083.0,
+      "median": 96809083.0,
+      "max": 96809083.0,
+      "spread_pct": 0.0,
+      "all": [
+       96809083.0
+      ]
+     }
+    },
+    "warm_prefill_gpu_ns_per_token": {
+     "value": 84466249.0,
+     "kind": "MEASURED",
+     "unit": "ns/token",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_16k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "mean GPU ns over prefill steps 1..N-1 (step 0 excluded as graph-cold)",
+     "spread": {
+      "n": 1,
+      "min": 84466249.0,
+      "median": 84466249.0,
+      "max": 84466249.0,
+      "spread_pct": 0.0,
+      "all": [
+       84466249.0
+      ]
+     }
+    },
+    "quadratic_fit": {
+     "ok": true,
+     "n": 16383,
+     "intercept_ns": 2507820.646591291,
+     "slope_ns_per_position": 14034.241425981048,
+     "slope_us_per_position": 14.03424142598105,
+     "r2": 0.8499493657933259,
+     "mean_gpu_ns": 117476326.40822804,
+     "first_warm_index": 1,
+     "last_index": 16383,
+     "formula": "gpu_ns(i) = intercept + slope * i  (i is 0-based position)",
+     "g118_equivalent_base_ms": 2.507820646591291,
+     "g118_equivalent_slope_us": 14.03424142598105
+    },
+    "runs_ok": [
+     true
+    ],
+    "raw_paths": [
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_q4_16k_gen_run1.json"
+    ]
+   },
+   "long": {
+    "length": "long",
+    "model": "q4",
+    "prompt_len": 32768,
+    "admission_max_seq_len": 32768,
+    "n_process_runs": 0,
+    "dispatches_per_step": null,
+    "cold_prefill_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on q4",
+     "absent_reason": "32K was not walked. A single Metal run at this length is also page-cache confounded; we refuse to invent a cold wall. The DERIVED GPU sum below is the warm-slope integral, not a cold first-touch."
+    },
+    "warm_prefill_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on q4",
+     "absent_reason": "32K in-process warm re-prefill was not run. GPU integral is DERIVED from the higher-r2 measured slope, not a second walk."
+    },
+    "warm_prefill_gpu_ns_total": {
+     "value": 4710496549996.07,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on q4",
+     "absent_reason": null,
+     "note": "Integral of MEASURED 4k gpu_ns(i)=a+b*i over i=0..32767. Host wall is not in the integral; GPU is the authority (GPUEnd\u2212GPUStart)."
+    },
+    "warm_prefill_gpu_ns_per_token": {
+     "value": 143752946.47204804,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on q4",
+     "absent_reason": null,
+     "note": "mean GPU ns/token of the 32K integral (mean context = 16383.5)"
+    },
+    "warm_prefill_gpu_ns_at_last_position": {
+     "value": 259289028.6560818,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on q4",
+     "absent_reason": null,
+     "note": "a + b*(32767): the prefill *step* cost at long context, not the mean"
+    },
+    "quadratic_fit": {
+     "ok": true,
+     "n": 4095,
+     "intercept_ns": 28216864.288014323,
+     "slope_ns_per_position": 7051.978037906048,
+     "slope_us_per_position": 7.051978037906047,
+     "r2": 0.9886049813575826,
+     "mean_gpu_ns": 42659315.309645906,
+     "first_warm_index": 1,
+     "last_index": 4095,
+     "formula": "gpu_ns(i) = intercept + slope * i  (i is 0-based position)",
+     "g118_equivalent_base_ms": 28.21686428801432,
+     "g118_equivalent_slope_us": 7.051978037906047
+    },
+    "derived_from": "4k",
+    "why_not_walked": "A 32K teacher-forced GEMV walk is ~2\u00d7 the 16K walk we already ran. The slope is identified by the 16K series (thousands of points). Repeating the 67-minute G118 choice would not change the topology conclusion: this path has no batched prefill."
+   }
+  },
+  "parent": {
+   "short": {
+    "length": "short",
+    "model": "parent",
+    "prompt_len": 34,
+    "admission_max_seq_len": 256,
+    "n_process_runs": 4,
+    "dispatches_per_step": 756,
+    "fallbacks": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "generated_text_head": "<think>\nThe user wants a detailed,",
+    "cold_prefill_wall_ns": {
+     "value": 1093675750.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_short_cw_run1.json ...",
+     "absent_reason": null,
+     "note": "cold prefill_wall_ns over 3 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 3,
+      "min": 1092247833.0,
+      "median": 1093675750.0,
+      "max": 1104440791.0,
+      "spread_pct": 1.1148604145241403,
+      "all": [
+       1092247833.0,
+       1093675750.0,
+       1104440791.0
+      ]
+     }
+    },
+    "warm_prefill_wall_ns": {
+     "value": 976431458.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_short_cw_run1.json ...",
+     "absent_reason": null,
+     "note": "warm prefill_wall_ns over 7 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 7,
+      "min": 973373917.0,
+      "median": 976431458.0,
+      "max": 1111649166.0,
+      "spread_pct": 14.161285758165322,
+      "all": [
+       973636916.0,
+       976431458.0,
+       973542166.0,
+       977399833.0,
+       979635084.0,
+       973373917.0,
+       1111649166.0
+      ]
+     }
+    },
+    "cold_first_step_gpu_ns": {
+     "value": 64030791.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_short_cw_run1.json ...",
+     "absent_reason": null,
+     "note": "graph-cold first prefill step GPUEnd\u2212GPUStart; never averaged into warm",
+     "spread": {
+      "n": 4,
+      "min": 60132124.0,
+      "median": 64030791.0,
+      "max": 64396791.0,
+      "spread_pct": 6.66033783652618,
+      "all": [
+       60132124.0,
+       64030791.0,
+       63576875.0,
+       64396791.0
+      ]
+     }
+    },
+    "warm_prefill_gpu_ns_per_token": {
+     "value": 27737708.0,
+     "kind": "MEASURED",
+     "unit": "ns/token",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_short_cw_run1.json ...",
+     "absent_reason": null,
+     "note": "mean GPU ns over prefill steps 1..N-1 (step 0 excluded as graph-cold)",
+     "spread": {
+      "n": 1,
+      "min": 27737708.0,
+      "median": 27737708.0,
+      "max": 27737708.0,
+      "spread_pct": 0.0,
+      "all": [
+       27737708.0
+      ]
+     }
+    },
+    "quadratic_fit": {
+     "ok": true,
+     "n": 33,
+     "intercept_ns": 27640445.698863637,
+     "slope_ns_per_position": 5504.723596256685,
+     "slope_us_per_position": 5.504723596256684,
+     "r2": 0.21041917525138865,
+     "mean_gpu_ns": 27734026.0,
+     "first_warm_index": 1,
+     "last_index": 33,
+     "formula": "gpu_ns(i) = intercept + slope * i  (i is 0-based position)",
+     "g118_equivalent_base_ms": 27.640445698863637,
+     "g118_equivalent_slope_us": 5.504723596256684
+    },
+    "runs_ok": [
+     true,
+     true,
+     true,
+     true
+    ],
+    "raw_paths": [
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_short_cw_run1.json",
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_short_cw_run2.json",
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_short_cw_run3.json",
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_short_gen_run0.json"
+    ]
+   },
+   "4k": {
+    "length": "4k",
+    "model": "parent",
+    "prompt_len": 4096,
+    "admission_max_seq_len": 4096,
+    "n_process_runs": 2,
+    "dispatches_per_step": 756,
+    "fallbacks": [
+     0,
+     0
+    ],
+    "generated_text_head": "<think>",
+    "cold_prefill_wall_ns": {
+     "value": 176154594000.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_4k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "cold prefill_wall_ns over 1 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 1,
+      "min": 176154594000.0,
+      "median": 176154594000.0,
+      "max": 176154594000.0,
+      "spread_pct": 0.0,
+      "all": [
+       176154594000.0
+      ]
+     }
+    },
+    "warm_prefill_wall_ns": {
+     "value": 174933177958.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_4k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "warm prefill_wall_ns over 1 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 1,
+      "min": 174933177958.0,
+      "median": 174933177958.0,
+      "max": 174933177958.0,
+      "spread_pct": 0.0,
+      "all": [
+       174933177958.0
+      ]
+     }
+    },
+    "cold_first_step_gpu_ns": {
+     "value": 72013625.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_4k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "graph-cold first prefill step GPUEnd\u2212GPUStart; never averaged into warm",
+     "spread": {
+      "n": 2,
+      "min": 59843250.0,
+      "median": 72013625.0,
+      "max": 72013625.0,
+      "spread_pct": 16.900100501814762,
+      "all": [
+       72013625.0,
+       59843250.0
+      ]
+     }
+    },
+    "warm_prefill_gpu_ns_per_token": {
+     "value": 41642249.0,
+     "kind": "MEASURED",
+     "unit": "ns/token",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_4k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "mean GPU ns over prefill steps 1..N-1 (step 0 excluded as graph-cold)",
+     "spread": {
+      "n": 2,
+      "min": 41633208.0,
+      "median": 41642249.0,
+      "max": 41642249.0,
+      "spread_pct": 0.021711123239285177,
+      "all": [
+       41633208.0,
+       41642249.0
+      ]
+     }
+    },
+    "quadratic_fit": {
+     "ok": true,
+     "n": 4095,
+     "intercept_ns": 27130073.435932864,
+     "slope_ns_per_position": 6961.153442991514,
+     "slope_us_per_position": 6.961153442991514,
+     "r2": 0.9923390031795118,
+     "mean_gpu_ns": 41386515.68717948,
+     "first_warm_index": 1,
+     "last_index": 4095,
+     "formula": "gpu_ns(i) = intercept + slope * i  (i is 0-based position)",
+     "g118_equivalent_base_ms": 27.130073435932864,
+     "g118_equivalent_slope_us": 6.961153442991514
+    },
+    "runs_ok": [
+     true,
+     true
+    ],
+    "raw_paths": [
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_4k_gen_run1.json",
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_4k_gen_run2.json"
+    ]
+   },
+   "16k": {
+    "length": "16k",
+    "model": "parent",
+    "prompt_len": 16384,
+    "admission_max_seq_len": 16384,
+    "n_process_runs": 1,
+    "dispatches_per_step": 756,
+    "fallbacks": [
+     0
+    ],
+    "generated_text_head": "!",
+    "cold_prefill_wall_ns": {
+     "value": 1959560736250.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_16k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "cold prefill_wall_ns over 1 process-or-rep samples. MTLCommandBuffer GPUEnd\u2212GPUStart lives in gpu_ns_per_step; this wall includes host encode/submit/wait.",
+     "spread": {
+      "n": 1,
+      "min": 1959560736250.0,
+      "median": 1959560736250.0,
+      "max": 1959560736250.0,
+      "spread_pct": 0.0,
+      "all": [
+       1959560736250.0
+      ]
+     }
+    },
+    "warm_prefill_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_16k_gen_run1.json ...",
+     "absent_reason": "Only one fresh-process 16k walk for parent. In-process warm re-prefill of this length was not repeated (a second 16K/long walk is another full teacher-forced GEMV pass). Cold here is graph-cold on step 0 plus page-cache state of that process; OS_PAGE_CACHE_COLD is separately ABSENT because this box cannot purge the unified-memory page cache without disrupting the machine."
+    },
+    "cold_first_step_gpu_ns": {
+     "value": 68560875.0,
+     "kind": "MEASURED",
+     "unit": "ns",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_16k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "graph-cold first prefill step GPUEnd\u2212GPUStart; never averaged into warm",
+     "spread": {
+      "n": 1,
+      "min": 68560875.0,
+      "median": 68560875.0,
+      "max": 68560875.0,
+      "spread_pct": 0.0,
+      "all": [
+       68560875.0
+      ]
+     }
+    },
+    "warm_prefill_gpu_ns_per_token": {
+     "value": 83263374.0,
+     "kind": "MEASURED",
+     "unit": "ns/token",
+     "command": "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_16k_gen_run1.json ...",
+     "absent_reason": null,
+     "note": "mean GPU ns over prefill steps 1..N-1 (step 0 excluded as graph-cold)",
+     "spread": {
+      "n": 1,
+      "min": 83263374.0,
+      "median": 83263374.0,
+      "max": 83263374.0,
+      "spread_pct": 0.0,
+      "all": [
+       83263374.0
+      ]
+     }
+    },
+    "quadratic_fit": {
+     "ok": true,
+     "n": 16383,
+     "intercept_ns": -300140.630932346,
+     "slope_ns_per_position": 14488.763165789982,
+     "slope_us_per_position": 14.488763165789981,
+     "r2": 0.8492591276064192,
+     "mean_gpu_ns": 118391807.22321919,
+     "first_warm_index": 1,
+     "last_index": 16383,
+     "formula": "gpu_ns(i) = intercept + slope * i  (i is 0-based position)",
+     "g118_equivalent_base_ms": -0.300140630932346,
+     "g118_equivalent_slope_us": 14.488763165789981
+    },
+    "runs_ok": [
+     true
+    ],
+    "raw_paths": [
+     "/Users/scammermike/.claude-grok/worktrees/n016prefill-20260823-232215/receipts/headless/_PREFILL_KV_parent_16k_gen_run1.json"
+    ]
+   },
+   "long": {
+    "length": "long",
+    "model": "parent",
+    "prompt_len": 32768,
+    "admission_max_seq_len": 32768,
+    "n_process_runs": 0,
+    "dispatches_per_step": null,
+    "cold_prefill_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on parent",
+     "absent_reason": "32K was not walked. A single Metal run at this length is also page-cache confounded; we refuse to invent a cold wall. The DERIVED GPU sum below is the warm-slope integral, not a cold first-touch."
+    },
+    "warm_prefill_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on parent",
+     "absent_reason": "32K in-process warm re-prefill was not run. GPU integral is DERIVED from the higher-r2 measured slope, not a second walk."
+    },
+    "warm_prefill_gpu_ns_total": {
+     "value": 4626124992321.433,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on parent",
+     "absent_reason": null,
+     "note": "Integral of MEASURED 4k gpu_ns(i)=a+b*i over i=0..32767. Host wall is not in the integral; GPU is the authority (GPUEnd\u2212GPUStart)."
+    },
+    "warm_prefill_gpu_ns_per_token": {
+     "value": 141178130.86918435,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on parent",
+     "absent_reason": null,
+     "note": "mean GPU ns/token of the 32K integral (mean context = 16383.5)"
+    },
+    "warm_prefill_gpu_ns_at_last_position": {
+     "value": 255226188.30243582,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum_{i=0..32767} (intercept + slope*i) from MEASURED 4k gpu_ns_per_step on parent",
+     "absent_reason": null,
+     "note": "a + b*(32767): the prefill *step* cost at long context, not the mean"
+    },
+    "quadratic_fit": {
+     "ok": true,
+     "n": 4095,
+     "intercept_ns": 27130073.435932864,
+     "slope_ns_per_position": 6961.153442991514,
+     "slope_us_per_position": 6.961153442991514,
+     "r2": 0.9923390031795118,
+     "mean_gpu_ns": 41386515.68717948,
+     "first_warm_index": 1,
+     "last_index": 4095,
+     "formula": "gpu_ns(i) = intercept + slope * i  (i is 0-based position)",
+     "g118_equivalent_base_ms": 27.130073435932864,
+     "g118_equivalent_slope_us": 6.961153442991514
+    },
+    "derived_from": "4k",
+    "why_not_walked": "A 32K teacher-forced GEMV walk is ~2\u00d7 the 16K walk we already ran. The slope is identified by the 16K series (thousands of points). Repeating the 67-minute G118 choice would not change the topology conclusion: this path has no batched prefill."
+   }
+  }
+ },
+ "production_footprint": {
+  "q4": {
+   "model": "q4",
+   "MODEL_BYTES": {
+    "value": 14297694680,
+    "kind": "MEASURED",
+    "unit": "bytes",
+    "command": "stat of artifact tree (payload_bytes from manifest/MIX_REPORT)",
+    "absent_reason": null
+   },
+   "by_length": {
+    "short": {
+     "c=1": {
+      "sessions": 1,
+      "max_seq_len": 256,
+      "MODEL_BYTES": 14297694680,
+      "SESSION_STATE_BYTES": 192139012,
+      "SESSION_STATE_BYTES_x_c": 192139012,
+      "PRODUCTION_FOOTPRINT_BYTES": 14489833692,
+      "PRODUCTION_FOOTPRINT_GiB": 13.494709219783545,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.013260263442918748,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 33554432,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 69004341028
+     },
+     "c=4": {
+      "sessions": 4,
+      "max_seq_len": 256,
+      "MODEL_BYTES": 14297694680,
+      "SESSION_STATE_BYTES": 192139012,
+      "SESSION_STATE_BYTES_x_c": 768556048,
+      "PRODUCTION_FOOTPRINT_BYTES": 15066250728,
+      "PRODUCTION_FOOTPRINT_GiB": 14.031539417803288,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.051011765426926724,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 33554432,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 68427923992
+     }
+    },
+    "4k": {
+     "c=1": {
+      "sessions": 1,
+      "max_seq_len": 4096,
+      "MODEL_BYTES": 14297694680,
+      "SESSION_STATE_BYTES": 695455492,
+      "SESSION_STATE_BYTES_x_c": 695455492,
+      "PRODUCTION_FOOTPRINT_BYTES": 14993150172,
+      "PRODUCTION_FOOTPRINT_GiB": 13.963459219783545,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.04638488136394289,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 536870912,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 68501024548
+     },
+     "c=4": {
+      "sessions": 4,
+      "max_seq_len": 4096,
+      "MODEL_BYTES": 14297694680,
+      "SESSION_STATE_BYTES": 695455492,
+      "SESSION_STATE_BYTES_x_c": 2781821968,
+      "PRODUCTION_FOOTPRINT_BYTES": 17079516648,
+      "PRODUCTION_FOOTPRINT_GiB": 15.906539417803288,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.16287474788261935,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 536870912,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 66414658072
+     }
+    },
+    "16k": {
+     "c=1": {
+      "sessions": 1,
+      "max_seq_len": 16384,
+      "MODEL_BYTES": 14297694680,
+      "SESSION_STATE_BYTES": 2306068228,
+      "SESSION_STATE_BYTES_x_c": 2306068228,
+      "PRODUCTION_FOOTPRINT_BYTES": 16603762908,
+      "PRODUCTION_FOOTPRINT_GiB": 15.463459219783545,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.13888828940630643,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 2147483648,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 66890411812
+     },
+     "c=4": {
+      "sessions": 4,
+      "max_seq_len": 16384,
+      "MODEL_BYTES": 14297694680,
+      "SESSION_STATE_BYTES": 2306068228,
+      "SESSION_STATE_BYTES_x_c": 9224272912,
+      "PRODUCTION_FOOTPRINT_BYTES": 23521967592,
+      "PRODUCTION_FOOTPRINT_GiB": 21.906539417803288,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.3921556679270847,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 2147483648,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 59972207128
+     }
+    },
+    "long": {
+     "c=1": {
+      "sessions": 1,
+      "max_seq_len": 32768,
+      "MODEL_BYTES": 14297694680,
+      "SESSION_STATE_BYTES": 4453551876,
+      "SESSION_STATE_BYTES_x_c": 4453551876,
+      "PRODUCTION_FOOTPRINT_BYTES": 18751246556,
+      "PRODUCTION_FOOTPRINT_GiB": 17.463459219783545,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.237506976546845,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 4294967296,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 64742928164
+     },
+     "c=4": {
+      "sessions": 4,
+      "max_seq_len": 32768,
+      "MODEL_BYTES": 14297694680,
+      "SESSION_STATE_BYTES": 4453551876,
+      "SESSION_STATE_BYTES_x_c": 17814207504,
+      "PRODUCTION_FOOTPRINT_BYTES": 32111902184,
+      "PRODUCTION_FOOTPRINT_GiB": 29.906539417803288,
+      "state_exceeds_weights": true,
+      "state_share_of_footprint": 0.5547540411005631,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 4294967296,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 51382272536
+     }
+    }
+   },
+   "crossover": {
+    "c=1": {
+     "sessions": 1,
+     "MODEL_BYTES": 14297694680,
+     "seq_where_c_state_exceeds_weights": 107873,
+     "formula": "seq = (MODEL_BYTES/c - activation - deltanet) / kv_bytes_per_position",
+     "kv_bytes_per_position": 131072,
+     "deltanet_state_bytes_constant": 156893184,
+     "kind": "DERIVED",
+     "note": "DeltaNet state is independent of seq_len; GQA KV is the only term that grows. At long context and c>1, state dominates weights. This is an arithmetic crossover, not a measurement of Metal currentAllocatedSize."
+    },
+    "c=4": {
+     "sessions": 4,
+     "MODEL_BYTES": 14297694680,
+     "seq_where_c_state_exceeds_weights": 26061,
+     "formula": "seq = (MODEL_BYTES/c - activation - deltanet) / kv_bytes_per_position",
+     "kv_bytes_per_position": 131072,
+     "deltanet_state_bytes_constant": 156893184,
+     "kind": "DERIVED",
+     "note": "DeltaNet state is independent of seq_len; GQA KV is the only term that grows. At long context and c>1, state dominates weights. This is an arithmetic crossover, not a measurement of Metal currentAllocatedSize."
+    }
+   },
+   "native_128k_c4": {
+    "sessions": 4,
+    "max_seq_len": 131072,
+    "MODEL_BYTES": 14297694680,
+    "SESSION_STATE_BYTES": 17338453764,
+    "SESSION_STATE_BYTES_x_c": 69353815056,
+    "PRODUCTION_FOOTPRINT_BYTES": 83651509736,
+    "PRODUCTION_FOOTPRINT_GiB": 77.90653941780329,
+    "state_exceeds_weights": true,
+    "state_share_of_footprint": 0.829080255393802,
+    "components": {
+     "activation_bytes": 1691396,
+     "deltanet_state_bytes": 156893184,
+     "gqa_kv_bytes": 17179869184,
+     "kv_bytes_per_position": 131072
+    },
+    "metal_budget_bytes": 83494174720,
+    "fits_metal_working_set": false,
+    "headroom_bytes": -157335016
+   },
+   "formula": "PRODUCTION_FOOTPRINT = MODEL_BYTES + c \u00d7 SESSION_STATE_BYTES(max_seq_len). SESSION_STATE = activation + DeltaNet(conv+rec) + GQA KV. DeltaNet is constant in seq; GQA KV = 131072 B \u00d7 seq. The runtime allocates the full max_seq_len KV; it does not pack to the live prompt length.",
+   "session_state_kind": "DERIVED",
+   "session_state_kind_reason": "qwen38_workspace_bytes in crates/hawking-core/src/model/qwen38_hybrid_decode.rs, mirrored by tools/headless/noetic_information_accounting.py. Validated MEASURED at seq=256 by NOETIC_MULTISESSION (Metal 13.50 GiB c=1 vs 14.03 GiB c=4; delta matches 3 \u00d7 192,139,012 B). Other seqs are the same formula, hence DERIVED not guessed."
+  },
+  "parent": {
+   "model": "parent",
+   "MODEL_BYTES": {
+    "value": 10554328856,
+    "kind": "MEASURED",
+    "unit": "bytes",
+    "command": "stat of artifact tree (payload_bytes from manifest/MIX_REPORT)",
+    "absent_reason": null
+   },
+   "by_length": {
+    "short": {
+     "c=1": {
+      "sessions": 1,
+      "max_seq_len": 256,
+      "MODEL_BYTES": 10554328856,
+      "SESSION_STATE_BYTES": 192139012,
+      "SESSION_STATE_BYTES_x_c": 192139012,
+      "PRODUCTION_FOOTPRINT_BYTES": 10746467868,
+      "PRODUCTION_FOOTPRINT_GiB": 10.008428122848272,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.017879271064694353,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 33554432,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 72747706852
+     },
+     "c=4": {
+      "sessions": 4,
+      "max_seq_len": 256,
+      "MODEL_BYTES": 10554328856,
+      "SESSION_STATE_BYTES": 192139012,
+      "SESSION_STATE_BYTES_x_c": 768556048,
+      "PRODUCTION_FOOTPRINT_BYTES": 11322884904,
+      "PRODUCTION_FOOTPRINT_GiB": 10.545258320868015,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.06787634551760696,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 33554432,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 72171289816
+     }
+    },
+    "4k": {
+     "c=1": {
+      "sessions": 1,
+      "max_seq_len": 4096,
+      "MODEL_BYTES": 10554328856,
+      "SESSION_STATE_BYTES": 695455492,
+      "SESSION_STATE_BYTES_x_c": 695455492,
+      "PRODUCTION_FOOTPRINT_BYTES": 11249784348,
+      "PRODUCTION_FOOTPRINT_GiB": 10.477178122848272,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.06181945097673262,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 536870912,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 72244390372
+     },
+     "c=4": {
+      "sessions": 4,
+      "max_seq_len": 4096,
+      "MODEL_BYTES": 10554328856,
+      "SESSION_STATE_BYTES": 695455492,
+      "SESSION_STATE_BYTES_x_c": 2781821968,
+      "PRODUCTION_FOOTPRINT_BYTES": 13336150824,
+      "PRODUCTION_FOOTPRINT_GiB": 12.420258320868015,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.20859256952866628,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 536870912,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 70158023896
+     }
+    },
+    "16k": {
+     "c=1": {
+      "sessions": 1,
+      "max_seq_len": 16384,
+      "MODEL_BYTES": 10554328856,
+      "SESSION_STATE_BYTES": 2306068228,
+      "SESSION_STATE_BYTES_x_c": 2306068228,
+      "PRODUCTION_FOOTPRINT_BYTES": 12860397084,
+      "PRODUCTION_FOOTPRINT_GiB": 11.977178122848272,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.1793154762592088,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 2147483648,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 70633777636
+     },
+     "c=4": {
+      "sessions": 4,
+      "max_seq_len": 16384,
+      "MODEL_BYTES": 10554328856,
+      "SESSION_STATE_BYTES": 2306068228,
+      "SESSION_STATE_BYTES_x_c": 9224272912,
+      "PRODUCTION_FOOTPRINT_BYTES": 19778601768,
+      "PRODUCTION_FOOTPRINT_GiB": 18.420258320868015,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.4663763910209287,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 2147483648,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 63715572952
+     }
+    },
+    "long": {
+     "c=1": {
+      "sessions": 1,
+      "max_seq_len": 32768,
+      "MODEL_BYTES": 10554328856,
+      "SESSION_STATE_BYTES": 4453551876,
+      "SESSION_STATE_BYTES_x_c": 4453551876,
+      "PRODUCTION_FOOTPRINT_BYTES": 15007880732,
+      "PRODUCTION_FOOTPRINT_GiB": 13.977178122848272,
+      "state_exceeds_weights": false,
+      "state_share_of_footprint": 0.29674755253778623,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 4294967296,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 68486293988
+     },
+     "c=4": {
+      "sessions": 4,
+      "max_seq_len": 32768,
+      "MODEL_BYTES": 10554328856,
+      "SESSION_STATE_BYTES": 4453551876,
+      "SESSION_STATE_BYTES_x_c": 17814207504,
+      "PRODUCTION_FOOTPRINT_BYTES": 28368536360,
+      "PRODUCTION_FOOTPRINT_GiB": 26.420258320868015,
+      "state_exceeds_weights": true,
+      "state_share_of_footprint": 0.6279565247193458,
+      "components": {
+       "activation_bytes": 1691396,
+       "deltanet_state_bytes": 156893184,
+       "gqa_kv_bytes": 4294967296,
+       "kv_bytes_per_position": 131072
+      },
+      "metal_budget_bytes": 83494174720,
+      "fits_metal_working_set": true,
+      "headroom_bytes": 55125638360
+     }
+    }
+   },
+   "crossover": {
+    "c=1": {
+     "sessions": 1,
+     "MODEL_BYTES": 10554328856,
+     "seq_where_c_state_exceeds_weights": 79314,
+     "formula": "seq = (MODEL_BYTES/c - activation - deltanet) / kv_bytes_per_position",
+     "kv_bytes_per_position": 131072,
+     "deltanet_state_bytes_constant": 156893184,
+     "kind": "DERIVED",
+     "note": "DeltaNet state is independent of seq_len; GQA KV is the only term that grows. At long context and c>1, state dominates weights. This is an arithmetic crossover, not a measurement of Metal currentAllocatedSize."
+    },
+    "c=4": {
+     "sessions": 4,
+     "MODEL_BYTES": 10554328856,
+     "seq_where_c_state_exceeds_weights": 18921,
+     "formula": "seq = (MODEL_BYTES/c - activation - deltanet) / kv_bytes_per_position",
+     "kv_bytes_per_position": 131072,
+     "deltanet_state_bytes_constant": 156893184,
+     "kind": "DERIVED",
+     "note": "DeltaNet state is independent of seq_len; GQA KV is the only term that grows. At long context and c>1, state dominates weights. This is an arithmetic crossover, not a measurement of Metal currentAllocatedSize."
+    }
+   },
+   "native_128k_c4": {
+    "sessions": 4,
+    "max_seq_len": 131072,
+    "MODEL_BYTES": 10554328856,
+    "SESSION_STATE_BYTES": 17338453764,
+    "SESSION_STATE_BYTES_x_c": 69353815056,
+    "PRODUCTION_FOOTPRINT_BYTES": 79908143912,
+    "PRODUCTION_FOOTPRINT_GiB": 74.42025832086802,
+    "state_exceeds_weights": true,
+    "state_share_of_footprint": 0.867919234019212,
+    "components": {
+     "activation_bytes": 1691396,
+     "deltanet_state_bytes": 156893184,
+     "gqa_kv_bytes": 17179869184,
+     "kv_bytes_per_position": 131072
+    },
+    "metal_budget_bytes": 83494174720,
+    "fits_metal_working_set": true,
+    "headroom_bytes": 3586030808
+   },
+   "formula": "PRODUCTION_FOOTPRINT = MODEL_BYTES + c \u00d7 SESSION_STATE_BYTES(max_seq_len). SESSION_STATE = activation + DeltaNet(conv+rec) + GQA KV. DeltaNet is constant in seq; GQA KV = 131072 B \u00d7 seq. The runtime allocates the full max_seq_len KV; it does not pack to the live prompt length.",
+   "session_state_kind": "DERIVED",
+   "session_state_kind_reason": "qwen38_workspace_bytes in crates/hawking-core/src/model/qwen38_hybrid_decode.rs, mirrored by tools/headless/noetic_information_accounting.py. Validated MEASURED at seq=256 by NOETIC_MULTISESSION (Metal 13.50 GiB c=1 vs 14.03 GiB c=4; delta matches 3 \u00d7 192,139,012 B). Other seqs are the same formula, hence DERIVED not guessed."
+  }
+ },
+ "headline_footprint": {
+  "q4_16k_c1": {
+   "sessions": 1,
+   "max_seq_len": 16384,
+   "MODEL_BYTES": 14297694680,
+   "SESSION_STATE_BYTES": 2306068228,
+   "SESSION_STATE_BYTES_x_c": 2306068228,
+   "PRODUCTION_FOOTPRINT_BYTES": 16603762908,
+   "PRODUCTION_FOOTPRINT_GiB": 15.463459219783545,
+   "state_exceeds_weights": false,
+   "state_share_of_footprint": 0.13888828940630643,
+   "components": {
+    "activation_bytes": 1691396,
+    "deltanet_state_bytes": 156893184,
+    "gqa_kv_bytes": 2147483648,
+    "kv_bytes_per_position": 131072
+   },
+   "metal_budget_bytes": 83494174720,
+   "fits_metal_working_set": true,
+   "headroom_bytes": 66890411812
+  },
+  "q4_16k_c4": {
+   "sessions": 4,
+   "max_seq_len": 16384,
+   "MODEL_BYTES": 14297694680,
+   "SESSION_STATE_BYTES": 2306068228,
+   "SESSION_STATE_BYTES_x_c": 9224272912,
+   "PRODUCTION_FOOTPRINT_BYTES": 23521967592,
+   "PRODUCTION_FOOTPRINT_GiB": 21.906539417803288,
+   "state_exceeds_weights": false,
+   "state_share_of_footprint": 0.3921556679270847,
+   "components": {
+    "activation_bytes": 1691396,
+    "deltanet_state_bytes": 156893184,
+    "gqa_kv_bytes": 2147483648,
+    "kv_bytes_per_position": 131072
+   },
+   "metal_budget_bytes": 83494174720,
+   "fits_metal_working_set": true,
+   "headroom_bytes": 59972207128
+  },
+  "q4_long_c4": {
+   "sessions": 4,
+   "max_seq_len": 32768,
+   "MODEL_BYTES": 14297694680,
+   "SESSION_STATE_BYTES": 4453551876,
+   "SESSION_STATE_BYTES_x_c": 17814207504,
+   "PRODUCTION_FOOTPRINT_BYTES": 32111902184,
+   "PRODUCTION_FOOTPRINT_GiB": 29.906539417803288,
+   "state_exceeds_weights": true,
+   "state_share_of_footprint": 0.5547540411005631,
+   "components": {
+    "activation_bytes": 1691396,
+    "deltanet_state_bytes": 156893184,
+    "gqa_kv_bytes": 4294967296,
+    "kv_bytes_per_position": 131072
+   },
+   "metal_budget_bytes": 83494174720,
+   "fits_metal_working_set": true,
+   "headroom_bytes": 51382272536
+  },
+  "parent_16k_c4": {
+   "sessions": 4,
+   "max_seq_len": 16384,
+   "MODEL_BYTES": 10554328856,
+   "SESSION_STATE_BYTES": 2306068228,
+   "SESSION_STATE_BYTES_x_c": 9224272912,
+   "PRODUCTION_FOOTPRINT_BYTES": 19778601768,
+   "PRODUCTION_FOOTPRINT_GiB": 18.420258320868015,
+   "state_exceeds_weights": false,
+   "state_share_of_footprint": 0.4663763910209287,
+   "components": {
+    "activation_bytes": 1691396,
+    "deltanet_state_bytes": 156893184,
+    "gqa_kv_bytes": 2147483648,
+    "kv_bytes_per_position": 131072
+   },
+   "metal_budget_bytes": 83494174720,
+   "fits_metal_working_set": true,
+   "headroom_bytes": 63715572952
+  },
+  "parent_long_c4": {
+   "sessions": 4,
+   "max_seq_len": 32768,
+   "MODEL_BYTES": 10554328856,
+   "SESSION_STATE_BYTES": 4453551876,
+   "SESSION_STATE_BYTES_x_c": 17814207504,
+   "PRODUCTION_FOOTPRINT_BYTES": 28368536360,
+   "PRODUCTION_FOOTPRINT_GiB": 26.420258320868015,
+   "state_exceeds_weights": true,
+   "state_share_of_footprint": 0.6279565247193458,
+   "components": {
+    "activation_bytes": 1691396,
+    "deltanet_state_bytes": 156893184,
+    "gqa_kv_bytes": 4294967296,
+    "kv_bytes_per_position": 131072
+   },
+   "metal_budget_bytes": 83494174720,
+   "fits_metal_working_set": true,
+   "headroom_bytes": 55125638360
+  }
+ },
+ "workspace_formula_validation": {
+  "source": "receipts/headless/NOETIC_MULTISESSION.json",
+  "seq": 256,
+  "workspace_total_bytes": 192139012,
+  "metal_c1_bytes": 14492024832,
+  "metal_c4_bytes": 15068971008,
+  "kind": "CITED",
+  "note": "Validates SESSION_STATE_BYTES at seq=256: c=4 minus c=1 tracks 3 \u00d7 workspace, not 3 \u00d7 (model+workspace)."
+ },
+ "kv_precision": {
+  "4k": {
+   "production_dtype": "f32",
+   "production_gqa_kv_bytes": 536870912,
+   "wired_in_qwen38_hybrid_decode": "mha_decode_f32_tcb",
+   "candidates": {
+    "f16": {
+     "gqa_kv_bytes": 268435456,
+     "saved_bytes": 268435456,
+     "kernel_exists": true,
+     "kernel_path": "crates/hawking-core/tests/mha_decode_f16kv_parity.rs",
+     "wired_into_production_session": false,
+     "capability_cost": {
+      "kind": "ABSENT",
+      "value": null,
+      "unit": "argmax_disagreement_rate",
+      "command": "crates/hawking-core/tests/mha_decode_f16kv_parity.rs (synthetic seq, not production Qwen3.8 greedy)",
+      "absent_reason": "f16 KV is not the production GQA path. Parity tests compare a synthetic MHA step against f32, not a Qwen3.8 greedy capability suite. Lowering production KV to f16 would need that suite; it is not free just because a kernel exists."
+     }
+    },
+    "int4": {
+     "gqa_kv_bytes": 67108864,
+     "saved_bytes": 469762048,
+     "kernel_exists": true,
+     "kernel_path": "crates/hawking-core/tests/mha_decode_flash_int4kv_parity.rs",
+     "wired_into_production_session": false,
+     "capability_cost": {
+      "kind": "ABSENT",
+      "value": null,
+      "unit": "argmax_disagreement_rate",
+      "command": "crates/hawking-core/tests/mha_decode_flash_int4kv_parity.rs",
+      "absent_reason": "int4 KV is a flash-MHA test kernel, not production. GQA was measured as the quality floor in NOETIC_GQA_DESIGN / ORGAN_FRONTIERS \u2014 it cannot cheaply go below Q4 *weights*. KV-cache quant is a different axis and is unmeasured on this body."
+     }
+    }
+   },
+   "deltanet_state": {
+    "bytes": 156893184,
+    "grows_with_seq": false,
+    "dtype": "f32",
+    "note": "156,893,184 B of conv+recurrent state, constant in seq_len. At max_seq_len=256 it already dwarfs GQA KV (33,554,432 B). At 16K GQA has overtaken it. Compressing DeltaNet state is an organ-floor question (ORGAN_FRONTIERS), not a free KV tweak."
+   }
+  },
+  "16k": {
+   "production_dtype": "f32",
+   "production_gqa_kv_bytes": 2147483648,
+   "wired_in_qwen38_hybrid_decode": "mha_decode_f32_tcb",
+   "candidates": {
+    "f16": {
+     "gqa_kv_bytes": 1073741824,
+     "saved_bytes": 1073741824,
+     "kernel_exists": true,
+     "kernel_path": "crates/hawking-core/tests/mha_decode_f16kv_parity.rs",
+     "wired_into_production_session": false,
+     "capability_cost": {
+      "kind": "ABSENT",
+      "value": null,
+      "unit": "argmax_disagreement_rate",
+      "command": "crates/hawking-core/tests/mha_decode_f16kv_parity.rs (synthetic seq, not production Qwen3.8 greedy)",
+      "absent_reason": "f16 KV is not the production GQA path. Parity tests compare a synthetic MHA step against f32, not a Qwen3.8 greedy capability suite. Lowering production KV to f16 would need that suite; it is not free just because a kernel exists."
+     }
+    },
+    "int4": {
+     "gqa_kv_bytes": 268435456,
+     "saved_bytes": 1879048192,
+     "kernel_exists": true,
+     "kernel_path": "crates/hawking-core/tests/mha_decode_flash_int4kv_parity.rs",
+     "wired_into_production_session": false,
+     "capability_cost": {
+      "kind": "ABSENT",
+      "value": null,
+      "unit": "argmax_disagreement_rate",
+      "command": "crates/hawking-core/tests/mha_decode_flash_int4kv_parity.rs",
+      "absent_reason": "int4 KV is a flash-MHA test kernel, not production. GQA was measured as the quality floor in NOETIC_GQA_DESIGN / ORGAN_FRONTIERS \u2014 it cannot cheaply go below Q4 *weights*. KV-cache quant is a different axis and is unmeasured on this body."
+     }
+    }
+   },
+   "deltanet_state": {
+    "bytes": 156893184,
+    "grows_with_seq": false,
+    "dtype": "f32",
+    "note": "156,893,184 B of conv+recurrent state, constant in seq_len. At max_seq_len=256 it already dwarfs GQA KV (33,554,432 B). At 16K GQA has overtaken it. Compressing DeltaNet state is an organ-floor question (ORGAN_FRONTIERS), not a free KV tweak."
+   }
+  },
+  "long": {
+   "production_dtype": "f32",
+   "production_gqa_kv_bytes": 4294967296,
+   "wired_in_qwen38_hybrid_decode": "mha_decode_f32_tcb",
+   "candidates": {
+    "f16": {
+     "gqa_kv_bytes": 2147483648,
+     "saved_bytes": 2147483648,
+     "kernel_exists": true,
+     "kernel_path": "crates/hawking-core/tests/mha_decode_f16kv_parity.rs",
+     "wired_into_production_session": false,
+     "capability_cost": {
+      "kind": "ABSENT",
+      "value": null,
+      "unit": "argmax_disagreement_rate",
+      "command": "crates/hawking-core/tests/mha_decode_f16kv_parity.rs (synthetic seq, not production Qwen3.8 greedy)",
+      "absent_reason": "f16 KV is not the production GQA path. Parity tests compare a synthetic MHA step against f32, not a Qwen3.8 greedy capability suite. Lowering production KV to f16 would need that suite; it is not free just because a kernel exists."
+     }
+    },
+    "int4": {
+     "gqa_kv_bytes": 536870912,
+     "saved_bytes": 3758096384,
+     "kernel_exists": true,
+     "kernel_path": "crates/hawking-core/tests/mha_decode_flash_int4kv_parity.rs",
+     "wired_into_production_session": false,
+     "capability_cost": {
+      "kind": "ABSENT",
+      "value": null,
+      "unit": "argmax_disagreement_rate",
+      "command": "crates/hawking-core/tests/mha_decode_flash_int4kv_parity.rs",
+      "absent_reason": "int4 KV is a flash-MHA test kernel, not production. GQA was measured as the quality floor in NOETIC_GQA_DESIGN / ORGAN_FRONTIERS \u2014 it cannot cheaply go below Q4 *weights*. KV-cache quant is a different axis and is unmeasured on this body."
+     }
+    }
+   },
+   "deltanet_state": {
+    "bytes": 156893184,
+    "grows_with_seq": false,
+    "dtype": "f32",
+    "note": "156,893,184 B of conv+recurrent state, constant in seq_len. At max_seq_len=256 it already dwarfs GQA KV (33,554,432 B). At 16K GQA has overtaken it. Compressing DeltaNet state is an organ-floor question (ORGAN_FRONTIERS), not a free KV tweak."
+   }
+  }
+ },
+ "prefix_sharing": {
+  "valid_when": "N sessions share a byte-identical prefix (system prompt / tool preamble). Then one GQA KV prefix plus N suffixes is correct; DeltaNet rec state is NOT prefix-shareable across diverged suffixes because it is a recurrent summary, not a cache.",
+  "wired_into_qwen38_hybrid": false,
+  "related_code": "crates/hawking-serve/src/system_kv_bank.rs",
+  "kind": "ABSENT",
+  "value": null,
+  "unit": "bytes_saved_at_c4",
+  "command": "crates/hawking-serve/src/system_kv_bank.rs",
+  "absent_reason": "system_kv_bank is a hawking-serve construct, not attached to Qwen38HybridDecodeSession. No prefix-sharing bytes were measured on this body. Claiming the savings without a shared-prefix run would be an assumed compromise of isolation."
+ },
+ "topology": {
+  "production_prefill_path": "Qwen38HybridDecodeSession.generate_greedy teacher-forced session.step per prompt token. Same 1-CB GEMV graph as decode (964 dispatches q4 / 756 fused parent). There is no batched GEMM prefill on this body.",
+  "decode_optimal": true,
+  "production_optimal": false,
+  "separate_prefill_path_allowed": true,
+  "separate_path_would_be": "A prompt-parallel GEMM (or flash-prefill) that amortizes the weight stream across tokens of one prompt, plus a GQA prefill kernel over the growing prefix. Kernels for batched prefill exist on the generic engine (crates/hawking-core/tests/p3_batched_prefill_parity.rs) and are not wired into Qwen38HybridDecodeSession. Building that path is explicitly in scope; this receipt does not ship it.",
+  "quadratic_mechanism": "encode_mha passes seq=position into mha_decode_f32_tcb. Each prefill step attends over the prefix built so far, so cost grows as O(seq) per step and O(N\u00b2) for a walk of N. GEMV weight traffic is ~constant per step and dominates at short context; GQA is the term that makes long prefill worse than N \u00d7 decode.",
+  "g117_g118_cited_not_copied": {
+   "g117": "HEAD:receipts/ascent-2026-08-16/G117_PREFILL_BASELINE.json",
+   "g118": "HEAD:receipts/ascent-2026-08-16/G118_PREFILL_SCALING.json",
+   "g117_claimed": "per-token flat near 32.5 ms (11..688 tokens)",
+   "g118_corrected": "quadratic; 2641-token point made the slope visible; 32K walk refused (~67 min predicted)",
+   "this_receipt": "Re-measured on the q4 incumbent AND the sealed parent. G118 numbers are not copied into MEASURED slots."
+  }
+ },
+ "capability_qualification": {
+  "do_not_assume_kv_quant_is_free": true,
+  "kv_precision_changed_in_this_measurement": false,
+  "short_context_greedy": {
+   "q4": "<think>\nThe user wants a detailed,",
+   "parent": "<think>\nThe user wants a detailed,",
+   "note": "Short complete-wall generates 8 new tokens (or fewer on EOS). This is a coherence canary, not the full capability suite. Parent seal already recorded a 16-token compiler-prompt sample."
+  },
+  "long_prefill_capability": {
+   "kind": "QUALIFIED",
+   "note": "4K/16K walks use max_new_tokens=1. A single greedy id after a long prefix is not a capability score. Fallbacks must stay 0 (dense_w_materialized stays 0). No KV dtype was changed, so these walks cannot be read as 'f16 KV is free'."
+  },
+  "what_would_qualify_a_kv_compromise": "Wire f16 (or int4) KV into Qwen38HybridDecodeSession, rerun the short greedy compiler-prompt sample AND a held-out capability suite, report argmax disagreement / gain / fallbacks against the f32 KV parent. Until that exists the cost is ABSENT."
+ },
+ "absent_gpu_counters": {
+  "DRAM_READ_BYTES": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "bytes",
+   "command": "swift receipts/headless/GPU_LEDGER_METAL_PROBE.json",
+   "absent_reason": "MTLDevice.counterSets on this Apple M3 Ultra contains only the 'timestamp' set with counter ['GPUTimestamp']. supportsCounterSampling.atDispatchBoundary is false. There is no DRAM bytes-moved, cache, occupancy, or per-dispatch GPU counter. Apple GPU does not expose NVIDIA-style Nsight bandwidth counters via the public Metal API."
+  },
+  "DRAM_WRITE_BYTES": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "bytes",
+   "command": "swift receipts/headless/GPU_LEDGER_METAL_PROBE.json",
+   "absent_reason": "MTLDevice.counterSets on this Apple M3 Ultra contains only the 'timestamp' set with counter ['GPUTimestamp']. supportsCounterSampling.atDispatchBoundary is false. There is no DRAM bytes-moved, cache, occupancy, or per-dispatch GPU counter. Apple GPU does not expose NVIDIA-style Nsight bandwidth counters via the public Metal API."
+  },
+  "OS_PAGE_CACHE_COLD_GPU_NS": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "ns",
+   "command": "swift receipts/headless/GPU_LEDGER_METAL_PROBE.json",
+   "absent_reason": "This box cannot purge the unified-memory file cache without a machine-level drop_caches that would disrupt other lanes. Fresh-process 'cold' still sees a warm VM cache after the first run. Reported separately from graph-cold step 0."
+  },
+  "per_dispatch_gpu_ns": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "ns",
+   "command": "swift receipts/headless/GPU_LEDGER_METAL_PROBE.json",
+   "absent_reason": "Production is one mixed command buffer. supportsCounterSampling.atDispatchBoundary=false, so the 964/756 dispatches cannot be split. GPU_NS is the CB GPUEnd\u2212GPUStart interval."
+  },
+  "SIMD_utilization": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "ratio",
+   "command": "swift receipts/headless/GPU_LEDGER_METAL_PROBE.json",
+   "absent_reason": "MTLDevice.counterSets on this Apple M3 Ultra contains only the 'timestamp' set with counter ['GPUTimestamp']. supportsCounterSampling.atDispatchBoundary is false. There is no DRAM bytes-moved, cache, occupancy, or per-dispatch GPU counter. Apple GPU does not expose NVIDIA-style Nsight bandwidth counters via the public Metal API."
+  },
+  "hardware_occupancy_counter": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "ratio",
+   "command": "swift receipts/headless/GPU_LEDGER_METAL_PROBE.json",
+   "absent_reason": "MTLDevice.counterSets on this Apple M3 Ultra contains only the 'timestamp' set with counter ['GPUTimestamp']. supportsCounterSampling.atDispatchBoundary is false. There is no DRAM bytes-moved, cache, occupancy, or per-dispatch GPU counter. Apple GPU does not expose NVIDIA-style Nsight bandwidth counters via the public Metal API."
+  }
+ },
+ "q4_live": {
+  "model": "q4",
+  "from_disk_raws": true
+ },
+ "parent_live": {
+  "model": "parent",
+  "from_disk_raws": true
+ }
+}

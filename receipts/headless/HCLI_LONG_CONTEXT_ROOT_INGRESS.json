@@ -1,0 +1,39 @@
+{
+  "gate": "HCLI_LONG_CONTEXT_ROOT_INGRESS",
+  "generated_at": "2026-08-23T07:40:36Z",
+  "path": "canonical: RuntimePool -> Engine._call_model -> llama-server",
+  "budget": {
+    "total_ctx": 64768,
+    "n_parallel": 1,
+    "per_request_ctx": 64768,
+    "usable_input_tokens": 60624,
+    "source": "discovered:gguf",
+    "model_ceiling": 262144
+  },
+  "prompt_chars": 180342,
+  "prompt_tokens_estimated": 60472,
+  "estimator": "Engine._estimate_prompt_tokens over the assembled messages",
+  "spawn_s": 3.2,
+  "model_calls": [
+    {
+      "endpoint": "http://127.0.0.1:60364/v1/chat/completions",
+      "finish_reason": "stop",
+      "prompt_tokens": 42046,
+      "completion_tokens": 39,
+      "wall_s": 185.16,
+      "max_tokens": 48,
+      "max_tokens_source": "env"
+    }
+  ],
+  "wall_s": 185.16,
+  "answer_excerpt": "{\"kind\": \"answer\", \"content\": \"tools/haider/hcli/resources.py\", \"operations\": [], \"tests\": []}",
+  "prompt_tokens_server_counted": 42046,
+  "runtime_identity": {
+    "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "endpoint": "http://127.0.0.1:60364",
+    "pid": 53218,
+    "requested_n": 1,
+    "ctx_size_arg": 64768
+  },
+  "result": "PASS"
+}

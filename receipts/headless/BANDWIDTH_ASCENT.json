@@ -1,0 +1,866 @@
+{
+ "schema": "hawking.headless.bandwidth_ascent.v1",
+ "generated_at": "2026-08-24T05:44:12Z",
+ "git_head": "dfa585f4ad22ecc005b7c5aa77115036b67b3902",
+ "elapsed_s": 0.014142167012323625,
+ "obligation": "N018 \u2014 close the gap to the roof on the production decode path",
+ "bar_gb_s": 775.0,
+ "spec_peak_gb_s": 819.0,
+ "prior_not_rederived": {
+  "q4_incumbent_gpu_ledger_gb_s": 468.9,
+  "q4_under_bench_gb_s": 289.9,
+  "parent_a_production_bench_gb_s": 231.5,
+  "parent_active_bytes_per_token": 9878901136,
+  "parent_dispatches_per_token": 756
+ },
+ "did_not_load_second_27b": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_write_ascent_or_campaign": true,
+ "parent_immutable": {
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "outside_worktree": true,
+  "catalog_present": true
+ },
+ "levers": [
+  {
+   "id": "qmvfast",
+   "what": "MLX qmv_fast tile: 8 rows/TG, 4-row register x-reuse, TG 64, uint32 code loads"
+  },
+  {
+   "id": "wide64",
+   "what": "whole-group 64-wide uint4 loads, 32 threads/row, scale/bias once per group"
+  },
+  {
+   "id": "tgx",
+   "what": "threadgroup-staged x (K-tile 512), 8 rows/TG, TG 256, split-K via simd_sum"
+  }
+ ],
+ "controls": {
+  "no_op": "tpr64 incumbent geometry (unchanged kernel family)",
+  "deliberately_bad": "runtime_div (bind-time group_size integer divide, measured 1.37x defect)",
+  "load_only": "qmvfast_addr_probe (same tile, skip FMA)",
+  "reps": 7,
+  "report": "min/median/max; overlapping ranges are NOT SEPARATED"
+ },
+ "shader_evidence": {
+  "mixed_present": true,
+  "standalone_present": true,
+  "production_kernels": {
+   "qwen_affine_q2_group64_matvec_qmvfast_r8tg64": true,
+   "qwen_affine_q2_group64_matvec_wide64_r4tg128": true,
+   "qwen_affine_q2_group64_matvec_tgx_r8tg256": true,
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_qmvfast_r8tg64": true,
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_wide64_r4tg128": true,
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgx_r8tg256": true,
+   "qwen_affine_q2_group32_matvec_geo_tpr64_tg128": true,
+   "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div": true
+  },
+  "isolated_kernels": {
+   "affine2_group64_matvec_geo_tpr64_tg128": true,
+   "affine2_group64_matvec_geo_tpr64_tg128_runtime_div": true,
+   "affine2_group64_matvec_qmvfast_r8tg64": true,
+   "affine2_group64_matvec_wide64_r4tg128": true,
+   "affine2_group64_matvec_tgx_r8tg256": true,
+   "affine2_group64_matvec_qmvfast_r8tg64_addr_probe": true
+  },
+  "wired_launch": true,
+  "wired_fused": true,
+  "incumbent_untouched": true,
+  "bad_control_kept": true,
+  "no_dense_w": true
+ },
+ "compile": {
+  "returncode": 0,
+  "skipped": true,
+  "bin_present": true,
+  "note": "reused existing raw; cargo not re-invoked"
+ },
+ "run": null,
+ "isolated_gemv": {
+  "kind": "MEASURED",
+  "parity": [
+   {
+    "dense_w_materialized": 0,
+    "id": "tpr64",
+    "kernel": "affine2_group64_matvec_geo_tpr64_tg128",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "runtime_div",
+    "kernel": "affine2_group64_matvec_geo_tpr64_tg128_runtime_div",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "qmvfast",
+    "kernel": "affine2_group64_matvec_qmvfast_r8tg64",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "wide64",
+    "kernel": "affine2_group64_matvec_wide64_r4tg128",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   },
+   {
+    "dense_w_materialized": 0,
+    "id": "tgx",
+    "kernel": "affine2_group64_matvec_tgx_r8tg256",
+    "max_abs_diff": 0.0,
+    "ok": true,
+    "tolerance": 0.019999999552965164
+   }
+  ],
+  "parity_all_ok": true,
+  "shapes": [
+   {
+    "label": "mlp.gate_proj",
+    "rows": 17408,
+    "cols": 5120,
+    "weight_payload_bytes": 27852800,
+    "arms": {
+     "tpr64": {
+      "role": "no_op_control",
+      "lever": null,
+      "kernel": "affine2_group64_matvec_geo_tpr64_tg128",
+      "gpu_ns_min": 140624,
+      "gpu_ns_median": 141374,
+      "gpu_ns_max": 141583,
+      "gpu_ns_reps": [
+       141583,
+       141374,
+       140624,
+       141500,
+       141291,
+       141374,
+       140874
+      ],
+      "weight_gb_s_median": 197.01500983207663,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "runtime_div": {
+      "role": "deliberately_bad_control",
+      "lever": null,
+      "kernel": "affine2_group64_matvec_geo_tpr64_tg128_runtime_div",
+      "gpu_ns_min": 197125,
+      "gpu_ns_median": 197500,
+      "gpu_ns_max": 198458,
+      "gpu_ns_reps": [
+       198458,
+       197416,
+       197125,
+       197500,
+       197999,
+       197458,
+       198374
+      ],
+      "weight_gb_s_median": 141.02683544303798,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "qmvfast": {
+      "role": "lever",
+      "lever": "qmv_fast tile: 8 rows/TG, 4-row x-reuse, TG 64, uint32 codes",
+      "kernel": "affine2_group64_matvec_qmvfast_r8tg64",
+      "gpu_ns_min": 147041,
+      "gpu_ns_median": 148125,
+      "gpu_ns_max": 152499,
+      "gpu_ns_reps": [
+       147041,
+       148249,
+       148124,
+       148583,
+       148125,
+       148083,
+       152499
+      ],
+      "weight_gb_s_median": 188.0357805907173,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "wide64": {
+      "role": "lever",
+      "lever": "whole-group uint4 loads, 32 threads/row, scale/bias once per 64",
+      "kernel": "affine2_group64_matvec_wide64_r4tg128",
+      "gpu_ns_min": 161458,
+      "gpu_ns_median": 163250,
+      "gpu_ns_max": 168625,
+      "gpu_ns_reps": [
+       168625,
+       168250,
+       162041,
+       161458,
+       167874,
+       163250,
+       162708
+      ],
+      "weight_gb_s_median": 170.6143950995406,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "tgx": {
+      "role": "lever",
+      "lever": "threadgroup-staged x K-tile 512, 8 rows/TG, TG 256, split-K simd_sum",
+      "kernel": "affine2_group64_matvec_tgx_r8tg256",
+      "gpu_ns_min": 87874,
+      "gpu_ns_median": 90000,
+      "gpu_ns_max": 92500,
+      "gpu_ns_reps": [
+       89875,
+       90833,
+       90666,
+       92500,
+       87874,
+       90000,
+       88333
+      ],
+      "weight_gb_s_median": 309.47555555555556,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "qmvfast_addr_probe": {
+      "role": "load_only_ceiling",
+      "lever": "same geometry as qmvfast; skip (q*scale+bias)*x",
+      "kernel": "affine2_group64_matvec_qmvfast_r8tg64_addr_probe",
+      "gpu_ns_min": 28500,
+      "gpu_ns_median": 28750,
+      "gpu_ns_max": 29125,
+      "gpu_ns_reps": [
+       28708,
+       29125,
+       29000,
+       28708,
+       28750,
+       28500,
+       28958
+      ],
+      "weight_gb_s_median": 968.7930434782609,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     }
+    },
+    "separation": {
+     "qmvfast_vs_tpr64": {
+      "separated": true,
+      "faster": false
+     },
+     "wide64_vs_tpr64": {
+      "separated": true,
+      "faster": false
+     },
+     "tgx_vs_tpr64": {
+      "separated": true,
+      "faster": true
+     }
+    }
+   },
+   {
+    "label": "mlp.down_proj",
+    "rows": 5120,
+    "cols": 17408,
+    "weight_payload_bytes": 27852800,
+    "arms": {
+     "tpr64": {
+      "role": "no_op_control",
+      "lever": null,
+      "kernel": "affine2_group64_matvec_geo_tpr64_tg128",
+      "gpu_ns_min": 86916,
+      "gpu_ns_median": 88083,
+      "gpu_ns_max": 90749,
+      "gpu_ns_reps": [
+       87874,
+       88999,
+       86916,
+       88250,
+       88083,
+       90749,
+       87916
+      ],
+      "weight_gb_s_median": 316.21084658787737,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "runtime_div": {
+      "role": "deliberately_bad_control",
+      "lever": null,
+      "kernel": "affine2_group64_matvec_geo_tpr64_tg128_runtime_div",
+      "gpu_ns_min": 119083,
+      "gpu_ns_median": 120291,
+      "gpu_ns_max": 126166,
+      "gpu_ns_reps": [
+       120666,
+       126166,
+       119874,
+       120291,
+       119083,
+       120124,
+       120374
+      ],
+      "weight_gb_s_median": 231.54516963031315,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "qmvfast": {
+      "role": "lever",
+      "lever": "qmv_fast tile: 8 rows/TG, 4-row x-reuse, TG 64, uint32 codes",
+      "kernel": "affine2_group64_matvec_qmvfast_r8tg64",
+      "gpu_ns_min": 104541,
+      "gpu_ns_median": 106458,
+      "gpu_ns_max": 108791,
+      "gpu_ns_reps": [
+       106874,
+       106249,
+       108499,
+       106249,
+       106458,
+       104541,
+       108791
+      ],
+      "weight_gb_s_median": 261.6318172424806,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "wide64": {
+      "role": "lever",
+      "lever": "whole-group uint4 loads, 32 threads/row, scale/bias once per 64",
+      "kernel": "affine2_group64_matvec_wide64_r4tg128",
+      "gpu_ns_min": 96500,
+      "gpu_ns_median": 100000,
+      "gpu_ns_max": 103541,
+      "gpu_ns_reps": [
+       96500,
+       100000,
+       98249,
+       100499,
+       96750,
+       103541,
+       100375
+      ],
+      "weight_gb_s_median": 278.528,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "tgx": {
+      "role": "lever",
+      "lever": "threadgroup-staged x K-tile 512, 8 rows/TG, TG 256, split-K simd_sum",
+      "kernel": "affine2_group64_matvec_tgx_r8tg256",
+      "gpu_ns_min": 100458,
+      "gpu_ns_median": 103208,
+      "gpu_ns_max": 105958,
+      "gpu_ns_reps": [
+       100458,
+       104958,
+       103208,
+       101500,
+       105958,
+       104249,
+       101499
+      ],
+      "weight_gb_s_median": 269.87055267033566,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     },
+     "qmvfast_addr_probe": {
+      "role": "load_only_ceiling",
+      "lever": "same geometry as qmvfast; skip (q*scale+bias)*x",
+      "kernel": "affine2_group64_matvec_qmvfast_r8tg64_addr_probe",
+      "gpu_ns_min": 55999,
+      "gpu_ns_median": 58208,
+      "gpu_ns_max": 60749,
+      "gpu_ns_reps": [
+       58374,
+       60749,
+       59166,
+       58208,
+       55999,
+       56166,
+       56124
+      ],
+      "weight_gb_s_median": 478.50467289719626,
+      "n_reps": 7,
+      "dense_w_materialized": 0
+     }
+    },
+    "separation": {
+     "qmvfast_vs_tpr64": {
+      "separated": true,
+      "faster": false
+     },
+     "wide64_vs_tpr64": {
+      "separated": true,
+      "faster": false
+     },
+     "tgx_vs_tpr64": {
+      "separated": true,
+      "faster": false
+     }
+    }
+   }
+  ],
+  "dense_w_materialized": 0
+ },
+ "production_decode": {
+  "kind": "MEASURED",
+  "active_bytes_per_token": 9878901136,
+  "did_not_mutate_parent": true,
+  "did_not_load_second_27b": true,
+  "fusion": "parent (mlp swiglu + gqa qkv + dn inproj)",
+  "arms": {
+   "tpr64": {
+    "role": "no_op_control",
+    "gpu_ns_min": 27377375,
+    "gpu_ns_median": 27697500,
+    "gpu_ns_max": 27910458,
+    "gpu_ns_reps": [
+     27697500.0,
+     27788625.0,
+     27857249.0,
+     27910458.0,
+     27449250.0,
+     27398875.0,
+     27377375.0
+    ],
+    "achieved_gb_s_median": 356.671220723892,
+    "tok_s_reps": [
+     34.074088262356156,
+     34.31381561442356,
+     34.15262311373441,
+     34.20495806066243,
+     34.37391775868306,
+     34.95108646710522,
+     34.21851241231369
+    ],
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "runtime_div": {
+    "role": "deliberately_bad_control",
+    "gpu_ns_min": 29379750,
+    "gpu_ns_median": 29800250,
+    "gpu_ns_max": 29900000,
+    "gpu_ns_reps": [
+     29900000.0,
+     29815874.0,
+     29794250.0,
+     29839875.0,
+     29800250.0,
+     29690958.0,
+     29379750.0
+    ],
+    "achieved_gb_s_median": 331.50396845664045,
+    "tok_s_reps": [
+     31.894727530859228,
+     31.956442703900574,
+     32.190720766784,
+     32.15308007686867,
+     32.11188066947697,
+     32.194491887738174,
+     32.71020986855387
+    ],
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "qmvfast": {
+    "role": "lever",
+    "gpu_ns_min": 28814833,
+    "gpu_ns_median": 29007000,
+    "gpu_ns_max": 29159583,
+    "gpu_ns_reps": [
+     28814833.0,
+     28940041.0,
+     28963541.0,
+     29159583.0,
+     29037541.0,
+     29007000.0,
+     29155625.0
+    ],
+    "achieved_gb_s_median": 340.56955686558416,
+    "tok_s_reps": [
+     32.98037305678625,
+     33.13539844166828,
+     33.044054081767,
+     32.79452533091441,
+     32.98088979727445,
+     32.905633225037235,
+     32.92628217000662
+    ],
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "wide64": {
+    "role": "lever",
+    "gpu_ns_min": 27838958,
+    "gpu_ns_median": 27997249,
+    "gpu_ns_max": 28247916,
+    "gpu_ns_reps": [
+     28000749.0,
+     28079749.0,
+     27887916.0,
+     27838958.0,
+     27997249.0,
+     27846750.0,
+     28247916.0
+    ],
+    "achieved_gb_s_median": 352.852565478844,
+    "tok_s_reps": [
+     34.14548692679937,
+     34.28954162556846,
+     34.226056665211594,
+     33.98054953344705,
+     34.240689461757384,
+     34.270974554975744,
+     33.987639425142405
+    ],
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   },
+   "tgx": {
+    "role": "lever",
+    "gpu_ns_min": 28668250,
+    "gpu_ns_median": 28840958,
+    "gpu_ns_max": 29006458,
+    "gpu_ns_reps": [
+     28978458.0,
+     28915624.0,
+     29006458.0,
+     28840958.0,
+     28668250.0,
+     28738875.0,
+     28706500.0
+    ],
+    "achieved_gb_s_median": 342.5302701803456,
+    "tok_s_reps": [
+     32.60255609473542,
+     33.23940431663524,
+     33.12285598513446,
+     33.0205310897623,
+     33.235083705028785,
+     33.3210107052477,
+     33.31716221932601
+    ],
+    "token_ids_unchanged_vs_tpr64": true,
+    "token_ids_stable_across_reps": true,
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "dispatches_last_step_reps": [
+     756,
+     756,
+     756,
+     756,
+     756,
+     756,
+     756
+    ],
+    "fallbacks_reps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_reps": 7,
+    "dense_w_materialized": 0
+   }
+  },
+  "before": {
+   "id": "tpr64",
+   "role": "no_op_control",
+   "achieved_gb_s": 356.671220723892,
+   "gpu_ns_median": 27697500,
+   "token_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    6587,
+    264,
+    11346,
+    11,
+    18541,
+    9546,
+    323,
+    15673,
+    314,
+    1204,
+    264,
+    18826
+   ]
+  },
+  "after": {
+   "id": null,
+   "achieved_gb_s": 356.671220723892,
+   "gpu_ns_median": null,
+   "token_ids_unchanged": true,
+   "kept_incumbent_tpr64": true,
+   "note": "no lever beat tpr64 on production GB/s with separated ranges, unchanged token ids, and zero fallbacks; incumbent remains the path"
+  },
+  "deliberately_bad_control": {
+   "role": "deliberately_bad_control",
+   "gpu_ns_min": 29379750,
+   "gpu_ns_median": 29800250,
+   "gpu_ns_max": 29900000,
+   "gpu_ns_reps": [
+    29900000.0,
+    29815874.0,
+    29794250.0,
+    29839875.0,
+    29800250.0,
+    29690958.0,
+    29379750.0
+   ],
+   "achieved_gb_s_median": 331.50396845664045,
+   "tok_s_reps": [
+    31.894727530859228,
+    31.956442703900574,
+    32.190720766784,
+    32.15308007686867,
+    32.11188066947697,
+    32.194491887738174,
+    32.71020986855387
+   ],
+   "token_ids_unchanged_vs_tpr64": true,
+   "token_ids_stable_across_reps": true,
+   "new_token_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    6587,
+    264,
+    11346,
+    11,
+    18541,
+    9546,
+    323,
+    15673,
+    314,
+    1204,
+    264,
+    18826
+   ],
+   "dispatches_last_step_reps": [
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756
+   ],
+   "fallbacks_reps": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "n_reps": 7,
+   "dense_w_materialized": 0
+  },
+  "separation": {
+   "qmvfast": {
+    "separated_from_tpr64": true
+   },
+   "wide64": {
+    "separated_from_tpr64": false,
+    "note": "NOT SEPARATED: gpu_ns ranges overlap; do not quote a mean delta"
+   },
+   "tgx": {
+    "separated_from_tpr64": true
+   }
+  },
+  "bar_gb_s": 775.0,
+  "spec_peak_gb_s": 819.0,
+  "reached_bar": false,
+  "gap_to_bar_gb_s": 418.328779276108,
+  "dense_w_materialized": 0
+ },
+ "before_gb_s": 356.671220723892,
+ "after_gb_s": 356.671220723892,
+ "how_close_to_775": "Production decode path reached 356.7 GB/s (before/tpr64 356.7 GB/s) bar 775 GB/s, spec peak 819 GB/s. Token ids were identical across tpr64, runtime_div, qmvfast, wide64, and tgx (7 reps, zero fallbacks, dense_w_materialized=0, 756 dispatches, 1 CB). qmvfast, wide64, and tgx did not beat tpr64 on production GPU ns with separated ranges (wide64 NOT SEPARATED; qmvfast and tgx slower). The deliberately-bad runtime_div control was slower and separated, so the ranking is not a two-rep fluke. Remainder 418.3 GB/s is not a claim that a fourth tile would close it. Isolated qmvfast addr-probe (load-only) on gate_proj is 968.8 GB/s of the affine2 byte mix. The isolated load-only ceiling is at or above the bar, so the remainder on the production path is compute / scale-bias / non-MLP organs / dispatch ceremony, not the byte mix itself. q4 incumbent GPU_LEDGER 468.9 GB/s is a different (fatter) stream; parent production-bench wall 231.5 GB/s is the number this lane is trying to lift.",
+ "dense_w_materialized": 0,
+ "answer": "Production decode path reached 356.7 GB/s (before/tpr64 356.7 GB/s) bar 775 GB/s, spec peak 819 GB/s. Token ids were identical across tpr64, runtime_div, qmvfast, wide64, and tgx (7 reps, zero fallbacks, dense_w_materialized=0, 756 dispatches, 1 CB). qmvfast, wide64, and tgx did not beat tpr64 on production GPU ns with separated ranges (wide64 NOT SEPARATED; qmvfast and tgx slower). The deliberately-bad runtime_div control was slower and separated, so the ranking is not a two-rep fluke. Remainder 418.3 GB/s is not a claim that a fourth tile would close it. Isolated qmvfast addr-probe (load-only) on gate_proj is 968.8 GB/s of the affine2 byte mix. The isolated load-only ceiling is at or above the bar, so the remainder on the production path is compute / scale-bias / non-MLP organs / dispatch ceremony, not the byte mix itself. q4 incumbent GPU_LEDGER 468.9 GB/s is a different (fatter) stream; parent production-bench wall 231.5 GB/s is the number this lane is trying to lift."
+}

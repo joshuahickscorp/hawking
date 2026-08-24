@@ -62,9 +62,28 @@ def bound_kernels():
     return sorted(lits & declared), len(declared)
 
 
-def seal():
-    ks, n_declared = bound_kernels()
+def lowers_nr_section(nr_path):
+    """Bind this NX to the exact NR it lowers: NR content hash + the requirement families
+    the NX must satisfy. NX evolves as kernels improve while the NR stays stable."""
+    p = pathlib.Path(nr_path)
+    nr = json.loads(p.read_text())
+    reqs = [{k: v for k, v in kr.items() if k != "note"}
+            for kr in nr.get("kernel_requirements", [])]
     return {
+        "nr_path": str(p),
+        "nr_content_sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
+        "nr_kind": nr.get("nr_kind"),
+        "nr_complete_bits_per_weight": nr.get("representation", {}).get("tensors", {})
+            .get("complete_bits_per_weight"),
+        "requirements_the_nx_satisfies": reqs,
+        "note": "the NX lowers THIS NR; its dispatched kernels implement the decoder families the "
+                "NR requires. Change the NR content and this hash no longer matches -- a rebind is required.",
+    }
+
+
+def seal(nr_path=None):
+    ks, n_declared = bound_kernels()
+    d = {
         "nx_version": "1.0.0",
         "nx_kind": "hawking.nos.noetic_executable_genome",
         "compiled_for_machine_genome": machine_genome(),
@@ -101,6 +120,9 @@ def seal():
             "basis": "G093",
         },
     }
+    if nr_path:
+        d["lowers_nr"] = lowers_nr_section(nr_path)
+    return d
 
 
 def check_loadable(nx, current):
@@ -120,10 +142,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seal", action="store_true"); ap.add_argument("--dump")
     ap.add_argument("--refusal-test"); ap.add_argument("--out", type=pathlib.Path)
+    ap.add_argument("--nr", help="bind this NX to the NR it lowers (content-hash + requirements)")
     a = ap.parse_args()
 
     if a.seal:
-        d = seal()
+        d = seal(nr_path=a.nr)
         txt = json.dumps(d, indent=2) + "\n"
         if a.out:
             a.out.write_text(txt)
@@ -150,6 +173,10 @@ def main():
         print(f"  residency   {d['residency_plan']['all_weights']}")
         print(f"  scheduling  {d['scheduling']['dispatches_per_token']} dispatches/token, "
               f"{d['scheduling']['host_encode_ns_per_dispatch']} ns/dispatch host encode")
+        if "lowers_nr" in d:
+            ln = d["lowers_nr"]
+            print(f"  lowers NR   {ln['nr_path']} sha {ln['nr_content_sha256'][:16]} "
+                  f"@ {ln['nr_complete_bits_per_weight']} bpw, {len(ln['requirements_the_nx_satisfies'])} requirement families")
         print(f"  loadable here: {'YES' if ok else 'NO'}")
         return 0 if ok else 1
 

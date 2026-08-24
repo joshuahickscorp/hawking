@@ -151,7 +151,7 @@ Integration points (future, not this scaffold):
 ## Non-goals (this scaffold)
 
 - No live Qwen / Gravity / model downloads
-- No edits to `lab/operators/frankenstein_*` or frankenstein evidence
+- No edits to `hawking-experiments/frankenstein/operators/frankenstein_*` or frankenstein evidence
 - No OS Seatbelt profile generation from this module yet
 - No committing venvs, no push/PR, no detached daemons
 - No self-merge automation

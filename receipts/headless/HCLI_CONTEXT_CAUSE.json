@@ -1,0 +1,103 @@
+{
+  "probe": "context_budget_probe",
+  "repo": "/Users/scammermike/Downloads/hawking-copy",
+  "hops": {
+    "1_runtime_count": {
+      "count": 3,
+      "source": "machine_genome.json"
+    },
+    "2_configured_ctx_size": {
+      "ctx_size": 32768,
+      "source": "tools/haider/hcli/runtime.py:201 hardcoded default"
+    },
+    "3_decode_topology": {
+      "topology": "slot",
+      "source": "receipts/headless/DECODE_TOPOLOGY.json"
+    },
+    "4_llama_parallel": 3,
+    "5_per_request_usable_ctx": 11008
+  },
+  "arithmetic": {
+    "rule": "per_seq = ceil(ctx_size / n_parallel / 256) * 256",
+    "ctx_size": 32768,
+    "n_parallel": 3,
+    "per_seq": 11008
+  },
+  "observed_failure": {
+    "receipt": ".hcli/receipts/887c6271-d82d-4d30-847e-1e02497ca8e6.json",
+    "n_prompt_tokens": 23532,
+    "n_ctx": 11008,
+    "recovered_n_parallel": 3,
+    "reproduced": true
+  },
+  "live_runtime": {
+    "reachable": true,
+    "url": "http://127.0.0.1:8080/props",
+    "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "total_slots": 4,
+    "per_slot_n_ctx": 262144
+  },
+  "capability_gap": {
+    "live_server_per_slot_n_ctx": 262144,
+    "hcli_assumed_total_ctx": 32768,
+    "hcli_reads_live_server": false,
+    "note": "No attach/discovery path exists: grep for '/props' in tools/haider/hcli/{runtime,backends}.py returns nothing, so HCLI always spawns its own server at its own default and never learns the real ceiling of one already running."
+  },
+  "preflight": {
+    "root_prompt_tokens": 23532,
+    "generation_reserve": 0,
+    "demand": 23532,
+    "usable": 11008,
+    "fits": false
+  },
+  "gate": "HCLI_CONTEXT_CAUSE_IDENTIFIED",
+  "result": "PASS",
+  "generated_at": "2026-08-23T03:26:49Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "causal_chain": [
+    "cli.py:47 resolve_resident_runtime_limit -> ~/.config/hcli/machine_genome.json resident_runtime_limit=3 (clamped by cli.py:29 MAX_RUNTIME_COUNT=8)",
+    "cli.py:153 args.runtime_count=3 -> cli.py:245 -> app.py:25 -> controller.py:45",
+    "controller.py:391-393 RuntimePool(requested_n=3)",
+    "runtime.py:201 self.ctx_size = int(os.environ.get('HCLI_CTX_SIZE','32768')) -- hardcoded, independent of model or live runtime capability",
+    "runtime.py:215 resolve_decode_topology -> machine.py:544 -> 'slot' because receipts/headless/DECODE_TOPOLOGY.json exists",
+    "runtime.py:611 slot branch -> runtime.py:426-443 _make_backend(n_slots=3)",
+    "backends.py:333-341 llama-server --ctx-size 32768 --parallel 3",
+    "llama.cpp build 9430 (d48a56eff): per-seq n_ctx = ceil(32768/3/256)*256 = 11008",
+    "engine.py:445 execute -> engine.py:1428 _call_model raises AFTER the HTTP 400; no preflight exists"
+  ],
+  "defects": {
+    "D1_hardcoded_ceiling": "runtime.py:201 / backends.py:228 / config.py:129 / engine.py:967 / engine.py:1207 each carry an independent 32768 literal. None is derived from the model's real 262144 ceiling.",
+    "D2_divisor_invisible": "Nothing in HCLI computes n_ctx/n_parallel. HCLI believes it holds 32768 while llama-server hands each slot 11008.",
+    "D3_no_preflight": "The budget violation surfaces as an HTTP 400 from the model server instead of a structured pre-inference diagnostic.",
+    "D4_no_discovery": "No /props attach path. A llama-server already running with per-slot n_ctx=262144 is invisible to HCLI, which spawns its own at 32768.",
+    "D5_evidence_budget_sized_against_wrong_ceiling": "engine._evidence_char_budget derives the admission budget from 32768 while the runtime hands the request 11008. The evidence subsystem is therefore licensed to admit ~3x more context than can ever be sent, and it uses that licence fully: 76.4% of the failing 23532-token request was inlined evidence."
+  },
+  "reproduction": "python3 tools/headless/context_budget_probe.py  (exit 2, prints per-request usable 11008)",
+  "prompt_anatomy": {
+    "method": "live llama-server /tokenize against the exact failing goal text from the receipt",
+    "system_prompt_tokens": 279,
+    "goal_tokens": 5271,
+    "evidence_tokens": 17952,
+    "assembled_approx": 23502,
+    "server_reported": 23532,
+    "delta": 30,
+    "delta_explanation": "chat template framing added by --jinja",
+    "evidence_share_pct": 76.4,
+    "evidence_files": [
+      "tools/headless/hcli_bootstrap_live_proof.py (20739 chars)",
+      "tools/headless/hcli_command_ingress_test.py (4345 chars)",
+      "tools/headless/hcli_grok_dispatch_test.py (14499 chars)",
+      "tools/headless/hcli_dag_consolidation_test.py (11615 chars)",
+      "tools/headless/hcli_scheduler_test.py (15318 chars)"
+    ],
+    "note": "engine._gather_evidence inlines whole files named by path tokens in the goal, up to _evidence_char_budget()."
+  },
+  "budget_arithmetic_defect": {
+    "evidence_char_budget": "engine.py:964-1007 -> (HCLI_CTX_SIZE 32768 - HCLI_MODEL_TOKENS 6500 - 4096) * 3 = 22172 * 3 = 66516 chars. Measured admitted exactly 66516 chars = 17952 tokens.",
+    "sized_against": 32768,
+    "actual_per_request_ceiling": 11008,
+    "oversizing_factor": 2.98,
+    "max_tokens_confirmation": "engine.py:1206-1213 _resolve_max_tokens: 32768 - 30259(est) = 2509, which is exactly the max_tokens recorded in the failing receipt. Independent confirmation that 32768 is the ceiling the code believes in.",
+    "chars_per_token_assumption": "3.0 assumed; 3.71 measured on this tokenizer (conservative in the safe direction)"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "gate": "HCLI_STATUS_OBSERVABILITY",
+  "generated_at": "2026-08-23T04:30:45Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "rendered": "mission \u2014  phase=\u2014\nGoal: (unset)\nWU ready=0 running=0 blocked=0 completed=0 failed=0\nQwen health=down resident=0 active=0 queued=0 n_ctx=unknown prompt=unknown tps=unknown\nGrok admitted=2 active=1 queued=0 done=33 failed=0 latency=89s\nCPU decode=0 compile=0 test=0 tool=0\nMutation held=false pid=unknown owner=unknown waiters=0\nVerifier backlog=unknown  accepted/h=unknown  ckpt=unknown  watchdog=unknown",
+  "line_count": 8,
+  "required_fields": {
+    "mission/phase/Goal": true,
+    "WU ready/running/blocked/completed": true,
+    "Qwen resident/active/queued/context/throughput": true,
+    "Grok admitted/active/queued/done/failed/latency": true,
+    "CPU/tool activity": true,
+    "mutation owner and waiters": true,
+    "verifier backlog": true,
+    "verified WorkUnits per hour": true,
+    "checkpoint age": true,
+    "watchdog state": true
+  },
+  "all_fields_present": true,
+  "missing": [],
+  "truthfulness": {
+    "principle": "unknown is printed where the value cannot be observed; a fabricated 0 is not acceptable",
+    "unknown_count": 9,
+    "live_grok_wrappers_now": 1,
+    "grok_line": "Grok admitted=2 active=1 queued=0 done=33 failed=0 latency=89s",
+    "before": "Grok active came from WorkUnit flags and read 0 while 11 grok processes were live; Qwen resident/active came from pool flags with no probe; failed_restarting was hardcoded 0",
+    "after": "Grok occupancy counts live grok-run tasks from ~/.claude-grok/tasks/*/status and requires a matching process; Qwen is probed via /health and /slots and reports health=down when unreachable rather than echoing an intended count; the controller's grok snapshot returns None fields plus an error on failure instead of zeros"
+  },
+  "result": "PASS",
+  "p0_7_gate_conclusive": {
+    "reported_active": 1,
+    "live_grok_processes": 1,
+    "ok": true,
+    "note": "Run while exactly one grok-run lane was live. Reported activity matched the process table; the pre-change surface reported active=0 with 11 lanes running."
+  }
+}

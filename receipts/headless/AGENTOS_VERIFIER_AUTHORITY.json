@@ -1,0 +1,22 @@
+{
+  "gate": "AGENTOS_VERIFIER_AUTHORITY",
+  "result": "PASS",
+  "generated_at": "2026-08-23T05:05:00Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "gate_suite": "tools/headless/hcli_p0_gates.py -> 8 GREEN, 0 RED, 1 INCONCLUSIVE. P0-7 is inconclusive only when no Grok lane is live; it returned conclusive GREEN earlier with reported_active=1 against live_grok_processes=1.",
+  "attacks_closed": {
+    "self_promotion_from_prose": "Grok text alone yields validation ok=False reason=GROK_REQUIRES_VERIFIER; Mission._accepted deletes the model's raw output before deciding.",
+    "unfailable_verifier_at_compile_time": "P0-1. start_ultragoal no longer emits python3 -c 'raise SystemExit(0)'. The real directive compiled to 57 obligations all sharing that command; it now compiles to 25 obligations with zero unfailable verify commands, and acceptance no longer restates the obligation.",
+    "unfailable_verifier_at_run_time": "P0-4, found while proving P0-3: a Grok task in state done was accepted on the strength of python3 -c \"raise SystemExit(0)\", because the executor ran verifiers through shell=True and took exit 0. It now reuses verifier_pipeline.command_is_admissible and rejects VACUOUS_COMMAND / EMPTY_COMMAND. Scoped to those two verdicts only: the pipeline's first-token allowlist is narrower than a legitimate WorkUnit verifier, and applying it wholesale wrongly refused `test -f x && grep -q nonce x`.",
+    "failed_backend_accepted": "P0-3. A Grok terminal state of failed/error/timeout/refused/cancelled/stale-running/unknown returns GROK_TERMINAL_STATE_NOT_SUCCESSFUL without consulting the verifier.",
+    "verifier_blind_completion": "P0-8. Scheduler.complete raises UnverifiedCompletion without a passing outcome; Mission passes its validation through explicitly.",
+    "forged_verified_on_disk": "Ledger.parse demotes a VERIFIED obligation with no verify receipt to STALE (not PENDING: unsatisfied either way, but distinguishable from never-attempted) and leaves the file untouched. is_goal_met is False.",
+    "acceptance_criteria_mutation": "Mission._route_validation now prefers the WorkUnit's OWN verifier, fixed at dispatch, over raw['tests'] -- which is model output, so letting it nominate the tests that judge its own work lets it name a file written in the same mutation."
+  },
+  "residual_risk": {
+    "id": "R1",
+    "severity": "medium",
+    "detail": "A WorkUnit with NO verifier of its own still falls back to engine._validate over model-supplied tests. That path is now TAGGED acceptance_source=model_supplied_tests so it is visible in the receipt rather than indistinguishable from a real gate, but it is not yet refused: doing so would require every WorkUnit to carry a verifier, which the compiler does not yet guarantee."
+  },
+  "test_suite": "python3 -m pytest tools/haider/hcli/tests -q -> 314 passed, 1 skipped"
+}

@@ -1,0 +1,49 @@
+{
+  "gate": "HCLI_REPORT_COMPACTION",
+  "result": "PASS",
+  "generated_at": "2026-08-23T03:54:47Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "original_defect": "compact=716 raw=39 \u2014 compile_backend_report emitted a fixed 13-key schema, and the live gate compared len(json.dumps(compact_dict)) against raw text bytes, two different objects.",
+  "semantic_repair": "payload_dumps() measures only the context-facing signal; provenance keys (raw_report_path, evidence_refs, compact_path, workspace) stay on the object for addressability but out of the size measurement. Consecutive duplicate lines collapse. Tiny reports mark passthrough. The 64-byte floor and the 8000 ceiling were NOT changed.",
+  "red_before_green": {
+    "old_canary2_identical": false,
+    "old_canary2_lens": [
+      906,
+      1514
+    ],
+    "old_tiny_compact": 311,
+    "old_tiny_passes_64_floor": false
+  },
+  "measured": {
+    "tiny": {
+      "raw": 39,
+      "payload": 59,
+      "floor": 64,
+      "passes": true
+    },
+    "large": {
+      "raw": 102933,
+      "payload": 537,
+      "under_8000": true,
+      "beats_raw": true
+    },
+    "canary_material_change": {
+      "finding": true,
+      "status": true,
+      "verifier_inputs": true
+    },
+    "canary_noise_does_not_balloon": {
+      "identical": true,
+      "len_50": 190,
+      "len_5000": 190
+    },
+    "decision_critical_retained_in_large": true
+  },
+  "regressions_caught_and_fixed_by_me_at_merge": [
+    "The delegated lane's grok_bridge.py was HEAD-based and would have reverted 106 lines of pre-existing dirty work (the non-blocking poll() and the deadline-owning wait()). Its only real delta vs HEAD was compact_report, which the working tree already had, so that file was deliberately NOT merged.",
+    "The passthrough branch assigned raw_text verbatim to final_summary, leaking <think> reasoning blocks and tool payloads ({\"tool\":\"shell\",\"cmd\":\"cat /etc/passwd\"}) into the compact record for any report under 256 bytes. Caught by test_grok_async.py::test_compact_report_does_not_dump_raw_trace. Fixed by routing passthrough through the same line filter (_summary(..., whole=True))."
+  ],
+  "leak_closed": true,
+  "test_suite": "python3 -m pytest tools/haider/hcli/tests -q -> 229 passed, 1 skipped",
+  "no_test_weakened": "No existing test was edited, skipped, or deleted. Both failures surfaced at merge were real regressions and were fixed in the implementation."
+}

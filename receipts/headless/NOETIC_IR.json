@@ -1,0 +1,732 @@
+{
+  "schema": "hawking.headless.noetic_ir.v1",
+  "ir_kind": "hawking.nos.noetic_representation_ir",
+  "generated_at": "2026-08-24T06:04:11Z",
+  "git_head": "1abd178a3c0eec8ec39731c171f4e220ff8749a4",
+  "elapsed_s": 0.0012,
+  "question": "Is there an IR with an executing node \u2014 semantic representation versus machine compilation \u2014 that produces the same numbers as the same computation done directly?",
+  "answer": "Yes. Family grouped_absmax_q4 is expressed as a semantic IR node and EXECUTED from it. y_from_ir vs y_direct max_abs_diff=1.907e-06 rel_l2=1.023e-07. Kernel names live on the machine lowering, not the semantic node. A 1 GB planted SharedBasis moves complete_bpw and cannot execute.",
+  "doctrine": {
+    "semantic": "what function this is, portable. grouped_absmax q4 is offset-binary nibbles with fp16 absmax/8 scale at group 64, regardless of device.",
+    "machine": "how it executes here. geo_tpr64_tg128, threadgroup 128, the M3 Ultra genome \u2014 NX. An NX that could load anywhere has failed.",
+    "executing_node": "the semantic interpreter: it reads the packed payload and produces y without writing W. That is the IR. The Metal kernel is a lowering of the same function, not the function.",
+    "nr_nx_split_preserved": true
+  },
+  "already_approximates_the_ir": [
+    {
+      "what": "hawking.nos.noetic_representation (NR / G103)",
+      "path": "tools/nr_container.py",
+      "receipt": "receipts/ascent-2026-08-16/G103_NR_uniform-q4-v1.json",
+      "does": "Portable schema of the patient: codec families, kernel REQUIREMENTS (grouped_absmax_decoder group 64, gated_delta_recurrence). Refuses machine-specific field names.",
+      "does_not": "Execute. complete_bits_per_weight is the packer's declared number. validate() accepted a 1 GB SharedBasis + TensorTrain family + 50 MB generated blob; BPW stayed 4.252735126866492 (receipts/headless/NOETIC_CLOSURE_GAP.json).",
+      "kind": "schema"
+    },
+    {
+      "what": "hawking.nos.noetic_executable_genome (NX / G104)",
+      "path": "tools/nx_genome.py",
+      "receipt": "receipts/ascent-2026-08-16/G104_NX_SEAL.json",
+      "does": "Machine compilation: genome digest, the 38 dispatched kernels of 554 declared, threadgroup geometry, residency, scheduling. An NX that could load anywhere has failed; the 40-core refusal test is the teeth.",
+      "does_not": "Interpret a representation. Kernel names are a seal of what the Rust decode path already dispatches, not a graph a VM walks.",
+      "kind": "schema"
+    },
+    {
+      "what": "hawking.gravity1.program.v1 (gravity_ir)",
+      "path": "tools/gravity_ir.py",
+      "receipt": null,
+      "does": "Program of QuantTensor/SharedBasis/GeneratedBlock/\u2026 nodes. Every node reports stored_bytes. Shared objects are content-addressed and counted once. Complete BPW is computed FROM the program. Every node NAMES a kernel.",
+      "does_not": "Execute. Node.kernel is a string. There is no interpreter. 'A representation with no execution path is not a representation, it is a compression demo' \u2014 and the kernel field is still a name.",
+      "kind": "schema"
+    },
+    {
+      "what": "hawking.nos.nvm_minimal.v1 (G120)",
+      "path": "tools/nvm_minimal.py",
+      "receipt": null,
+      "does": "Binds G106 route kinds to NX kernel names, then invokes the Rust greedy binary.",
+      "does_not": "Dispatch Metal or own the residual stream. Explicitly refuses to reimplement execution in Python.",
+      "kind": "orchestrator"
+    },
+    {
+      "what": "production fused Q4 GEMV",
+      "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+      "receipt": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+      "does": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 unpacks nibbles in registers and FMAs into y. 401 dispatches/token. W is never written. NATIVE (NOETIC_NATIVE_OPERATOR.json).",
+      "does_not": "Take an IR document as input. The graph is hard-coded in qwen38_hybrid_decode.rs.",
+      "kind": "executing_kernel"
+    },
+    {
+      "what": "operation / kernel censuses",
+      "path": "tools/headless/noetic_operation_census.py",
+      "receipt": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+      "does": "Enumerate what actually runs (38 dispatched, workhorse grouped-absmax q4).",
+      "does_not": "Provide a node type or an interpreter.",
+      "kind": "census"
+    }
+  ],
+  "node_types": {
+    "grouped_absmax": {
+      "executes": true,
+      "family": "grouped_absmax_q4",
+      "experiment": "uniform-q4-v1 production decode: grouped-absmax q4 group-64 is the workhorse GEMV (401 dispatches/token of 964).",
+      "receipts": [
+        "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+        "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+        "receipts/headless/NOETIC_NATIVE_OPERATOR.json"
+      ],
+      "semantic": "signed offset-binary nibbles, fp16 absmax/8 scale, group 64",
+      "machine_example": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 tg=128 tpr=64"
+    },
+    "ternary_group64": {
+      "executes": true,
+      "family": "ternary_group64",
+      "experiment": "noetic_composition requantize_absmax bits=2 (Ternary Weight Networks threshold 0.7\u00b7mean|w|, alpha refit on the kept set). Whole-model ternary flipped the composition-ladder prediction.",
+      "receipts": [
+        "receipts/headless/NOETIC_COMPOSITION.json",
+        "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+      ],
+      "semantic": "per-group ternary {-\u03b1,0,+\u03b1}, group 64",
+      "machine_example": "cpu_interpreter (no Metal ternary kernel on the Qwen3.8 path)"
+    },
+    "binary_sign_codes": {
+      "executes": true,
+      "family": "binary_sign_codes",
+      "experiment": "HGRAVB01 binary_sign_scale on Q80 gate_proj; composition 1-bit sign code (\u03b1 = mean|w|) after bits=1 absmax collapsed to the zero tensor. test_lowbit_codec locks the sign-code optimum.",
+      "receipts": [
+        "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+        "tools/headless/test_lowbit_codec.py"
+      ],
+      "semantic": "1-bit sign, fp16 mean-abs scale, group 64",
+      "machine_example": "q80_binary_group_matvec_tg256 (Q80 production uses group 128)"
+    },
+    "low_rank_uv": {
+      "executes": true,
+      "family": "low_rank_uv",
+      "experiment": "HGRAVS01 y=L@(R@x); q80_hgravs01_two_stage_matvec threadgroup mid[160]. NATIVE vs reconstruct-then-GEMM ORACLE in NOETIC_NATIVE_OPERATOR.",
+      "receipts": [
+        "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+        "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+      ],
+      "semantic": "y = L @ (R @ x); W is not a stored object",
+      "machine_example": "q80_hgravs01_two_stage_matvec / two q80_hgravs01_factor_matvec_*"
+    },
+    "product_quantization": {
+      "executes": true,
+      "family": "product_quantization",
+      "experiment": "gravity_pq_matvec: per subspace, pq_index \u2192 codebook entry, fma into acc, simd_sum to y[row]. EXISTS and REACHABLE; not on uniform-q4-v1. C4 refused the Qwen3.8 port, not the kernel.",
+      "receipts": [
+        "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+        "receipts/headless/C4CODEBOOK_DESIGN.json"
+      ],
+      "semantic": "subspace codebooks \u00d7 packed indices; W never written",
+      "machine_example": "gravity_pq_matvec"
+    },
+    "shared_basis": {
+      "executes": false,
+      "family": "shared_basis",
+      "experiment": "G035 shared column-basis vs independent SVD at matched bits: shared_beats_independent=false on 3/3 pairs. C1: NOT_WORTH_BUILDING (fidelity, not reconstruction). Kernel census family shared_basis_x_coefficients = ABSENT. The node exists so a planted basis is charged; it has no executor.",
+      "receipts": [
+        "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+        "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+        "receipts/headless/NOETIC_CLOSURE_GAP.json"
+      ],
+      "semantic": "one basis stored once; per-site coefficients",
+      "machine_example": null
+    }
+  },
+  "cannot_express": [
+    {
+      "what": "tensor_train / Tucker / tensor-ring as an executing node",
+      "why": "G034/C2: 373/373 rows unhealthy, healthy=true count 0 at sub-0.5 BPW. G096 NEVER BUILT a TT node in NR. Kernel census tensor_contraction = ABSENT. A node nothing executed, that the experiment closed, is speculative \u2014 left out.",
+      "receipts": [
+        "receipts/headless/C2TENSOROP_DESIGN.json",
+        "receipts/headless/NOETIC_KERNEL_CENSUS.json"
+      ]
+    },
+    {
+      "what": "shared_basis as an executing operator",
+      "why": "The node is in the IR so accounting cannot go blind, but there is no executor: zero shaders mention shared_basis. Execute raises UnexecutableNode. This is the honest form of the G103 hole: we charge the 1 GB and we refuse to claim it ran.",
+      "receipts": [
+        "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+      ]
+    },
+    {
+      "what": "UV + sparse as one fused representation",
+      "why": "C3: no kernel does UV + sparse in one representation. Mixed decode assigns low-rank to down_proj and binary+sparse to up_proj \u2014 different organs. Fusion traffic save is 2199.6 ns. NOT_WORTH_BUILDING.",
+      "receipts": [
+        "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+      ]
+    },
+    {
+      "what": "structured Hadamard as a weight-side operator without materialising W",
+      "why": "strand_rht_forward_cols transforms x then a bitslice GEMV consumes tx (feature=tq). G032 Block-diagonal Sylvester-Hadamard was a reparameterization with GENERATED_BPW_EQUIVALENT=0.0. Kernel census structured_transform = PARTIAL.",
+      "receipts": [
+        "receipts/headless/NOETIC_KERNEL_CENSUS.json"
+      ]
+    },
+    {
+      "what": "a sidecar file that never became a node (the remaining G103 hole)",
+      "why": "account() sums payload bytes + referenced pool objects. A path string with no nbytes (NR's basis.bin next to tensors/) is still invisible. Closing THAT is the executable-closure hash over files the loader actually opens (NOETIC_EXECUTABLE_CLOSURE.json), not another schema field. This IR does not walk directories and does not load a 27B to find stragglers.",
+      "receipts": [
+        "receipts/headless/NOETIC_CLOSURE_GAP.json",
+        "receipts/headless/NOETIC_EXECUTABLE_CLOSURE.json"
+      ]
+    },
+    {
+      "what": "whole-model Metal dispatch of a 27B from this document",
+      "why": "Do not load a second 27B. The production kernel is cited, not relaunched. Semantic execution here is a CPU interpreter of the same function on micro-sites.",
+      "receipts": [
+        "receipts/headless/NOETIC_NATIVE_OPERATOR.json"
+      ]
+    }
+  ],
+  "executed_families": [
+    "grouped_absmax_q4",
+    "ternary_group64",
+    "binary_sign_codes",
+    "low_rank_uv",
+    "product_quantization"
+  ],
+  "flagship": {
+    "family": "grouped_absmax_q4",
+    "node_id": "site.q4",
+    "y_from_ir": [
+      -8.272335052490234,
+      4.0400919914245605,
+      3.1129021644592285,
+      2.2656216621398926,
+      1.289632797241211,
+      -2.4786951541900635,
+      6.565053462982178,
+      -15.321873664855957
+    ],
+    "y_direct": [
+      -8.272335052490234,
+      4.040092468261719,
+      3.1129019260406494,
+      2.265622138977051,
+      1.2896318435668945,
+      -2.478695869445801,
+      6.565053939819336,
+      -15.32187271118164
+    ],
+    "max_abs_diff": 1.9073486328125e-06,
+    "rel_l2": 1.023363678397145e-07,
+    "match_atol_1e5": true,
+    "y_source_dense": [
+      -8.342743873596191,
+      4.949780464172363,
+      3.9521572589874268,
+      3.2623956203460693,
+      1.372406005859375,
+      -2.2060041427612305,
+      8.02859878540039,
+      -15.61324691772461
+    ],
+    "quantization_rel_l2_vs_source": 0.1065628363121008,
+    "direct_is": "the same function evaluated by reconstructing the implied matrix and doing a dense matvec. Difference is floating-point association, not a different codec."
+  },
+  "executions": [
+    {
+      "node_id": "site.q4",
+      "family": "grouped_absmax_q4",
+      "kind": "grouped_absmax",
+      "executes": true,
+      "shape": {
+        "rows": 16,
+        "cols": 64
+      },
+      "y_from_ir": [
+        -8.272335052490234,
+        4.0400919914245605,
+        3.1129021644592285,
+        2.2656216621398926,
+        1.289632797241211,
+        -2.4786951541900635,
+        6.565053462982178,
+        -15.321873664855957
+      ],
+      "y_direct": [
+        -8.272335052490234,
+        4.040092468261719,
+        3.1129019260406494,
+        2.265622138977051,
+        1.2896318435668945,
+        -2.478695869445801,
+        6.565053939819336,
+        -15.32187271118164
+      ],
+      "max_abs_diff": 1.9073486328125e-06,
+      "rel_l2": 1.023363678397145e-07,
+      "match_atol_1e5": true,
+      "direct_is": "the same function evaluated by reconstructing the implied matrix and doing a dense matvec. Difference is floating-point association, not a different codec.",
+      "ir_path": "interpreter of the packed payload; W is not written",
+      "machine": {
+        "kind": "semantic_interpreter",
+        "portable": true,
+        "target": "cpu",
+        "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to.",
+        "equivalent_metal_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "equivalent_metal_kernel_is_not_semantic": true
+      },
+      "y_source_dense": [
+        -8.342743873596191,
+        4.949780464172363,
+        3.9521572589874268,
+        3.2623956203460693,
+        1.372406005859375,
+        -2.2060041427612305,
+        8.02859878540039,
+        -15.61324691772461
+      ],
+      "quantization_rel_l2_vs_source": 0.1065628363121008,
+      "source_note": "y_source_dense is original W @ x, a DIFFERENT computation (quantisation error). y_direct is reconstructed-W @ x, the same computation as the IR interpreter."
+    },
+    {
+      "node_id": "site.ternary",
+      "family": "ternary_group64",
+      "kind": "ternary_group64",
+      "executes": true,
+      "shape": {
+        "rows": 8,
+        "cols": 64
+      },
+      "y_from_ir": [
+        4.706055641174316,
+        -5.6233696937561035,
+        -11.558553695678711,
+        10.736501693725586,
+        0.38489484786987305,
+        -10.704909324645996,
+        0.945826530456543,
+        2.931443691253662
+      ],
+      "y_direct": [
+        4.7060546875,
+        -5.623369216918945,
+        -11.558553695678711,
+        10.736501693725586,
+        0.38489484786987305,
+        -10.70490837097168,
+        0.9458262920379639,
+        2.931443929672241
+      ],
+      "max_abs_diff": 9.5367431640625e-07,
+      "rel_l2": 7.113486951094395e-08,
+      "match_atol_1e5": true,
+      "direct_is": "the same function evaluated by reconstructing the implied matrix and doing a dense matvec. Difference is floating-point association, not a different codec.",
+      "ir_path": "interpreter of the packed payload; W is not written",
+      "machine": {
+        "kind": "semantic_interpreter",
+        "portable": true,
+        "target": "cpu",
+        "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to."
+      }
+    },
+    {
+      "node_id": "site.binary",
+      "family": "binary_sign_codes",
+      "kind": "binary_sign_codes",
+      "executes": true,
+      "shape": {
+        "rows": 8,
+        "cols": 64
+      },
+      "y_from_ir": [
+        -2.065375804901123,
+        -7.9706830978393555,
+        -1.4113969802856445,
+        -1.671072006225586,
+        4.577573776245117,
+        -14.181633949279785,
+        -2.29512882232666,
+        -5.668122291564941
+      ],
+      "y_direct": [
+        -2.065375566482544,
+        -7.9706830978393555,
+        -1.4113974571228027,
+        -1.6710715293884277,
+        4.577573299407959,
+        -14.181633949279785,
+        -2.29512882232666,
+        -5.668121337890625
+      ],
+      "max_abs_diff": 9.5367431640625e-07,
+      "rel_l2": 7.045911864661875e-08,
+      "match_atol_1e5": true,
+      "direct_is": "the same function evaluated by reconstructing the implied matrix and doing a dense matvec. Difference is floating-point association, not a different codec.",
+      "ir_path": "interpreter of the packed payload; W is not written",
+      "machine": {
+        "kind": "semantic_interpreter",
+        "portable": true,
+        "target": "cpu",
+        "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to.",
+        "equivalent_metal_kernel": "q80_binary_group_matvec_tg256",
+        "equivalent_metal_kernel_is_not_semantic": true
+      }
+    },
+    {
+      "node_id": "site.uv",
+      "family": "low_rank_uv",
+      "kind": "low_rank_uv",
+      "executes": true,
+      "shape": {
+        "rows": 12,
+        "cols": 32
+      },
+      "y_from_ir": [
+        10.395216941833496,
+        9.062145233154297,
+        10.055835723876953,
+        2.631317615509033,
+        3.1870622634887695,
+        -0.837928295135498,
+        15.804161071777344,
+        4.677626609802246
+      ],
+      "y_direct": [
+        10.395218849182129,
+        9.06214714050293,
+        10.055834770202637,
+        2.6313183307647705,
+        3.1870625019073486,
+        -0.8379281759262085,
+        15.804163932800293,
+        4.6776275634765625
+      ],
+      "max_abs_diff": 2.86102294921875e-06,
+      "rel_l2": 1.8780393323578502e-07,
+      "match_atol_1e5": true,
+      "direct_is": "the same function evaluated by reconstructing the implied matrix and doing a dense matvec. Difference is floating-point association, not a different codec.",
+      "ir_path": "interpreter of the packed payload; W is not written",
+      "machine": {
+        "kind": "semantic_interpreter",
+        "portable": true,
+        "target": "cpu",
+        "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to.",
+        "equivalent_metal_kernel": "q80_hgravs01_two_stage_matvec",
+        "equivalent_metal_kernel_is_not_semantic": true
+      }
+    },
+    {
+      "node_id": "site.pq",
+      "family": "product_quantization",
+      "kind": "product_quantization",
+      "executes": true,
+      "shape": {
+        "rows": 6,
+        "cols": 32
+      },
+      "y_from_ir": [
+        -0.2287764549255371,
+        -4.92739200592041,
+        6.0927276611328125,
+        1.0385947227478027,
+        -6.805136680603027,
+        -2.2262139320373535
+      ],
+      "y_direct": [
+        -0.2287764549255371,
+        -4.927392959594727,
+        6.092728137969971,
+        1.0385942459106445,
+        -6.805136203765869,
+        -2.2262141704559326
+      ],
+      "max_abs_diff": 9.5367431640625e-07,
+      "rel_l2": 1.2035740218775835e-07,
+      "match_atol_1e5": true,
+      "direct_is": "the same function evaluated by reconstructing the implied matrix and doing a dense matvec. Difference is floating-point association, not a different codec.",
+      "ir_path": "interpreter of the packed payload; W is not written",
+      "machine": {
+        "kind": "semantic_interpreter",
+        "portable": true,
+        "target": "cpu",
+        "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to.",
+        "equivalent_metal_kernel": "gravity_pq_matvec",
+        "equivalent_metal_kernel_is_not_semantic": true
+      }
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "semantic": {
+          "id": "site.q4",
+          "kind": "grouped_absmax",
+          "family": "grouped_absmax_q4",
+          "executes": true,
+          "experiment": "uniform-q4-v1 production decode: grouped-absmax q4 group-64 is the workhorse GEMV (401 dispatches/token of 964).",
+          "receipts": [
+            "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+            "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+            "receipts/headless/NOETIC_NATIVE_OPERATOR.json"
+          ],
+          "shape": {
+            "rows": 16,
+            "cols": 64,
+            "group": 64,
+            "bits": 4
+          },
+          "shared_refs": [],
+          "exclusive_bytes": 544
+        },
+        "machine": {
+          "kind": "semantic_interpreter",
+          "portable": true,
+          "target": "cpu",
+          "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to.",
+          "equivalent_metal_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "equivalent_metal_kernel_is_not_semantic": true
+        },
+        "payload": {
+          "rows": 16,
+          "cols": 64,
+          "group": 64,
+          "bits": 4,
+          "scales": {
+            "bytes": 32,
+            "sha256": "a39bf1793658dcf70cce899b515b1de4c59f9c5d427fd09e7733c99da243098e"
+          },
+          "codes": {
+            "bytes": 512,
+            "sha256": "38fd808cba855381c49c199d82a9bac9b4f334aca8706d7fe6b87d38b1b36d91"
+          }
+        }
+      },
+      {
+        "semantic": {
+          "id": "site.ternary",
+          "kind": "ternary_group64",
+          "family": "ternary_group64",
+          "executes": true,
+          "experiment": "noetic_composition requantize_absmax bits=2 (Ternary Weight Networks threshold 0.7\u00b7mean|w|, alpha refit on the kept set). Whole-model ternary flipped the composition-ladder prediction.",
+          "receipts": [
+            "receipts/headless/NOETIC_COMPOSITION.json",
+            "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+          ],
+          "shape": {
+            "rows": 8,
+            "cols": 64,
+            "group": 64,
+            "bits": 2
+          },
+          "shared_refs": [],
+          "exclusive_bytes": 144
+        },
+        "machine": {
+          "kind": "semantic_interpreter",
+          "portable": true,
+          "target": "cpu",
+          "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to."
+        },
+        "payload": {
+          "rows": 8,
+          "cols": 64,
+          "group": 64,
+          "bits": 2,
+          "scales": {
+            "bytes": 16,
+            "sha256": "5e3e0ad76c4573b8147a4cc0dbbcafe9e1c48287373e4df40f322650d0ebff8c"
+          },
+          "codes": {
+            "bytes": 128,
+            "sha256": "de44e41c7bd5e40c623fba7da2fa8a8e70ac5a80da3fbfc40a7f27b91b0f3741"
+          }
+        }
+      },
+      {
+        "semantic": {
+          "id": "site.binary",
+          "kind": "binary_sign_codes",
+          "family": "binary_sign_codes",
+          "executes": true,
+          "experiment": "HGRAVB01 binary_sign_scale on Q80 gate_proj; composition 1-bit sign code (\u03b1 = mean|w|) after bits=1 absmax collapsed to the zero tensor. test_lowbit_codec locks the sign-code optimum.",
+          "receipts": [
+            "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+            "tools/headless/test_lowbit_codec.py"
+          ],
+          "shape": {
+            "rows": 8,
+            "cols": 64,
+            "group": 64,
+            "bits": 1
+          },
+          "shared_refs": [],
+          "exclusive_bytes": 80
+        },
+        "machine": {
+          "kind": "semantic_interpreter",
+          "portable": true,
+          "target": "cpu",
+          "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to.",
+          "equivalent_metal_kernel": "q80_binary_group_matvec_tg256",
+          "equivalent_metal_kernel_is_not_semantic": true
+        },
+        "payload": {
+          "rows": 8,
+          "cols": 64,
+          "group": 64,
+          "bits": 1,
+          "scales": {
+            "bytes": 16,
+            "sha256": "48a472ea8005dd33dd8f9bc13abbc2342f75f70d72a13b918747ea9a0786af15"
+          },
+          "codes": {
+            "bytes": 64,
+            "sha256": "7a29d001e60fdaba9651da9b906709f76255d4080cd62a980b981f305a7c7a98"
+          }
+        }
+      },
+      {
+        "semantic": {
+          "id": "site.uv",
+          "kind": "low_rank_uv",
+          "family": "low_rank_uv",
+          "executes": true,
+          "experiment": "HGRAVS01 y=L@(R@x); q80_hgravs01_two_stage_matvec threadgroup mid[160]. NATIVE vs reconstruct-then-GEMM ORACLE in NOETIC_NATIVE_OPERATOR.",
+          "receipts": [
+            "receipts/headless/NOETIC_NATIVE_OPERATOR.json",
+            "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+          ],
+          "shape": {
+            "rows": 12,
+            "cols": 32,
+            "rank": 4
+          },
+          "shared_refs": [],
+          "exclusive_bytes": 704
+        },
+        "machine": {
+          "kind": "semantic_interpreter",
+          "portable": true,
+          "target": "cpu",
+          "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to.",
+          "equivalent_metal_kernel": "q80_hgravs01_two_stage_matvec",
+          "equivalent_metal_kernel_is_not_semantic": true
+        },
+        "payload": {
+          "rows": 12,
+          "cols": 32,
+          "rank": 4,
+          "L": {
+            "bytes": 192,
+            "sha256": "aebde5d5f24868d3c1b0822879b3835fad4b03952db57946c1daa727ba76dd07"
+          },
+          "R": {
+            "bytes": 512,
+            "sha256": "031c24550e8af7c0e027451a61f1314345cab9f8c8b5aa547d177953b677aea2"
+          }
+        }
+      },
+      {
+        "semantic": {
+          "id": "site.pq",
+          "kind": "product_quantization",
+          "family": "product_quantization",
+          "executes": true,
+          "experiment": "gravity_pq_matvec: per subspace, pq_index \u2192 codebook entry, fma into acc, simd_sum to y[row]. EXISTS and REACHABLE; not on uniform-q4-v1. C4 refused the Qwen3.8 port, not the kernel.",
+          "receipts": [
+            "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+            "receipts/headless/C4CODEBOOK_DESIGN.json"
+          ],
+          "shape": {
+            "rows": 6,
+            "cols": 32,
+            "bits": 3,
+            "subspaces": 4,
+            "card": 8,
+            "sub": 8
+          },
+          "shared_refs": [],
+          "exclusive_bytes": 1037
+        },
+        "machine": {
+          "kind": "semantic_interpreter",
+          "portable": true,
+          "target": "cpu",
+          "note": "This is the SEMANTIC function of the node, not an NX. An NX that could load anywhere has failed; this interpreter is supposed to.",
+          "equivalent_metal_kernel": "gravity_pq_matvec",
+          "equivalent_metal_kernel_is_not_semantic": true
+        },
+        "payload": {
+          "rows": 6,
+          "cols": 32,
+          "subspaces": 4,
+          "card": 8,
+          "sub": 8,
+          "nchunk": 1,
+          "bits": 3,
+          "codebooks": {
+            "bytes": 1024,
+            "sha256": "cafb1768ed55572d5e68998461b036ac5edd083d8780a9c39cd5ddb788be9aec"
+          },
+          "codes": {
+            "bytes": 13,
+            "sha256": "2f9bfc514c759926093f13a0e5cb06bdc5a82d48f146ead308cbcdc44f77c1f3"
+          }
+        }
+      }
+    ],
+    "n_executing": 5,
+    "n_total": 5
+  },
+  "accounting": {
+    "before_plant": {
+      "exclusive_bytes": 2509,
+      "shared_bytes": 0,
+      "total_bytes": 2509,
+      "source_param_count": 26895998464,
+      "complete_bpw": 7.462820176341901e-07,
+      "shared_objects": {},
+      "law": "complete_bpw = 8 * (payload bytes + referenced pool objects counted once) / SOURCE_PARAM_COUNT. Declared packer BPW is not consulted."
+    },
+    "after_1gb_shared_basis": {
+      "exclusive_bytes": 2509,
+      "shared_bytes": 1000000000,
+      "total_bytes": 1000002509,
+      "source_param_count": 26895998464,
+      "complete_bpw": 0.2974427620788252,
+      "shared_objects": {
+        "planted-1gb-shared-basis": {
+          "kind": "SharedBasis",
+          "nbytes": 1000000000,
+          "rank": 256,
+          "note": "injection: 1 GB basis NR.validate() accepted without moving BPW"
+        }
+      },
+      "law": "complete_bpw = 8 * (payload bytes + referenced pool objects counted once) / SOURCE_PARAM_COUNT. Declared packer BPW is not consulted."
+    },
+    "planted_bytes": 1000000000,
+    "bpw_moved": true,
+    "bpw_delta": 0.29744201579680757,
+    "sealed_packer_bpw_was": 4.252735126866492,
+    "planted_execute": "planted.shared_basis: family shared_basis has no interpreter (justified by G035 shared column-basis vs independent SVD at matched bits: shared_beats_indepe\u2026)",
+    "nr_hole": {
+      "was": "NR.validate() returned ok and complete_bits_per_weight stayed 4.252735126866492 after injecting a 1 GB SharedBasis, a TensorTrain family, and a 50 MB generated blob (receipts/headless/NOETIC_CLOSURE_GAP.json).",
+      "here": "account() recomputes BPW from payloads + pool. The 1 GB is charged (bpw_moved=true). execute() of the planted node raises UnexecutableNode. Description without accounting is refused; description without execution is named, not claimed as an IR."
+    }
+  },
+  "semantic_vs_machine_teeth": {
+    "machine_field_on_semantic_rejected": true,
+    "problems": [
+      "MACHINE-SPECIFIC FIELD in semantic: site.q4.threadgroup_size",
+      "MACHINE-SPECIFIC FIELD in semantic: site.q4.kernel",
+      "semantic names an implementation: site.q4"
+    ],
+    "metal_lowering_genome_mismatch": "REFUSED, as required: MACHINE GENOME MISMATCH: lowering built for gpu_cores=40, this box is gpu_cores=60"
+  },
+  "did_not_load_27b": true,
+  "opened_model_paths": [],
+  "self_check": {
+    "at_least_one_family_executed": true,
+    "flagship_is_grouped_absmax_q4": true,
+    "flagship_ir_matches_direct": true,
+    "all_executing_match_direct": true,
+    "semantic_refuses_kernel_name": true,
+    "planted_1gb_moves_bpw": true,
+    "planted_1gb_cannot_execute": true,
+    "tensor_train_is_not_a_node": true,
+    "every_node_type_names_an_experiment": true,
+    "no_27b_loaded": true
+  }
+}

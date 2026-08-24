@@ -1,0 +1,1414 @@
+{
+  "schema": "hawking.headless.c4codebook_design.v1",
+  "generated_at": "2026-08-23T19:22:11Z",
+  "git_head": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "lane": "c4codebook",
+  "question": "Does a lookup-plus-accumulate move less than a Q4 dequant-plus-multiply at the same fidelity on a 595.9 GB/s Apple M3 Ultra, given that gravity_pq_matvec already exists?",
+  "answer": "NOT_WORTH_BUILDING_THE_QWEN38_PORT",
+  "anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "roof_gb_s": 595.9,
+    "unified_memory_bytes": 103079215104,
+    "gpu_cores": 60,
+    "parameter_count": 26895998464,
+    "bpw": 4.253,
+    "dispatches_per_token": 964,
+    "command_buffers_per_token": 1,
+    "gemv_mac_flops": 51243909120,
+    "mlx_4bit_tps": 35.51,
+    "llamacpp_q5k_tps_archived": 24.12,
+    "two_servers_tps": 3.986,
+    "one_server_tps": 33.47,
+    "llama_d32_gate_median_us": 460.041,
+    "mlp_distill_nogo": "+0.4206 held-out gap vs q3 at 72% of its active bytes",
+    "q80_storage_vs_active": "0.6462 vs 2.518"
+  },
+  "geometry": {
+    "layers": 64,
+    "dn_layers": 48,
+    "gqa_layers": 16,
+    "hidden": 5120,
+    "intermediate": 17408,
+    "vocab": 248320,
+    "qkvz_rows": 16384,
+    "ba_rows": 96,
+    "q_proj_rows": 12288,
+    "kv_proj_rows": 1024,
+    "o_proj_rows": 5120,
+    "o_proj_cols": 6144
+  },
+  "artifact": {
+    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/manifest.json",
+    "present": true,
+    "gravity_pq_tensors": 0,
+    "kinds": {
+      "q4": 402,
+      "f32": 353
+    },
+    "schema": "hawking.ascent.qwen38_language_uniform_q4.v1",
+    "status": "CANDIDATE_QWEN38_LANGUAGE_Q4_FUSED_INPROJ",
+    "tensor_count": 755,
+    "q4_tensors": 402,
+    "f32_tensors": 353,
+    "complete_physical_bpw": 4.252735126866492,
+    "q4_group_size": 64,
+    "source_weight_elements": 26895998464
+  },
+  "existing_kernel": {
+    "kernel_name": "gravity_pq_matvec",
+    "file": "crates/hawking-core/shaders/gravity_pq.metal",
+    "line": 399,
+    "class": "REACHABLE",
+    "compile_gate": null,
+    "quoted_in_qwen38_hybrid_decode": false,
+    "glm52cpk_magic_accepted_by_qwen38_classify": false,
+    "llm52rpk_magic_accepted_by_qwen38_classify": false,
+    "qwen38_classify_exists": true,
+    "qwen38_admits_hq30uq4": true,
+    "never_materializes_dense_w_comment": true,
+    "body_writes_dense_w": false,
+    "body_does_fma_into_acc": true,
+    "body_does_pq_index_gather": true,
+    "one_simdgroup_per_output_row": true,
+    "host_encode_8_rows_per_tg256": true,
+    "rotate_1_unsupported": true,
+    "host_row_reconstructs_dense_as_oracle_helper": true,
+    "q4_tpr64_present": true,
+    "q4_geometry_sweep_comment_present": true,
+    "llama_d32_roofline_probe_present": true,
+    "census_family_verdict": "EXISTS",
+    "census_family_why": "gravity_pq.metal:399-428 gravity_pq_matvec: per subspace, pq_index(codes) \u2192 codebook entry, fma into acc, simd_sum to y[row]. Codebook is the dictionary; W is never written. gravity_residual_pq_matvec is additive multi-stage PQ. Not on the Qwen3.8 uniform-q4 path (gravity GLM/Llama). Porting is bind work, not a new kernel.",
+    "census_missing_family_cost": {
+      "id": "fused_dictionary_lookup_accumulate",
+      "status": "nothing_to_write_for_the_family",
+      "estimate": "Kernel already exists. Wiring it onto a Qwen3.8 token is bind/schedule work, not a new shader family."
+    },
+    "production_geometry_glm": {
+      "D": 32,
+      "S": 1,
+      "sub": 32,
+      "card": 256,
+      "bits": 8,
+      "source": "gravity_pq.metal comments + tests/gravity_pq_kernel_registry.rs primary_header"
+    },
+    "math": "For subspace s in 0..S-1, chunk c in 0..nchunk-1, row r: code = pq_index(codes, (r*nchunk + c)*S + s, bits); acc_r += <codebook[s, code], x[c*D + s*sub : c*D + (s+1)*sub]>. S=1, D=sub=32, card=256, bits=8 is the GLM production shape. W is never written. This is fused lookup+FMA, not ADC: the codebook vector is dotted against x once per (row, chunk), so the GEMV FMA count equals the dense parent (rows*cols FMAs)."
+  },
+  "why_unused": [
+    "No codebook artifact. Sealed uniform-q4-v1 is HQ30UQ4 grouped-absmax q4 (402 tensors) + f32v2 (353), schema hawking.ascent.qwen38_language_uniform_q4.v1. Zero GLM52CPK payloads.",
+    "Qwen3.8 catalog refuses the codec. classify_qwen38_mixed_payload admits packed 0-2, HGRAVU01/HQ30UQ4, f32v2. GLM52CPK/LLM52RPK magics are not in qwen38_hybrid_decode.rs. This is a missing pack + missing lane, not a forgotten dispatch of a ready tensor.",
+    "Not a rows/cols shape mismatch. Every Qwen3.8 GEMV dimension (5120, 17408, 6144, 16384, 12288, 1024, 248320, 96) is divisible by D=32. rotate=1 is the only geometry the Metal path rejects, and the Q4 artifact is not rotated PQ.",
+    "The existing kernel is the wrong execution of the family. Llama-8B FFN gate 14336x4096 D32 single-stage measured 460.041 us (receipted). Scaled by rows*nchunk to Qwen3.8 gate 17408x5120: 698.3 us vs Q4 token-share 106.5 us. Predicted existing-kernel token 200.7 ms (4.98 tok/s) against incumbent 30.606 ms / 32.73 tok/s.",
+    "It still does 51.24 GFLOP of GEMV. Each (row, chunk) dots a gathered codebook vector of length D against x. FMA count = rows*cols, identical to the dense parent and to Q4. Storage compression without less work is the trap the operation census already named.",
+    "Residual-PQ quality is already closed as a drop-in codec at the bit rates that would still save bytes (1.50 / 2.63 / 3.50 bpw continuation or first-token failure). That is not a Qwen3.8 measurement, but it is why a packer is not the first move."
+  ],
+  "prior_science": {
+    "found": [
+      {
+        "id": "NOETIC_KERNEL_CENSUS",
+        "how": "disk",
+        "path": "/Users/scammermike/.claude-grok/worktrees/c4codebook-20260823-150610/receipts/headless/NOETIC_KERNEL_CENSUS.json"
+      },
+      {
+        "id": "NOETIC_OPERATION_CENSUS",
+        "how": "disk",
+        "path": "/Users/scammermike/.claude-grok/worktrees/c4codebook-20260823-150610/receipts/headless/NOETIC_OPERATION_CENSUS.json"
+      },
+      {
+        "id": "NOETIC_TPR64_REOPEN",
+        "how": "disk",
+        "path": "/Users/scammermike/.claude-grok/worktrees/c4codebook-20260823-150610/receipts/headless/NOETIC_TPR64_REOPEN.json"
+      },
+      {
+        "id": "NOETIC_ORGAN_CENSUS",
+        "how": "disk",
+        "path": "/Users/scammermike/.claude-grok/worktrees/c4codebook-20260823-150610/receipts/headless/NOETIC_ORGAN_CENSUS.json"
+      },
+      {
+        "id": "NOETIC_GAIN_RESCORE",
+        "how": "disk",
+        "path": "/Users/scammermike/.claude-grok/worktrees/c4codebook-20260823-150610/receipts/headless/NOETIC_GAIN_RESCORE.json"
+      },
+      {
+        "id": "G035_CROSSLAYER_SHARE",
+        "how": "git",
+        "path": "HEAD:receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json"
+      },
+      {
+        "id": "TG_LLAMA_RESIDUAL_PQ_FFN_RUNTIME_REJECTED",
+        "how": "git",
+        "path": "HEAD:workspace/campaign/evidence/runtime/tg/TG_LLAMA_RESIDUAL_PQ_FFN_RUNTIME_REJECTED.json"
+      },
+      {
+        "id": "TG_LLAMA_RESIDUAL_PQ_S2_C64_REJECTED",
+        "how": "git",
+        "path": "HEAD:workspace/campaign/evidence/runtime/tg/TG_LLAMA_RESIDUAL_PQ_S2_C64_REJECTED.json"
+      },
+      {
+        "id": "TG_LLAMA_RESIDUAL_PQ_S3_C128_REJECTED",
+        "how": "git",
+        "path": "HEAD:workspace/campaign/evidence/runtime/tg/TG_LLAMA_RESIDUAL_PQ_S3_C128_REJECTED.json"
+      },
+      {
+        "id": "TG32_QWEN32_RESIDUAL_PQ_RESULT",
+        "how": "git",
+        "path": "HEAD:workspace/campaign/evidence/runtime/tg/TG32_QWEN32_RESIDUAL_PQ_RESULT_2026_08_02.json"
+      },
+      {
+        "id": "G042_BPW_FAMILY",
+        "how": "git",
+        "path": "HEAD:receipts/ascent-2026-08-16/G042_BPW_FAMILY.json"
+      }
+    ],
+    "missing": [
+      {
+        "id": "lane-bootstrap-census",
+        "path": ".lane-bootstrap/census",
+        "why": "Not on disk (sparse checkout) and not in HEAD. n1arch/n15neg/n16clos cannot be opened here. Substituted: receipts/headless/NOETIC_KERNEL_CENSUS.json families + constraints_from_recovered_science, plus git-show of G035 and residual-PQ rejections."
+      }
+    ],
+    "closures": [
+      {
+        "source": "NOETIC_KERNEL_CENSUS.constraints",
+        "text": "223 components measured below 0.5 local BPW, zero healthy \u2014 a new low number is not a result without a health verdict"
+      },
+      {
+        "source": "NOETIC_KERNEL_CENSUS.constraints",
+        "text": "Q80 storage BPW 0.6462 vs ACTIVE 2.518 \u2014 storage and execution cost are different quantities"
+      },
+      {
+        "source": "NOETIC_KERNEL_CENSUS.constraints",
+        "text": "G035 G-SHARE shared_beats_independent=false"
+      },
+      {
+        "source": "NOETIC_KERNEL_CENSUS.constraints",
+        "text": "GLM 0.167 expert BPW trap; HGRAVS01 0.13 on down_proj ONLY"
+      },
+      {
+        "source": "NOETIC_KERNEL_CENSUS.constraints",
+        "text": "five information-hiding scenarios currently MISSED by NR/NX (SHARED_BPW 0, route_graph null, ROUTING_FLOPS 0, generated_structures empty, no shader source hashed, set_bytes unhashed)"
+      },
+      {
+        "source": "NOETIC_KERNEL_CENSUS.constraints",
+        "text": "never evaluate compression on synthetic activations; cosine is scale-invariant; raw activation cosine null \u2248 0.898"
+      },
+      {
+        "source": "NOETIC_KERNEL_CENSUS.families.fused_dictionary_lookup_accumulate",
+        "verdict": "EXISTS",
+        "text": "gravity_pq.metal:399-428 gravity_pq_matvec: per subspace, pq_index(codes) \u2192 codebook entry, fma into acc, simd_sum to y[row]. Codebook is the dictionary; W is never written. gravity_residual_pq_matvec is additive multi-stage PQ. Not on the Qwen3.8 uniform-q4 path (gravity GLM/Llama). Porting is bind work, not a new kernel.",
+        "status": "EXISTS_REACHABLE_NOT_DISPATCHED_ON_QWEN38"
+      },
+      {
+        "source": "NOETIC_KERNEL_CENSUS.families.shared_basis_x_coefficients",
+        "verdict": "ABSENT",
+        "text": "Zero shaders mention shared_basis / shared_codebook / joint_basis. q80_hgravs01_factor_matvec_* is per-tensor U,V \u2014 not a basis shared across layers. G035 G-SHARE measured shared_beats_independent=false. G042 SHARED_BPW is hardcoded 0.0. NS-010 killed cross-expert shared bases on Q80.",
+        "applies_to_codebooks": "G035 refutes shared SVD bases, not shared PQ codebooks. Cited as a caution: sharing is not a free byte win. A 16 KiB codebook shared across 64 layers saves 63*16 KiB, which is noise against hundreds of MB of indices."
+      },
+      {
+        "source": "G035_CROSSLAYER_SHARE",
+        "shared_beats_independent": [
+          false,
+          false,
+          false
+        ],
+        "all_false": true,
+        "corrected_verdict": "AXIS-DEPENDENT, which the original refutation did not distinguish. Sharing the COLUMN space (the contraction axis) LOSES on 3/3 pairs. Sharing the ROW space (the output axis) WINS, and wins 9x more for adjacent layers than distant ones. The blanket 'REFUTED AT MATCHED BITS' was drawn from the column basis alone and is too broad.",
+        "what_still_limits_it": "The row-basis win is measured at ~1.03 bits/elem where the pair errors are 0.58-0.70, deep in the DEAD zone against the coherent anchor's 0.198. It is a 6.3% improvement to something unusable. G034 separately measured low-rank at a usable 3.25 bits/elem running 2.93x worse than flat q3, so the family's ceiling is low whichever axis is shared. Whether the row-basis advantage survives at usable fidelity is UNTESTED.",
+        "text": "Column-space sharing LOSES 3/3. Row-space sharing WINS 6.3% at ~1.03 bits/elem where pair errors are 0.58-0.70 (dead vs coherent 0.198). Not a codebook-sharing license."
+      },
+      {
+        "source": "TG_LLAMA_RESIDUAL_PQ_FFN_RUNTIME_REJECTED",
+        "status": "rejected_before_full_artifact_bake",
+        "four_stage_median_us": 672.625,
+        "single_stage_d32_median_us": 460.041,
+        "reopen_condition": "A materially different execution grammar must demonstrate a resident real-geometry gate/up pair at <=0.5 ms combined while also passing complete-artifact capability gates. Direct one-codebook-per-chunk lookup is rejected too; shared tables alone do not satisfy this condition.",
+        "text": "Additive stages multiply compact decode FMAs and index reads. The representation meets only an analytic byte condition; its direct execution cost makes the FFN pair alone slower than the complete source-model decode budget."
+      },
+      {
+        "source": "TG_LLAMA_RESIDUAL_PQ_S2_C64_REJECTED",
+        "status": "REJECTED_CONTINUATION_GATE",
+        "complete_bpw": 1.5014867282185835,
+        "decode_tps": 5.880228561602878,
+        "equal_tokens": false,
+        "text": "The 1.50-bit nominal payload reaches the TG2 byte neighborhood but loses the source continuation immediately. This candidate is rejected; lower bytes require an architecture-aware student/distillation gate rather than blind residual-PQ substitution."
+      },
+      {
+        "source": "TG_LLAMA_RESIDUAL_PQ_S3_C128_REJECTED",
+        "status": "REJECTED_CONTINUATION_GATE",
+        "complete_bpw": 2.6273716369134,
+        "equal_tokens": false,
+        "text": "Additional residual-PQ stages recover the first next token but still collapse the continuation, and the 2.63-bit payload is 1.79x above the TG2 active-byte ceiling. Blind uniform residual-PQ is not a route to TG2/TG1."
+      },
+      {
+        "source": "TG32_QWEN32_RESIDUAL_PQ_RESULT",
+        "status": "REJECTED_CAPABILITY_FIRST_FORWARD",
+        "complete_bpw": 3.50188072105199,
+        "tps": 1.4790778900698314,
+        "capability": {
+          "numeric_parity_v2_1": "FAIL_FIRST_TOKEN",
+          "continuation_hash": null,
+          "route_and_trajectory": "NOT_ADMITTED",
+          "named_tg_rung": null,
+          "rejection_reason": "compact residual-PQ weight error changes the first greedy decision; faster or smaller bytes cannot override whole-model capability"
+        },
+        "reopen": "activation-aware or layer-protected codebooks with a measured first-token parity contract; do not increase stages/cardinality blindly",
+        "text": "compact residual-PQ weight error changes the first greedy decision; faster or smaller bytes cannot override whole-model capability"
+      },
+      {
+        "source": "NOETIC_TPR64_REOPEN",
+        "claim": "At the production tpr64 launch geometry, reconstruction costs NOTHING on Qwen3.8. Codec choice is not constrained by reconstruction time.",
+        "what_free_means": "At production tpr64 (64 threads/row, TG 128, 2 rows/TG) on Qwen3.8 MLP GEMVs, in-register packed kernels take the same GPU ns as uncompressed f32 (~15125 ns gate, ~7083 ns down). Reconstruction adds 0 ns above the packed-byte bandwidth floor on 32 of 33 variants. Codec choice at this geometry is not constrained by reconstruction time. 'Free' is NOT 'free at every geometry', NOT 'quality vs BF16', and NOT 'the shipped mixed reader'.",
+        "text": "At production tpr64, in-register dequant is free against the packed-byte floor on 32/33 variants. A design that only cuts dequant ALU, at matched bytes, cannot beat Q4 on this machine."
+      },
+      {
+        "source": "NOETIC_TPR64_REOPEN.null_baseline_cosine",
+        "value": 0.898,
+        "text": "Report every fidelity cosine against this null or it means nothing."
+      },
+      {
+        "source": "NOETIC_ORGAN_CENSUS.scale_rejection",
+        "cosine_0p01W": 0.9999999999999949,
+        "scale_aware_0p01W": 0.009999999778828024,
+        "text": "0.01*W must not score perfect. Cosine is scale-invariant; scale_aware = cosine * min(s,1/s) and relative_l2 are the gates."
+      },
+      {
+        "source": "NOETIC_ORGAN_CENSUS.codec_spot_check_vs_bf16",
+        "organ": "language_model.model.layers.0.mlp.gate_proj.weight",
+        "cosine": 0.9940659721350217,
+        "relative_l2": 0.10942454280572439,
+        "scale_aware": 0.9882004321563559,
+        "text": "Q4 L0 gate vs bf16 is the fidelity bar a PQ geometry must meet or beat."
+      },
+      {
+        "source": "NOETIC_GAIN_RESCORE",
+        "text": "Cosine divides out the per-row norms, so it is scale-invariant. 0.01*W and 100*W score 1.000000 on observed, probed, and worst_unit."
+      },
+      {
+        "source": "G042_BPW_FAMILY",
+        "SHARED_BPW": "ZERO: G035 refuted cross-layer sharing at matched bits (definition text)",
+        "GENERATED_BPW_EQUIVALENT": "structure computed rather than stored. ZERO for every live candidate: the one generated transform tested (Hadamard) was refuted, and the channel scale is folded into existing tensors rather than generated at runtime",
+        "text": "SHARED_BPW is defined as structure stored once and used by many tensors, and is ZERO because G035 refuted cross-layer sharing at matched bits. Not a codebook-sharing licence."
+      },
+      {
+        "source": "CONTRACT_NOT_REDERIVED",
+        "text": "MLP function distillation is NO-GO as of today: +0.4206 held-out gap vs q3 at 72% of its active bytes. That avenue is closed; this lane does not reopen it. Q80 storage BPW 0.6462 vs ACTIVE 2.518 (factor ~3.9) \u2014 report both or neither. 223 components below 0.5 local BPW with ZERO healthy. GLM 0.167 expert BPW trap; HGRAVS01 0.13 on down_proj ONLY. Raw activation cosine null baseline ~0.898."
+      }
+    ],
+    "family_already_refuted": false,
+    "family_refute_scope": "Residual-PQ as a blind storage substitution is quality-refuted (Llama-8B continuation fail at 1.50 and 2.63 bpw; Qwen2.5-32B first-token fail at 3.50 bpw, 1.48 tok/s). Direct per-row codebook-vector execution is speed-refuted on Llama-8B FFN (460.041 us D32 single-stage gate). The FAMILY is not closed: ADC of GLM52CPK was never measured, and Qwen3.8 never received a PQ pack. G035 does not refute codebooks.",
+    "n_found": 11,
+    "n_missing": 1,
+    "n_closures": 20
+  },
+  "identity_check": {
+    "pass": true,
+    "rows": 8,
+    "cols": 12,
+    "D": 4,
+    "card": 4,
+    "nchunk": 3,
+    "max_abs_adc_minus_per_row": 0.0,
+    "max_abs_per_row_minus_oracle": 0.0,
+    "per_row": [
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875
+    ],
+    "adc": [
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875
+    ],
+    "oracle_dense": [
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875,
+      -1.375,
+      -1.875
+    ],
+    "note": "ADC and per-row FMA matched the dense-W oracle to 0 ULP on dyadic values. The oracle materialises W; ADC and per-row do not."
+  },
+  "operator": {
+    "name": "fused_adc_pq_matvec",
+    "family": "fused_dictionary_lookup_accumulate",
+    "representation": "GLM52CPK (gravity-pq) with index layout [chunk][row] for ADC coalescing",
+    "incumbent_kernel_to_not_port": "gravity_pq_matvec",
+    "why_not_port_existing": "gravity_pq_matvec performs the parent GEMV FMA count (one D-vector dot per row per chunk). S011: a candidate that only lowers executable bytes is incomplete. Measured 460.041 us on Llama-8B 14336x4096 D32; scaled to Qwen3.8 mlp.gate 17408x5120 that is ~697 us vs ~107 us Q4.",
+    "production_operator": {
+      "label": "PRODUCTION",
+      "algebra": "Given codebook C[s][k][0:sub) fp16, codes[chunk][row][s] in 0..card-1, activation x[cols]: y[r] = 0; for c in 0..nchunk-1:   for s in 0..S-1:     for k in 0..card-1:       LUT[s][k] = <C[s][k], x[c*D + s*sub : c*D + (s+1)*sub]>;     for r in rows_of_this_threadgroup:       y[r] += LUT[s][ codes[c][r][s] ]; LUT lives in threadgroup memory (card floats per subspace, 1 KiB at card=256 S=1) and is never a rows x cols matrix. Codebook and x are read once per chunk per dispatch, not once per row.",
+      "default_geometry": {
+        "D": 32,
+        "S": 1,
+        "sub": 32,
+        "card": 256,
+        "bits": 8,
+        "index_layout": "[chunk][row][subspace], bits packed MSB-first as today",
+        "codebook_layout": "[subspace][card][sub] fp16, unchanged from GLM52CPK",
+        "note": "Default D=32 matches the kernel that already exists, so the execution microbench isolates ADC vs per-row gather. Quality at 0.25 index-bpw is NOT claimed; it is the kill probe."
+      },
+      "mixed_plan": "Replace a GEMV with ADC only when rows > card (LUT cheaper than parent GEMV). in_proj_ba is 96x5120 (rows < 256): keep Q4. All other GEMV organs have rows >= 1024.",
+      "not_this": [
+        "shared cross-layer codebooks as the byte lever (16 KiB vs GB of indices; G035)",
+        "residual-PQ additive stages as the primary (quality-refuted 1.5-3.5 bpw; FMA-multiplies the existing kernel)",
+        "route-group / MoE worklists (Qwen3.8 is dense; qwen38_geometry refuses num_experts)",
+        "hierarchical codebooks beyond residual-PQ (same family, already rejected)",
+        "MLP function distillation (NO-GO, +0.4206 held-out gap vs q3)"
+      ]
+    },
+    "correctness_oracle": {
+      "label": "ORACLE \u2014 not a production implementation",
+      "algebra": "For each row r, reconstruct W_hat[r, c*D:(c+1)*D] = C[s][codes[c,r,s]] concatenated over subspaces s, then y = W_hat @ x (ordinary GEMM). Host helper: crates/hawking-core/src/artifact_pq.rs PqTensor::row. f64 authority: pq_matvec_f64_authority. Numeric Parity V2.1.",
+      "dense_reconstruction_law": "representation -> reconstruct dense W -> ordinary GEMM may exist as this labelled oracle. It is NOT a production path and must never be presented as one."
+    },
+    "production_path_named_separately": "fused_adc_pq_matvec (to be written) bound in place of qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 on organs with rows>card, same TokenCommandBuffer, one dispatch per organ. Existing gravity_pq_matvec remains the GLM/Llama path and is NOT the Qwen3.8 production candidate."
+  },
+  "costs": {
+    "geometry": {
+      "D": 32,
+      "S": 1,
+      "sub": 32,
+      "card": 256,
+      "bits": 8
+    },
+    "organs": [
+      {
+        "organ": "mlp.gate_proj",
+        "count_per_token": 64,
+        "rows": 17408,
+        "cols": 5120,
+        "nchunk": 160,
+        "q4_bytes_per_launch": 47349760,
+        "q4_bytes_per_token": 3030384640,
+        "pq_index_bytes_per_launch": 2785280,
+        "pq_index_bytes_per_token": 178257920,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 2801728,
+        "pq_payload_bytes_per_token": 179310592,
+        "existing_kernel_flops_per_launch": 178257920,
+        "existing_kernel_flops_per_token": 11408506880,
+        "existing_kernel_lookups_per_launch": 2785280,
+        "adc_lut_flops_per_launch": 2621440,
+        "adc_acc_flops_per_launch": 2785280,
+        "adc_flops_per_launch": 5406720,
+        "adc_flops_per_token": 346030080,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "mlp",
+        "keep_q4": false,
+        "mixed_flops_per_token": 346030080,
+        "mixed_weight_bytes_per_token": 179306496
+      },
+      {
+        "organ": "mlp.up_proj",
+        "count_per_token": 64,
+        "rows": 17408,
+        "cols": 5120,
+        "nchunk": 160,
+        "q4_bytes_per_launch": 47349760,
+        "q4_bytes_per_token": 3030384640,
+        "pq_index_bytes_per_launch": 2785280,
+        "pq_index_bytes_per_token": 178257920,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 2801728,
+        "pq_payload_bytes_per_token": 179310592,
+        "existing_kernel_flops_per_launch": 178257920,
+        "existing_kernel_flops_per_token": 11408506880,
+        "existing_kernel_lookups_per_launch": 2785280,
+        "adc_lut_flops_per_launch": 2621440,
+        "adc_acc_flops_per_launch": 2785280,
+        "adc_flops_per_launch": 5406720,
+        "adc_flops_per_token": 346030080,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "mlp",
+        "keep_q4": false,
+        "mixed_flops_per_token": 346030080,
+        "mixed_weight_bytes_per_token": 179306496
+      },
+      {
+        "organ": "mlp.down_proj",
+        "count_per_token": 64,
+        "rows": 5120,
+        "cols": 17408,
+        "nchunk": 544,
+        "q4_bytes_per_launch": 47349760,
+        "q4_bytes_per_token": 3030384640,
+        "pq_index_bytes_per_launch": 2785280,
+        "pq_index_bytes_per_token": 178257920,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 2801728,
+        "pq_payload_bytes_per_token": 179310592,
+        "existing_kernel_flops_per_launch": 178257920,
+        "existing_kernel_flops_per_token": 11408506880,
+        "existing_kernel_lookups_per_launch": 2785280,
+        "adc_lut_flops_per_launch": 8912896,
+        "adc_acc_flops_per_launch": 2785280,
+        "adc_flops_per_launch": 11698176,
+        "adc_flops_per_token": 748683264,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "mlp",
+        "keep_q4": false,
+        "mixed_flops_per_token": 748683264,
+        "mixed_weight_bytes_per_token": 179306496
+      },
+      {
+        "organ": "linear_attn.in_proj_qkvz",
+        "count_per_token": 48,
+        "rows": 16384,
+        "cols": 5120,
+        "nchunk": 160,
+        "q4_bytes_per_launch": 44564480,
+        "q4_bytes_per_token": 2139095040,
+        "pq_index_bytes_per_launch": 2621440,
+        "pq_index_bytes_per_token": 125829120,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 2637888,
+        "pq_payload_bytes_per_token": 126618624,
+        "existing_kernel_flops_per_launch": 167772160,
+        "existing_kernel_flops_per_token": 8053063680,
+        "existing_kernel_lookups_per_launch": 2621440,
+        "adc_lut_flops_per_launch": 2621440,
+        "adc_acc_flops_per_launch": 2621440,
+        "adc_flops_per_launch": 5242880,
+        "adc_flops_per_token": 251658240,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "deltanet",
+        "keep_q4": false,
+        "mixed_flops_per_token": 251658240,
+        "mixed_weight_bytes_per_token": 126615552
+      },
+      {
+        "organ": "linear_attn.in_proj_ba",
+        "count_per_token": 48,
+        "rows": 96,
+        "cols": 5120,
+        "nchunk": 160,
+        "q4_bytes_per_launch": 261120,
+        "q4_bytes_per_token": 12533760,
+        "pq_index_bytes_per_launch": 15360,
+        "pq_index_bytes_per_token": 737280,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 31808,
+        "pq_payload_bytes_per_token": 1526784,
+        "existing_kernel_flops_per_launch": 983040,
+        "existing_kernel_flops_per_token": 47185920,
+        "existing_kernel_lookups_per_launch": 15360,
+        "adc_lut_flops_per_launch": 2621440,
+        "adc_acc_flops_per_launch": 15360,
+        "adc_flops_per_launch": 2636800,
+        "adc_flops_per_token": 126566400,
+        "rows_gt_card": false,
+        "adc_wins_ops_vs_dense": false,
+        "role": "deltanet",
+        "keep_q4": true,
+        "mixed_flops_per_token": 47185920,
+        "mixed_weight_bytes_per_token": 12533760
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "count_per_token": 48,
+        "rows": 5120,
+        "cols": 6144,
+        "nchunk": 192,
+        "q4_bytes_per_launch": 16711680,
+        "q4_bytes_per_token": 802160640,
+        "pq_index_bytes_per_launch": 983040,
+        "pq_index_bytes_per_token": 47185920,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 999488,
+        "pq_payload_bytes_per_token": 47975424,
+        "existing_kernel_flops_per_launch": 62914560,
+        "existing_kernel_flops_per_token": 3019898880,
+        "existing_kernel_lookups_per_launch": 983040,
+        "adc_lut_flops_per_launch": 3145728,
+        "adc_acc_flops_per_launch": 983040,
+        "adc_flops_per_launch": 4128768,
+        "adc_flops_per_token": 198180864,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "deltanet",
+        "keep_q4": false,
+        "mixed_flops_per_token": 198180864,
+        "mixed_weight_bytes_per_token": 47972352
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "count_per_token": 16,
+        "rows": 12288,
+        "cols": 5120,
+        "nchunk": 160,
+        "q4_bytes_per_launch": 33423360,
+        "q4_bytes_per_token": 534773760,
+        "pq_index_bytes_per_launch": 1966080,
+        "pq_index_bytes_per_token": 31457280,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 1982528,
+        "pq_payload_bytes_per_token": 31720448,
+        "existing_kernel_flops_per_launch": 125829120,
+        "existing_kernel_flops_per_token": 2013265920,
+        "existing_kernel_lookups_per_launch": 1966080,
+        "adc_lut_flops_per_launch": 2621440,
+        "adc_acc_flops_per_launch": 1966080,
+        "adc_flops_per_launch": 4587520,
+        "adc_flops_per_token": 73400320,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "gqa",
+        "keep_q4": false,
+        "mixed_flops_per_token": 73400320,
+        "mixed_weight_bytes_per_token": 31719424
+      },
+      {
+        "organ": "self_attn.k_proj",
+        "count_per_token": 16,
+        "rows": 1024,
+        "cols": 5120,
+        "nchunk": 160,
+        "q4_bytes_per_launch": 2785280,
+        "q4_bytes_per_token": 44564480,
+        "pq_index_bytes_per_launch": 163840,
+        "pq_index_bytes_per_token": 2621440,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 180288,
+        "pq_payload_bytes_per_token": 2884608,
+        "existing_kernel_flops_per_launch": 10485760,
+        "existing_kernel_flops_per_token": 167772160,
+        "existing_kernel_lookups_per_launch": 163840,
+        "adc_lut_flops_per_launch": 2621440,
+        "adc_acc_flops_per_launch": 163840,
+        "adc_flops_per_launch": 2785280,
+        "adc_flops_per_token": 44564480,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "gqa",
+        "keep_q4": false,
+        "mixed_flops_per_token": 44564480,
+        "mixed_weight_bytes_per_token": 2883584
+      },
+      {
+        "organ": "self_attn.v_proj",
+        "count_per_token": 16,
+        "rows": 1024,
+        "cols": 5120,
+        "nchunk": 160,
+        "q4_bytes_per_launch": 2785280,
+        "q4_bytes_per_token": 44564480,
+        "pq_index_bytes_per_launch": 163840,
+        "pq_index_bytes_per_token": 2621440,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 180288,
+        "pq_payload_bytes_per_token": 2884608,
+        "existing_kernel_flops_per_launch": 10485760,
+        "existing_kernel_flops_per_token": 167772160,
+        "existing_kernel_lookups_per_launch": 163840,
+        "adc_lut_flops_per_launch": 2621440,
+        "adc_acc_flops_per_launch": 163840,
+        "adc_flops_per_launch": 2785280,
+        "adc_flops_per_token": 44564480,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "gqa",
+        "keep_q4": false,
+        "mixed_flops_per_token": 44564480,
+        "mixed_weight_bytes_per_token": 2883584
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "count_per_token": 16,
+        "rows": 5120,
+        "cols": 6144,
+        "nchunk": 192,
+        "q4_bytes_per_launch": 16711680,
+        "q4_bytes_per_token": 267386880,
+        "pq_index_bytes_per_launch": 983040,
+        "pq_index_bytes_per_token": 15728640,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 999488,
+        "pq_payload_bytes_per_token": 15991808,
+        "existing_kernel_flops_per_launch": 62914560,
+        "existing_kernel_flops_per_token": 1006632960,
+        "existing_kernel_lookups_per_launch": 983040,
+        "adc_lut_flops_per_launch": 3145728,
+        "adc_acc_flops_per_launch": 983040,
+        "adc_flops_per_launch": 4128768,
+        "adc_flops_per_token": 66060288,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "gqa",
+        "keep_q4": false,
+        "mixed_flops_per_token": 66060288,
+        "mixed_weight_bytes_per_token": 15990784
+      },
+      {
+        "organ": "lm_head",
+        "count_per_token": 1,
+        "rows": 248320,
+        "cols": 5120,
+        "nchunk": 160,
+        "q4_bytes_per_launch": 675430400,
+        "q4_bytes_per_token": 675430400,
+        "pq_index_bytes_per_launch": 39731200,
+        "pq_index_bytes_per_token": 39731200,
+        "pq_codebook_bytes_resident": 16384,
+        "pq_payload_bytes_per_launch": 39747648,
+        "pq_payload_bytes_per_token": 39747648,
+        "existing_kernel_flops_per_launch": 2542796800,
+        "existing_kernel_flops_per_token": 2542796800,
+        "existing_kernel_lookups_per_launch": 39731200,
+        "adc_lut_flops_per_launch": 2621440,
+        "adc_acc_flops_per_launch": 39731200,
+        "adc_flops_per_launch": 42352640,
+        "adc_flops_per_token": 42352640,
+        "rows_gt_card": true,
+        "adc_wins_ops_vs_dense": true,
+        "role": "terminal",
+        "keep_q4": false,
+        "mixed_flops_per_token": 42352640,
+        "mixed_weight_bytes_per_token": 39747584
+      }
+    ],
+    "incumbent": {
+      "gemv_flops_per_token": 51243909120,
+      "q4_gemv_bytes_per_token": 13611663360,
+      "dispatches_per_token": 964,
+      "command_buffers": 1,
+      "executable_flops_per_token": 77163181824,
+      "executable_ops_per_token": 179651020544,
+      "executable_dram_bytes_per_token": 13988022948,
+      "gemv_dispatches_per_token": 401,
+      "tps": 32.73,
+      "ms_per_token": 30.606,
+      "implied_weight_GB_s": 445.5097417728,
+      "pct_of_roof": 74.76250071703306
+    },
+    "existing_kernel_port": {
+      "index_bytes_per_token": 800686080,
+      "payload_bytes_per_token": 807281728,
+      "codebook_resident_traffic_per_token": 6569984,
+      "flops_per_token": 51541222144,
+      "ops_per_token_glm_lookup_model": 63551513344,
+      "lookups_per_token": 800686080,
+      "predicted_us_per_token_scaled_from_llama_d32": 200733.96133928568,
+      "predicted_ms_per_token": 200.73396133928568,
+      "predicted_tps_if_pq_is_the_whole_token": 4.98171805771209,
+      "s011": {
+        "bytes": "REDUCE (indices 0.801 GB vs Q4 13.61 GB) if codebook hits cache",
+        "operations": "SAME 51.24 GFLOP GEMV \u2014 INCOMPLETE if this is the only lever",
+        "dispatches": "SAME 964",
+        "materialization": "SAME 0 dense W",
+        "synchronization": "SAME 1 CB",
+        "traffic": "AMBIGUOUS: sequential indices drop; per-row codebook gathers are 17408*160*32*2 = 178 MB of fp16 from a 16 KiB table per gate. If billed as DRAM this INCREASES traffic vs Q4 47 MB. Measured 460 us says the kernel does not reach the index-stream roof.",
+        "complete": false,
+        "why_incomplete": "S011 \u00a74: a candidate that only lowers executable bytes is incomplete. The current executable already stores fewer bytes and does not do less work. Porting gravity_pq_matvec repeats that mistake: 51.24 GFLOP of GEMV remain, and the Llama D32 roofline is slower than Q4."
+      }
+    },
+    "adc_all_organs": {
+      "index_bytes_per_token": 800686080,
+      "payload_bytes_per_token": 807281728,
+      "flops_per_token_lut_plus_acc": 2288091136,
+      "dram_bytes_per_token_pred": 1183615652,
+      "roof_us_per_token_index_stream": 1343.6584661856011,
+      "roof_ms_per_token": 1.343658466185601
+    },
+    "adc_mixed_ba_stays_q4": {
+      "weight_bytes_per_token": 818266112,
+      "index_bytes_per_token": 799948800,
+      "q4_bytes_kept_per_token": 12533760,
+      "flops_gemv_path_per_token": 2208710656,
+      "flops_per_token_with_activations": 2506023680,
+      "ops_per_token": 2600395520,
+      "dram_bytes_per_token_pred": 1194625700,
+      "replaced_parent_gemv_flops": 51196723200,
+      "kept_unpack_alu_ops": 94371840,
+      "dispatches_per_token": 964,
+      "command_buffers": 1,
+      "s011": {
+        "bytes": "REDUCE: mixed weight stream 818,266,112 vs Q4 13,611,663,360",
+        "operations": "REDUCE: mixed ADC+kept-GEMV FLOPs 2,208,710,656 vs 51,243,909,120 GEMV MACs",
+        "dispatches": "SAME 964 (1:1 replace of large GEMVs; ba stays Q4, still 1 dispatch)",
+        "materialization": "SAME 0 dense W (LUT in threadgroup, 1 KiB)",
+        "synchronization": "SAME 1 host CB; more in-kernel barriers (one per chunk)",
+        "traffic": "REDUCE sequential DRAM to the index stream + 16 KiB codebook + activations",
+        "complete": true,
+        "why_complete": "Reduces bytes AND operations AND traffic vs the incumbent fused Q4 path. Does not reduce dispatches or host synchronization. Quality is the open kill."
+      }
+    },
+    "per_organ_time_prediction": [
+      {
+        "organ": "mlp.gate_proj",
+        "count": 64,
+        "existing_kernel_pred_us_per_launch": 698.2765178571428,
+        "q4_implied_us_per_launch": 106.46654389195827,
+        "adc_roof_us_per_launch": 4.674072831011914,
+        "existing_kernel_pred_us_per_token": 44689.69714285714
+      },
+      {
+        "organ": "mlp.up_proj",
+        "count": 64,
+        "existing_kernel_pred_us_per_launch": 698.2765178571428,
+        "q4_implied_us_per_launch": 106.46654389195827,
+        "adc_roof_us_per_launch": 4.674072831011914,
+        "existing_kernel_pred_us_per_token": 44689.69714285714
+      },
+      {
+        "organ": "mlp.down_proj",
+        "count": 64,
+        "existing_kernel_pred_us_per_launch": 698.2765178571428,
+        "q4_implied_us_per_launch": 106.46654389195827,
+        "adc_roof_us_per_launch": 4.674072831011914,
+        "existing_kernel_pred_us_per_token": 44689.69714285714
+      },
+      {
+        "organ": "linear_attn.in_proj_qkvz",
+        "count": 48,
+        "existing_kernel_pred_us_per_launch": 657.2014285714286,
+        "q4_implied_us_per_launch": 100.20380601596071,
+        "adc_roof_us_per_launch": 4.399127370364155,
+        "existing_kernel_pred_us_per_token": 31545.66857142857
+      },
+      {
+        "organ": "linear_attn.in_proj_ba",
+        "count": 48,
+        "existing_kernel_pred_us_per_launch": 3.850789620535714,
+        "q4_implied_us_per_launch": 0.5871316758747698,
+        "adc_roof_us_per_launch": 0.02577613693572747,
+        "existing_kernel_pred_us_per_token": 184.83790178571428
+      },
+      {
+        "organ": "linear_attn.out_proj",
+        "count": 48,
+        "existing_kernel_pred_us_per_launch": 246.4505357142857,
+        "q4_implied_us_per_launch": 37.576427255985266,
+        "adc_roof_us_per_launch": 1.649672763886558,
+        "existing_kernel_pred_us_per_token": 11829.625714285714
+      },
+      {
+        "organ": "self_attn.q_proj",
+        "count": 16,
+        "existing_kernel_pred_us_per_launch": 492.9010714285714,
+        "q4_implied_us_per_launch": 75.15285451197053,
+        "adc_roof_us_per_launch": 3.299345527773116,
+        "existing_kernel_pred_us_per_token": 7886.417142857143
+      },
+      {
+        "organ": "self_attn.k_proj",
+        "count": 16,
+        "existing_kernel_pred_us_per_launch": 41.075089285714284,
+        "q4_implied_us_per_launch": 6.262737875997544,
+        "adc_roof_us_per_launch": 0.2749454606477597,
+        "existing_kernel_pred_us_per_token": 657.2014285714286
+      },
+      {
+        "organ": "self_attn.v_proj",
+        "count": 16,
+        "existing_kernel_pred_us_per_launch": 41.075089285714284,
+        "q4_implied_us_per_launch": 6.262737875997544,
+        "adc_roof_us_per_launch": 0.2749454606477597,
+        "existing_kernel_pred_us_per_token": 657.2014285714286
+      },
+      {
+        "organ": "self_attn.o_proj",
+        "count": 16,
+        "existing_kernel_pred_us_per_launch": 246.4505357142857,
+        "q4_implied_us_per_launch": 37.576427255985266,
+        "adc_roof_us_per_launch": 1.649672763886558,
+        "existing_kernel_pred_us_per_token": 3943.2085714285713
+      },
+      {
+        "organ": "lm_head",
+        "count": 1,
+        "existing_kernel_pred_us_per_launch": 9960.709151785715,
+        "q4_implied_us_per_launch": 1518.7139349294046,
+        "adc_roof_us_per_launch": 66.67427420708172,
+        "existing_kernel_pred_us_per_token": 9960.709151785715
+      }
+    ],
+    "q4_implied_gemv_us_sum": 30606.0,
+    "byte_ratio_mixed_vs_q4": 0.06011507119729414,
+    "flop_ratio_mixed_vs_gemv": 0.04310191579701248
+  },
+  "metal_feasibility": {
+    "device": "Apple M3 Ultra, 60 GPU cores, Metal 4, 103079215104 B unified, roof 595.9 GB/s",
+    "simdgroup_width": 32,
+    "evidence_simdgroup_width": "gravity_pq_matvec: for (uint c = lane; c < p.nchunk; c += 32u); simd_sum",
+    "incumbent_q4_launch": {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "threadgroup": 128,
+      "threads_per_row": 64,
+      "rows_per_tg": 2,
+      "grid": "ceil(rows/2)*128",
+      "access": "64 threads/row walk columns in 8-wide unpack8 steps of +512. Packed Q4 bytes are sequential per row; consecutive groups of a row coalesce. Dequant stays in registers (tpr64: reconstruction free)."
+    },
+    "existing_pq_launch": {
+      "kernel": "gravity_pq_matvec",
+      "threadgroup": 256,
+      "rows_per_tg": 8,
+      "grid": "ceil(rows/8)*256",
+      "access": "One simdgroup owns one output row. 32 lanes stride chunks of that row: consecutive lanes read consecutive [row][chunk] indices (coalesced) then GATHER a 32-half codebook entry at a random card slot (uncoalesced). Inner loop is 32 scalar FMAs. Arithmetic intensity per thread is nchunk/32 * 32 = nchunk FMAs (~160 on gate).",
+      "coalescing": "indices YES for [row][chunk]; codebook gathers NO"
+    },
+    "adc_launch": {
+      "kernel_to_write": "fused_adc_pq_matvec",
+      "threadgroup": 256,
+      "rows_per_tg": 256,
+      "grid": "ceil(rows/256)*256, one TG dimension",
+      "threadgroup_memory": {
+        "LUT_card_floats": 1024,
+        "optional_codebook_fp16": 16384,
+        "sum_if_both": 17408,
+        "apple9_limit": 32768,
+        "fits": true,
+        "evidence_tree_already_uses_16kib": "gravity_pq.metal gravity_glm_stable_topk: threadgroup ulong ranked[2048] = 16384 B. 17 KiB LUT+codebook is inside the same budget."
+      },
+      "register_pressure": "One f32 accumulator per owned row, one u8/u32 index, no 32-long FMA chain. Far below the current kernel's 32-scalar inner product (or bits8_vec4's four float4 accumulators, or double-single hi/lo).",
+      "coalescing": "REQUIRES index layout [chunk][row]. Then 256 consecutive threads load 256 consecutive bytes of codes for that chunk (8-wide coalesced if widened to uint32). LUT lookup is TG memory, not DRAM. Current GLM52CPK [row][chunk] would stride nchunk (160 B on gate) and miss coalescing \u2014 a layout transpose, not new math.",
+      "barriers": "One threadgroup_barrier per chunk after LUT fill. Gate nchunk=160, down nchunk=544, lm_head nchunk=160. Barriers are the occupancy risk the microbench must measure; they do not appear in the byte roof.",
+      "occupancy": "256 light-register threads. lm_head 248320/256 = 970 TGs; gate 17408/256 = 68 TGs. 60 cores stay busy on the large organs. ba (96 rows) is excluded from ADC because LUT costs more than GEMV."
+    },
+    "indirection_is_a_coalescing_question": "Codebook lookup trades arithmetic for indirection. On this GPU the incumbent is byte-bound at 445 GB/s of a 595.9 GB/s roof, and tpr64 already made dequant ALU free. ADC wins only if the index stream coalesces and the LUT stays in threadgroup memory. Per-row codebook gathers (the existing kernel) failed that test at 460 us."
+  },
+  "memory_layout": {
+    "header": {
+      "bytes": 64,
+      "magic": "GLM52CPK",
+      "fields": "d,s,sub,card,rows,cols,nchunk,seed,bits,rotate,n_codebooks",
+      "rotate": "must be 0; rotate=1 is unsupported on CPU and Metal"
+    },
+    "codebooks": {
+      "layout": "[subspace 0..S) [code 0..card) [j 0..sub) fp16 little-endian",
+      "bytes_formula": "S * card * sub * 2",
+      "glm_default_bytes": 16384,
+      "resident": "one buffer per tensor, uploaded once, not per token"
+    },
+    "codes_current_glm52cpk": {
+      "layout": "[row][chunk][subspace], MSB-first bit stream, 4 bytes tail padding",
+      "good_for": "existing gravity_pq_matvec (consecutive chunks of one row)",
+      "bad_for": "ADC (consecutive rows of one chunk stride nchunk)"
+    },
+    "codes_adc_required": {
+      "layout": "[chunk][row][subspace], same bit packing",
+      "bytes_formula": "ceil(rows * nchunk * S * bits / 8)",
+      "good_for": "ADC coalesced index load, 256 consecutive rows",
+      "conversion": "offline transpose of the index tensor; codebook unchanged"
+    },
+    "lut_transient": {
+      "where": "threadgroup float lut[card]  // 1024 B at card=256",
+      "lifetime": "one chunk of one dispatch",
+      "not_stored_in_the_artifact": true
+    },
+    "not_stored": [
+      "dense W",
+      "per-row reconstructed vectors",
+      "cross-layer shared codebook (rejected as a byte lever)"
+    ],
+    "qwen38_catalog_blocker": {
+      "classify_qwen38_mixed_payload": "admits codecs 0-2 packed, 3 HGRAVU01/HQ30UQ4, 4 f32v2",
+      "GLM52CPK": "not a Qwen3.8 mixed codec; classify refuses unknown codec ids and unknown magics",
+      "artifact_on_disk": "402 q4 + 353 f32, zero gravity-pq tensors",
+      "implication": "Absence is not a forgotten dispatch. There is no PQ payload to bind, and the catalog would refuse one. Bind work is a new lane plus a pack, and is still the wrong first move until ADC beats Q4 on one organ."
+    }
+  },
+  "microbenchmark": {
+    "purpose": "Discriminate ADC from the incumbent AND from the existing gravity_pq_matvec BEFORE anyone writes a Qwen3.8 catalog lane or packer.",
+    "identity_already_run_in_this_script": true,
+    "gpu_bench_not_run_here": true,
+    "why_gpu_bench_is_out_of_scope": "crates/ is DENY for this lane. The bench is specified so the next lane can land it as one ignored test next to gravity_residual_pq_metal.rs, using PqMetalMatrix::benchmark which already exists.",
+    "cheap_gpu_discriminator": {
+      "name": "adc_vs_q4_vs_gravity_pq_gate_17408x5120",
+      "shape": {
+        "rows": 17408,
+        "cols": 5120,
+        "D": 32,
+        "S": 1,
+        "sub": 32,
+        "card": 256,
+        "bits": 8
+      },
+      "payload": "Reuse tests/gravity_pq_kernel_registry.rs::autotune_payload(17408, 5120) for GLM52CPK. Build an index-transposed sibling [chunk][row]. Build a Q4 group-64 sibling of the same logical W via qwen_uniform_q4 pack of the reconstructed rows (ORACLE used only to make a fair Q4 control, then discarded).",
+      "kernels": [
+        {
+          "id": "A_existing_pq",
+          "kernel": "gravity_pq_matvec (or bits8_vec4)",
+          "api": "PqMetalMatrix::benchmark(ctx, variant, x, warmup=8, iterations=32)",
+          "layout": "[row][chunk]",
+          "predict_us": 698.2765178571428
+        },
+        {
+          "id": "B_adc",
+          "kernel": "fused_adc_pq_matvec (the ~80-line candidate, not a 401-dispatch port)",
+          "layout": "[chunk][row]",
+          "predict_us_roof": 4.674072831011914,
+          "threadgroup": 256,
+          "tg_mem": "float lut[256]"
+        },
+        {
+          "id": "C_q4_tpr64",
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "layout": "HQ30UQ4 group-64",
+          "predict_us_from_token_share": 106.46654389195827
+        }
+      ],
+      "device": "Apple M3 Ultra, same process, no second 27B, no llama-server spawn",
+      "metric": "median GPU us via MTLCommandBuffer GPUEndTime-GPUStartTime after wait; also wall us",
+      "kill_if": [
+        "B_adc median_us >= C_q4_tpr64 median_us  (ADC does not beat Q4 on the organ that is 22% of GEMV bytes)",
+        "B_adc median_us >= A_existing_pq median_us AND A is already slower than Q4  (ADC implementation is broken)"
+      ],
+      "pass_does_not_promote": "A wall-time win on random codes is execution-only. Quality is a separate probe. Do not pack Qwen3.8 on a timing win."
+    },
+    "cheap_quality_kill": {
+      "name": "l0_gate_pq_vs_q4_on_real_x",
+      "tensor": "language_model.model.layers.0.mlp.gate_proj.weight  (17408 x 5120)",
+      "W_source": "bf16 parent if present; else HQ30UQ4 dequant of the sealed artifact (say so)",
+      "X_source": "real activations, never synthetic. Organ-census capture used cpu_hybrid_prefill of gravity q4 on real token ids; TPR64 used first holdout token of activation-capture-v1. Either is admissible. Gaussian / 0.01*W is not.",
+      "geometries": [
+        {
+          "D": 32,
+          "bits": 8,
+          "bpw_indices": 0.25,
+          "why": "GLM default; must almost certainly fail vs Q4"
+        },
+        {
+          "D": 8,
+          "bits": 8,
+          "bpw_indices": 1.0,
+          "why": "byte-saving; residual-PQ at 1.50 bpw already failed continuation"
+        },
+        {
+          "D": 2,
+          "bits": 8,
+          "bpw_indices": 4.0,
+          "why": "matched-byte; tpr64 says ALU savings will not win if bytes do not drop"
+        }
+      ],
+      "encoder": "per-subspace k-means / GLM gravity-pq packer, one tensor, CPU",
+      "metrics": [
+        "relative_l2 of y = X @ W.T vs X @ W_hat.T",
+        "gain = min(r, 1/r) on output-row norms (gravity_doctor_gate._gain)",
+        "scale_aware = cosine * min(s, 1/s)",
+        "Q4 L0 gate vs bf16 bar: cosine 0.994066, rel_l2 0.109425, scale_aware 0.988200",
+        "reject cosine-only; 0.01*W scores cosine 1.000000",
+        "report against null baseline cosine 0.898"
+      ],
+      "kill_if": "Every geometry that saves bytes vs Q4 loses gain or rel_l2 to Q4 on real X. The D=2 matched-byte geometry is then the only survivor, and tpr64 plus the production 76.8% roof say it cannot win on this machine."
+    },
+    "do_not_rerun": [
+      "residual_pq_single_stage_d32_ffn_gate_geometry_roofline (460.041 us, already receipted)",
+      "residual_pq_four_stage_ffn_gate_geometry_roofline (672.625 us, already receipted)",
+      "Llama/Qwen32 residual-PQ continuation gates (already REJECTED)"
+    ]
+  },
+  "expected_value": {
+    "verdict": "NOT_WORTH_BUILDING_THE_QWEN38_PORT",
+    "verdict_meaning": "Do not pack GLM52CPK for Qwen3.8. Do not bind gravity_pq_matvec onto qwen38_hybrid_decode. Do not invent shared/hierarchical/route-group codebooks to walk around residual-PQ's quality failure. The cheapest remaining experiment is a one-organ ADC microbench plus an L0-gate quality probe; both are allowed to close the family.",
+    "what_it_would_win_if_both_probes_pass": {
+      "bytes_per_token_weight": {
+        "q4": 13611663360,
+        "adc_mixed": 818266112,
+        "ratio": 0.06011507119729414
+      },
+      "gemv_path_flops": {
+        "q4_mac": 51243909120,
+        "adc_mixed": 2208710656,
+        "ratio": 0.04310191579701248
+      },
+      "roof_ms_index_stream": 1.343658466185601,
+      "incumbent_ms": 30.606,
+      "vs_mlx_4bit": 35.51,
+      "vs_llamacpp_q5k_archived": 24.12,
+      "note": "A 17x byte cut at D=32 is the physical prize. It is also the geometry at which residual-PQ-class codecs have never passed a token-identity gate in this campaign."
+    },
+    "what_it_risks": [
+      "Quality: residual-PQ failed first-token / continuation at 1.50, 2.63, 3.50 bpw. D=32 is 0.25 index-bpw.",
+      "TPR64: dequant ALU is already free. Matched-byte PQ (D=2, 4 bpw) has no roof to attack.",
+      "Existing kernel: predicted 697 us/gate vs 107 us Q4. Porting it would lose to the incumbent and to MLX 35.51 tok/s.",
+      "G035: sharing is not a byte lever for 16 KiB codebooks; row-basis 'win' is 6.3% of a dead-zone error.",
+      "Cosine: 0.01*W scores 1.000000; a PQ pack scored on cosine alone will lie.",
+      "Two-server occupancy: 3.986 vs 33.47 tok/s. A PQ experiment must not load a second 27B.",
+      "Catalog: Qwen3.8 classify will not admit GLM52CPK even if a pack appears."
+    ],
+    "cheapest_kill": "Quality probe of L0 gate D=8 and D=32 PQ vs Q4 on real X, gain+rel_l2. If both lose, stop. If they win, run the ADC vs Q4 Metal microbench on 17408x5120. If ADC loses wall time, stop. Only then is a packer in scope.",
+    "not_worth_building_existing_kernel_port": true,
+    "existing_kernel_predicted_ms_per_token": 200.73396133928568,
+    "existing_kernel_s011_complete": false,
+    "adc_s011_complete": true,
+    "identity_check_pass": true,
+    "family_already_refuted": false,
+    "family_refute_scope": "Residual-PQ as a blind storage substitution is quality-refuted (Llama-8B continuation fail at 1.50 and 2.63 bpw; Qwen2.5-32B first-token fail at 3.50 bpw, 1.48 tok/s). Direct per-row codebook-vector execution is speed-refuted on Llama-8B FFN (460.041 us D32 single-stage gate). The FAMILY is not closed: ADC of GLM52CPK was never measured, and Qwen3.8 never received a PQ pack. G035 does not refute codebooks.",
+    "controls_to_beat": {
+      "incumbent_native_q4": 32.73,
+      "mlx_4bit_live": 35.51,
+      "llamacpp_q5k_archived": 24.12
+    }
+  },
+  "eight_items": {
+    "1_mathematical_operator": {
+      "name": "fused_adc_pq_matvec",
+      "family": "fused_dictionary_lookup_accumulate",
+      "representation": "GLM52CPK (gravity-pq) with index layout [chunk][row] for ADC coalescing",
+      "incumbent_kernel_to_not_port": "gravity_pq_matvec",
+      "why_not_port_existing": "gravity_pq_matvec performs the parent GEMV FMA count (one D-vector dot per row per chunk). S011: a candidate that only lowers executable bytes is incomplete. Measured 460.041 us on Llama-8B 14336x4096 D32; scaled to Qwen3.8 mlp.gate 17408x5120 that is ~697 us vs ~107 us Q4.",
+      "production_operator": {
+        "label": "PRODUCTION",
+        "algebra": "Given codebook C[s][k][0:sub) fp16, codes[chunk][row][s] in 0..card-1, activation x[cols]: y[r] = 0; for c in 0..nchunk-1:   for s in 0..S-1:     for k in 0..card-1:       LUT[s][k] = <C[s][k], x[c*D + s*sub : c*D + (s+1)*sub]>;     for r in rows_of_this_threadgroup:       y[r] += LUT[s][ codes[c][r][s] ]; LUT lives in threadgroup memory (card floats per subspace, 1 KiB at card=256 S=1) and is never a rows x cols matrix. Codebook and x are read once per chunk per dispatch, not once per row.",
+        "default_geometry": {
+          "D": 32,
+          "S": 1,
+          "sub": 32,
+          "card": 256,
+          "bits": 8,
+          "index_layout": "[chunk][row][subspace], bits packed MSB-first as today",
+          "codebook_layout": "[subspace][card][sub] fp16, unchanged from GLM52CPK",
+          "note": "Default D=32 matches the kernel that already exists, so the execution microbench isolates ADC vs per-row gather. Quality at 0.25 index-bpw is NOT claimed; it is the kill probe."
+        },
+        "mixed_plan": "Replace a GEMV with ADC only when rows > card (LUT cheaper than parent GEMV). in_proj_ba is 96x5120 (rows < 256): keep Q4. All other GEMV organs have rows >= 1024.",
+        "not_this": [
+          "shared cross-layer codebooks as the byte lever (16 KiB vs GB of indices; G035)",
+          "residual-PQ additive stages as the primary (quality-refuted 1.5-3.5 bpw; FMA-multiplies the existing kernel)",
+          "route-group / MoE worklists (Qwen3.8 is dense; qwen38_geometry refuses num_experts)",
+          "hierarchical codebooks beyond residual-PQ (same family, already rejected)",
+          "MLP function distillation (NO-GO, +0.4206 held-out gap vs q3)"
+        ]
+      },
+      "correctness_oracle": {
+        "label": "ORACLE \u2014 not a production implementation",
+        "algebra": "For each row r, reconstruct W_hat[r, c*D:(c+1)*D] = C[s][codes[c,r,s]] concatenated over subspaces s, then y = W_hat @ x (ordinary GEMM). Host helper: crates/hawking-core/src/artifact_pq.rs PqTensor::row. f64 authority: pq_matvec_f64_authority. Numeric Parity V2.1.",
+        "dense_reconstruction_law": "representation -> reconstruct dense W -> ordinary GEMM may exist as this labelled oracle. It is NOT a production path and must never be presented as one."
+      },
+      "production_path_named_separately": "fused_adc_pq_matvec (to be written) bound in place of qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 on organs with rows>card, same TokenCommandBuffer, one dispatch per organ. Existing gravity_pq_matvec remains the GLM/Llama path and is NOT the Qwen3.8 production candidate."
+    },
+    "2_expected_bytes_per_token": {
+      "incumbent_q4_gemv": 13611663360,
+      "incumbent_exec_dram": 13988022948,
+      "existing_kernel_index_stream": 800686080,
+      "adc_mixed_weight_stream": 818266112,
+      "derived_not_guessed": true
+    },
+    "3_expected_operations_per_token": {
+      "incumbent_gemv_mac_flops": 51243909120,
+      "incumbent_exec_flops": 77163181824,
+      "incumbent_exec_ops": 179651020544,
+      "existing_kernel_port_flops": 51541222144,
+      "adc_mixed_gemv_path_flops": 2208710656,
+      "adc_mixed_flops_with_activations": 2506023680,
+      "adc_mixed_ops": 2600395520,
+      "convention": "FMA=2; ADC LUT uses FMA; ADC accumulate of a LUT scalar counted as 1 add"
+    },
+    "4_dispatch_topology": {
+      "incumbent_dispatches": 964,
+      "incumbent_command_buffers": 1,
+      "adc_dispatches": 964,
+      "adc_command_buffers": 1,
+      "what_synchronises": "One TokenCommandBuffer as today. ADC fused in-kernel: LUT fill then accumulate with a threadgroup barrier per chunk. No extra host wait. A two-kernel LUT+accumulate lowering would add 400 dispatches (401 GEMV minus ba) and is rejected."
+    },
+    "5_metal_feasibility": {
+      "device": "Apple M3 Ultra, 60 GPU cores, Metal 4, 103079215104 B unified, roof 595.9 GB/s",
+      "simdgroup_width": 32,
+      "evidence_simdgroup_width": "gravity_pq_matvec: for (uint c = lane; c < p.nchunk; c += 32u); simd_sum",
+      "incumbent_q4_launch": {
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "threadgroup": 128,
+        "threads_per_row": 64,
+        "rows_per_tg": 2,
+        "grid": "ceil(rows/2)*128",
+        "access": "64 threads/row walk columns in 8-wide unpack8 steps of +512. Packed Q4 bytes are sequential per row; consecutive groups of a row coalesce. Dequant stays in registers (tpr64: reconstruction free)."
+      },
+      "existing_pq_launch": {
+        "kernel": "gravity_pq_matvec",
+        "threadgroup": 256,
+        "rows_per_tg": 8,
+        "grid": "ceil(rows/8)*256",
+        "access": "One simdgroup owns one output row. 32 lanes stride chunks of that row: consecutive lanes read consecutive [row][chunk] indices (coalesced) then GATHER a 32-half codebook entry at a random card slot (uncoalesced). Inner loop is 32 scalar FMAs. Arithmetic intensity per thread is nchunk/32 * 32 = nchunk FMAs (~160 on gate).",
+        "coalescing": "indices YES for [row][chunk]; codebook gathers NO"
+      },
+      "adc_launch": {
+        "kernel_to_write": "fused_adc_pq_matvec",
+        "threadgroup": 256,
+        "rows_per_tg": 256,
+        "grid": "ceil(rows/256)*256, one TG dimension",
+        "threadgroup_memory": {
+          "LUT_card_floats": 1024,
+          "optional_codebook_fp16": 16384,
+          "sum_if_both": 17408,
+          "apple9_limit": 32768,
+          "fits": true,
+          "evidence_tree_already_uses_16kib": "gravity_pq.metal gravity_glm_stable_topk: threadgroup ulong ranked[2048] = 16384 B. 17 KiB LUT+codebook is inside the same budget."
+        },
+        "register_pressure": "One f32 accumulator per owned row, one u8/u32 index, no 32-long FMA chain. Far below the current kernel's 32-scalar inner product (or bits8_vec4's four float4 accumulators, or double-single hi/lo).",
+        "coalescing": "REQUIRES index layout [chunk][row]. Then 256 consecutive threads load 256 consecutive bytes of codes for that chunk (8-wide coalesced if widened to uint32). LUT lookup is TG memory, not DRAM. Current GLM52CPK [row][chunk] would stride nchunk (160 B on gate) and miss coalescing \u2014 a layout transpose, not new math.",
+        "barriers": "One threadgroup_barrier per chunk after LUT fill. Gate nchunk=160, down nchunk=544, lm_head nchunk=160. Barriers are the occupancy risk the microbench must measure; they do not appear in the byte roof.",
+        "occupancy": "256 light-register threads. lm_head 248320/256 = 970 TGs; gate 17408/256 = 68 TGs. 60 cores stay busy on the large organs. ba (96 rows) is excluded from ADC because LUT costs more than GEMV."
+      },
+      "indirection_is_a_coalescing_question": "Codebook lookup trades arithmetic for indirection. On this GPU the incumbent is byte-bound at 445 GB/s of a 595.9 GB/s roof, and tpr64 already made dequant ALU free. ADC wins only if the index stream coalesces and the LUT stays in threadgroup memory. Per-row codebook gathers (the existing kernel) failed that test at 460 us."
+    },
+    "6_memory_layout": {
+      "header": {
+        "bytes": 64,
+        "magic": "GLM52CPK",
+        "fields": "d,s,sub,card,rows,cols,nchunk,seed,bits,rotate,n_codebooks",
+        "rotate": "must be 0; rotate=1 is unsupported on CPU and Metal"
+      },
+      "codebooks": {
+        "layout": "[subspace 0..S) [code 0..card) [j 0..sub) fp16 little-endian",
+        "bytes_formula": "S * card * sub * 2",
+        "glm_default_bytes": 16384,
+        "resident": "one buffer per tensor, uploaded once, not per token"
+      },
+      "codes_current_glm52cpk": {
+        "layout": "[row][chunk][subspace], MSB-first bit stream, 4 bytes tail padding",
+        "good_for": "existing gravity_pq_matvec (consecutive chunks of one row)",
+        "bad_for": "ADC (consecutive rows of one chunk stride nchunk)"
+      },
+      "codes_adc_required": {
+        "layout": "[chunk][row][subspace], same bit packing",
+        "bytes_formula": "ceil(rows * nchunk * S * bits / 8)",
+        "good_for": "ADC coalesced index load, 256 consecutive rows",
+        "conversion": "offline transpose of the index tensor; codebook unchanged"
+      },
+      "lut_transient": {
+        "where": "threadgroup float lut[card]  // 1024 B at card=256",
+        "lifetime": "one chunk of one dispatch",
+        "not_stored_in_the_artifact": true
+      },
+      "not_stored": [
+        "dense W",
+        "per-row reconstructed vectors",
+        "cross-layer shared codebook (rejected as a byte lever)"
+      ],
+      "qwen38_catalog_blocker": {
+        "classify_qwen38_mixed_payload": "admits codecs 0-2 packed, 3 HGRAVU01/HQ30UQ4, 4 f32v2",
+        "GLM52CPK": "not a Qwen3.8 mixed codec; classify refuses unknown codec ids and unknown magics",
+        "artifact_on_disk": "402 q4 + 353 f32, zero gravity-pq tensors",
+        "implication": "Absence is not a forgotten dispatch. There is no PQ payload to bind, and the catalog would refuse one. Bind work is a new lane plus a pack, and is still the wrong first move until ADC beats Q4 on one organ."
+      }
+    },
+    "7_cheap_microbenchmark": {
+      "purpose": "Discriminate ADC from the incumbent AND from the existing gravity_pq_matvec BEFORE anyone writes a Qwen3.8 catalog lane or packer.",
+      "identity_already_run_in_this_script": true,
+      "gpu_bench_not_run_here": true,
+      "why_gpu_bench_is_out_of_scope": "crates/ is DENY for this lane. The bench is specified so the next lane can land it as one ignored test next to gravity_residual_pq_metal.rs, using PqMetalMatrix::benchmark which already exists.",
+      "cheap_gpu_discriminator": {
+        "name": "adc_vs_q4_vs_gravity_pq_gate_17408x5120",
+        "shape": {
+          "rows": 17408,
+          "cols": 5120,
+          "D": 32,
+          "S": 1,
+          "sub": 32,
+          "card": 256,
+          "bits": 8
+        },
+        "payload": "Reuse tests/gravity_pq_kernel_registry.rs::autotune_payload(17408, 5120) for GLM52CPK. Build an index-transposed sibling [chunk][row]. Build a Q4 group-64 sibling of the same logical W via qwen_uniform_q4 pack of the reconstructed rows (ORACLE used only to make a fair Q4 control, then discarded).",
+        "kernels": [
+          {
+            "id": "A_existing_pq",
+            "kernel": "gravity_pq_matvec (or bits8_vec4)",
+            "api": "PqMetalMatrix::benchmark(ctx, variant, x, warmup=8, iterations=32)",
+            "layout": "[row][chunk]",
+            "predict_us": 698.2765178571428
+          },
+          {
+            "id": "B_adc",
+            "kernel": "fused_adc_pq_matvec (the ~80-line candidate, not a 401-dispatch port)",
+            "layout": "[chunk][row]",
+            "predict_us_roof": 4.674072831011914,
+            "threadgroup": 256,
+            "tg_mem": "float lut[256]"
+          },
+          {
+            "id": "C_q4_tpr64",
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "layout": "HQ30UQ4 group-64",
+            "predict_us_from_token_share": 106.46654389195827
+          }
+        ],
+        "device": "Apple M3 Ultra, same process, no second 27B, no llama-server spawn",
+        "metric": "median GPU us via MTLCommandBuffer GPUEndTime-GPUStartTime after wait; also wall us",
+        "kill_if": [
+          "B_adc median_us >= C_q4_tpr64 median_us  (ADC does not beat Q4 on the organ that is 22% of GEMV bytes)",
+          "B_adc median_us >= A_existing_pq median_us AND A is already slower than Q4  (ADC implementation is broken)"
+        ],
+        "pass_does_not_promote": "A wall-time win on random codes is execution-only. Quality is a separate probe. Do not pack Qwen3.8 on a timing win."
+      },
+      "cheap_quality_kill": {
+        "name": "l0_gate_pq_vs_q4_on_real_x",
+        "tensor": "language_model.model.layers.0.mlp.gate_proj.weight  (17408 x 5120)",
+        "W_source": "bf16 parent if present; else HQ30UQ4 dequant of the sealed artifact (say so)",
+        "X_source": "real activations, never synthetic. Organ-census capture used cpu_hybrid_prefill of gravity q4 on real token ids; TPR64 used first holdout token of activation-capture-v1. Either is admissible. Gaussian / 0.01*W is not.",
+        "geometries": [
+          {
+            "D": 32,
+            "bits": 8,
+            "bpw_indices": 0.25,
+            "why": "GLM default; must almost certainly fail vs Q4"
+          },
+          {
+            "D": 8,
+            "bits": 8,
+            "bpw_indices": 1.0,
+            "why": "byte-saving; residual-PQ at 1.50 bpw already failed continuation"
+          },
+          {
+            "D": 2,
+            "bits": 8,
+            "bpw_indices": 4.0,
+            "why": "matched-byte; tpr64 says ALU savings will not win if bytes do not drop"
+          }
+        ],
+        "encoder": "per-subspace k-means / GLM gravity-pq packer, one tensor, CPU",
+        "metrics": [
+          "relative_l2 of y = X @ W.T vs X @ W_hat.T",
+          "gain = min(r, 1/r) on output-row norms (gravity_doctor_gate._gain)",
+          "scale_aware = cosine * min(s, 1/s)",
+          "Q4 L0 gate vs bf16 bar: cosine 0.994066, rel_l2 0.109425, scale_aware 0.988200",
+          "reject cosine-only; 0.01*W scores cosine 1.000000",
+          "report against null baseline cosine 0.898"
+        ],
+        "kill_if": "Every geometry that saves bytes vs Q4 loses gain or rel_l2 to Q4 on real X. The D=2 matched-byte geometry is then the only survivor, and tpr64 plus the production 76.8% roof say it cannot win on this machine."
+      },
+      "do_not_rerun": [
+        "residual_pq_single_stage_d32_ffn_gate_geometry_roofline (460.041 us, already receipted)",
+        "residual_pq_four_stage_ffn_gate_geometry_roofline (672.625 us, already receipted)",
+        "Llama/Qwen32 residual-PQ continuation gates (already REJECTED)"
+      ]
+    },
+    "8_expected_value": {
+      "verdict": "NOT_WORTH_BUILDING_THE_QWEN38_PORT",
+      "verdict_meaning": "Do not pack GLM52CPK for Qwen3.8. Do not bind gravity_pq_matvec onto qwen38_hybrid_decode. Do not invent shared/hierarchical/route-group codebooks to walk around residual-PQ's quality failure. The cheapest remaining experiment is a one-organ ADC microbench plus an L0-gate quality probe; both are allowed to close the family.",
+      "what_it_would_win_if_both_probes_pass": {
+        "bytes_per_token_weight": {
+          "q4": 13611663360,
+          "adc_mixed": 818266112,
+          "ratio": 0.06011507119729414
+        },
+        "gemv_path_flops": {
+          "q4_mac": 51243909120,
+          "adc_mixed": 2208710656,
+          "ratio": 0.04310191579701248
+        },
+        "roof_ms_index_stream": 1.343658466185601,
+        "incumbent_ms": 30.606,
+        "vs_mlx_4bit": 35.51,
+        "vs_llamacpp_q5k_archived": 24.12,
+        "note": "A 17x byte cut at D=32 is the physical prize. It is also the geometry at which residual-PQ-class codecs have never passed a token-identity gate in this campaign."
+      },
+      "what_it_risks": [
+        "Quality: residual-PQ failed first-token / continuation at 1.50, 2.63, 3.50 bpw. D=32 is 0.25 index-bpw.",
+        "TPR64: dequant ALU is already free. Matched-byte PQ (D=2, 4 bpw) has no roof to attack.",
+        "Existing kernel: predicted 697 us/gate vs 107 us Q4. Porting it would lose to the incumbent and to MLX 35.51 tok/s.",
+        "G035: sharing is not a byte lever for 16 KiB codebooks; row-basis 'win' is 6.3% of a dead-zone error.",
+        "Cosine: 0.01*W scores 1.000000; a PQ pack scored on cosine alone will lie.",
+        "Two-server occupancy: 3.986 vs 33.47 tok/s. A PQ experiment must not load a second 27B.",
+        "Catalog: Qwen3.8 classify will not admit GLM52CPK even if a pack appears."
+      ],
+      "cheapest_kill": "Quality probe of L0 gate D=8 and D=32 PQ vs Q4 on real X, gain+rel_l2. If both lose, stop. If they win, run the ADC vs Q4 Metal microbench on 17408x5120. If ADC loses wall time, stop. Only then is a packer in scope.",
+      "not_worth_building_existing_kernel_port": true,
+      "existing_kernel_predicted_ms_per_token": 200.73396133928568,
+      "existing_kernel_s011_complete": false,
+      "adc_s011_complete": true,
+      "identity_check_pass": true,
+      "family_already_refuted": false,
+      "family_refute_scope": "Residual-PQ as a blind storage substitution is quality-refuted (Llama-8B continuation fail at 1.50 and 2.63 bpw; Qwen2.5-32B first-token fail at 3.50 bpw, 1.48 tok/s). Direct per-row codebook-vector execution is speed-refuted on Llama-8B FFN (460.041 us D32 single-stage gate). The FAMILY is not closed: ADC of GLM52CPK was never measured, and Qwen3.8 never received a PQ pack. G035 does not refute codebooks.",
+      "controls_to_beat": {
+        "incumbent_native_q4": 32.73,
+        "mlx_4bit_live": 35.51,
+        "llamacpp_q5k_archived": 24.12
+      }
+    }
+  },
+  "s011": {
+    "existing_kernel_port_complete": false,
+    "adc_mixed_complete": true,
+    "incumbent_comparison": {
+      "bytes": "ADC mixed reduces",
+      "operations": "ADC mixed reduces; existing kernel port does not",
+      "dispatches": "same 964",
+      "materialization": "same 0",
+      "synchronization": "same 1 CB",
+      "traffic": "ADC mixed reduces sequential DRAM; existing kernel gathers"
+    }
+  },
+  "what_i_watched_fail": [
+    {
+      "what": ".lane-bootstrap/census (n1arch 35 mechanisms, n15neg 31 closures, n16clos)",
+      "result": "MISSING",
+      "why": "Directory is not on disk in this sparse checkout and `git ls-tree HEAD .lane-bootstrap/census` is empty. Did not run git sparse-checkout add. Prior science was recovered from NOETIC_* receipts plus git show of G035 and residual-PQ rejection receipts."
+    },
+    {
+      "what": "HCLI baseline 464 passed / 1 skipped (HCLI_SWAP_CEILING_GIB=64)",
+      "result": "NOT RUN",
+      "why": "tools/haider is DENY and not materialized."
+    },
+    {
+      "what": "Live Metal ADC microbench on 17408x5120",
+      "result": "NOT RUN (design lane)",
+      "why": "crates/ is DENY. Specified concretely (PqMetalMatrix::benchmark + one new ~80-line kernel) so a later lane can run it. Llama D32 460.041 us is reused, not re-measured."
+    },
+    {
+      "what": "Qwen3.8 gravity-pq artifact",
+      "result": "DOES NOT EXIST",
+      "why": "Sealed uniform-q4-v1 kinds={'q4': 402, 'f32': 353} gravity_pq_tensors=0. Catalog classify_qwen38_mixed_payload does not admit GLM52CPK. quoted_in_qwen38_hybrid_decode=False."
+    },
+    {
+      "what": "Porting gravity_pq_matvec as the design",
+      "result": "REJECTED as S011-incomplete",
+      "why": "Same 51.24 GFLOP of GEMV as the parent. The campaign already knows that storing fewer bytes without doing less work is not a result. Census missing_family_cost said 'wiring is bind work'; bind work would dispatch a kernel that is slower than Q4 on the Llama FFN roofline."
+    },
+    {
+      "what": "Residual-PQ as the Qwen3.8 codec",
+      "result": "ALREADY REJECTED (searched, not rediscovered)",
+      "why": "Llama-8B FFN runtime 672.625 us four-stage / 460.041 us D32; S2 1.50 bpw continuation fail at 5.88 tok/s; S3 2.63 bpw continuation fail at 4.40 tok/s; Qwen2.5-32B 3.50 bpw first-token fail at 1.48 tok/s. Reopen condition was activation-aware / layer-protected codebooks, not more stages."
+    },
+    {
+      "what": "Shared / hierarchical / route-group codebooks as the primary design",
+      "result": "NOT SELECTED",
+      "why": "G035 shared_beats_independent=false on column bases; codebook sharing saves 16 KiB-class tables against GB-class indices. Residual/hierarchical is the quality-refuted additive-PQ family. Qwen3.8 is dense (no experts, ROUTING_FLOPS=0). gravity_glm_expert_table_pq_matvec is a GLM organ."
+    },
+    {
+      "what": "MLP function distillation as a codebook substitute",
+      "result": "NO-GO (contract constraint, not re-derived)",
+      "why": "+0.4206 held-out gap vs q3 at 72% of its active bytes. Kernel census still says that avenue 'has not been run' \u2014 stale relative to the contract."
+    },
+    {
+      "what": "Evaluating on synthetic activations / cosine-only",
+      "result": "REFUSED",
+      "why": "0.01*W scores cosine 1.000000 (organ census + gain rescore). Raw activation cosine null baseline 0.898. Quality kill is gain + rel_l2 on real X."
+    },
+    {
+      "what": "ADC identity (this process)",
+      "result": "PASS",
+      "why": "ADC and per-row FMA matched the dense-W oracle to 0 ULP on dyadic values. The oracle materialises W; ADC and per-row do not."
+    },
+    {
+      "what": "Second 27B / live native re-time",
+      "result": "REFUSED",
+      "why": "Two servers resident measured 3.986 tok/s vs 33.47 with one. TPS/token-ms used here are the supplied anchors (32.73 / 30.606 ms)."
+    }
+  ],
+  "self_check": {
+    "identity": true,
+    "q4_bytes_match_anchor": true,
+    "gemv_flops_match_anchor": true,
+    "dispatches_964": true,
+    "oracle_labelled": true,
+    "production_path_named_separately": true,
+    "kernel_reachable_not_dispatched": true
+  },
+  "written_to": "/Users/scammermike/.claude-grok/worktrees/c4codebook-20260823-150610/receipts/headless/C4CODEBOOK_DESIGN.json"
+}

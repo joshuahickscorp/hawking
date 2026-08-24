@@ -1,0 +1,805 @@
+{
+ "schema": "hawking.headless.representation_library.v1",
+ "generated_at": "2026-08-24T18:31:28Z",
+ "git_head": "bab8f140631fb7463f4cdb548eebbeb9bac0b54f",
+ "generated_by": "tools/headless/genome_libraries.py",
+ "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
+ "hand_authored": false,
+ "did_not_load_a_model": true,
+ "did_not_touch_gpu": true,
+ "did_not_run_cargo_or_metal_benchmarks": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_modify_odyssey_state": true,
+ "unmeasured_is_absent": true,
+ "s023": [
+  "\u00a714",
+  "\u00a770"
+ ],
+ "one_line": "Seven representation families from BYTES_FRONTIER + C1/C2/C3/C5. Permanent law: fewer stored bits != fewer nanoseconds.",
+ "laws": [
+  {
+   "law": "fewer stored bits != fewer nanoseconds",
+   "permanent": true,
+   "s023": "\u00a721 / N032",
+   "statement": "A representation that stores fewer bits than q2f 2.25 bpw is not thereby faster. On a bandwidth-bound graph, token_ns tracks DRAM bytes only if the kernel is load-bound and competent. Extra arithmetic (trit unpack, two-pass dots+scale, CSR gather) can eat the byte win.",
+   "evidence": {
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "command": "BYTES_FRONTIER.finding",
+    "fewer_bytes_moved_token_ns_toward_729_7": true,
+    "who_moved": "binary_g64",
+    "who_did_not": [
+     "ternary_5in8_g64",
+     "shared_binary_k2",
+     "binary_residual_sparse_2pct"
+    ]
+   }
+  }
+ ],
+ "families": [
+  {
+   "family": "q2_affine",
+   "successful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "failed_organs": [],
+   "density_frontier": {
+    "active_bpw": 2.25,
+    "parent_affine_storage_bpw": 2.5,
+    "whole_model_complete_ebpw": 3.139300850311054,
+    "source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "execution_cost": {
+    "active_bpw": {
+     "value": 2.25,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "active_bytes_per_token": {
+     "value": 4812963840.0,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bytes_per_token",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "complete_token_ns": {
+     "value": 27547874,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": {
+      "billing": "2 bits + f16 delta / 64"
+     }
+    },
+    "toward_roof_729_7": {
+     "moved": false,
+     "delta_ns": 0,
+     "baseline_ns": 27547874,
+     "candidate_ns": 27547874,
+     "roof_ns": 1370426.2025489926,
+     "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+    },
+    "coherence": {
+     "rung": "coherent_generation",
+     "status": "UNTESTED_ABOVE",
+     "unreached_above": "capability",
+     "why": "N021 survived complete_token (argmax 9714=9714) and native generation.",
+     "source_receipt": "receipts/headless/NATIVE_2BIT_MLP.json"
+    },
+    "parity": {
+     "ok": true,
+     "rows": [
+      {
+       "dense_w_materialized": 0,
+       "id": "q2f_geo_c5120",
+       "kernel": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+       "max_abs_diff": 0.0,
+       "must_match": true,
+       "ok": true,
+       "tolerance": 0.019999999552965164
+      }
+     ]
+    },
+    "dense_w_materialized": 0,
+    "timing_label": "DIRTY_ENGINEERING",
+    "timing_label_source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "kernel_requirement": [
+    "q2f_group64_matvec_geo_tpr64_tg128",
+    "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+   ],
+   "information_accounting": {
+    "codes": "2 bits/weight packed",
+    "scales_and_bias": "f16 per group of 64 (parent affine is 2.5 bpw with scale+bias)",
+    "dense_reconstruction": 0,
+    "source": "receipts/headless/NOETIC_PARENT_A.json"
+   },
+   "notes": "HGRAVF01 affine_q2_group64 LS (w = q * scale + bias, q in {0,1,2,3})",
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/NATIVE_2BIT_MLP.json",
+    "receipts/headless/NOETIC_PARENT_A.json"
+   ]
+  },
+  {
+   "family": "q4_control",
+   "successful_organs": [
+    "gqa_attention",
+    "deltanet",
+    "embed",
+    "lm_head"
+   ],
+   "failed_organs": [],
+   "density_frontier": {
+    "gqa": 4.25,
+    "deltanet": 4.125,
+    "embedding_output": 4.125,
+    "q4_incumbent_complete_physical_bpw": 4.252735126866492,
+    "source": "receipts/headless/ORGAN_FRONTIERS.json"
+   },
+   "execution_cost": {
+    "note": "Q4 is the incumbent control on attention/embed/head. Isolated q4_remainder sits closer to the DRAM roof (503 GB/s) than MLP.",
+    "q4_remainder_achieved_gb_s": {
+     "value": 503.2516887627687,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.q4_remainder.achieved_gb_s",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": null
+    }
+   },
+   "kernel_requirement": [
+    "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+    "qwen_uniform_q4_embedding_lookup"
+   ],
+   "information_accounting": {
+    "codec": "HQ30UQ4 g64 (hardlinked incumbent)",
+    "source": "receipts/headless/NOETIC_PARENT_A.json"
+   },
+   "citations": [
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/ORGAN_BANDWIDTH.json",
+    "receipts/headless/NOETIC_PARENT_A.json"
+   ]
+  },
+  {
+   "family": "binary",
+   "successful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "failed_organs": [],
+   "density_frontier": {
+    "active_bpw": 1.25,
+    "note": "Fewer bytes DID move COMPLETE_TOKEN_NS toward 729.7 (delta 4116083 ns). Speed without a generation-coherent whole-model mix is not a promotion.",
+    "source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "execution_cost": {
+    "active_bpw": {
+     "value": 1.25,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "BYTES_FRONTIER.representations[binary_g64].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "active_bytes_per_token": {
+     "value": 2673868800.0,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "BYTES_FRONTIER.representations[binary_g64].active_bytes_per_token",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "complete_token_ns": {
+     "value": 23431791,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "BYTES_FRONTIER.representations[binary_g64].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": {
+      "billing": "1 sign bit + f16 mean-abs / 64 = 1.25 bpw",
+      "scales_counted": true
+     }
+    },
+    "toward_roof_729_7": {
+     "moved": true,
+     "delta_ns": 4116083,
+     "baseline_ns": 27547874,
+     "candidate_ns": 23431791,
+     "roof_ns": 1370426.2025489926,
+     "gap_closed_frac": 0.15723775028980472
+    },
+    "coherence": {
+     "rung": "complete_token",
+     "status": "FAILED",
+     "died_at": "coherent_generation",
+     "why": "Native binary geo matches the CPU oracle. mix_c_all_mlp_binary_g64 already ran the whole-model token loop and degenerated (16 copies of token 271). Associativity: the cheaper kernel does not reopen that death. Speed is reported; the arm is DEAD for promotion (S022 \u00a738).",
+     "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json"
+    },
+    "parity": {
+     "ok": true,
+     "rows": [
+      {
+       "dense_w_materialized": 0,
+       "id": "binary_geo_c5120",
+       "kernel": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+       "max_abs_diff": 0.0,
+       "must_match": true,
+       "ok": true,
+       "tolerance": 0.019999999552965164
+      }
+     ]
+    },
+    "dense_w_materialized": 0,
+    "timing_label": "DIRTY_ENGINEERING",
+    "timing_label_source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "kernel_requirement": [
+    "binary_g64_matvec_geo_c5120_tpr64_tg128"
+   ],
+   "information_accounting": {
+    "stored_equals_active": true,
+    "bpw": 1.25,
+    "source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "fewer_bits_moved_ns": true,
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "family": "ternary",
+   "successful_organs": [],
+   "failed_organs": [
+    "mlp_gate_up",
+    "mlp_down",
+    "whole_model"
+   ],
+   "density_frontier": {
+    "active_bpw": 1.85,
+    "whole_model": "NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json flipped argmax (9714 vs 10895)",
+    "source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "execution_cost": {
+    "active_bpw": {
+     "value": 1.85,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "BYTES_FRONTIER.representations[ternary_5in8_g64].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "active_bytes_per_token": {
+     "value": 3957325824.0,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "BYTES_FRONTIER.representations[ternary_5in8_g64].active_bytes_per_token",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "complete_token_ns": {
+     "value": 59417374,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "BYTES_FRONTIER.representations[ternary_5in8_g64].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": {
+      "zero_macs_elided": true,
+      "zero_bytes_skipped": false,
+      "why_active_eq_stored": "5-in-8 still streams every packed byte; skipping a zero trit saves an FMA, not a DRAM load. Index-carrying sparsity was already the expensive topology (G070)."
+     }
+    },
+    "toward_roof_729_7": {
+     "moved": false,
+     "delta_ns": -31869500,
+     "baseline_ns": 27547874,
+     "candidate_ns": 59417374,
+     "roof_ns": 1370426.2025489926,
+     "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+    },
+    "coherence": {
+     "rung": "held_out_activation",
+     "status": "FAILED",
+     "died_at": "complete_token",
+     "why": "Organ-local CANON (rel_fro 0.321) flipped the whole-model argmax (10895 vs teacher 9714). Native 5-in-8 equals reconstruct-then-GEMV on the packed codes (parity), so the cheaper kernel does not reopen the fidelity death. S022 \u00a738: a cheaper representation that flips the argmax is DEAD.",
+     "source_receipt": "receipts/headless/FRACTIONAL_BIT_CANON.json + NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+    },
+    "parity": {
+     "ok": true,
+     "rows": [
+      {
+       "dense_w_materialized": 0,
+       "id": "ternary_geo_c5120",
+       "kernel": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+       "max_abs_diff": 0.0,
+       "must_match": true,
+       "ok": true,
+       "tolerance": 0.019999999552965164
+      }
+     ]
+    },
+    "dense_w_materialized": 0,
+    "timing_label": "DIRTY_ENGINEERING",
+    "timing_label_source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "kernel_requirement": [
+    "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+    "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128"
+   ],
+   "information_accounting": {
+    "trit_pack": "5 trits in 8 bits + f16 scale / group 64 = 1.85 bpw",
+    "zeros_still_load": true,
+    "source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "fewer_bits_moved_ns": false,
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/ORGAN_FRONTIERS.json"
+   ]
+  },
+  {
+   "family": "shared_basis",
+   "successful_organs": [],
+   "failed_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "density_frontier": {
+    "active_bpw": 0.53125,
+    "c1_verdict": "NOT_WORTH_BUILDING",
+    "c1_failure": "fidelity",
+    "source": "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+   },
+   "execution_cost": {
+    "active_bpw": {
+     "value": 0.53125,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "BYTES_FRONTIER.representations[shared_binary_k2].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "active_bytes_per_token": {
+     "value": 1136394240.0,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "BYTES_FRONTIER.representations[shared_binary_k2].active_bytes_per_token",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "complete_token_ns": {
+     "value": 111626166,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "BYTES_FRONTIER.representations[shared_binary_k2].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": {
+      "basis_sign_bytes": 66846720.0,
+      "scale_bytes": 1069547520.0,
+      "active_bytes": 1136394240.0,
+      "active_bpw": 0.53125,
+      "storage_bpw_cold": 0.53125,
+      "k": 2,
+      "n_layers": 64
+     }
+    },
+    "toward_roof_729_7": {
+     "moved": false,
+     "delta_ns": -84078292,
+     "baseline_ns": 27547874,
+     "candidate_ns": 111626166,
+     "roof_ns": 1370426.2025489926,
+     "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+    },
+    "coherence": {
+     "rung": "local_functional_probe",
+     "status": "UNTESTED_ABOVE",
+     "unreached_above": "held_out_activation",
+     "why": "Native two-pass (group-dots then scale-contract) matches the CPU oracle on the packed codes. Whole-model argmax was not re-run: G035 column-share lost on fidelity and ONEBIT B4 is a matched-2.0 binary-share family, not this K=2 0.53-bpw operating point. May not be described above local_functional_probe.",
+     "source_receipt": "receipts/headless/C1SHAREDBASIS_DESIGN.json + ONEBIT_FAMILIES.json"
+    },
+    "parity": {
+     "ok": true,
+     "rows": [
+      {
+       "dense_w_materialized": 0,
+       "id": "shared_k2_two_pass_c5120",
+       "kernel": "shared_binary_k2_group_dots + scale_contract_gpr80",
+       "max_abs_diff": 0.0,
+       "must_match": true,
+       "ok": true,
+       "tolerance": 0.019999999552965164
+      }
+     ]
+    },
+    "dense_w_materialized": 0,
+    "timing_label": "DIRTY_ENGINEERING",
+    "timing_label_source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "kernel_requirement": [
+    "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128",
+    "shared_binary_k2_scale_contract_gpr80"
+   ],
+   "information_accounting": {
+    "bases_amortized_across_layers": true,
+    "native_two_stage_equals_reconstruct": true,
+    "source": "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+   },
+   "fewer_bits_moved_ns": false,
+   "design_verdict": "NOT_WORTH_BUILDING",
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+   ]
+  },
+  {
+   "family": "binary_sparse_residual",
+   "successful_organs": [],
+   "failed_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "density_frontier": {
+    "active_bpw": 2.216250359030331,
+    "nnz_frac": 0.02,
+    "note": "2% CSR indices are not free; active_bpw 2.216 still below 2.25 and still slower.",
+    "source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "execution_cost": {
+    "active_bpw": {
+     "value": 2.216250359030331,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "BYTES_FRONTIER.representations[binary_residual_sparse_2pct].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "active_bytes_per_token": {
+     "value": 4740770150.4,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "BYTES_FRONTIER.representations[binary_residual_sparse_2pct].active_bytes_per_token",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null
+    },
+    "complete_token_ns": {
+     "value": 37147375,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "BYTES_FRONTIER.representations[binary_residual_sparse_2pct].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": {
+      "binary_bytes": 2673868800.0,
+      "csr_bytes": 2066901350.4,
+      "nnz_frac": 0.02,
+      "active_bytes": 4740770150.4,
+      "active_bpw": 2.216250359030331
+     }
+    },
+    "toward_roof_729_7": {
+     "moved": false,
+     "delta_ns": -9599501,
+     "baseline_ns": 27547874,
+     "candidate_ns": 37147375,
+     "roof_ns": 1370426.2025489926,
+     "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+    },
+    "coherence": {
+     "rung": "local_functional_probe",
+     "status": "UNTESTED_ABOVE",
+     "unreached_above": "complete_token",
+     "why": "Fused kernel matches CPU binary+CSR. mix_c_all_mlp_binary_g64 already died at coherent_generation (16 copies of token 271). A 2% correction does not reopen that death without a new whole-model argmax. G070: index-carrying topologies lose on overhead; this pack bills the indices.",
+     "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json + C3LOWRANKSPARSE_DESIGN.json"
+    },
+    "parity": {
+     "ok": true,
+     "rows": [
+      {
+       "dense_w_materialized": 0,
+       "id": "residual_fused_c5120",
+       "kernel": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+       "max_abs_diff": 0.0,
+       "must_match": true,
+       "ok": true,
+       "tolerance": 0.019999999552965164
+      }
+     ]
+    },
+    "dense_w_materialized": 0,
+    "timing_label": "DIRTY_ENGINEERING",
+    "timing_label_source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "kernel_requirement": [
+    "binary_sparse_fused_geo_c5120_tpr64_tg128"
+   ],
+   "information_accounting": {
+    "binary_plane": true,
+    "sparse_residual": "CSR 2%",
+    "source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "fewer_bits_moved_ns": false,
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "family": "low_rank_sparse",
+   "successful_organs": [],
+   "failed_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "density_frontier": {
+    "c3_verdict": "NOT_WORTH_BUILDING",
+    "c2_tensor_family_also_refuted": "NOT_WORTH_BUILDING",
+    "c5_struct_transform": "NOT_WORTH_BUILDING",
+    "source": "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+   },
+   "execution_cost": {
+    "kind": "CITED",
+    "source": "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+    "answer": "NOT_WORTH_BUILDING. Fusion guaranteed save is 1,310,720 B = 2199.6 ns at 595.9 GB/s (0.0072% of 30.606 ms). The approximation family is already refuted as a byte/quality lever except as a Q80 down_proj COMPONENT; the novel fusion claim is dead on accounting. Do not write the shader.",
+    "note": "Fusion guaranteed save is 1,310,720 B = 2199.6 ns at 595.9 GB/s (0.0072% of 30.606 ms) \u2014 cited as written in C3; 595.9 is the then-scoring-reference, not the 778.8 DRAM roof."
+   },
+   "kernel_requirement": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "kernel",
+    "command": "native fused low-rank+sparse kernel",
+    "source": "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+    "absent_reason": "C3: Do not write the shader. NOT_WORTH_BUILDING."
+   },
+   "information_accounting": {
+    "source": "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+    "accounting": {
+     "site": {
+      "organ": "mlp.down_proj",
+      "why_this_organ": "NS-012 / Q80 frontier: down_proj inverts the ranking (HGRAVS01 beats binary) and must be fit on post-SwiGLU X. gate/up already have fused binary\u00b1CSR. Attention/lm_head were not inverted. Scope is 64 down_proj GEMVs, not the other 337.",
+      "rows": 5120,
+      "cols": 17408,
+      "rank": 160,
+      "bits": 3,
+      "group": 64,
+      "layers": 64,
+      "elements_per_launch": 89128960,
+      "elements_per_token": 5704253440,
+      "x_is": "post-SwiGLU silu(X@Wg.T)*(X@Wu.T), length intermediate"
+     },
+     "incumbent_down": {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "bytes_per_launch": 47349760,
+      "bytes_per_token": 3030384640,
+      "mac_flops_per_launch": 178257920,
+      "mac_flops_per_token": 11408506880,
+      "dispatches_per_token": 64,
+      "occupancy": {
+       "rows": 5120,
+       "rows_per_threadgroup": 2,
+       "threadgroup_size": 128,
+       "threadgroups": 2560,
+       "threads": 327680,
+       "gpu_cores": 60,
+       "threadgroups_per_core_if_spread": 42.666666666666664,
+       "fills_all_cores": true
+      },
+      "reconstructs_dense": "NO",
+      "bandwidth_floor_ns_at_roof": 5085391.240140963
+     },
+     "factors": {
+      "R_shape": [
+       160,
+       17408
+      ],
+      "L_shape": [
+       5120,
+       160
+      ],
+      "R_bytes_per_launch": 1131520,
+      "L_bytes_per_launch": 399360,
+      "LR_bytes_per_launch": 1530880,
+      "LR_bytes_per_token": 97976320,
+      "LR_complete_bpw_including_both_factors": 0.13740808823529413,
+      "trap_0_13_bpw_is": "0.1374 BPW at rank-160 3-bit g64 counting L AND R. The '0.13 BPW' slogan is this component, not a model EBPW, and is not 3.1% of 4.25 (that arithmetic drops R).",
+      "q80_right_bytes_check": {
+       "formula_160x512_b3": 33280,
+       "receipt_down_packed_right": 33280,
+       "match": true
+      },
+      "L_last_group_padded": true,
+      "L_groups_per_row": 3
+     },
+     "activations": {
+      "x_bytes": 69632,
+      "y_bytes": 20480,
+      "mid_bytes": 640,
+      "x_fits_two_stage_kXCap": false,
+      "x_fits_32kib_threadgroup": false,
+      "kXCap": 512,
+      "kRankCap": 160,
+      "qwen38_n_vs_kXCap": "17408 > 512"
+     },
+     "sparse_by_density": {
+      "0.0": {
+       "density": 0.0,
+       "nnz": 0,
+       "nnz_per_row": 0.0,
+       "index_bits_per_nnz": 32,
+       "value_bits_per_nnz": 1,
+       "index_share_of_csr_payload": 0.0,
+       "indices_bytes": 0,
+       "row_ptr_bytes": 20484,
+       "signs_bytes": 0,
+       "scale_bytes": 2,
+       "active_bytes": 20486,
+       "csr_bytes_per_token": 1311104,
+       "sp_macs_per_launch": 0,
+       "sp_macs_per_token": 0,
+       "fused_weight_bytes_per_launch": 1551366,
+       "fused_weight_bytes_per_token": 99287424,
+       "fusion_guaranteed_dram_save_per_launch": 20480,
+       "fusion_guaranteed_dram_save_per_token": 1310720,
+       "fusion_optimistic_x_plus_y_save_per_launch": 90112,
+       "fusion_optimistic_x_plus_y_save_per_token": 5767168,
+       "vs_q4_weight_bytes_per_token": 2931097216
+      },
+      "0.005": {
+       "density": 0.005,
+       "nnz": 445645,
+       "nnz_per_row": 87.0400390625,
+       "index_bits_per_nnz": 32,
+       "value_bits_per_nnz": 1,
+       "index_share_of_csr_payload": 0.9590094965923739,
+       "indices_bytes": 1782580,
+       "row_ptr_bytes": 20484,
+       "signs_bytes": 55706,
+       "scale_bytes": 2,
+       "active_bytes": 1858772,
+       "csr_bytes_per_token": 118961408,
+       "sp_macs_per_launch": 891290,
+       "sp_macs_per_token": 57042560,
+       "fused_weight_bytes_per_launch": 3389652,
+       "fused_weight_bytes_per_token": 216937728,
+       "fusion_guaranteed_dram_save_per_launch": 20480,
+       "fusion_guaranteed_dram_save_per_token": 1310720,
+       "fusion_optimistic_x_plus_y_save_per_launch": 90112,
+       "fusion_optimistic_x_plus_y_save_per_token": 5767168,
+       "vs_q4_weight_bytes_per_token": 2813446912
+      },
+      "0.02": {
+       "density": 0.02,
+       "nnz": 1782579,
+       "nnz_per_row": 348.1599609375,
+       "index_bits_per_nnz": 32,
+       "value_bits_per_nnz": 1,
+       "index_share_of_csr_payload": 0.9670027971316686,
+       "indices_bytes": 7130316,
+       "row_ptr_bytes": 20484,
+       "signs_bytes": 222823,
+       "scale_bytes": 2,
+       "active_bytes": 7373625,
+       "csr_bytes_per_token": 471912000,
+       "sp_macs_per_launch": 3565158,
+       "sp_macs_per_token": 228170112,
+       "fused_weight_bytes_per_launch": 8904505,
+       "fused_weight_bytes_per_token": 569888320,
+       "fusion_guaranteed_dram_save_per_launch": 20480,
+       "fusion_guaranteed_dram_save_per_token": 1310720,
+       "fusion_optimistic_x_plus_y_save_per_launch": 90112,
+       "fusion_optimistic_x_plus_y_save_per_token": 5767168,
+       "vs_q4_weight_bytes_per_token": 2460496320
+      }
+     },
+     "headline_density": 0.02,
+     "flops": {
+      "convention": "IEEE FMA counted as 2 (matches G143 / operation census)",
+      "incumbent_gemv_mac_flops_per_token": 51243909120,
+      "incumbent_down_mac_flops_per_token": 11408506880,
+      "lr_mac_flops_per_launch": 7208960,
+      "lr_mac_flops_per_token": 461373440,
+      "lr_mac_ratio_vs_dense_down": 0.04044117647058824,
+      "fused_2pct_mac_flops_per_token": 40524945792,
+      "token_gemv_after_lr_only": 40296775680,
+      "delta_vs_incumbent_gemv_fused_2pct": -10718963328
+     },
+     "dispatches": {
+      "incumbent_total": 964,
+      "incumbent_cbs": 1,
+      "incumbent_down": 64,
+      "fused_down": 128,
+      "twopass_down": 192,
+      "token_if_fused_replaces_down": 1028,
+      "token_if_twopass_replaces_down": 1092,
+      "fusion_saves_vs_twopass": 64,
+      "sync": "device mid[rank] between R and L; no grid-wide barrier exists (NS-030)"
+     },
+     "occupancy": {
+      "q4_down": {
+       "rows": 5120,
+       "rows_per_threadgroup": 2,
+       "threadgroup_size": 128,
+       "threadgroups": 2560,
+       "threads": 327680,
+       "gpu_cores": 60,
+       "threadgroups_per_core_if_spread": 42.666666666666664,
+       "fills_all_cores": true
+      },
+      "R_stage": {
+       "rows": 160,
+       "rows_per_threadgroup": 8,
+       "threadgroup_size": 256,
+       "threadgroups": 20,
+       "threads": 5120,
+       "gpu_cores": 60,
+       "threadgroups_per_core_if_spread": 0.3333333333333333,
+       "fills_all_cores": false
+      },
+      "L_stage": {
+       "rows": 5120,
+       "rows_per_threadgroup": 8,
+       "threadgroup_size": 256,
+       "threadgroups": 640,
+       "threads": 163840,
+       "gpu_cores": 60,
+       "threadgroups_per_core_if_spread": 10.666666666666666,
+       "fills_all_cores": true
+      }
+     },
+     "roofline": {
+      "roof_gb_s": 595.9,
+      "honest_decode_gb_s": 411.51,
+      "q4_down_floor_ns": 5085391.240140963,
+      "lr_floor_ns": 164417.3854673603,
+      "csr_2pct_floor_ns": 791931.5321362645,
+      "fused_weight_floor_ns": 956348.9176036248,
+      "fusion_guaranteed_save_ns": 2199.5636851820777,
+      "fusion_optimistic_save_ns": 9678.080214801143,
+      "token_ns": 30606000.0,
+      "fusion_guaranteed_save_frac_of_token": 7.18670745991661e-05,
+      "fusion_optimistic_save_frac_of_token": 0.00031621512823633085,
+      "ns030_q80_fused_over_two_dispatch": 12.830296296296297
+     },
+     "token_after_replace_down": {
+      "note": "Quality-conditional bandwidth scaling. Not a TPS claim.",
+      "dram_incumbent": 13988022948,
+      "dram_lr_only": 11055614628,
+      "dram_fused_2pct": 11527526628,
+      "scaled_ms_lr_only_if_dram_bound": 24.18984745467176,
+      "scaled_ms_fused_2pct_if_dram_bound": 25.22239785337304
+     }
+    }
+   },
+   "design_verdict": "NOT_WORTH_BUILDING",
+   "related_refutations": {
+    "c2_tensor": {
+     "verdict": "NOT_WORTH_BUILDING",
+     "source": "receipts/headless/C2TENSOROP_DESIGN.json"
+    },
+    "c5_struct_transform": {
+     "verdict": "NOT_WORTH_BUILDING",
+     "source": "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json"
+    }
+   },
+   "citations": [
+    "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+    "receipts/headless/C2TENSOROP_DESIGN.json",
+    "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json"
+   ]
+  }
+ ],
+ "n_families": 7
+}

@@ -1,0 +1,3838 @@
+{
+  "schema": "hawking.headless.authority_census.v1",
+  "generated_at": "2026-08-23T20:00:11Z",
+  "git_head": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/r2auth-20260823-154253",
+  "method": "HEAD-tree scan (sparse-safe git show/grep) + curated classification with live line recovery. Working-tree grep was not used as evidence of absence.",
+  "anti_goodhart": "A 20% LOC reduction that leaves two Goal stores or two HCLI binaries unnamed is a failure. Optimise verified capability over line count. Ten science lanes are in flight against tools/headless and receipts/headless \u2014 this receipt is a plan, not a migration.",
+  "standing_facts": {
+    "haider_is_a_fossil_namespace": true,
+    "preserve_sealed_schema_ids": true,
+    "preserve_historical_receipt_filenames": true,
+    "untracked_work_is_real_work": true,
+    "precious_corpora": [
+      "workspace/campaign/records/ascension-sandbox/",
+      "workspace/campaign/phaseB/"
+    ]
+  },
+  "planes": {
+    "hcli-py": "tools/haider/hcli \u2014 live campaign control plane (33 modules)",
+    "hide-rs": "hide-kernel / hide-backend / hide-protocol, including rust bin/hcli.rs",
+    "hawking-orch": "model-role admission",
+    "hawking-serve": "decode-slot batching",
+    "hawking-context": "HIDE context packer",
+    "lab": "science campaign engine",
+    "headless": "measurement harnesses",
+    "ramanujan": "math verifier scaffold",
+    "agentos": "genesis / machine_state",
+    "haider-v0": "tools/haider/haider.py bootstrap",
+    "hawking-speculate": "speculative-decode accept (name collision)"
+  },
+  "concepts": [
+    "Goal",
+    "mission",
+    "WorkUnit",
+    "DAG",
+    "scheduler",
+    "checkpoint",
+    "mutation lock",
+    "verifier",
+    "backend registry",
+    "context budget",
+    "runtime registry",
+    "receipt",
+    "experiment",
+    "model identity",
+    "machine identity",
+    "status",
+    "retry policy"
+  ],
+  "implementations": [
+    {
+      "id": "hcli.ledger.Ledger",
+      "concept": "Goal",
+      "path": "tools/haider/hcli/ledger.py",
+      "line": 395,
+      "file_line": "tools/haider/hcli/ledger.py:395",
+      "symbol": "Ledger",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Mission-level obligation ledger (GOAL.md). Answers 'is the overall goal satisfied?' via obligation VERIFIED. Identity space is G001-style ids, distinct from WorkUnit.id.",
+      "move": "Keep. Do not merge with WorkUnitDAG or hide-backend GoalStore. Callers that need 'goal met' must go through Ledger.outcome / assert_may_complete.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/commands.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/steering.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "bytes": 35185,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.goal.GoalCompiler",
+      "concept": "Goal",
+      "path": "tools/haider/hcli/goal.py",
+      "line": 172,
+      "file_line": "tools/haider/hcli/goal.py:172",
+      "symbol": "GoalCompiler",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Compiles natural-language goal text into implement/validate WorkUnits. A different identity space from Ledger obligations. Documented split, not an accidental duplicate.",
+      "move": "Keep as compiler. Do not teach it to decide GOAL_MET. Engine, Controller, and Mission already call GoalCompiler().compile.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/engine.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/controller.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "bytes": 45222,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-protocol.Goal",
+      "concept": "Goal",
+      "path": "crates/hide-protocol/src/plan.rs",
+      "line": 58,
+      "file_line": "crates/hide-protocol/src/plan.rs:58",
+      "symbol": "Goal",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE protocol schema (bible sec 14): declaration, not execution. This crate does not run plans.",
+      "move": "Keep as the HIDE wire/schema type. Do not import it into HCLI-py. A translation layer between GoalId and Ledger G-ids does not exist and must not be invented as a third Goal type.",
+      "callers": [
+        {
+          "path": "crates/hide-protocol/src/plan.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 11047,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.GoalStore",
+      "concept": "Goal",
+      "path": "crates/hide-backend/src/services_goal.rs",
+      "line": 126,
+      "file_line": "crates/hide-backend/src/services_goal.rs:126",
+      "symbol": "GoalStore / GoalRecord / GoalVerdict",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "Durable HIDE session goal over the KV `goals` namespace. One active goal per session. Evaluated model-free from verify.result evidence.",
+      "move": "Keep as HIDE's durable goal. Do not replace HCLI Ledger with this, or this with HCLI Ledger. TWO real authorities across products.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/services_goal.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 12388,
+      "unknown_reason": null
+    },
+    {
+      "id": "haider-v0.haider.py",
+      "concept": "Goal",
+      "path": "tools/haider/haider.py",
+      "line": 2,
+      "file_line": "tools/haider/haider.py:2",
+      "symbol": "haider.py (HCLI-v0 loop)",
+      "classification": "obsolete_implementation",
+      "plane": "haider-v0",
+      "two_real": false,
+      "survives": false,
+      "role": "Gate-zero bootstrap: one llama-server, one scoped edit, one receipt.",
+      "move": "Leave in tree (historical bootstrap). Do not route live missions through it. Live control plane is tools/haider/hcli/.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 16716,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.mission.Mission",
+      "concept": "mission",
+      "path": "tools/haider/hcli/mission.py",
+      "line": 157,
+      "file_line": "tools/haider/hcli/mission.py:157",
+      "symbol": "Mission",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI run-loop: owns scheduler, heartbeat, cancel, adopted Grok tasks, phase, and the mission state.json checkpoint. Not the ledger and not the WorkUnit DAG.",
+      "move": "Keep. Lab ExperimentRuntime and hide-kernel AgentDriver stay in their planes.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/controller.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/app.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 46368,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-kernel.AgentDriver",
+      "concept": "mission",
+      "path": "crates/hide-kernel/src/machine.rs",
+      "line": 51,
+      "file_line": "crates/hide-kernel/src/machine.rs:51",
+      "symbol": "AgentDriver",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE FSM driver (bible ch.02 \u00a74.4). Name collision: this file is machine.rs but it is the agent loop, not hardware identity.",
+      "move": "Keep as HIDE's run-loop. Do not rename for the HCLI-py Mission.",
+      "callers": [
+        {
+          "path": "crates/hide-kernel/src/machine.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 78971,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.ExperimentRuntime",
+      "concept": "mission",
+      "path": "lab/runtime.py",
+      "line": 178,
+      "file_line": "lab/runtime.py:178",
+      "symbol": "ExperimentRuntime",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab science campaign run-loop (lease, checkpoint, operators, receipts).",
+      "move": "Keep. Name collision with 'runtime registry' is documented there. Do not drive HCLI WorkUnits through this.",
+      "callers": [
+        {
+          "path": "lab/runtime.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 23550,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.hcli.self_evolution",
+      "concept": "mission",
+      "path": "lab/hcli/self_evolution.py",
+      "line": 160,
+      "file_line": "lab/hcli/self_evolution.py:160",
+      "symbol": "EvolutionLedger",
+      "classification": "obsolete_implementation",
+      "plane": "lab",
+      "two_real": false,
+      "survives": false,
+      "role": "Experimental self-evolution ledger under lab/hcli, not the live HCLI Mission.",
+      "move": "Leave. Not a migration target for tools/haider/hcli/mission.py.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 25964,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.workunit.WorkUnit",
+      "concept": "WorkUnit",
+      "path": "tools/haider/hcli/workunit.py",
+      "line": 42,
+      "file_line": "tools/haider/hcli/workunit.py:42",
+      "symbol": "WorkUnit",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "The WorkUnit dataclass plus identify_ready / transition_status / assign_ready / emit_repair. Shared identity space with the scheduler.",
+      "move": "Keep. All status writes go through transition_status.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/goal.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/dag_store.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "bytes": 20682,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.goal.WorkUnitDAG",
+      "concept": "WorkUnit",
+      "path": "tools/haider/hcli/goal.py",
+      "line": 55,
+      "file_line": "tools/haider/hcli/goal.py:55",
+      "symbol": "WorkUnitDAG",
+      "classification": "compatibility_wrapper",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "GoalCompiler IR. Readiness is identify_ready; completions walk transition_status. Persistence uses DagStore. Not a second DAG.",
+      "move": "Keep as compiler IR while GoalCompiler / engine.py / hcli_dag_consolidation_test.py call it. Do not restore the naive 'all deps completed' loop or direct wu.status writes.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/goal.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/headless/hcli_dag_consolidation_test.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "bytes": 45222,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.executors.WorkUnitExecutor",
+      "concept": "WorkUnit",
+      "path": "tools/haider/hcli/executors.py",
+      "line": 39,
+      "file_line": "tools/haider/hcli/executors.py:39",
+      "symbol": "WorkUnitExecutor",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Executes an already-admitted WorkUnit. Does not invent work or decide readiness.",
+      "move": "Keep. Not a second WorkUnit type.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 13726,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab._WorkItem",
+      "concept": "WorkUnit",
+      "path": "lab/engine_support.py",
+      "line": 109,
+      "file_line": "lab/engine_support.py:109",
+      "symbol": "_WorkItem",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "Lab experiment step. Different identity space from HCLI WorkUnit.id.",
+      "move": "Keep in lab. Do not alias to hcli.workunit.WorkUnit.",
+      "callers": [
+        {
+          "path": "lab/engine_support.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 13178,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.workunit.identify_ready",
+      "concept": "DAG",
+      "path": "tools/haider/hcli/workunit.py",
+      "line": 490,
+      "file_line": "tools/haider/hcli/workunit.py:490",
+      "symbol": "identify_ready / assign_ready / is_ready",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Canonical HCLI DAG logic: repair-aware readiness, retry budget, resource-class admission, MUTATION lock in assign_ready.",
+      "move": "Keep. Scheduler.dispatch and WorkUnitDAG.get_ready_units both call this.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/goal.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "bytes": 20682,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.dag_store.DagStore",
+      "concept": "DAG",
+      "path": "tools/haider/hcli/dag_store.py",
+      "line": 207,
+      "file_line": "tools/haider/hcli/dag_store.py:207",
+      "symbol": "DagStore",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Durable atomic writer for the HCLI WorkUnit DAG (.hcli/dag.json).",
+      "move": "Keep as the only on-disk DAG for HCLI-py.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/goal.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 14717,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-kernel.PlanDag",
+      "concept": "DAG",
+      "path": "crates/hide-kernel/src/plan.rs",
+      "line": 6,
+      "file_line": "crates/hide-kernel/src/plan.rs:6",
+      "symbol": "PlanDag",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE plan DAG: ready_steps is 'pending + all deps completed'. No repair-aware readiness. Used by AgentDriver.",
+      "move": "Keep as HIDE's plan DAG. Do not replace HCLI identify_ready with this, or this with identify_ready. TWO real DAG authorities.",
+      "callers": [
+        {
+          "path": "crates/hide-kernel/src/machine.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 24723,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.HaiderDag",
+      "concept": "DAG",
+      "path": "crates/hide-backend/src/haider/dag.rs",
+      "line": 117,
+      "file_line": "crates/hide-backend/src/haider/dag.rs:117",
+      "symbol": "HaiderDag / HaiderNode",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "Rust HAIDER parallel task DAG (disjoint write scopes + MemGate). Lives under a fossil namespace; it is not aider.",
+      "move": "Keep. Do not rename the crate path in this campaign (haider is a fossil namespace, not architecture). Do not merge with HCLI-py DAG.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/haider/lanes.rs",
+          "in_head": true
+        },
+        {
+          "path": "crates/hide-backend/src/haider/mod.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 5387,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.scheduler.Scheduler",
+      "concept": "scheduler",
+      "path": "tools/haider/hcli/scheduler.py",
+      "line": 117,
+      "file_line": "tools/haider/hcli/scheduler.py:117",
+      "symbol": "Scheduler",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Dispatch existing WorkUnits. FIFO by ready_at. Does not invent work. complete() refuses without a passing verifier (UnverifiedCompletion).",
+      "move": "Keep. Delete the post-import MAX_REPAIR_* reassignment (merge shadow) on a later source lane; re-export workunit.py names only. _remaining_depth is dead in dispatch \u2014 do not reintroduce depth sort.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/controller.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/HCLI_SCHEDULER_QUALITY.json",
+      "in_head": true,
+      "bytes": 19052,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.scheduler._remaining_depth",
+      "concept": "scheduler",
+      "path": "tools/haider/hcli/scheduler.py",
+      "line": 41,
+      "file_line": "tools/haider/hcli/scheduler.py:41",
+      "symbol": "_remaining_depth",
+      "classification": "obsolete_implementation",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": false,
+      "role": "Hop-count helper. Dispatch does not call it (ready_at FIFO). LOG and MAX_REPAIR_* are redefined after this helper \u2014 merge artifact.",
+      "move": "Remove on a later source lane together with the duplicated LOG = and MAX_REPAIR_* assignments. Do not use it as a scheduling key.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "tools/headless/hcli_scheduler_quality.py",
+      "in_head": true,
+      "bytes": 19052,
+      "unknown_reason": null
+    },
+    {
+      "id": "headless.remaining_depth",
+      "concept": "scheduler",
+      "path": "tools/headless/hcli_scheduler_quality.py",
+      "line": 129,
+      "file_line": "tools/headless/hcli_scheduler_quality.py:129",
+      "symbol": "remaining_depth",
+      "classification": "test_only_implementation",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "Measurement copy used to refute depth-sort. Not a scheduler.",
+      "move": "Keep as the harness that proved depth-sort does not help.",
+      "callers": [
+        {
+          "path": "tools/headless/hcli_scheduler_quality.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 54052,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.engine_support.Scheduler",
+      "concept": "scheduler",
+      "path": "lab/engine_support.py",
+      "line": 122,
+      "file_line": "lab/engine_support.py:122",
+      "symbol": "Scheduler",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab experiment-step scheduler over ExperimentSpec.steps.",
+      "move": "Keep in lab. Same English name as HCLI Scheduler; different object.",
+      "callers": [
+        {
+          "path": "lab/runtime.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 13178,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-orch.Scheduler",
+      "concept": "scheduler",
+      "path": "crates/hawking-orch/src/scheduler.rs",
+      "line": 117,
+      "file_line": "crates/hawking-orch/src/scheduler.rs:117",
+      "symbol": "Scheduler",
+      "classification": "canonical_authority",
+      "plane": "hawking-orch",
+      "two_real": true,
+      "survives": true,
+      "role": "Energy/thermal/RAM admission for model roles. Not WorkUnit dispatch.",
+      "move": "Keep. Do not merge with HCLI-py Scheduler.",
+      "callers": [
+        {
+          "path": "crates/hawking-orch/src/scheduler.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 9599,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-serve.batch.Scheduler",
+      "concept": "scheduler",
+      "path": "crates/hawking-serve/src/batch/scheduler.rs",
+      "line": 258,
+      "file_line": "crates/hawking-serve/src/batch/scheduler.rs:258",
+      "symbol": "Scheduler",
+      "classification": "canonical_authority",
+      "plane": "hawking-serve",
+      "two_real": true,
+      "survives": true,
+      "role": "Decode-slot batch packer (KV slots, greedy-first, prefix reuse).",
+      "move": "Keep. This is inference batching, not campaign dispatch.",
+      "callers": [
+        {
+          "path": "crates/hawking-serve/src/batch/scheduler.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 41075,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.AgentScheduler",
+      "concept": "scheduler",
+      "path": "crates/hide-backend/src/agent_scheduler.rs",
+      "line": 372,
+      "file_line": "crates/hide-backend/src/agent_scheduler.rs:372",
+      "symbol": "AgentScheduler",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE backend agent/job scheduler (policy + metrics + checkpoint refs).",
+      "move": "Keep in hide-backend. Not HCLI-py Scheduler.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/agent_scheduler.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 44100,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.LaneScheduler",
+      "concept": "scheduler",
+      "path": "crates/hide-backend/src/haider/lanes.rs",
+      "line": 96,
+      "file_line": "crates/hide-backend/src/haider/lanes.rs:96",
+      "symbol": "LaneScheduler",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "MemGate-controlled HAIDER lane scheduler (Architect/Implementer/Adversary).",
+      "move": "Keep with HaiderDag. Not a second HCLI-py scheduler.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/haider/lanes.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 5371,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.dag_store.persist",
+      "concept": "checkpoint",
+      "path": "tools/haider/hcli/dag_store.py",
+      "line": 207,
+      "file_line": "tools/haider/hcli/dag_store.py:207",
+      "symbol": "DagStore (HCLI crash checkpoint)",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI has no Checkpoint class. Durable restart is DagStore + mission state.json + MutationLock record. Crash behaviour is proven by tools/headless/hcli_crash_checkpoint_test.py.",
+      "move": "Do not grow a third Checkpoint type in HCLI-py. If a name is needed, it is this pair, not hide-backend CheckpointStore.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
+      "in_head": true,
+      "bytes": 14717,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-kernel.AgentCheckpoint",
+      "concept": "checkpoint",
+      "path": "crates/hide-kernel/src/checkpoint.rs",
+      "line": 17,
+      "file_line": "crates/hide-kernel/src/checkpoint.rs:17",
+      "symbol": "AgentCheckpoint",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE event-log fold snapshot/restore/resume/fork (bible ch.02 \u00a74.13).",
+      "move": "Keep as HIDE's agent-state checkpoint. Not HCLI dag.json.",
+      "callers": [
+        {
+          "path": "crates/hide-kernel/src/checkpoint.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 3504,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.CheckpointStore",
+      "concept": "checkpoint",
+      "path": "crates/hide-backend/src/services_goal.rs",
+      "line": 223,
+      "file_line": "crates/hide-backend/src/services_goal.rs:223",
+      "symbol": "CheckpointStore / CheckpointRecord",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "Durable HIDE session checkpoint over KV `checkpoints` namespace.",
+      "move": "Keep. Protocol schema is hide-protocol::Checkpoint; this is the store.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/services_goal.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 12388,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-protocol.Checkpoint",
+      "concept": "checkpoint",
+      "path": "crates/hide-protocol/src/model.rs",
+      "line": 247,
+      "file_line": "crates/hide-protocol/src/model.rs:247",
+      "symbol": "Checkpoint",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "HIDE protocol schema for a named restorable boundary (capsule + vcs_ref).",
+      "move": "Keep as schema. Execution is AgentCheckpoint / CheckpointStore.",
+      "callers": [
+        {
+          "path": "crates/hide-protocol/src/model.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 10440,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.checkpoint.CheckpointStore",
+      "concept": "checkpoint",
+      "path": "lab/checkpoint.py",
+      "line": 78,
+      "file_line": "lab/checkpoint.py:78",
+      "symbol": "CheckpointStore",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab campaign controller checkpoint + hash-chain event log.",
+      "move": "Keep in lab. Same class name as hide-backend and frankenstein; different schema.",
+      "callers": [
+        {
+          "path": "lab/runtime.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 5899,
+      "unknown_reason": null
+    },
+    {
+      "id": "frankenstein.CheckpointStore",
+      "concept": "checkpoint",
+      "path": "lab/operators/frankenstein_latent_v0.py",
+      "line": 1589,
+      "file_line": "lab/operators/frankenstein_latent_v0.py:1589",
+      "symbol": "CheckpointStore (.pt slots)",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "Latent-v0 weight-slot store (slot.pt). Not a controller checkpoint.",
+      "move": "Keep local to the operator. Rename would clarify; not required for HCLI.",
+      "callers": [
+        {
+          "path": "lab/operators/frankenstein_latent_v0.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 109029,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-context.CheckpointId",
+      "concept": "checkpoint",
+      "path": "crates/hawking-context/src/kv.rs",
+      "line": 138,
+      "file_line": "crates/hawking-context/src/kv.rs:138",
+      "symbol": "CheckpointId / CheckpointMeta / KvCheckpoint",
+      "classification": "canonical_authority",
+      "plane": "hawking-context",
+      "two_real": false,
+      "survives": true,
+      "role": "KV-cache checkpoint (prefix reuse), not a mission/controller checkpoint.",
+      "move": "Keep. Do not treat as HCLI crash checkpoint.",
+      "callers": [
+        {
+          "path": "crates/hawking-context/src/lib.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 18950,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-fleet.CheckpointId",
+      "concept": "checkpoint",
+      "path": "crates/hide-fleet/src/fabric_failure.rs",
+      "line": 16,
+      "file_line": "crates/hide-fleet/src/fabric_failure.rs:16",
+      "symbol": "CheckpointId (fleet fabric_failure)",
+      "classification": "historical_implementation",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "Newtype id in fabric_failure. Name collision with hawking-context::CheckpointId.",
+      "move": "Keep. Do not treat as HCLI or HIDE session checkpoint.",
+      "callers": [
+        {
+          "path": "crates/hide-fleet/src/fabric_failure.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 8038,
+      "unknown_reason": null
+    },
+    {
+      "id": "tools.worker_checkpoint",
+      "concept": "checkpoint",
+      "path": "tools/worker_checkpoint.py",
+      "line": 45,
+      "file_line": "tools/worker_checkpoint.py:45",
+      "symbol": "worker_checkpoint (G132 rebind)",
+      "classification": "canonical_authority",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "Gravity-worker rebind protocol. Measurements do not survive a parent change.",
+      "move": "Keep. Not HCLI dag.json and not hide-kernel AgentCheckpoint.",
+      "callers": [
+        {
+          "path": "tools/worker_checkpoint.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 12894,
+      "unknown_reason": null
+    },
+    {
+      "id": "tools.llama_checkpoint_bisect",
+      "concept": "checkpoint",
+      "path": "tools/llama_checkpoint_bisect.py",
+      "line": null,
+      "file_line": "tools/llama_checkpoint_bisect.py",
+      "symbol": "llama_checkpoint_bisect (GGUF)",
+      "classification": "historical_implementation",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "GGUF/weight checkpoint bisect. English collision only.",
+      "move": "Keep. Do not cite as a control-plane checkpoint.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 26392,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.resources.MutationLock",
+      "concept": "mutation lock",
+      "path": "tools/haider/hcli/resources.py",
+      "line": 420,
+      "file_line": "tools/haider/hcli/resources.py:420",
+      "symbol": "MutationLock",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Crash-safe exclusive lock for MUTATION WorkUnits. Replaced the advisory JSON check-then-replace that two processes could both win.",
+      "move": "Keep. Scheduler.assign_ready and GrokBridge.delegate must keep using it.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/workunit.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/commands.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/grok_bridge.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/AGENTOS_SINGLE_WRITER.json",
+      "in_head": true,
+      "bytes": 41346,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.grok_bridge.mutation_lock_param",
+      "concept": "mutation lock",
+      "path": "tools/haider/hcli/grok_bridge.py",
+      "line": 618,
+      "file_line": "tools/haider/hcli/grok_bridge.py:618",
+      "symbol": "_as_mutation_lock / delegate(mutation_lock=)",
+      "classification": "compatibility_wrapper",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Accepts a callable or context manager wrapping MutationLock for Grok delegate.",
+      "move": "Keep while CommandHandler._grok_mutation_lock and Mission pass it.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/commands.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/grok_bridge.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 52337,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.lease.SingletonLease",
+      "concept": "mutation lock",
+      "path": "lab/lease.py",
+      "line": 32,
+      "file_line": "lab/lease.py:32",
+      "symbol": "SingletonLease",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "fcntl exclusive lease for the lab campaign controller.",
+      "move": "Keep in lab. Do not replace MutationLock with this, or this with MutationLock.",
+      "callers": [
+        {
+          "path": "lab/runtime.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 29595,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.glm52.SingletonLease",
+      "concept": "mutation lock",
+      "path": "lab/operators/glm52_state.py",
+      "line": 1036,
+      "file_line": "lab/operators/glm52_state.py:1036",
+      "symbol": "glm52_state.SingletonLease",
+      "classification": "compatibility_wrapper",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "Subclass of lab.lease.SingletonLease for the GLM-52 operator.",
+      "move": "Keep as a named subclass. Canonical lock remains lab.lease.SingletonLease.",
+      "callers": [
+        {
+          "path": "lab/operators/glm52_state.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 219219,
+      "unknown_reason": null
+    },
+    {
+      "id": "tools.gpu_lane_guard",
+      "concept": "mutation lock",
+      "path": "tools/gpu_lane_guard.py",
+      "line": 49,
+      "file_line": "tools/gpu_lane_guard.py:49",
+      "symbol": "gpu_lane_guard / gpu_lane_lock.sh",
+      "classification": "canonical_authority",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "GPU timing-lane witness. Marks contended timings VOID rather than claiming exclusive ownership of the repo.",
+      "move": "Keep. Different job from MutationLock.",
+      "callers": [
+        {
+          "path": "tools/gpu_lane_guard.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 9414,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.verifier_pipeline",
+      "concept": "verifier",
+      "path": "tools/haider/hcli/verifier_pipeline.py",
+      "line": 353,
+      "file_line": "tools/haider/hcli/verifier_pipeline.py:353",
+      "symbol": "verifier_pipeline.verify / plan / execute",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Verifier-first pipeline (plan \u2192 evidence \u2192 mechanical command). Defines its own Obligation dataclass (id, statement, angles) \u2014 not ledger.Obligation.",
+      "move": "Keep as the HCLI pipeline. Rename its Obligation to PipelineClaim on a later source lane so the two types cannot be confused. command_is_admissible stays the vacuity gate.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+      "in_head": true,
+      "bytes": 40198,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.ledger.Obligation",
+      "concept": "verifier",
+      "path": "tools/haider/hcli/ledger.py",
+      "line": 281,
+      "file_line": "tools/haider/hcli/ledger.py:281",
+      "symbol": "ledger.Obligation + Ledger.run_verify",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Durable GOAL.md obligation with verify_command. VerifyResult is fresh only when produced by run_verify (anti-forgery).",
+      "move": "Keep. Different type from verifier_pipeline.Obligation. TWO real authorities in one package.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+      "in_head": true,
+      "bytes": 35185,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.scheduler.verification_passed",
+      "concept": "verifier",
+      "path": "tools/haider/hcli/scheduler.py",
+      "line": 91,
+      "file_line": "tools/haider/hcli/scheduler.py:91",
+      "symbol": "verification_passed / UnverifiedCompletion",
+      "classification": "compatibility_wrapper",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Thin predicate: outcome is a dict with ok is True. complete() raises otherwise.",
+      "move": "Keep. Verified caller: Scheduler.complete.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 19052,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.VerificationAuthority",
+      "concept": "verifier",
+      "path": "lab/verification_authority.py",
+      "line": 281,
+      "file_line": "lab/verification_authority.py:281",
+      "symbol": "VerificationAuthority",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab science certification: models emit candidates, only the controller certifies.",
+      "move": "Keep. Not the HCLI WorkUnit verifier.",
+      "callers": [
+        {
+          "path": "lab/verification_authority.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 18720,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-kernel.VerificationGate",
+      "concept": "verifier",
+      "path": "crates/hide-kernel/src/verify.rs",
+      "line": 792,
+      "file_line": "crates/hide-kernel/src/verify.rs:792",
+      "symbol": "VerificationGate / OracleSuite",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE oracle gate. AgentDriver will not advance without it.",
+      "move": "Keep as HIDE verify. Do not import into HCLI-py.",
+      "callers": [
+        {
+          "path": "crates/hide-kernel/src/machine.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 50201,
+      "unknown_reason": null
+    },
+    {
+      "id": "ramanujan.VerifierRegistry",
+      "concept": "verifier",
+      "path": "ramanujan/scaffold/research/verifier/registry.py",
+      "line": 19,
+      "file_line": "ramanujan/scaffold/research/verifier/registry.py:19",
+      "symbol": "VerifierRegistry",
+      "classification": "canonical_authority",
+      "plane": "ramanujan",
+      "two_real": false,
+      "survives": true,
+      "role": "Math verifier backends (lean / sympy / exact numeric).",
+      "move": "Keep in ramanujan. Not an HCLI WorkUnit verifier.",
+      "callers": [
+        {
+          "path": "ramanujan/scaffold/research/verifier/registry.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 2879,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-speculate.Verifier",
+      "concept": "verifier",
+      "path": "crates/hawking-speculate/src/verifier.rs",
+      "line": 66,
+      "file_line": "crates/hawking-speculate/src/verifier.rs:66",
+      "symbol": "Verifier (speculative decode)",
+      "classification": "historical_implementation",
+      "plane": "hawking-speculate",
+      "two_real": false,
+      "survives": true,
+      "role": "Draft-token accept rule for speculative decode. English collision with WorkUnit verification; not a control-plane verifier.",
+      "move": "Keep. Do not cite as HCLI/HIDE goal verification.",
+      "callers": [
+        {
+          "path": "crates/hawking-speculate/src/verifier.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 9653,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.backends.RuntimeBackend",
+      "concept": "backend registry",
+      "path": "tools/haider/hcli/backends.py",
+      "line": 325,
+      "file_line": "tools/haider/hcli/backends.py:325",
+      "symbol": "RuntimeBackend + LlamaServerBackend + MlxServerBackend",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI inference-server registry. supports() is the capability table; MLX reports response_format/grammar false so the engine degrades instead of silently sending ignored fields.",
+      "move": "Keep. New backends implement RuntimeBackend; do not add a second registry dict.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/runtime.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/engine.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/BACKEND_CAPABILITY.json",
+      "in_head": true,
+      "bytes": 54359,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.resources.BackendHealth",
+      "concept": "backend registry",
+      "path": "tools/haider/hcli/resources.py",
+      "line": 981,
+      "file_line": "tools/haider/hcli/resources.py:981",
+      "symbol": "BackendHealth",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Durable per-backend circuit breaker. Not a backend registry.",
+      "move": "Keep beside RuntimeBackend. Do not let it grow spawn/complete methods.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/resources.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 41346,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-orch.RoleRegistry",
+      "concept": "backend registry",
+      "path": "crates/hawking-orch/src/registry.rs",
+      "line": 13,
+      "file_line": "crates/hawking-orch/src/registry.rs:13",
+      "symbol": "RoleRegistry",
+      "classification": "canonical_authority",
+      "plane": "hawking-orch",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE/Hawking model-role registry (roles.toml). Not llama vs MLX servers.",
+      "move": "Keep. Different object from RuntimeBackend.",
+      "callers": [
+        {
+          "path": "crates/hawking-orch/src/registry.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 11800,
+      "unknown_reason": null
+    },
+    {
+      "id": "haider-v0.allocate_port",
+      "concept": "backend registry",
+      "path": "tools/haider/haider.py",
+      "line": 52,
+      "file_line": "tools/haider/haider.py:52",
+      "symbol": "allocate_port (HCLI-v0)",
+      "classification": "obsolete_implementation",
+      "plane": "haider-v0",
+      "two_real": false,
+      "survives": false,
+      "role": "Duplicate of backends.allocate_port in the v0 bootstrap.",
+      "move": "Leave the v0 file. Live callers use tools/haider/hcli/backends.py:allocate_port.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 16716,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.context_budget.ContextBudget",
+      "concept": "context budget",
+      "path": "tools/haider/hcli/context_budget.py",
+      "line": 87,
+      "file_line": "tools/haider/hcli/context_budget.py:87",
+      "symbol": "ContextBudget / resolve / preflight / per_seq_context",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI per-request context authority. Divides allocation by slot count; preflight refuses an over-large root prompt before inference.",
+      "move": "Keep. Remaining gap (HCLI_CONTEXT_AUTHORITY): resolve() without demand_tokens still yields 32768/3=11008; root ingress must pass demand (G006/G007). Do not reintroduce a 32768 literal in config.py.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/runtime.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/backends.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/config.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/engine.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/goal.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/HCLI_CONTEXT_AUTHORITY.json",
+      "in_head": true,
+      "bytes": 22610,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.context.reexport",
+      "concept": "context budget",
+      "path": "tools/haider/hcli/context.py",
+      "line": 10,
+      "file_line": "tools/haider/hcli/context.py:10",
+      "symbol": "context.py (re-export)",
+      "classification": "compatibility_wrapper",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": false,
+      "role": "Re-exports WorkerPacket from goal.py so there is not a second packet shape. No production importer of hcli.context was found.",
+      "move": "Removable: no named verified caller of hcli.context (only context_budget).",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": true,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 456,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-context.TokenBudget",
+      "concept": "context budget",
+      "path": "crates/hawking-context/src/budget.rs",
+      "line": 17,
+      "file_line": "crates/hawking-context/src/budget.rs:17",
+      "symbol": "TokenBudget / RegionBudget",
+      "classification": "canonical_authority",
+      "plane": "hawking-context",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE shell-side context compiler (reservation-aware knapsack).",
+      "move": "Keep as HIDE's packer. Do not replace HCLI context_budget.py with this.",
+      "callers": [
+        {
+          "path": "crates/hawking-context/src/lib.rs",
+          "in_head": true
+        },
+        {
+          "path": "crates/hawking-context/src/compiler.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 11273,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.haider.ContextBudget",
+      "concept": "context budget",
+      "path": "crates/hide-backend/src/haider/lanes.rs",
+      "line": 62,
+      "file_line": "crates/hide-backend/src/haider/lanes.rs:62",
+      "symbol": "haider::lanes::ContextBudget",
+      "classification": "compatibility_wrapper",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "Per-lane max_tokens newtype used by EvidencePacket. Not the HCLI authority.",
+      "move": "Keep as a field on EvidencePacket. Verified caller: crates/hide-backend/src/haider/lanes.rs EvidencePacket. Do not give it resolve/preflight logic.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/haider/lanes.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 5371,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-context.ContextCompiler",
+      "concept": "context budget",
+      "path": "crates/hawking-context/src/compiler.rs",
+      "line": 276,
+      "file_line": "crates/hawking-context/src/compiler.rs:276",
+      "symbol": "ContextCompiler",
+      "classification": "canonical_authority",
+      "plane": "hawking-context",
+      "two_real": false,
+      "survives": true,
+      "role": "Packs TokenBudget into a replayable manifest. Same plane as TokenBudget, not a second budget.",
+      "move": "Keep with TokenBudget. Do not merge with HCLI context_budget.py.",
+      "callers": [
+        {
+          "path": "crates/hawking-context/src/lib.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 54605,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.hcli_bridge.MAX_CONTEXT_TOKENS",
+      "concept": "context budget",
+      "path": "crates/hide-backend/src/hcli_bridge.rs",
+      "line": 55,
+      "file_line": "crates/hide-backend/src/hcli_bridge.rs:55",
+      "symbol": "MAX_CONTEXT_TOKENS (transport bound)",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "JSONL transport cap (2e6), independent of the model window.",
+      "move": "Keep as a transport bound. Not a substitute for context_budget.resolve.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/hcli_bridge.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 95985,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.runtime.RuntimePool",
+      "concept": "runtime registry",
+      "path": "tools/haider/hcli/runtime.py",
+      "line": 520,
+      "file_line": "tools/haider/hcli/runtime.py:520",
+      "symbol": "RuntimePool / Runtime",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI owned llama/MLX process pool. Limits come from machine.resolve_runtime_limits (genome is a prior, not a constant).",
+      "move": "Keep. Do not hand-edit MACHINE_GENOME.json to change slot counts.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/controller.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/RUNTIME_AUTHORITY.json",
+      "in_head": true,
+      "bytes": 46061,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.runtime.ExperimentRuntime",
+      "concept": "runtime registry",
+      "path": "lab/runtime.py",
+      "line": 178,
+      "file_line": "lab/runtime.py:178",
+      "symbol": "ExperimentRuntime",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab experiment runner. Name collision with HCLI RuntimePool.",
+      "move": "Keep in lab. Do not spawn llama-server from here.",
+      "callers": [
+        {
+          "path": "lab/runtime.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 23550,
+      "unknown_reason": null
+    },
+    {
+      "id": "tools.glm52_gravity.Runtime",
+      "concept": "runtime registry",
+      "path": "tools/glm52_gravity.py",
+      "line": 81,
+      "file_line": "tools/glm52_gravity.py:81",
+      "symbol": "Runtime (glm52_gravity local)",
+      "classification": "obsolete_implementation",
+      "plane": "headless",
+      "two_real": false,
+      "survives": false,
+      "role": "Local helper in a gravity tool. Not RuntimePool.",
+      "move": "Leave in the tool. Do not import from hcli.runtime.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 56370,
+      "unknown_reason": null
+    },
+    {
+      "id": "headless.machine_probe.Runtime",
+      "concept": "runtime registry",
+      "path": "tools/headless/machine_probe.py",
+      "line": 120,
+      "file_line": "tools/headless/machine_probe.py:120",
+      "symbol": "Runtime (probe-local)",
+      "classification": "test_only_implementation",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "Local helper inside the genome probe. Not RuntimePool.",
+      "move": "Keep inside the probe. Do not import from hcli.runtime.",
+      "callers": [
+        {
+          "path": "tools/headless/machine_probe.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 27109,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.receipts.Receipt",
+      "concept": "receipt",
+      "path": "lab/receipts.py",
+      "line": 278,
+      "file_line": "lab/receipts.py:278",
+      "symbol": "Receipt / ReceiptAuthority / GateEvidence / seal",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab sealed receipt family (hawking.lab.receipt.v1).",
+      "move": "Keep as the lab seal. Do not rewrite historical receipts. Do not force HCLI engine receipts onto this schema.",
+      "callers": [
+        {
+          "path": "lab/runtime.py",
+          "in_head": true
+        },
+        {
+          "path": "lab/verification_authority.py",
+          "in_head": true
+        },
+        {
+          "path": "lab/checkpoint.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 19793,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.engine._write_receipt",
+      "concept": "receipt",
+      "path": "tools/haider/hcli/engine.py",
+      "line": 3479,
+      "file_line": "tools/haider/hcli/engine.py:3479",
+      "symbol": "Engine._write_receipt",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Per-goal mutation receipt under the workspace.",
+      "move": "Keep the schema and filenames (historical receipts cite them). Share the atomic-write primitive with grok_bridge and ledger on a later source lane; do not merge the three payload shapes.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/engine.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 110540,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.grok_bridge._write_receipt",
+      "concept": "receipt",
+      "path": "tools/haider/hcli/grok_bridge.py",
+      "line": 1194,
+      "file_line": "tools/haider/hcli/grok_bridge.py:1194",
+      "symbol": "GrokBridge._write_receipt",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Per-Grok-task receipt. Different payload from Engine.",
+      "move": "Keep. Share atomic-write only.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/grok_bridge.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 52337,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.ledger._write_receipt",
+      "concept": "receipt",
+      "path": "tools/haider/hcli/ledger.py",
+      "line": 954,
+      "file_line": "tools/haider/hcli/ledger.py:954",
+      "symbol": "Ledger._write_receipt",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Per-obligation verify receipt. Forgery of VERIFIED without this is demoted to STALE.",
+      "move": "Keep. Required by AGENTOS_VERIFIER_AUTHORITY.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/ledger.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+      "in_head": true,
+      "bytes": 35185,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.write_sealed_receipt",
+      "concept": "receipt",
+      "path": "crates/hide-backend/src/headless.rs",
+      "line": 342,
+      "file_line": "crates/hide-backend/src/headless.rs:342",
+      "symbol": "write_sealed_receipt",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE headless sealed receipt writer.",
+      "move": "Keep for hide-headless / rust hcli. Not HCLI-py engine receipts.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/bin/hide-headless.rs",
+          "in_head": true
+        },
+        {
+          "path": "crates/hide-backend/src/bin/hcli.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 33120,
+      "unknown_reason": null
+    },
+    {
+      "id": "haider-v0.write_receipt",
+      "concept": "receipt",
+      "path": "tools/haider/haider.py",
+      "line": 351,
+      "file_line": "tools/haider/haider.py:351",
+      "symbol": "haider.py write_receipt",
+      "classification": "obsolete_implementation",
+      "plane": "haider-v0",
+      "two_real": false,
+      "survives": false,
+      "role": "HCLI-v0 receipt writer.",
+      "move": "Leave. Historical .haider/receipts filenames are evidence.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 16716,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.spec.ExperimentSpec",
+      "concept": "experiment",
+      "path": "lab/spec.py",
+      "line": 189,
+      "file_line": "lab/spec.py:189",
+      "symbol": "ExperimentSpec (hawking.lab.experiment_spec.v1)",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab campaign spec. lab.runtime and lab.engine_support import this one.",
+      "move": "Keep as the campaign spec. Accepts hawking.lab.experiment.v1 as a compatibility schema id.",
+      "callers": [
+        {
+          "path": "lab/runtime.py",
+          "in_head": true
+        },
+        {
+          "path": "lab/engine_support.py",
+          "in_head": true
+        },
+        {
+          "path": "lab/__init__.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 17234,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.bench_harness.ExperimentSpec",
+      "concept": "experiment",
+      "path": "lab/bench_harness/spec.py",
+      "line": 29,
+      "file_line": "lab/bench_harness/spec.py:29",
+      "symbol": "ExperimentSpec (hawking.lab.experiment.v1 stages)",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Second ExperimentSpec: id + stages runner schema. Imported by tools/foundry/tests, not by lab.runtime.",
+      "move": "TWO real authorities. Rename this class to HarnessSpec on a later source lane; keep the sealed schema id hawking.lab.experiment.v1.",
+      "callers": [
+        {
+          "path": "tools/foundry/tests/test_foundry_tables_lifecycle.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 3819,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.science_registry",
+      "concept": "experiment",
+      "path": "lab/science_registry.py",
+      "line": 40,
+      "file_line": "lab/science_registry.py:40",
+      "symbol": "OperatorRegistry / OperatorRecord",
+      "classification": "canonical_authority",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "Catalog of lab.operators. Not an ExperimentSpec.",
+      "move": "Keep. Runtime looks up operators here.",
+      "callers": [
+        {
+          "path": "lab/runtime.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 15252,
+      "unknown_reason": null
+    },
+    {
+      "id": "headless.runtime_experiment",
+      "concept": "experiment",
+      "path": "tools/headless/runtime_experiment.py",
+      "line": 2,
+      "file_line": "tools/headless/runtime_experiment.py:2",
+      "symbol": "runtime_experiment.py (harness)",
+      "classification": "test_only_implementation",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "Measurement harness writing RUNTIME_EXPERIMENT.json. No Experiment type.",
+      "move": "Keep as a harness. Do not promote into lab.spec.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 47500,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.models.ModelRegistry",
+      "concept": "model identity",
+      "path": "tools/haider/hcli/models.py",
+      "line": 288,
+      "file_line": "tools/haider/hcli/models.py:288",
+      "symbol": "ModelRegistry / ModelInfo / resolve_model",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Local GGUF inventory and selection. Discovery never loads. Ambiguous discovery stays ambiguous.",
+      "move": "Keep as HCLI selection. Do not merge with the promotion registry.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/cli.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/headless/hcli_command_driver.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 12992,
+      "unknown_reason": null
+    },
+    {
+      "id": "headless.model_registry",
+      "concept": "model identity",
+      "path": "tools/headless/model_registry.py",
+      "line": 2,
+      "file_line": "tools/headless/model_registry.py:2",
+      "symbol": "model_registry.py + receipts/headless/MODEL_REGISTRY.json",
+      "classification": "canonical_authority",
+      "plane": "headless",
+      "two_real": true,
+      "survives": true,
+      "role": "Parent/child promotion lineage. promote() reads PerformanceLedger + capability receipt + incumbent; a child cannot promote itself.",
+      "move": "Keep as the promotion authority. Different job from ModelRegistry path selection. TWO real authorities under the English name 'model identity'.",
+      "callers": [
+        {
+          "path": "tools/headless/model_registry.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/MODEL_REGISTRY.json",
+      "in_head": true,
+      "bytes": 11609,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-comms.ModelIdentity",
+      "concept": "model identity",
+      "path": "crates/hawking-comms/src/level3.rs",
+      "line": 74,
+      "file_line": "crates/hawking-comms/src/level3.rs:74",
+      "symbol": "ModelIdentity",
+      "classification": "canonical_authority",
+      "plane": "hawking-orch",
+      "two_real": true,
+      "survives": true,
+      "role": "Wire-level model identity in hawking-comms. Not HCLI path selection and not the promotion registry.",
+      "move": "Keep as the comms identity type. Do not merge with ModelRegistry or MODEL_REGISTRY.json.",
+      "callers": [
+        {
+          "path": "crates/hawking-comms/src/level3.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 11171,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-orch.ModelSpec",
+      "concept": "model identity",
+      "path": "crates/hawking-orch/src/registry.rs",
+      "line": 131,
+      "file_line": "crates/hawking-orch/src/registry.rs:131",
+      "symbol": "ModelSpec (roles.toml parse)",
+      "classification": "compatibility_wrapper",
+      "plane": "hawking-orch",
+      "two_real": false,
+      "survives": true,
+      "role": "TOML parse shape for RoleRegistry. Not lab.operators.ModelSpec.",
+      "move": "Keep private to registry.rs. Verified caller: RoleRegistry::from_roles_toml.",
+      "callers": [
+        {
+          "path": "crates/hawking-orch/src/registry.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 11800,
+      "unknown_reason": null
+    },
+    {
+      "id": "hawking-serve.ModelInfo",
+      "concept": "model identity",
+      "path": "crates/hawking-serve/src/http.rs",
+      "line": 423,
+      "file_line": "crates/hawking-serve/src/http.rs:423",
+      "symbol": "ModelInfo (HTTP)",
+      "classification": "compatibility_wrapper",
+      "plane": "hawking-serve",
+      "two_real": false,
+      "survives": true,
+      "role": "HTTP-layer model info. Name collision with hcli.models.ModelInfo.",
+      "move": "Keep in hawking-serve. Do not share a type with HCLI-py ModelInfo.",
+      "callers": [
+        {
+          "path": "crates/hawking-serve/src/http.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 59265,
+      "unknown_reason": null
+    },
+    {
+      "id": "lab.operators.ModelSpec.copies",
+      "concept": "model identity",
+      "path": "lab/operators/ascension_qwen_state_kv.py",
+      "line": 85,
+      "file_line": "lab/operators/ascension_qwen_state_kv.py:85",
+      "symbol": "ModelSpec (copied across operators)",
+      "classification": "UNKNOWN",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "class ModelSpec appears in at least four lab operators. Whether they are copies of one type or independent locals was not fully compared.",
+      "move": "Follow-up: diff the four ModelSpec bodies before deleting any.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 77799,
+      "unknown_reason": "Four lab/operators/* ModelSpec classes exist (ascension_dual_gravity_worker, ascension_physical_gatekeeper, ascension_qwen_scientific_optimizer, ascension_qwen_state_kv). This lane did not byte-compare them."
+    },
+    {
+      "id": "headless.machine_probe",
+      "concept": "machine identity",
+      "path": "tools/headless/machine_probe.py",
+      "line": 494,
+      "file_line": "tools/headless/machine_probe.py:494",
+      "symbol": "machine_probe.py (producer)",
+      "classification": "canonical_authority",
+      "plane": "headless",
+      "two_real": true,
+      "survives": true,
+      "role": "Produces receipts/headless/MACHINE_GENOME.json. Promotion of a new knee is a re-run of this probe, not an editor.",
+      "move": "Keep as the sole producer of the live genome.",
+      "callers": [
+        {
+          "path": "tools/headless/machine_probe.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/RUNTIME_AUTHORITY.json",
+      "in_head": true,
+      "bytes": 27109,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.machine.live_machine_identity",
+      "concept": "machine identity",
+      "path": "tools/haider/hcli/machine.py",
+      "line": 555,
+      "file_line": "tools/haider/hcli/machine.py:555",
+      "symbol": "live_machine_identity / assess_genome_freshness / resolve_runtime_limits / MachineProbe / MemGate",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Consumer of the genome. Reads (1) env (2) ~/.config/hcli/machine_genome.json (3) receipts/headless/MACHINE_GENOME.json (4) worker-equilibrium.json. STALE genomes (wrong machine, wrong model, too old) are not used.",
+      "move": "Keep as the consumer. Do not let it grow a write() that bypasses the probe.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/runtime.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/resources.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/RUNTIME_AUTHORITY.json",
+      "in_head": true,
+      "bytes": 34860,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.machine.MachineGenome",
+      "concept": "machine identity",
+      "path": "tools/haider/hcli/machine.py",
+      "line": 969,
+      "file_line": "tools/haider/hcli/machine.py:969",
+      "symbol": "MachineGenome (HCLI_HOME/machine-genome.json)",
+      "classification": "obsolete_implementation",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": false,
+      "role": "Thin JSON blob at ~/.local/share/hcli/machine-genome.json via get_machine_genome_path(). Production limit resolution does not read this class. Only hcli_persistence_audit.py constructs it.",
+      "move": "Remove or wrap so it reads the same files as resolve_runtime_limits. Leaving it is a second genome authority.",
+      "callers": [
+        {
+          "path": "tools/headless/hcli_persistence_audit.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 34860,
+      "unknown_reason": null
+    },
+    {
+      "id": "agentos.machine_state",
+      "concept": "machine identity",
+      "path": "tools/agentos/machine_state.py",
+      "line": 2,
+      "file_line": "tools/agentos/machine_state.py:2",
+      "symbol": "machine_state.py (ancestor of Machine Genome)",
+      "classification": "canonical_authority",
+      "plane": "agentos",
+      "two_real": false,
+      "survives": true,
+      "role": "Load/RAM/disk/heavy-lane snapshot for genesis. Not the HCLI genome.",
+      "move": "Keep for agentos. Do not feed it to resolve_runtime_limits.",
+      "callers": [
+        {
+          "path": "tools/agentos/machine_state.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 4732,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-kernel.machine.rs",
+      "concept": "machine identity",
+      "path": "crates/hide-kernel/src/machine.rs",
+      "line": 51,
+      "file_line": "crates/hide-kernel/src/machine.rs:51",
+      "symbol": "machine.rs (AgentDriver \u2014 name collision)",
+      "classification": "historical_implementation",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "File name says machine; contents are the HIDE agent FSM. Not hardware identity.",
+      "move": "Keep. Do not cite as machine identity.",
+      "callers": [
+        {
+          "path": "crates/hide-kernel/src/machine.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 78971,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.workunit.transition_status",
+      "concept": "status",
+      "path": "tools/haider/hcli/workunit.py",
+      "line": 433,
+      "file_line": "tools/haider/hcli/workunit.py:433",
+      "symbol": "transition_status / WORKUNIT_STATUSES",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "WorkUnit state machine (pending/ready/running/completed/failed/interrupted).",
+      "move": "Keep. Direct wu.status writes are forbidden (DAG consolidation).",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/goal.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 20682,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.ledger.outcome",
+      "concept": "status",
+      "path": "tools/haider/hcli/ledger.py",
+      "line": 395,
+      "file_line": "tools/haider/hcli/ledger.py:395",
+      "symbol": "Ledger.outcome / Ledger.status",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Mission completion: GOAL_MET / GOAL_NOT_MET / TERMINAL_BLOCKER / SAFETY_DISARM / ENFORCEMENT_FAILURE. .status remains the three-way compat property.",
+      "move": "Keep. Compatibility: .status still returns EMPTY_LEDGER/GOAL_MET/GOAL_NOT_MET.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/commands.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/headless/hcli_agentos_ledger_test.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "bytes": 35185,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.commands.format_status",
+      "concept": "status",
+      "path": "tools/haider/hcli/commands.py",
+      "line": 94,
+      "file_line": "tools/haider/hcli/commands.py:94",
+      "symbol": "format_status / enrich_status_snapshot",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "One-screen /status renderer. Unmeasured fields print as unknown, never as 0. HEAD has exactly one def format_status; the 'later shadows earlier' finding did not reproduce.",
+      "move": "Keep as the only human /status renderer. TUI.render_status is a transcript line, not this.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/commands.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/tests/test_status_completeness.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/tests/test_status_truth.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/HCLI_STATUS_OBSERVABILITY.json",
+      "in_head": true,
+      "bytes": 32399,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.controller.status",
+      "concept": "status",
+      "path": "tools/haider/hcli/controller.py",
+      "line": 190,
+      "file_line": "tools/haider/hcli/controller.py:190",
+      "symbol": "Controller.status (snapshot)",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Builds the snapshot format_status renders (qwen/grok/mutation/occupancy).",
+      "move": "Keep as the data side of /status. format_status must not grow its own probes.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/commands.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 38455,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.tui.render_status",
+      "concept": "status",
+      "path": "tools/haider/hcli/tui.py",
+      "line": 49,
+      "file_line": "tools/haider/hcli/tui.py:49",
+      "symbol": "TUI.render_status",
+      "classification": "obsolete_implementation",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Prints TUI.status string (idle/working). Not /status.",
+      "move": "Keep as a transcript chrome, or later call format_status. Do not treat as the operator status surface.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/tui.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 5717,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.grok.parse_grok_status",
+      "concept": "status",
+      "path": "tools/haider/hcli/grok_bridge.py",
+      "line": 282,
+      "file_line": "tools/haider/hcli/grok_bridge.py:282",
+      "symbol": "parse_grok_status / grok_succeeded",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Grok-run task liveness/terminal state. Input to Mission adoption and P0-3.",
+      "move": "Keep. Not WorkUnit.status and not Ledger.outcome.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/grok_bridge.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 52337,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.StatusResponse",
+      "concept": "status",
+      "path": "crates/hide-backend/src/hcli_bridge.rs",
+      "line": 1810,
+      "file_line": "crates/hide-backend/src/hcli_bridge.rs:1810",
+      "symbol": "StatusResponse",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "Rust HCLI JSONL status. A second product named HCLI.",
+      "move": "Keep for crates/hide-backend/src/bin/hcli.rs. Do not make Python format_status emit this schema.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/bin/hcli.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 95985,
+      "unknown_reason": null
+    },
+    {
+      "id": "ramanujan.Status",
+      "concept": "status",
+      "path": "ramanujan/scaffold/research/prover.py",
+      "line": 56,
+      "file_line": "ramanujan/scaffold/research/prover.py:56",
+      "symbol": "Status (ramanujan prover)",
+      "classification": "canonical_authority",
+      "plane": "ramanujan",
+      "two_real": false,
+      "survives": true,
+      "role": "Ramanujan prover enum. Unrelated to HCLI /status.",
+      "move": "Keep.",
+      "callers": [
+        {
+          "path": "ramanujan/scaffold/research/prover.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 10049,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.workunit.DEFAULT_RETRY_BUDGET",
+      "concept": "retry policy",
+      "path": "tools/haider/hcli/workunit.py",
+      "line": 26,
+      "file_line": "tools/haider/hcli/workunit.py:26",
+      "symbol": "DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Durable retry/repair caps on the unit and DAG document.",
+      "move": "Keep here. Scheduler must re-export, not reassign.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/workunit.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 20682,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.scheduler.MAX_REPAIR_shadow",
+      "concept": "retry policy",
+      "path": "tools/haider/hcli/scheduler.py",
+      "line": 79,
+      "file_line": "tools/haider/hcli/scheduler.py:79",
+      "symbol": "MAX_REPAIR_DEPTH = 3 (shadows the import)",
+      "classification": "obsolete_implementation",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": false,
+      "role": "Imported from workunit.py at line 20, then reassigned at line 79 after a duplicated LOG =. Same values today; a drift would split the repair cap between emit_repair and `from scheduler import`.",
+      "move": "Delete the reassignment; keep a re-export comment only.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/tests/test_scheduler_quality.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 19052,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.resources.classify_failure",
+      "concept": "retry policy",
+      "path": "tools/haider/hcli/resources.py",
+      "line": 800,
+      "file_line": "tools/haider/hcli/resources.py:800",
+      "symbol": "classify_failure / counts_toward_retry_budget / NON_RETRYABLE / FailureClassification",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Retryability of a failure. Non-retryable names do not burn DEFAULT_RETRY_BUDGET.",
+      "move": "Keep as the retryability authority. emit_repair consults this.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/workunit.py",
+          "in_head": true
+        },
+        {
+          "path": "tools/headless/repair_disposition_table.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 41346,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-kernel.RetryPolicy",
+      "concept": "retry policy",
+      "path": "crates/hide-kernel/src/program_runtime_ast.rs",
+      "line": 76,
+      "file_line": "crates/hide-kernel/src/program_runtime_ast.rs:76",
+      "symbol": "RetryPolicy",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE program-runtime AST retry policy. Not WorkUnit DEFAULT_RETRY_BUDGET.",
+      "move": "Keep in hide-kernel. Do not import into HCLI-py workunit.py.",
+      "callers": [
+        {
+          "path": "crates/hide-kernel/src/program_runtime_ast.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 10233,
+      "unknown_reason": null
+    },
+    {
+      "id": "hcli.backends.structured_output_attempts",
+      "concept": "retry policy",
+      "path": "tools/haider/hcli/backends.py",
+      "line": 441,
+      "file_line": "tools/haider/hcli/backends.py:441",
+      "symbol": "DEFAULT_STRUCTURED_OUTPUT_ATTEMPTS",
+      "classification": "canonical_authority",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Bounded parse retries for structured output (especially MLX without grammar).",
+      "move": "Keep. Different budget from WorkUnit attempts.",
+      "callers": [
+        {
+          "path": "tools/haider/hcli/backends.py",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": "receipts/headless/BACKEND_CAPABILITY.json",
+      "in_head": true,
+      "bytes": 54359,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.bin.hcli",
+      "concept": "mission",
+      "path": "crates/hide-backend/src/bin/hcli.rs",
+      "line": 1,
+      "file_line": "crates/hide-backend/src/bin/hcli.rs:1",
+      "symbol": "bin/hcli.rs (Rust HCLI)",
+      "classification": "canonical_authority",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "A second product named HCLI: JSONL shell over hide-backend. Not tools/haider/hcli. bin/haider.rs is an empty blob (git e69de29).",
+      "move": "Keep as the HIDE product surface. Do not point ~/.local/bin/hcli at this binary without an explicit cutover. TWO real HCLI authorities.",
+      "callers": [
+        {
+          "path": "crates/hide-backend/src/bin/hcli.rs",
+          "in_head": true
+        }
+      ],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 125086,
+      "unknown_reason": null
+    },
+    {
+      "id": "hide-backend.bin.haider_empty",
+      "concept": "mission",
+      "path": "crates/hide-backend/src/bin/haider.rs",
+      "line": null,
+      "file_line": "crates/hide-backend/src/bin/haider.rs",
+      "symbol": "bin/haider.rs (empty)",
+      "classification": "historical_implementation",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "Empty file (git blob e69de29). Fossil namespace, not a runner.",
+      "move": "Do not delete in this campaign (historical name). Do not implement into it.",
+      "callers": [],
+      "callers_unverified": [],
+      "wrapper_removable": false,
+      "evidence_receipt": null,
+      "in_head": true,
+      "bytes": 0,
+      "unknown_reason": null
+    }
+  ],
+  "targets": [
+    {
+      "concept": "Goal",
+      "canonical_ids": [
+        "hcli.ledger.Ledger",
+        "hcli.goal.GoalCompiler",
+        "hide-protocol.Goal",
+        "hide-backend.GoalStore"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/ledger.py:395",
+        "tools/haider/hcli/goal.py:172",
+        "crates/hide-protocol/src/plan.rs:58",
+        "crates/hide-backend/src/services_goal.rs:126"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.ledger.Ledger",
+        "hcli.goal.GoalCompiler",
+        "hide-protocol.Goal",
+        "hide-backend.GoalStore"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.ledger.Ledger",
+          "survives": true,
+          "move": "Keep. Do not merge with WorkUnitDAG or hide-backend GoalStore. Callers that need 'goal met' must go through Ledger.outcome / assert_may_complete."
+        },
+        {
+          "id": "hcli.goal.GoalCompiler",
+          "survives": true,
+          "move": "Keep as compiler. Do not teach it to decide GOAL_MET. Engine, Controller, and Mission already call GoalCompiler().compile."
+        },
+        {
+          "id": "hide-protocol.Goal",
+          "survives": true,
+          "move": "Keep as the HIDE wire/schema type. Do not import it into HCLI-py. A translation layer between GoalId and Ledger G-ids does not exist and must not be invented as a third Goal type."
+        },
+        {
+          "id": "hide-backend.GoalStore",
+          "survives": true,
+          "move": "Keep as HIDE's durable goal. Do not replace HCLI Ledger with this, or this with HCLI Ledger. TWO real authorities across products."
+        },
+        {
+          "id": "haider-v0.haider.py",
+          "survives": false,
+          "move": "Leave in tree (historical bootstrap). Do not route live missions through it. Live control plane is tools/haider/hcli/."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "mission",
+      "canonical_ids": [
+        "hcli.mission.Mission",
+        "hide-kernel.AgentDriver",
+        "lab.ExperimentRuntime",
+        "hide-backend.bin.hcli"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/mission.py:157",
+        "crates/hide-kernel/src/machine.rs:51",
+        "lab/runtime.py:178",
+        "crates/hide-backend/src/bin/hcli.rs:1"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.mission.Mission",
+        "hide-kernel.AgentDriver",
+        "lab.ExperimentRuntime",
+        "hide-backend.bin.hcli"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.mission.Mission",
+          "survives": true,
+          "move": "Keep. Lab ExperimentRuntime and hide-kernel AgentDriver stay in their planes."
+        },
+        {
+          "id": "hide-kernel.AgentDriver",
+          "survives": true,
+          "move": "Keep as HIDE's run-loop. Do not rename for the HCLI-py Mission."
+        },
+        {
+          "id": "lab.ExperimentRuntime",
+          "survives": true,
+          "move": "Keep. Name collision with 'runtime registry' is documented there. Do not drive HCLI WorkUnits through this."
+        },
+        {
+          "id": "lab.hcli.self_evolution",
+          "survives": false,
+          "move": "Leave. Not a migration target for tools/haider/hcli/mission.py."
+        },
+        {
+          "id": "hide-backend.bin.hcli",
+          "survives": true,
+          "move": "Keep as the HIDE product surface. Do not point ~/.local/bin/hcli at this binary without an explicit cutover. TWO real HCLI authorities."
+        },
+        {
+          "id": "hide-backend.bin.haider_empty",
+          "survives": true,
+          "move": "Do not delete in this campaign (historical name). Do not implement into it."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "WorkUnit",
+      "canonical_ids": [
+        "hcli.workunit.WorkUnit",
+        "hcli.executors.WorkUnitExecutor",
+        "lab._WorkItem"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/workunit.py:42",
+        "tools/haider/hcli/executors.py:39",
+        "lab/engine_support.py:109"
+      ],
+      "two_real_authorities": false,
+      "two_real_ids": [],
+      "wrappers_justified": [
+        {
+          "id": "hcli.goal.WorkUnitDAG",
+          "file_line": "tools/haider/hcli/goal.py:55",
+          "callers": [
+            "tools/haider/hcli/goal.py",
+            "tools/headless/hcli_dag_consolidation_test.py"
+          ]
+        }
+      ],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.workunit.WorkUnit",
+          "survives": true,
+          "move": "Keep. All status writes go through transition_status."
+        },
+        {
+          "id": "hcli.goal.WorkUnitDAG",
+          "survives": true,
+          "move": "Keep as compiler IR while GoalCompiler / engine.py / hcli_dag_consolidation_test.py call it. Do not restore the naive 'all deps completed' loop or direct wu.status writes."
+        },
+        {
+          "id": "hcli.executors.WorkUnitExecutor",
+          "survives": true,
+          "move": "Keep. Not a second WorkUnit type."
+        },
+        {
+          "id": "lab._WorkItem",
+          "survives": true,
+          "move": "Keep in lab. Do not alias to hcli.workunit.WorkUnit."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "DAG",
+      "canonical_ids": [
+        "hcli.workunit.identify_ready",
+        "hcli.dag_store.DagStore",
+        "hide-kernel.PlanDag",
+        "hide-backend.HaiderDag"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/workunit.py:490",
+        "tools/haider/hcli/dag_store.py:207",
+        "crates/hide-kernel/src/plan.rs:6",
+        "crates/hide-backend/src/haider/dag.rs:117"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.workunit.identify_ready",
+        "hide-kernel.PlanDag",
+        "hide-backend.HaiderDag"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.workunit.identify_ready",
+          "survives": true,
+          "move": "Keep. Scheduler.dispatch and WorkUnitDAG.get_ready_units both call this."
+        },
+        {
+          "id": "hcli.dag_store.DagStore",
+          "survives": true,
+          "move": "Keep as the only on-disk DAG for HCLI-py."
+        },
+        {
+          "id": "hide-kernel.PlanDag",
+          "survives": true,
+          "move": "Keep as HIDE's plan DAG. Do not replace HCLI identify_ready with this, or this with identify_ready. TWO real DAG authorities."
+        },
+        {
+          "id": "hide-backend.HaiderDag",
+          "survives": true,
+          "move": "Keep. Do not rename the crate path in this campaign (haider is a fossil namespace, not architecture). Do not merge with HCLI-py DAG."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "scheduler",
+      "canonical_ids": [
+        "hcli.scheduler.Scheduler",
+        "lab.engine_support.Scheduler",
+        "hawking-orch.Scheduler",
+        "hawking-serve.batch.Scheduler",
+        "hide-backend.AgentScheduler",
+        "hide-backend.LaneScheduler"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/scheduler.py:117",
+        "lab/engine_support.py:122",
+        "crates/hawking-orch/src/scheduler.rs:117",
+        "crates/hawking-serve/src/batch/scheduler.rs:258",
+        "crates/hide-backend/src/agent_scheduler.rs:372",
+        "crates/hide-backend/src/haider/lanes.rs:96"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.scheduler.Scheduler",
+        "lab.engine_support.Scheduler",
+        "hawking-orch.Scheduler",
+        "hawking-serve.batch.Scheduler",
+        "hide-backend.AgentScheduler"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.scheduler.Scheduler",
+          "survives": true,
+          "move": "Keep. Delete the post-import MAX_REPAIR_* reassignment (merge shadow) on a later source lane; re-export workunit.py names only. _remaining_depth is dead in dispatch \u2014 do not reintroduce depth sort."
+        },
+        {
+          "id": "hcli.scheduler._remaining_depth",
+          "survives": false,
+          "move": "Remove on a later source lane together with the duplicated LOG = and MAX_REPAIR_* assignments. Do not use it as a scheduling key."
+        },
+        {
+          "id": "headless.remaining_depth",
+          "survives": true,
+          "move": "Keep as the harness that proved depth-sort does not help."
+        },
+        {
+          "id": "lab.engine_support.Scheduler",
+          "survives": true,
+          "move": "Keep in lab. Same English name as HCLI Scheduler; different object."
+        },
+        {
+          "id": "hawking-orch.Scheduler",
+          "survives": true,
+          "move": "Keep. Do not merge with HCLI-py Scheduler."
+        },
+        {
+          "id": "hawking-serve.batch.Scheduler",
+          "survives": true,
+          "move": "Keep. This is inference batching, not campaign dispatch."
+        },
+        {
+          "id": "hide-backend.AgentScheduler",
+          "survives": true,
+          "move": "Keep in hide-backend. Not HCLI-py Scheduler."
+        },
+        {
+          "id": "hide-backend.LaneScheduler",
+          "survives": true,
+          "move": "Keep with HaiderDag. Not a second HCLI-py scheduler."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "checkpoint",
+      "canonical_ids": [
+        "hcli.dag_store.persist",
+        "hide-kernel.AgentCheckpoint",
+        "hide-backend.CheckpointStore",
+        "hide-protocol.Checkpoint",
+        "lab.checkpoint.CheckpointStore",
+        "frankenstein.CheckpointStore",
+        "hawking-context.CheckpointId",
+        "tools.worker_checkpoint"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/dag_store.py:207",
+        "crates/hide-kernel/src/checkpoint.rs:17",
+        "crates/hide-backend/src/services_goal.rs:223",
+        "crates/hide-protocol/src/model.rs:247",
+        "lab/checkpoint.py:78",
+        "lab/operators/frankenstein_latent_v0.py:1589",
+        "crates/hawking-context/src/kv.rs:138",
+        "tools/worker_checkpoint.py:45"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.dag_store.persist",
+        "hide-kernel.AgentCheckpoint",
+        "hide-backend.CheckpointStore",
+        "lab.checkpoint.CheckpointStore"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.dag_store.persist",
+          "survives": true,
+          "move": "Do not grow a third Checkpoint type in HCLI-py. If a name is needed, it is this pair, not hide-backend CheckpointStore."
+        },
+        {
+          "id": "hide-kernel.AgentCheckpoint",
+          "survives": true,
+          "move": "Keep as HIDE's agent-state checkpoint. Not HCLI dag.json."
+        },
+        {
+          "id": "hide-backend.CheckpointStore",
+          "survives": true,
+          "move": "Keep. Protocol schema is hide-protocol::Checkpoint; this is the store."
+        },
+        {
+          "id": "hide-protocol.Checkpoint",
+          "survives": true,
+          "move": "Keep as schema. Execution is AgentCheckpoint / CheckpointStore."
+        },
+        {
+          "id": "lab.checkpoint.CheckpointStore",
+          "survives": true,
+          "move": "Keep in lab. Same class name as hide-backend and frankenstein; different schema."
+        },
+        {
+          "id": "frankenstein.CheckpointStore",
+          "survives": true,
+          "move": "Keep local to the operator. Rename would clarify; not required for HCLI."
+        },
+        {
+          "id": "hawking-context.CheckpointId",
+          "survives": true,
+          "move": "Keep. Do not treat as HCLI crash checkpoint."
+        },
+        {
+          "id": "hide-fleet.CheckpointId",
+          "survives": true,
+          "move": "Keep. Do not treat as HCLI or HIDE session checkpoint."
+        },
+        {
+          "id": "tools.worker_checkpoint",
+          "survives": true,
+          "move": "Keep. Not HCLI dag.json and not hide-kernel AgentCheckpoint."
+        },
+        {
+          "id": "tools.llama_checkpoint_bisect",
+          "survives": true,
+          "move": "Keep. Do not cite as a control-plane checkpoint."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "mutation lock",
+      "canonical_ids": [
+        "hcli.resources.MutationLock",
+        "lab.lease.SingletonLease",
+        "tools.gpu_lane_guard"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/resources.py:420",
+        "lab/lease.py:32",
+        "tools/gpu_lane_guard.py:49"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.resources.MutationLock",
+        "lab.lease.SingletonLease"
+      ],
+      "wrappers_justified": [
+        {
+          "id": "hcli.grok_bridge.mutation_lock_param",
+          "file_line": "tools/haider/hcli/grok_bridge.py:618",
+          "callers": [
+            "tools/haider/hcli/commands.py",
+            "tools/haider/hcli/grok_bridge.py"
+          ]
+        },
+        {
+          "id": "lab.glm52.SingletonLease",
+          "file_line": "lab/operators/glm52_state.py:1036",
+          "callers": [
+            "lab/operators/glm52_state.py"
+          ]
+        }
+      ],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.resources.MutationLock",
+          "survives": true,
+          "move": "Keep. Scheduler.assign_ready and GrokBridge.delegate must keep using it."
+        },
+        {
+          "id": "hcli.grok_bridge.mutation_lock_param",
+          "survives": true,
+          "move": "Keep while CommandHandler._grok_mutation_lock and Mission pass it."
+        },
+        {
+          "id": "lab.lease.SingletonLease",
+          "survives": true,
+          "move": "Keep in lab. Do not replace MutationLock with this, or this with MutationLock."
+        },
+        {
+          "id": "lab.glm52.SingletonLease",
+          "survives": true,
+          "move": "Keep as a named subclass. Canonical lock remains lab.lease.SingletonLease."
+        },
+        {
+          "id": "tools.gpu_lane_guard",
+          "survives": true,
+          "move": "Keep. Different job from MutationLock."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "verifier",
+      "canonical_ids": [
+        "hcli.verifier_pipeline",
+        "hcli.ledger.Obligation",
+        "lab.VerificationAuthority",
+        "hide-kernel.VerificationGate",
+        "ramanujan.VerifierRegistry"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/verifier_pipeline.py:353",
+        "tools/haider/hcli/ledger.py:281",
+        "lab/verification_authority.py:281",
+        "crates/hide-kernel/src/verify.rs:792",
+        "ramanujan/scaffold/research/verifier/registry.py:19"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.verifier_pipeline",
+        "hcli.ledger.Obligation",
+        "lab.VerificationAuthority",
+        "hide-kernel.VerificationGate"
+      ],
+      "wrappers_justified": [
+        {
+          "id": "hcli.scheduler.verification_passed",
+          "file_line": "tools/haider/hcli/scheduler.py:91",
+          "callers": [
+            "tools/haider/hcli/scheduler.py"
+          ]
+        }
+      ],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.verifier_pipeline",
+          "survives": true,
+          "move": "Keep as the HCLI pipeline. Rename its Obligation to PipelineClaim on a later source lane so the two types cannot be confused. command_is_admissible stays the vacuity gate."
+        },
+        {
+          "id": "hcli.ledger.Obligation",
+          "survives": true,
+          "move": "Keep. Different type from verifier_pipeline.Obligation. TWO real authorities in one package."
+        },
+        {
+          "id": "hcli.scheduler.verification_passed",
+          "survives": true,
+          "move": "Keep. Verified caller: Scheduler.complete."
+        },
+        {
+          "id": "lab.VerificationAuthority",
+          "survives": true,
+          "move": "Keep. Not the HCLI WorkUnit verifier."
+        },
+        {
+          "id": "hide-kernel.VerificationGate",
+          "survives": true,
+          "move": "Keep as HIDE verify. Do not import into HCLI-py."
+        },
+        {
+          "id": "ramanujan.VerifierRegistry",
+          "survives": true,
+          "move": "Keep in ramanujan. Not an HCLI WorkUnit verifier."
+        },
+        {
+          "id": "hawking-speculate.Verifier",
+          "survives": true,
+          "move": "Keep. Do not cite as HCLI/HIDE goal verification."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "backend registry",
+      "canonical_ids": [
+        "hcli.backends.RuntimeBackend",
+        "hcli.resources.BackendHealth",
+        "hawking-orch.RoleRegistry"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/backends.py:325",
+        "tools/haider/hcli/resources.py:981",
+        "crates/hawking-orch/src/registry.rs:13"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.backends.RuntimeBackend",
+        "hawking-orch.RoleRegistry"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.backends.RuntimeBackend",
+          "survives": true,
+          "move": "Keep. New backends implement RuntimeBackend; do not add a second registry dict."
+        },
+        {
+          "id": "hcli.resources.BackendHealth",
+          "survives": true,
+          "move": "Keep beside RuntimeBackend. Do not let it grow spawn/complete methods."
+        },
+        {
+          "id": "hawking-orch.RoleRegistry",
+          "survives": true,
+          "move": "Keep. Different object from RuntimeBackend."
+        },
+        {
+          "id": "haider-v0.allocate_port",
+          "survives": false,
+          "move": "Leave the v0 file. Live callers use tools/haider/hcli/backends.py:allocate_port."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "context budget",
+      "canonical_ids": [
+        "hcli.context_budget.ContextBudget",
+        "hawking-context.TokenBudget",
+        "hawking-context.ContextCompiler",
+        "hide-backend.hcli_bridge.MAX_CONTEXT_TOKENS"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/context_budget.py:87",
+        "crates/hawking-context/src/budget.rs:17",
+        "crates/hawking-context/src/compiler.rs:276",
+        "crates/hide-backend/src/hcli_bridge.rs:55"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.context_budget.ContextBudget",
+        "hawking-context.TokenBudget"
+      ],
+      "wrappers_justified": [
+        {
+          "id": "hide-backend.haider.ContextBudget",
+          "file_line": "crates/hide-backend/src/haider/lanes.rs:62",
+          "callers": [
+            "crates/hide-backend/src/haider/lanes.rs"
+          ]
+        }
+      ],
+      "wrappers_removable": [
+        {
+          "id": "hcli.context.reexport",
+          "file_line": "tools/haider/hcli/context.py:10",
+          "reason": "Removable: no named verified caller of hcli.context (only context_budget)."
+        }
+      ],
+      "what_must_move": [
+        {
+          "id": "hcli.context_budget.ContextBudget",
+          "survives": true,
+          "move": "Keep. Remaining gap (HCLI_CONTEXT_AUTHORITY): resolve() without demand_tokens still yields 32768/3=11008; root ingress must pass demand (G006/G007). Do not reintroduce a 32768 literal in config.py."
+        },
+        {
+          "id": "hcli.context.reexport",
+          "survives": false,
+          "move": "Removable: no named verified caller of hcli.context (only context_budget)."
+        },
+        {
+          "id": "hawking-context.TokenBudget",
+          "survives": true,
+          "move": "Keep as HIDE's packer. Do not replace HCLI context_budget.py with this."
+        },
+        {
+          "id": "hide-backend.haider.ContextBudget",
+          "survives": true,
+          "move": "Keep as a field on EvidencePacket. Verified caller: crates/hide-backend/src/haider/lanes.rs EvidencePacket. Do not give it resolve/preflight logic."
+        },
+        {
+          "id": "hawking-context.ContextCompiler",
+          "survives": true,
+          "move": "Keep with TokenBudget. Do not merge with HCLI context_budget.py."
+        },
+        {
+          "id": "hide-backend.hcli_bridge.MAX_CONTEXT_TOKENS",
+          "survives": true,
+          "move": "Keep as a transport bound. Not a substitute for context_budget.resolve."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "runtime registry",
+      "canonical_ids": [
+        "hcli.runtime.RuntimePool",
+        "lab.runtime.ExperimentRuntime"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/runtime.py:520",
+        "lab/runtime.py:178"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.runtime.RuntimePool",
+        "lab.runtime.ExperimentRuntime"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.runtime.RuntimePool",
+          "survives": true,
+          "move": "Keep. Do not hand-edit MACHINE_GENOME.json to change slot counts."
+        },
+        {
+          "id": "lab.runtime.ExperimentRuntime",
+          "survives": true,
+          "move": "Keep in lab. Do not spawn llama-server from here."
+        },
+        {
+          "id": "tools.glm52_gravity.Runtime",
+          "survives": false,
+          "move": "Leave in the tool. Do not import from hcli.runtime."
+        },
+        {
+          "id": "headless.machine_probe.Runtime",
+          "survives": true,
+          "move": "Keep inside the probe. Do not import from hcli.runtime."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "receipt",
+      "canonical_ids": [
+        "lab.receipts.Receipt",
+        "hcli.engine._write_receipt",
+        "hcli.grok_bridge._write_receipt",
+        "hcli.ledger._write_receipt",
+        "hide-backend.write_sealed_receipt"
+      ],
+      "canonical_file_lines": [
+        "lab/receipts.py:278",
+        "tools/haider/hcli/engine.py:3479",
+        "tools/haider/hcli/grok_bridge.py:1194",
+        "tools/haider/hcli/ledger.py:954",
+        "crates/hide-backend/src/headless.rs:342"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "lab.receipts.Receipt",
+        "hcli.engine._write_receipt",
+        "hcli.grok_bridge._write_receipt",
+        "hcli.ledger._write_receipt",
+        "hide-backend.write_sealed_receipt"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "lab.receipts.Receipt",
+          "survives": true,
+          "move": "Keep as the lab seal. Do not rewrite historical receipts. Do not force HCLI engine receipts onto this schema."
+        },
+        {
+          "id": "hcli.engine._write_receipt",
+          "survives": true,
+          "move": "Keep the schema and filenames (historical receipts cite them). Share the atomic-write primitive with grok_bridge and ledger on a later source lane; do not merge the three payload shapes."
+        },
+        {
+          "id": "hcli.grok_bridge._write_receipt",
+          "survives": true,
+          "move": "Keep. Share atomic-write only."
+        },
+        {
+          "id": "hcli.ledger._write_receipt",
+          "survives": true,
+          "move": "Keep. Required by AGENTOS_VERIFIER_AUTHORITY."
+        },
+        {
+          "id": "hide-backend.write_sealed_receipt",
+          "survives": true,
+          "move": "Keep for hide-headless / rust hcli. Not HCLI-py engine receipts."
+        },
+        {
+          "id": "haider-v0.write_receipt",
+          "survives": false,
+          "move": "Leave. Historical .haider/receipts filenames are evidence."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "experiment",
+      "canonical_ids": [
+        "lab.spec.ExperimentSpec",
+        "lab.bench_harness.ExperimentSpec",
+        "lab.science_registry"
+      ],
+      "canonical_file_lines": [
+        "lab/spec.py:189",
+        "lab/bench_harness/spec.py:29",
+        "lab/science_registry.py:40"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "lab.spec.ExperimentSpec",
+        "lab.bench_harness.ExperimentSpec"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "lab.spec.ExperimentSpec",
+          "survives": true,
+          "move": "Keep as the campaign spec. Accepts hawking.lab.experiment.v1 as a compatibility schema id."
+        },
+        {
+          "id": "lab.bench_harness.ExperimentSpec",
+          "survives": true,
+          "move": "TWO real authorities. Rename this class to HarnessSpec on a later source lane; keep the sealed schema id hawking.lab.experiment.v1."
+        },
+        {
+          "id": "lab.science_registry",
+          "survives": true,
+          "move": "Keep. Runtime looks up operators here."
+        },
+        {
+          "id": "headless.runtime_experiment",
+          "survives": true,
+          "move": "Keep as a harness. Do not promote into lab.spec."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "model identity",
+      "canonical_ids": [
+        "hcli.models.ModelRegistry",
+        "headless.model_registry",
+        "hawking-comms.ModelIdentity"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/models.py:288",
+        "tools/headless/model_registry.py:2",
+        "crates/hawking-comms/src/level3.rs:74"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.models.ModelRegistry",
+        "headless.model_registry",
+        "hawking-comms.ModelIdentity"
+      ],
+      "wrappers_justified": [
+        {
+          "id": "hawking-orch.ModelSpec",
+          "file_line": "crates/hawking-orch/src/registry.rs:131",
+          "callers": [
+            "crates/hawking-orch/src/registry.rs"
+          ]
+        },
+        {
+          "id": "hawking-serve.ModelInfo",
+          "file_line": "crates/hawking-serve/src/http.rs:423",
+          "callers": [
+            "crates/hawking-serve/src/http.rs"
+          ]
+        }
+      ],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.models.ModelRegistry",
+          "survives": true,
+          "move": "Keep as HCLI selection. Do not merge with the promotion registry."
+        },
+        {
+          "id": "headless.model_registry",
+          "survives": true,
+          "move": "Keep as the promotion authority. Different job from ModelRegistry path selection. TWO real authorities under the English name 'model identity'."
+        },
+        {
+          "id": "hawking-comms.ModelIdentity",
+          "survives": true,
+          "move": "Keep as the comms identity type. Do not merge with ModelRegistry or MODEL_REGISTRY.json."
+        },
+        {
+          "id": "hawking-orch.ModelSpec",
+          "survives": true,
+          "move": "Keep private to registry.rs. Verified caller: RoleRegistry::from_roles_toml."
+        },
+        {
+          "id": "hawking-serve.ModelInfo",
+          "survives": true,
+          "move": "Keep in hawking-serve. Do not share a type with HCLI-py ModelInfo."
+        },
+        {
+          "id": "lab.operators.ModelSpec.copies",
+          "survives": true,
+          "move": "Follow-up: diff the four ModelSpec bodies before deleting any."
+        }
+      ],
+      "unknown": [
+        {
+          "id": "lab.operators.ModelSpec.copies",
+          "reason": "Four lab/operators/* ModelSpec classes exist (ascension_dual_gravity_worker, ascension_physical_gatekeeper, ascension_qwen_scientific_optimizer, ascension_qwen_state_kv). This lane did not byte-compare them."
+        }
+      ]
+    },
+    {
+      "concept": "machine identity",
+      "canonical_ids": [
+        "headless.machine_probe",
+        "hcli.machine.live_machine_identity",
+        "agentos.machine_state"
+      ],
+      "canonical_file_lines": [
+        "tools/headless/machine_probe.py:494",
+        "tools/haider/hcli/machine.py:555",
+        "tools/agentos/machine_state.py:2"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "headless.machine_probe",
+        "hcli.machine.MachineGenome"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "headless.machine_probe",
+          "survives": true,
+          "move": "Keep as the sole producer of the live genome."
+        },
+        {
+          "id": "hcli.machine.live_machine_identity",
+          "survives": true,
+          "move": "Keep as the consumer. Do not let it grow a write() that bypasses the probe."
+        },
+        {
+          "id": "hcli.machine.MachineGenome",
+          "survives": false,
+          "move": "Remove or wrap so it reads the same files as resolve_runtime_limits. Leaving it is a second genome authority."
+        },
+        {
+          "id": "agentos.machine_state",
+          "survives": true,
+          "move": "Keep for agentos. Do not feed it to resolve_runtime_limits."
+        },
+        {
+          "id": "hide-kernel.machine.rs",
+          "survives": true,
+          "move": "Keep. Do not cite as machine identity."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "status",
+      "canonical_ids": [
+        "hcli.workunit.transition_status",
+        "hcli.ledger.outcome",
+        "hcli.commands.format_status",
+        "hcli.controller.status",
+        "hcli.grok.parse_grok_status",
+        "hide-backend.StatusResponse",
+        "ramanujan.Status"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/workunit.py:433",
+        "tools/haider/hcli/ledger.py:395",
+        "tools/haider/hcli/commands.py:94",
+        "tools/haider/hcli/controller.py:190",
+        "tools/haider/hcli/grok_bridge.py:282",
+        "crates/hide-backend/src/hcli_bridge.rs:1810",
+        "ramanujan/scaffold/research/prover.py:56"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.workunit.transition_status",
+        "hcli.ledger.outcome",
+        "hcli.commands.format_status",
+        "hide-backend.StatusResponse"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.workunit.transition_status",
+          "survives": true,
+          "move": "Keep. Direct wu.status writes are forbidden (DAG consolidation)."
+        },
+        {
+          "id": "hcli.ledger.outcome",
+          "survives": true,
+          "move": "Keep. Compatibility: .status still returns EMPTY_LEDGER/GOAL_MET/GOAL_NOT_MET."
+        },
+        {
+          "id": "hcli.commands.format_status",
+          "survives": true,
+          "move": "Keep as the only human /status renderer. TUI.render_status is a transcript line, not this."
+        },
+        {
+          "id": "hcli.controller.status",
+          "survives": true,
+          "move": "Keep as the data side of /status. format_status must not grow its own probes."
+        },
+        {
+          "id": "hcli.tui.render_status",
+          "survives": true,
+          "move": "Keep as a transcript chrome, or later call format_status. Do not treat as the operator status surface."
+        },
+        {
+          "id": "hcli.grok.parse_grok_status",
+          "survives": true,
+          "move": "Keep. Not WorkUnit.status and not Ledger.outcome."
+        },
+        {
+          "id": "hide-backend.StatusResponse",
+          "survives": true,
+          "move": "Keep for crates/hide-backend/src/bin/hcli.rs. Do not make Python format_status emit this schema."
+        },
+        {
+          "id": "ramanujan.Status",
+          "survives": true,
+          "move": "Keep."
+        }
+      ],
+      "unknown": []
+    },
+    {
+      "concept": "retry policy",
+      "canonical_ids": [
+        "hcli.workunit.DEFAULT_RETRY_BUDGET",
+        "hcli.resources.classify_failure",
+        "hide-kernel.RetryPolicy",
+        "hcli.backends.structured_output_attempts"
+      ],
+      "canonical_file_lines": [
+        "tools/haider/hcli/workunit.py:26",
+        "tools/haider/hcli/resources.py:800",
+        "crates/hide-kernel/src/program_runtime_ast.rs:76",
+        "tools/haider/hcli/backends.py:441"
+      ],
+      "two_real_authorities": true,
+      "two_real_ids": [
+        "hcli.workunit.DEFAULT_RETRY_BUDGET",
+        "hcli.scheduler.MAX_REPAIR_shadow",
+        "hide-kernel.RetryPolicy"
+      ],
+      "wrappers_justified": [],
+      "wrappers_removable": [],
+      "what_must_move": [
+        {
+          "id": "hcli.workunit.DEFAULT_RETRY_BUDGET",
+          "survives": true,
+          "move": "Keep here. Scheduler must re-export, not reassign."
+        },
+        {
+          "id": "hcli.scheduler.MAX_REPAIR_shadow",
+          "survives": false,
+          "move": "Delete the reassignment; keep a re-export comment only."
+        },
+        {
+          "id": "hcli.resources.classify_failure",
+          "survives": true,
+          "move": "Keep as the retryability authority. emit_repair consults this."
+        },
+        {
+          "id": "hide-kernel.RetryPolicy",
+          "survives": true,
+          "move": "Keep in hide-kernel. Do not import into HCLI-py workunit.py."
+        },
+        {
+          "id": "hcli.backends.structured_output_attempts",
+          "survives": true,
+          "move": "Keep. Different budget from WorkUnit attempts."
+        }
+      ],
+      "unknown": []
+    }
+  ],
+  "two_real_authority_concepts": [
+    "Goal",
+    "mission",
+    "DAG",
+    "scheduler",
+    "checkpoint",
+    "mutation lock",
+    "verifier",
+    "backend registry",
+    "context budget",
+    "runtime registry",
+    "receipt",
+    "experiment",
+    "model identity",
+    "machine identity",
+    "status",
+    "retry policy"
+  ],
+  "unscanned_unknown": [
+    {
+      "concept": "model identity",
+      "path": "lab/operators/ascension_dual_gravity_worker.py",
+      "line": 146,
+      "file_line": "lab/operators/ascension_dual_gravity_worker.py:146",
+      "snippet": "class ModelSpec:",
+      "reason": "Definition matched the scan pattern and is not in the catalog. Follow-up; not classified by guess.",
+      "classification": "UNKNOWN"
+    },
+    {
+      "concept": "model identity",
+      "path": "lab/operators/ascension_physical_gatekeeper.py",
+      "line": 110,
+      "file_line": "lab/operators/ascension_physical_gatekeeper.py:110",
+      "snippet": "class ModelSpec:",
+      "reason": "Definition matched the scan pattern and is not in the catalog. Follow-up; not classified by guess.",
+      "classification": "UNKNOWN"
+    },
+    {
+      "concept": "model identity",
+      "path": "lab/operators/ascension_qwen_scientific_optimizer.py",
+      "line": 66,
+      "file_line": "lab/operators/ascension_qwen_scientific_optimizer.py:66",
+      "snippet": "class ModelSpec:",
+      "reason": "Definition matched the scan pattern and is not in the catalog. Follow-up; not classified by guess.",
+      "classification": "UNKNOWN"
+    }
+  ],
+  "catalog_unknown": [
+    {
+      "id": "lab.operators.ModelSpec.copies",
+      "reason": "Four lab/operators/* ModelSpec classes exist (ascension_dual_gravity_worker, ascension_physical_gatekeeper, ascension_qwen_scientific_optimizer, ascension_qwen_state_kv). This lane did not byte-compare them.",
+      "file_line": "lab/operators/ascension_qwen_state_kv.py:85"
+    }
+  ],
+  "self_check_problems": [],
+  "watched_fail": [
+    {
+      "id": 1,
+      "what": "Working-tree git grep is silent on the live control plane",
+      "detail": "This worktree is a sparse checkout. `git grep class Goal -- '*.py'` returned nothing even though HEAD:tools/haider/hcli/goal.py exists. Every search in this census is `git grep \u2026 HEAD` / `git show HEAD:path`."
+    },
+    {
+      "id": 2,
+      "what": "A start-anchored `class Goal` regex misses GoalCompiler",
+      "detail": "GoalCompiler is the HCLI compiler authority. Word-boundary search for class Goal found only GoalNotMetError. Catalog needles are literal substrings resolved against the blob."
+    },
+    {
+      "id": 3,
+      "what": "format_status defined twice, later shadowing earlier \u2014 did not reproduce",
+      "detail": "HEAD tools/haider/hcli/commands.py has exactly one `def format_status` (line recovered live). TUI.render_status is a different function. The shadowing bug is not present at this HEAD; claiming it still disables a fix would be a wrong confident answer."
+    },
+    {
+      "id": 4,
+      "what": "_remaining_depth is not defined twice; the merge duplicate is next to it",
+      "detail": "scheduler.py defines _remaining_depth once. Immediately after it, LOG = logging.getLogger is assigned a second time and MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT are reassigned, shadowing the import from workunit.py. Dispatch does not call _remaining_depth (ready_at FIFO). The measurement copy lives in tools/headless/hcli_scheduler_quality.py."
+    },
+    {
+      "id": 5,
+      "what": "class MachineGenome is not the machine genome",
+      "detail": "The live genome is receipts/headless/MACHINE_GENOME.json produced by tools/headless/machine_probe.py and consumed by resolve_runtime_limits. class MachineGenome writes ~/.local/share/hcli/machine-genome.json and is constructed only by hcli_persistence_audit.py. Treating the class as canonical would split hardware identity."
+    },
+    {
+      "id": 6,
+      "what": "hide-kernel machine.rs is not machine identity",
+      "detail": "crates/hide-kernel/src/machine.rs is AgentDriver, the HIDE FSM. Citing it as a hardware-identity implementation is a name collision."
+    },
+    {
+      "id": 7,
+      "what": "hawking-speculate Verifier is not a WorkUnit verifier",
+      "detail": "crates/hawking-speculate/src/verifier.rs is the speculative-decode draft-token accept rule. Catalogued as historical_implementation under the verifier concept so a later reader does not merge it."
+    },
+    {
+      "id": 8,
+      "what": "Cannot `import hcli` in this worktree",
+      "detail": "tools/haider is not materialized. Classification does not execute HCLI; it reads HEAD blobs. A missing on-disk file is not evidence the symbol is gone."
+    },
+    {
+      "id": 9,
+      "what": "crates/hide-backend/src/bin/haider.rs is an empty blob",
+      "detail": "git cat-file shows e69de29 (empty). A second HCLI lives at crates/hide-backend/src/bin/hcli.rs, which is a real binary. haider is a fossil namespace, not a runner."
+    },
+    {
+      "id": 10,
+      "what": "hcli.context has no production importer",
+      "detail": "context.py re-exports WorkerPacket from goal.py. git grep of `from hcli.context` / `from .context import` over HEAD found no production caller. The wrapper is marked removable."
+    },
+    {
+      "id": 11,
+      "what": "Receipts cite hawking-copy paths",
+      "detail": "DISK_TRUTH / RUNTIME_AUTHORITY / others name /Users/scammermike/Downloads/hawking-copy/\u2026. Those strings in historical receipts are evidence, not debt, and were not rewritten."
+    },
+    {
+      "id": 12,
+      "what": "Four lab ModelSpec classes were not byte-compared",
+      "detail": "Listed as UNKNOWN with a follow-up rather than a confident 'copy-paste, delete three'. Wrong merge would drop operator-local fields."
+    },
+    {
+      "id": 13,
+      "what": "git grep -E with `\\b` matches nothing",
+      "detail": "POSIX ERE has no word boundary. An earlier scan used git grep -E and `\\b`, so SCAN HITS reported (none) while `class Scheduler` existed in two files. The census uses git grep -P (PCRE)."
+    }
+  ],
+  "write_scope": {
+    "write": [
+      "tools/headless/authority_census.py",
+      "receipts/headless/AUTHORITY_CENSUS.json"
+    ],
+    "deny": [
+      "workspace",
+      "crates",
+      "visionmcp",
+      "app",
+      "lab",
+      "tools/haider",
+      "ramanujan",
+      "receipts/ascent-2026-08-16",
+      "receipts/ascent-2026-08-18"
+    ],
+    "git_status_porcelain": [
+      "?? receipts/headless/AUTHORITY_CENSUS.json",
+      "?? tools/headless/authority_census.py"
+    ],
+    "outside_write_scope": [],
+    "clean_write_scope": true,
+    "how_verified": "git status --porcelain --untracked-files=all after writing the receipt; every path other than the two WRITE targets is a violation. No rm / git mv / git clean / git checkout / git restore / git reset was invoked."
+  },
+  "counts": {
+    "catalog_rows": 97,
+    "canonical": 71,
+    "wrappers": 8,
+    "obsolete": 9,
+    "test_only": 3,
+    "historical": 5,
+    "unknown": 4,
+    "two_real_concepts": 16,
+    "scan_uncatalogued_production": 3
+  },
+  "receipt_sha256_of_body_without_this_field": "53d0648387a6b3847813f325cff56aee95a5e7f6169b0964802c64c9f52cef5b"
+}

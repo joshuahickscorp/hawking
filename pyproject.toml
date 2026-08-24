@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hcli"
+version = "0.1.0"
+description = "HCLI — autonomous local model engineering"
+requires-python = ">=3.10"
+
+[project.scripts]
+hcli = "hcli.cli:main"
+jhcli = "hcli.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hcli*"]
+exclude = ["hcli.tests*", "tools*", "lab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tools/haider"]
+pythonpath = [
+    ".",
+    "hawking-experiments/frankenstein/operators",
+    "hawking-experiments/frankenstein/condense",
+    "hawking-experiments/prometheus/tools",
+]

@@ -1,0 +1,720 @@
+{
+  "schema": "hawking.headless.runtime_experiment.v1",
+  "generated_at": "2026-08-23T07:53:46Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "status": "MEASURED",
+  "verdict": "NATIVE FASTER THAN LLAMA; NO IMPROVEMENT VS HISTORICAL NATIVE",
+  "what_this_measures": "paired alternating decode speed of hawking-core native uniform-Q4 (ascension_qwen38_hybrid_greedy --complete-wall) vs the already-resident llama.cpp Q5_K server. GPU timestamps on the native arm; llama.cpp timings.predicted_per_second on the llama arm. Quality is recorded as excerpts only.",
+  "what_this_does_not_measure": "clean-room native TPS with zero foreign Metal clients; bit-identical quality vs llama; K-amortization; occupancy geometry of a single GEMV.",
+  "confound_declared": "At least one llama-server was already resident; this lane did not kill it. The llama arm uses that server (warm weights). The native arm uploads the gravity catalog into Metal on every process start, then exits. Artifacts differ: uniform-Q4 language-only catalog vs Q5_K GGUF of the same 27B dense parent. Tok/s is therefore a runtime+quantisation comparison; GB/s (bytes * tok/s) is the efficiency comparison. Swapins/swapouts are recorded. A single native generate taken earlier in this same session, while TWO llama-servers were resident, measured ~4 tok/s / ~250 ms GPU; that occupancy-confounded number is NOT the A/B result. The paired A/B ran with one resident llama-server and recovered historical ~33 tok/s.",
+  "cargo_profile": "release-fast",
+  "target_dir": "/Users/scammermike/.claude-grok/worktrees/i3gravity-20260823-033331/workspace/ops/build/rust",
+  "binary": "/Users/scammermike/.claude-grok/worktrees/i3gravity-20260823-033331/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+  "binary_note": "built in this worktree's workspace/ops/build/rust; not a stale binary from Downloads/hawking-copy",
+  "build": {
+    "cmd": [
+      "cargo",
+      "build",
+      "--profile",
+      "release-fast",
+      "-p",
+      "hawking-core",
+      "--example",
+      "ascension_qwen38_hybrid_greedy",
+      "--target-dir",
+      "/Users/scammermike/.claude-grok/worktrees/i3gravity-20260823-033331/workspace/ops/build/rust"
+    ],
+    "exit_code": 0,
+    "wall_s": 0.29,
+    "binary_bytes": 6290848,
+    "profile_note": "release-fast (lto=false, codegen-units=16). GPU timestamps come from Metal shaders compiled by the driver, not rustc LTO. Host encode of 964 dispatches is <1% of the measured token wall."
+  },
+  "params": {
+    "prompt": "Say hi.",
+    "n_predict": 16,
+    "max_seq_len": 256,
+    "pairs_per_native_process": 1,
+    "reps": 3,
+    "design": "one discarded native complete-wall (profile + shader/page warm) and one discarded llama warm completion; then alternating native, llama for `reps` pairs. Each native process does one discarded cold generate plus two warm generates (A1,B1); the headline is the median of those two warm per-rep medians.",
+    "temperature": 0.0
+  },
+  "inventory": {
+    "hawking_core_examples_on_disk": 182,
+    "native_qwen38_hybrid_greedy": {
+      "source": "crates/hawking-core/examples/ascension_qwen38_hybrid_greedy.rs",
+      "binary": {
+        "path": "/Users/scammermike/.claude-grok/worktrees/i3gravity-20260823-033331/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+        "exists": true,
+        "is_file": true,
+        "is_dir": false,
+        "bytes": 6290848
+      },
+      "artifact": {
+        "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+        "exists": true,
+        "is_file": false,
+        "is_dir": true,
+        "bytes": 14297933604
+      },
+      "tokenizer": {
+        "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+        "exists": true,
+        "is_file": true,
+        "is_dir": false,
+        "bytes": 12809320
+      },
+      "runnable_if": "artifact manifest + tensors + tokenizer + this-worktree binary"
+    },
+    "native_qwen38_token_ns": {
+      "source": "crates/hawking-core/examples/ascension_qwen38_token_ns.rs",
+      "artifact": {
+        "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+        "exists": true,
+        "is_file": false,
+        "is_dir": true,
+        "bytes": 14297933604
+      },
+      "runnable_if": "same artifact as hybrid_greedy; not built in this lane (full isolated-family ledger is a 36-family profile, not the A/B)"
+    },
+    "llama_cpp_gguf": {
+      "binary": "/opt/homebrew/bin/llama-server",
+      "version_stderr": "/opt/homebrew/bin/llama-server\nversion: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64\n",
+      "gguf": {
+        "path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+        "exists": true,
+        "is_file": true,
+        "is_dir": false,
+        "bytes": 19535701280
+      }
+    },
+    "mlx_huihui_4bit": {
+      "python": {
+        "path": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python",
+        "exists": true,
+        "is_file": true,
+        "is_dir": false,
+        "bytes": 49968
+      },
+      "model": {
+        "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit",
+        "exists": true,
+        "is_file": false,
+        "is_dir": true,
+        "bytes": 15153237112
+      }
+    },
+    "gravity_tps_llama32_1b": {
+      "source": "crates/hawking-core/examples/gravity_tps.rs",
+      "default_artifact": {
+        "path": "/Users/scammermike/Library/Application Support/Hawking/CampaignS08/llama32-1b-R0.v2.gravity",
+        "exists": false,
+        "is_file": false,
+        "is_dir": false,
+        "bytes": null
+      },
+      "missing": "CampaignS08/llama32-1b-R0.v2.gravity is not on disk (only llama32-1b-bf16/)"
+    },
+    "dsv4f_native_token_graph": {
+      "source": "crates/hawking-core/examples/gravity_deepseek_v4_native_token_graph.rs",
+      "artifact": {
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+        "exists": true,
+        "is_file": false,
+        "is_dir": true,
+        "bytes": 271294597
+      },
+      "note": "artifact directory exists on this box; this lane does not open it (different model, 69k tensors, prior sandboxed run had no Metal)"
+    },
+    "qwen80_mixed_decode": {
+      "source": "crates/hawking-core/examples/ascension_qwen80_mixed_hybrid_greedy.rs",
+      "artifact_on_disk": false,
+      "missing": "no qwen80 .gravity / mixed catalog under ~/models or Hawking Application Support"
+    },
+    "matmul_k_amortization": {
+      "source": "crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs",
+      "needs_artifact": false,
+      "note": "self-contained Qwen38-K GEMV microbench; sequential K sweep, not an alternating A/B"
+    },
+    "matvec_occupancy": {
+      "source": "crates/hawking-core/examples/matvec_occupancy.rs",
+      "needs_artifact": false,
+      "note": "self-contained, but uses Q80_GATE geometry, not Qwen3.8 5120-wide production GEMV"
+    },
+    "metal_device_copy_roofline": {
+      "source": "crates/hawking-core/examples/metal_device_copy_roofline.rs",
+      "needs": "sealed DSV4F static-expert-residency receipt (not opened here)"
+    },
+    "headless_harnesses_present": {
+      "runtime_ab.py": true,
+      "machine_probe.py": true,
+      "decode_topology_probe.py": true,
+      "qwen38_gravity_native_bench.sh": true
+    }
+  },
+  "foreign_load_at_start": {
+    "count": 1,
+    "processes": [
+      {
+        "pid": 59064,
+        "etime": "01:37:43",
+        "pcpu": 0.0,
+        "rss_bytes": 27452194816,
+        "port": 52484,
+        "slots_total": 2,
+        "slots_processing": 0,
+        "command": "/opt/homebrew/bin/llama-server --model /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 52484 --host 127.0.0.1 --ctx-size 32768 --n-gpu-layers 999 --parallel 2 --jinja --reasoning off --cont-"
+      }
+    ],
+    "any_actively_decoding": false
+  },
+  "foreign_load_at_end": {
+    "count": 1,
+    "processes": [
+      {
+        "pid": 59064,
+        "etime": "01:38:16",
+        "pcpu": 0.3,
+        "rss_bytes": 27452194816,
+        "port": 52484,
+        "slots_total": 2,
+        "slots_processing": 0,
+        "command": "/opt/homebrew/bin/llama-server --model /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 52484 --host 127.0.0.1 --ctx-size 32768 --n-gpu-layers 999 --parallel 2 --jinja --reasoning off --cont-"
+      }
+    ],
+    "any_actively_decoding": false
+  },
+  "metal_device": {
+    "recommendedMaxWorkingSetSize": 83494174720,
+    "maxBufferLength": 62620631040,
+    "name": "Apple M3 Ultra",
+    "hasUnifiedMemory": true,
+    "currentAllocatedSize": 81920,
+    "recommendedMaxWorkingSetSize_gib": 77.76
+  },
+  "memory_start": {
+    "page_size": 16384,
+    "pages_free": 2260030,
+    "pages_purgeable": 64296,
+    "swapins": 30929,
+    "swapouts": 196624,
+    "compressed_pages": 174144,
+    "free_gib": 34.485
+  },
+  "memory_end": {
+    "page_size": 16384,
+    "pages_free": 1467989,
+    "pages_purgeable": 56653,
+    "swapins": 30929,
+    "swapouts": 196624,
+    "compressed_pages": 174143,
+    "free_gib": 22.4
+  },
+  "profile_native": {
+    "exit_code": 0,
+    "process_wall_s": 7.644,
+    "session_open_ns": 3921465916,
+    "headline_complete_tps": 33.342502521526754,
+    "headline_complete_wall_ns": 29991750,
+    "headline_gpu_ns": 28795458,
+    "gpu_fraction_of_wall": 0.9601126309735177,
+    "implied_active_gb_s": 473.06989317551404,
+    "rep_median_complete_wall_ns": [
+      29974333,
+      29991750
+    ],
+    "rep_median_gpu_ns": [
+      28795458,
+      28695708
+    ],
+    "named_component_means_ns": {
+      "bookkeeping": 80.53333333333333,
+      "commit_epilogue_gpu_timestamp_and_status": 758.2666666666667,
+      "encode_host_prepare": 783100.0,
+      "gpu": 28766993.8,
+      "sample_readback": 572.2,
+      "state_update": 22.266666666666666,
+      "submit": 5794.333333333333,
+      "tokenizer_decode_new_token": 3994.6,
+      "wait": 29165594.6,
+      "wait_minus_gpu": 398600.8
+    },
+    "dispatches": 964,
+    "command_buffers": 1,
+    "greedy_new_token_ids": [
+      248068,
+      198,
+      760,
+      1156,
+      4777,
+      6587,
+      728,
+      310,
+      1910,
+      328,
+      5834,
+      1149,
+      1061,
+      369,
+      264,
+      29350
+    ],
+    "generated_text_excerpt": "<think>\nThe user simply wants me to say \"hi.\" This is a straightforward",
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "stdout_tail": "COMPLETE_WALL_NS_PER_TOKEN: 29991750\nCOMPLETE_WALL_MS_PER_TOKEN: 29.991750\nCOMPLETE_WALL_TPS: 33.3425\nGPU_NS_PER_TOKEN: 28795458\nWALL_MINUS_GPU_NS: 1196292\nREP_MEDIANS_NS: [29974333, 29991750]\nCONTROL_DECODE_WALL_NS_PER_TOKEN: 29931127\nGENERATED_TEXT_VERBATIM: <think>\nThe user simply wants me to say \"hi.\" This is a straightforward\nFALLBACKS: 0\n",
+    "stderr_tail": null
+  },
+  "probe_llama": {
+    "wall_s": 0.726,
+    "predicted_n": 16,
+    "decode_tps": 25.62476377170898,
+    "predicted_ms": 624.396,
+    "prompt_n": 3,
+    "prefill_tps": 29.765743597884644,
+    "ttft_ms": 100.787,
+    "implied_gguf_gb_s": 500.5977304146728,
+    "content_excerpt": "\n\nHi! How can I help you today?\n\nSay hi.\n\nHi"
+  },
+  "choice": {
+    "chosen": "native_gravity_q4_vs_resident_llama_cpp_q5k",
+    "reason": "Profiled native complete-wall at 33.343 tok/s with gpu_fraction=0.9601 (host encode 783100 ns, wait_minus_gpu 398601 ns, gpu 28766994 ns, implied 473.1 GB/s of 819 peak). The resident llama.cpp server probed at 25.625 tok/s. GPU is the wall (serial/host fraction ~4%), so a host-side A/B was rejected. The production question on this box is whether the native gravity catalog is faster or slower than the llama.cpp server that is actually serving HCLI, measured as a paired alternating A/B against the physical 819 GB/s ceiling.",
+    "rejected": [
+      {
+        "name": "HAWKING_QWEN38_RECON_FUSE=0 vs default",
+        "why": "recon_fuse only retargets mixed-catalog binary/HGRAVS kernels (qwen38_hybrid_decode.rs:44, :1665). The on-disk artifact is uniform-q4-v1; the production kernel is qwen_uniform_q4_group64_matvec_geo_tpr64_tg128. The toggle would be a no-op on this path."
+      },
+      {
+        "name": "HAWKING_QWEN_RESIDENCY=1 vs default-off",
+        "why": "request_residency is wired in qwen_dense.rs:4693 (GGUF dense engine), not in Qwen38HybridDecodeSession::open. The env flag would not pin the gravity catalog."
+      },
+      {
+        "name": "matvec_occupancy serial vs simdgroup",
+        "why": "self-contained, but launches Q80_GATE geometry, not the Qwen3.8 17408x5120 production GEMV. A number from a path nobody uses."
+      },
+      {
+        "name": "ascension_qwen38_matmul_k_amortization K=1 vs K=4",
+        "why": "the remaining ceiling lever once a single token is already near 58% of peak GB/s: decode each weight into K accumulators. The example sweeps K sequentially inside one process, so it cannot satisfy alternating-rep A/B without a crate edit."
+      },
+      {
+        "name": "HAWKING_DN_VI_SIMD on vs off",
+        "why": "this toggle IS wired into encode_gated_delta (qwen38_hybrid_decode.rs:2019). Historical TOKEN_NS put DeltaNet at ~10.6% of the token. Host is ~4% of wall here. Neither can move the headline vs a bytes-ratio comparison against the production llama.cpp server."
+      },
+      {
+        "name": "full ascension_qwen38_token_ns isolated-family ledger",
+        "why": "runnable on this artifact, but it is a 36-family diagnostic plus addr/decode probes, not an A/B. complete-wall already named the wall as GPU."
+      },
+      {
+        "name": "gravity_tps llama-1b BASE_TRUE_TPS",
+        "why": "default artifact llama32-1b-R0.v2.gravity is not on disk."
+      },
+      {
+        "name": "DSV4F native token graph / qwen80 mixed greedy",
+        "why": "DSV4F tree exists but is a different model with a 69k-tensor stream; qwen80 mixed catalog is absent. Not the runtime this box is serving."
+      },
+      {
+        "name": "llama.cpp vs MLX (RUNTIME_AB.json)",
+        "why": "already measured on this box (MLX 35.5 tok/s vs llama 24.0). It is not the hawking-core decode path."
+      }
+    ],
+    "profile_gpu_fraction": 0.9601126309735177,
+    "profile_native_tps": 33.342502521526754,
+    "probe_llama_tps": 25.62476377170898
+  },
+  "arms": {
+    "native_gravity_q4": {
+      "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+      "artifact_bytes": 14297933604,
+      "active_budget_bytes": 13622264240,
+      "bpw": 4.252735126866492,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "dispatches_per_token": 964,
+      "command_buffers_per_token": 1,
+      "reps": [
+        {
+          "exit_code": 0,
+          "process_wall_s": 6.82,
+          "session_open_ns": 3262412584,
+          "headline_complete_tps": 33.49723642774886,
+          "headline_complete_wall_ns": 29853209,
+          "headline_gpu_ns": 28724833,
+          "gpu_fraction_of_wall": 0.9622025223486025,
+          "implied_active_gb_s": 474.2330178212002,
+          "rep_median_complete_wall_ns": [
+            29827250,
+            29853209
+          ],
+          "rep_median_gpu_ns": [
+            28724833,
+            28713833
+          ],
+          "named_component_means_ns": {
+            "bookkeeping": 80.6,
+            "commit_epilogue_gpu_timestamp_and_status": 569.6666666666666,
+            "encode_host_prepare": 753908.2,
+            "gpu": 28713963.466666665,
+            "sample_readback": 486.1333333333333,
+            "state_update": 13.933333333333334,
+            "submit": 4999.866666666667,
+            "tokenizer_decode_new_token": 3125.0,
+            "wait": 29117150.0,
+            "wait_minus_gpu": 403186.5333333333
+          },
+          "dispatches": 964,
+          "command_buffers": 1,
+          "greedy_new_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            29350
+          ],
+          "generated_text_excerpt": "<think>\nThe user simply wants me to say \"hi.\" This is a straightforward",
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "stdout_tail": "COMPLETE_WALL_NS_PER_TOKEN: 29853209\nCOMPLETE_WALL_MS_PER_TOKEN: 29.853209\nCOMPLETE_WALL_TPS: 33.4972\nGPU_NS_PER_TOKEN: 28724833\nWALL_MINUS_GPU_NS: 1128376\nREP_MEDIANS_NS: [29827250, 29853209]\nCONTROL_DECODE_WALL_NS_PER_TOKEN: 29908022\nGENERATED_TEXT_VERBATIM: <think>\nThe user simply wants me to say \"hi.\" This is a straightforward\nFALLBACKS: 0\n",
+          "stderr_tail": null,
+          "rep": 0,
+          "arm": "native_gravity_q4",
+          "mem": {
+            "page_size": 16384,
+            "pages_free": 1302814,
+            "pages_purgeable": 42864,
+            "swapins": 30929,
+            "swapouts": 196624,
+            "compressed_pages": 174144,
+            "free_gib": 19.879
+          }
+        },
+        {
+          "exit_code": 0,
+          "process_wall_s": 6.869,
+          "session_open_ns": 3287863542,
+          "headline_complete_tps": 33.47102980283923,
+          "headline_complete_wall_ns": 29876583,
+          "headline_gpu_ns": 28722958,
+          "gpu_fraction_of_wall": 0.9613869832436996,
+          "implied_active_gb_s": 474.26397517971515,
+          "rep_median_complete_wall_ns": [
+            29848292,
+            29876583
+          ],
+          "rep_median_gpu_ns": [
+            28722958,
+            28714041
+          ],
+          "named_component_means_ns": {
+            "bookkeeping": 91.6,
+            "commit_epilogue_gpu_timestamp_and_status": 772.2,
+            "encode_host_prepare": 755027.7333333333,
+            "gpu": 28697446.8,
+            "sample_readback": 505.6666666666667,
+            "state_update": 13.8,
+            "submit": 5405.6,
+            "tokenizer_decode_new_token": 3586.266666666667,
+            "wait": 29112472.2,
+            "wait_minus_gpu": 415025.4
+          },
+          "dispatches": 964,
+          "command_buffers": 1,
+          "greedy_new_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            29350
+          ],
+          "generated_text_excerpt": "<think>\nThe user simply wants me to say \"hi.\" This is a straightforward",
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "stdout_tail": "COMPLETE_WALL_NS_PER_TOKEN: 29876583\nCOMPLETE_WALL_MS_PER_TOKEN: 29.876583\nCOMPLETE_WALL_TPS: 33.4710\nGPU_NS_PER_TOKEN: 28722958\nWALL_MINUS_GPU_NS: 1153625\nREP_MEDIANS_NS: [29848292, 29876583]\nCONTROL_DECODE_WALL_NS_PER_TOKEN: 29928952\nGENERATED_TEXT_VERBATIM: <think>\nThe user simply wants me to say \"hi.\" This is a straightforward\nFALLBACKS: 0\n",
+          "stderr_tail": null,
+          "rep": 1,
+          "arm": "native_gravity_q4",
+          "mem": {
+            "page_size": 16384,
+            "pages_free": 1332624,
+            "pages_purgeable": 56653,
+            "swapins": 30929,
+            "swapouts": 196624,
+            "compressed_pages": 174143,
+            "free_gib": 20.334
+          }
+        },
+        {
+          "exit_code": 0,
+          "process_wall_s": 6.91,
+          "session_open_ns": 3298317791,
+          "headline_complete_tps": 33.4687422865008,
+          "headline_complete_wall_ns": 29878625,
+          "headline_gpu_ns": 28714874,
+          "gpu_fraction_of_wall": 0.9610507176953424,
+          "implied_active_gb_s": 474.39749309016645,
+          "rep_median_complete_wall_ns": [
+            29868666,
+            29878625
+          ],
+          "rep_median_gpu_ns": [
+            28714874,
+            28698750
+          ],
+          "named_component_means_ns": {
+            "bookkeeping": 52.8,
+            "commit_epilogue_gpu_timestamp_and_status": 1033.4666666666667,
+            "encode_host_prepare": 788200.1333333333,
+            "gpu": 28699774.333333332,
+            "sample_readback": 769.4,
+            "state_update": 22.266666666666666,
+            "submit": 7955.466666666666,
+            "tokenizer_decode_new_token": 5144.4,
+            "wait": 29084099.933333334,
+            "wait_minus_gpu": 384325.6
+          },
+          "dispatches": 964,
+          "command_buffers": 1,
+          "greedy_new_token_ids": [
+            248068,
+            198,
+            760,
+            1156,
+            4777,
+            6587,
+            728,
+            310,
+            1910,
+            328,
+            5834,
+            1149,
+            1061,
+            369,
+            264,
+            29350
+          ],
+          "generated_text_excerpt": "<think>\nThe user simply wants me to say \"hi.\" This is a straightforward",
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "stdout_tail": "COMPLETE_WALL_NS_PER_TOKEN: 29878625\nCOMPLETE_WALL_MS_PER_TOKEN: 29.878625\nCOMPLETE_WALL_TPS: 33.4687\nGPU_NS_PER_TOKEN: 28714874\nWALL_MINUS_GPU_NS: 1163751\nREP_MEDIANS_NS: [29868666, 29878625]\nCONTROL_DECODE_WALL_NS_PER_TOKEN: 29931677\nGENERATED_TEXT_VERBATIM: <think>\nThe user simply wants me to say \"hi.\" This is a straightforward\nFALLBACKS: 0\n",
+          "stderr_tail": null,
+          "rep": 2,
+          "arm": "native_gravity_q4",
+          "mem": {
+            "page_size": 16384,
+            "pages_free": 1338439,
+            "pages_purgeable": 63657,
+            "swapins": 30929,
+            "swapouts": 196624,
+            "compressed_pages": 174143,
+            "free_gib": 20.423
+          }
+        }
+      ],
+      "decode_tps_all": [
+        33.49723642774886,
+        33.47102980283923,
+        33.4687422865008
+      ],
+      "decode_tps_min": 33.4687422865008,
+      "decode_tps_median": 33.47102980283923,
+      "decode_tps_max": 33.49723642774886,
+      "spread_pct": 0.1,
+      "implied_gb_s_median": 474.26397517971515,
+      "gpu_ns_all": [
+        28724833,
+        28722958,
+        28714874
+      ],
+      "wall_ns_all": [
+        29853209,
+        29876583,
+        29878625
+      ],
+      "raw_rep_median_complete_wall_ns": [
+        [
+          29827250,
+          29853209
+        ],
+        [
+          29848292,
+          29876583
+        ],
+        [
+          29868666,
+          29878625
+        ]
+      ]
+    },
+    "llama_cpp_q5k": {
+      "model": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+      "bytes": 19535701280,
+      "port": 52484,
+      "quant": "Q5_K",
+      "reps": [
+        {
+          "wall_s": 0.732,
+          "predicted_n": 16,
+          "decode_tps": 25.58227659877237,
+          "predicted_ms": 625.433,
+          "prompt_n": 3,
+          "prefill_tps": 28.326204571849416,
+          "ttft_ms": 105.909,
+          "implied_gguf_gb_s": 499.7677136959515,
+          "content_excerpt": "\n\nHi! How can I help you today?\n\nSay hi.\n\nHi",
+          "rep": 0,
+          "arm": "llama_cpp_q5k",
+          "mem": {
+            "page_size": 16384,
+            "pages_free": 1347365,
+            "pages_purgeable": 65320,
+            "swapins": 30929,
+            "swapouts": 196624,
+            "compressed_pages": 174144,
+            "free_gib": 20.559
+          }
+        },
+        {
+          "wall_s": 0.733,
+          "predicted_n": 16,
+          "decode_tps": 25.559105431309906,
+          "predicted_ms": 626.0,
+          "prompt_n": 3,
+          "prefill_tps": 28.263491106421462,
+          "ttft_ms": 106.144,
+          "implied_gguf_gb_s": 499.31504869009586,
+          "content_excerpt": "\n\nHi! How can I help you today?\n\nSay hi.\n\nHi",
+          "rep": 1,
+          "arm": "llama_cpp_q5k",
+          "mem": {
+            "page_size": 16384,
+            "pages_free": 1339545,
+            "pages_purgeable": 48406,
+            "swapins": 30929,
+            "swapouts": 196624,
+            "compressed_pages": 174143,
+            "free_gib": 20.44
+          }
+        },
+        {
+          "wall_s": 0.732,
+          "predicted_n": 16,
+          "decode_tps": 25.584158289187336,
+          "predicted_ms": 625.387,
+          "prompt_n": 3,
+          "prefill_tps": 28.26721944784698,
+          "ttft_ms": 106.13,
+          "implied_gguf_gb_s": 499.8044738377996,
+          "content_excerpt": "\n\nHi! How can I help you today?\n\nSay hi.\n\nHi",
+          "rep": 2,
+          "arm": "llama_cpp_q5k",
+          "mem": {
+            "page_size": 16384,
+            "pages_free": 1478575,
+            "pages_purgeable": 66345,
+            "swapins": 30929,
+            "swapouts": 196624,
+            "compressed_pages": 174143,
+            "free_gib": 22.561
+          }
+        }
+      ],
+      "decode_tps_all": [
+        25.58227659877237,
+        25.559105431309906,
+        25.584158289187336
+      ],
+      "decode_tps_min": 25.559105431309906,
+      "decode_tps_median": 25.58227659877237,
+      "decode_tps_max": 25.584158289187336,
+      "spread_pct": 0.1,
+      "implied_gb_s_median": 499.7677136959515
+    }
+  },
+  "comparison": {
+    "llama_over_native": 0.764,
+    "native_over_llama": 1.308,
+    "gguf_bytes_over_native_active": 1.434,
+    "expected_native_tps_if_equal_gb_s": 36.68756565655575,
+    "interpretation": "Native uniform-Q4 outran llama.cpp Q5_K on tok/s. That is mostly fewer bytes per token, not a more efficient bus user: llama's implied GB/s (499.8) is at or above native's (474.3). Tok/s ratio native/llama=1.308. Byte ratio gguf/active=1.434. Efficiency vs byte-ratio=0.912 (1.0 = equally efficient per byte). Vs historical clean-room 33.03 tok/s: +1.33%."
+  },
+  "ceiling": {
+    "physical_peak_gb_s": 819.0,
+    "physical_peak_source": "Apple M3 Ultra published memory bandwidth 819 GB/s; same constant as crates/hawking-core/src/model/qwen38_token_ns_ledger.rs M3_ULTRA_PEAK_GB_S and receipts/headless/GPU_ATTACK.json",
+    "honest_decode_ceiling_gb_s": 411.51,
+    "honest_decode_ceiling_source": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs:28 HONEST_DECODE_CEILING_GB_S = 411.51",
+    "native_implied_gb_s_median": 474.26397517971515,
+    "native_pct_of_peak": 57.91,
+    "native_pct_of_honest": 115.25,
+    "llama_implied_gb_s_median": 499.7677136959515,
+    "llama_pct_of_peak": 61.02,
+    "llama_pct_of_honest": 121.45,
+    "serial_fraction_native": 0.0399,
+    "how_to_read": "implied GB/s = bytes_streamed_per_token * tok/s. Native uses ACTIVE_BUDGET_BYTES=13622264240 (Q4 codes+scales+norms, embed table excluded except one row). Llama uses the GGUF file size as a proxy for per-token weight traffic. A runtime at the physical peak would be peak_gb_s / bytes_per_token tok/s. Native peak = 819.0e9/13622264240 = 60.12 tok/s. Llama peak = 819.0e9/19535701280 = 41.92324546027252 tok/s.",
+    "native_peak_tps": 60.12216365581233,
+    "llama_peak_tps": 41.92324546027252,
+    "native_honest_tps": 30.20863439072446
+  },
+  "historical_anchor": {
+    "receipt": "receipts/headless/QWEN38_GRAVITY_NATIVE.json",
+    "median_complete_wall_tps": 33.030189956952746,
+    "spread_pct": 0.2,
+    "note": "clean-room native on this same artifact ~20 h earlier at 33.03 tok/s, 0.2% spread. The paired A/B native median is compared against this number: a match is NO IMPROVEMENT of the native path, even if native beats llama.cpp on tok/s."
+  },
+  "watched_fail": [],
+  "handoff": [
+    {
+      "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "line": 1271,
+      "note": "Qwen38HybridDecodeSession::open never calls MetalContext::request_residency. That method is defined at metal/mod.rs:2500 (HAWKING_QWEN_RESIDENCY=1) and is only invoked from qwen_dense.rs:4693. An earlier generate in this session, with two llama-servers resident, ran at ~4 tok/s; with one server it ran at ~33 tok/s. Hook residency here before claiming a kernel win under load."
+    },
+    {
+      "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "line": 609,
+      "note": "Qwen38MatvecKernel {GeoTpr64Tg128, Vecgroup, VecgroupX64, VecgroupR4} exists but production open() hardcodes GeoTpr64Tg128 (:1302). There is no CLI/env to A/B production GEMV occupancy without a crate edit."
+    },
+    {
+      "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "line": 2019,
+      "note": "HAWKING_DN_VI_SIMD default-on; serial sibling is qwen38_gated_delta_decode_vi. Not bit-identical. Rejected as THIS experiment: host is ~4% of wall and DeltaNet is not the bytes-per-token lever vs llama.cpp."
+    },
+    {
+      "file": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+      "line": 28,
+      "note": "HONEST_DECODE_CEILING_GB_S=411.51; production_dispatches_per_token=964 (:56). This run's native implied GB/s is above 411.51 and at ~58% of the 819 peak, so the honest ceiling is conservative. The remaining lever is K>1 amortization of the weight sweep, not host encode."
+    }
+  ],
+  "elapsed_s": 35.52,
+  "reprofile_command": "python3 tools/headless/runtime_experiment.py",
+  "correctness_gate": {
+    "harness": "tools/headless/runtime_correctness_gate.py",
+    "receipt": "receipts/headless/RUNTIME_CORRECTNESS.json",
+    "damage_control_receipt": "receipts/headless/RUNTIME_CORRECTNESS_DAMAGED.json",
+    "verdict_by_arm": {
+      "native_gravity_q4": "PASS",
+      "llama_cpp_q5k": "PASS"
+    },
+    "why_it_was_missing": "The original A/B measured tok/s on the prompt 'Say hi.' and never looked at the output. This repository has already shipped an artifact that served at full speed and answered 'capital of France' with ' combust'. A tok/s number from an unchecked artifact measures how fast something produces text.",
+    "sensitivity": "Zeroing the second half of ONE 16 MB tensor out of a 14 GB catalog did NOT change either answer -- the model shrugged it off and the damage control correctly refused to call that a demonstration. At 25% of tensor files corrupted the model emits 'zbazbazba...' and the gate REJECTS. So the gate fires, and its sensitivity is now a measured number rather than an assumption.",
+    "safety": "The catalog is HARDLINKED rather than copied, and each victim is unlinked before being rebuilt as its own inode, so no write ever reaches the real artifact. Every original's inode, size and mtime are asserted unchanged. Verified after the run: 756 files, 14297933604 bytes, no zeroed tails."
+  },
+  "promotion": {
+    "decision": "NOT_PROMOTED",
+    "basis": "The paired A/B found NO IMPROVEMENT against the historical native anchor of 33.03 tok/s (measured 33.47, 0.1% spread). Correctness passing does not promote anything; it only makes the timing number mean something.",
+    "owner": "The measuring harness does NOT own promotion. It reports; a human decides."
+  }
+}

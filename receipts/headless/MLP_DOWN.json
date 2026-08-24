@@ -1,0 +1,820 @@
+{
+  "schema": "hawking.headless.mlp_down.v1",
+  "generated_at": "2026-08-24T17:00:15Z",
+  "git_head": "b9db37d617e0e2d3664d8e83289127f307aa00f7",
+  "obligation": "N031 \u2014 MLP_DOWN_ATTACK (S022 \u00a76, \u00a710, \u00a712): third organ (23.3%), treated independently",
+  "one_line": "mlp_down [5120\u00d717408] affine2 g64: accumulate 5510000 ns vs load 3286916 ns; residual 117666 ns; no COMPLETE_TOKEN_NS win. Gate/up conclusions not transferred. dense_w_materialized=0.",
+  "question": "What is the load/decode/accumulate/output/residual/norm profile of mlp_down, and does down+residual fusion, next-norm prep, or output geometry reduce COMPLETE_TOKEN_NS?",
+  "answer": "mlp_down [5120\u00d717408] affine2 g64: accumulate 5510000 ns vs load 3286916 ns; residual 117666 ns; no COMPLETE_TOKEN_NS win. Gate/up conclusions not transferred. dense_w_materialized=0.",
+  "reading": "down_proj is [5120, 17408] affine2 g64 tpr64: 2560 TGs vs 8704 for gate/up. N025 isolated mlp_down (GEMV+residual) was 5.68 ms / 309.5 GB/s. Isolated accumulate median 5510000 ns, load 3286916 ns, decode 5486000 ns, residual 117666 ns. All three attempted reductions (down+residual fusion, pair-store output geometry, ssq next-norm prep) failed COMPLETE_TOKEN_NS separation on the production 580 graph. Residual is 118 us vs a 5.51 ms GEMV and a 28.46 ms token; folding it into the store cannot separate COMPLETE_TOKEN_NS. Isolated fused-vs-unfused ranges also overlap. Token ids unchanged; plain bad control rejected.",
+  "did_not_load_second_27b": true,
+  "did_not_mutate_parent": true,
+  "did_not_write_under_models": true,
+  "did_not_assume_gate_up": true,
+  "occupancy": {
+    "ps_matches": [
+      "12402  21824 /Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp9wq3pmxx/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}"
+    ],
+    "loaded_a_second_27b": false,
+    "note": "A second Qwen3.8-27B would show RSS in the 10+ GiB class and is refused."
+  },
+  "parent_immutable": {
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "outside_worktree": true,
+    "catalog_present": true
+  },
+  "controls": {
+    "no_op": "production 580 graph, down_fusion=off (incumbent GEMV + add_rmsnorm)",
+    "deliberately_bad": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_plain writes y and drops residual; must change token ids",
+    "reps": 7,
+    "report": "min/median/max; overlapping ranges are NOT SEPARATED",
+    "ranking_quantity": "COMPLETE_TOKEN_NS"
+  },
+  "kernel_autopsy": {
+    "exit_code": 0,
+    "ok": true,
+    "any_new_kernel_defective": false,
+    "stdout_tail": "files 43  kernels 632  {'DEFECTIVE': 89, 'SUSPECT': 460, 'CLEAR': 83}\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::q2f_group64_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group64_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE bandwidth_roof.metal::roof_seq_simd8x8  runtime_integer_divide -> tpg\n  DEFECTIVE common.metal::rope_q_f32_inplace  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_q_interleaved_concat  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_f32_batched_multiseq  runtime_integer_divide -> per_slot\n  DEFECTIVE common.metal::rope_qk_f32_batched_multiseq  runtime_integer_divide -> q_per_slot\n  DEFECTIVE common.metal::embed_lookup_f32_batched  runtime_integer_divide -> hidden\n  DEFECTIVE common.metal::rope_qk_f32_b1_bias  runtime_integer_divide -> pairs_per_head\nreceipt: /Users/scammermike/.claude-grok/worktrees/n031down-20260824-123509/receipts/headless/KERNEL_COMPETENCE.json\n",
+    "stderr_tail": "",
+    "new_kernels": [
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_geo_tpr64_tg128_addr_probe",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        acc = affine_q2_geo_ad"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_geo_tpr64_tg128_decode_probe",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        acc = affine_q2_geo_de"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_geo_tpr64_tg128_output_probe",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "st uint row = group_id * 2u + team;\n    if (split == 0u && simd_lane == 0u && row < rows) {\n        output[row] = float(group_id)"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        acc = affine_q2_geo_ac"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_plain",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        acc = affine_q2_geo_ac"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_add_ssq_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        acc = affine_q2_geo_ac"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_pairstore",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "row0 + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        acc = affine_q2_geo_ac"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen38_ssq_prepared_rmsnorm_tg",
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "hidden_n",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "{\n    float sum = 0.0f;\n    for (uint index = tid; index < hidden_n; index += tg_size) {\n        sum += ssq"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "tid",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "; stride > 0u; stride >>= 1u) {\n        if (tid < stride) scratch[tid] += scratch[tid + stride];"
+          }
+        ]
+      }
+    ],
+    "missing": []
+  },
+  "shader_evidence": {
+    "shader_present": true,
+    "shader_path": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "kernel_needles": {
+      "qwen_affine_q2_group64_matvec_add_tpr64_tg128": 166737,
+      "qwen_affine_q2_group64_matvec_add_tpr64_tg128_plain": 168093,
+      "qwen_affine_q2_group64_matvec_add_ssq_tpr64_tg128": 169459,
+      "qwen_affine_q2_group64_matvec_add_tpr64_tg128_pairstore": 170923,
+      "qwen_affine_q2_group64_matvec_geo_tpr64_tg128_addr_probe": 163122,
+      "qwen_affine_q2_group64_matvec_geo_tpr64_tg128_decode_probe": 164433,
+      "qwen_affine_q2_group64_matvec_geo_tpr64_tg128_output_probe": 165748,
+      "qwen38_ssq_prepared_rmsnorm_tg": 172576
+    },
+    "all_kernels_declared": true,
+    "wired": true,
+    "default_off": true,
+    "organ_isolate": true,
+    "does_not_write_dense_w": true,
+    "production_580_untouched": true,
+    "did_not_assume_gate_up": true,
+    "incumbent_untouched": true,
+    "bad_control_kept": true
+  },
+  "compile": {
+    "skipped": true,
+    "bin_present": true
+  },
+  "run": null,
+  "profile": {
+    "kind": "MEASURED",
+    "phases": {
+      "load": {
+        "organ": "mlp_down_load",
+        "status": "MEASURED",
+        "gpu_ns_reps": [
+          4427374.0,
+          4196249.0,
+          4073124.0,
+          3286916.0,
+          3204458.0,
+          3194458.0,
+          3093041.0
+        ],
+        "gpu_ns_min": 3093041,
+        "gpu_ns_median": 3286916,
+        "gpu_ns_max": 4427374,
+        "n_reps": 7,
+        "dispatches": 64,
+        "dense_w_materialized": 0
+      },
+      "decode": {
+        "organ": "mlp_down_decode",
+        "status": "MEASURED",
+        "gpu_ns_reps": [
+          5597374.0,
+          5418249.0,
+          5463291.0,
+          5647499.0,
+          5421375.0,
+          5486000.0,
+          5573624.0
+        ],
+        "gpu_ns_min": 5418249,
+        "gpu_ns_median": 5486000,
+        "gpu_ns_max": 5647499,
+        "n_reps": 7,
+        "dispatches": 64,
+        "dense_w_materialized": 0
+      },
+      "accumulate": {
+        "organ": "mlp_down_accumulate",
+        "status": "MEASURED",
+        "gpu_ns_reps": [
+          5504375.0,
+          5621291.0,
+          5510000.0,
+          5505499.0,
+          5721124.0,
+          5510166.0,
+          5499250.0
+        ],
+        "gpu_ns_min": 5499250,
+        "gpu_ns_median": 5510000,
+        "gpu_ns_max": 5721124,
+        "n_reps": 7,
+        "dispatches": 64,
+        "dense_w_materialized": 0
+      },
+      "output_write": {
+        "organ": "mlp_down_output",
+        "status": "MEASURED",
+        "gpu_ns_reps": [
+          312499.0,
+          309291.0,
+          311500.0,
+          311583.0,
+          311375.0,
+          310833.0,
+          314000.0
+        ],
+        "gpu_ns_min": 309291,
+        "gpu_ns_median": 311500,
+        "gpu_ns_max": 314000,
+        "n_reps": 7,
+        "dispatches": 64,
+        "dense_w_materialized": 0
+      },
+      "residual": {
+        "organ": "mlp_down_residual",
+        "status": "MEASURED",
+        "gpu_ns_reps": [
+          117499.0,
+          134875.0,
+          117124.0,
+          133749.0,
+          117666.0,
+          133749.0,
+          117499.0
+        ],
+        "gpu_ns_min": 117124,
+        "gpu_ns_median": 117666,
+        "gpu_ns_max": 134875,
+        "n_reps": 7,
+        "dispatches": 64,
+        "dense_w_materialized": 0
+      },
+      "norm_deps": {
+        "organ": "mlp_down_norm",
+        "status": "MEASURED",
+        "gpu_ns_reps": [
+          557458.0,
+          543083.0,
+          504750.0,
+          516541.0,
+          508916.0,
+          520000.0,
+          524916.0
+        ],
+        "gpu_ns_min": 504750,
+        "gpu_ns_median": 520000,
+        "gpu_ns_max": 557458,
+        "n_reps": 7,
+        "dispatches": 64,
+        "dense_w_materialized": 0
+      }
+    },
+    "shape": {
+      "rows": 5120,
+      "cols": 17408,
+      "codec": "affine2_g64",
+      "tile": "tpr64_tg128"
+    },
+    "n025_prior_not_rederived": {
+      "fraction_of_roof_gap": 0.233,
+      "achieved_gb_s": 309.5,
+      "scaled_gpu_ns": 5759460.0
+    },
+    "did_not_assume_gate_up": true,
+    "reading": "down_proj is [5120, 17408] affine2 g64 tpr64: 2560 TGs vs 8704 for gate/up. N025 isolated mlp_down (GEMV+residual) was 5.68 ms / 309.5 GB/s. Isolated accumulate median 5510000 ns, load 3286916 ns, decode 5486000 ns, residual 117666 ns.",
+    "dense_w_materialized": 0
+  },
+  "reductions": {
+    "kind": "measured_no_win",
+    "attempts": [
+      {
+        "id": "down_add",
+        "motif": "down+residual fusion (GEMV writes residual+y; rmsnorm stays a second launch on the 580 graph)",
+        "attempted": true,
+        "win": false,
+        "kind": "measured_no_win",
+        "complete_token_ns_before_reps": [
+          28433416.0,
+          28473458.0,
+          28473666.0,
+          28446459.0,
+          28466709.0,
+          28464334.0,
+          28457125.0
+        ],
+        "complete_token_ns_after_reps": [
+          28383292.0,
+          28422667.0,
+          28393375.0,
+          28374708.0,
+          28486833.0,
+          28596500.0,
+          28652166.0
+        ],
+        "complete_token_ns_before_median": 28464334.0,
+        "complete_token_ns_after_median": 28422667.0,
+        "complete_token_ns_separated": false,
+        "complete_token_ns_faster": false,
+        "isolated_gpu_ns_before_reps": [
+          5800416.0,
+          5631874.0,
+          5715833.0,
+          5695625.0,
+          5620416.0,
+          5884791.0,
+          5646000.0
+        ],
+        "isolated_gpu_ns_after_reps": [
+          5493791.0,
+          5782041.0,
+          5484083.0,
+          5555125.0,
+          5674875.0,
+          5498124.0,
+          5587666.0
+        ],
+        "isolated_gpu_ns_separated": false,
+        "token_ids_before": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "token_ids_after": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "token_ids_bad": [
+          14,
+          17,
+          15,
+          15,
+          23,
+          220,
+          32002,
+          23,
+          294,
+          349,
+          17,
+          41,
+          220,
+          14,
+          68733,
+          15
+        ],
+        "token_ids_unchanged": true,
+        "parity": {
+          "dense_w_materialized": 0,
+          "fused_dispatches": 1,
+          "fused_gpu_ns": 158250,
+          "fusion": "add",
+          "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128",
+          "layer": 0,
+          "max_abs_diff": 5.960464477539063e-08,
+          "unfused_dispatches": 2,
+          "unfused_gpu_ns": 164291
+        },
+        "bad_parity": {
+          "dense_w_materialized": 0,
+          "fused_dispatches": 1,
+          "fused_gpu_ns": 159083,
+          "fusion": "plain",
+          "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_plain",
+          "layer": 0,
+          "max_abs_diff": 0.1899999976158142,
+          "unfused_dispatches": 2,
+          "unfused_gpu_ns": 157999
+        },
+        "n_reps": 7,
+        "dispatches_before": 580,
+        "dispatches_after": 580,
+        "sentinel_kernel_present": true,
+        "dense_w_materialized": 0,
+        "why": "COMPLETE_TOKEN_NS ranges overlap (NOT SEPARATED); no mean delta",
+        "note": "down+residual fusion (GEMV writes residual+y; rmsnorm stays a second launch on the 580 graph): COMPLETE_TOKEN_NS 28464334.0 \u2192 28422667.0 NOT SEPARATED"
+      },
+      {
+        "id": "pairstore",
+        "motif": "output geometry: one float2 store of the two hidden rows per TG",
+        "attempted": true,
+        "win": false,
+        "kind": "measured_no_win",
+        "complete_token_ns_before_reps": [
+          28433416.0,
+          28473458.0,
+          28473666.0,
+          28446459.0,
+          28466709.0,
+          28464334.0,
+          28457125.0
+        ],
+        "complete_token_ns_after_reps": [
+          28726000.0,
+          28699958.0,
+          28410334.0,
+          28417042.0,
+          28437875.0,
+          28512291.0,
+          28420542.0
+        ],
+        "complete_token_ns_before_median": 28464334.0,
+        "complete_token_ns_after_median": 28437875.0,
+        "complete_token_ns_separated": false,
+        "complete_token_ns_faster": false,
+        "isolated_gpu_ns_before_reps": [
+          5493791.0,
+          5782041.0,
+          5484083.0,
+          5555125.0,
+          5674875.0,
+          5498124.0,
+          5587666.0
+        ],
+        "isolated_gpu_ns_after_reps": [
+          5661166.0,
+          5489499.0,
+          5575749.0,
+          5540374.0,
+          5505625.0,
+          5707916.0,
+          5501833.0
+        ],
+        "isolated_gpu_ns_separated": false,
+        "token_ids_before": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "token_ids_after": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "token_ids_bad": [
+          14,
+          17,
+          15,
+          15,
+          23,
+          220,
+          32002,
+          23,
+          294,
+          349,
+          17,
+          41,
+          220,
+          14,
+          68733,
+          15
+        ],
+        "token_ids_unchanged": true,
+        "parity": {
+          "dense_w_materialized": 0,
+          "fused_dispatches": 1,
+          "fused_gpu_ns": 157500,
+          "fusion": "pairstore",
+          "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_pairstore",
+          "layer": 0,
+          "max_abs_diff": 0.0,
+          "unfused_dispatches": 2,
+          "unfused_gpu_ns": 157041
+        },
+        "bad_parity": {
+          "dense_w_materialized": 0,
+          "fused_dispatches": 1,
+          "fused_gpu_ns": 159083,
+          "fusion": "plain",
+          "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_plain",
+          "layer": 0,
+          "max_abs_diff": 0.1899999976158142,
+          "unfused_dispatches": 2,
+          "unfused_gpu_ns": 157999
+        },
+        "n_reps": 7,
+        "dispatches_before": 580,
+        "dispatches_after": 580,
+        "sentinel_kernel_present": true,
+        "dense_w_materialized": 0,
+        "why": "COMPLETE_TOKEN_NS ranges overlap (NOT SEPARATED); no mean delta",
+        "note": "output geometry: one float2 store of the two hidden rows per TG: COMPLETE_TOKEN_NS 28464334.0 \u2192 28437875.0 NOT SEPARATED"
+      },
+      {
+        "id": "ssq",
+        "motif": "down+next-norm prep: GEMV writes residual+y and per-row ssq; cheap rmsnorm consumes ssq",
+        "attempted": true,
+        "win": false,
+        "kind": "measured_no_win",
+        "complete_token_ns_before_reps": [
+          28433416.0,
+          28473458.0,
+          28473666.0,
+          28446459.0,
+          28466709.0,
+          28464334.0,
+          28457125.0
+        ],
+        "complete_token_ns_after_reps": [
+          28424583.0,
+          28449875.0,
+          28394833.0,
+          28429417.0,
+          28455500.0,
+          28463792.0,
+          28409167.0
+        ],
+        "complete_token_ns_before_median": 28464334.0,
+        "complete_token_ns_after_median": 28429417.0,
+        "complete_token_ns_separated": false,
+        "complete_token_ns_faster": false,
+        "isolated_gpu_ns_before_reps": [
+          5996583.0,
+          6145624.0,
+          5999000.0,
+          6209333.0,
+          6016666.0,
+          5995708.0,
+          6211458.0
+        ],
+        "isolated_gpu_ns_after_reps": [
+          6196750.0,
+          6027708.0,
+          6099374.0,
+          6129666.0,
+          6003124.0,
+          6132625.0,
+          6052666.0
+        ],
+        "isolated_gpu_ns_separated": false,
+        "token_ids_before": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "token_ids_after": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "token_ids_bad": [
+          14,
+          17,
+          15,
+          15,
+          23,
+          220,
+          32002,
+          23,
+          294,
+          349,
+          17,
+          41,
+          220,
+          14,
+          68733,
+          15
+        ],
+        "token_ids_unchanged": true,
+        "parity": {
+          "dense_w_materialized": 0,
+          "fused_dispatches": 1,
+          "fused_gpu_ns": 154666,
+          "fusion": "ssq",
+          "kernel": "qwen_affine_q2_group64_matvec_add_ssq_tpr64_tg128",
+          "layer": 0,
+          "max_abs_diff": 5.960464477539063e-08,
+          "unfused_dispatches": 2,
+          "unfused_gpu_ns": 155166
+        },
+        "bad_parity": {
+          "dense_w_materialized": 0,
+          "fused_dispatches": 1,
+          "fused_gpu_ns": 159083,
+          "fusion": "plain",
+          "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_plain",
+          "layer": 0,
+          "max_abs_diff": 0.1899999976158142,
+          "unfused_dispatches": 2,
+          "unfused_gpu_ns": 157999
+        },
+        "n_reps": 7,
+        "dispatches_before": 580,
+        "dispatches_after": 580,
+        "sentinel_kernel_present": true,
+        "dense_w_materialized": 0,
+        "why": "COMPLETE_TOKEN_NS ranges overlap (NOT SEPARATED); no mean delta",
+        "note": "down+next-norm prep: GEMV writes residual+y and per-row ssq; cheap rmsnorm consumes ssq: COMPLETE_TOKEN_NS 28464334.0 \u2192 28429417.0 NOT SEPARATED"
+      }
+    ],
+    "n_attempts": 3,
+    "winner": null,
+    "gpu_ran": true,
+    "ranking_quantity": "COMPLETE_TOKEN_NS",
+    "not_the_ranking_quantity": [
+      "GB/s",
+      "dispatch_count"
+    ],
+    "token_ids_before": [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      264,
+      11346,
+      11,
+      18541,
+      9546,
+      323,
+      15673,
+      314,
+      1204,
+      264,
+      18826
+    ],
+    "noop_control": {
+      "id": "production_580",
+      "dispatches": 580,
+      "must_not_score": true,
+      "did_not_score": true,
+      "token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ]
+    },
+    "bad_control": {
+      "id": "plain",
+      "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_plain",
+      "must_be_rejected": true,
+      "rejected": true,
+      "max_abs_diff": 0.1899999976158142,
+      "token_ids": [
+        14,
+        17,
+        15,
+        15,
+        23,
+        220,
+        32002,
+        23,
+        294,
+        349,
+        17,
+        41,
+        220,
+        14,
+        68733,
+        15
+      ]
+    },
+    "dense_w_materialized": 0,
+    "note": "All three attempted reductions (down+residual fusion, pair-store output geometry, ssq next-norm prep) failed COMPLETE_TOKEN_NS separation on the production 580 graph. Residual is 118 us vs a 5.51 ms GEMV and a 28.46 ms token; folding it into the store cannot separate COMPLETE_TOKEN_NS. Isolated fused-vs-unfused ranges also overlap. Token ids unchanged; plain bad control rejected.",
+    "why": "All three attempted reductions (down+residual fusion, pair-store output geometry, ssq next-norm prep) failed COMPLETE_TOKEN_NS separation on the production 580 graph. Residual is 118 us vs a 5.51 ms GEMV and a 28.46 ms token; folding it into the store cannot separate COMPLETE_TOKEN_NS. Isolated fused-vs-unfused ranges also overlap. Token ids unchanged; plain bad control rejected.",
+    "did_not_assume_gate_up": true
+  },
+  "dense_w_materialized": 0,
+  "causal_benchmark_law": {
+    "kernel_identity": "qwen_affine_q2_group64_matvec_add_tpr64_tg128",
+    "bad_control": "qwen_affine_q2_group64_matvec_add_tpr64_tg128_plain",
+    "dispatch_count": "production 580 with default-off fusion",
+    "token_ids": "unchanged vs production-580 for honest fusions"
+  },
+  "elapsed_s": 0.22138724999967963,
+  "_harvest_note": "Receipt-only harvest. The measured no-win (down fusion/widen/precompute cannot move COMPLETE_TOKEN_NS; residual 118us vs 28.46ms token) was produced in the isolated N031 lane which built green. The Rust probe wiring + profiler tool + example were dropped on merge because they conflict with N030 gate_up scaffolding in the same qwen38_hybrid_decode.rs regions; re-deriving would require the isolated lane. The negative result stands as evidence."
+}

@@ -191,7 +191,7 @@ All sealed via `lab.receipts.seal` / `verify`.
 - No Qwen download or Xet stream.
 - No Gravity against real 30B weights.
 - No BASE_TRUE_TPS measurement or TG rung claim.
-- No edits to `lab/operators/frankenstein_*` or DSV4F crate sources.
+- No edits to `hawking-experiments/frankenstein/operators/frankenstein_*` or DSV4F crate sources.
 - No push / PR / remote / detached daemon / committed venv.
 
 ---

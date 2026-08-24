@@ -1,0 +1,705 @@
+{
+  "schema": "hawking.headless.vmcp_unavailable_gate.v1",
+  "gate": "VMCP_UNAVAILABLE_GATE",
+  "obligation": "Unavailable visionmcp capabilities must classify as unavailable. An empty or observed-class return that a caller holding only the return value cannot distinguish from a genuine negative finding is a gate failure.",
+  "generated_at": "2026-08-23T08:51:56Z",
+  "elapsed_s": 0.963,
+  "git": {
+    "head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+    "oneline": "2f670c2 hcli: wire /grok command dispatch through GrokBridge (G027 phase 2)",
+    "cwd": "/Users/scammermike/Downloads/hawking-copy"
+  },
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "visionmcp": {
+    "version": "0.8.0a2",
+    "src": "/Users/scammermike/Downloads/hawking-copy/visionmcp/src",
+    "git": {
+      "head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+      "oneline": "2f670c2 hcli: wire /grok command dispatch through GrokBridge (G027 phase 2)",
+      "cwd": "/Users/scammermike/Downloads/hawking-copy/visionmcp/src"
+    },
+    "in_this_worktree": true
+  },
+  "interpreter": {
+    "executable": "/Users/scammermike/.grok-vision/bin/python",
+    "version": "3.12.13"
+  },
+  "classification_rule": {
+    "counts": [
+      "BACKEND_UNAVAILABLE",
+      "BLENDER_UNAVAILABLE",
+      "BLOCKED",
+      "COLMAP_UNAVAILABLE",
+      "INTERRUPTED",
+      "OCC_RUNTIME_UNAVAILABLE",
+      "OCR_UNAVAILABLE",
+      "TARGET_ABSENT",
+      "TOOL_ABSENT",
+      "UNAVAILABLE",
+      "blocked",
+      "unavailable"
+    ],
+    "does_not_count": [
+      "empty list",
+      "text_symbol_count=0",
+      "available_tools.blender=false without a token",
+      "colmap_fallback_reason buried next to a stored solution",
+      "prose limitations about DERIVED interpretations",
+      "environment.tesseract=None"
+    ],
+    "why_fallback_reason_does_not_save_cameras": "CameraSolver.solve('auto') does set diagnostics.colmap_fallback_reason when COLMAP is missing, but it also stores a real turntable solution at confidence=0.2. A caller that asks 'do we have cameras?' says yes. A first-run PASS on that site would mean the gate is wrong."
+  },
+  "sites": [
+    {
+      "id": "geometry.pipeline.auto_colmap",
+      "cited": "visionmcp/src/visionmcp/vision/pipeline.py:39-46, :240-248",
+      "technique": "monkeypatch shutil.which so 'colmap' returns None. The cited auto branch is `if shutil.which('colmap') and len(references) >= 2`.",
+      "technique_why_faithful": "GeometryPipeline.run('auto') consults shutil.which at call time and only sets colmap_fallback_reason on an exception from _run_colmap, not when the binary is simply absent. Hiding the name from which() is exactly the absent-binary path, without uninstalling COLMAP.",
+      "probes": [
+        {
+          "name": "tool_absent_auto",
+          "kind": "tool_absent",
+          "verdict": "PASS_CLASSIFIED",
+          "classified_unavailable": {
+            "ok": true,
+            "via": "status=UNAVAILABLE"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "id": "96086a43-1cd8-4cde-99e0-c38a271c0385",
+            "backend": "silhouette",
+            "evidence_class": "UNAVAILABLE",
+            "configuration": {
+              "colmap_fallback_reason": "TOOL_ABSENT: colmap binary not on PATH",
+              "solve_cameras": false,
+              "unavailability_kind": "TOOL_ABSENT"
+            },
+            "colmap_fallback_reason": "TOOL_ABSENT: colmap binary not on PATH",
+            "method": "alpha_or_corner_background_silhouette",
+            "uncertainty": {
+              "geometry": "silhouette-only",
+              "camera": [
+                "unavailable"
+              ],
+              "metric_authority": false
+            },
+            "n_masks": 2,
+            "mask_occupied": [
+              0.30767822,
+              0.24053955
+            ],
+            "status": "UNAVAILABLE",
+            "limitations": [
+              "COLMAP_UNAVAILABLE:TOOL_ABSENT"
+            ]
+          }
+        },
+        {
+          "name": "true_negative_blank_silhouettes",
+          "kind": "true_negative",
+          "verdict": "PASS_TRUE_NEGATIVE",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": true,
+            "via": "evidence_class=MULTI_VIEW_OBSERVED"
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "id": "3909dcd7-3247-4cd8-a31f-f80c7c27ce07",
+            "backend": "silhouette",
+            "evidence_class": "MULTI_VIEW_OBSERVED",
+            "configuration": {
+              "solve_cameras": false
+            },
+            "colmap_fallback_reason": null,
+            "method": "alpha_or_corner_background_silhouette",
+            "uncertainty": {
+              "geometry": "silhouette-only",
+              "camera": [
+                "unavailable"
+              ],
+              "metric_authority": false
+            },
+            "n_masks": 2,
+            "mask_occupied": [
+              0.0,
+              0.0
+            ],
+            "status": null,
+            "limitations": null
+          }
+        },
+        {
+          "name": "auto_colmap_present_empty_scene",
+          "kind": "not_probed",
+          "verdict": "NOT_PROBED",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "status": "NOT_PROBED"
+          },
+          "extra": {
+            "reason": "A true-negative of COLMAP reconstruction (tool present, genuinely no 3D points) requires running the COLMAP mapper on a no-feature scene. This gate does not start that job. The constructible true negative is explicit silhouette backend on blank images with colmap still on PATH."
+          }
+        }
+      ],
+      "site_verdict": "PASS"
+    },
+    {
+      "id": "cameras.solver.auto_colmap",
+      "cited": "visionmcp/src/visionmcp/cameras/solver.py:251-258, :1568-1609",
+      "technique": "monkeypatch shutil.which so 'colmap' returns None. _solve_colmap raises BackendUnavailable('COLMAP is not installed') when which() is None; solve('auto') catches every Exception including that.",
+      "technique_why_faithful": "The cited auto branch is try/_solve_colmap/except Exception, and _solve_colmap's first instruction is shutil.which('colmap'). Hiding the binary is the live BackendUnavailable path, without uninstalling COLMAP. The stored turntable at confidence=0.2 is the return a caller holding only the solution document sees.",
+      "probes": [
+        {
+          "name": "tool_absent_auto",
+          "kind": "tool_absent",
+          "verdict": "PASS_CLASSIFIED",
+          "classified_unavailable": {
+            "ok": true,
+            "via": "status=UNAVAILABLE"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "id": "0ad993e6-1bac-4ba7-9879-0b375efbd2a5",
+            "backend": "colmap",
+            "n_cameras": 0,
+            "cameras": [],
+            "colmap_fallback_reason": "TOOL_ABSENT: colmap binary not on PATH",
+            "diagnostics_warning": "COLMAP lane omitted; no camera solution is stored as an observation.",
+            "registered_images": 0,
+            "status": "UNAVAILABLE",
+            "limitations": [
+              "COLMAP_UNAVAILABLE:TOOL_ABSENT"
+            ],
+            "evidence_class": null
+          }
+        },
+        {
+          "name": "true_negative_colmap_one_view",
+          "kind": "true_negative",
+          "verdict": "PASS_TRUE_NEGATIVE",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "exception:VisionMCPError",
+            "error": "COLMAP requires at least two distinct views"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": "VisionMCPError",
+          "error": "COLMAP requires at least two distinct views",
+          "return": {
+            "raised": "VisionMCPError",
+            "message": "COLMAP requires at least two distinct views"
+          }
+        },
+        {
+          "name": "auto_one_view_colmap_present_still_turntable",
+          "kind": "tool_absent",
+          "verdict": "PASS_CLASSIFIED",
+          "classified_unavailable": {
+            "ok": true,
+            "via": "status=UNAVAILABLE"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "id": "164976f2-84a5-4b07-96b0-f5e42ba46677",
+            "backend": "colmap",
+            "n_cameras": 0,
+            "cameras": [],
+            "colmap_fallback_reason": "VisionMCPError: COLMAP requires at least two distinct views",
+            "diagnostics_warning": "COLMAP lane omitted; no camera solution is stored as an observation.",
+            "registered_images": 0,
+            "status": "UNAVAILABLE",
+            "limitations": [
+              "COLMAP_UNAVAILABLE:TOOL_FAILED"
+            ],
+            "evidence_class": null
+          }
+        },
+        {
+          "name": "auto_colmap_present_empty_reconstruction",
+          "kind": "not_probed",
+          "verdict": "NOT_PROBED",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "status": "NOT_PROBED"
+          },
+          "extra": {
+            "reason": "Running COLMAP on a no-feature pair is a photogrammetry job this gate does not start. CameraSolver has no empty-cameras success path: auto always stores a solution or the explicit colmap backend raises."
+          }
+        }
+      ],
+      "site_verdict": "PASS"
+    },
+    {
+      "id": "compilers.spatial.resolve_cad_backend",
+      "cited": "visionmcp/src/visionmcp/compilers/spatial/interfaces.py:326-338",
+      "technique": "Live import failure plus injected exception. `from visionmcp.worlds.spatial.cad import get_default_backend` fails because the symbol is not exported; the except Exception path returns FixtureCadBackend(). We also assign a raising get_default_backend to prove the catch-all.",
+      "technique_why_faithful": "The cited function is try/import/call/except Exception/pass/return FixtureCadBackend(). Injecting the import failure is exactly that branch. Uninstalling OpenCascade is unnecessary: the Step 20 entry point is already missing.",
+      "probes": [
+        {
+          "name": "tool_absent_live_import",
+          "kind": "tool_absent",
+          "verdict": "PASS_CLASSIFIED",
+          "classified_unavailable": {
+            "ok": true,
+            "via": "status=UNAVAILABLE"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "type": "FixtureCadBackend",
+            "name": "step_fixture_dialect",
+            "backend": "step_fixture_dialect",
+            "available": false,
+            "available_reason": "OCC_RUNTIME_UNAVAILABLE:TOOL_ABSENT: ImportError: cannot import name 'get_default_backend' from 'visionmcp.worlds.spatial.cad' (/Users/scammermike/Downloads/hawking-copy/visionmcp/src/visionmcp/worlds/spatial/cad/__init__.py)",
+            "status": "UNAVAILABLE"
+          },
+          "extra": {
+            "real_backend_failed": true
+          }
+        },
+        {
+          "name": "tool_absent_injected_exception",
+          "kind": "tool_absent",
+          "verdict": "PASS_CLASSIFIED",
+          "classified_unavailable": {
+            "ok": true,
+            "via": "status=UNAVAILABLE"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "type": "FixtureCadBackend",
+            "name": "step_fixture_dialect",
+            "backend": "step_fixture_dialect",
+            "available": false,
+            "available_reason": "OCC_RUNTIME_UNAVAILABLE:TOOL_FAILED: RuntimeError: injected Step 20 failure",
+            "status": "UNAVAILABLE"
+          },
+          "extra": {
+            "real_backend_failed": true
+          }
+        },
+        {
+          "name": "present_control_unavailable_backend_forwarded",
+          "kind": "present_control",
+          "verdict": "PASS_PRESENT_CONTROL",
+          "classified_unavailable": {
+            "ok": true,
+            "via": "status=UNAVAILABLE"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "type": "UnavailableCad",
+            "name": "occ",
+            "backend": "occ",
+            "available": false,
+            "available_reason": "OCC_RUNTIME_UNAVAILABLE",
+            "status": "UNAVAILABLE"
+          },
+          "extra": {
+            "found": true
+          }
+        },
+        {
+          "name": "true_negative_empty_surface_distance",
+          "kind": "true_negative",
+          "verdict": "PASS_TRUE_NEGATIVE",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": true,
+            "via": "comparisons=[]"
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "backend": "step_fixture_dialect",
+            "comparisons": [],
+            "max_residual_m": null,
+            "note": "extent comparison only; not full surface-distance B-rep metric"
+          }
+        }
+      ],
+      "site_verdict": "PASS"
+    },
+    {
+      "id": "perception.media.ocr_tesseract",
+      "cited": "visionmcp/src/visionmcp/perception/media.py:666-670, :698-715",
+      "technique": "monkeypatch shutil.which so 'tesseract' returns None. analyze_image then takes the `else []` branch; ImageFileAdapter.capture stores text_symbol_count=0 with the same limitations prose as a blank image.",
+      "technique_why_faithful": "The cited condition is `if config.get('ocr') and shutil.which('tesseract')`. Hiding the binary is the absent-tesseract path, without uninstalling Tesseract 5.5.2. The return a caller holding only the capture sees is summary.text_symbol_count and analysis['ocr'].",
+      "probes": [
+        {
+          "name": "tool_absent_text_image",
+          "kind": "tool_absent",
+          "verdict": "PASS_CLASSIFIED",
+          "classified_unavailable": {
+            "ok": true,
+            "via": "limitations:OCR_UNAVAILABLE"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": true,
+            "via": "ocr=[]"
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "status": "COMPLETE",
+            "authority": "OBSERVED",
+            "summary": {
+              "height": 80,
+              "ocr_status": "UNAVAILABLE",
+              "perceptual_hash": "ffffff1fffffffff",
+              "region_count": 7,
+              "text_symbol_count": 0,
+              "width": 320
+            },
+            "text_symbol_count": 0,
+            "limitations": [
+              "Contour regions and OCR symbols are DERIVED interpretations of observed pixels.",
+              "Single-image depth and occluded structure remain unobserved.",
+              "OCR_UNAVAILABLE"
+            ],
+            "environment_tesseract": null,
+            "ocr": []
+          }
+        },
+        {
+          "name": "true_negative_blank_image",
+          "kind": "true_negative",
+          "verdict": "PASS_TRUE_NEGATIVE",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": true,
+            "via": "ocr=[]"
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "status": "COMPLETE",
+            "authority": "OBSERVED",
+            "summary": {
+              "height": 128,
+              "ocr_status": "EXECUTED",
+              "perceptual_hash": "ffffffffffffffff",
+              "region_count": 0,
+              "text_symbol_count": 0,
+              "width": 128
+            },
+            "text_symbol_count": 0,
+            "limitations": [
+              "Contour regions and OCR symbols are DERIVED interpretations of observed pixels.",
+              "Single-image depth and occluded structure remain unobserved."
+            ],
+            "environment_tesseract": "tesseract 5.5.2",
+            "ocr": []
+          }
+        },
+        {
+          "name": "present_control_text_image",
+          "kind": "present_control",
+          "verdict": "PASS_PRESENT_CONTROL",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "status": "COMPLETE",
+            "authority": "OBSERVED",
+            "summary": {
+              "height": 80,
+              "ocr_status": "EXECUTED",
+              "perceptual_hash": "ffffff1fffffffff",
+              "region_count": 7,
+              "text_symbol_count": 1,
+              "width": 320
+            },
+            "text_symbol_count": 1,
+            "limitations": [
+              "Contour regions and OCR symbols are DERIVED interpretations of observed pixels.",
+              "Single-image depth and occluded structure remain unobserved."
+            ],
+            "environment_tesseract": "tesseract 5.5.2",
+            "ocr": [
+              {
+                "id": "text:0",
+                "text": "HELLOWORLD",
+                "confidence": 0.9034867099999999,
+                "bounds": {
+                  "x": 11.0,
+                  "y": 32.0,
+                  "width": 70.0,
+                  "height": 8.0
+                },
+                "authority": "DERIVED"
+              }
+            ]
+          },
+          "extra": {
+            "found": true
+          }
+        }
+      ],
+      "site_verdict": "PASS"
+    },
+    {
+      "id": "orchestration.resources.discover_blender",
+      "cited": "visionmcp/src/visionmcp/orchestration/resources.py:73-88",
+      "technique": "No injection for the live probe: shutil.which('blender') is already None on this machine while Blender 4.2.1 is at /Applications/Blender.app/Contents/MacOS/Blender. Present control sets BLENDER_PATH to that binary (the only extra channel discover_resources consults).",
+      "technique_why_faithful": "discover_resources uses only shutil.which('blender') or os.environ['BLENDER_PATH']. discover_blender() in core.config already knows the macOS app path. The disagreement is the live defect, not a synthetic one.",
+      "probes": [
+        {
+          "name": "live_which_miss_app_present",
+          "kind": "present_control",
+          "verdict": "FAIL_PRESENT_CONTROL",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": true,
+            "via": "available_tools.blender=false"
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "available_tools": {
+              "blender": false,
+              "ffmpeg": true,
+              "colmap": true
+            },
+            "blender": false,
+            "degradation_policy": "run the strongest available pipeline; omit unavailable optional lanes and record them instead of failing the campaign",
+            "which_blender": null,
+            "app_path": "/Applications/Blender.app/Contents/MacOS/Blender",
+            "app_exists": true,
+            "discover_blender": {
+              "available": true,
+              "path": "/Applications/Blender.app/Contents/MacOS/Blender",
+              "version": "Blender 4.2.1 LTS"
+            },
+            "limitations": null,
+            "status": null
+          },
+          "extra": {
+            "tool_actually_installed": true,
+            "found": false
+          }
+        },
+        {
+          "name": "present_control_BLENDER_PATH",
+          "kind": "present_control",
+          "verdict": "PASS_PRESENT_CONTROL",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": false,
+            "via": null
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "available_tools": {
+              "blender": true,
+              "ffmpeg": true,
+              "colmap": true
+            },
+            "blender": true
+          },
+          "extra": {
+            "found": true
+          }
+        },
+        {
+          "name": "true_negative_which_and_env_channels_empty",
+          "kind": "true_negative",
+          "verdict": "PASS_TRUE_NEGATIVE",
+          "classified_unavailable": {
+            "ok": false,
+            "via": "none"
+          },
+          "usable_as_observation": {
+            "ok": false,
+            "via": null
+          },
+          "empty_negative_shape": {
+            "ok": true,
+            "via": "available_tools.blender=false"
+          },
+          "error_type": null,
+          "error": null,
+          "return": {
+            "available_tools": {
+              "blender": false,
+              "ffmpeg": true,
+              "colmap": true
+            },
+            "blender": false
+          }
+        }
+      ],
+      "site_verdict": "FAIL"
+    }
+  ],
+  "failed_sites": [
+    "orchestration.resources.discover_blender"
+  ],
+  "watched_fail": [
+    {
+      "site": "orchestration.resources.discover_blender",
+      "probe": "live_which_miss_app_present",
+      "verdict": "FAIL_PRESENT_CONTROL",
+      "return": {
+        "available_tools": {
+          "blender": false,
+          "ffmpeg": true,
+          "colmap": true
+        },
+        "blender": false,
+        "degradation_policy": "run the strongest available pipeline; omit unavailable optional lanes and record them instead of failing the campaign",
+        "which_blender": null,
+        "app_path": "/Applications/Blender.app/Contents/MacOS/Blender",
+        "app_exists": true,
+        "discover_blender": {
+          "available": true,
+          "path": "/Applications/Blender.app/Contents/MacOS/Blender",
+          "version": "Blender 4.2.1 LTS"
+        },
+        "limitations": null,
+        "status": null
+      }
+    }
+  ],
+  "errors": [],
+  "result": "FAIL"
+}

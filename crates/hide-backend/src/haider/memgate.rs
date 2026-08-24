@@ -9,6 +9,7 @@
 //! behind this trait (delegating to it) rather than re-implemented here.
 
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Mutex;
 
 /// A snapshot of real machine + app-level memory pressure.
 ///
@@ -62,6 +63,7 @@ pub struct SystemMemGate {
     resident_model_bytes: AtomicU64,
     active_worker_bytes: AtomicU64,
     context_kv_bytes: AtomicU64,
+    pressure_override: Mutex<Option<MemoryPressure>>,
 }
 
 impl SystemMemGate {
@@ -72,6 +74,7 @@ impl SystemMemGate {
             resident_model_bytes: AtomicU64::new(0),
             active_worker_bytes: AtomicU64::new(0),
             context_kv_bytes: AtomicU64::new(0),
+            pressure_override: Mutex::new(None),
         }
     }
 
@@ -87,6 +90,15 @@ impl SystemMemGate {
     pub fn set_context_kv_bytes(&self, b: u64) {
         self.context_kv_bytes.store(b, Ordering::Relaxed);
     }
+
+    /// Deterministic override for tests and bootstrap diagnostics.
+    pub fn set_pressure_override(&self, p: MemoryPressure) {
+        *self.pressure_override.lock().unwrap() = Some(p);
+    }
+
+    pub fn clear_pressure_override(&self) {
+        *self.pressure_override.lock().unwrap() = None;
+    }
 }
 
 impl MemGate for SystemMemGate {
@@ -95,6 +107,9 @@ impl MemGate for SystemMemGate {
     }
 
     fn pressure(&self) -> MemoryPressure {
+        if let Some(p) = self.pressure_override.lock().unwrap().clone() {
+            return p;
+        }
         let os = read_os_pressure();
         MemoryPressure {
             total_physical_bytes: os.total_physical,
@@ -117,8 +132,20 @@ impl MemGate for SystemMemGate {
                 reason: "none requested".into(),
             };
         }
-        // Headroom after what workers + context already hold.
-        let held = p.active_worker_bytes.saturating_add(p.context_kv_bytes);
+
+        // If pressure is unknown, bootstrap permissive rather than blocking all work.
+        if p.total_physical_bytes == 0 {
+            return AdmissionDecision {
+                admitted_lanes: want,
+                reason: "pressure unknown; bootstrap permissive".into(),
+            };
+        }
+
+        // Headroom after what workers + context + resident model already hold.
+        let held = p
+            .active_worker_bytes
+            .saturating_add(p.context_kv_bytes)
+            .saturating_add(p.resident_model_bytes);
         let headroom = p.available_bytes.saturating_sub(held);
         let per_lane = self.per_lane_bytes.load(Ordering::Relaxed).max(1);
         let affordable = (headroom / per_lane) as usize;
@@ -193,12 +220,13 @@ fn read_os_pressure() -> OsPressure {
             if kr != libc::KERN_SUCCESS {
                 return OsPressure {
                     total_physical: total,
+                    available: total,
                     ..Default::default()
                 };
             }
             let wired = stats.wire_count as u64 * page;
             let compressed = stats.compressor_page_count as u64 * page;
-            let available = stats.free_count as u64 * page;
+            let available = (stats.free_count + stats.purgeable_count) as u64 * page;
 
             let mut xsw: libc::xsw_usage = std::mem::zeroed();
             let mut xsw_count =

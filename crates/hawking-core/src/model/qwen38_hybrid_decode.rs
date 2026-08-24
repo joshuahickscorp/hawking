@@ -9,9 +9,10 @@
 use super::qwen38_64_layer_execution_schedule::qwen38_assert_schedule_intact;
 use super::qwen38_geometry::{ARGMAX_GROUPS, 
     qwen38_deltanet_state_slot, qwen38_gqa_state_slot, qwen38_layer_name, qwen38_mixer_kind,
-    Qwen38DeltaNetLayout, Qwen38MixerKind, QWEN38_GQA_HEAD_DIM, QWEN38_GQA_HEADS,
-    QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM, QWEN38_HIDDEN,
-    QWEN38_INTERMEDIATE, QWEN38_LAYERS, QWEN38_RMS_EPS, QWEN38_ROPE_THETA, QWEN38_VOCAB,
+    Qwen38DeltaNetLayout, Qwen38MixerKind, QWEN38_DELTANET_LAYERS, QWEN38_GQA_HEAD_DIM,
+    QWEN38_GQA_HEADS, QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM,
+    QWEN38_HIDDEN, QWEN38_INTERMEDIATE, QWEN38_LAYERS, QWEN38_RMS_EPS, QWEN38_ROPE_THETA,
+    QWEN38_VOCAB,
 };
 use super::qwen38_pack::{
     load_qwen38_manifest, read_qwen38_f32_payload, QWEN38_EXPECTED_CATALOG_TENSORS,
@@ -19,12 +20,13 @@ use super::qwen38_pack::{
 use super::qwen_complete_binary::{
     expand_rice_indices, mixed_gpu_layout, parse_uniform_q4_header, rice_q1_row_ptr,
     uniform_factor_value, BinaryGroupPacked, MixedGpuKind, RiceQ1Packed, UniformFactorPacked,
-    MAGIC_BINARY, MAGIC_HGRAVS01, MAGIC_RESIDUAL_COMPACT, MAGIC_UNIFORM, UNIFORM_Q4_GROUP_SIZE,
-    UNIFORM_Q4_GROUP_SIZE_128, uniform_q4_group_size_supported,
+    MAGIC_AFFINE, MAGIC_BINARY, MAGIC_HGRAVS01, MAGIC_RESIDUAL_COMPACT, MAGIC_UNIFORM,
+    UNIFORM_Q4_GROUP_SIZE, UNIFORM_Q4_GROUP_SIZE_128, affine_group_size_supported,
+    uniform_q4_group_size_supported,
 };
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -43,6 +45,383 @@ pub const QWEN38_MIXED_HGRAVS_GROUP: usize = 64;
 /// `HAWKING_QWEN38_RECON_FUSE=0` selects the G023 serial family names.
 pub fn qwen38_recon_fuse_enabled() -> bool {
     crate::env_opt_out("HAWKING_QWEN38_RECON_FUSE")
+}
+
+/// `true` only when `HAWKING_TRACE_DISPATCH=1`. Default off so
+/// `MetalContext` is built with `new_with_trace(false)` — the same
+/// constructor the decode path used before this lever existed.
+pub fn qwen38_trace_dispatch_enabled() -> bool {
+    crate::env_on("HAWKING_TRACE_DISPATCH")
+}
+
+/// MLP suffix fusion. Default Off keeps the 964-dispatch production graph.
+///
+/// `HAWKING_QWEN38_FUSE_MLP=pair`   — gate+up in one geo_tpr64 dispatch (still SwiGLU)
+/// `HAWKING_QWEN38_FUSE_MLP=swiglu` — gate+up+SwiGLU in one dispatch
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum Qwen38MlpFusion {
+    #[default]
+    Off,
+    GateUpPair,
+    GateUpSwiglu,
+}
+
+impl Qwen38MlpFusion {
+    pub fn from_env() -> Self {
+        match std::env::var("HAWKING_QWEN38_FUSE_MLP") {
+            Ok(v) => match v.trim().to_ascii_lowercase().as_str() {
+                "pair" | "gate_up" => Self::GateUpPair,
+                "swiglu" | "gate_up_swiglu" => Self::GateUpSwiglu,
+                _ => Self::Off,
+            },
+            Err(_) => Self::Off,
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Off => "off",
+            Self::GateUpPair => "pair",
+            Self::GateUpSwiglu => "swiglu",
+        }
+    }
+
+    /// Dispatches removed from the 6-kernel MLP suffix, per token (64 layers).
+    pub fn saved_dispatches_per_token(self) -> u64 {
+        match self {
+            Self::Off => 0,
+            Self::GateUpPair => QWEN38_LAYERS as u64,
+            Self::GateUpSwiglu => 2 * QWEN38_LAYERS as u64,
+        }
+    }
+}
+
+pub fn qwen38_concurrent_independent_enabled() -> bool {
+    crate::env_on("HAWKING_QWEN38_CONCURRENT")
+}
+
+pub fn qwen38_fuse_gqa_qkv_enabled() -> bool {
+    crate::env_on("HAWKING_QWEN38_FUSE_GQA_QKV")
+}
+
+pub fn qwen38_fuse_dn_inproj_enabled() -> bool {
+    crate::env_on("HAWKING_QWEN38_FUSE_DN_INPROJ")
+}
+
+/// Residual add + the following RMSNorm. Default Off.
+///
+/// `HAWKING_QWEN38_FUSE_ADD_RMSNORM=1`   — (1+w) production math
+/// `HAWKING_QWEN38_FUSE_ADD_RMSNORM=bad` — plain `weight[i]` BAD control
+pub fn qwen38_fuse_add_rmsnorm_from_env() -> (bool, bool) {
+    match std::env::var("HAWKING_QWEN38_FUSE_ADD_RMSNORM") {
+        Ok(v) => match v.trim().to_ascii_lowercase().as_str() {
+            "1" | "true" | "on" => (true, false),
+            "bad" | "plainweight" => (true, true),
+            _ => (false, false),
+        },
+        Err(_) => (false, false),
+    }
+}
+
+pub fn qwen38_fuse_add_rmsnorm_enabled() -> bool {
+    qwen38_fuse_add_rmsnorm_from_env().0
+}
+
+/// Mixer residual + MLP RMSNorm, and MLP residual + next mixer RMSNorm
+/// (last layer: MLP residual + final norm). 2 launches saved per layer.
+pub const QWEN38_ADD_RMSNORM_SAVED_PER_TOKEN: u64 = 2 * QWEN38_LAYERS as u64;
+
+/// Production 964 minus the fusions named. Counted the same way as
+/// `production_dispatches_per_token` (one kernel launch = one dispatch).
+pub fn qwen38_fused_dispatches_per_token(
+    mlp: Qwen38MlpFusion,
+    fuse_gqa_qkv: bool,
+    fuse_dn_inproj: bool,
+) -> u64 {
+    qwen38_fused_dispatches_per_token_ex(mlp, fuse_gqa_qkv, fuse_dn_inproj, false)
+}
+
+pub fn qwen38_fused_dispatches_per_token_ex(
+    mlp: Qwen38MlpFusion,
+    fuse_gqa_qkv: bool,
+    fuse_dn_inproj: bool,
+    fuse_add_rmsnorm: bool,
+) -> u64 {
+    qwen38_fused_dispatches_per_token_full(
+        mlp,
+        fuse_gqa_qkv,
+        fuse_dn_inproj,
+        fuse_add_rmsnorm,
+        false,
+    )
+}
+
+/// ba_to_decay folded into gated-delta. 48 launches on the 628 graph.
+/// Default Off — production stays 756/628 until a child enables it.
+pub const QWEN38_BA_DELTA_SAVED_PER_TOKEN: u64 = QWEN38_DELTANET_LAYERS as u64;
+pub const QWEN38_BA_DELTA_KERNEL: &str = "qwen38_gated_delta_decode_vi_simd_ba";
+pub const QWEN38_BA_DELTA_BAD_KERNEL: &str = "qwen38_gated_delta_decode_vi_simd_ba_plain";
+pub const QWEN38_DN_STATE_F4_KERNEL: &str = "qwen38_gated_delta_decode_vi_simd_ba_f4";
+pub const QWEN38_DN_STATE_TG32_KERNEL: &str = "qwen38_gated_delta_decode_vi_simd_ba_tg32";
+/// 128 ki × 32 vi tile + 16-float simd partials (change 2).
+pub const QWEN38_DN_STATE_TG32_BYTES: u64 = (128 * 32 + 16) * 4;
+
+/// Gated-delta state-update kernel. Default is the N025 fused ba sibling.
+/// `WidenF4` packs 4 vi as float4. `CoalesceTg32` stages a 128×32 state
+/// tile in threadgroup memory and loads it coalesced. Production stays
+/// Baseline unless a child sets the flag.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum Qwen38DeltaNetStateKernel {
+    Baseline,
+    WidenF4,
+    CoalesceTg32,
+}
+
+impl Qwen38DeltaNetStateKernel {
+    pub fn fused_ba_name(self, bad: bool) -> &'static str {
+        if bad {
+            return QWEN38_BA_DELTA_BAD_KERNEL;
+        }
+        match self {
+            Self::Baseline => QWEN38_BA_DELTA_KERNEL,
+            Self::WidenF4 => QWEN38_DN_STATE_F4_KERNEL,
+            Self::CoalesceTg32 => QWEN38_DN_STATE_TG32_KERNEL,
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Baseline => "baseline",
+            Self::WidenF4 => "widen_f4",
+            Self::CoalesceTg32 => "coalesce_tg32",
+        }
+    }
+
+    pub fn from_env() -> Self {
+        match std::env::var("HAWKING_QWEN38_DN_STATE") {
+            Ok(v) => match v.trim().to_ascii_lowercase().as_str() {
+                "f4" | "widen" | "widen_f4" => Self::WidenF4,
+                "tg32" | "coalesce" | "coalesce_tg32" => Self::CoalesceTg32,
+                _ => Self::Baseline,
+            },
+            Err(_) => Self::Baseline,
+        }
+    }
+}
+
+/// Recurrent-state + rec_out parity of a candidate gated-delta kernel
+/// against `qwen38_gated_delta_decode_vi_simd_ba` on one layer.
+#[derive(Clone, Debug)]
+pub struct Qwen38DeltaNetStateParity {
+    pub kernel: &'static str,
+    pub layer: usize,
+    pub max_abs_diff_rec_out: f32,
+    pub max_abs_diff_rec_state: f32,
+    pub baseline_gpu_ns: Option<u64>,
+    pub candidate_gpu_ns: Option<u64>,
+    pub baseline_dispatches: u64,
+    pub candidate_dispatches: u64,
+    pub dense_w_materialized: u64,
+}
+
+/// `HAWKING_QWEN38_FUSE_BA_DELTA=1` honest formula; `=bad` identity decay/beta.
+pub fn qwen38_fuse_ba_delta_from_env() -> (bool, bool) {
+    match std::env::var("HAWKING_QWEN38_FUSE_BA_DELTA") {
+        Ok(v) => match v.trim().to_ascii_lowercase().as_str() {
+            "1" | "true" | "on" => (true, false),
+            "bad" | "plain" | "identity" => (true, true),
+            _ => (false, false),
+        },
+        Err(_) => (false, false),
+    }
+}
+
+pub fn qwen38_fuse_ba_delta_enabled() -> bool {
+    qwen38_fuse_ba_delta_from_env().0
+}
+
+pub fn qwen38_fused_dispatches_per_token_full(
+    mlp: Qwen38MlpFusion,
+    fuse_gqa_qkv: bool,
+    fuse_dn_inproj: bool,
+    fuse_add_rmsnorm: bool,
+    fuse_ba_delta: bool,
+) -> u64 {
+    let mut n = super::qwen38_token_ns_ledger::production_dispatches_per_token();
+    n = n.saturating_sub(mlp.saved_dispatches_per_token());
+    if fuse_gqa_qkv {
+        n = n.saturating_sub(2 * QWEN38_GQA_LAYERS as u64);
+    }
+    if fuse_dn_inproj {
+        n = n.saturating_sub(QWEN38_DELTANET_LAYERS as u64);
+    }
+    if fuse_add_rmsnorm {
+        n = n.saturating_sub(QWEN38_ADD_RMSNORM_SAVED_PER_TOKEN);
+    }
+    if fuse_ba_delta {
+        n = n.saturating_sub(QWEN38_BA_DELTA_SAVED_PER_TOKEN);
+    }
+    n
+}
+
+pub const QWEN38_Q4_GATE_UP_KERNEL: &str =
+    "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128";
+pub const QWEN38_Q4_GATE_UP_SWIGLU_KERNEL: &str =
+    "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128";
+pub const QWEN38_Q4_PAIR_CONCAT_KERNEL: &str =
+    "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128";
+pub const QWEN38_Q4_QKV_GEO_KERNEL: &str =
+    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_KERNEL: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_KERNEL: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128";
+pub const QWEN38_AFFINE_Q2_GEO_TPR64_RUNTIME_DIV: &str =
+    "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div";
+pub const QWEN38_AFFINE_Q2_QMVFAST: &str = "qwen_affine_q2_group64_matvec_qmvfast_r8tg64";
+pub const QWEN38_AFFINE_Q2_WIDE64: &str = "qwen_affine_q2_group64_matvec_wide64_r4tg128";
+pub const QWEN38_AFFINE_Q2_TGX: &str = "qwen_affine_q2_group64_matvec_tgx_r8tg256";
+pub const QWEN38_AFFINE_Q2_QMVFAST_ADDR: &str =
+    "qwen_affine_q2_group64_matvec_qmvfast_r8tg64_addr_probe";
+pub const QWEN38_AFFINE_GATE_UP_QMVFAST: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_qmvfast_r8tg64";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_QMVFAST: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_qmvfast_r8tg64";
+pub const QWEN38_AFFINE_GATE_UP_WIDE64: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_wide64_r4tg128";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_WIDE64: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_wide64_r4tg128";
+pub const QWEN38_AFFINE_GATE_UP_TGX: &str = "qwen_affine_q2_group64_matvec_gate_up_tgx_r8tg256";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_TGX: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgx_r8tg256";
+pub const QWEN38_AFFINE_Q2_TGSB: &str = "qwen_affine_q2_group64_matvec_tgsb_tpr64_tg128";
+pub const QWEN38_AFFINE_Q2_PIPE: &str = "qwen_affine_q2_group64_matvec_pipe_tpr64_tg128";
+pub const QWEN38_AFFINE_Q2_SPLITK4: &str = "qwen_affine_q2_group64_matvec_splitk4_tg256";
+pub const QWEN38_AFFINE_Q2_ACCFUSE: &str = "qwen_affine_q2_group64_matvec_accfuse_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_TGSB: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_tgsb_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_TGSB: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgsb_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_PIPE: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_pipe_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_PIPE: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_SPLITK4: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_splitk4_tg256";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_SPLITK4: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_splitk4_tg256";
+pub const QWEN38_AFFINE_GATE_UP_ACCFUSE: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_accfuse_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_ACCFUSE: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_accfuse_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_BIASPREP: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_biasprep_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_BIASPREP: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_BIASPREP_DROP: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128";
+pub const QWEN38_RMSNORM_XSUM64_KERNEL: &str = "qwen80_residual_rmsnorm_tg_xsum64";
+pub const QWEN38_ADD_RMSNORM_XSUM64_KERNEL: &str = "qwen80_add_residual_rmsnorm_tg_xsum64";
+/// Group-64 x-sums of the MLP input (hidden) plus headroom for intermediate.
+pub const QWEN38_XSUM64_CAP: usize = QWEN38_INTERMEDIATE / 64;
+
+/// Affine2 GEMV launch geometry. Default is the incumbent tpr64 tile
+/// (no-op control). `HAWKING_AFFINE2_GEO` selects a lever.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum Affine2Geo {
+    #[default]
+    Tpr64,
+    RuntimeDiv,
+    QmvFast,
+    Wide64,
+    Tgx,
+    /// Threadgroup-staged scale/bias (N024). Same tpr64 occupancy.
+    Tgsb,
+    /// Software-pipelined unpack + vectorized x (N024). Same tpr64 occupancy.
+    Pipe,
+    /// 4-way split-K, TG 256, 2 rows (N024). Not the N018 tgx tile.
+    SplitK4,
+    /// Fuse scale/bias into the accumulate via algebraic rewrite (N024).
+    AccFuse,
+    /// N030: deferred group-64 bias via RMSNorm-produced x-sums. Same tpr64
+    /// occupancy. Gate_up_swiglu only; single GEMVs stay tpr64.
+    BiasPrep,
+    /// N030 deliberately-bad control: biasprep inner loop, bias term dropped.
+    BiasPrepDrop,
+}
+
+impl Affine2Geo {
+    pub fn from_env() -> Self {
+        match std::env::var("HAWKING_AFFINE2_GEO") {
+            Ok(v) => match v.trim().to_ascii_lowercase().as_str() {
+                "runtime_div" | "bad" => Self::RuntimeDiv,
+                "qmvfast" | "qmv_fast" => Self::QmvFast,
+                "wide64" | "wide" => Self::Wide64,
+                "tgx" | "tgx_splitk" => Self::Tgx,
+                "tgsb" | "tg_scale_bias" => Self::Tgsb,
+                "pipe" | "pipeline" => Self::Pipe,
+                "splitk4" | "splitk" => Self::SplitK4,
+                "accfuse" | "acc_fuse" => Self::AccFuse,
+                "biasprep" | "xsum" | "bias_prep" => Self::BiasPrep,
+                "biasprep_drop" | "dropbias" | "drop_bias" => Self::BiasPrepDrop,
+                _ => Self::Tpr64,
+            },
+            Err(_) => Self::Tpr64,
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Tpr64 => "tpr64",
+            Self::RuntimeDiv => "runtime_div",
+            Self::QmvFast => "qmvfast",
+            Self::Wide64 => "wide64",
+            Self::Tgx => "tgx",
+            Self::Tgsb => "tgsb",
+            Self::Pipe => "pipe",
+            Self::SplitK4 => "splitk4",
+            Self::AccFuse => "accfuse",
+            Self::BiasPrep => "biasprep",
+            Self::BiasPrepDrop => "biasprep_drop",
+        }
+    }
+
+    pub fn is_g64_specialized(self) -> bool {
+        matches!(
+            self,
+            Self::QmvFast
+                | Self::Wide64
+                | Self::Tgx
+                | Self::Tgsb
+                | Self::Pipe
+                | Self::SplitK4
+                | Self::AccFuse
+        )
+    }
+
+    /// Fused gate_up_swiglu consumes group-64 x-sums written by RMSNorm.
+    pub fn uses_xsum(self) -> bool {
+        matches!(self, Self::BiasPrep | Self::BiasPrepDrop)
+    }
+}
+pub const QWEN38_ADD_RMSNORM_KERNEL: &str = "qwen80_add_residual_rmsnorm_tg";
+pub const QWEN38_ADD_RMSNORM_BAD_KERNEL: &str = "qwen80_add_residual_rmsnorm_tg_plainweight";
+
+/// Component parity of a fused kernel against the unfused path.
+#[derive(Clone, Debug)]
+pub struct Qwen38FusionParity {
+    pub fusion: &'static str,
+    pub layer: usize,
+    pub unfused_dispatches: u64,
+    pub fused_pair_dispatches: u64,
+    pub fused_swiglu_dispatches: u64,
+    pub unfused_gpu_ns: Option<u64>,
+    pub fused_pair_gpu_ns: Option<u64>,
+    pub fused_swiglu_gpu_ns: Option<u64>,
+    pub max_abs_diff_gate: f32,
+    pub max_abs_diff_up: f32,
+    pub max_abs_diff_act: f32,
+    pub dense_w_materialized: u64,
 }
 
 fn mixed_error(message: impl Into<String>) -> Error {
@@ -71,6 +450,7 @@ pub enum MixedCatalogLane {
     Hq30Uq4,
     F32v2,
     HgravuVector,
+    Affine,
 }
 
 /// CPU census of a mixed catalog. Does not open Metal and does not expand
@@ -83,11 +463,15 @@ pub struct MixedCatalogCensus {
     pub residual: usize,
     pub hgravs: usize,
     pub uniform: usize,
+    pub affine: usize,
     pub q4: usize,
     pub f32: usize,
     pub refused: usize,
     pub expanded_to_q4: usize,
     pub expanded_to_float_gemv: usize,
+    /// GEMV weight tensors reconstructed to dense float. Production affine/q2f
+    /// upload never increments this; it exists so a reconstruct cannot hide.
+    pub dense_w_materialized: usize,
     pub refusals: Vec<String>,
 }
 
@@ -195,6 +579,16 @@ pub fn classify_qwen38_mixed_payload(
             }
             Ok(MixedCatalogLane::F32v2)
         }
+        5 => {
+            if payload.len() >= 8 && payload[..8] == MAGIC_AFFINE {
+                Ok(MixedCatalogLane::Affine)
+            } else {
+                Err(mixed_error(format!(
+                    "{name} codec 5 magic {:?} is not HGRAVF01; refusing silent fallback",
+                    payload.get(..8)
+                )))
+            }
+        }
         other => Err(mixed_error(format!(
             "{name} unknown mixed codec {other}; refusing silent fallback"
         ))),
@@ -210,6 +604,7 @@ pub enum MixedMlpNativeKind {
     Residual,
     Hgravs,
     Uniform,
+    AffineScaleBias,
 }
 
 pub fn mixed_mlp_native_kind_from_lane(lane: MixedCatalogLane) -> Option<MixedMlpNativeKind> {
@@ -218,6 +613,7 @@ pub fn mixed_mlp_native_kind_from_lane(lane: MixedCatalogLane) -> Option<MixedMl
         MixedCatalogLane::Packed(1) => Some(MixedMlpNativeKind::Residual),
         MixedCatalogLane::Packed(2) => Some(MixedMlpNativeKind::Hgravs),
         MixedCatalogLane::Packed(3) => Some(MixedMlpNativeKind::Uniform),
+        MixedCatalogLane::Affine => Some(MixedMlpNativeKind::AffineScaleBias),
         MixedCatalogLane::Packed(_)
         | MixedCatalogLane::Hq30Uq4
         | MixedCatalogLane::F32v2
@@ -229,15 +625,21 @@ fn mixed_mlp_role_allowed(suffix: &str, kind: MixedMlpNativeKind) -> bool {
     match suffix {
         "mlp.gate_proj.weight" => matches!(
             kind,
-            MixedMlpNativeKind::Binary | MixedMlpNativeKind::Uniform
+            MixedMlpNativeKind::Binary
+                | MixedMlpNativeKind::Uniform
+                | MixedMlpNativeKind::AffineScaleBias
         ),
         "mlp.up_proj.weight" => matches!(
             kind,
-            MixedMlpNativeKind::Residual | MixedMlpNativeKind::Uniform
+            MixedMlpNativeKind::Residual
+                | MixedMlpNativeKind::Uniform
+                | MixedMlpNativeKind::AffineScaleBias
         ),
         "mlp.down_proj.weight" => matches!(
             kind,
-            MixedMlpNativeKind::Hgravs | MixedMlpNativeKind::Uniform
+            MixedMlpNativeKind::Hgravs
+                | MixedMlpNativeKind::Uniform
+                | MixedMlpNativeKind::AffineScaleBias
         ),
         _ => false,
     }
@@ -262,7 +664,7 @@ pub fn assert_mixed_mlp_native_kinds(
                 Some(kind) if mixed_mlp_role_allowed(suffix, kind) => {}
                 Some(_) => {
                     return Err(mixed_error(format!(
-                        "{name} is not {label} or HGRAVU01; refusing reconstructed MLP"
+                        "{name} is not {label} or HGRAVU01 or HGRAVF01; refusing reconstructed MLP"
                     )))
                 }
                 None => {
@@ -309,7 +711,7 @@ pub fn assert_mixed_mlp_native_catalog(root: impl AsRef<Path>) -> Result<()> {
         if !is_mixed_mlp_gemv_name(&row.name) {
             continue;
         }
-        if row.codec > 3 {
+        if row.codec > 3 && row.codec != 5 {
             continue;
         }
         let prefix = read_catalog_prefix(row, 64)?;
@@ -357,6 +759,13 @@ pub fn census_qwen38_mixed_catalog(root: impl AsRef<Path>) -> Result<MixedCatalo
             Ok(MixedCatalogLane::HgravuVector) => {
                 census.f32 += 1;
             }
+            Ok(MixedCatalogLane::Affine) => match mixed_gpu_layout(5, &payload) {
+                Ok(_) => census.affine += 1,
+                Err(error) => {
+                    census.refused += 1;
+                    census.refusals.push(format!("{} affine: {error}", row.name));
+                }
+            },
             Err(error) => {
                 census.refused += 1;
                 census.refusals.push(format!("{error}"));
@@ -557,6 +966,206 @@ pub const QWEN38_HGRAVU01_Q3_GEO_TPR64: &str =
     "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128";
 pub const QWEN38_HGRAVU01_Q4_GEO_TPR64: &str =
     "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128";
+pub const QWEN38_AFFINE_Q2_SERIAL: &str = "qwen_affine_q2_group32_matvec";
+pub const QWEN38_AFFINE_Q2_GEO_TPR64: &str = "qwen_affine_q2_group32_matvec_geo_tpr64_tg128";
+pub const QWEN38_Q2F_SERIAL: &str = "qwen_q2f_group64_matvec";
+pub const QWEN38_Q2F_GEO_TPR64: &str = "qwen_q2f_group64_matvec_geo_tpr64_tg128";
+pub const QWEN38_Q2F_GATE_UP_KERNEL: &str = "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128";
+pub const QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL: &str =
+    "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128";
+pub const QWEN38_HGRAFV_EMBED: &str = "qwen38_hgrafv_embedding_lookup";
+
+/// G0-class launch for Affine HGRAVF01 q2 at group 32 or 64.
+/// None selects the serial `qwen_affine_q2_group32_matvec`.
+/// Never falls through to HGRAVU01. Kernel names keep the group32 family.
+pub fn qwen38_affine_q2_geo_tpr64_launch(
+    group_size: u32,
+    rows: u32,
+    cols: u32,
+) -> Option<(&'static str, (u32, u32, u32), (u32, u32, u32))> {
+    qwen38_affine_q2_launch(Affine2Geo::Tpr64, group_size, rows, cols)
+}
+
+/// Launch for a named affine2 geometry. g64-specialized levers refuse group 32.
+pub fn qwen38_affine_q2_launch(
+    geo: Affine2Geo,
+    group_size: u32,
+    rows: u32,
+    cols: u32,
+) -> Option<(&'static str, (u32, u32, u32), (u32, u32, u32))> {
+    if !qwen38_recon_fuse_enabled()
+        || !affine_group_size_supported(group_size as usize)
+        || cols % group_size != 0
+    {
+        return None;
+    }
+    if geo.is_g64_specialized() && group_size != 64 {
+        return None;
+    }
+    match geo {
+        Affine2Geo::Tpr64 => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_GEO_TPR64, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::RuntimeDiv => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_GEO_TPR64_RUNTIME_DIV, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::QmvFast => {
+            let tg = 64u32;
+            let grid = rows.div_ceil(8).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_QMVFAST, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::Wide64 => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(4).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_WIDE64, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::Tgx => {
+            let tg = 256u32;
+            let grid = rows.div_ceil(8).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_TGX, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::Tgsb => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_TGSB, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::Pipe => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_PIPE, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::SplitK4 => {
+            let tg = 256u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_SPLITK4, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::AccFuse => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_ACCFUSE, (grid, 1, 1), (tg, 1, 1)))
+        }
+        Affine2Geo::BiasPrep | Affine2Geo::BiasPrepDrop => {
+            // mlp_down and other single GEMVs stay on tpr64. BiasPrep is
+            // a fused gate_up_swiglu organ cut (N031 owns down).
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_GEO_TPR64, (grid, 1, 1), (tg, 1, 1)))
+        }
+    }
+}
+
+fn qwen38_affine_gate_up_launch(
+    geo: Affine2Geo,
+    with_swiglu: bool,
+    rows: u32,
+) -> (&'static str, (u32, u32, u32), (u32, u32, u32)) {
+    match geo {
+        Affine2Geo::QmvFast => {
+            let tg = 64u32;
+            let grid = rows.div_ceil(8).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_QMVFAST
+            } else {
+                QWEN38_AFFINE_GATE_UP_QMVFAST
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::Wide64 => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(4).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_WIDE64
+            } else {
+                QWEN38_AFFINE_GATE_UP_WIDE64
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::Tgx => {
+            let tg = 256u32;
+            let grid = rows.div_ceil(8).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_TGX
+            } else {
+                QWEN38_AFFINE_GATE_UP_TGX
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::Tgsb => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_TGSB
+            } else {
+                QWEN38_AFFINE_GATE_UP_TGSB
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::Pipe => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_PIPE
+            } else {
+                QWEN38_AFFINE_GATE_UP_PIPE
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::SplitK4 => {
+            let tg = 256u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_SPLITK4
+            } else {
+                QWEN38_AFFINE_GATE_UP_SPLITK4
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::AccFuse => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_ACCFUSE
+            } else {
+                QWEN38_AFFINE_GATE_UP_ACCFUSE
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::BiasPrep => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_BIASPREP
+            } else {
+                QWEN38_AFFINE_GATE_UP_BIASPREP
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::BiasPrepDrop => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_BIASPREP_DROP
+            } else {
+                QWEN38_AFFINE_GATE_UP_BIASPREP
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+        Affine2Geo::Tpr64 | Affine2Geo::RuntimeDiv => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_KERNEL
+            } else {
+                QWEN38_AFFINE_GATE_UP_KERNEL
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
+    }
+}
 
 /// G0-class launch for Uniform HGRAVU01 bits 3/4. None leaves the
 /// incumbent simd / simd3 / uniform8 / serial path in `dispatch_factor`.
@@ -726,6 +1335,7 @@ pub fn qwen38_workspace_bytes(max_seq_len: usize) -> Result<Qwen38WorkspaceBytes
     let split_a = f32b(crate::model::qwen38_geometry::QWEN38_IN_PROJ_A_ROWS)?;
     let sampled = std::mem::size_of::<u32>();
     let heads_f32 = f32b(layout.value_heads)?;
+    let xsum64 = f32b(QWEN38_XSUM64_CAP)?;
     let activation = hidden
         .checked_mul(2)
         .and_then(|n| n.checked_add(qkvz))
@@ -744,6 +1354,7 @@ pub fn qwen38_workspace_bytes(max_seq_len: usize) -> Result<Qwen38WorkspaceBytes
         .and_then(|n| n.checked_add(split_qkv))
         .and_then(|n| n.checked_add(split_b))
         .and_then(|n| n.checked_add(split_a))
+        .and_then(|n| n.checked_add(xsum64))
         .ok_or_else(|| Error::Model("qwen38 workspace overflow".into()))?;
     let deltanet = conv
         .checked_add(rec)
@@ -832,11 +1443,23 @@ mod device {
         bound: u32,
     }
 
+    struct GpuAffine {
+        codes: PinnedBuffer,
+        scales: PinnedBuffer,
+        /// None = Q2F (w = (q-1.5)*delta). Some = affine2 (w = q*scale+bias).
+        biases: Option<PinnedBuffer>,
+        rows: u32,
+        cols: u32,
+        group_size: u32,
+        bits: u32,
+    }
+
     enum MixedGpuWeight {
         Binary(GpuBinary),
         Residual(GpuResidual),
         Hgravs(GpuHgravs),
         Uniform(GpuUniform),
+        Affine(GpuAffine),
     }
 
     impl MixedGpuWeight {
@@ -857,6 +1480,11 @@ mod device {
                         + body.right_scales.length()
                 }
                 Self::Uniform(body) => body.codes.length() + body.scales.length(),
+                Self::Affine(body) => {
+                    body.codes.length()
+                        + body.scales.length()
+                        + body.biases.as_ref().map(|b| b.length()).unwrap_or(0)
+                }
             }
         }
     }
@@ -868,6 +1496,8 @@ mod device {
         q4: HashMap<String, Q4Weight>,
         f32s: HashMap<String, PinnedBuffer>,
         mixed: HashMap<String, MixedGpuWeight>,
+        /// GEMV weights reconstructed to dense float. Stays 0 on the packed path.
+        pub dense_w_materialized: u64,
     }
 
     impl Qwen38HybridWeights {
@@ -888,7 +1518,7 @@ mod device {
                 "qwen38-decode opening Metal + {} catalog tensors",
                 rows.len()
             );
-            let context = MetalContext::new()?;
+            let context = MetalContext::new_with_trace(qwen38_trace_dispatch_enabled())?;
             let mut q4 = HashMap::new();
             let mut f32s = HashMap::new();
             let tensors_dir = root.join("tensors");
@@ -944,6 +1574,7 @@ mod device {
                 q4,
                 f32s,
                 mixed: HashMap::new(),
+                dense_w_materialized: 0,
             })
         }
 
@@ -956,7 +1587,7 @@ mod device {
                 "qwen38-decode opening mixed HQ38M20 + {} catalog tensors (no reconstruct-to-Q4)",
                 rows.len()
             );
-            let context = MetalContext::new()?;
+            let context = MetalContext::new_with_trace(qwen38_trace_dispatch_enabled())?;
             let mut q4 = HashMap::new();
             let mut f32s = HashMap::new();
             let mut mixed = HashMap::new();
@@ -1036,27 +1667,122 @@ mod device {
                         );
                         census.f32 += 1;
                     }
+                    MixedCatalogLane::Affine => {
+                        let layout = mixed_gpu_layout(5, &payload)?;
+                        let MixedGpuKind::Affine {
+                            scale_off,
+                            scale_bytes,
+                            bias_off,
+                            bias_bytes,
+                            code_off,
+                            code_bytes,
+                            group_size,
+                            bits,
+                        } = layout.kind
+                        else {
+                            return Err(mixed_error(format!(
+                                "{} codec 5 layout is not Affine",
+                                row.name
+                            )));
+                        };
+                        let biases = if bias_bytes == 0 {
+                            if std::env::var("HAWKING_Q2F_REUSE_AFFINE2")
+                                .map(|v| v != "0")
+                                .unwrap_or(false)
+                            {
+                                let scales = &payload[scale_off..scale_off + scale_bytes];
+                                let mut derived = vec![0u8; scale_bytes];
+                                for (i, chunk) in scales.chunks_exact(2).enumerate() {
+                                    let bits = u16::from_le_bytes([chunk[0], chunk[1]]);
+                                    let delta = half::f16::from_bits(bits).to_f32();
+                                    let bias = half::f16::from_f32(-1.5 * delta).to_bits();
+                                    derived[i * 2..i * 2 + 2]
+                                        .copy_from_slice(&bias.to_le_bytes());
+                                }
+                                Some(context.new_buffer_with_bytes_checked(&derived)?)
+                            } else {
+                                None
+                            }
+                        } else {
+                            Some(context.new_buffer_with_bytes_checked(
+                                &payload[bias_off..bias_off + bias_bytes],
+                            )?)
+                        };
+                        mixed.insert(
+                            row.name.clone(),
+                            MixedGpuWeight::Affine(GpuAffine {
+                                codes: context.new_buffer_with_bytes_checked(
+                                    &payload[code_off..code_off + code_bytes],
+                                )?,
+                                scales: context.new_buffer_with_bytes_checked(
+                                    &payload[scale_off..scale_off + scale_bytes],
+                                )?,
+                                biases,
+                                rows: layout.rows,
+                                cols: layout.cols,
+                                group_size,
+                                bits,
+                            }),
+                        );
+                        census.affine += 1;
+                    }
                 }
             }
             eprintln!(
                 "qwen38-decode mixed census: tensors={} binary={} residual={} \
-                 hgravs={} uniform={} q4={} f32={} refused=0 expanded_to_q4=0 \
-                 expanded_to_float_gemv=0",
+                 hgravs={} uniform={} affine={} q4={} f32={} refused={} expanded_to_q4={} \
+                 expanded_to_float_gemv={} dense_w_materialized={}",
                 census.tensors,
                 census.binary,
                 census.residual,
                 census.hgravs,
                 census.uniform,
+                census.affine,
                 census.q4,
-                census.f32
+                census.f32,
+                census.refused,
+                census.expanded_to_q4,
+                census.expanded_to_float_gemv,
+                census.dense_w_materialized
             );
             eprintln!("{}", qwen38_mixed_k_complete_bind_message());
+            if census.affine > 0 {
+                let sample = mixed.values().find_map(|weight| match weight {
+                    MixedGpuWeight::Affine(body) => Some(body),
+                    _ => None,
+                });
+                let group = sample.map(|b| b.group_size).unwrap_or(0);
+                let q2f = sample.map(|b| b.biases.is_none()).unwrap_or(false);
+                let kernel = if q2f {
+                    if qwen38_recon_fuse_enabled() {
+                        QWEN38_Q2F_GEO_TPR64
+                    } else {
+                        QWEN38_Q2F_SERIAL
+                    }
+                } else if qwen38_recon_fuse_enabled() {
+                    QWEN38_AFFINE_Q2_GEO_TPR64
+                } else {
+                    QWEN38_AFFINE_Q2_SERIAL
+                };
+                if q2f {
+                    eprintln!(
+                        "qwen38-decode mixed bind: HGRAVF01 q2f {kernel} group={group} \
+                         (delta only, w=(q-1.5)*delta, 4 codes/byte)"
+                    );
+                } else {
+                    eprintln!(
+                        "qwen38-decode mixed bind: HGRAVF01 affine2 {kernel} group={group} \
+                         (scale+bias, 4 codes/byte)"
+                    );
+                }
+            }
             Qwen38HybridDecodeSession::assert_mixed_mlp_native(&mixed)?;
             Ok(Self {
                 context,
                 q4,
                 f32s,
                 mixed,
+                dense_w_materialized: census.dense_w_materialized as u64,
             })
         }
 
@@ -1069,6 +1795,50 @@ mod device {
             let f32s: u64 = self.f32s.values().map(|b| b.length()).sum();
             let mixed: u64 = self.mixed.values().map(MixedGpuWeight::resident_bytes).sum();
             q4 + f32s + mixed
+        }
+
+        fn residency_allocations(&self) -> Vec<&PinnedBuffer> {
+            let mut v = Vec::new();
+            for w in self.q4.values() {
+                v.push(&w.codes);
+                v.push(&w.scales);
+            }
+            for b in self.f32s.values() {
+                v.push(b);
+            }
+            for m in self.mixed.values() {
+                match m {
+                    MixedGpuWeight::Binary(body) => {
+                        v.push(&body.signs);
+                        v.push(&body.scales);
+                    }
+                    MixedGpuWeight::Residual(body) => {
+                        v.push(&body.binary.signs);
+                        v.push(&body.binary.scales);
+                        v.push(&body.indices);
+                        v.push(&body.row_ptr);
+                        v.push(&body.residual_signs);
+                    }
+                    MixedGpuWeight::Hgravs(body) => {
+                        v.push(&body.left_codes);
+                        v.push(&body.left_scales);
+                        v.push(&body.right_codes);
+                        v.push(&body.right_scales);
+                    }
+                    MixedGpuWeight::Uniform(body) => {
+                        v.push(&body.codes);
+                        v.push(&body.scales);
+                    }
+                    MixedGpuWeight::Affine(body) => {
+                        v.push(&body.codes);
+                        v.push(&body.scales);
+                        if let Some(b) = &body.biases {
+                            v.push(b);
+                        }
+                    }
+                }
+            }
+            v
         }
 
         pub fn q4_tensor_count(&self) -> usize {
@@ -1133,6 +1903,7 @@ mod device {
         split_qkv: PinnedBuffer,
         split_b: PinnedBuffer,
         split_a: PinnedBuffer,
+        xsum64: PinnedBuffer,
     }
 
     impl Qwen38HybridWorkspace {
@@ -1199,6 +1970,7 @@ mod device {
                 split_a: ctx.new_buffer_checked(f32b(
                     crate::model::qwen38_geometry::QWEN38_IN_PROJ_A_ROWS,
                 )?)?,
+                xsum64: ctx.new_buffer_checked(f32b(QWEN38_XSUM64_CAP)?)?,
             })
         }
 
@@ -1238,6 +2010,7 @@ mod device {
                 &self.split_qkv,
                 &self.split_b,
                 &self.split_a,
+                &self.xsum64,
             ]
             .iter()
             .map(|b| b.length())
@@ -1246,12 +2019,15 @@ mod device {
     }
 
     pub struct Qwen38HybridDecodeSession {
-        #[allow(dead_code)]
         context: MetalContext,
         weights: Arc<Qwen38HybridWeights>,
         workspace: Qwen38HybridWorkspace,
         max_seq_len: usize,
         position: usize,
+        /// Distinct `dispatch_threads` labels harvested when
+        /// `HAWKING_TRACE_DISPATCH=1`. `None` on the default path so `step`
+        /// allocates nothing extra.
+        seen_kernels: Option<HashSet<String>>,
         pub fallbacks: u32,
         /// Default matches the shipped bring-up binding. Diagnostic lanes may
         /// retarget to another shipped kernel; they must not invent one.
@@ -1265,6 +2041,33 @@ mod device {
         /// the vi columns are independent. Default ON after paired generate
         /// admitted a 42.7→33.4 ms token cut with greedy-identical ids.
         pub deltanet_vi_parallel: bool,
+        /// MLP suffix fusion. Default Off. See [`Qwen38MlpFusion`].
+        pub mlp_fusion: Qwen38MlpFusion,
+        /// Fuse GQA Q/K/V into one geo_tpr64 concat dispatch. Default Off.
+        pub fuse_gqa_qkv: bool,
+        /// Fuse DeltaNet qkvz+ba into one geo_tpr64 concat dispatch. Default Off.
+        pub fuse_dn_inproj: bool,
+        /// Fuse residual add + the following RMSNorm. Default Off.
+        pub fuse_add_rmsnorm: bool,
+        /// BAD control: fused kernel multiplies by weight[i] not (1+w).
+        pub fuse_add_rmsnorm_bad: bool,
+        /// Fuse ba_to_decay into gated-delta. Default Off.
+        pub fuse_ba_delta: bool,
+        /// BAD control: fused kernel uses identity decay/beta.
+        pub fuse_ba_delta_bad: bool,
+        /// Gated-delta state kernel. Default Baseline (N025 vi_simd_ba).
+        pub dn_state_kernel: Qwen38DeltaNetStateKernel,
+        /// Affine2 GEMV geometry. Default tpr64 (incumbent / no-op control).
+        pub affine2_geo: Affine2Geo,
+        /// GEMV weights reconstructed to dense float. Copied from the catalog
+        /// load census and incremented only by [`Self::account_dense_w`].
+        pub dense_w_materialized: u64,
+        /// BAD control: force the serial one-thread-per-row q2f kernel.
+        pub q2f_force_serial: bool,
+        /// One serial compute encoder for the whole token graph. Default off
+        /// (one encoder per dispatch). Opt-in attack on encoder-boundary idle
+        /// and host command construction. Independent of `concurrent_independent`.
+        pub serial_token_encoder: bool,
     }
 
     impl Qwen38HybridDecodeSession {
@@ -1292,17 +2095,45 @@ mod device {
             zero_buffer(&workspace.rec_state);
             zero_buffer(&workspace.gqa_key);
             zero_buffer(&workspace.gqa_value);
-            Ok(Self {
+            let dense_w_materialized = weights.dense_w_materialized;
+            let session = Self {
                 context: weights.context.clone(),
                 weights,
                 workspace,
                 max_seq_len,
                 position: 0,
+                seen_kernels: if qwen38_trace_dispatch_enabled() {
+                    Some(HashSet::new())
+                } else {
+                    None
+                },
                 fallbacks: 0,
                 matvec_kernel: Qwen38MatvecKernel::GeoTpr64Tg128,
-                concurrent_independent: false,
+                concurrent_independent: qwen38_concurrent_independent_enabled(),
                 deltanet_vi_parallel: true,
-            })
+                mlp_fusion: Qwen38MlpFusion::from_env(),
+                fuse_gqa_qkv: qwen38_fuse_gqa_qkv_enabled(),
+                fuse_dn_inproj: qwen38_fuse_dn_inproj_enabled(),
+                fuse_add_rmsnorm: qwen38_fuse_add_rmsnorm_from_env().0,
+                fuse_add_rmsnorm_bad: qwen38_fuse_add_rmsnorm_from_env().1,
+                fuse_ba_delta: qwen38_fuse_ba_delta_from_env().0,
+                fuse_ba_delta_bad: qwen38_fuse_ba_delta_from_env().1,
+                dn_state_kernel: Qwen38DeltaNetStateKernel::from_env(),
+                affine2_geo: Affine2Geo::from_env(),
+                dense_w_materialized,
+                q2f_force_serial: false,
+                serial_token_encoder: false,
+            };
+            // `MetalContext` clones share `Arc<DispatchTrace>`. If that ever
+            // becomes a fresh buffer, `drain_trace` on the session would miss
+            // every TCB sample recorded against the weight-load context.
+            assert!(
+                std::sync::Arc::ptr_eq(&session.context.trace, &session.weights.context.trace),
+                "qwen38 dispatch trace must survive MetalContext clone"
+            );
+            let allocs = session.weights.residency_allocations();
+            session.context.request_residency(&allocs)?;
+            Ok(session)
         }
 
         pub fn share_weights(&self) -> Arc<Qwen38HybridWeights> {
@@ -1325,6 +2156,48 @@ mod device {
             Arc::ptr_eq(&self.weights, &other.weights)
         }
 
+        fn enable_dispatch_name_trace(tcb: &mut TokenCommandBuffer<'_>) {
+            if qwen38_trace_dispatch_enabled() {
+                // Requires TCB Off. Cpu/gpu timing modes refuse this opt-in
+                // and instead flush remapped names into `ctx.trace`.
+                let _ = tcb.enable_structural_kernel_trace();
+            }
+        }
+
+        fn harvest_dispatch_names(&mut self, names: Option<Vec<String>>) {
+            let Some(seen) = self.seen_kernels.as_mut() else {
+                return;
+            };
+            if let Some(names) = names {
+                seen.extend(names);
+            }
+        }
+
+        /// Distinct kernel names the runtime actually dispatched since the
+        /// last drain (or session open). Empty when
+        /// `HAWKING_TRACE_DISPATCH` is not `1`.
+        ///
+        /// Primary source is the TCB structural label list (the exact
+        /// `dispatch_threads` string, no `static_kernel_name` remap).
+        /// Also unions `MetalContext::drain_trace` so a
+        /// `HAWKING_TCB_TRACE=cpu` run still reports through the
+        /// `Arc<DispatchTrace>` that survives `weights.context.clone()`.
+        pub fn drain_dispatched_kernel_names(&mut self) -> Vec<String> {
+            let mut names: Vec<String> = self
+                .context
+                .drain_trace()
+                .into_iter()
+                .map(|sample| sample.kernel_name.to_string())
+                .filter(|name| name != "other" && !name.starts_with("tcb_"))
+                .collect();
+            if let Some(seen) = self.seen_kernels.as_mut() {
+                names.extend(seen.drain());
+            }
+            names.sort();
+            names.dedup();
+            names
+        }
+
 
 
         fn assert_mixed_mlp_native(mixed: &HashMap<String, MixedGpuWeight>) -> Result<()> {
@@ -1334,6 +2207,7 @@ mod device {
                     MixedGpuWeight::Residual(_) => MixedMlpNativeKind::Residual,
                     MixedGpuWeight::Hgravs(_) => MixedMlpNativeKind::Hgravs,
                     MixedGpuWeight::Uniform(_) => MixedMlpNativeKind::Uniform,
+                    MixedGpuWeight::Affine(_) => MixedMlpNativeKind::AffineScaleBias,
                 })
             })
         }
@@ -1503,6 +2377,9 @@ mod device {
                     bits: factor.bits,
                     bound: factor.bound,
                 })),
+                MixedGpuKind::Affine { .. } => Err(mixed_error(format!(
+                    "{name} HGRAVF01 is a MixedCatalogLane, not an upload_mixed codec"
+                ))),
             }
         }
 
@@ -1519,6 +2396,13 @@ mod device {
                 .q4
                 .get(name)
                 .ok_or_else(|| Error::Model(format!("qwen38 missing Q4 {name}")))
+        }
+
+        fn affine(&self, name: &str) -> Option<&GpuAffine> {
+            match self.weights.mixed.get(name) {
+                Some(MixedGpuWeight::Affine(body)) => Some(body),
+                _ => None,
+            }
         }
 
         fn f32(&self, name: &str) -> Result<&PinnedBuffer> {
@@ -1573,6 +2457,7 @@ mod device {
                 MixedGpuWeight::Residual(body) => self.dispatch_residual(tcb, body, input, output),
                 MixedGpuWeight::Hgravs(body) => self.dispatch_hgravs(tcb, body, input, output),
                 MixedGpuWeight::Uniform(body) => self.dispatch_uniform(tcb, body, input, output),
+                MixedGpuWeight::Affine(body) => self.dispatch_affine(tcb, body, input, output),
             }
         }
 
@@ -1653,6 +2538,104 @@ mod device {
             set_u32(enc, 6, group_size);
             set_u32(enc, 7, bits);
             set_u32(enc, 8, bound);
+        }
+
+        fn encode_affine_args(
+            &self,
+            enc: &metal::ComputeCommandEncoderRef,
+            body: &GpuAffine,
+            input: &PinnedBuffer,
+            output: &PinnedBuffer,
+        ) {
+            let biases = body
+                .biases
+                .as_ref()
+                .expect("affine2 encode requires a bias buffer");
+            enc.set_buffer(0, Some(&body.codes), 0);
+            enc.set_buffer(1, Some(&body.scales), 0);
+            enc.set_buffer(2, Some(biases), 0);
+            enc.set_buffer(3, Some(input), 0);
+            enc.set_buffer(4, Some(output), 0);
+            set_u32(enc, 5, body.rows);
+            set_u32(enc, 6, body.cols);
+            set_u32(enc, 7, body.group_size);
+        }
+
+        fn encode_q2f_args(
+            &self,
+            enc: &metal::ComputeCommandEncoderRef,
+            body: &GpuAffine,
+            input: &PinnedBuffer,
+            output: &PinnedBuffer,
+        ) {
+            enc.set_buffer(0, Some(&body.codes), 0);
+            enc.set_buffer(1, Some(&body.scales), 0);
+            enc.set_buffer(2, Some(input), 0);
+            enc.set_buffer(3, Some(output), 0);
+            set_u32(enc, 4, body.rows);
+            set_u32(enc, 5, body.cols);
+        }
+
+        fn dispatch_q2f(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            body: &GpuAffine,
+            input: &PinnedBuffer,
+            output: &PinnedBuffer,
+        ) -> Result<()> {
+            if body.bits != 2 || body.group_size != 64 || body.cols % 64 != 0 {
+                return Err(mixed_error(format!(
+                    "q2f dispatch refuses bits={} group_size={} cols={}",
+                    body.bits, body.group_size, body.cols
+                )));
+            }
+            if !self.q2f_force_serial && qwen38_recon_fuse_enabled() {
+                let tg = 128u32;
+                let grid = body.rows.div_ceil(2).saturating_mul(tg).max(tg);
+                return tcb.dispatch_threads(QWEN38_Q2F_GEO_TPR64, (grid, 1, 1), (tg, 1, 1), |enc| {
+                    self.encode_q2f_args(enc, body, input, output)
+                });
+            }
+            tcb.dispatch_threads(
+                QWEN38_Q2F_SERIAL,
+                (body.rows, 1, 1),
+                (256, 1, 1),
+                |enc| self.encode_q2f_args(enc, body, input, output),
+            )
+        }
+
+        fn dispatch_affine(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            body: &GpuAffine,
+            input: &PinnedBuffer,
+            output: &PinnedBuffer,
+        ) -> Result<()> {
+            if body.biases.is_none() {
+                return self.dispatch_q2f(tcb, body, input, output);
+            }
+            if body.bits != 2 || !affine_group_size_supported(body.group_size as usize) {
+                return Err(mixed_error(format!(
+                    "HGRAVF01 dispatch refuses bits={} group_size={}",
+                    body.bits, body.group_size
+                )));
+            }
+            if let Some((name, grid, tg)) = qwen38_affine_q2_launch(
+                self.affine2_geo,
+                body.group_size,
+                body.rows,
+                body.cols,
+            ) {
+                return tcb.dispatch_threads(name, grid, tg, |enc| {
+                    self.encode_affine_args(enc, body, input, output)
+                });
+            }
+            tcb.dispatch_threads(
+                QWEN38_AFFINE_Q2_SERIAL,
+                (body.rows, 1, 1),
+                (256, 1, 1),
+                |enc| self.encode_affine_args(enc, body, input, output),
+            )
         }
 
         fn dispatch_binary(
@@ -1993,6 +2976,272 @@ mod device {
             Ok(())
         }
 
+        fn encode_fused_affine_gate_up(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            gate: &GpuAffine,
+            up: &GpuAffine,
+            with_swiglu: bool,
+        ) -> Result<()> {
+            if gate.rows != up.rows || gate.cols != up.cols {
+                return Err(mixed_error(format!(
+                    "qwen38 fused affine gate/up shape mismatch: {}x{} vs {}x{}",
+                    gate.rows, gate.cols, up.rows, up.cols
+                )));
+            }
+            if gate.group_size != 64 || up.group_size != 64 || gate.bits != 2 || up.bits != 2 {
+                return Err(mixed_error(format!(
+                    "qwen38 fused affine gate/up refuses bits={}/{} group={}/{} (need 2 @ 64)",
+                    gate.bits, up.bits, gate.group_size, up.group_size
+                )));
+            }
+            let gate_b = gate.biases.as_ref().ok_or_else(|| {
+                mixed_error("fused affine gate/up on a delta-only (q2f) tensor")
+            })?;
+            let up_b = up.biases.as_ref().ok_or_else(|| {
+                mixed_error("fused affine gate/up on a delta-only (q2f) tensor")
+            })?;
+            let rows = gate.rows;
+            let cols = gate.cols;
+            let (name, grid, tg) = qwen38_affine_gate_up_launch(self.affine2_geo, with_swiglu, rows);
+            let xsum = self.affine2_geo.uses_xsum();
+            if with_swiglu {
+                tcb.dispatch_threads(name, grid, tg, |enc| {
+                    enc.set_buffer(0, Some(&gate.codes), 0);
+                    enc.set_buffer(1, Some(&gate.scales), 0);
+                    enc.set_buffer(2, Some(gate_b), 0);
+                    enc.set_buffer(3, Some(&up.codes), 0);
+                    enc.set_buffer(4, Some(&up.scales), 0);
+                    enc.set_buffer(5, Some(up_b), 0);
+                    enc.set_buffer(6, Some(&self.workspace.normalized), 0);
+                    enc.set_buffer(7, Some(&self.workspace.act), 0);
+                    if xsum {
+                        enc.set_buffer(8, Some(&self.workspace.xsum64), 0);
+                        set_u32(enc, 9, rows);
+                        set_u32(enc, 10, cols);
+                    } else {
+                        set_u32(enc, 8, rows);
+                        set_u32(enc, 9, cols);
+                    }
+                })
+            } else {
+                tcb.dispatch_threads(name, grid, tg, |enc| {
+                    enc.set_buffer(0, Some(&gate.codes), 0);
+                    enc.set_buffer(1, Some(&gate.scales), 0);
+                    enc.set_buffer(2, Some(gate_b), 0);
+                    enc.set_buffer(3, Some(&up.codes), 0);
+                    enc.set_buffer(4, Some(&up.scales), 0);
+                    enc.set_buffer(5, Some(up_b), 0);
+                    enc.set_buffer(6, Some(&self.workspace.normalized), 0);
+                    enc.set_buffer(7, Some(&self.workspace.gate), 0);
+                    enc.set_buffer(8, Some(&self.workspace.up), 0);
+                    if xsum {
+                        enc.set_buffer(9, Some(&self.workspace.xsum64), 0);
+                        set_u32(enc, 10, rows);
+                        set_u32(enc, 11, cols);
+                    } else {
+                        set_u32(enc, 9, rows);
+                        set_u32(enc, 10, cols);
+                    }
+                })
+            }
+        }
+
+        fn encode_fused_q2f_gate_up(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            gate: &GpuAffine,
+            up: &GpuAffine,
+            with_swiglu: bool,
+        ) -> Result<()> {
+            if gate.rows != up.rows || gate.cols != up.cols {
+                return Err(mixed_error(format!(
+                    "qwen38 fused q2f gate/up shape mismatch: {}x{} vs {}x{}",
+                    gate.rows, gate.cols, up.rows, up.cols
+                )));
+            }
+            if gate.group_size != 64 || up.group_size != 64 || gate.bits != 2 || up.bits != 2 {
+                return Err(mixed_error(format!(
+                    "qwen38 fused q2f gate/up refuses bits={}/{} group={}/{} (need 2 @ 64)",
+                    gate.bits, up.bits, gate.group_size, up.group_size
+                )));
+            }
+            let rows = gate.rows;
+            let cols = gate.cols;
+            let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(rows);
+            if with_swiglu {
+                tcb.dispatch_threads(QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL, grid, tg, |enc| {
+                    enc.set_buffer(0, Some(&gate.codes), 0);
+                    enc.set_buffer(1, Some(&gate.scales), 0);
+                    enc.set_buffer(2, Some(&up.codes), 0);
+                    enc.set_buffer(3, Some(&up.scales), 0);
+                    enc.set_buffer(4, Some(&self.workspace.normalized), 0);
+                    enc.set_buffer(5, Some(&self.workspace.act), 0);
+                    set_u32(enc, 6, rows);
+                    set_u32(enc, 7, cols);
+                })
+            } else {
+                tcb.dispatch_threads(QWEN38_Q2F_GATE_UP_KERNEL, grid, tg, |enc| {
+                    enc.set_buffer(0, Some(&gate.codes), 0);
+                    enc.set_buffer(1, Some(&gate.scales), 0);
+                    enc.set_buffer(2, Some(&up.codes), 0);
+                    enc.set_buffer(3, Some(&up.scales), 0);
+                    enc.set_buffer(4, Some(&self.workspace.normalized), 0);
+                    enc.set_buffer(5, Some(&self.workspace.gate), 0);
+                    enc.set_buffer(6, Some(&self.workspace.up), 0);
+                    set_u32(enc, 7, rows);
+                    set_u32(enc, 8, cols);
+                })
+            }
+        }
+
+        fn encode_fused_gate_up(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            layer: usize,
+            with_swiglu: bool,
+        ) -> Result<()> {
+            let gate_name = qwen38_layer_name(layer, "mlp.gate_proj.weight");
+            let up_name = qwen38_layer_name(layer, "mlp.up_proj.weight");
+            if let (Some(gate), Some(up)) = (self.affine(&gate_name), self.affine(&up_name)) {
+                if gate.biases.is_none() && up.biases.is_none() {
+                    return self.encode_fused_q2f_gate_up(tcb, gate, up, with_swiglu);
+                }
+                return self.encode_fused_affine_gate_up(tcb, gate, up, with_swiglu);
+            }
+            let gate = self.q4(&gate_name)?;
+            let up = self.q4(&up_name)?;
+            if gate.rows != up.rows || gate.cols != up.cols {
+                return Err(Error::Model(format!(
+                    "qwen38 fused gate/up shape mismatch layer {layer}: {}x{} vs {}x{}",
+                    gate.rows, gate.cols, up.rows, up.cols
+                )));
+            }
+            if gate.group_size != UNIFORM_Q4_GROUP_SIZE || up.group_size != UNIFORM_Q4_GROUP_SIZE {
+                return Err(Error::Model(format!(
+                    "qwen38 fused gate/up refuses group_size {}/{} (need {UNIFORM_Q4_GROUP_SIZE})",
+                    gate.group_size, up.group_size
+                )));
+            }
+            let rows = gate.rows as u32;
+            let cols = gate.cols as u32;
+            let gpr = (gate.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
+            let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(rows);
+            if with_swiglu {
+                tcb.dispatch_threads(QWEN38_Q4_GATE_UP_SWIGLU_KERNEL, grid, tg, |enc| {
+                    enc.set_buffer(0, Some(&gate.codes), 0);
+                    enc.set_buffer(1, Some(&gate.scales), 0);
+                    enc.set_buffer(2, Some(&up.codes), 0);
+                    enc.set_buffer(3, Some(&up.scales), 0);
+                    enc.set_buffer(4, Some(&self.workspace.normalized), 0);
+                    enc.set_buffer(5, Some(&self.workspace.act), 0);
+                    set_u32(enc, 6, rows);
+                    set_u32(enc, 7, cols);
+                    set_u32(enc, 8, gpr);
+                })
+            } else {
+                tcb.dispatch_threads(QWEN38_Q4_GATE_UP_KERNEL, grid, tg, |enc| {
+                    enc.set_buffer(0, Some(&gate.codes), 0);
+                    enc.set_buffer(1, Some(&gate.scales), 0);
+                    enc.set_buffer(2, Some(&up.codes), 0);
+                    enc.set_buffer(3, Some(&up.scales), 0);
+                    enc.set_buffer(4, Some(&self.workspace.normalized), 0);
+                    enc.set_buffer(5, Some(&self.workspace.gate), 0);
+                    enc.set_buffer(6, Some(&self.workspace.up), 0);
+                    set_u32(enc, 7, rows);
+                    set_u32(enc, 8, cols);
+                    set_u32(enc, 9, gpr);
+                })
+            }
+        }
+
+        fn encode_fused_pair_concat(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            a_name: &str,
+            a_out: &PinnedBuffer,
+            b_name: &str,
+            b_out: &PinnedBuffer,
+        ) -> Result<()> {
+            let a = self.q4(a_name)?;
+            let b = self.q4(b_name)?;
+            if a.cols != b.cols {
+                return Err(Error::Model(format!(
+                    "qwen38 pair-concat col mismatch {a_name} {} vs {b_name} {}",
+                    a.cols, b.cols
+                )));
+            }
+            if a.group_size != UNIFORM_Q4_GROUP_SIZE || b.group_size != UNIFORM_Q4_GROUP_SIZE {
+                return Err(Error::Model(format!(
+                    "qwen38 pair-concat refuses group_size {}/{}",
+                    a.group_size, b.group_size
+                )));
+            }
+            let a_rows = a.rows as u32;
+            let b_rows = b.rows as u32;
+            let cols = a.cols as u32;
+            let gpr = (a.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
+            let total = a_rows.saturating_add(b_rows);
+            let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(total);
+            tcb.dispatch_threads(QWEN38_Q4_PAIR_CONCAT_KERNEL, grid, tg, |enc| {
+                enc.set_buffer(0, Some(&a.codes), 0);
+                enc.set_buffer(1, Some(&a.scales), 0);
+                enc.set_buffer(2, Some(&b.codes), 0);
+                enc.set_buffer(3, Some(&b.scales), 0);
+                enc.set_buffer(4, Some(&self.workspace.normalized), 0);
+                enc.set_buffer(5, Some(a_out), 0);
+                enc.set_buffer(6, Some(b_out), 0);
+                set_u32(enc, 7, a_rows);
+                set_u32(enc, 8, b_rows);
+                set_u32(enc, 9, cols);
+                set_u32(enc, 10, gpr);
+            })
+        }
+
+        fn encode_fused_qkv(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
+            let q = self.q4(&qwen38_layer_name(layer, "self_attn.q_proj.weight"))?;
+            let k = self.q4(&qwen38_layer_name(layer, "self_attn.k_proj.weight"))?;
+            let v = self.q4(&qwen38_layer_name(layer, "self_attn.v_proj.weight"))?;
+            if q.cols != k.cols || q.cols != v.cols {
+                return Err(Error::Model(format!(
+                    "qwen38 fused QKV col mismatch layer {layer}"
+                )));
+            }
+            if q.group_size != UNIFORM_Q4_GROUP_SIZE
+                || k.group_size != UNIFORM_Q4_GROUP_SIZE
+                || v.group_size != UNIFORM_Q4_GROUP_SIZE
+            {
+                return Err(Error::Model(format!(
+                    "qwen38 fused QKV refuses group_size {}/{}/{}",
+                    q.group_size, k.group_size, v.group_size
+                )));
+            }
+            let q_rows = q.rows as u32;
+            let k_rows = k.rows as u32;
+            let v_rows = v.rows as u32;
+            let cols = q.cols as u32;
+            let gpr = (q.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
+            let total = q_rows.saturating_add(k_rows).saturating_add(v_rows);
+            let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(total);
+            tcb.dispatch_threads(QWEN38_Q4_QKV_GEO_KERNEL, grid, tg, |enc| {
+                enc.set_buffer(0, Some(&q.codes), 0);
+                enc.set_buffer(1, Some(&q.scales), 0);
+                enc.set_buffer(2, Some(&k.codes), 0);
+                enc.set_buffer(3, Some(&k.scales), 0);
+                enc.set_buffer(4, Some(&v.codes), 0);
+                enc.set_buffer(5, Some(&v.scales), 0);
+                enc.set_buffer(6, Some(&self.workspace.normalized), 0);
+                enc.set_buffer(7, Some(&self.workspace.q_proj), 0);
+                enc.set_buffer(8, Some(&self.workspace.k_proj), 0);
+                enc.set_buffer(9, Some(&self.workspace.v_proj), 0);
+                set_u32(enc, 10, q_rows);
+                set_u32(enc, 11, k_rows);
+                set_u32(enc, 12, v_rows);
+                set_u32(enc, 13, cols);
+                set_u32(enc, 14, gpr);
+            })
+        }
+
         fn timed_cb(
             &self,
             encode: impl FnOnce(&mut TokenCommandBuffer<'_>) -> Result<()>,
@@ -2046,6 +3295,58 @@ mod device {
                 encoder.set_bytes(9, 4, &vd as *const u32 as *const _);
                 encoder.set_threadgroup_memory_length(0, 128 * 4);
             })
+        }
+
+        fn encode_gated_delta_fused_ba(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            rec_off: u64,
+            layer: usize,
+        ) -> Result<()> {
+            let layout = Qwen38DeltaNetLayout::source_exact();
+            let heads = layout.value_heads as u32;
+            let kd = layout.key_head_dim as u32;
+            let vd = layout.value_head_dim as u32;
+            let a_log = self.f32(&qwen38_layer_name(layer, "linear_attn.A_log"))?;
+            let dt_bias = self.f32(&qwen38_layer_name(layer, "linear_attn.dt_bias"))?;
+            let kernel = self.dn_state_kernel.fused_ba_name(self.fuse_ba_delta_bad);
+            let (grid_z, tg_bytes) = if self.fuse_ba_delta_bad {
+                (vd, 512u64)
+            } else {
+                match self.dn_state_kernel {
+                    Qwen38DeltaNetStateKernel::WidenF4 => (vd / 4, 512u64),
+                    Qwen38DeltaNetStateKernel::CoalesceTg32 => (vd / 32, QWEN38_DN_STATE_TG32_BYTES),
+                    Qwen38DeltaNetStateKernel::Baseline => (vd, 512u64),
+                }
+            };
+            tcb.dispatch_threads(kernel, (kd, heads, grid_z), (kd, 1, 1), |encoder| {
+                encoder.set_buffer(0, Some(&self.workspace.rec_state), rec_off);
+                encoder.set_buffer(1, Some(&self.workspace.repeated_q), 0);
+                encoder.set_buffer(2, Some(&self.workspace.repeated_k), 0);
+                encoder.set_buffer(3, Some(&self.workspace.conv_v), 0);
+                encoder.set_buffer(4, Some(&self.workspace.ba), 0);
+                encoder.set_buffer(5, Some(a_log), 0);
+                encoder.set_buffer(6, Some(dt_bias), 0);
+                encoder.set_buffer(7, Some(&self.workspace.rec_out), 0);
+                encoder.set_bytes(8, 4, &heads as *const u32 as *const _);
+                encoder.set_bytes(9, 4, &kd as *const u32 as *const _);
+                encoder.set_bytes(10, 4, &vd as *const u32 as *const _);
+                encoder.set_threadgroup_memory_length(0, tg_bytes);
+            })
+        }
+
+        fn encode_dn_ba_and_delta(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            layer: usize,
+            rec_off: u64,
+        ) -> Result<()> {
+            if self.fuse_ba_delta {
+                self.encode_gated_delta_fused_ba(tcb, rec_off, layer)
+            } else {
+                self.encode_ba_to_decay(tcb, layer)?;
+                self.encode_gated_delta(tcb, rec_off)
+            }
         }
 
         fn encode_mixer(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
@@ -2141,22 +3442,29 @@ mod device {
             )
         }
 
+        fn workspace_f32<'a>(&'a self, which: &str) -> Result<&'a PinnedBuffer> {
+            match which {
+                "gate" => Ok(&self.workspace.gate),
+                "up" => Ok(&self.workspace.up),
+                "act" => Ok(&self.workspace.act),
+                "down" => Ok(&self.workspace.down),
+                "hidden" => Ok(&self.workspace.hidden),
+                "normalized" => Ok(&self.workspace.normalized),
+                "logits" => Ok(&self.workspace.logits),
+                "mixer" => Ok(&self.workspace.mixer),
+                "q_proj" => Ok(&self.workspace.q_proj),
+                "k_proj" => Ok(&self.workspace.k_proj),
+                "v_proj" => Ok(&self.workspace.v_proj),
+                "qkvz" => Ok(&self.workspace.qkvz),
+                "ba" => Ok(&self.workspace.ba),
+                other => Err(Error::Model(format!(
+                    "qwen38 unknown workspace buffer {other}"
+                ))),
+            }
+        }
+
         pub fn read_f32_workspace(&self, which: &str, n: usize) -> Result<Vec<f32>> {
-            let buffer = match which {
-                "gate" => &self.workspace.gate,
-                "up" => &self.workspace.up,
-                "act" => &self.workspace.act,
-                "down" => &self.workspace.down,
-                "hidden" => &self.workspace.hidden,
-                "normalized" => &self.workspace.normalized,
-                "logits" => &self.workspace.logits,
-                "mixer" => &self.workspace.mixer,
-                other => {
-                    return Err(Error::Model(format!(
-                        "qwen38 unknown workspace buffer {other}"
-                    )))
-                }
-            };
+            let buffer = self.workspace_f32(which)?;
             let bytes = n
                 .checked_mul(std::mem::size_of::<f32>())
                 .ok_or_else(|| Error::Model("qwen38 read overflow".into()))?;
@@ -2175,6 +3483,825 @@ mod device {
                 );
             }
             Ok(out)
+        }
+
+        pub fn write_f32_workspace(&self, which: &str, values: &[f32]) -> Result<()> {
+            let buffer = self.workspace_f32(which)?;
+            let bytes = values
+                .len()
+                .checked_mul(std::mem::size_of::<f32>())
+                .ok_or_else(|| Error::Model("qwen38 write overflow".into()))?;
+            if buffer.length() < bytes as u64 {
+                return Err(Error::Model(format!(
+                    "qwen38 {which} is {} bytes, need {bytes}",
+                    buffer.length()
+                )));
+            }
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    values.as_ptr(),
+                    buffer.contents() as *mut f32,
+                    values.len(),
+                );
+            }
+            Ok(())
+        }
+
+        pub fn apply_fusion(
+            &mut self,
+            mlp: Qwen38MlpFusion,
+            fuse_gqa_qkv: bool,
+            fuse_dn_inproj: bool,
+        ) {
+            self.mlp_fusion = mlp;
+            self.fuse_gqa_qkv = fuse_gqa_qkv;
+            self.fuse_dn_inproj = fuse_dn_inproj;
+        }
+
+        pub fn apply_affine2_geo(&mut self, geo: Affine2Geo) {
+            self.affine2_geo = geo;
+        }
+
+        pub fn set_fuse_add_rmsnorm(&mut self, on: bool, bad: bool) {
+            self.fuse_add_rmsnorm = on;
+            self.fuse_add_rmsnorm_bad = bad;
+        }
+
+        pub fn set_fuse_ba_delta(&mut self, on: bool, bad: bool) {
+            self.fuse_ba_delta = on;
+            self.fuse_ba_delta_bad = bad;
+        }
+
+        pub fn set_dn_state_kernel(&mut self, kernel: Qwen38DeltaNetStateKernel) {
+            self.dn_state_kernel = kernel;
+        }
+
+        /// Record a dense-W reconstruct. Production packed GEMV never calls this.
+        pub fn account_dense_w(&mut self, n: u64) {
+            self.dense_w_materialized += n;
+        }
+
+        pub fn set_q2f_force_serial(&mut self, on: bool) {
+            self.q2f_force_serial = on;
+        }
+
+        /// Cover the token graph with one serial compute encoder.
+        /// Forces `concurrent_independent` off so a nested concurrent group
+        /// cannot fight the open serial encoder.
+        pub fn set_serial_token_encoder(&mut self, on: bool) {
+            self.serial_token_encoder = on;
+            if on {
+                self.concurrent_independent = false;
+            }
+        }
+
+        fn encode_full_token(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            token: u32,
+        ) -> Result<()> {
+            if self.serial_token_encoder {
+                tcb.begin_serial_group()?;
+            }
+            self.encode_embed(tcb, token)?;
+            self.encode_layers(tcb)?;
+            self.encode_terminal(tcb)?;
+            if self.serial_token_encoder {
+                tcb.end_serial_group()?;
+            }
+            Ok(())
+        }
+
+        pub fn theoretical_dispatches(&self) -> u64 {
+            qwen38_fused_dispatches_per_token_full(
+                self.mlp_fusion,
+                self.fuse_gqa_qkv,
+                self.fuse_dn_inproj,
+                self.fuse_add_rmsnorm,
+                self.fuse_ba_delta,
+            )
+        }
+
+        /// Encode one complete token and return the TCB dispatch count.
+        /// Mutates recurrent/KV state — caller should `reset` around a probe.
+        pub fn measure_token_dispatches(&mut self, token: u32) -> Result<(u32, u64, CommandBufferTiming)> {
+            let (sampled, timing) = self.step(token)?;
+            Ok((sampled, timing.dispatches, timing))
+        }
+
+        pub fn measure_isolated_dense_mlp(&self) -> Result<CommandBufferTiming> {
+            self.timed_cb(|tcb| {
+                for layer in 0..QWEN38_LAYERS {
+                    self.encode_dense_mlp(tcb, layer, &self.workspace.first_residual)?;
+                }
+                Ok(())
+            })
+        }
+
+        fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
+            a.iter()
+                .zip(b.iter())
+                .map(|(x, y)| (x - y).abs())
+                .fold(0.0f32, f32::max)
+        }
+
+        /// Fused gate+up(+SwiGLU) vs the two-matvec + SwiGLU path on a known x.
+        /// Does not materialize a dense parent W.
+        pub fn measure_mlp_fusion_parity(&self, layer: usize) -> Result<Qwen38FusionParity> {
+            let n_hidden = QWEN38_HIDDEN;
+            let n_mid = QWEN38_INTERMEDIATE;
+            let mut x = vec![0.0f32; n_hidden];
+            for (i, v) in x.iter_mut().enumerate() {
+                *v = ((i % 17) as f32) * 0.01 - 0.08;
+            }
+            self.write_f32_workspace("normalized", &x)?;
+
+            let unfused = self.timed_cb(|tcb| {
+                self.encode_named_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.gate,
+                )?;
+                self.encode_named_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "mlp.up_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.up,
+                )?;
+                let n = n_mid as u32;
+                tcb.dispatch_threads(
+                    crate::decode_family::swiglu_f32(),
+                    (n, 1, 1),
+                    (n.min(256).max(1), 1, 1),
+                    |encoder| {
+                        encoder.set_buffer(0, Some(&self.workspace.gate), 0);
+                        encoder.set_buffer(1, Some(&self.workspace.up), 0);
+                        encoder.set_buffer(2, Some(&self.workspace.act), 0);
+                        encoder.set_bytes(3, 4, &n as *const u32 as *const _);
+                    },
+                )
+            })?;
+            let gate_u = self.read_f32_workspace("gate", n_mid)?;
+            let up_u = self.read_f32_workspace("up", n_mid)?;
+            let act_u = self.read_f32_workspace("act", n_mid)?;
+
+            let pair = self.timed_cb(|tcb| self.encode_fused_gate_up(tcb, layer, false))?;
+            let gate_p = self.read_f32_workspace("gate", n_mid)?;
+            let up_p = self.read_f32_workspace("up", n_mid)?;
+
+            let swiglu = self.timed_cb(|tcb| self.encode_fused_gate_up(tcb, layer, true))?;
+            let act_s = self.read_f32_workspace("act", n_mid)?;
+
+            Ok(Qwen38FusionParity {
+                fusion: "gate_up_swiglu",
+                layer,
+                unfused_dispatches: unfused.dispatches,
+                fused_pair_dispatches: pair.dispatches,
+                fused_swiglu_dispatches: swiglu.dispatches,
+                unfused_gpu_ns: unfused.gpu_ns,
+                fused_pair_gpu_ns: pair.gpu_ns,
+                fused_swiglu_gpu_ns: swiglu.gpu_ns,
+                max_abs_diff_gate: Self::max_abs_diff(&gate_u, &gate_p),
+                max_abs_diff_up: Self::max_abs_diff(&up_u, &up_p),
+                max_abs_diff_act: Self::max_abs_diff(&act_u, &act_s),
+                dense_w_materialized: 0,
+            })
+        }
+
+        pub fn measure_qkv_fusion_parity(&self, layer: usize) -> Result<Qwen38FusionParity> {
+            let n_hidden = QWEN38_HIDDEN;
+            let q_n = QWEN38_GQA_HEADS * QWEN38_GQA_HEAD_DIM * 2;
+            let kv_n = QWEN38_GQA_KV_HEADS * QWEN38_GQA_HEAD_DIM;
+            let mut x = vec![0.0f32; n_hidden];
+            for (i, v) in x.iter_mut().enumerate() {
+                *v = ((i % 13) as f32) * 0.02 - 0.12;
+            }
+            self.write_f32_workspace("normalized", &x)?;
+            let unfused = self.timed_cb(|tcb| {
+                self.encode_q4_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.q_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.q_proj,
+                )?;
+                self.encode_q4_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.k_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.k_proj,
+                )?;
+                self.encode_q4_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.v_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.v_proj,
+                )
+            })?;
+            let q_u = self.read_f32_workspace("q_proj", q_n)?;
+            let k_u = self.read_f32_workspace("k_proj", kv_n)?;
+            let v_u = self.read_f32_workspace("v_proj", kv_n)?;
+            let fused = self.timed_cb(|tcb| self.encode_fused_qkv(tcb, layer))?;
+            let q_f = self.read_f32_workspace("q_proj", q_n)?;
+            let k_f = self.read_f32_workspace("k_proj", kv_n)?;
+            let v_f = self.read_f32_workspace("v_proj", kv_n)?;
+            Ok(Qwen38FusionParity {
+                fusion: "gqa_qkv",
+                layer,
+                unfused_dispatches: unfused.dispatches,
+                fused_pair_dispatches: fused.dispatches,
+                fused_swiglu_dispatches: fused.dispatches,
+                unfused_gpu_ns: unfused.gpu_ns,
+                fused_pair_gpu_ns: fused.gpu_ns,
+                fused_swiglu_gpu_ns: fused.gpu_ns,
+                max_abs_diff_gate: Self::max_abs_diff(&q_u, &q_f),
+                max_abs_diff_up: Self::max_abs_diff(&k_u, &k_f),
+                max_abs_diff_act: Self::max_abs_diff(&v_u, &v_f),
+                dense_w_materialized: 0,
+            })
+        }
+
+        pub fn measure_dn_inproj_fusion_parity(&self, layer: usize) -> Result<Qwen38FusionParity> {
+            let layout = Qwen38DeltaNetLayout::source_exact();
+            let n_hidden = QWEN38_HIDDEN;
+            let mut x = vec![0.0f32; n_hidden];
+            for (i, v) in x.iter_mut().enumerate() {
+                *v = ((i % 11) as f32) * 0.015 - 0.07;
+            }
+            self.write_f32_workspace("normalized", &x)?;
+            let unfused = self.timed_cb(|tcb| {
+                self.encode_independent_q4_pair(
+                    tcb,
+                    &qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.qkvz,
+                    &qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.ba,
+                )
+            })?;
+            let qkvz_u = self.read_f32_workspace("qkvz", layout.qkvz_rows())?;
+            let ba_u = self.read_f32_workspace("ba", layout.ba_rows())?;
+            let fused = self.timed_cb(|tcb| {
+                self.encode_fused_pair_concat(
+                    tcb,
+                    &qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
+                    &self.workspace.qkvz,
+                    &qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
+                    &self.workspace.ba,
+                )
+            })?;
+            let qkvz_f = self.read_f32_workspace("qkvz", layout.qkvz_rows())?;
+            let ba_f = self.read_f32_workspace("ba", layout.ba_rows())?;
+            Ok(Qwen38FusionParity {
+                fusion: "dn_qkvz_ba",
+                layer,
+                unfused_dispatches: unfused.dispatches,
+                fused_pair_dispatches: fused.dispatches,
+                fused_swiglu_dispatches: fused.dispatches,
+                unfused_gpu_ns: unfused.gpu_ns,
+                fused_pair_gpu_ns: fused.gpu_ns,
+                fused_swiglu_gpu_ns: fused.gpu_ns,
+                max_abs_diff_gate: Self::max_abs_diff(&qkvz_u, &qkvz_f),
+                max_abs_diff_up: Self::max_abs_diff(&ba_u, &ba_f),
+                max_abs_diff_act: 0.0,
+                dense_w_materialized: 0,
+            })
+        }
+
+        /// Residual add + RMSNorm vs the two-dispatch production pair.
+        /// `bad=true` binds the plain-weight kernel (intentionally diverges).
+        pub fn measure_add_rmsnorm_fusion_parity(
+            &mut self,
+            layer: usize,
+            bad: bool,
+        ) -> Result<Qwen38FusionParity> {
+            let n = QWEN38_HIDDEN;
+            let mut residual = vec![0.0f32; n];
+            let mut delta = vec![0.0f32; n];
+            for i in 0..n {
+                residual[i] = ((i % 19) as f32) * 0.02 - 0.17;
+                delta[i] = ((i % 13) as f32) * 0.015 - 0.09;
+            }
+            self.write_f32_workspace("hidden", &residual)?;
+            self.write_f32_workspace("mixer", &delta)?;
+            let weight_name = qwen38_layer_name(layer, "post_attention_layernorm.weight");
+            let saved_bad = self.fuse_add_rmsnorm_bad;
+            self.fuse_add_rmsnorm_bad = false;
+            let unfused = self.timed_cb(|tcb| {
+                qwen_next_add_residual_tcb(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    QWEN38_HIDDEN,
+                )?;
+                self.encode_rmsnorm(
+                    tcb,
+                    &self.workspace.first_residual,
+                    &weight_name,
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )
+            })?;
+            let residual_u = {
+                let buf = &self.workspace.first_residual;
+                let mut out = vec![0.0f32; n];
+                unsafe {
+                    std::ptr::copy_nonoverlapping(buf.contents() as *const f32, out.as_mut_ptr(), n);
+                }
+                out
+            };
+            let norm_u = self.read_f32_workspace("normalized", n)?;
+            self.write_f32_workspace("hidden", &residual)?;
+            self.write_f32_workspace("mixer", &delta)?;
+            self.fuse_add_rmsnorm_bad = bad;
+            let fused = self.timed_cb(|tcb| {
+                self.encode_add_residual_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    &weight_name,
+                    &self.workspace.normalized,
+                )
+            })?;
+            let residual_f = {
+                let buf = &self.workspace.first_residual;
+                let mut out = vec![0.0f32; n];
+                unsafe {
+                    std::ptr::copy_nonoverlapping(buf.contents() as *const f32, out.as_mut_ptr(), n);
+                }
+                out
+            };
+            let norm_f = self.read_f32_workspace("normalized", n)?;
+            self.fuse_add_rmsnorm_bad = saved_bad;
+            Ok(Qwen38FusionParity {
+                fusion: if bad {
+                    "add_residual_rmsnorm_plainweight"
+                } else {
+                    "add_residual_rmsnorm"
+                },
+                layer,
+                unfused_dispatches: unfused.dispatches,
+                fused_pair_dispatches: fused.dispatches,
+                fused_swiglu_dispatches: fused.dispatches,
+                unfused_gpu_ns: unfused.gpu_ns,
+                fused_pair_gpu_ns: fused.gpu_ns,
+                fused_swiglu_gpu_ns: fused.gpu_ns,
+                max_abs_diff_gate: Self::max_abs_diff(&residual_u, &residual_f),
+                max_abs_diff_up: Self::max_abs_diff(&norm_u, &norm_f),
+                max_abs_diff_act: Self::max_abs_diff(&norm_u, &norm_f),
+                dense_w_materialized: 0,
+            })
+        }
+
+        /// ba_to_decay + gated-delta vs the fused kernel on layer 0's real A_log/dt_bias.
+        /// `bad=true` binds the identity-decay control (must diverge).
+        pub fn measure_ba_delta_fusion_parity(
+            &mut self,
+            layer: usize,
+            bad: bool,
+        ) -> Result<Qwen38FusionParity> {
+            let layout = Qwen38DeltaNetLayout::source_exact();
+            let slot = qwen38_deltanet_state_slot(layer)?;
+            let rec_n = layout.recurrent_state_elements();
+            let rec_off = (slot * rec_n * 4) as u64;
+            let ba_n = layout.ba_rows();
+            let q_n = layout.key_heads * layout.key_head_dim;
+            let v_n = layout.value_elements();
+            let fill = |n: usize, modulus: usize, scale: f32, bias: f32| -> Vec<f32> {
+                (0..n)
+                    .map(|i| ((i % modulus) as f32) * scale - bias)
+                    .collect()
+            };
+            let write_buf = |buf: &PinnedBuffer, values: &[f32]| {
+                unsafe {
+                    std::ptr::copy_nonoverlapping(
+                        values.as_ptr(),
+                        buf.contents() as *mut f32,
+                        values.len(),
+                    );
+                }
+            };
+            let read_buf = |buf: &PinnedBuffer, n: usize| -> Vec<f32> {
+                let mut out = vec![0.0f32; n];
+                unsafe {
+                    std::ptr::copy_nonoverlapping(buf.contents() as *const f32, out.as_mut_ptr(), n);
+                }
+                out
+            };
+            let ba = fill(ba_n, 11, 0.02, 0.1);
+            let q = fill(q_n, 13, 0.015, 0.08);
+            let k = fill(q_n, 17, 0.018, 0.09);
+            let v = fill(v_n, 19, 0.012, 0.07);
+            let rec = fill(rec_n, 23, 0.004, 0.05);
+            write_buf(&self.workspace.ba, &ba);
+            write_buf(&self.workspace.repeated_q, &q);
+            write_buf(&self.workspace.repeated_k, &k);
+            write_buf(&self.workspace.conv_v, &v);
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    rec.as_ptr(),
+                    (self.workspace.rec_state.contents() as *mut u8).add(rec_off as usize)
+                        as *mut f32,
+                    rec_n,
+                );
+            }
+            let saved_on = self.fuse_ba_delta;
+            let saved_bad = self.fuse_ba_delta_bad;
+            self.fuse_ba_delta = false;
+            self.fuse_ba_delta_bad = false;
+            let unfused = self.timed_cb(|tcb| {
+                self.encode_ba_to_decay(tcb, layer)?;
+                self.encode_gated_delta(tcb, rec_off)
+            })?;
+            let rec_out_u = read_buf(&self.workspace.rec_out, v_n);
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    rec.as_ptr(),
+                    (self.workspace.rec_state.contents() as *mut u8).add(rec_off as usize)
+                        as *mut f32,
+                    rec_n,
+                );
+            }
+            self.fuse_ba_delta = true;
+            self.fuse_ba_delta_bad = bad;
+            let fused = self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
+            let rec_out_f = read_buf(&self.workspace.rec_out, v_n);
+            self.fuse_ba_delta = saved_on;
+            self.fuse_ba_delta_bad = saved_bad;
+            let diff = Self::max_abs_diff(&rec_out_u, &rec_out_f);
+            Ok(Qwen38FusionParity {
+                fusion: if bad {
+                    "ba_delta_identity"
+                } else {
+                    "ba_delta"
+                },
+                layer,
+                unfused_dispatches: unfused.dispatches,
+                fused_pair_dispatches: fused.dispatches,
+                fused_swiglu_dispatches: fused.dispatches,
+                unfused_gpu_ns: unfused.gpu_ns,
+                fused_pair_gpu_ns: fused.gpu_ns,
+                fused_swiglu_gpu_ns: fused.gpu_ns,
+                max_abs_diff_gate: diff,
+                max_abs_diff_up: diff,
+                max_abs_diff_act: diff,
+                dense_w_materialized: 0,
+            })
+        }
+
+        /// Candidate gated-delta kernel vs N025 `vi_simd_ba` on layer 0.
+        /// Compares rec_out AND the recurrent state (not just the readout).
+        pub fn measure_dn_state_kernel_parity(
+            &mut self,
+            layer: usize,
+            candidate: Qwen38DeltaNetStateKernel,
+            bad: bool,
+        ) -> Result<Qwen38DeltaNetStateParity> {
+            let layout = Qwen38DeltaNetLayout::source_exact();
+            let slot = qwen38_deltanet_state_slot(layer)?;
+            let rec_n = layout.recurrent_state_elements();
+            let rec_off = (slot * rec_n * 4) as u64;
+            let ba_n = layout.ba_rows();
+            let q_n = layout.key_heads * layout.key_head_dim;
+            let v_n = layout.value_elements();
+            let fill = |n: usize, modulus: usize, scale: f32, bias: f32| -> Vec<f32> {
+                (0..n)
+                    .map(|i| ((i % modulus) as f32) * scale - bias)
+                    .collect()
+            };
+            let write_buf = |buf: &PinnedBuffer, values: &[f32]| unsafe {
+                std::ptr::copy_nonoverlapping(
+                    values.as_ptr(),
+                    buf.contents() as *mut f32,
+                    values.len(),
+                );
+            };
+            let read_buf = |buf: &PinnedBuffer, n: usize| -> Vec<f32> {
+                let mut out = vec![0.0f32; n];
+                unsafe {
+                    std::ptr::copy_nonoverlapping(buf.contents() as *const f32, out.as_mut_ptr(), n);
+                }
+                out
+            };
+            let write_rec = |values: &[f32]| unsafe {
+                std::ptr::copy_nonoverlapping(
+                    values.as_ptr(),
+                    (self.workspace.rec_state.contents() as *mut u8).add(rec_off as usize)
+                        as *mut f32,
+                    rec_n,
+                );
+            };
+            let read_rec = || -> Vec<f32> {
+                let mut out = vec![0.0f32; rec_n];
+                unsafe {
+                    std::ptr::copy_nonoverlapping(
+                        (self.workspace.rec_state.contents() as *const u8).add(rec_off as usize)
+                            as *const f32,
+                        out.as_mut_ptr(),
+                        rec_n,
+                    );
+                }
+                out
+            };
+            let ba = fill(ba_n, 11, 0.02, 0.1);
+            let q = fill(q_n, 13, 0.015, 0.08);
+            let k = fill(q_n, 17, 0.018, 0.09);
+            let v = fill(v_n, 19, 0.012, 0.07);
+            let rec = fill(rec_n, 23, 0.004, 0.05);
+            write_buf(&self.workspace.ba, &ba);
+            write_buf(&self.workspace.repeated_q, &q);
+            write_buf(&self.workspace.repeated_k, &k);
+            write_buf(&self.workspace.conv_v, &v);
+            write_rec(&rec);
+            let saved_on = self.fuse_ba_delta;
+            let saved_bad = self.fuse_ba_delta_bad;
+            let saved_k = self.dn_state_kernel;
+            self.fuse_ba_delta = true;
+            self.fuse_ba_delta_bad = false;
+            self.dn_state_kernel = Qwen38DeltaNetStateKernel::Baseline;
+            let base = self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
+            let rec_out_b = read_buf(&self.workspace.rec_out, v_n);
+            let rec_state_b = read_rec();
+            write_rec(&rec);
+            self.dn_state_kernel = candidate;
+            self.fuse_ba_delta_bad = bad;
+            let cand = self.timed_cb(|tcb| self.encode_gated_delta_fused_ba(tcb, rec_off, layer))?;
+            let rec_out_c = read_buf(&self.workspace.rec_out, v_n);
+            let rec_state_c = read_rec();
+            self.fuse_ba_delta = saved_on;
+            self.fuse_ba_delta_bad = saved_bad;
+            self.dn_state_kernel = saved_k;
+            Ok(Qwen38DeltaNetStateParity {
+                kernel: candidate.fused_ba_name(bad),
+                layer,
+                max_abs_diff_rec_out: Self::max_abs_diff(&rec_out_b, &rec_out_c),
+                max_abs_diff_rec_state: Self::max_abs_diff(&rec_state_b, &rec_state_c),
+                baseline_gpu_ns: base.gpu_ns,
+                candidate_gpu_ns: cand.gpu_ns,
+                baseline_dispatches: base.dispatches,
+                candidate_dispatches: cand.dispatches,
+                dense_w_materialized: 0,
+            })
+        }
+
+        pub fn measure_isolated_dn_state_update(&self) -> Result<CommandBufferTiming> {
+            let layout = Qwen38DeltaNetLayout::source_exact();
+            self.timed_cb(|tcb| {
+                for layer in 0..QWEN38_LAYERS {
+                    if qwen38_mixer_kind(layer)? != Qwen38MixerKind::DeltaNet {
+                        continue;
+                    }
+                    let slot = qwen38_deltanet_state_slot(layer)?;
+                    let rec_off = (slot * layout.recurrent_state_elements() * 4) as u64;
+                    self.encode_dn_ba_and_delta(tcb, layer, rec_off)?;
+                }
+                Ok(())
+            })
+        }
+
+        pub fn measure_isolated_dn_inproj(&self) -> Result<CommandBufferTiming> {
+            self.timed_cb(|tcb| {
+                for layer in 0..QWEN38_LAYERS {
+                    if qwen38_mixer_kind(layer)? != Qwen38MixerKind::DeltaNet {
+                        continue;
+                    }
+                    let fused_qkvz = qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight");
+                    let fused_ba = qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight");
+                    if self.has_weight(&fused_qkvz) && self.has_weight(&fused_ba) {
+                        if self.fuse_dn_inproj && self.weights.q4.contains_key(&fused_qkvz) {
+                            self.encode_fused_pair_concat(
+                                tcb,
+                                &fused_qkvz,
+                                &self.workspace.qkvz,
+                                &fused_ba,
+                                &self.workspace.ba,
+                            )?;
+                        } else {
+                            self.encode_named_matvec(
+                                tcb,
+                                &fused_qkvz,
+                                &self.workspace.normalized,
+                                &self.workspace.qkvz,
+                            )?;
+                            self.encode_named_matvec(
+                                tcb,
+                                &fused_ba,
+                                &self.workspace.normalized,
+                                &self.workspace.ba,
+                            )?;
+                        }
+                    }
+                }
+                Ok(())
+            })
+        }
+
+        fn encode_organ_gqa_compute(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            layer: usize,
+        ) -> Result<()> {
+            self.encode_rmsnorm(
+                tcb,
+                &self.workspace.hidden,
+                &qwen38_layer_name(layer, "input_layernorm.weight"),
+                &self.workspace.normalized,
+                QWEN38_HIDDEN as u32,
+            )?;
+            let q_name = qwen38_layer_name(layer, "self_attn.q_proj.weight");
+            if self.fuse_gqa_qkv && self.weights.q4.contains_key(&q_name) {
+                self.encode_fused_qkv(tcb, layer)?;
+            } else {
+                self.encode_named_matvec(
+                    tcb,
+                    &q_name,
+                    &self.workspace.normalized,
+                    &self.workspace.q_proj,
+                )?;
+                self.encode_named_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.k_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.k_proj,
+                )?;
+                self.encode_named_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.v_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.v_proj,
+                )?;
+            }
+            self.encode_rope_cache(tcb, layer)?;
+            self.encode_mha(tcb, layer)?;
+            self.encode_sigmoid_gate(tcb)?;
+            qwen_next_add_residual_tcb(
+                tcb,
+                &self.workspace.hidden,
+                &self.workspace.mixer,
+                &self.workspace.first_residual,
+                QWEN38_HIDDEN,
+            )
+        }
+
+        fn encode_organ_dn_compute(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            layer: usize,
+        ) -> Result<()> {
+            let layout = Qwen38DeltaNetLayout::source_exact();
+            let slot = qwen38_deltanet_state_slot(layer)?;
+            let rec_off = (slot * layout.recurrent_state_elements() * 4) as u64;
+            self.encode_rmsnorm(
+                tcb,
+                &self.workspace.hidden,
+                &qwen38_layer_name(layer, "input_layernorm.weight"),
+                &self.workspace.normalized,
+                QWEN38_HIDDEN as u32,
+            )?;
+            let fused_qkvz = qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight");
+            let fused_ba = qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight");
+            if self.has_weight(&fused_qkvz) && self.has_weight(&fused_ba) {
+                if self.fuse_dn_inproj && self.weights.q4.contains_key(&fused_qkvz) {
+                    self.encode_fused_pair_concat(
+                        tcb,
+                        &fused_qkvz,
+                        &self.workspace.qkvz,
+                        &fused_ba,
+                        &self.workspace.ba,
+                    )?;
+                } else {
+                    self.encode_named_matvec(
+                        tcb,
+                        &fused_qkvz,
+                        &self.workspace.normalized,
+                        &self.workspace.qkvz,
+                    )?;
+                    self.encode_named_matvec(
+                        tcb,
+                        &fused_ba,
+                        &self.workspace.normalized,
+                        &self.workspace.ba,
+                    )?;
+                }
+            } else if self.has_weight(&qwen38_layer_name(layer, "linear_attn.in_proj_qkv.weight"))
+            {
+                self.encode_split_deltanet_projections(tcb, layer)?;
+            } else {
+                return Err(Error::Model(format!(
+                    "layer {layer} mixer projections missing for organ isolate"
+                )));
+            }
+            self.encode_rearrange(tcb, layer)?;
+            self.encode_dn_ba_and_delta(tcb, layer, rec_off)?;
+            self.encode_gated_rmsnorm(tcb, layer)?;
+            qwen_next_add_residual_tcb(
+                tcb,
+                &self.workspace.hidden,
+                &self.workspace.mixer,
+                &self.workspace.first_residual,
+                QWEN38_HIDDEN,
+            )
+        }
+
+        /// Isolated organ CBs: one family, all layers, GPUEnd−GPUStart.
+        /// Production remains one CB; these partition it. Caller scales.
+        pub fn measure_isolated_organ(&self, organ: &str) -> Result<CommandBufferTiming> {
+            match organ {
+                "embedding" => self.timed_cb(|tcb| self.encode_embed(tcb, 1)),
+                "gqa_attention" => self.timed_cb(|tcb| {
+                    for layer in 0..QWEN38_LAYERS {
+                        if qwen38_mixer_kind(layer)? == Qwen38MixerKind::Gqa {
+                            self.encode_organ_gqa_compute(tcb, layer)?;
+                        }
+                    }
+                    Ok(())
+                }),
+                "deltanet" => self.timed_cb(|tcb| {
+                    for layer in 0..QWEN38_LAYERS {
+                        if qwen38_mixer_kind(layer)? == Qwen38MixerKind::DeltaNet {
+                            self.encode_organ_dn_compute(tcb, layer)?;
+                        }
+                    }
+                    Ok(())
+                }),
+                "mlp_gate_up" => self.timed_cb(|tcb| {
+                    for layer in 0..QWEN38_LAYERS {
+                        self.encode_rmsnorm(
+                            tcb,
+                            &self.workspace.first_residual,
+                            &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
+                            &self.workspace.normalized,
+                            QWEN38_HIDDEN as u32,
+                        )?;
+                        self.encode_fused_gate_up(tcb, layer, true)?;
+                    }
+                    Ok(())
+                }),
+                "mlp_down" => self.timed_cb(|tcb| {
+                    for layer in 0..QWEN38_LAYERS {
+                        self.encode_named_matvec(
+                            tcb,
+                            &qwen38_layer_name(layer, "mlp.down_proj.weight"),
+                            &self.workspace.act,
+                            &self.workspace.down,
+                        )?;
+                        qwen_next_add_residual_tcb(
+                            tcb,
+                            &self.workspace.first_residual,
+                            &self.workspace.down,
+                            &self.workspace.hidden,
+                            QWEN38_HIDDEN,
+                        )?;
+                    }
+                    Ok(())
+                }),
+                "q4_remainder" => self.timed_cb(|tcb| {
+                    for layer in 0..QWEN38_LAYERS {
+                        match qwen38_mixer_kind(layer)? {
+                            Qwen38MixerKind::DeltaNet => {
+                                self.encode_named_matvec(
+                                    tcb,
+                                    &qwen38_layer_name(layer, "linear_attn.out_proj.weight"),
+                                    &self.workspace.gated,
+                                    &self.workspace.mixer,
+                                )?;
+                            }
+                            Qwen38MixerKind::Gqa => {
+                                self.encode_named_matvec(
+                                    tcb,
+                                    &qwen38_layer_name(layer, "self_attn.o_proj.weight"),
+                                    &self.workspace.gated_attn,
+                                    &self.workspace.mixer,
+                                )?;
+                            }
+                        }
+                    }
+                    Ok(())
+                }),
+                "lm_head" => self.timed_cb(|tcb| {
+                    self.encode_rmsnorm(
+                        tcb,
+                        &self.workspace.hidden,
+                        "language_model.model.norm.weight",
+                        &self.workspace.normalized,
+                        QWEN38_HIDDEN as u32,
+                    )?;
+                    self.encode_named_matvec(
+                        tcb,
+                        "language_model.lm_head.weight",
+                        &self.workspace.normalized,
+                        &self.workspace.logits,
+                    )
+                }),
+                "sampling" => self.timed_cb(|tcb| self.encode_argmax(tcb)),
+                "noop_empty" => self.timed_cb(|_tcb| Ok(())),
+                other => Err(Error::Model(format!(
+                    "qwen38 unknown isolated organ {other}"
+                ))),
+            }
         }
 
         pub fn measure_named_matvec(&self, name: &str, output: &str) -> Result<CommandBufferTiming> {
@@ -2196,7 +4323,7 @@ mod device {
                     "qkvz" => &self.workspace.qkvz,
                     _ => &self.workspace.hidden,
                 };
-                self.encode_q4_matvec(tcb, name, &self.workspace.normalized, out_buf)
+                self.encode_named_matvec(tcb, name, &self.workspace.normalized, out_buf)
             })
         }
 
@@ -2987,7 +5114,10 @@ mod device {
                 // Mean 35.792 -> 34.267, 4.26% faster, every pair favouring the retile,
                 // token-identical. HAWKING_RMSNORM_TG=0 restores the 256-pinned kernel.
                 .unwrap_or(1024);
-            let (rms_name, rms_n) = if rms_tg > 0 {
+            let xsum = self.affine2_geo.uses_xsum();
+            let (rms_name, rms_n) = if xsum {
+                (QWEN38_RMSNORM_XSUM64_KERNEL, if rms_tg > 0 { rms_tg } else { 256 })
+            } else if rms_tg > 0 {
                 ("qwen80_residual_rmsnorm_tg", rms_tg)
             } else {
                 ("qwen80_residual_rmsnorm_f32", 256)
@@ -3000,12 +5130,77 @@ mod device {
                     encoder.set_buffer(0, Some(input), 0);
                     encoder.set_buffer(1, Some(weight), 0);
                     encoder.set_buffer(2, Some(output), 0);
-                    encoder.set_bytes(3, 4, &hidden as *const u32 as *const _);
-                    encoder.set_bytes(4, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                    if xsum {
+                        encoder.set_buffer(3, Some(&self.workspace.xsum64), 0);
+                        encoder.set_bytes(4, 4, &hidden as *const u32 as *const _);
+                        encoder.set_bytes(5, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                    } else {
+                        encoder.set_bytes(3, 4, &hidden as *const u32 as *const _);
+                        encoder.set_bytes(4, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                    }
                     // sized to the ACTUAL threadgroup: the scratch is one float per thread and
                     // a hardcoded 256 silently under-allocates for any larger tg, which showed
                     // up immediately as diverged tokens rather than as a crash
                     encoder.set_threadgroup_memory_length(0, (rms_n as u64) * 4);
+                },
+            )
+        }
+
+        fn add_rmsnorm_kernel(&self) -> &'static str {
+            if self.fuse_add_rmsnorm_bad {
+                QWEN38_ADD_RMSNORM_BAD_KERNEL
+            } else if self.affine2_geo.uses_xsum() {
+                QWEN38_ADD_RMSNORM_XSUM64_KERNEL
+            } else {
+                QWEN38_ADD_RMSNORM_KERNEL
+            }
+        }
+
+        fn next_norm_weight_name(layer: usize) -> String {
+            if layer + 1 < QWEN38_LAYERS {
+                qwen38_layer_name(layer + 1, "input_layernorm.weight")
+            } else {
+                "language_model.model.norm.weight".to_string()
+            }
+        }
+
+        fn encode_add_residual_rmsnorm(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            residual_in: &PinnedBuffer,
+            delta: &PinnedBuffer,
+            residual_out: &PinnedBuffer,
+            weight_name: &str,
+            x_norm: &PinnedBuffer,
+        ) -> Result<()> {
+            let weight = self.f32(weight_name)?;
+            let rms_tg: u32 = std::env::var("HAWKING_RMSNORM_TG")
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+                .unwrap_or(1024);
+            let tg = if rms_tg > 0 { rms_tg } else { 256 };
+            let hidden = QWEN38_HIDDEN as u32;
+            let xsum = self.affine2_geo.uses_xsum() && !self.fuse_add_rmsnorm_bad;
+            tcb.dispatch_threads(
+                self.add_rmsnorm_kernel(),
+                (tg, 1, 1),
+                (tg, 1, 1),
+                |encoder| {
+                    encoder.set_buffer(0, Some(residual_in), 0);
+                    encoder.set_buffer(1, Some(delta), 0);
+                    encoder.set_buffer(2, Some(residual_out), 0);
+                    encoder.set_buffer(3, Some(weight), 0);
+                    encoder.set_buffer(4, Some(x_norm), 0);
+                    if xsum {
+                        encoder.set_buffer(5, Some(&self.workspace.xsum64), 0);
+                        encoder.set_bytes(6, 4, &hidden as *const u32 as *const _);
+                        encoder.set_bytes(7, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                    } else {
+                        encoder.set_bytes(5, 4, &hidden as *const u32 as *const _);
+                        encoder.set_bytes(6, 4, &QWEN38_RMS_EPS as *const f32 as *const _);
+                    }
+                    encoder.set_threadgroup_memory_length(0, (tg as u64) * 4);
                 },
             )
         }
@@ -3047,46 +5242,81 @@ mod device {
                 return self.encode_dense_mlp_mixed(tcb, layer, input);
             }
             let n = QWEN38_INTERMEDIATE as u32;
-            self.encode_rmsnorm(
-                tcb,
-                input,
-                &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
-                &self.workspace.normalized,
-                QWEN38_HIDDEN as u32,
-            )?;
-            self.encode_independent_q4_pair(
-                tcb,
-                &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.gate,
-                &qwen38_layer_name(layer, "mlp.up_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.up,
-            )?;
-            tcb.dispatch_threads(
-                crate::decode_family::swiglu_f32(),
-                (n, 1, 1),
-                (n.min(256).max(1), 1, 1),
-                |encoder| {
-                    encoder.set_buffer(0, Some(&self.workspace.gate), 0);
-                    encoder.set_buffer(1, Some(&self.workspace.up), 0);
-                    encoder.set_buffer(2, Some(&self.workspace.act), 0);
-                    encoder.set_bytes(3, 4, &n as *const u32 as *const _);
-                },
-            )?;
+            if !self.fuse_add_rmsnorm {
+                self.encode_rmsnorm(
+                    tcb,
+                    input,
+                    &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )?;
+            }
+            match self.mlp_fusion {
+                Qwen38MlpFusion::Off => {
+                    self.encode_independent_q4_pair(
+                        tcb,
+                        &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.gate,
+                        &qwen38_layer_name(layer, "mlp.up_proj.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.up,
+                    )?;
+                    tcb.dispatch_threads(
+                        crate::decode_family::swiglu_f32(),
+                        (n, 1, 1),
+                        (n.min(256).max(1), 1, 1),
+                        |encoder| {
+                            encoder.set_buffer(0, Some(&self.workspace.gate), 0);
+                            encoder.set_buffer(1, Some(&self.workspace.up), 0);
+                            encoder.set_buffer(2, Some(&self.workspace.act), 0);
+                            encoder.set_bytes(3, 4, &n as *const u32 as *const _);
+                        },
+                    )?;
+                }
+                Qwen38MlpFusion::GateUpPair => {
+                    self.encode_fused_gate_up(tcb, layer, false)?;
+                    tcb.dispatch_threads(
+                        crate::decode_family::swiglu_f32(),
+                        (n, 1, 1),
+                        (n.min(256).max(1), 1, 1),
+                        |encoder| {
+                            encoder.set_buffer(0, Some(&self.workspace.gate), 0);
+                            encoder.set_buffer(1, Some(&self.workspace.up), 0);
+                            encoder.set_buffer(2, Some(&self.workspace.act), 0);
+                            encoder.set_bytes(3, 4, &n as *const u32 as *const _);
+                        },
+                    )?;
+                }
+                Qwen38MlpFusion::GateUpSwiglu => {
+                    self.encode_fused_gate_up(tcb, layer, true)?;
+                }
+            }
             self.encode_q4_matvec(
                 tcb,
                 &qwen38_layer_name(layer, "mlp.down_proj.weight"),
                 &self.workspace.act,
                 &self.workspace.down,
             )?;
-            qwen_next_add_residual_tcb(
-                tcb,
-                input,
-                &self.workspace.down,
-                &self.workspace.hidden,
-                QWEN38_HIDDEN,
-            )
+            if self.fuse_add_rmsnorm {
+                let next = Self::next_norm_weight_name(layer);
+                self.encode_add_residual_rmsnorm(
+                    tcb,
+                    input,
+                    &self.workspace.down,
+                    &self.workspace.hidden,
+                    &next,
+                    &self.workspace.normalized,
+                )
+            } else {
+                qwen_next_add_residual_tcb(
+                    tcb,
+                    input,
+                    &self.workspace.down,
+                    &self.workspace.hidden,
+                    QWEN38_HIDDEN,
+                )
+            }
         }
 
         fn encode_deltanet(
@@ -3101,22 +5331,34 @@ mod device {
             let slot = qwen38_deltanet_state_slot(layer)?;
             let conv_off = (slot * layout.conv_state_elements() * 4) as u64;
             let rec_off = (slot * layout.recurrent_state_elements() * 4) as u64;
-            self.encode_rmsnorm(
-                tcb,
-                &self.workspace.hidden,
-                &qwen38_layer_name(layer, "input_layernorm.weight"),
-                &self.workspace.normalized,
-                QWEN38_HIDDEN as u32,
-            )?;
-            self.encode_independent_q4_pair(
-                tcb,
-                &qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
-                &self.workspace.normalized,
-                &self.workspace.qkvz,
-                &qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
-                &self.workspace.normalized,
-                &self.workspace.ba,
-            )?;
+            if !(self.fuse_add_rmsnorm && layer > 0) {
+                self.encode_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &qwen38_layer_name(layer, "input_layernorm.weight"),
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )?;
+            }
+            if self.fuse_dn_inproj {
+                self.encode_fused_pair_concat(
+                    tcb,
+                    &qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
+                    &self.workspace.qkvz,
+                    &qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
+                    &self.workspace.ba,
+                )?;
+            } else {
+                self.encode_independent_q4_pair(
+                    tcb,
+                    &qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.qkvz,
+                    &qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.ba,
+                )?;
+            }
             let conv_w = self.f32(&qwen38_layer_name(layer, "linear_attn.conv1d.weight"))?;
             tcb.dispatch_threads(
                 "qwen38_qkvz_rearrange_conv_l2_f32",
@@ -3144,25 +5386,7 @@ mod device {
                     encoder.set_threadgroup_memory_length(0, 4 * 256 * 4);
                 },
             )?;
-            let a_log = self.f32(&qwen38_layer_name(layer, "linear_attn.A_log"))?;
-            let dt_bias = self.f32(&qwen38_layer_name(layer, "linear_attn.dt_bias"))?;
-            tcb.dispatch_threads(
-                "qwen80_ba_to_decay_beta_f32",
-                (layout.value_heads as u32, 1, 1),
-                (16, 1, 1),
-                |encoder| {
-                    encoder.set_buffer(0, Some(&self.workspace.ba), 0);
-                    encoder.set_buffer(1, Some(a_log), 0);
-                    encoder.set_buffer(2, Some(dt_bias), 0);
-                    encoder.set_buffer(3, Some(&self.workspace.decay), 0);
-                    encoder.set_buffer(4, Some(&self.workspace.beta), 0);
-                    let kh = layout.key_heads as u32;
-                    let vpk = layout.values_per_key as u32;
-                    encoder.set_bytes(5, 4, &kh as *const u32 as *const _);
-                    encoder.set_bytes(6, 4, &vpk as *const u32 as *const _);
-                },
-            )?;
-            self.encode_gated_delta(tcb, rec_off)?;
+            self.encode_dn_ba_and_delta(tcb, layer, rec_off)?;
             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
             let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
                 .ok()
@@ -3206,13 +5430,24 @@ mod device {
                 &self.workspace.gated,
                 &self.workspace.mixer,
             )?;
-            qwen_next_add_residual_tcb(
-                tcb,
-                &self.workspace.hidden,
-                &self.workspace.mixer,
-                &self.workspace.first_residual,
-                QWEN38_HIDDEN,
-            )
+            if self.fuse_add_rmsnorm {
+                self.encode_add_residual_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
+                    &self.workspace.normalized,
+                )
+            } else {
+                qwen_next_add_residual_tcb(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    QWEN38_HIDDEN,
+                )
+            }
         }
 
         fn encode_gqa(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
@@ -3228,36 +5463,42 @@ mod device {
             let slot = qwen38_gqa_state_slot(layer)?;
             let slot_elems = self.max_seq_len * QWEN38_GQA_KV_HEADS * QWEN38_GQA_HEAD_DIM;
             let cache_off = (slot * slot_elems * 4) as u64;
-            self.encode_rmsnorm(
-                tcb,
-                &self.workspace.hidden,
-                &qwen38_layer_name(layer, "input_layernorm.weight"),
-                &self.workspace.normalized,
-                QWEN38_HIDDEN as u32,
-            )?;
-            if self.concurrent_independent {
-                tcb.begin_concurrent_group()?;
+            if !(self.fuse_add_rmsnorm && layer > 0) {
+                self.encode_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &qwen38_layer_name(layer, "input_layernorm.weight"),
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )?;
             }
-            self.encode_q4_matvec(
-                tcb,
-                &qwen38_layer_name(layer, "self_attn.q_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.q_proj,
-            )?;
-            self.encode_q4_matvec(
-                tcb,
-                &qwen38_layer_name(layer, "self_attn.k_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.k_proj,
-            )?;
-            self.encode_q4_matvec(
-                tcb,
-                &qwen38_layer_name(layer, "self_attn.v_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.v_proj,
-            )?;
-            if self.concurrent_independent {
-                tcb.end_concurrent_group()?;
+            if self.fuse_gqa_qkv {
+                self.encode_fused_qkv(tcb, layer)?;
+            } else {
+                if self.concurrent_independent {
+                    tcb.begin_concurrent_group()?;
+                }
+                self.encode_q4_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.q_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.q_proj,
+                )?;
+                self.encode_q4_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.k_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.k_proj,
+                )?;
+                self.encode_q4_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.v_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.v_proj,
+                )?;
+                if self.concurrent_independent {
+                    tcb.end_concurrent_group()?;
+                }
             }
             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
@@ -3340,13 +5581,24 @@ mod device {
                 &self.workspace.gated_attn,
                 &self.workspace.mixer,
             )?;
-            qwen_next_add_residual_tcb(
-                tcb,
-                &self.workspace.hidden,
-                &self.workspace.mixer,
-                &self.workspace.first_residual,
-                QWEN38_HIDDEN,
-            )
+            if self.fuse_add_rmsnorm {
+                self.encode_add_residual_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
+                    &self.workspace.normalized,
+                )
+            } else {
+                qwen_next_add_residual_tcb(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    QWEN38_HIDDEN,
+                )
+            }
         }
 
         fn encode_layers(&self, tcb: &mut TokenCommandBuffer<'_>) -> Result<()> {
@@ -3364,13 +5616,15 @@ mod device {
             if !self.weights.mixed.is_empty() {
                 return self.encode_terminal_mixed(tcb);
             }
-            self.encode_rmsnorm(
-                tcb,
-                &self.workspace.hidden,
-                "language_model.model.norm.weight",
-                &self.workspace.normalized,
-                QWEN38_HIDDEN as u32,
-            )?;
+            if !self.fuse_add_rmsnorm {
+                self.encode_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    "language_model.model.norm.weight",
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )?;
+            }
             self.encode_q4_matvec(
                 tcb,
                 "language_model.lm_head.weight",
@@ -3387,6 +5641,31 @@ mod device {
 
         fn encode_embed_mixed(&self, tcb: &mut TokenCommandBuffer<'_>, token: u32) -> Result<()> {
             const EMBED: &str = "language_model.model.embed_tokens.weight";
+            if let Some(MixedGpuWeight::Affine(weight)) = self.weights.mixed.get(EMBED) {
+                if weight.rows != QWEN38_VOCAB as u32 || weight.cols != QWEN38_HIDDEN as u32 {
+                    return Err(mixed_error("embed HGRAVF01 shape drifted"));
+                }
+                let biases = weight.biases.as_ref().ok_or_else(|| {
+                    mixed_error("embed HGRAVF01 is delta-only (q2f); embed kernel needs bias")
+                })?;
+                let hidden = QWEN38_HIDDEN as u32;
+                let vocab = QWEN38_VOCAB as u32;
+                return tcb.dispatch_threads(
+                    QWEN38_HGRAFV_EMBED,
+                    (hidden, 1, 1),
+                    (256, 1, 1),
+                    |encoder| {
+                        encoder.set_buffer(0, Some(&weight.codes), 0);
+                        encoder.set_buffer(1, Some(&weight.scales), 0);
+                        encoder.set_buffer(2, Some(biases), 0);
+                        encoder.set_buffer(3, Some(&self.workspace.hidden), 0);
+                        set_u32(encoder, 4, token);
+                        set_u32(encoder, 5, hidden);
+                        set_u32(encoder, 6, vocab);
+                        set_u32(encoder, 7, weight.group_size);
+                    },
+                );
+            }
             if let Some(MixedGpuWeight::Uniform(weight)) = self.weights.mixed.get(EMBED) {
                 if weight.rows != QWEN38_VOCAB as u32 || weight.cols != QWEN38_HIDDEN as u32 {
                     return Err(mixed_error("embed HGRAVU01 shape drifted"));
@@ -3434,7 +5713,7 @@ mod device {
                 );
             }
             Err(mixed_error(
-                "embed is neither HGRAVU01 nor HQ30UQ4; refusing silent fallback",
+                "embed is neither HGRAVF01 nor HGRAVU01 nor HQ30UQ4; refusing silent fallback",
             ))
         }
 
@@ -3445,49 +5724,84 @@ mod device {
             input: &PinnedBuffer,
         ) -> Result<()> {
             let n = QWEN38_INTERMEDIATE as u32;
-            self.encode_rmsnorm(
-                tcb,
-                input,
-                &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
-                &self.workspace.normalized,
-                QWEN38_HIDDEN as u32,
-            )?;
-            self.encode_named_matvec(
-                tcb,
-                &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.gate,
-            )?;
-            self.encode_named_matvec(
-                tcb,
-                &qwen38_layer_name(layer, "mlp.up_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.up,
-            )?;
-            tcb.dispatch_threads(
-                crate::decode_family::swiglu_f32(),
-                (n, 1, 1),
-                (n.min(256).max(1), 1, 1),
-                |encoder| {
-                    encoder.set_buffer(0, Some(&self.workspace.gate), 0);
-                    encoder.set_buffer(1, Some(&self.workspace.up), 0);
-                    encoder.set_buffer(2, Some(&self.workspace.act), 0);
-                    encoder.set_bytes(3, 4, &n as *const u32 as *const _);
-                },
-            )?;
+            if !self.fuse_add_rmsnorm {
+                self.encode_rmsnorm(
+                    tcb,
+                    input,
+                    &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )?;
+            }
+            match self.mlp_fusion {
+                Qwen38MlpFusion::Off => {
+                    self.encode_named_matvec(
+                        tcb,
+                        &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.gate,
+                    )?;
+                    self.encode_named_matvec(
+                        tcb,
+                        &qwen38_layer_name(layer, "mlp.up_proj.weight"),
+                        &self.workspace.normalized,
+                        &self.workspace.up,
+                    )?;
+                    tcb.dispatch_threads(
+                        crate::decode_family::swiglu_f32(),
+                        (n, 1, 1),
+                        (n.min(256).max(1), 1, 1),
+                        |encoder| {
+                            encoder.set_buffer(0, Some(&self.workspace.gate), 0);
+                            encoder.set_buffer(1, Some(&self.workspace.up), 0);
+                            encoder.set_buffer(2, Some(&self.workspace.act), 0);
+                            encoder.set_bytes(3, 4, &n as *const u32 as *const _);
+                        },
+                    )?;
+                }
+                Qwen38MlpFusion::GateUpPair => {
+                    self.encode_fused_gate_up(tcb, layer, false)?;
+                    tcb.dispatch_threads(
+                        crate::decode_family::swiglu_f32(),
+                        (n, 1, 1),
+                        (n.min(256).max(1), 1, 1),
+                        |encoder| {
+                            encoder.set_buffer(0, Some(&self.workspace.gate), 0);
+                            encoder.set_buffer(1, Some(&self.workspace.up), 0);
+                            encoder.set_buffer(2, Some(&self.workspace.act), 0);
+                            encoder.set_bytes(3, 4, &n as *const u32 as *const _);
+                        },
+                    )?;
+                }
+                Qwen38MlpFusion::GateUpSwiglu => {
+                    self.encode_fused_gate_up(tcb, layer, true)?;
+                }
+            }
             self.encode_named_matvec(
                 tcb,
                 &qwen38_layer_name(layer, "mlp.down_proj.weight"),
                 &self.workspace.act,
                 &self.workspace.down,
             )?;
-            qwen_next_add_residual_tcb(
-                tcb,
-                input,
-                &self.workspace.down,
-                &self.workspace.hidden,
-                QWEN38_HIDDEN,
-            )
+            if self.fuse_add_rmsnorm {
+                let next = Self::next_norm_weight_name(layer);
+                self.encode_add_residual_rmsnorm(
+                    tcb,
+                    input,
+                    &self.workspace.down,
+                    &self.workspace.hidden,
+                    &next,
+                    &self.workspace.normalized,
+                )
+            } else {
+                qwen_next_add_residual_tcb(
+                    tcb,
+                    input,
+                    &self.workspace.down,
+                    &self.workspace.hidden,
+                    QWEN38_HIDDEN,
+                )
+            }
         }
 
         fn encode_deltanet_mixed(
@@ -3499,28 +5813,40 @@ mod device {
             let slot = qwen38_deltanet_state_slot(layer)?;
             let conv_off = (slot * layout.conv_state_elements() * 4) as u64;
             let rec_off = (slot * layout.recurrent_state_elements() * 4) as u64;
-            self.encode_rmsnorm(
-                tcb,
-                &self.workspace.hidden,
-                &qwen38_layer_name(layer, "input_layernorm.weight"),
-                &self.workspace.normalized,
-                QWEN38_HIDDEN as u32,
-            )?;
+            if !(self.fuse_add_rmsnorm && layer > 0) {
+                self.encode_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &qwen38_layer_name(layer, "input_layernorm.weight"),
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )?;
+            }
             let fused_qkvz = qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight");
             let fused_ba = qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight");
             if self.has_weight(&fused_qkvz) && self.has_weight(&fused_ba) {
-                self.encode_named_matvec(
-                    tcb,
-                    &fused_qkvz,
-                    &self.workspace.normalized,
-                    &self.workspace.qkvz,
-                )?;
-                self.encode_named_matvec(
-                    tcb,
-                    &fused_ba,
-                    &self.workspace.normalized,
-                    &self.workspace.ba,
-                )?;
+                if self.fuse_dn_inproj {
+                    self.encode_fused_pair_concat(
+                        tcb,
+                        &fused_qkvz,
+                        &self.workspace.qkvz,
+                        &fused_ba,
+                        &self.workspace.ba,
+                    )?;
+                } else {
+                    self.encode_named_matvec(
+                        tcb,
+                        &fused_qkvz,
+                        &self.workspace.normalized,
+                        &self.workspace.qkvz,
+                    )?;
+                    self.encode_named_matvec(
+                        tcb,
+                        &fused_ba,
+                        &self.workspace.normalized,
+                        &self.workspace.ba,
+                    )?;
+                }
             } else if self.has_weight(&qwen38_layer_name(layer, "linear_attn.in_proj_qkv.weight")) {
                 self.encode_split_deltanet_projections(tcb, layer)?;
             } else {
@@ -3555,25 +5881,7 @@ mod device {
                     encoder.set_threadgroup_memory_length(0, 4 * 256 * 4);
                 },
             )?;
-            let a_log = self.f32(&qwen38_layer_name(layer, "linear_attn.A_log"))?;
-            let dt_bias = self.f32(&qwen38_layer_name(layer, "linear_attn.dt_bias"))?;
-            tcb.dispatch_threads(
-                "qwen80_ba_to_decay_beta_f32",
-                (layout.value_heads as u32, 1, 1),
-                (16, 1, 1),
-                |encoder| {
-                    encoder.set_buffer(0, Some(&self.workspace.ba), 0);
-                    encoder.set_buffer(1, Some(a_log), 0);
-                    encoder.set_buffer(2, Some(dt_bias), 0);
-                    encoder.set_buffer(3, Some(&self.workspace.decay), 0);
-                    encoder.set_buffer(4, Some(&self.workspace.beta), 0);
-                    let kh = layout.key_heads as u32;
-                    let vpk = layout.values_per_key as u32;
-                    encoder.set_bytes(5, 4, &kh as *const u32 as *const _);
-                    encoder.set_bytes(6, 4, &vpk as *const u32 as *const _);
-                },
-            )?;
-            self.encode_gated_delta(tcb, rec_off)?;
+            self.encode_dn_ba_and_delta(tcb, layer, rec_off)?;
             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
             let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
                 .ok()
@@ -3617,13 +5925,24 @@ mod device {
                 &self.workspace.gated,
                 &self.workspace.mixer,
             )?;
-            qwen_next_add_residual_tcb(
-                tcb,
-                &self.workspace.hidden,
-                &self.workspace.mixer,
-                &self.workspace.first_residual,
-                QWEN38_HIDDEN,
-            )
+            if self.fuse_add_rmsnorm {
+                self.encode_add_residual_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
+                    &self.workspace.normalized,
+                )
+            } else {
+                qwen_next_add_residual_tcb(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    QWEN38_HIDDEN,
+                )
+            }
         }
 
         fn encode_gqa_mixed(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
@@ -3636,31 +5955,37 @@ mod device {
             let slot = qwen38_gqa_state_slot(layer)?;
             let slot_elems = self.max_seq_len * QWEN38_GQA_KV_HEADS * QWEN38_GQA_HEAD_DIM;
             let cache_off = (slot * slot_elems * 4) as u64;
-            self.encode_rmsnorm(
-                tcb,
-                &self.workspace.hidden,
-                &qwen38_layer_name(layer, "input_layernorm.weight"),
-                &self.workspace.normalized,
-                QWEN38_HIDDEN as u32,
-            )?;
-            self.encode_named_matvec(
-                tcb,
-                &qwen38_layer_name(layer, "self_attn.q_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.q_proj,
-            )?;
-            self.encode_named_matvec(
-                tcb,
-                &qwen38_layer_name(layer, "self_attn.k_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.k_proj,
-            )?;
-            self.encode_named_matvec(
-                tcb,
-                &qwen38_layer_name(layer, "self_attn.v_proj.weight"),
-                &self.workspace.normalized,
-                &self.workspace.v_proj,
-            )?;
+            if !(self.fuse_add_rmsnorm && layer > 0) {
+                self.encode_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &qwen38_layer_name(layer, "input_layernorm.weight"),
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )?;
+            }
+            if self.fuse_gqa_qkv {
+                self.encode_fused_qkv(tcb, layer)?;
+            } else {
+                self.encode_named_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.q_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.q_proj,
+                )?;
+                self.encode_named_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.k_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.k_proj,
+                )?;
+                self.encode_named_matvec(
+                    tcb,
+                    &qwen38_layer_name(layer, "self_attn.v_proj.weight"),
+                    &self.workspace.normalized,
+                    &self.workspace.v_proj,
+                )?;
+            }
             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
             let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
@@ -3742,23 +6067,36 @@ mod device {
                 &self.workspace.gated_attn,
                 &self.workspace.mixer,
             )?;
-            qwen_next_add_residual_tcb(
-                tcb,
-                &self.workspace.hidden,
-                &self.workspace.mixer,
-                &self.workspace.first_residual,
-                QWEN38_HIDDEN,
-            )
+            if self.fuse_add_rmsnorm {
+                self.encode_add_residual_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    &qwen38_layer_name(layer, "post_attention_layernorm.weight"),
+                    &self.workspace.normalized,
+                )
+            } else {
+                qwen_next_add_residual_tcb(
+                    tcb,
+                    &self.workspace.hidden,
+                    &self.workspace.mixer,
+                    &self.workspace.first_residual,
+                    QWEN38_HIDDEN,
+                )
+            }
         }
 
         fn encode_terminal_mixed(&self, tcb: &mut TokenCommandBuffer<'_>) -> Result<()> {
-            self.encode_rmsnorm(
-                tcb,
-                &self.workspace.hidden,
-                "language_model.model.norm.weight",
-                &self.workspace.normalized,
-                QWEN38_HIDDEN as u32,
-            )?;
+            if !self.fuse_add_rmsnorm {
+                self.encode_rmsnorm(
+                    tcb,
+                    &self.workspace.hidden,
+                    "language_model.model.norm.weight",
+                    &self.workspace.normalized,
+                    QWEN38_HIDDEN as u32,
+                )?;
+            }
             self.encode_named_matvec(
                 tcb,
                 "language_model.lm_head.weight",
@@ -3866,11 +6204,12 @@ mod device {
             }
             let encode_t0 = Instant::now();
             let mut tcb = TokenCommandBuffer::new(&self.context);
-            self.encode_embed(&mut tcb, token)?;
-            self.encode_layers(&mut tcb)?;
-            self.encode_terminal(&mut tcb)?;
+            Self::enable_dispatch_name_trace(&mut tcb);
+            self.encode_full_token(&mut tcb, token)?;
+            let harvested = tcb.structural_kernel_names().map(|names| names.to_vec());
             let encode_ns = encode_t0.elapsed().as_nanos() as u64;
             let mut timing = tcb.commit_and_wait_timed()?;
+            self.harvest_dispatch_names(harvested);
             if timing.encode_ns == 0 {
                 timing.encode_ns = encode_ns;
             }
@@ -3889,14 +6228,17 @@ mod device {
                 ));
             }
             let wall = Instant::now();
-            let encode_started = Instant::now();
+            let alloc_started = Instant::now();
             let mut tcb = TokenCommandBuffer::new(&self.context);
-            self.encode_embed(&mut tcb, token)?;
-            self.encode_layers(&mut tcb)?;
-            self.encode_terminal(&mut tcb)?;
+            let allocation_ns = alloc_started.elapsed().as_nanos() as u64;
+            Self::enable_dispatch_name_trace(&mut tcb);
+            let encode_started = Instant::now();
+            self.encode_full_token(&mut tcb, token)?;
+            let harvested = tcb.structural_kernel_names().map(|names| names.to_vec());
             let encode_ns = encode_started.elapsed().as_nanos() as u64;
             let commit_started = Instant::now();
             let timing = tcb.commit_and_wait_timed()?;
+            self.harvest_dispatch_names(harvested);
             let commit_return_ns = commit_started.elapsed().as_nanos() as u64;
             let submit_plus_wait = timing.submit_ns.saturating_add(timing.wait_ns);
             let commit_epilogue_ns = commit_return_ns.saturating_sub(submit_plus_wait);
@@ -3906,6 +6248,11 @@ mod device {
             let state_started = Instant::now();
             self.position = self.position.saturating_add(1);
             let state_update_ns = state_started.elapsed().as_nanos() as u64;
+            let command_buffers = if timing.command_buffers == 0 {
+                1
+            } else {
+                timing.command_buffers
+            };
             Ok((
                 sampled,
                 Qwen38StepWall {
@@ -3914,12 +6261,18 @@ mod device {
                     submit_ns: timing.submit_ns,
                     wait_ns: timing.wait_ns,
                     gpu_ns: timing.gpu_ns,
+                    gpu_start_s: timing.gpu_start_s,
+                    gpu_end_s: timing.gpu_end_s,
+                    gpu_start_ns: timing.gpu_start_ns,
+                    gpu_end_ns: timing.gpu_end_ns,
+                    allocation_ns,
+                    encoder_count: timing.encoder_count,
                     commit_epilogue_ns,
                     sample_readback_ns,
                     state_update_ns,
                     tcb_encode_ns: timing.encode_ns,
                     dispatches: timing.dispatches,
-                    command_buffers: 1,
+                    command_buffers,
                 },
             ))
         }
@@ -3963,9 +6316,13 @@ mod device {
         let prefill_wall_ns = prefill.elapsed().as_nanos() as u64;
         tokens.push(next);
         let decode = Instant::now();
+        let ignore_eos = std::env::var("HAWKING_QWEN38_IGNORE_EOS")
+            .map(|v| v != "0")
+            .unwrap_or(false);
         while tokens.len() - prompt.len() < max_new_tokens {
-            if next == crate::model::qwen38_geometry::QWEN38_EOS_IM_END
-                || next == crate::model::qwen38_geometry::QWEN38_EOS_END_OF_TEXT
+            if !ignore_eos
+                && (next == crate::model::qwen38_geometry::QWEN38_EOS_IM_END
+                    || next == crate::model::qwen38_geometry::QWEN38_EOS_END_OF_TEXT)
             {
                 break;
             }
@@ -3992,6 +6349,7 @@ mod device {
             submit_ns,
             dispatches,
             fallbacks: session.fallbacks,
+            dense_w_materialized: session.dense_w_materialized,
             first_step_wall_ns,
             prefill_wall_ns,
             decode_wall_ns,
@@ -4079,6 +6437,7 @@ mod device {
             prefill_wall_ns,
             decode_wall_ns,
             fallbacks: session.fallbacks,
+            dense_w_materialized: session.dense_w_materialized,
             steps,
         })
     }
@@ -4195,6 +6554,20 @@ pub struct Qwen38StepWall {
     pub submit_ns: u64,
     pub wait_ns: u64,
     pub gpu_ns: Option<u64>,
+    /// Absolute `GPUStartTime` seconds on the driver epoch.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_s: Option<f64>,
+    /// Absolute `GPUEndTime` seconds, paired with `gpu_start_s`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_s: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_ns: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_ns: Option<u64>,
+    /// Host Instant around `TokenCommandBuffer::new`. Split out of encode so
+    /// allocation is a classified idle cause, not mixed into command construction.
+    pub allocation_ns: u64,
+    pub encoder_count: u64,
     /// `commit_and_wait_timed` return minus submit minus wait: GPU timestamp
     /// read + command-buffer status check after the host wait returns.
     pub commit_epilogue_ns: u64,
@@ -4208,7 +6581,8 @@ pub struct Qwen38StepWall {
 
 impl Qwen38StepWall {
     pub fn named_sum_ns(&self) -> u64 {
-        self.encode_ns
+        self.allocation_ns
+            .saturating_add(self.encode_ns)
             .saturating_add(self.submit_ns)
             .saturating_add(self.wait_ns)
             .saturating_add(self.commit_epilogue_ns)
@@ -4263,6 +6637,7 @@ pub struct Qwen38CompleteWallResult {
     pub prefill_wall_ns: u64,
     pub decode_wall_ns: u64,
     pub fallbacks: u32,
+    pub dense_w_materialized: u64,
     pub steps: Vec<Qwen38CompleteToken>,
 }
 
@@ -4301,6 +6676,7 @@ pub struct Qwen38GenerateResult {
     pub submit_ns: Vec<u64>,
     pub dispatches: Vec<u64>,
     pub fallbacks: u32,
+    pub dense_w_materialized: u64,
     pub first_step_wall_ns: u64,
     pub prefill_wall_ns: u64,
     pub decode_wall_ns: u64,
@@ -4403,14 +6779,39 @@ mod mixed_catalog_contract_tests {
     }
 
     #[test]
-    fn unknown_codec_5_still_refuses() {
-        let err = classify_qwen38_mixed_payload(5, b"xxxxxxxx", "tensor.x", &[1])
-            .expect_err("codec 5 must refuse");
+    fn unknown_codec_6_still_refuses() {
+        let err = classify_qwen38_mixed_payload(6, b"xxxxxxxx", "tensor.x", &[1])
+            .expect_err("codec 6 must refuse");
         let msg = format!("{err}");
         assert!(
-            msg.contains("unknown mixed codec 5"),
+            msg.contains("unknown mixed codec 6"),
             "refuse message was {msg}"
         );
+    }
+
+    #[test]
+    fn classify_codec_5_hgrafv01_is_affine() {
+        let packed = super::super::qwen_complete_binary::pack_affine_factor(
+            &super::super::qwen_complete_binary::deterministic_matrix(2, 32, 7),
+            2,
+            32,
+        )
+        .unwrap();
+        let payload = super::super::qwen_complete_binary::wrap_affine_factor(&packed).unwrap();
+        let lane = classify_qwen38_mixed_payload(5, &payload, "tensor.x", &[2, 32]).unwrap();
+        assert_eq!(lane, MixedCatalogLane::Affine);
+        assert_eq!(
+            mixed_mlp_native_kind_from_lane(lane),
+            Some(MixedMlpNativeKind::AffineScaleBias)
+        );
+    }
+
+    #[test]
+    fn classify_codec_5_wrong_magic_refuses() {
+        let err = classify_qwen38_mixed_payload(5, b"HGRAVU01xxxx", "tensor.x", &[1])
+            .expect_err("codec 5 wrong magic must refuse");
+        let msg = format!("{err}");
+        assert!(msg.contains("not HGRAVF01"), "refuse message was {msg}");
     }
 
     fn filled_mlp_kinds(kind: MixedMlpNativeKind) -> HashMap<String, MixedMlpNativeKind> {
@@ -4426,6 +6827,12 @@ mod mixed_catalog_contract_tests {
     #[test]
     fn mixed_mlp_uniform_is_admitted_on_every_role() {
         let kinds = filled_mlp_kinds(MixedMlpNativeKind::Uniform);
+        assert_mixed_mlp_native_kinds(|name| kinds.get(name).copied()).unwrap();
+    }
+
+    #[test]
+    fn mixed_mlp_affine_is_admitted_on_every_role() {
+        let kinds = filled_mlp_kinds(MixedMlpNativeKind::AffineScaleBias);
         assert_mixed_mlp_native_kinds(|name| kinds.get(name).copied()).unwrap();
     }
 
@@ -4609,7 +7016,7 @@ mod mixed_catalog_contract_tests {
     }
 
     #[test]
-    fn catalog_roundtrip_codec_4_census_and_codec_5_refuses() {
+    fn catalog_roundtrip_codec_4_census_and_codec_6_refuses() {
         let tmp = tempfile::tempdir().unwrap();
         let root = tmp.path();
         std::fs::create_dir(root.join("segments")).unwrap();
@@ -4629,11 +7036,39 @@ mod mixed_catalog_contract_tests {
         assert_eq!(census.refused, 0);
         assert_eq!(census.expanded_to_q4, 0);
         assert_eq!(census.expanded_to_float_gemv, 0);
+        assert_eq!(census.dense_w_materialized, 0);
 
-        write_tiny_hq38m20(root, "tensor.x", 5, &payload);
+        write_tiny_hq38m20(root, "tensor.x", 6, &payload);
         let census = census_qwen38_mixed_catalog(root).unwrap();
         assert_eq!(census.refused, 1);
-        assert!(census.refusals.iter().any(|s| s.contains("unknown mixed codec 5")));
+        assert!(census.refusals.iter().any(|s| s.contains("unknown mixed codec 6")));
+    }
+
+    #[test]
+    fn catalog_roundtrip_codec_5_affine_census() {
+        let tmp = tempfile::tempdir().unwrap();
+        let root = tmp.path();
+        std::fs::create_dir(root.join("segments")).unwrap();
+        let packed = super::super::qwen_complete_binary::pack_affine_factor(
+            &super::super::qwen_complete_binary::deterministic_matrix(2, 32, 11),
+            2,
+            32,
+        )
+        .unwrap();
+        let payload = super::super::qwen_complete_binary::wrap_affine_factor(&packed).unwrap();
+        write_tiny_hq38m20(
+            root,
+            "language_model.model.layers.0.mlp.gate_proj.weight",
+            5,
+            &payload,
+        );
+        let census = census_qwen38_mixed_catalog(root).unwrap();
+        assert_eq!(census.tensors, 1);
+        assert_eq!(census.affine, 1);
+        assert_eq!(census.refused, 0);
+        assert_eq!(census.expanded_to_q4, 0);
+        assert_eq!(census.expanded_to_float_gemv, 0);
+        assert_eq!(census.dense_w_materialized, 0);
     }
 
     #[test]
@@ -4703,6 +7138,7 @@ mod mixed_catalog_contract_tests {
         assert_eq!(census.refused, 0, "refusals: {:?}", census.refusals);
         assert_eq!(census.expanded_to_q4, 0);
         assert_eq!(census.expanded_to_float_gemv, 0);
+        assert_eq!(census.dense_w_materialized, 0);
         assert_eq!(census.tensors, 851);
         assert_eq!(census.binary, 64);
         assert_eq!(census.residual, 368);
@@ -4751,6 +7187,140 @@ mod mixed_catalog_contract_tests {
         assert!(qwen38_uniform_q4_geo_tpr64_launch(64, 5120, 160).is_none());
         assert!(crate::metal::SHADER_QWEN_UNIFORM_Q4
             .contains("kernel void qwen_uniform_q4_group128_matvec_geo_tpr64_tg128("));
+    }
+
+    #[test]
+    fn affine_q2_geo_tpr64_bind_is_group32_or_64() {
+        let on32 = qwen38_affine_q2_geo_tpr64_launch(32, 17408, 5120);
+        let on64 = qwen38_affine_q2_geo_tpr64_launch(64, 17408, 5120);
+        if qwen38_recon_fuse_enabled() {
+            let launch = on32.expect("affine geo g32");
+            assert_eq!(launch.0, QWEN38_AFFINE_Q2_GEO_TPR64);
+            assert_eq!(launch.1, (17408u32.div_ceil(2) * 128, 1, 1));
+            assert_eq!(launch.2, (128, 1, 1));
+            let launch64 = on64.expect("affine geo g64");
+            assert_eq!(launch64.0, QWEN38_AFFINE_Q2_GEO_TPR64);
+        } else {
+            assert!(on32.is_none());
+            assert!(on64.is_none());
+        }
+        assert!(qwen38_affine_q2_geo_tpr64_launch(16, 17408, 5120).is_none());
+        assert!(qwen38_affine_q2_geo_tpr64_launch(32, 17408, 161).is_none());
+        assert!(qwen38_affine_q2_geo_tpr64_launch(64, 17408, 161).is_none());
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128"));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group32_matvec("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
+            "kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div("
+        ));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
+            "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128("
+        ));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains("const uint group = col >> 6u;"));
+        assert_eq!(
+            QWEN38_AFFINE_GATE_UP_KERNEL,
+            "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128"
+        );
+        assert_eq!(
+            QWEN38_AFFINE_GATE_UP_SWIGLU_KERNEL,
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+        );
+        assert_eq!(
+            QWEN38_AFFINE_Q2_GEO_TPR64_RUNTIME_DIV,
+            "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div"
+        );
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_qmvfast_r8tg64("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_wide64_r4tg128("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_tgx_r8tg256("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_qmvfast_r8tg64("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_tgsb_tpr64_tg128("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_pipe_tpr64_tg128("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_splitk4_tg256("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_affine_q2_group64_matvec_accfuse_tpr64_tg128("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
+            "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_tgsb_tpr64_tg128("
+        ));
+        assert!(crate::metal::SHADER_QWEN38_DEVICE_ACTIVATIONS
+            .contains("kernel void qwen38_gated_delta_decode_vi_simd_ba("));
+        assert!(crate::metal::SHADER_QWEN38_DEVICE_ACTIVATIONS
+            .contains("kernel void qwen38_gated_delta_decode_vi_simd_ba_plain("));
+        assert!(crate::metal::SHADER_QWEN38_DEVICE_ACTIVATIONS
+            .contains("kernel void qwen38_gated_delta_decode_vi_simd_ba_f4("));
+        assert!(crate::metal::SHADER_QWEN38_DEVICE_ACTIVATIONS
+            .contains("kernel void qwen38_gated_delta_decode_vi_simd_ba_tg32("));
+        assert_eq!(
+            qwen38_fused_dispatches_per_token_full(
+                Qwen38MlpFusion::GateUpSwiglu,
+                true,
+                true,
+                true,
+                true
+            ),
+            580
+        );
+        assert_eq!(
+            qwen38_affine_q2_launch(Affine2Geo::QmvFast, 64, 17408, 5120)
+                .map(|l| l.0),
+            Some(QWEN38_AFFINE_Q2_QMVFAST)
+        );
+        assert!(qwen38_affine_q2_launch(Affine2Geo::QmvFast, 32, 17408, 5120).is_none());
+        assert_eq!(
+            qwen38_affine_q2_launch(Affine2Geo::Tgsb, 64, 17408, 5120).map(|l| l.0),
+            Some(QWEN38_AFFINE_Q2_TGSB)
+        );
+        assert_eq!(
+            qwen38_affine_q2_launch(Affine2Geo::Pipe, 64, 17408, 5120).map(|l| l.0),
+            Some(QWEN38_AFFINE_Q2_PIPE)
+        );
+        assert_eq!(
+            qwen38_affine_q2_launch(Affine2Geo::SplitK4, 64, 17408, 5120).map(|l| (l.0, l.2)),
+            Some((QWEN38_AFFINE_Q2_SPLITK4, (256, 1, 1)))
+        );
+        assert_eq!(
+            qwen38_affine_q2_launch(Affine2Geo::AccFuse, 64, 17408, 5120).map(|l| l.0),
+            Some(QWEN38_AFFINE_Q2_ACCFUSE)
+        );
+        assert_eq!(
+            qwen38_affine_q2_launch(Affine2Geo::BiasPrep, 64, 17408, 5120).map(|l| l.0),
+            Some(QWEN38_AFFINE_Q2_GEO_TPR64)
+        );
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
+            "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128("
+        ));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
+            "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128("
+        ));
+        assert!(crate::metal::SHADER_QWEN80_DEVICE_ACTIVATIONS
+            .contains("kernel void qwen80_residual_rmsnorm_tg_xsum64("));
+        assert!(crate::metal::SHADER_QWEN80_DEVICE_ACTIVATIONS
+            .contains("kernel void qwen80_add_residual_rmsnorm_tg_xsum64("));
+        assert_eq!(
+            qwen38_affine_gate_up_launch(Affine2Geo::BiasPrep, true, 17408).0,
+            QWEN38_AFFINE_GATE_UP_SWIGLU_BIASPREP
+        );
+        assert!(qwen38_affine_q2_launch(Affine2Geo::Tgsb, 32, 17408, 5120).is_none());
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_q2f_group64_matvec_geo_tpr64_tg128("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("kernel void qwen_q2f_group64_matvec("));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("(float(q) - 1.5f) * delta"));
+        assert_eq!(QWEN38_Q2F_GEO_TPR64, "qwen_q2f_group64_matvec_geo_tpr64_tg128");
+        assert_eq!(
+            QWEN38_Q2F_GATE_UP_KERNEL,
+            "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128"
+        );
     }
 
     #[cfg(target_os = "macos")]
@@ -5102,6 +7672,14 @@ mod mixed_catalog_contract_tests {
         let src = crate::metal::SHADER_QWEN_UNIFORM_Q4;
         assert!(src.contains("kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128("));
         assert!(src.contains("kernel void qwen_uniform_q4_group128_matvec_geo_tpr64_tg128("));
+        assert!(src.contains("kernel void qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128("));
+        assert!(src.contains(
+            "kernel void qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128("
+        ));
+        assert!(src.contains(
+            "kernel void qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128("
+        ));
+        assert!(src.contains("kernel void qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128("));
         assert!(
             !src.contains("element * bits"),
             "G0 Q4 kernel must not use the overflowing element*bits extract"
@@ -5793,6 +8371,12 @@ mod complete_wall_identity_tests {
             submit_ns: 20_000,
             wait_ns: 33_500_000,
             gpu_ns: Some(33_100_000),
+            gpu_start_s: None,
+            gpu_end_s: None,
+            gpu_start_ns: None,
+            gpu_end_ns: None,
+            allocation_ns: 0,
+            encoder_count: 900,
             commit_epilogue_ns: 30_000,
             sample_readback_ns: 2_000,
             state_update_ns: 1_000,
@@ -5820,6 +8404,12 @@ mod complete_wall_identity_tests {
                 submit_ns: 20_000,
                 wait_ns: 33_500_000,
                 gpu_ns: Some(33_100_000),
+                gpu_start_s: None,
+                gpu_end_s: None,
+                gpu_start_ns: None,
+                gpu_end_ns: None,
+                allocation_ns: 0,
+                encoder_count: 900,
                 commit_epilogue_ns: 30_000,
                 sample_readback_ns: 2_000,
                 state_update_ns: 1_000,

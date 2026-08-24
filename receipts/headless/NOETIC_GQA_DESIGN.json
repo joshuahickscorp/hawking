@@ -1,0 +1,1371 @@
+{
+  "schema": "hawking.headless.noetic_gqa_design.v1",
+  "generated_at": "2026-08-23T19:31:19Z",
+  "git_head": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644",
+  "question": "Is there an operator formulation of grouped attention that moves less or does less, at the fidelity attention actually demands?",
+  "answer": "Not one worth building. GQA K/V sharing is a cache layout (`kv_h = h / GROUP` in mha_decode_f32) in front of four independent uniform-Q4 GEMVs. The organ is the quality floor (cannot cheaply go below Q4), not the storage mass on uniform-q4-v1 (6.2% of bytes, 1.89% of wall for MHA). A grouped-Q/O operator is the only candidate that would treat grouping as an operator; its quality is unmeasured and even a perfect pack moves complete BPW 4.253 → ~4.05.",
+  "anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "roof_gb_s": 595.9,
+    "unified_memory_bytes": 103079215104,
+    "gpu_cores": 60,
+    "parameter_count": 26895998464,
+    "artifact_bytes": 14297933604,
+    "tensor_count": 755,
+    "dispatches_per_token": 964,
+    "command_buffers": 1,
+    "kernels_bound": 38,
+    "kernels_declared": 554,
+    "gemv_gflop": 51.24,
+    "mlx_4bit_tps_live": 35.51,
+    "llamacpp_q5k_tps_archived": 24.12,
+    "machine": "Apple M3 Ultra, 60 GPU cores, Metal 4",
+    "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "decode_source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+  },
+  "prior_science_respected": {
+    "n1arch_35_mechanisms": {
+      "rel": ".lane-bootstrap/census/n1arch.md",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n1arch.md",
+      "bytes": 36748
+    },
+    "n15neg_31_closures": {
+      "rel": ".lane-bootstrap/census/n15neg.md",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n15neg.md",
+      "bytes": 7481
+    },
+    "n16clos": {
+      "rel": ".lane-bootstrap/census/n16clos.md",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n16clos.md",
+      "bytes": 11868
+    },
+    "g035_shared_beats_independent": [
+      false,
+      false,
+      false
+    ],
+    "n223_unhealthy": "223 components local_bpw<0.5, healthy=0 (n1arch / kernel census)",
+    "q80_storage_vs_active": "0.6462 vs 2.518 — report both or neither",
+    "glm_0_167": "trap",
+    "hgravs01_0_13": "down_proj ONLY",
+    "tpr64_free_on_32_of_33": true,
+    "mlp_function_distillation": {
+      "status": "MEASURED",
+      "decision": "NO-GO",
+      "deciding_number": 0.4206259548664093,
+      "source": {
+        "rel": "receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+        "found": true,
+        "how": "copy",
+        "path": "/Users/scammermike/.claude-grok/worktrees/n16mlp-20260823-142304/receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+        "bytes": 48459
+      },
+      "note": "worst L0/L31 hold rel-fro gap of I'=2560 vs q3 (positive = worse than q3). Reopen needs this <= 0 AND byte_ratio <= 0.9 AND Doctor healthy."
+    },
+    "never_synthetic_activations": true,
+    "cosine_scale_blind": true,
+    "raw_activation_cosine_null": 0.898
+  },
+  "acceptance": {
+    "1_share_today": {
+      "stored_bytes": {
+        "value": 891652992,
+        "status": "MEASURED",
+        "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.physical.bytes",
+        "unit": "bytes"
+      },
+      "stored_bytes_share_of_on_disk": {
+        "value": 0.062362367646647245,
+        "status": "DERIVED",
+        "formula": "891652992 / artifact.on_disk 14297933604",
+        "unit": "fraction"
+      },
+      "stored_bytes_share_of_payload": {
+        "value": 0.06236340976334235,
+        "status": "DERIVED",
+        "formula": "891652992 / payload 14297694680",
+        "unit": "fraction"
+      },
+      "elements": {
+        "value": 1677811712,
+        "status": "MEASURED",
+        "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.physical.elements"
+      },
+      "tensor_count": {
+        "value": 112,
+        "status": "MEASURED",
+        "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.physical.tensor_count"
+      },
+      "q4_tensors": {
+        "value": 64,
+        "status": "MEASURED",
+        "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.physical.q4_tensors"
+      },
+      "f32_tensors": {
+        "value": 48,
+        "status": "MEASURED",
+        "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.physical.f32_tensors"
+      },
+      "local_physical_bpw": {
+        "value": 4.251504435796906,
+        "status": "DERIVED",
+        "formula": "8 * 891652992 / 1677811712",
+        "unit": "bits/weight",
+        "note": "Q4 g64 body plus 48 small f32 tensors (q/k norms)."
+      },
+      "active_bytes_per_token": {
+        "value": 891289600,
+        "status": "MEASURED",
+        "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.physical.active_bytes_per_token",
+        "unit": "bytes/token",
+        "note": "decode streams the full packed organ every token (no MoE)."
+      },
+      "active_q4_gemv_bytes_per_token": {
+        "value": 891289600,
+        "status": "MEASURED",
+        "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json gemv_organs self_attn.{q,k,v,o}_proj q4_bytes_per_token sum",
+        "unit": "bytes/token"
+      },
+      "active_share_of_weight_stream": {
+        "value": 0.06544869406007163,
+        "status": "DERIVED",
+        "formula": "891289600 / production_token.active_weight_bytes_per_token",
+        "unit": "fraction"
+      },
+      "dispatches": {
+        "gqa_named_kernel_launches": {
+          "value": 112,
+          "status": "DERIVED",
+          "formula": "16 GQA layers * 7 named prefix kernels ['qwen_uniform_q4_group64_matvec_geo_tpr64_tg128', 'qwen_uniform_q4_group64_matvec_geo_tpr64_tg128', 'qwen_uniform_q4_group64_matvec_geo_tpr64_tg128', 'qwen38_gqa_qk_norm_rope_cache_f32', 'mha_decode_f32', 'qwen38_attention_apply_sigmoid_gate', 'qwen_uniform_q4_group64_matvec_geo_tpr64_tg128']"
+        },
+        "gqa_gemv_launches": {
+          "value": 64,
+          "status": "DERIVED",
+          "formula": "16 * 4 encode_q4_matvec (q,k,v,o)"
+        },
+        "gqa_mixer_prefix_including_rms_and_residual": {
+          "value": 144,
+          "status": "DERIVED",
+          "formula": "16 * 9 schedule slots"
+        },
+        "production_dispatches_per_token": {
+          "value": 964,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json dispatch_reconciliation.recorded_anchor"
+        },
+        "share_of_964_named": {
+          "value": 0.11618257261410789,
+          "status": "DERIVED",
+          "formula": "112 / 964",
+          "unit": "fraction"
+        },
+        "command_buffers": {
+          "value": 1,
+          "status": "MEASURED",
+          "source": "production shape; ledger production_cb_shape"
+        }
+      },
+      "token_ns": {
+        "ledger_wall_ns": {
+          "value": 35227917.0,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json median_wall_ns",
+          "unit": "ns"
+        },
+        "gqa_component_ns": {
+          "value": 2443470.7102658837,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json components[gqa].ns_per_token",
+          "unit": "ns",
+          "note": "rope leftover + mha leftover + GQA GEMV FMA remainder + sigmoid + 16/64 mixer residual. NOT the GEMV bytes. Ledger commit 57ee82cc names qwen38_gqa_qk_norm_rope_cache_f32; live default is HAWKING_ROPE_TG=256 (_tg). The 1.56 ms isolated rope is the 24-thread form."
+        },
+        "gqa_component_share": {
+          "value": 0.06936177095755856,
+          "status": "DERIVED",
+          "formula": "2443470.7102658837 / 35227917.0",
+          "unit": "fraction"
+        },
+        "isolated_rope_ns": {
+          "value": 1562625.0,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json isolated rope_cache_16.median_gpu_ns",
+          "unit": "ns"
+        },
+        "isolated_mha_ns": {
+          "value": 666500.0,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json isolated mha_16.median_gpu_ns",
+          "unit": "ns"
+        },
+        "isolated_sigmoid_ns": {
+          "value": 43625.0,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json isolated sigmoid_16.median_gpu_ns",
+          "unit": "ns"
+        },
+        "isolated_gqa_gemvs_ns": {
+          "value": 1817416.0,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json isolated gqa_gemvs.median_gpu_ns",
+          "unit": "ns"
+        },
+        "isolated_gqa_full_probe_ns": {
+          "value": 1894625.0,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json isolated gqa_full_probe.median_gpu_ns",
+          "unit": "ns"
+        },
+        "isolated_gqa_kv_stream_ns": {
+          "value": 51291.0,
+          "status": "DERIVED",
+          "formula": "stream_gqa_key 24375.0 + stream_gqa_value 26916.0",
+          "unit": "ns"
+        },
+        "mha_share_of_wall": {
+          "value": 0.018919653977838086,
+          "status": "DERIVED",
+          "formula": "isolated mha_16 666500.0 / wall 35227917.0",
+          "unit": "fraction",
+          "note": "this is the attention-arithmetic slice, historically paraphrased as ~2.4%."
+        },
+        "organ_census_ns": {
+          "value": 4875760.710265884,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.token_ns.ns_per_token",
+          "unit": "ns",
+          "note": "isolated_gqa_gemv 1894625 + gqa_component 2443470.7102658837 + kv_state 537665.0"
+        },
+        "organ_census_share": {
+          "value": 0.13840615981540674,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.token_ns.share_of_token_ns",
+          "unit": "fraction"
+        },
+        "organ_ns_with_gqa_kv_only": {
+          "value": 4389386.710265884,
+          "status": "DERIVED",
+          "formula": "gqa_full_probe 1894625.0 + gqa_component 2443470.7102658837 + unique KV stream 51291.0",
+          "unit": "ns",
+          "note": "replaces the census's full kv_state (rec+conv+GQA) with the GQA KV stream only."
+        },
+        "organ_share_with_gqa_kv_only": {
+          "value": 0.12459966651635646,
+          "status": "DERIVED",
+          "formula": "4389386.710265884 / 35227917.0",
+          "unit": "fraction"
+        },
+        "kv_state_bucket_ns": {
+          "value": 537665.0,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json components[kv_state].ns_per_token",
+          "unit": "ns",
+          "note": "rec_state + conv_state + GQA cache sequential stream. Not GQA-only."
+        }
+      },
+      "flops": {
+        "gqa_gemv_mac": {
+          "value": 3355443200,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json sum self_attn.{q,k,v,o} mac_flops_per_token",
+          "unit": "flop"
+        },
+        "gqa_gemv_mac_share": {
+          "value": 0.06547984448536935,
+          "status": "DERIVED",
+          "formula": "3355443200 / dispatched_gemv_mac_flops 51243909120",
+          "unit": "fraction"
+        },
+        "mha_mac": {
+          "value": 13369344,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json activation_flops.mha_mac",
+          "unit": "flop"
+        },
+        "activation_flops_total": {
+          "value": 297313024,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json activation_flops.total_flops",
+          "unit": "flop"
+        },
+        "source_gemv_gflop_anchor": {
+          "value": 51.24,
+          "status": "CITED",
+          "source": "contract / operation census 51.24 GFLOP GEMV",
+          "unit": "GFLOP"
+        }
+      },
+      "not_the_mass_on_uniform_q4": {
+        "mlp_stored_bytes": {
+          "value": 9092472832,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.mlp.physical.bytes",
+          "unit": "bytes"
+        },
+        "mlp_share": {
+          "value": 0.635929154787534,
+          "status": "DERIVED",
+          "formula": "9092472832 / 14297933604",
+          "unit": "fraction"
+        },
+        "deltanet_stored_bytes": {
+          "value": 2962687488,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.deltanet.physical.bytes",
+          "unit": "bytes"
+        },
+        "deltanet_share": {
+          "value": 0.20721088585634195,
+          "status": "DERIVED",
+          "formula": "deltanet / on_disk",
+          "unit": "fraction"
+        },
+        "mixer_gqa_plus_deltanet_share": {
+          "value": 0.2695732535029892,
+          "status": "DERIVED",
+          "formula": "(891652992+2962687488) / 14297933604",
+          "unit": "fraction"
+        }
+      }
+    },
+    "2_bpw_floor": {
+      "contract_phrase": "Q4 g=128 MSE at 4.125",
+      "verdict": "CORRECTED",
+      "what_4_125_is": {
+        "grouped_absmax_arithmetic": {
+          "value": 4.125,
+          "status": "DERIVED",
+          "formula": "4 code bits + 16-bit scale / group 128",
+          "unit": "bits/weight",
+          "note": "This is the SCALE OVERHEAD of Q4 g=128, not a measured MSE."
+        },
+        "uniform_q4_g64_arithmetic": {
+          "value": 4.25,
+          "status": "DERIVED",
+          "formula": "4 code bits + 16-bit scale / group 64",
+          "unit": "bits/weight",
+          "note": "This is what the sealed uniform-q4-v1 artifact actually stores on GEMV bodies."
+        },
+        "density_probe_codec_at_4_125": {
+          "value": "HGRAVH01_hadamard_q4_g128",
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_PROBE.json candidates codec field on rows with bpw≈4.125",
+          "note": "The 4.125 figure in QWEN_ATTENTION_DENSITY_VERDICT ('q4 ~matches uniform Q4 at 4.125 vs 4.250 BPW. 2.9% save, not the mass.') is Hadamard-Q4 group-128, reconstruction class MEDIUM_INREGISTER_TRANSFORM, not a uniform Q4 g=128 MSE campaign and not the shipping codec."
+        },
+        "quality_bar": {
+          "value": "mean row output cosine >= 0.990 vs BF16 W on real captured X (Qwen3.8 Q4 vs bf16 min cosine is 0.98948)",
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json quality_bound.primary",
+          "note": "mean row output cosine >= 0.990 vs BF16 W on real captured X. Not MSE. Not the expert bar 0.8604."
+        },
+        "not_used_bar": {
+          "value": "expert organ bar 0.8604 — attention is HIGH sensitivity",
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json quality_bound.not_used"
+        }
+      },
+      "scope": {
+        "models": [
+          "qwen38",
+          "q80"
+        ],
+        "organs": "attention GEMVs: GQA q/k/v/o AND DeltaNet in_proj/out_proj. lm_head tabulated separately.",
+        "layers_qwen38": [
+          0,
+          3,
+          32,
+          63
+        ],
+        "n_probes": 34,
+        "real_activations": {
+          "value": true,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json activation_honesty.used_synthetic_or_gaussian == false"
+        },
+        "claim": {
+          "value": "Attention GEMVs cannot be cheaply compressed below uniform-Q4 at Q4-equivalent output quality. Existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01) do not transfer. The only cheap Q4-quality action on the 86-88% mass is: (1) on mixed-1p5, drop attention+lm_head from Q8 to Q4 (they were over-protected); (2) lm_head Q3 is cosine-legal but top-1-risky and needs a generate test. Q3 on the attention mass fails the 0.99 bar, especially out_proj.",
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json claim"
+        }
+      },
+      "qwen38_gqa_probe_rows": [
+        {
+          "tensor": "qwen38.L3.self_attn.q_proj",
+          "shape": [
+            12288,
+            5120
+          ],
+          "winner_any_at_0p990": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.2500354766845705,
+            "output_cosine": 0.9969567425340466
+          },
+          "hgravu_q4_g64": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.2500354766845705,
+            "output_cosine": 0.9969567425340466,
+            "output_cosine_min_row": 0.9956736225148717,
+            "output_rel_l2": 0.07906618034698487
+          },
+          "hgravu_q3_g64": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2500354766845705,
+            "output_cosine": 0.9837575582378689,
+            "output_cosine_min_row": 0.9771648936278821,
+            "output_rel_l2": 0.1847357203156413
+          },
+          "hgravh_q4_g128": null
+        },
+        {
+          "tensor": "qwen38.L3.self_attn.k_proj",
+          "shape": [
+            1024,
+            5120
+          ],
+          "winner_any_at_0p990": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.1256103515625,
+            "output_cosine": 0.9969246325661216
+          },
+          "hgravu_q4_g64": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.250418090820313,
+            "output_cosine": 0.9971424690889432,
+            "output_cosine_min_row": 0.9951809367908155,
+            "output_rel_l2": 0.07499005621583309
+          },
+          "hgravu_q3_g64": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2504180908203124,
+            "output_cosine": 0.9848535244743293,
+            "output_cosine_min_row": 0.9757449047139471,
+            "output_rel_l2": 0.1753054874823436
+          },
+          "hgravh_q4_g128": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.1256103515625,
+            "output_cosine": 0.9969246325661216,
+            "output_cosine_min_row": 0.9953436258157088,
+            "output_rel_l2": 0.07776297406379486
+          }
+        },
+        {
+          "tensor": "qwen38.L3.self_attn.v_proj",
+          "shape": [
+            1024,
+            5120
+          ],
+          "winner_any_at_0p990": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.1256103515625,
+            "output_cosine": 0.9955837362376334
+          },
+          "hgravu_q4_g64": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.250418090820313,
+            "output_cosine": 0.9961224519264696,
+            "output_cosine_min_row": 0.9945081948150065,
+            "output_rel_l2": 0.08728262301754977
+          },
+          "hgravu_q3_g64": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2504180908203124,
+            "output_cosine": 0.9796597460605887,
+            "output_cosine_min_row": 0.9703284055222517,
+            "output_rel_l2": 0.20264607405387156
+          },
+          "hgravh_q4_g128": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.1256103515625,
+            "output_cosine": 0.9955837362376334,
+            "output_cosine_min_row": 0.9938106719137377,
+            "output_rel_l2": 0.09277233015518853
+          }
+        },
+        {
+          "tensor": "qwen38.L3.self_attn.o_proj",
+          "shape": [
+            5120,
+            6144
+          ],
+          "winner_any_at_0p990": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.125102742513021,
+            "output_cosine": 0.9965077066092891
+          },
+          "hgravu_q4_g64": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.250070444742838,
+            "output_cosine": 0.9966651476917059,
+            "output_cosine_min_row": 0.9940085221394045,
+            "output_rel_l2": 0.07691143105082665
+          },
+          "hgravu_q3_g64": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2500704447428386,
+            "output_cosine": 0.9833639411446032,
+            "output_cosine_min_row": 0.9732957672894327,
+            "output_rel_l2": 0.17178248549489317
+          },
+          "hgravh_q4_g128": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.125102742513021,
+            "output_cosine": 0.9965077066092891,
+            "output_cosine_min_row": 0.9950253009825771,
+            "output_rel_l2": 0.07790095210316261
+          }
+        },
+        {
+          "tensor": "qwen38.L63.self_attn.q_proj",
+          "shape": [
+            12288,
+            5120
+          ],
+          "winner_any_at_0p990": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2500354766845705,
+            "output_cosine": 0.990864519976552
+          },
+          "hgravu_q4_g64": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.2500354766845705,
+            "output_cosine": 0.9982652667539069,
+            "output_cosine_min_row": 0.9978760464618633,
+            "output_rel_l2": 0.05849445193783307
+          },
+          "hgravu_q3_g64": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2500354766845705,
+            "output_cosine": 0.990864519976552,
+            "output_cosine_min_row": 0.9885161723263421,
+            "output_rel_l2": 0.13503996059557882
+          },
+          "hgravh_q4_g128": null
+        },
+        {
+          "tensor": "qwen38.L63.self_attn.k_proj",
+          "shape": [
+            1024,
+            5120
+          ],
+          "winner_any_at_0p990": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.1256103515625,
+            "output_cosine": 0.9953459861358953
+          },
+          "hgravu_q4_g64": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.250418090820313,
+            "output_cosine": 0.9924302701270186,
+            "output_cosine_min_row": 0.9885092710790182,
+            "output_rel_l2": 0.10994219736385112
+          },
+          "hgravu_q3_g64": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2504180908203124,
+            "output_cosine": 0.9633207611545018,
+            "output_cosine_min_row": 0.9472681896984856,
+            "output_rel_l2": 0.24437862731630142
+          },
+          "hgravh_q4_g128": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.1256103515625,
+            "output_cosine": 0.9953459861358953,
+            "output_cosine_min_row": 0.9936437847893191,
+            "output_rel_l2": 0.08642872262065047
+          }
+        },
+        {
+          "tensor": "qwen38.L63.self_attn.v_proj",
+          "shape": [
+            1024,
+            5120
+          ],
+          "winner_any_at_0p990": {
+            "codec": "HGRAVH01_hadamard_q3_g128",
+            "bpw": 3.1256103515625,
+            "output_cosine": 0.9932673164712585
+          },
+          "hgravu_q4_g64": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.250418090820313,
+            "output_cosine": 0.9984441808727935,
+            "output_cosine_min_row": 0.9977395214687153,
+            "output_rel_l2": 0.05361471719603958
+          },
+          "hgravu_q3_g64": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2504180908203124,
+            "output_cosine": 0.9924819290461558,
+            "output_cosine_min_row": 0.9891349202739828,
+            "output_rel_l2": 0.1182535511568548
+          },
+          "hgravh_q4_g128": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.1256103515625,
+            "output_cosine": 0.9987513473444223,
+            "output_cosine_min_row": 0.9981518795880829,
+            "output_rel_l2": 0.04795980383164507
+          }
+        },
+        {
+          "tensor": "qwen38.L63.self_attn.o_proj",
+          "shape": [
+            5120,
+            6144
+          ],
+          "winner_any_at_0p990": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.125102742513021,
+            "output_cosine": 0.9930296953153175
+          },
+          "hgravu_q4_g64": {
+            "codec": "HGRAVU01_q4_g64",
+            "bpw": 4.250070444742838,
+            "output_cosine": 0.9924664364534181,
+            "output_cosine_min_row": 0.989444376916609,
+            "output_rel_l2": 0.107557727530621
+          },
+          "hgravu_q3_g64": {
+            "codec": "HGRAVU01_q3_g64",
+            "bpw": 3.2500704447428386,
+            "output_cosine": 0.9603495613192754,
+            "output_cosine_min_row": 0.9454794344143209,
+            "output_rel_l2": 0.2526753679103621
+          },
+          "hgravh_q4_g128": {
+            "codec": "HGRAVH01_hadamard_q4_g128",
+            "bpw": 4.125102742513021,
+            "output_cosine": 0.9930296953153175,
+            "output_cosine_min_row": 0.9901306022522536,
+            "output_rel_l2": 0.10265548663375276
+          }
+        }
+      ],
+      "q3_fails_mean_0p99": [
+        {
+          "tensor": "qwen38.L3.self_attn.q_proj",
+          "q3_cosine": 0.9837575582378689,
+          "q3_min_row": 0.9771648936278821
+        },
+        {
+          "tensor": "qwen38.L3.self_attn.k_proj",
+          "q3_cosine": 0.9848535244743293,
+          "q3_min_row": 0.9757449047139471
+        },
+        {
+          "tensor": "qwen38.L3.self_attn.v_proj",
+          "q3_cosine": 0.9796597460605887,
+          "q3_min_row": 0.9703284055222517
+        },
+        {
+          "tensor": "qwen38.L3.self_attn.o_proj",
+          "q3_cosine": 0.9833639411446032,
+          "q3_min_row": 0.9732957672894327
+        },
+        {
+          "tensor": "qwen38.L63.self_attn.k_proj",
+          "q3_cosine": 0.9633207611545018,
+          "q3_min_row": 0.9472681896984856
+        },
+        {
+          "tensor": "qwen38.L63.self_attn.o_proj",
+          "q3_cosine": 0.9603495613192754,
+          "q3_min_row": 0.9454794344143209
+        }
+      ],
+      "q3_clears_mean_0p99": [
+        {
+          "tensor": "qwen38.L63.self_attn.q_proj",
+          "q3_cosine": 0.990864519976552
+        },
+        {
+          "tensor": "qwen38.L63.self_attn.v_proj",
+          "q3_cosine": 0.9924819290461558
+        }
+      ],
+      "hadamard_q4_g128_rows": 6,
+      "organ_level_reading": "The floor is organ-level, not tensor-level. Isolated late q_proj (L63) clears Q3 mean-cosine 0.99; out_proj and late k_proj do not. A pack that puts the attention MASS at Q3 fails the 0.99 bar, especially out_proj (density verdict qwen38 if_q3_all_attention_rejected). The cheapest quality-intact action on that mass is stay at uniform Q4 g64 (4.250) or the 2.9% Hadamard g128 save. That is not a new family and is not the mass.",
+      "mixed_2p0_is_where_attention_is_the_mass": {
+        "complete_physical_bpw": {
+          "value": 2.0855934079220506,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_DENSITY_ROOT_CAUSE.json evidence.complete_physical_bpw"
+        },
+        "mlp_physical_bpw": {
+          "value": 0.8480504639008466,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_DENSITY_ROOT_CAUSE.json evidence.mlp_physical_bpw"
+        },
+        "attention_share_of_artifact": {
+          "value": 0.741,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_DENSITY_ROOT_CAUSE.json evidence.attention_share_of_artifact",
+          "note": "74% on mixed-2p0-v1 is attention+embed+norm at 4.250 BPW after MLP was already 0.848. It is NOT GQA-only. GQA full_attn on uniform-q4 is 891_289_600 B."
+        },
+        "coherence": {
+          "value": "This does not prove sub-2.0 BPW Qwen3.8 is impossible. It proves THIS recipe fails there. The MLP compresses to 0.848 BPW fine; it is attention at 4.250 and 74% of the artifact that dominates, and no attention codec below Q4 exists yet.",
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN38_COHERENCE_FLOOR_BRACKETED.json honest_note"
+        }
+      },
+      "hgrav_families_on_attention": {
+        "HGRAVU01": {
+          "applies_to_attention": true,
+          "why": "geometry-agnostic; already ships on attention at Q4 (Q4 vehicle) and Q8 (mixed-1p5)",
+          "reconstruction": "CHEAP_INREGISTER",
+          "shipping_kernel": "qwen_uniform_q4_group64_matvec",
+          "quality": "Q4 clears 0.99 on the attention mass. Q3 typically 0.96-0.98 and fails out_proj / late k."
+        },
+        "HGRAVB01": {
+          "applies_to_attention": "encode_yes_recipe_no",
+          "why": "encoder takes a plain matrix, but the gate_proj sign-scale recipe exploits SwiGLU sign structure that attention does not have",
+          "reconstruction": "algorithmically cheap; no attention kernel (expert-gate only)",
+          "quality": "max cosine seen 0.946 (qwen38 L63 v). Typical 0.75-0.88. FAILS 0.99 everywhere."
+        },
+        "HGRAVR02": {
+          "applies_to_attention": "encode_yes_recipe_no",
+          "why": "2% rice residual was fit for up_proj, not Q/K/V/O or DeltaNet",
+          "reconstruction": "EXPENSIVE_SCATTER — a LOSS even if quality passed (mixed 5.9x slower per byte)",
+          "quality": "max cosine 0.958 (q80 L3 q). Typical 0.82-0.91. FAILS 0.99 everywhere."
+        },
+        "HGRAVS01": {
+          "applies_to_attention": "encode_yes_recipe_no",
+          "why": "r160 / post-SwiGLU / in-dim 512 is a down_proj recipe. Attention in-dim is 2048 or 5120 and is not low-rank under the same fit.",
+          "reconstruction": "CONDITIONAL_TWOSTAGE — cheap iff fused y=L@(R@x). Existing kernel is expert down [2048,512] r160 ONLY. Materialize-W is a LOSS.",
+          "quality": "0 clears of 0.99 at ranks whose BPW beats Q4. Typical 0.83-0.89 at r=512. Attention is not a low-rank organ."
+        },
+        "HGRAVH01": {
+          "applies_to_attention": true,
+          "reconstruction": "MEDIUM_INREGISTER_TRANSFORM (extra Walsh-Hadamard ALU, no shipping attention kernel)",
+          "quality": "q4 ~matches uniform Q4 at 4.125 vs 4.250 BPW. 2.9% save, not the mass."
+        }
+      }
+    },
+    "3_operator_vs_layout": {
+      "verdict": "LAYOUT_NOT_OPERATOR",
+      "geometry": {
+        "gqa_layers": {
+          "value": 16,
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:92 source rule (layer+1)%4==0"
+        },
+        "n_heads": {
+          "value": 24,
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:41 pub const QWEN38_GQA_HEADS: usize = 24;"
+        },
+        "n_kv_heads": {
+          "value": 4,
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:42 pub const QWEN38_GQA_KV_HEADS: usize = 4;"
+        },
+        "head_dim": {
+          "value": 256,
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs QWEN38_GQA_HEAD_DIM"
+        },
+        "group_size": {
+          "value": 6,
+          "status": "DERIVED",
+          "formula": "24 query heads / 4 kv heads"
+        },
+        "q_proj_rows": {
+          "value": 12288,
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:52 — 24*(256 q + 256 gate)"
+        },
+        "kv_proj_rows": {
+          "value": 1024,
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:53 — 4*256"
+        },
+        "o_proj": {
+          "value": "5120 x 6144",
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs QWEN38_O_PROJ_ROWS/COLS"
+        },
+        "q_workspace_is_q_plus_gate": {
+          "value": true,
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:709 let q_proj = f32b(QWEN38_GQA_HEADS * QWEN38_GQA_HEAD_DIM * 2)?;"
+        }
+      },
+      "weight_path_is_four_independent_gemvs": {
+        "schedule_gqa_prefix": [
+          "qwen80_residual_rmsnorm_f32",
+          "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "qwen38_gqa_qk_norm_rope_cache_f32",
+          "mha_decode_f32",
+          "qwen38_attention_apply_sigmoid_gate",
+          "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "qwen_next_add_residual"
+        ],
+        "encode": [
+          {
+            "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+            "line": 2090,
+            "text": "&qwen38_layer_name(layer, \"self_attn.q_proj.weight\"),"
+          },
+          {
+            "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+            "line": 2096,
+            "text": "&qwen38_layer_name(layer, \"self_attn.k_proj.weight\"),"
+          },
+          {
+            "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+            "line": 2102,
+            "text": "&qwen38_layer_name(layer, \"self_attn.v_proj.weight\"),"
+          }
+        ],
+        "kernel": {
+          "value": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:548 — same workhorse as MLP and DeltaNet. GQA is a layout of launches, not a kernel family."
+        },
+        "group128_kernel_exists_not_default": {
+          "value": "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+          "status": "MEASURED",
+          "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:550 declared; crates/hawking-core/src/model/qwen38_hybrid_decode.rs:570 geo_tpr64 launch returns None unless group_size==64."
+        }
+      },
+      "attention_path_indexes_shared_kv": {
+        "mha_header": {
+          "file": "crates/hawking-core/shaders/mha.metal",
+          "line": 5,
+          "text": "// via `h / group_size` where `group_size = n_heads / n_kv_heads`."
+        },
+        "kv_head_from_query_head": {
+          "file": "crates/hawking-core/shaders/mha.metal",
+          "line": 618,
+          "text": "const uint kv_h   = h / GROUP;",
+          "reading": "GQA sharing is integer division of the query-head index. Six query heads read the same K/V cache slice. No shared-Q weight, no grouped-Q matvec, no operator fusion."
+        },
+        "rope_writes_kv_only_for_first_4_heads": {
+          "file": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+          "line": 183,
+          "text": "if (head < n_kv_heads) {",
+          "guard": "if (head >= n_heads || n_heads != 24u || n_kv_heads != 4u ||"
+        },
+        "reconstructs_dense": {
+          "value": "NO",
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_KERNEL_CENSUS.json helper_dispatched_not_in_38 mha_decode_f32.reconstructs_dense; qwen38_gqa_qk_norm_rope_cache_{tg,f32} in dispatched also NO. Activations only."
+        }
+      },
+      "byte_split_inside_gqa_gemv": {
+        "q_plus_gate_q4_bytes": {
+          "value": 534773760,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json self_attn.q_proj",
+          "unit": "bytes/token"
+        },
+        "k_q4_bytes": {
+          "value": 44564480,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json self_attn.k_proj",
+          "unit": "bytes/token"
+        },
+        "v_q4_bytes": {
+          "value": 44564480,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json self_attn.v_proj",
+          "unit": "bytes/token"
+        },
+        "o_q4_bytes": {
+          "value": 267386880,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json self_attn.o_proj",
+          "unit": "bytes/token"
+        },
+        "kv_share_of_gqa_gemv_bytes": {
+          "value": 0.1,
+          "status": "DERIVED",
+          "formula": "(k+v) / (q+k+v+o) Q4 bytes",
+          "unit": "fraction",
+          "note": "K/V are already 6:1 vs a full MHA. The remaining GQA weight mass is Q+gate and O, which are not shared."
+        },
+        "q_plus_o_share": {
+          "value": 0.9,
+          "status": "DERIVED",
+          "formula": "(q_proj including gate + o_proj) / GQA GEMV Q4 bytes",
+          "unit": "fraction"
+        }
+      },
+      "what_would_count_as_an_operator": "A native grouped-query projection that stores one Q (and optionally O) matrix per KV group and applies per-head scale/FiLM without materializing the 24-head parent, or a fused GQA decode that never writes the parent dense W. Integer division in mha_decode_f32 is not that."
+    },
+    "4_candidate": {
+      "name": "KV-group shared Q/O projection, native (never reconstruct parent dense W)",
+      "why_this_one": "GQA already shares K/V 6:1 as a cache layout. The remaining GQA weight mass is Q+gate and O. An operator formulation would store one Q (and optionally O) per KV group and broadcast across the 6 query heads with a cheap per-head scale, executed as y = W_g x in-register. That is the only candidate that treats grouping as an operator rather than as `h / group_size`.",
+      "not_this": [
+        "reconstruct grouped W to dense 24-head Q then ordinary GEMM — oracle only",
+        "cross-layer shared basis (G035 shared_beats_independent=false)",
+        "HGRAVS01 on attention (density: 0 clears of 0.99 at ranks that beat Q4)",
+        "latent KV as the first lever (G060: fix the 253x per-element kernel first)",
+        "fusing rope+mha+sigmoid without changing bytes or MACs (dispatch Type-1 dead)",
+        "Hadamard Q4 g128 (2.9% of the organ, kernel transform, not the mass)"
+      ],
+      "expected": {
+        "bytes_today_gqa_q4": {
+          "value": 891289600,
+          "status": "MEASURED",
+          "source": "sum of four GQA GEMV q4_bytes_per_token",
+          "unit": "bytes/token"
+        },
+        "q_proj_is_q_plus_gate": {
+          "value": true,
+          "status": "DERIVED",
+          "formula": "QWEN38_Q_PROJ_ROWS=12288 = 24*(256 q + 256 gate); half of q_proj bytes are the sigmoid gate"
+        },
+        "bytes_if_q_only_grouped_gate_and_o_stay": {
+          "value": 668467200.0,
+          "status": "DERIVED",
+          "formula": "q_half/6 + gate_half + k + v + o = 44564480.0+267386880.0+44564480+44564480+267386880",
+          "unit": "bytes/token",
+          "note": "GEOMETRY. Groups the Q half of q_proj only."
+        },
+        "complete_bpw_if_q_only_grouped": {
+          "value": 4.186458383045809,
+          "status": "DERIVED",
+          "formula": "8 * (14297694680 - 222822400.0) / 26895998464",
+          "unit": "bits/weight"
+        },
+        "bytes_if_q_gate_and_o_grouped_6_to_1": {
+          "value": 222822400.0,
+          "status": "DERIVED",
+          "formula": "(q_half+gate_half)/6 + k + v + o/6 = 89128960.0+44564480+44564480+44564480.0",
+          "unit": "bytes/token",
+          "note": "GEOMETRY, not a packed artifact. Quality UNMEASURED. Groups the sigmoid gate too."
+        },
+        "byte_delta": {
+          "value": 668467200.0,
+          "status": "DERIVED",
+          "formula": "today - grouped",
+          "unit": "bytes/token"
+        },
+        "byte_delta_share_of_payload": {
+          "value": 0.04675349522850491,
+          "status": "DERIVED",
+          "formula": "668467200.0 / 14297694680",
+          "unit": "fraction"
+        },
+        "complete_bpw_if_q_gate_and_o_grouped": {
+          "value": 4.053904895404444,
+          "status": "DERIVED",
+          "formula": "8 * (14297694680 - 668467200.0) / 26895998464",
+          "unit": "bits/weight",
+          "note": "Aggressive geometry. Still ~4.05, not sub-1.5. Uniform-q4 complete BPW today is 4.2527."
+        },
+        "ops_today_gqa_mac": {
+          "value": 3355443200,
+          "status": "MEASURED",
+          "source": "sum of four GQA GEMV mac_flops_per_token",
+          "unit": "flop"
+        },
+        "ops_if_q_and_o_grouped": {
+          "value": 838860800.0,
+          "status": "DERIVED",
+          "formula": "q_mac/6 + k_mac + v_mac + o_mac/6",
+          "unit": "flop"
+        },
+        "dispatches_conservative": {
+          "value": 964,
+          "status": "DERIVED",
+          "formula": "same 964: still 4 GEMVs/GQA layer, different matrix shapes"
+        },
+        "dispatches_if_q_fused_with_k_shape": {
+          "value": 948,
+          "status": "DERIVED",
+          "formula": "964 - 16: grouped Q has K's 1024-row shape so q+k can share a launch geometry; still not measured"
+        },
+        "tps_delta": {
+          "value": null,
+          "status": "NULL",
+          "reason": "No native kernel, no A/B. Isolated gqa_gemvs is 1.817 ms of a 35.228 ms wall. Even a perfect 5/6 cut of Q+O MACs is a PROJECTED ~1 ms, which does not close 32.73 vs MLX 35.51 and is not a measurement."
+        }
+      },
+      "fidelity_it_must_hold": {
+        "primary": {
+          "value": "mean row output cosine >= 0.990 vs BF16 W on real captured X (Qwen3.8 Q4 vs bf16 min cosine is 0.98948)",
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json quality_bound.primary"
+        },
+        "scale_aware_must_reject_0p01W": {
+          "value": true,
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json organs.attention_gqa.functional_sensitivity_local.scaled_0p01_W: cosine=0.9999999999999739 scale_aware=0.009999999777046952"
+        },
+        "not_expert_bar_0p8604": {
+          "value": true,
+          "status": "MEASURED",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json quality_bound.not_used"
+        },
+        "native_operator_no_dense_W": {
+          "value": true,
+          "status": "CITED",
+          "source": "contract dense-reconstruction law; operation census dense_w_materialized_bytes_per_token=0 on the current path"
+        },
+        "health_verdict_required": {
+          "value": true,
+          "status": "CITED",
+          "source": "n1arch / kernel census: 223 components below 0.5 local BPW with healthy=true count 0. A low number is not a result."
+        },
+        "quality_on_this_candidate": {
+          "value": null,
+          "status": "NULL",
+          "reason": "KV-group shared Q/O has never been packed or scored on real X. G035 shared_beats_independent=false is cross-layer, not within-layer heads; it still forbids treating 'sharing' as a free move. Density probe Q3 on out_proj already fails 0.99. This candidate is more aggressive than Q3."
+        }
+      },
+      "production_eligibility_today": {
+        "allowed_families": [
+          "grouped_absmax_q4",
+          "binary±CSR",
+          "HGRAVS01 factors",
+          "PQ codebook lookup",
+          "MoE worklists",
+          "recurrent state op"
+        ],
+        "this_candidate_in_allowed_set": false,
+        "would_need": "a new native grouped-Q matvec (or a bind of HGRAVS01 two-stage onto per-KV-group factors that never writes W). Reconstruct-then-GEMM is not production. The Q4 g128 kernel already exists and is not this idea."
+      },
+      "prior_science_that_blocks_building_first": [
+        {
+          "id": "G035",
+          "fact": "shared_beats_independent=false",
+          "status": "MEASURED",
+          "n_flags": 3,
+          "source": "receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json"
+        },
+        {
+          "id": "attention-density",
+          "fact": "Gravity families miss 0.99 on attention below Q4; HGRAVS01 0 clears at ranks that beat Q4; attention is not a low-rank organ",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json"
+        },
+        {
+          "id": "223-unhealthy",
+          "fact": "223 components local_bpw<0.5, healthy=true count 0",
+          "source": ".lane-bootstrap/census/n1arch.md"
+        },
+        {
+          "id": "G3-FiLM",
+          "fact": "shared SwiGLU + per-layer FiLM headline gap 0.026 then refuted as a family",
+          "source": ".lane-bootstrap/census/n1arch.md"
+        }
+      ]
+    },
+    "5_reconciliation": {
+      "historical_2p4": {
+        "text": "| MLA Phase 4 simdgroup attn | dead | −1.7..−2.5% regression; attn only 2.4% wall | New intrinsic + long-ctx share |",
+        "source": "workspace/docs/guides/dead_levers.md",
+        "status": "MEASURED",
+        "scope": "MLA Phase 4 simdgroup attn on the llama.cpp-era kill ledger, not the Qwen3.8 GQA organ."
+      },
+      "this_vehicle": {
+        "mha_isolated_share": {
+          "value": 0.018919653977838086,
+          "status": "DERIVED",
+          "formula": "666500.0 / 35227917.0",
+          "unit": "fraction",
+          "note": "attention arithmetic. Nearest number to the historical 2.4% paraphrase."
+        },
+        "gqa_component_share": {
+          "value": 0.06936177095755856,
+          "status": "DERIVED",
+          "formula": "2443470.7102658837 / 35227917.0",
+          "unit": "fraction",
+          "note": "ledger components[gqa] = 6.94%: mostly rope occupancy + mha, not weight bytes."
+        },
+        "organ_census_share": {
+          "value": 0.13840615981540674,
+          "status": "DERIVED",
+          "formula": "census ns / wall",
+          "unit": "fraction"
+        },
+        "organ_share_gqa_kv_only": {
+          "value": 0.12459966651635646,
+          "status": "DERIVED",
+          "formula": "probe+component+unique KV / wall",
+          "unit": "fraction"
+        }
+      },
+      "why_both_can_be_true": "Attention is expensive to COMPRESS because the density probe's 0.99 bar rejects Q3 / binary / HGRAVS01 / rice on the attention mass, so mixed packs that crush MLP still carry attention at 4.25 BPW and that remainder is 74% of mixed-2p0-v1. Attention arithmetic is cheap to RUN because MHA at seq≈19 is 0.667 ms (1.89% of the 35.228 ms wall) and even the whole GQA component is 2.443 ms (6.94%), of which 62% is a 24-thread rope kernel already retiled behind HAWKING_ROPE_TG=256. Those are different axes.",
+      "axis_a_win_would_move": {
+        "storage_ebpw_resident": {
+          "moves": true,
+          "how_much_on_uniform_q4": "GQA is 0.0624 of on-disk bytes. Deleting the organ entirely would drop complete BPW from 4.2528 to 3.9876. Grouped Q/O at perfect quality is 4.0539. Neither is sub-1.5.",
+          "how_much_on_mixed_2p0": "On mixed-2p0-v1 the 74% figure is attention+embed+norm, of which GQA full_attn is 891_289_600 B of a 7.01 GB artifact (~12.7%). A GQA-only operator does not move that 74% by itself. DeltaNet + embed + lm_head are the rest of that remainder."
+        },
+        "tok_s": {
+          "moves": false,
+          "why": "MHA is 0.0189 of wall. Isolated GQA GEMVs are 0.0516. The token is 60.4% weight_addressing across ALL organs (MLP 9.09 GB streamed). Beating MLX 35.51 tok/s from 32.73 is not a GQA-operator problem. Rope occupancy was the GQA speed bug and is already shipped (decode.rs HAWKING_ROPE_TG=256, measured 4.16% faster token)."
+        },
+        "dispatches": {
+          "moves": false,
+          "why": "Production is already 1 command buffer / 964 dispatches. Host per-dispatch overhead is a Type-1 kill (dead_levers). Cutting GQA named launches (112) without cutting bytes or MACs does not move tok/s."
+        },
+        "work": {
+          "moves": "only if Q/O grouping is quality-legal",
+          "why": "GQA GEMV MACs are 0.0655 of dispatched GEMV. Storage compression of the same W still does the same MACs (operation census). An operator that stores one Q per KV group would do fewer MACs. Quality on that operator is UNMEASURED and prior science is hostile."
+        }
+      },
+      "s011_storage_alone_incomplete": {
+        "s011_in_git": {
+          "pattern": "S011",
+          "n_files": 0,
+          "sample": []
+        },
+        "measurement": {
+          "value": "The executable holds and streams fewer bytes (Q4 4.25 BPW vs f32/bf16). It does not do fewer MACs — it does the same 51.24 GFLOP of GEMV plus extra dequant ALU — and it does not reconstruct a dense W before computing.",
+          "status": "MEASURED",
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json answer — executable holds fewer bytes, does the same 51.24 GFLOP GEMV plus dequant ALU"
+        }
+      }
+    },
+    "6_verdict": {
+      "verdict": "NOT_WORTH_BUILDING",
+      "as_of": "2026-08-23T19:31:19Z",
+      "because": [
+        "GQA K/V sharing is already exploited as a cache layout (6:1). The kernels do not have a grouped-Q operator to write.",
+        "On uniform-q4-v1 GQA is 6.2% of stored bytes and ~6.5% of GEMV MACs. The remaining storage mass on this vehicle is MLP (63.6%), then DeltaNet (20.7%).",
+        "The 74% 'attention is the mass' figure is mixed-2p0 after MLP was already 0.848 BPW, and that 74% is attention+embed+norm, not GQA-only (~12.7% of that artifact).",
+        "MLP function distillation is NO-GO (deciding_number +0.4206 at I'=2560, ~72% of q3 active bytes, Doctor UNHEALTHY). That closes a function-space cut of the large organ; it does not make GQA large.",
+        "A quality-perfect grouped Q/O operator moves complete BPW 4.253 → ~4.05 on this vehicle. Sub-1.5 stays closed. Tok/s vs MLX 35.51 does not move.",
+        "Attention below Q4 is a family Gravity does not have (density verdict). Sharing as an idea lost on G035. Latent KV is the second lever after a 253x kernel hole (G060).",
+        "A candidate that only lowers executable bytes is incomplete (operation census / S011 §4 as named). This candidate's only legal win is fewer MACs on Q/O, which is quality-blocked."
+      ],
+      "reopen_condition": "A native grouped-Q (and/or grouped-O) operator, scored on real activations with scale-aware + Doctor, clears the 0.99 attention bar at materially fewer active bytes than uniform Q4, without reconstructing dense W, AND the byte delta is large enough to move a named gate (sub-1.5 complete BPW or the 32.73→35.51 tok/s gap). Within-layer head cosine/energy on Q of a KV group is the cheap oracle; do not skip it and do not use synthetic X.",
+      "already_shipped_gqa_speed_work": "HAWKING_ROPE_TG=256 retile of qwen38_gqa_qk_norm_rope_cache_tg. Measured 4.16% faster token, token-identical on 24 greedy tokens (decode.rs comment on encode_rope_cache). Do not rediscover 24-thread rope as this design.",
+      "mlp_function_distillation": {
+        "status": "MEASURED",
+        "decision": "NO-GO",
+        "deciding_number": 0.4206259548664093,
+        "source": {
+          "rel": "receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+          "found": true,
+          "how": "copy",
+          "path": "/Users/scammermike/.claude-grok/worktrees/n16mlp-20260823-142304/receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+          "bytes": 48459
+        },
+        "note": "worst L0/L31 hold rel-fro gap of I'=2560 vs q3 (positive = worse than q3). Reopen needs this <= 0 AND byte_ratio <= 0.9 AND Doctor healthy."
+      }
+    }
+  },
+  "function_if_zeroed": {
+    "function_lost": 0.6070411601515365,
+    "survival_null": 0.39295883984846347,
+    "rank_by_function_per_stored_byte": 3,
+    "source": "receipts/headless/NOETIC_ORGAN_CENSUS.json ranking.by_stored_byte attention_gqa",
+    "reading": "Zeroing GQA loses 0.607 of residual-stream function on the organ census capture; it is rank 3 of 5 by function/byte, behind embed and lm_head. It carries function. That does not make it the storage mass."
+  },
+  "located": {
+    "receipts/headless/NOETIC_ORGAN_CENSUS.json": {
+      "rel": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/receipts/headless/NOETIC_ORGAN_CENSUS.json",
+      "bytes": 35827
+    },
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json": {
+      "rel": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/receipts/headless/NOETIC_OPERATION_CENSUS.json",
+      "bytes": 35212
+    },
+    "receipts/headless/NOETIC_KERNEL_CENSUS.json": {
+      "rel": "receipts/headless/NOETIC_KERNEL_CENSUS.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/receipts/headless/NOETIC_KERNEL_CENSUS.json",
+      "bytes": 213728
+    },
+    "receipts/headless/NOETIC_METRICS.json": {
+      "rel": "receipts/headless/NOETIC_METRICS.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/receipts/headless/NOETIC_METRICS.json",
+      "bytes": 31834
+    },
+    "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json": {
+      "rel": "receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/receipts/headless/NOETIC_INFORMATION_ACCOUNTING.json",
+      "bytes": 23057
+    },
+    "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json": {
+      "rel": "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+      "bytes": 42951
+    },
+    "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_PROBE.json": {
+      "rel": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_PROBE.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_PROBE.json",
+      "bytes": 483624
+    },
+    "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json": {
+      "rel": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json",
+      "bytes": 8333
+    },
+    "receipts/ascent-2026-08-16/QWEN38_DENSITY_ROOT_CAUSE.json": {
+      "rel": "receipts/ascent-2026-08-16/QWEN38_DENSITY_ROOT_CAUSE.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/QWEN38_DENSITY_ROOT_CAUSE.json",
+      "bytes": 2468
+    },
+    "receipts/ascent-2026-08-16/QWEN38_COHERENCE_FLOOR_BRACKETED.json": {
+      "rel": "receipts/ascent-2026-08-16/QWEN38_COHERENCE_FLOOR_BRACKETED.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/QWEN38_COHERENCE_FLOOR_BRACKETED.json",
+      "bytes": 2361
+    },
+    "receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json": {
+      "rel": "receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/G035_CROSSLAYER_SHARE.json",
+      "bytes": 9203
+    },
+    "receipts/ascent-2026-08-16/G060_LATENT_KV_VERDICT.json": {
+      "rel": "receipts/ascent-2026-08-16/G060_LATENT_KV_VERDICT.json",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:receipts/ascent-2026-08-16/G060_LATENT_KV_VERDICT.json",
+      "bytes": 4377
+    },
+    "receipts/headless/NOETIC_MLP_DISTILL_PROBE.json": {
+      "rel": "receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/.claude-grok/worktrees/n16mlp-20260823-142304/receipts/headless/NOETIC_MLP_DISTILL_PROBE.json",
+      "bytes": 48459
+    },
+    "workspace/docs/guides/dead_levers.md": {
+      "rel": "workspace/docs/guides/dead_levers.md",
+      "found": true,
+      "how": "git",
+      "path": "HEAD:workspace/docs/guides/dead_levers.md",
+      "bytes": 7196
+    },
+    ".lane-bootstrap/census/n1arch.md": {
+      "rel": ".lane-bootstrap/census/n1arch.md",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n1arch.md",
+      "bytes": 36748
+    },
+    ".lane-bootstrap/census/n15neg.md": {
+      "rel": ".lane-bootstrap/census/n15neg.md",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n15neg.md",
+      "bytes": 7481
+    },
+    ".lane-bootstrap/census/n16clos.md": {
+      "rel": ".lane-bootstrap/census/n16clos.md",
+      "found": true,
+      "how": "copy",
+      "path": "/Users/scammermike/Downloads/hawking-copy/.lane-bootstrap/census/n16clos.md",
+      "bytes": 11868
+    },
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs": {
+      "rel": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "bytes": 244272
+    },
+    "crates/hawking-core/src/model/qwen38_geometry.rs": {
+      "rel": "crates/hawking-core/src/model/qwen38_geometry.rs",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/crates/hawking-core/src/model/qwen38_geometry.rs",
+      "bytes": 19679
+    },
+    "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs": {
+      "rel": "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs",
+      "bytes": 6909
+    },
+    "crates/hawking-core/shaders/mha.metal": {
+      "rel": "crates/hawking-core/shaders/mha.metal",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/crates/hawking-core/shaders/mha.metal",
+      "bytes": 71096
+    },
+    "crates/hawking-core/shaders/qwen38_device_activations.metal": {
+      "rel": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+      "found": true,
+      "how": "disk",
+      "path": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644/crates/hawking-core/shaders/qwen38_device_activations.metal",
+      "bytes": 24510
+    }
+  },
+  "self_checks": {
+    "required_receipts_present": true,
+    "dispatches_964": true,
+    "gqa_prefix_len_9": true,
+    "gqa_named_dispatches_112": true,
+    "mha_reconstructs_dense_no": true,
+    "dispatched_reconstructs_dense_all_no": true,
+    "organ_census_arithmetic_reproduces": true,
+    "gqa_q4_bytes_match_production_full_attn": true,
+    "scale_trap_on_gqa_q_proj": true,
+    "g035_all_false": true,
+    "no_dense_w_on_path": true,
+    "verdict_is_not_worth_building": true
+  },
+  "what_i_watched_fail": [
+    "git grep S011 over HEAD is empty. The contract names S011 §4 ('storage alone is incomplete'). The measurement of that law in this tree is NOETIC_OPERATION_CENSUS: same 51.24 GFLOP GEMV, 964 dispatches, dense W materialized = 0. The section label is not in git.",
+    "NOETIC_ORGAN_CENSUS attributed kv_state 537665 ns (rec+conv+GQA) wholly to attention_gqa, producing organ share 0.1384. Unique GQA KV stream is 51291 ns. With that correction the organ is 0.1246 of the wall, not 0.1384.",
+    "Calling 4.125 a 'Q4 g=128 MSE floor' overstates the receipt. The probe's 4.125 rows are HGRAVH01_hadamard_q4_g128 (2.9% vs g64). Uniform Q4 g64 at 4.250 is what ships. MSE is not the gate; output cosine 0.99 on real X is.",
+    "cosine(q_proj, 0.01*q_proj) on real L3 activations is 1.000000; scale_aware 0.0100. A cosine-only GQA design would have accepted a magnitude wipe.",
+    "Historical 'attn only 2.4% wall' is dead_levers.md MLA Phase 4, a different stack. On this vehicle MHA is 1.89%, GQA component 6.94%, organ-with-stolen-kv_state 13.84%.",
+    "mixed-2p0 'attention is 74%' includes linear_attn + embed + norms. Treating that as GQA-only would have pointed the remaining mass at 0.89 GB instead of 5.20 GB.",
+    "G060 latent KV looks like a GQA operator. The receipt says the 253x per-element inefficiency dominates; after the kernel is fixed latent KV is 1.003x. Do not reopen it as this lane.",
+    "tpr64 reconstruction is free on 32/33 variants (NNS-011). That reopens codecs killed for a 5.9x penalty; it does not reopen attention quality below Q4.",
+    "Q80 storage BPW 0.6462 vs ACTIVE 2.518 is a category error. A GQA byte cut that reconstructs dense W would repeat it.",
+    "Rope-as-encoder-tax was false (g1-gqa-and-attention-geometry): sigmoid 2.7 µs/launch vs rope 97.7 µs with 24 threads. Occupancy, not ceremony. Already retiled.",
+    "Production workhorse for GQA weights is the MLP workhorse. Writing a new shader that still dequants independent 24-head Q is a layout tweak, not an operator.",
+    "223 components measured below 0.5 local BPW with healthy=true count 0 (kernel census constraints_from_recovered_science / n1arch). A grouped-Q local BPW without a health verdict would be that trap again.",
+    "G035 G-SHARE shared_beats_independent=false on this model. Within-layer head grouping is not the same experiment, but 'sharing' is not a free move.",
+    "The sealed QWEN38_TOKEN_NS_LEDGER gqa row (2.443 ms, 6.94%) includes isolated rope_cache_16 = 1.562 ms on qwen38_gqa_qk_norm_rope_cache_f32 (24 threads). Production default is now HAWKING_ROPE_TG=256 (qwen38_gqa_qk_norm_rope_cache_tg), measured 4.16% faster token. The schedule array still lists _f32. Do not treat 6.94% as the live GQA component share; MHA 0.667 ms / 1.89% is the stable arithmetic slice."
+  ],
+  "write_scope": {
+    "write": [
+      "tools/headless/noetic_gqa_design.py",
+      "receipts/headless/NOETIC_GQA_DESIGN.json"
+    ],
+    "deny": [
+      "workspace",
+      "crates",
+      "visionmcp",
+      "app",
+      "lab",
+      "tools/haider",
+      "ramanujan"
+    ]
+  },
+  "wall_s": 0.743192750000162
+}

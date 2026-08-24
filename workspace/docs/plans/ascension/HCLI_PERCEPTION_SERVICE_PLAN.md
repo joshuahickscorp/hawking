@@ -34,7 +34,7 @@ cheap metadata/text pass
 |------|-------------|
 | Proto-Frankenstein | Offloaded, hash-verified, out of active local storage envelope |
 | Live model work | **Out of scope** for this plan stage — no Qwen/Gravity downloads, no vision model wiring |
-| Frankenstein evidence | Do **not** touch `lab/operators/frankenstein_*` or frankenstein campaign evidence |
+| Frankenstein evidence | Do **not** touch `hawking-experiments/frankenstein/operators/frankenstein_*` or frankenstein campaign evidence |
 | Existing text research | Prefer reuse of `hawking-research` ingest/CAS seams for text evidence pins |
 
 This stage ships **interfaces, stubs, budgets, and tool names only**. Real PDF

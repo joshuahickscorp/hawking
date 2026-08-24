@@ -40,13 +40,13 @@ This is not online weight training. It is structured admission of:
 | Negative science | Graveyard laws live (burial ≠ deletion; no free resurrection) |
 
 **Explicit non-goals for this plan revision:** Qwen/Gravity downloads, live model
-training, mutation of `lab/operators/frankenstein_*`, writes into `ramanujan/`.
+training, mutation of `hawking-experiments/frankenstein/operators/frankenstein_*`, writes into `ramanujan/`.
 
 ---
 
 ## 3. Existing patterns reused
 
-### 3.1 Promotion-gate honesty — `lab/operators/frankenstein_promotion_gate.py`
+### 3.1 Promotion-gate honesty — `hawking-experiments/frankenstein/operators/frankenstein_promotion_gate.py`
 
 - Missing evidence → **PENDING**, never fabricated **ACCEPT**.
 - Independent challenge required before promotion-class decisions.

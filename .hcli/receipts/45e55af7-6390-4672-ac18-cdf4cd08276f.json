@@ -1,0 +1,28 @@
+{
+  "evidence_files": [],
+  "goal": "Return exactly HCLI_OPENROUTER_OK as a read-only answer. Do not modify files.",
+  "goal_id": "45e55af7-6390-4672-ac18-cdf4cd08276f",
+  "kind": "answer",
+  "model": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+  "operations": [],
+  "rolled_back": false,
+  "runtime_count": 1,
+  "runtime_provenance": [
+    {
+      "active": true,
+      "index": 0,
+      "pid": 99003,
+      "port": 54520
+    }
+  ],
+  "status": "completed",
+  "tests": [],
+  "timestamps": {
+    "finished_at": "2026-08-21T19:53:41.176426+00:00",
+    "started_at": "2026-08-21T19:53:33.415650+00:00"
+  },
+  "validation": {
+    "kind": "read_only",
+    "ok": true
+  }
+}

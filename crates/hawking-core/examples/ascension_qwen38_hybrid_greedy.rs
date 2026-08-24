@@ -286,7 +286,7 @@ fn run_default(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_ids: &
     let median = result.median_gpu_ns_per_token();
     println!("GENERATED_TEXT_VERBATIM: {text}");
     println!("FALLBACKS: {}", result.fallbacks);
-    println!("DENSE_W_MATERIALIZED: 0");
+    println!("DENSE_W_MATERIALIZED: {}", result.dense_w_materialized);
     println!("PROMPT_LEN: {}", result.prompt_len);
     println!("NEW_TOKENS: {:?}", result.new_tokens());
     println!("generated_token_ids={:?}", result.new_tokens());
@@ -312,7 +312,7 @@ fn run_default(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_ids: &
                 "prompt_ids": prompt_ids,
                 "new_token_ids": result.new_tokens(),
                 "fallbacks": result.fallbacks,
-                "dense_w_materialized": 0,
+                "dense_w_materialized": result.dense_w_materialized,
                 "gpu_ns_per_step": result.gpu_ns,
                 "wait_ns_per_step": result.wait_ns,
                 "median_gpu_ns_per_token": median,
@@ -322,6 +322,7 @@ fn run_default(args: &Args, tokenizer: &Tokenizer, rendered: &str, prompt_ids: &
                 "decode_wall_ns": result.decode_wall_ns,
                 "decode_steps": result.decode_steps,
                 "wall_ns_per_step": result.wall_ns_per_step,
+                "dispatches_per_step": result.dispatches,
                 "timing_label": "DIRTY_ENGINEERING",
             }),
         );
@@ -650,7 +651,7 @@ fn run_prompts_file(args: &Args, tokenizer: &Tokenizer, prompts: &[String]) {
         println!("PROMPT: {prompt}");
         println!("GENERATED_TEXT_VERBATIM: {text}");
         println!("FALLBACKS: {}", result.fallbacks);
-        println!("DENSE_W_MATERIALIZED: 0");
+        println!("DENSE_W_MATERIALIZED: {}", result.dense_w_materialized);
         println!("PROMPT_LEN: {}", result.prompt_len);
         println!("NEW_TOKENS: {new_tokens:?}");
         println!("generated_token_ids={new_tokens:?}");
@@ -662,7 +663,7 @@ fn run_prompts_file(args: &Args, tokenizer: &Tokenizer, prompts: &[String]) {
             "generated_text": text,
             "new_token_ids": new_tokens,
             "fallbacks": result.fallbacks,
-            "dense_w_materialized": 0,
+            "dense_w_materialized": result.dense_w_materialized,
             "prompt_len": result.prompt_len,
             "wall_ns": result.wall_ns,
             "prefill_wall_ns": result.prefill_wall_ns,
@@ -677,7 +678,7 @@ fn run_prompts_file(args: &Args, tokenizer: &Tokenizer, prompts: &[String]) {
                 "artifact_root": args.artifact_root,
                 "max_new_tokens": args.max_new_tokens,
                 "fallbacks_total": results.iter().map(|r| r["fallbacks"].as_u64().unwrap_or(0)).sum::<u64>(),
-                "dense_w_materialized_total": 0,
+                "dense_w_materialized_total": results.iter().map(|r| r["dense_w_materialized"].as_u64().unwrap_or(0)).sum::<u64>(),
                 "prompts": results,
             }),
         );

@@ -1,0 +1,757 @@
+{
+  "schema": "hawking.headless.noetic_operation_census.v1",
+  "generated_at": "2026-08-23T18:48:10Z",
+  "commit": "10c2c5c1660b7ee51f108e84f307a10971c197a3",
+  "question": "Does the executable do LESS WORK, or just hold fewer bytes?",
+  "answer": "The executable holds and streams fewer bytes (Q4 4.25 BPW vs f32/bf16). It does not do fewer MACs \u2014 it does the same 51.24 GFLOP of GEMV plus extra dequant ALU \u2014 and it does not reconstruct a dense W before computing.",
+  "path": {
+    "decode_source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "schedule": "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs",
+    "ledger": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs",
+    "shaders": "crates/hawking-core/shaders",
+    "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1"
+  },
+  "anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "roof_gb_s": 595.9,
+    "unified_memory_bytes": 103079215104,
+    "gpu_cores": 60,
+    "parameter_count": 26895998464,
+    "bpw": 4.253,
+    "dispatches_per_token": 964,
+    "command_buffers_per_token": 1,
+    "kernels_bound_g071": 38,
+    "kernels_declared": 554,
+    "two_servers_tps": 3.986,
+    "one_server_tps": 33.47,
+    "llama_server_live_on": 52484
+  },
+  "geometry": {
+    "layers": 64,
+    "dn_layers": 48,
+    "gqa_layers": 16,
+    "hidden": 5120,
+    "intermediate": 17408,
+    "vocab": 248320,
+    "qkvz_rows": 16384,
+    "ba_rows": 96,
+    "q_proj_rows": 12288,
+    "kv_proj_rows": 1024,
+    "o_proj_rows": 5120,
+    "o_proj_cols": 6144,
+    "gqa_heads": 24,
+    "gqa_kv_heads": 4,
+    "gqa_head_dim": 256,
+    "gqa_rotary_dim": 64,
+    "lin_key_heads": 16,
+    "lin_value_heads": 48,
+    "lin_vpk": 3,
+    "lin_key_dim": 128,
+    "lin_value_dim": 128,
+    "lin_conv_k": 4,
+    "mixer_prefix": 9,
+    "mlp_suffix": 6,
+    "active_budget_bytes": 13622264240,
+    "embed_table_bytes": 675430440,
+    "full_layer": 15,
+    "terminal_n": 3,
+    "production_dispatches": 964,
+    "production_cbs": 1,
+    "value_elements": 6144,
+    "key_elements": 2048,
+    "conv_channels": 10240,
+    "conv_state_elements": 30720,
+    "rec_state_elements": 786432
+  },
+  "artifact": {
+    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "present": true,
+    "file_count": 756,
+    "bytes": 14297933604,
+    "manifest": {
+      "schema": "hawking.ascent.qwen38_language_uniform_q4.v1",
+      "status": "CANDIDATE_QWEN38_LANGUAGE_Q4_FUSED_INPROJ",
+      "tensor_count": 755,
+      "q4_tensors": 402,
+      "f32_tensors": 353,
+      "source_weight_elements": 26895998464,
+      "tensor_payload_bytes": 14297694680,
+      "complete_physical_bpw": 4.252735126866492,
+      "q4_group_size": 64,
+      "fused_in_proj_layers": 48,
+      "skipped_vision_tensors": 333,
+      "kind_counts": {
+        "q4": 402,
+        "f32": 353
+      }
+    }
+  },
+  "kernel_binding": {
+    "declared_in_tree": 561,
+    "g071_bound_count": 41,
+    "g071_bound": [
+      "q80_binary_group_csr_matvec_bytes",
+      "q80_binary_group_csr_matvec_tg256",
+      "q80_binary_group_matvec_simd_bytes",
+      "q80_binary_group_matvec_tg256",
+      "q80_hgravs01_factor_matvec_simd",
+      "q80_hgravs01_factor_matvec_simd3",
+      "q80_sparse_q1_apply_csr",
+      "q80_uniform8_matvec_simd_bytes",
+      "q80_uniform8_matvec_tg256",
+      "qwen38_attention_apply_sigmoid_gate",
+      "qwen38_f32_stream_probe",
+      "qwen38_fuse_split_ba_f32",
+      "qwen38_fuse_split_qkvz_f32",
+      "qwen38_gated_delta_decode_vi",
+      "qwen38_gated_delta_decode_vi_simd",
+      "qwen38_gqa_qk_norm_rope_cache_f32",
+      "qwen38_gqa_qk_norm_rope_cache_tg",
+      "qwen38_hgrafv_embedding_lookup",
+      "qwen38_hgravu_embedding_lookup",
+      "qwen38_qkvz_rearrange_conv_l2_f32",
+      "qwen80_ba_to_decay_beta_f32",
+      "qwen80_deltanet_gated_rmsnorm_f32",
+      "qwen80_deltanet_gated_rmsnorm_tg",
+      "qwen80_gated_delta_decode_tg",
+      "qwen80_residual_rmsnorm_f32",
+      "qwen80_residual_rmsnorm_tg",
+      "qwen_affine_q2_group32_matvec",
+      "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_embedding_lookup",
+      "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+      "qwen_uniform_q4_group64_matvec_vecgroup",
+      "qwen_uniform_q4_group64_matvec_vecgroup_r4",
+      "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+      "sample_argmax_f32_pass1",
+      "sample_argmax_f32_pass2"
+    ],
+    "helper_kernels_on_uniform_q4": [
+      "mha_decode_f32",
+      "qwen_next_add_residual",
+      "gk_swiglu_f32",
+      "sample_argmax_f32"
+    ],
+    "live_default_names": {
+      "embed": "qwen_uniform_q4_embedding_lookup",
+      "rmsnorm": "qwen80_residual_rmsnorm_tg",
+      "gemv": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "rearrange": "qwen38_qkvz_rearrange_conv_l2_f32",
+      "ba_to_decay": "qwen80_ba_to_decay_beta_f32",
+      "gated_delta": "qwen38_gated_delta_decode_vi_simd",
+      "gated_rmsnorm": "qwen80_deltanet_gated_rmsnorm_tg",
+      "residual": "qwen_next_add_residual",
+      "rope": "qwen38_gqa_qk_norm_rope_cache_tg",
+      "mha": "mha_decode_f32",
+      "sigmoid_gate": "qwen38_attention_apply_sigmoid_gate",
+      "swiglu": "gk_swiglu_f32",
+      "argmax": "sample_argmax_f32",
+      "schedule_vs_live": {
+        "qwen80_residual_rmsnorm_f32": "qwen80_residual_rmsnorm_tg",
+        "qwen80_silu_mul_f32": "gk_swiglu_f32",
+        "qwen38_gated_delta_decode_vi": "qwen38_gated_delta_decode_vi_simd",
+        "qwen38_gqa_qk_norm_rope_cache_f32": "qwen38_gqa_qk_norm_rope_cache_tg",
+        "sample_argmax_f32 (schedule name matches live; two-pass is off)": "sample_argmax_f32"
+      },
+      "count_unchanged": true,
+      "count_exception": "HAWKING_ARGMAX_TWO_PASS=1 replaces sample_argmax_f32 with sample_argmax_f32_pass1 + pass2 and the token becomes 965 dispatches. Default is off."
+    },
+    "extraction_g071": "string literals in qwen38_hybrid_decode.rs intersected with declared `kernel void` names \u2014 the nx_genome / G071 method",
+    "note": "G071 measured 38 bound against 554 declared; live count is 41 / 561. A seal listing all 561 would be a lie about what runs. A seal listing only the 38 is also incomplete: four production kernels are dispatched through helpers and are not literals."
+  },
+  "dispatch_inventory": [
+    {
+      "kernel": "qwen_uniform_q4_embedding_lookup",
+      "dispatches_per_token": 1,
+      "what": "gather one Q4 embed row into f32 hidden",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen80_residual_rmsnorm_tg",
+      "dispatches_per_token": 129,
+      "what": "input_layernorm + post_attention_layernorm per layer, plus final norm",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "dispatches_per_token": 401,
+      "what": "every Q4 matvec (DN qkvz/ba/out, GQA q/k/v/o, MLP gate/up/down, lm_head)",
+      "is_gemv": true,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+      "dispatches_per_token": 48,
+      "what": "qkvz split + causal conv1d + L2 on q/k, writes q/k/v/z activations",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen80_ba_to_decay_beta_f32",
+      "dispatches_per_token": 48,
+      "what": "BA -> decay/beta (48 value heads)",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen38_gated_delta_decode_vi_simd",
+      "dispatches_per_token": 48,
+      "what": "DeltaNet recurrence: decay state, rank-1 update, query readout",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+      "dispatches_per_token": 48,
+      "what": "gated RMSNorm on rec_out",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+      "dispatches_per_token": 16,
+      "what": "Q/K RMSNorm + partial RoPE + KV append",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "mha_decode_f32",
+      "dispatches_per_token": 16,
+      "what": "GQA decode attention over cached K/V",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen38_attention_apply_sigmoid_gate",
+      "dispatches_per_token": 16,
+      "what": "attention output * sigmoid(gate from q_proj)",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "gk_swiglu_f32",
+      "dispatches_per_token": 64,
+      "what": "silu(gate)*up -> act",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "qwen_next_add_residual",
+      "dispatches_per_token": 128,
+      "what": "mixer residual + MLP residual (qwen_next_add_residual)",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    },
+    {
+      "kernel": "sample_argmax_f32",
+      "dispatches_per_token": 1,
+      "what": "greedy argmax over vocab logits",
+      "is_gemv": false,
+      "reconstructs_dense_w_to_dram": false
+    }
+  ],
+  "dispatch_reconciliation": {
+    "formula": "1 embed + QWEN38_LAYERS * (MIXER_PREFIX + MLP_SUFFIX) + len(TERMINAL_HEAD_KERNELS)",
+    "embed": 1,
+    "layers": 64,
+    "mixer_prefix": 9,
+    "mlp_suffix": 6,
+    "full_layer": 15,
+    "terminal": 3,
+    "formula_total": 964,
+    "inventory_total": 964,
+    "recorded_anchor": 964,
+    "command_buffers": 1,
+    "matches_recorded_964": true,
+    "source": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs::production_dispatches_per_token and the unit test production_dispatch_count_is_964. Shape: 1 command buffer, 964 dispatches.",
+    "verdict": "STILL 964. 1 + 64*15 + 3 = 964, and the encode-path inventory re-sums to the same number. Live kernel NAMES drifted from the frozen schedule arrays; the COUNT did not. Default env does not enable the two-pass argmax (that would be 965)."
+  },
+  "gemv_organs": [
+    {
+      "organ": "mlp.gate_proj",
+      "count_per_token": 64,
+      "rows": 17408,
+      "cols": 5120,
+      "elements_per_launch": 89128960,
+      "elements_per_token": 5704253440,
+      "mac_flops_per_launch": 178257920,
+      "mac_flops_per_token": 11408506880,
+      "q4_bytes_per_launch": 47349760,
+      "q4_bytes_per_token": 3030384640,
+      "dense_f32_bytes_per_launch": 356515840,
+      "dense_f32_bytes_per_token": 22817013760,
+      "dense_bf16_bytes_per_token": 11408506880,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "mlp"
+    },
+    {
+      "organ": "mlp.up_proj",
+      "count_per_token": 64,
+      "rows": 17408,
+      "cols": 5120,
+      "elements_per_launch": 89128960,
+      "elements_per_token": 5704253440,
+      "mac_flops_per_launch": 178257920,
+      "mac_flops_per_token": 11408506880,
+      "q4_bytes_per_launch": 47349760,
+      "q4_bytes_per_token": 3030384640,
+      "dense_f32_bytes_per_launch": 356515840,
+      "dense_f32_bytes_per_token": 22817013760,
+      "dense_bf16_bytes_per_token": 11408506880,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "mlp"
+    },
+    {
+      "organ": "mlp.down_proj",
+      "count_per_token": 64,
+      "rows": 5120,
+      "cols": 17408,
+      "elements_per_launch": 89128960,
+      "elements_per_token": 5704253440,
+      "mac_flops_per_launch": 178257920,
+      "mac_flops_per_token": 11408506880,
+      "q4_bytes_per_launch": 47349760,
+      "q4_bytes_per_token": 3030384640,
+      "dense_f32_bytes_per_launch": 356515840,
+      "dense_f32_bytes_per_token": 22817013760,
+      "dense_bf16_bytes_per_token": 11408506880,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "mlp"
+    },
+    {
+      "organ": "linear_attn.in_proj_qkvz",
+      "count_per_token": 48,
+      "rows": 16384,
+      "cols": 5120,
+      "elements_per_launch": 83886080,
+      "elements_per_token": 4026531840,
+      "mac_flops_per_launch": 167772160,
+      "mac_flops_per_token": 8053063680,
+      "q4_bytes_per_launch": 44564480,
+      "q4_bytes_per_token": 2139095040,
+      "dense_f32_bytes_per_launch": 335544320,
+      "dense_f32_bytes_per_token": 16106127360,
+      "dense_bf16_bytes_per_token": 8053063680,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "deltanet"
+    },
+    {
+      "organ": "linear_attn.in_proj_ba",
+      "count_per_token": 48,
+      "rows": 96,
+      "cols": 5120,
+      "elements_per_launch": 491520,
+      "elements_per_token": 23592960,
+      "mac_flops_per_launch": 983040,
+      "mac_flops_per_token": 47185920,
+      "q4_bytes_per_launch": 261120,
+      "q4_bytes_per_token": 12533760,
+      "dense_f32_bytes_per_launch": 1966080,
+      "dense_f32_bytes_per_token": 94371840,
+      "dense_bf16_bytes_per_token": 47185920,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "deltanet"
+    },
+    {
+      "organ": "linear_attn.out_proj",
+      "count_per_token": 48,
+      "rows": 5120,
+      "cols": 6144,
+      "elements_per_launch": 31457280,
+      "elements_per_token": 1509949440,
+      "mac_flops_per_launch": 62914560,
+      "mac_flops_per_token": 3019898880,
+      "q4_bytes_per_launch": 16711680,
+      "q4_bytes_per_token": 802160640,
+      "dense_f32_bytes_per_launch": 125829120,
+      "dense_f32_bytes_per_token": 6039797760,
+      "dense_bf16_bytes_per_token": 3019898880,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "deltanet"
+    },
+    {
+      "organ": "self_attn.q_proj",
+      "count_per_token": 16,
+      "rows": 12288,
+      "cols": 5120,
+      "elements_per_launch": 62914560,
+      "elements_per_token": 1006632960,
+      "mac_flops_per_launch": 125829120,
+      "mac_flops_per_token": 2013265920,
+      "q4_bytes_per_launch": 33423360,
+      "q4_bytes_per_token": 534773760,
+      "dense_f32_bytes_per_launch": 251658240,
+      "dense_f32_bytes_per_token": 4026531840,
+      "dense_bf16_bytes_per_token": 2013265920,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "gqa"
+    },
+    {
+      "organ": "self_attn.k_proj",
+      "count_per_token": 16,
+      "rows": 1024,
+      "cols": 5120,
+      "elements_per_launch": 5242880,
+      "elements_per_token": 83886080,
+      "mac_flops_per_launch": 10485760,
+      "mac_flops_per_token": 167772160,
+      "q4_bytes_per_launch": 2785280,
+      "q4_bytes_per_token": 44564480,
+      "dense_f32_bytes_per_launch": 20971520,
+      "dense_f32_bytes_per_token": 335544320,
+      "dense_bf16_bytes_per_token": 167772160,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "gqa"
+    },
+    {
+      "organ": "self_attn.v_proj",
+      "count_per_token": 16,
+      "rows": 1024,
+      "cols": 5120,
+      "elements_per_launch": 5242880,
+      "elements_per_token": 83886080,
+      "mac_flops_per_launch": 10485760,
+      "mac_flops_per_token": 167772160,
+      "q4_bytes_per_launch": 2785280,
+      "q4_bytes_per_token": 44564480,
+      "dense_f32_bytes_per_launch": 20971520,
+      "dense_f32_bytes_per_token": 335544320,
+      "dense_bf16_bytes_per_token": 167772160,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "gqa"
+    },
+    {
+      "organ": "self_attn.o_proj",
+      "count_per_token": 16,
+      "rows": 5120,
+      "cols": 6144,
+      "elements_per_launch": 31457280,
+      "elements_per_token": 503316480,
+      "mac_flops_per_launch": 62914560,
+      "mac_flops_per_token": 1006632960,
+      "q4_bytes_per_launch": 16711680,
+      "q4_bytes_per_token": 267386880,
+      "dense_f32_bytes_per_launch": 125829120,
+      "dense_f32_bytes_per_token": 2013265920,
+      "dense_bf16_bytes_per_token": 1006632960,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "gqa"
+    },
+    {
+      "organ": "lm_head",
+      "count_per_token": 1,
+      "rows": 248320,
+      "cols": 5120,
+      "elements_per_launch": 1271398400,
+      "elements_per_token": 1271398400,
+      "mac_flops_per_launch": 2542796800,
+      "mac_flops_per_token": 2542796800,
+      "q4_bytes_per_launch": 675430400,
+      "q4_bytes_per_token": 675430400,
+      "dense_f32_bytes_per_launch": 5085593600,
+      "dense_f32_bytes_per_token": 5085593600,
+      "dense_bf16_bytes_per_token": 2542796800,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "role": "terminal"
+    }
+  ],
+  "gemv_dispatches_per_token": 401,
+  "activation_flops": {
+    "rmsnorm": 3302400,
+    "swiglu": 5570560,
+    "residual_add": 655360,
+    "rearrange_conv_l2": 7372800,
+    "ba_to_decay": 27648,
+    "gated_delta": 264241152,
+    "gated_rmsnorm": 1474560,
+    "rope": 737280,
+    "mha_mac": 13369344,
+    "mha_softmax": 65280,
+    "sigmoid_gate": 491520,
+    "embed_dequant_scale": 5120,
+    "argmax_comparisons_not_flops": 248320,
+    "total_flops": 297313024
+  },
+  "dram_and_temp": {
+    "gemv_elements_per_token": 25621954560,
+    "executable_weight_bytes_per_token": 13623403168,
+    "executable_q4_gemv_bytes": 13611663360,
+    "executable_embed_row_q4_bytes": 2720,
+    "executable_embed_table_resident_q4_bytes": 675430400,
+    "executable_f32_scale_bytes": 11737088,
+    "executable_activation_write_bytes": 191649796,
+    "executable_rec_state_read_bytes": 150994944,
+    "executable_conv_state_read_bytes": 5898240,
+    "executable_gqa_kv_read_bytes_at_seq": 4456448,
+    "executable_gemv_input_read_bytes": 11620352,
+    "executable_dram_bytes_per_token": 13988022948,
+    "source_dense_f32_gemv_bytes": 102487818240,
+    "source_dense_bf16_gemv_bytes": 51243909120,
+    "source_embed_table_f32_bytes": 5085593600,
+    "trap_reconstruct_then_gemm": {
+      "dense_w_write_bytes": 102487818240,
+      "dense_w_reread_bytes": 102487818240,
+      "q4_still_read_bytes": 13611663360,
+      "extra_vs_fused_bytes": 204975636480,
+      "note": "A decode_vector-then-f32-GEMM lowering would materialise every GEMV matrix as f32 (102.5 GiB-class) every token, then read it back. The fused geo_tpr64 kernel never writes that buffer."
+    },
+    "temporary_materialization_bytes_per_token": 191649796,
+    "dense_w_materialized_bytes_per_token": 0,
+    "unused_mixed_workspace_residency_bytes": 43904,
+    "seq_len_used_for_kv": 34
+  },
+  "columns": {
+    "convention": {
+      "flop": "IEEE floating-point; FMA counted as 2 (matches G143's 2N = mul+add per weight)",
+      "operation": "FLOPs plus integer nibble-unpack ALU (shift/mask/sub/itof \u2248 4 per Q4 weight)",
+      "dispatch": "Metal compute dispatches encoded into the production TokenCommandBuffer",
+      "dram": "bytes the kernels read or write per decode step, including weight stream and activations",
+      "temporary_materialization": "bytes of intermediate tensors written to device buffers per token. Dense W reconstruction is counted separately and is 0 on this path.",
+      "source_means": "the dense mathematical graph: same organs, f32 (or bf16) GEMV bodies, no Q4 unpack ALU, activations still dense",
+      "executable_means": "the uniform-q4 fused path encode_embed + 64*(mixer+mlp) + encode_terminal with default env (geo_tpr64_tg128 GEMV, family SwiGLU, tiled RMS/RoPE/DeltaNet)"
+    },
+    "source": {
+      "flops_per_token": 51541222144,
+      "flops_per_token_trace": "GEMV MACs 51243909120 (2*elements of every dispatched matvec) + activation FLOPs 297313024 (RMSNorm/SwiGLU/DeltaNet/MHA/\u2026). Does NOT include G143's 2*embed_table.",
+      "g143_paper_flops_per_token": 53791996928,
+      "operations_per_token": 51541222144,
+      "operations_per_token_trace": "equal to FLOPs: a dense f32 GEMV has no nibble unpack",
+      "dispatches_per_token": 964,
+      "dispatches_per_token_trace": "same control graph as the executable (one kernel per organ). A reconstruct-then-GEMM SOURCE lowering would add 401 qwen_uniform_q4_decode_vector dispatches and is tabulated under trap_reconstruct_then_gemm, not here.",
+      "dram_bytes_per_token_f32_weights": 102679468036,
+      "dram_bytes_per_token_bf16_weights": 51435558916,
+      "dram_trace": "streaming every GEMV matrix as dense f32 (4 B/weight) or bf16 (2 B/weight), plus the same activation writes the executable already pays",
+      "temporary_materialization_bytes_per_token": 191649796,
+      "dense_w_materialized_bytes_per_token": 102487818240,
+      "dense_w_note": "A dense SOURCE stores W already unpacked, so 'materialization' is the weight stream itself, not a codec expansion."
+    },
+    "executable": {
+      "flops_per_token": 77163181824,
+      "flops_per_token_trace": "same GEMV MACs 51243909120 + same activations 297313024 + one extra scale-mul FLOP per Q4 weight (25621959680). unpack8: acc += float(q)*scale*x[col].",
+      "operations_per_token": 179651020544,
+      "operations_per_token_trace": "executable FLOPs 77163181824 + integer unpack 102487838720 (~4 ALU ops per Q4 weight)",
+      "dispatches_per_token": 964,
+      "dispatches_per_token_trace": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs::production_dispatches_per_token and the unit test production_dispatch_count_is_964. Shape: 1 command buffer, 964 dispatches.",
+      "command_buffers_per_token": 1,
+      "dram_bytes_per_token": 13988022948,
+      "dram_trace": "Q4 GEMV stream 13611663360 + embed row 2720 + f32 scales 11737088 + activation writes 191649796 + state/KV/GEMV-input reads",
+      "temporary_materialization_bytes_per_token": 191649796,
+      "dense_w_materialized_bytes_per_token": 0,
+      "dense_w_note": "zero. Packed codes stay packed. Missing codec fails the run; there is no reconstruct-to-Q4 or reconstruct-to-f32 fallback on this path."
+    },
+    "verdict": {
+      "does_the_executable_do_less_work": false,
+      "does_the_executable_hold_fewer_bytes": true,
+      "one_line": "The executable holds and streams fewer bytes (Q4 4.25 BPW vs f32/bf16). It does not do fewer MACs \u2014 it does the same 51.24 GFLOP of GEMV plus extra dequant ALU \u2014 and it does not reconstruct a dense W before computing.",
+      "paradigm_boundary_crossed": false,
+      "paradigm_note": "Storage moved. Arithmetic did not. Activation tensors are still dense f32. The Noetic attack surface is the list of reconstruction sites, not the BPW."
+    },
+    "trap_reconstruct_then_gemm_not_the_current_path": {
+      "extra_dispatches_per_token": 401,
+      "extra_dense_w_bytes_per_token": 102487818240,
+      "kernel_that_would_do_it": "qwen_uniform_q4_decode_vector",
+      "note": "A decode_vector-then-f32-GEMM lowering would materialise every GEMV matrix as f32 (102.5 GiB-class) every token, then read it back. The fused geo_tpr64 kernel never writes that buffer."
+    }
+  },
+  "analytic_vs_measured": {
+    "g143_paper_flops_2N": 53791996928,
+    "g143_method": "tools/flops_per_token.py / receipts/ascent-2026-08-16/G143_FLOPS_PER_TOKEN.json: 2 * active_text_params, active_text_params = source_weight_elements including the embed table and every f32 scale tensor. Not derived from dispatched kernels.",
+    "dispatched_gemv_mac_flops": 51243909120,
+    "dispatched_activation_flops": 297313024,
+    "dispatched_total_flops_without_dequant_scale": 51541222144,
+    "embed_table_params_treated_as_matvec_by_paper": 1271398400,
+    "paper_overcount_from_embed_table_macs": 2542796800,
+    "paper_minus_embed_table": 51249200128,
+    "gemv_elements_actually_multiplied": 25621954560,
+    "leftover_params_not_in_any_gemv": 2645504,
+    "leftover_is": "f32 mixer tensors (conv1d.weight, A_log, dt_bias, rms/q/k/gated norms). They run as f32 vector math, not as 2N MACs.",
+    "gap_paper_minus_dispatched_gemv_macs": 2548087808,
+    "reading": "G143 reports 53.79 GFLOP/token. The decode path's GEMV kernels perform 51.24 GFLOP of MACs \u2014 the embed table is gathered as one row (5120 elements), not multiplied as a 248320\u00d75120 matvec (2.54 GFLOP of the paper number never run). The remaining 2,645,504 params are f32 scales, not GEMVs. An analytic FLOP number and a measured dispatch count disagreeing is the finding: 964 dispatches is a graph-shape fact; 53.79 GFLOP is a parameter-count fact that double-counts the embed table."
+  },
+  "reconstruction_sites": [
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "bytes_materialised_per_token": 0,
+      "classification": "required-by-implementation-of-the-codec-but-fused",
+      "kind": "weight_in_register",
+      "on_uniform_q4_production_path": true,
+      "note": "qwen_uniform_q4_unpack8 unpacks 8 nibbles into registers, FMAs them against x, and discards the decoded weights. Output is the matvec vector only. This is the site a reconstruct-then-GEMM lowering would turn into a 102,487,818,240 byte dense-W write. It does not, today."
+    },
+    {
+      "kernel": "qwen_uniform_q4_decode_vector",
+      "bytes_materialised_per_token": 102487818240,
+      "classification": "required-by-implementation",
+      "kind": "weight_to_dram",
+      "on_uniform_q4_production_path": false,
+      "note": "The reconstruct-to-dense kernel exists in qwen_uniform_q4.metal and is wired in metal/mod.rs. qwen38_hybrid_decode.rs does not dispatch it. qwen30_complete_runtime.rs does. Naming it is the point: this is the kernel a Noetic representation must not need."
+    },
+    {
+      "kernel": "qwen_uniform_q4_embedding_lookup",
+      "bytes_materialised_per_token": 20480,
+      "classification": "required-by-math",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "One vocab row must exist as an f32 hidden vector before layer 0. The kernel dequants 5,120 Q4 values into workspace.hidden and does not expand the 675,430,440-byte embed table."
+    },
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 -> workspace.gate/up",
+      "bytes_materialised_per_token": 8912896,
+      "classification": "required-by-implementation",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "SwiGLU math needs gate and up. Writing both as full 17,408-wide f32 buffers, then launching a third kernel to silu-mul them, is the current graph. A fused gate-up-silu-down kernel would not write gate, up, or act to DRAM."
+    },
+    {
+      "kernel": "gk_swiglu_f32 -> workspace.act",
+      "bytes_materialised_per_token": 4456448,
+      "classification": "required-by-implementation",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "act is the SwiGLU result consumed by down_proj. Math needs the vector; a fused MLP would keep it in registers / SRAM."
+    },
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 -> workspace.qkvz",
+      "bytes_materialised_per_token": 3145728,
+      "classification": "required-by-implementation",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "Pack-time fuse already concatenated in_proj_qkv and in_proj_z into one Q4 matrix, so W is not reconstructed. The ACTIVATION is still materialised as a 16,384-wide f32 vector for rearrange to split. Math needs q,k,v,z; it does not need the concatenated buffer."
+    },
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 -> workspace.ba",
+      "bytes_materialised_per_token": 18432,
+      "classification": "required-by-implementation",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "96-wide BA vector written dense, then ba_to_decay rereads it. Fuseable."
+    },
+    {
+      "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+      "bytes_materialised_per_token": 10616832,
+      "classification": "required-by-math",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "Causal conv and the recurrence consume q,k,v,z and update conv_state. Those tensors are the math. The preceding qkvz concatenation is not."
+    },
+    {
+      "kernel": "qwen38_gated_delta_decode_vi_simd",
+      "bytes_materialised_per_token": 152174592,
+      "classification": "required-by-math",
+      "kind": "state",
+      "on_uniform_q4_production_path": true,
+      "note": "Recurrent state is 48\u00d7128\u00d7128 f32 per DeltaNet layer. It is read and written every token. This is the math of gated DeltaNet, not a codec artefact."
+    },
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 -> workspace.q_proj/k_proj/v_proj",
+      "bytes_materialised_per_token": 917504,
+      "classification": "required-by-implementation",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "Q/K/V written dense, then rope/mha reread them. Fuseable into rope."
+    },
+    {
+      "kernel": "mha_decode_f32",
+      "bytes_materialised_per_token": 393216,
+      "classification": "required-by-math",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "Attention output is a 6,144-wide f32 vector. KV cache traffic scales with seq_len."
+    },
+    {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 -> workspace.logits",
+      "bytes_materialised_per_token": 993280,
+      "classification": "required-by-implementation",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "lm_head writes 248,320 f32 logits, then a separate argmax scans them. Math needs the max index, not the dense logit buffer, if argmax were fused into the matvec reduction. Default path does not fuse them. qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8 exists and is unused."
+    },
+    {
+      "kernel": "qwen80_residual_rmsnorm_tg -> workspace.normalized",
+      "bytes_materialised_per_token": 2641920,
+      "classification": "required-by-implementation",
+      "kind": "activation",
+      "on_uniform_q4_production_path": true,
+      "note": "RMSNorm output is an f32 hidden written so the next GEMV can bind it. Fuseable."
+    },
+    {
+      "kernel": "qwen38_fuse_split_qkvz_f32 / qwen38_fuse_split_ba_f32",
+      "bytes_materialised_per_token": 3164160,
+      "classification": "required-by-implementation",
+      "kind": "activation",
+      "on_uniform_q4_production_path": false,
+      "note": "Concatenates split in_proj activations into the packed QKVZ/BA layout. The uniform-q4 artifact has fused_in_proj_layers=48, so encode_deltanet never takes this branch. Mixed/unfused catalogs do."
+    },
+    {
+      "kernel": "dequant_hgravu_vector (host, session open)",
+      "bytes_materialised_per_token": 0,
+      "classification": "required-by-implementation",
+      "kind": "weight_host",
+      "on_uniform_q4_production_path": false,
+      "note": "Host decoder for small HGRAVU vectors at catalog load. Explicitly refuses dense W (`dequant refuses N elements (dense W)`). Not per-token, not on the uniform-q4 path."
+    }
+  ],
+  "flop_convention": {
+    "flop": "IEEE floating-point; FMA counted as 2 (matches G143's 2N = mul+add per weight)",
+    "operation": "FLOPs plus integer nibble-unpack ALU (shift/mask/sub/itof \u2248 4 per Q4 weight)",
+    "dispatch": "Metal compute dispatches encoded into the production TokenCommandBuffer",
+    "dram": "bytes the kernels read or write per decode step, including weight stream and activations",
+    "temporary_materialization": "bytes of intermediate tensors written to device buffers per token. Dense W reconstruction is counted separately and is 0 on this path.",
+    "source_means": "the dense mathematical graph: same organs, f32 (or bf16) GEMV bodies, no Q4 unpack ALU, activations still dense",
+    "executable_means": "the uniform-q4 fused path encode_embed + 64*(mixer+mlp) + encode_terminal with default env (geo_tpr64_tg128 GEMV, family SwiGLU, tiled RMS/RoPE/DeltaNet)"
+  },
+  "what_i_watched_fail": [
+    {
+      "what": "git apply tree-state.patch",
+      "result": "FAILED",
+      "why": "The patch is entirely tools/haider/hcli/**. This worktree is a sparse checkout and tools/haider is neither materialized nor in WRITE scope (DENY: tools/haider). git apply aborted with 'No such file or directory' on every hunk. untracked.tar is the same tree. Nothing in-scope was missing from HEAD."
+    },
+    {
+      "what": "baseline suite 464 passed, 1 skipped (HCLI_SWAP_CEILING_GIB=64)",
+      "result": "NOT RUN",
+      "why": "That suite lives under tools/haider/hcli/tests, which is DENY and not on disk. git sparse-checkout add is forbidden in this sandbox (sparse-checkout.lock: Operation not permitted). The 9 RuntimePool MemGate failures the ceiling avoids cannot be reproduced here without materializing a denied path."
+    },
+    {
+      "what": "live 27B native decode re-time",
+      "result": "NOT RUN (refused)",
+      "why": "A llama-server is already listening on 127.0.0.1:52484. The contract forbids spawning a second 27B. Occupancy is not free: two model servers resident measured 3.986 tok/s against 33.47 with one. TPS/token-ms used here are the supplied anchors (32.73 tps / 30.606 ms), not a new run."
+    },
+    {
+      "what": "G143 2N vs dispatched GEMV MACs",
+      "result": "DISAGREE (reported, not smoothed)",
+      "why": "Paper 2*N_active = 53.79 GFLOP includes a full embed-table matvec the path never launches. Dispatched GEMV MACs are 51.24 GFLOP. See analytic_vs_measured."
+    },
+    {
+      "what": "frozen schedule kernel names vs live encode defaults",
+      "result": "NAMES DRIFTED, COUNT DID NOT",
+      "why": "QWEN38_*_KERNELS still lists qwen80_residual_rmsnorm_f32, qwen80_silu_mul_f32, qwen38_gated_delta_decode_vi, qwen38_gqa_qk_norm_rope_cache_f32. encode_* retile to _tg / _simd / gk_swiglu_f32 under default env. 15 dispatches/layer and 964/token are unchanged. HAWKING_ARGMAX_TWO_PASS=1 would make 965."
+    },
+    {
+      "what": "G071 38-bound kernel extraction vs kernels actually launched",
+      "result": "UNDERCOUNT",
+      "why": "String-literal \u2229 kernel-void is still 41 vs 561 declared, matching the 38/554 anchor. Helpers dispatch mha_decode_f32, qwen_next_add_residual, gk_swiglu_f32, sample_argmax_f32 \u2014 four production kernels the G071 method cannot see. A seal of the 38 is a seal of literals, not of the 964-dispatch graph."
+    },
+    {
+      "what": "GPU occupancy as a free resource",
+      "result": "FALSE (already measured)",
+      "why": "Native run: 3.986 tok/s with two model servers resident vs 33.47 with one. The 964-dispatch fused path is still one process streaming ~13.6 GB of weights per token; a second resident copy contends for the same 595.9 GB/s roof."
+    }
+  ],
+  "self_check": {
+    "dispatches_964": true,
+    "declared_554": false,
+    "g071_bound_38": false,
+    "layers_64": true,
+    "full_layer_15": true,
+    "dense_w_materialized_is_zero": true
+  },
+  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_OPERATION_CENSUS.json"
+}

@@ -1,0 +1,131 @@
+{
+  "schema": "hawking.headless.composition_ladder.v1",
+  "obligation": "N011 (S017 \u00a728)",
+  "git_head": "6e3dda0fb683",
+  "rungs": [
+    "local_functional_probe",
+    "held_out_activation",
+    "adjacent_layers",
+    "short_chain",
+    "complete_organ",
+    "complete_token",
+    "coherent_generation",
+    "capability"
+  ],
+  "rule": "A candidate that fails a rung is KILLED THERE and may not be described above the rung its evidence supports. Reaching a rung is not the same as passing it; UNREACHED and FAILED are different states.",
+  "why_this_is_not_bookkeeping": "Ternary at 1.85 bpw was named CANON on an organ-local held-out screen and then flipped the argmax on the whole model. In the other direction, the cheapest candidate that ever passed a screen (2.3440 EBPW) emits sixteen newlines when asked to generate. Screen survival predicts neither composition nor generation.",
+  "candidates": [
+    {
+      "id": "ternary_aa_g64 (organ-local CANON, 1.85 bpw)",
+      "highest_rung_reached": "held_out_activation",
+      "highest_rung_index": 1,
+      "died_at": "complete_token",
+      "unreached_above": null,
+      "status": "FAILED",
+      "why": "Named CANON on an organ-local held-out screen (mean rel_fro 0.3209715361396472), then FLIPPED THE ARGMAX applied to the whole MLP: rel_l2 0.7360, student argmax 10895 vs teacher 9714.",
+      "source_receipt": "receipts/headless/FRACTIONAL_BIT_CANON.json + NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+      "note": "THE case for composition-first screening. A screen verdict is not a model verdict.",
+      "may_be_described_as": "held_out_activation"
+    },
+    {
+      "id": "mix_a_l0_down_binary_g1024",
+      "highest_rung_reached": "coherent_generation",
+      "highest_rung_index": 6,
+      "died_at": null,
+      "unreached_above": null,
+      "status": "PASSED_ALL_TESTED",
+      "why": "generated varied tokens",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "note": "EBPW 4.242016986754093",
+      "may_be_described_as": "coherent_generation"
+    },
+    {
+      "id": "mix_b_all_down_binary_g1024",
+      "highest_rung_reached": "complete_token",
+      "highest_rung_index": 5,
+      "died_at": "coherent_generation",
+      "unreached_above": null,
+      "status": "FAILED",
+      "why": "decode degenerated: only 2 new tokens (stopped early, likely EOS); not a 16-token sample",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "note": "EBPW 3.566774159673004",
+      "may_be_described_as": "complete_token"
+    },
+    {
+      "id": "mix_c_all_mlp_binary_g64",
+      "highest_rung_reached": "complete_token",
+      "highest_rung_index": 5,
+      "died_at": "coherent_generation",
+      "unreached_above": null,
+      "status": "FAILED",
+      "why": "decode degenerated: 16 copies of the same token (271)",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "note": "EBPW 2.343974955991431",
+      "may_be_described_as": "complete_token"
+    },
+    {
+      "id": "q2_4level_fitted_g64 whole-MLP (2.25 bpw)",
+      "highest_rung_reached": "coherent_generation",
+      "highest_rung_index": 6,
+      "died_at": null,
+      "unreached_above": "capability",
+      "status": "UNTESTED_ABOVE",
+      "why": "Survived the complete 64-layer token loop with the argmax AGREEING (9714 = 9714), and native generation is non-degenerate.",
+      "source_receipt": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json + NATIVE_2BIT_MLP.json",
+      "note": "Cheapest arm known to survive the whole-model token loop, now carried to native generation. Capability is still UNREACHED.",
+      "may_be_described_as": "coherent_generation"
+    },
+    {
+      "id": "NOETIC_PARENT_A (affine2_g64_LS + fused graph)",
+      "highest_rung_reached": "coherent_generation",
+      "highest_rung_index": 6,
+      "died_at": null,
+      "unreached_above": "capability",
+      "status": "UNTESTED_ABOVE",
+      "why": "Generates 16 coherent tokens natively at 34.873 tok/s. NO capability suite has ever been run on it, so the capability rung is UNREACHED, not passed.",
+      "source_receipt": "receipts/headless/NOETIC_FUSED_SUBBIT.json",
+      "note": "LEADER. Frontier candidate; not resident-promoted.",
+      "may_be_described_as": "coherent_generation"
+    }
+  ],
+  "counts": {
+    "candidates": 6,
+    "by_highest_rung": {
+      "held_out_activation": 1,
+      "coherent_generation": 3,
+      "complete_token": 2
+    },
+    "killed_before_capability": 3,
+    "untested_above_their_rung": 2
+  },
+  "untested_not_failed": [
+    {
+      "id": "q2_4level_fitted_g64 whole-MLP (2.25 bpw)",
+      "unreached_above": "capability",
+      "why": "Cheapest arm known to survive the whole-model token loop, now carried to native generation. Capability is still UNREACHED."
+    },
+    {
+      "id": "NOETIC_PARENT_A (affine2_g64_LS + fused graph)",
+      "unreached_above": "capability",
+      "why": "LEADER. Frontier candidate; not resident-promoted."
+    }
+  ],
+  "killed": [
+    {
+      "id": "ternary_aa_g64 (organ-local CANON, 1.85 bpw)",
+      "died_at": "complete_token",
+      "why": "Named CANON on an organ-local held-out screen (mean rel_fro 0.3209715361396472), then FLIPPED THE ARGMAX applied to the whole MLP: rel_l2 0.7360, student argmax 10895 vs teacher 9714."
+    },
+    {
+      "id": "mix_b_all_down_binary_g1024",
+      "died_at": "coherent_generation",
+      "why": "decode degenerated: only 2 new tokens (stopped early, likely EOS); not a 16-token sample"
+    },
+    {
+      "id": "mix_c_all_mlp_binary_g64",
+      "died_at": "coherent_generation",
+      "why": "decode degenerated: 16 copies of the same token (271)"
+    }
+  ],
+  "capability_rung_status": "UNREACHED FOR EVERY CANDIDATE. No capability suite has been run on any artifact in this campaign. Coherence on a 16-token greedy sample is not capability."
+}

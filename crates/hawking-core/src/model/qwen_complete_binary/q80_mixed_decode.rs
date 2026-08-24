@@ -39,11 +39,39 @@ pub const MAGIC_BINARY: [u8; 8] = *b"HGRAVB01";
 pub const MAGIC_RESIDUAL_COMPACT: [u8; 8] = *b"HGRAVR02";
 pub const MAGIC_HGRAVS01: [u8; 8] = *b"HGRAVS01";
 pub const MAGIC_UNIFORM: [u8; 8] = *b"HGRAVU01";
+pub const MAGIC_AFFINE: [u8; 8] = *b"HGRAVF01";
 
 pub const SCHEMA_BINARY: &str = "hawking.gravity.binary_sign_scale.v1";
 pub const SCHEMA_RESIDUAL: &str = "hawking.gravity.binary_outlier_residual.v2";
 pub const SCHEMA_HGRAVS01: &str = "hawking.gravity.activation_weighted_svd_low_rank.v1";
 pub const SCHEMA_UNIFORM: &str = "hawking.gravity.uniform_group.v1";
+pub const SCHEMA_AFFINE: &str = "hawking.gravity.affine_scale_bias.v1";
+pub const AFFINE_REPRESENTATION: &str = "affine_q2_group32_fp16_scale_bias";
+pub const AFFINE_REPRESENTATION_G64: &str = "affine_q2_group64_fp16_scale_bias";
+pub const Q2F_REPRESENTATION: &str = "fourlevel_q2_group64_fp16_delta";
+pub const AFFINE_BITS: u8 = 2;
+pub const AFFINE_GROUP_SIZE: usize = 32;
+pub const AFFINE_GROUP_SIZE_64: usize = 64;
+
+pub fn affine_group_size_supported(group_size: usize) -> bool {
+    matches!(group_size, AFFINE_GROUP_SIZE | AFFINE_GROUP_SIZE_64)
+}
+
+pub fn affine_representation(group_size: usize) -> &'static str {
+    match group_size {
+        AFFINE_GROUP_SIZE_64 => AFFINE_REPRESENTATION_G64,
+        _ => AFFINE_REPRESENTATION,
+    }
+}
+
+pub fn affine_code_bytes_per_group(group_size: usize) -> Result<usize> {
+    if !affine_group_size_supported(group_size) {
+        return Err(Error::Model(format!(
+            "HGRAVF01 group_size={group_size} is not 32 or 64"
+        )));
+    }
+    Ok(group_size / 4)
+}
 pub const HGRAVS01_REPRESENTATION_PACKED: &str = "activation_weighted_svd_low_rank_q";
 
 #[derive(Clone, Debug, PartialEq)]
@@ -78,6 +106,29 @@ pub struct UniformFactorPacked {
     pub bound: u16,
     pub scales_f16: Vec<u16>,
     pub codes: Vec<u8>,
+}
+
+/// Affine 2-bit pack: `w = q * scale + bias`, `q ∈ {0,1,2,3}`, group 32 or 64.
+/// No signed bound. Body is `fp16 scales || fp16 biases || LSB-first codes`.
+///
+/// Q2F (4-level LS-fitted, no bias): `biases_f16` is empty and
+/// `w = (q - 1.5) * scale`. Body is `fp16 scales || LSB-first codes`.
+#[derive(Clone, Debug, PartialEq)]
+pub struct AffineFactorPacked {
+    pub rows: usize,
+    pub cols: usize,
+    pub bits: u8,
+    pub group_size: usize,
+    pub groups: usize,
+    pub scales_f16: Vec<u16>,
+    pub biases_f16: Vec<u16>,
+    pub codes: Vec<u8>,
+}
+
+impl AffineFactorPacked {
+    pub fn is_q2f(&self) -> bool {
+        self.biases_f16.is_empty()
+    }
 }
 
 pub fn packed_byte_count(count: usize, bits: u8) -> Result<usize> {
@@ -612,6 +663,227 @@ pub fn uniform_factor_matvec_f32(packed: &UniformFactorPacked, input: &[f32]) ->
     Ok(output)
 }
 
+/// Textbook min/max affine pack for tests. Production catalogs fit scale
+/// and bias by least squares in the Python packer.
+pub fn pack_affine_factor(values: &[f32], rows: usize, cols: usize) -> Result<AffineFactorPacked> {
+    pack_affine_factor_group(values, rows, cols, AFFINE_GROUP_SIZE)
+}
+
+pub fn pack_affine_factor_group(
+    values: &[f32],
+    rows: usize,
+    cols: usize,
+    group_size: usize,
+) -> Result<AffineFactorPacked> {
+    if rows == 0 || cols == 0 || !affine_group_size_supported(group_size) || cols % group_size != 0
+    {
+        return Err(Error::Model(format!(
+            "affine factor requires positive geometry, group 32 or 64, cols % {group_size} == 0"
+        )));
+    }
+    if values.len() != rows * cols {
+        return Err(Error::Model("affine factor length disagrees with shape".into()));
+    }
+    if values.iter().any(|v| !v.is_finite()) {
+        return Err(Error::Model("affine factor refuses non-finite values".into()));
+    }
+    let groups_per_row = cols / group_size;
+    let groups = rows
+        .checked_mul(groups_per_row)
+        .ok_or_else(|| Error::Model("affine group count overflows".into()))?;
+    let mut scales_f16 = Vec::with_capacity(groups);
+    let mut biases_f16 = Vec::with_capacity(groups);
+    let mut codes = Vec::with_capacity(groups * group_size);
+    for row in 0..rows {
+        for group in 0..groups_per_row {
+            let start = row * cols + group * group_size;
+            let slice = &values[start..start + group_size];
+            let min = slice.iter().copied().fold(f32::INFINITY, f32::min);
+            let max = slice.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+            let scale = ((max - min) / 3.0).max(1e-7);
+            let bias = min;
+            let scale_bits = f16::from_f32(scale).to_bits();
+            let bias_bits = f16::from_f32(bias).to_bits();
+            let stored_scale = f16::from_bits(scale_bits).to_f32();
+            let stored_bias = f16::from_bits(bias_bits).to_f32();
+            let denom = if stored_scale.abs() > 0.0 {
+                stored_scale
+            } else {
+                1.0
+            };
+            scales_f16.push(scale_bits);
+            biases_f16.push(bias_bits);
+            for &value in slice {
+                let q = ((value - stored_bias) / denom).round().clamp(0.0, 3.0) as u8;
+                codes.push(q);
+            }
+        }
+    }
+    Ok(AffineFactorPacked {
+        rows,
+        cols,
+        bits: AFFINE_BITS,
+        group_size,
+        groups,
+        scales_f16,
+        biases_f16,
+        codes: pack_unsigned(&codes, AFFINE_BITS)?,
+    })
+}
+
+/// 4-level LS-fitted 2-bit, no bias. `w = (q - 1.5) * delta`, q in {0,1,2,3}.
+///
+/// Init delta = amax/1.5 (same as `_fourlevel_fitted`), assign onto the odd
+/// grid, LS-refit delta, iterate until codes stabilize. Group 64.
+pub fn pack_q2f_factor_group(
+    values: &[f32],
+    rows: usize,
+    cols: usize,
+    group_size: usize,
+) -> Result<AffineFactorPacked> {
+    if rows == 0 || cols == 0 || group_size != AFFINE_GROUP_SIZE_64 || cols % group_size != 0 {
+        return Err(Error::Model(format!(
+            "q2f factor requires group 64 and cols % {group_size} == 0"
+        )));
+    }
+    if values.len() != rows * cols {
+        return Err(Error::Model("q2f factor length disagrees with shape".into()));
+    }
+    if values.iter().any(|v| !v.is_finite()) {
+        return Err(Error::Model("q2f factor refuses non-finite values".into()));
+    }
+    let groups_per_row = cols / group_size;
+    let groups = rows
+        .checked_mul(groups_per_row)
+        .ok_or_else(|| Error::Model("q2f group count overflows".into()))?;
+    let mut scales_f16 = Vec::with_capacity(groups);
+    let mut codes = Vec::with_capacity(groups * group_size);
+    const MAX_ITERS: usize = 16;
+    for row in 0..rows {
+        for group in 0..groups_per_row {
+            let start = row * cols + group * group_size;
+            let slice = &values[start..start + group_size];
+            let amax = slice.iter().copied().fold(0.0f32, |a, v| a.max(v.abs()));
+            let mut delta = if amax > 0.0 { amax / 1.5 } else { 1.0 };
+            let mut q = vec![0u8; group_size];
+            for _ in 0..MAX_ITERS {
+                let denom = if delta.abs() > 0.0 { delta } else { 1.0 };
+                let mut q_new = vec![0u8; group_size];
+                for (i, &value) in slice.iter().enumerate() {
+                    q_new[i] = (value / denom + 1.5).round().clamp(0.0, 3.0) as u8;
+                }
+                let mut num = 0.0f32;
+                let mut den = 0.0f32;
+                for (i, &value) in slice.iter().enumerate() {
+                    let unit = q_new[i] as f32 - 1.5;
+                    num += value * unit;
+                    den += unit * unit;
+                }
+                let delta_ls = if den > 0.0 { num / den } else { delta };
+                let delta_bits = f16::from_f32(delta_ls).to_bits();
+                let delta_new = f16::from_bits(delta_bits).to_f32();
+                let same = q_new == q;
+                q = q_new;
+                delta = delta_new;
+                if same {
+                    break;
+                }
+            }
+            scales_f16.push(f16::from_f32(delta).to_bits());
+            codes.extend_from_slice(&q);
+        }
+    }
+    Ok(AffineFactorPacked {
+        rows,
+        cols,
+        bits: AFFINE_BITS,
+        group_size,
+        groups,
+        scales_f16,
+        biases_f16: Vec::new(),
+        codes: pack_unsigned(&codes, AFFINE_BITS)?,
+    })
+}
+
+fn affine_group_index(packed: &AffineFactorPacked, row: usize, col: usize) -> usize {
+    row * (packed.cols / packed.group_size) + col / packed.group_size
+}
+
+pub fn affine_factor_value(packed: &AffineFactorPacked, row: usize, col: usize) -> f32 {
+    let element = row * packed.cols + col;
+    let group = affine_group_index(packed, row, col);
+    let scale = f16::from_bits(packed.scales_f16[group]).to_f32();
+    let q = extract_unsigned(&packed.codes, element, packed.bits);
+    if packed.is_q2f() {
+        (q as f32 - 1.5) * scale
+    } else {
+        let bias = f16::from_bits(packed.biases_f16[group]).to_f32();
+        q as f32 * scale + bias
+    }
+}
+
+pub fn affine_factor_matvec_f32(packed: &AffineFactorPacked, input: &[f32]) -> Result<Vec<f32>> {
+    if input.len() != packed.cols || input.iter().any(|v| !v.is_finite()) {
+        return Err(Error::Model("affine factor matvec input is not finite cols".into()));
+    }
+    let mut output = vec![0.0f32; packed.rows];
+    for row in 0..packed.rows {
+        let mut sum = 0.0f32;
+        for col in 0..packed.cols {
+            sum += affine_factor_value(packed, row, col) * input[col];
+        }
+        output[row] = sum;
+    }
+    Ok(output)
+}
+
+pub fn wrap_affine_factor(packed: &AffineFactorPacked) -> Result<Vec<u8>> {
+    if packed.bits != AFFINE_BITS || !affine_group_size_supported(packed.group_size) {
+        return Err(Error::Model(format!(
+            "HGRAVF01 is bits=2 group_size=32 or 64, got bits={} group_size={}",
+            packed.bits, packed.group_size
+        )));
+    }
+    let scale_bytes = packed.scales_f16.len() * 2;
+    let bias_bytes = packed.biases_f16.len() * 2;
+    let mut body = Vec::with_capacity(scale_bytes + bias_bytes + packed.codes.len());
+    for scale in &packed.scales_f16 {
+        body.extend_from_slice(&scale.to_le_bytes());
+    }
+    for bias in &packed.biases_f16 {
+        body.extend_from_slice(&bias.to_le_bytes());
+    }
+    body.extend_from_slice(&packed.codes);
+    let q2f = packed.is_q2f();
+    let header = serde_json::json!({
+        "schema": SCHEMA_AFFINE,
+        "representation": if q2f {
+            Q2F_REPRESENTATION
+        } else {
+            affine_representation(packed.group_size)
+        },
+        "shape": [packed.rows, packed.cols],
+        "elements": packed.rows * packed.cols,
+        "bits": packed.bits,
+        "group_size": packed.group_size,
+        "groups": packed.groups,
+        "scale_bytes": scale_bytes,
+        "bias_bytes": bias_bytes,
+        "code_bytes": packed.codes.len(),
+        "source": if q2f { "fourlevel_ls_fitted" } else { "fitted_affine" },
+    });
+    let header_bytes = serde_json::to_vec(&header)
+        .map_err(|error| Error::Model(format!("HGRAVF01 header encode: {error}")))?;
+    let header_len = u32::try_from(header_bytes.len())
+        .map_err(|_| Error::Model("HGRAVF01 header length overflows u32".into()))?;
+    let mut out = Vec::with_capacity(12 + header_bytes.len() + body.len());
+    out.extend_from_slice(&MAGIC_AFFINE);
+    out.extend_from_slice(&header_len.to_le_bytes());
+    out.extend_from_slice(&header_bytes);
+    out.extend_from_slice(&body);
+    Ok(out)
+}
+
 /// Native two-stage `y = L @ (R @ x)` of packed factors. Never forms dense W.
 pub fn hgravs01_two_stage_matvec_f32(
     left: &UniformFactorPacked,
@@ -1078,6 +1350,7 @@ pub enum MixedPackedTensor {
         right: UniformFactorPacked,
     },
     Uniform8(UniformFactorPacked),
+    Affine(AffineFactorPacked),
 }
 
 /// Byte-window description of a mixed payload. Offsets are from the
@@ -1116,6 +1389,16 @@ pub enum MixedGpuKind {
         right: MixedFactorLayout,
     },
     Uniform(MixedFactorLayout),
+    Affine {
+        scale_off: usize,
+        scale_bytes: usize,
+        bias_off: usize,
+        bias_bytes: usize,
+        code_off: usize,
+        code_bytes: usize,
+        group_size: u32,
+        bits: u32,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -1328,8 +1611,104 @@ pub fn mixed_gpu_layout(codec: u8, payload: &[u8]) -> Result<MixedGpuLayout> {
                 kind: MixedGpuKind::Uniform(layout),
             })
         }
+        5 => {
+            let (header_bytes, body) = split_gravity_container(payload, &MAGIC_AFFINE)?;
+            let header = header_object(header_bytes, "HGRAVF01")?;
+            require_header_str(&header, "schema", SCHEMA_AFFINE, "HGRAVF01")?;
+            let bits = u8::try_from(header_u64(&header, "bits", "HGRAVF01")?)
+                .map_err(|_| Error::Model("HGRAVF01 bits do not fit u8".into()))?;
+            let group_size = header_usize(&header, "group_size", "HGRAVF01")?;
+            if bits != AFFINE_BITS || !affine_group_size_supported(group_size) {
+                return Err(Error::Model(format!(
+                    "HGRAVF01 bits={bits} group_size={group_size} is not 2/32 or 2/64"
+                )));
+            }
+            let shape = header_shape(&header, "shape", "HGRAVF01")?;
+            let elements = header_usize(&header, "elements", "HGRAVF01")?;
+            let (rows, cols) = matrix_rows_cols(&shape, elements, "HGRAVF01")?;
+            if cols % group_size != 0 {
+                return Err(Error::Model(format!(
+                    "HGRAVF01 kernel requires cols to be a multiple of {group_size}"
+                )));
+            }
+            let groups = rows * (cols / group_size);
+            let header_groups = header_usize(&header, "groups", "HGRAVF01")?;
+            if header_groups != groups {
+                return Err(Error::Model(format!(
+                    "HGRAVF01 groups {header_groups} != rows*(cols/{group_size}) {groups}"
+                )));
+            }
+            let scale_bytes = header_usize(&header, "scale_bytes", "HGRAVF01")?;
+            let bias_bytes = header_usize(&header, "bias_bytes", "HGRAVF01")?;
+            let code_bytes = header_usize(&header, "code_bytes", "HGRAVF01")?;
+            let bytes_per_group = affine_code_bytes_per_group(group_size)?;
+            let q2f = bias_bytes == 0;
+            if scale_bytes != groups * 2
+                || (!q2f && bias_bytes != groups * 2)
+                || code_bytes != groups * bytes_per_group
+            {
+                return Err(Error::Model(format!(
+                    "HGRAVF01 ledger scales={scale_bytes} biases={bias_bytes} codes={code_bytes} \
+                     != groups={groups} * {{2, 0-or-2, {bytes_per_group}}}"
+                )));
+            }
+            if body.len() != scale_bytes + bias_bytes + code_bytes {
+                return Err(Error::Model(format!(
+                    "HGRAVF01 body {} != scales {scale_bytes} + biases {bias_bytes} + codes {code_bytes}",
+                    body.len()
+                )));
+            }
+            let body_off = 12 + header_bytes.len();
+            Ok(MixedGpuLayout {
+                rows: rows as u32,
+                cols: cols as u32,
+                kind: MixedGpuKind::Affine {
+                    scale_off: body_off,
+                    scale_bytes,
+                    bias_off: body_off + scale_bytes,
+                    bias_bytes,
+                    code_off: body_off + scale_bytes + bias_bytes,
+                    code_bytes,
+                    group_size: group_size as u32,
+                    bits: u32::from(bits),
+                },
+            })
+        }
         other => Err(Error::Model(format!("unknown mixed codec {other}"))),
     }
+}
+
+pub fn parse_affine_container(payload: &[u8]) -> Result<AffineFactorPacked> {
+    let layout = mixed_gpu_layout(5, payload)?;
+    let MixedGpuKind::Affine {
+        scale_off,
+        scale_bytes,
+        bias_off,
+        bias_bytes,
+        code_off,
+        code_bytes,
+        group_size,
+        bits,
+    } = layout.kind
+    else {
+        return Err(Error::Model("HGRAVF01 layout is not Affine".into()));
+    };
+    let scales_f16 = copy_f16_scales(&payload[scale_off..scale_off + scale_bytes], scale_bytes / 2, "HGRAVF01")?;
+    let biases_f16 = if bias_bytes == 0 {
+        Vec::new()
+    } else {
+        copy_f16_scales(&payload[bias_off..bias_off + bias_bytes], bias_bytes / 2, "HGRAVF01")?
+    };
+    Ok(AffineFactorPacked {
+        rows: layout.rows as usize,
+        cols: layout.cols as usize,
+        bits: u8::try_from(bits).map_err(|_| Error::Model("HGRAVF01 bits".into()))?,
+        group_size: group_size as usize,
+        groups: scale_bytes / 2,
+        scales_f16,
+        biases_f16,
+        codes: payload[code_off..code_off + code_bytes].to_vec(),
+    })
 }
 
 impl MixedPackedTensor {
@@ -1342,6 +1721,7 @@ impl MixedPackedTensor {
                 Ok(Self::Hgravs { left, right })
             }
             3 => Ok(Self::Uniform8(parse_uniform_q8_container(payload)?)),
+            5 => Ok(Self::Affine(parse_affine_container(payload)?)),
             other => Err(Error::Model(format!("unknown mixed codec {other}"))),
         }
     }
@@ -1357,6 +1737,7 @@ impl MixedPackedTensor {
                 Ok((left.rows, right.cols))
             }
             Self::Uniform8(packed) => Ok((packed.rows, packed.cols)),
+            Self::Affine(packed) => Ok((packed.rows, packed.cols)),
         }
     }
 
@@ -1367,6 +1748,7 @@ impl MixedPackedTensor {
             Self::Residual(packed) => binary_rice_q1_matvec_f32(packed, input),
             Self::Hgravs { left, right } => hgravs01_two_stage_matvec_f32(left, right, input),
             Self::Uniform8(packed) => uniform_factor_matvec_f32(packed, input),
+            Self::Affine(packed) => affine_factor_matvec_f32(packed, input),
         }
     }
 
@@ -1381,6 +1763,14 @@ impl MixedPackedTensor {
                     .collect())
             }
             Self::Uniform8(packed) => uniform_factor_gather_row(packed, row),
+            Self::Affine(packed) => {
+                if row >= packed.rows {
+                    return Err(Error::Model("affine gather row is out of range".into()));
+                }
+                Ok((0..packed.cols)
+                    .map(|col| affine_factor_value(packed, row, col))
+                    .collect())
+            }
             Self::Residual(_) | Self::Hgravs { .. } => Err(Error::Model(
                 "gather_row on a routed mixed organ would reconstruct a weight row; refused".into(),
             )),
@@ -1643,5 +2033,151 @@ mod tests {
         let tensor = MixedPackedTensor::Uniform8(packed);
         let error = tensor.decode_vector_f32().unwrap_err().to_string();
         assert!(error.contains("dense W"), "{error}");
+    }
+
+    #[test]
+    fn parse_affine_container_roundtrip() {
+        let rows = 4;
+        let cols = 64;
+        let packed = pack_affine_factor(&deterministic_matrix(rows, cols, 41), rows, cols).unwrap();
+        let payload = wrap_affine_factor(&packed).unwrap();
+        assert_eq!(&payload[..8], &MAGIC_AFFINE);
+        let parsed = parse_affine_container(&payload).unwrap();
+        assert_eq!(parsed, packed);
+        let layout = mixed_gpu_layout(5, &payload).unwrap();
+        match layout.kind {
+            MixedGpuKind::Affine {
+                bits,
+                group_size,
+                scale_bytes,
+                bias_bytes,
+                code_bytes,
+                ..
+            } => {
+                assert_eq!(bits, 2);
+                assert_eq!(group_size, 32);
+                assert_eq!(scale_bytes, packed.groups * 2);
+                assert_eq!(bias_bytes, packed.groups * 2);
+                assert_eq!(code_bytes, packed.groups * 8);
+            }
+            other => panic!("expected Affine layout, got {other:?}"),
+        }
+        let x = deterministic_input(cols);
+        let a = affine_factor_matvec_f32(&packed, &x).unwrap();
+        let b = MixedPackedTensor::from_codec_payload(5, &payload)
+            .unwrap()
+            .cpu_matvec(&x)
+            .unwrap();
+        assert_eq!(max_abs_error(&a, &b), 0.0);
+    }
+
+    #[test]
+    fn affine_factor_value_is_q_times_scale_plus_bias() {
+        let rows = 1;
+        let cols = 32;
+        let values: Vec<f32> = (0..cols).map(|i| (i as f32) * 0.1 - 1.0).collect();
+        let packed = pack_affine_factor(&values, rows, cols).unwrap();
+        let scale = f16::from_bits(packed.scales_f16[0]).to_f32();
+        let bias = f16::from_bits(packed.biases_f16[0]).to_f32();
+        for col in 0..cols {
+            let q = extract_unsigned(&packed.codes, col, 2);
+            let expected = q as f32 * scale + bias;
+            assert_eq!(affine_factor_value(&packed, 0, col), expected);
+        }
+        let absmax = pack_uniform_factor(&values, rows, cols, 2, 32).unwrap();
+        let mut disagreed = 0usize;
+        for col in 0..cols {
+            if (affine_factor_value(&packed, 0, col) - uniform_factor_value(&absmax, 0, col)).abs()
+                > 1e-6
+            {
+                disagreed += 1;
+            }
+        }
+        assert!(
+            disagreed > 0,
+            "affine q*s+b must disagree with HGRAVU01 signed bits=2 on this group"
+        );
+    }
+
+    #[test]
+    fn affine_layout_refuses_missing_bias() {
+        let packed = pack_affine_factor(&deterministic_matrix(2, 32, 3), 2, 32).unwrap();
+        let mut payload = wrap_affine_factor(&packed).unwrap();
+        payload.truncate(payload.len() - 4);
+        let err = mixed_gpu_layout(5, &payload).unwrap_err().to_string();
+        assert!(err.contains("HGRAVF01"), "{err}");
+    }
+
+    #[test]
+    fn parse_affine_container_roundtrip_group64() {
+        let rows = 4;
+        let cols = 64;
+        let packed = pack_affine_factor_group(
+            &deterministic_matrix(rows, cols, 7),
+            rows,
+            cols,
+            AFFINE_GROUP_SIZE_64,
+        )
+        .unwrap();
+        assert_eq!(packed.group_size, 64);
+        assert_eq!(packed.groups, 4);
+        let payload = wrap_affine_factor(&packed).unwrap();
+        let parsed = parse_affine_container(&payload).unwrap();
+        assert_eq!(parsed, packed);
+        let layout = mixed_gpu_layout(5, &payload).unwrap();
+        match layout.kind {
+            MixedGpuKind::Affine {
+                bits,
+                group_size,
+                code_bytes,
+                ..
+            } => {
+                assert_eq!(bits, 2);
+                assert_eq!(group_size, 64);
+                assert_eq!(code_bytes, packed.groups * 16);
+            }
+            other => panic!("expected Affine layout, got {other:?}"),
+        }
+        let x = deterministic_input(cols);
+        let a = affine_factor_matvec_f32(&packed, &x).unwrap();
+        let b = MixedPackedTensor::from_codec_payload(5, &payload)
+            .unwrap()
+            .cpu_matvec(&x)
+            .unwrap();
+        assert_eq!(max_abs_error(&a, &b), 0.0);
+    }
+
+    #[test]
+    fn q2f_pack_is_delta_only_four_level() {
+        let rows = 4;
+        let cols = 64;
+        let packed = pack_q2f_factor_group(
+            &deterministic_matrix(rows, cols, 11),
+            rows,
+            cols,
+            AFFINE_GROUP_SIZE_64,
+        )
+        .unwrap();
+        assert!(packed.is_q2f());
+        assert!(packed.biases_f16.is_empty());
+        assert_eq!(packed.group_size, 64);
+        let payload = wrap_affine_factor(&packed).unwrap();
+        let header_len = u32::from_le_bytes(payload[8..12].try_into().unwrap()) as usize;
+        let header: serde_json::Value = serde_json::from_slice(&payload[12..12 + header_len]).unwrap();
+        assert_eq!(header["bias_bytes"], 0);
+        assert_eq!(header["representation"], Q2F_REPRESENTATION);
+        let parsed = parse_affine_container(&payload).unwrap();
+        assert_eq!(parsed, packed);
+        let layout = mixed_gpu_layout(5, &payload).unwrap();
+        match layout.kind {
+            MixedGpuKind::Affine { bias_bytes, .. } => assert_eq!(bias_bytes, 0),
+            other => panic!("expected Affine layout, got {other:?}"),
+        }
+        for col in 0..cols {
+            let scale = f16::from_bits(packed.scales_f16[col / 64]).to_f32();
+            let q = extract_unsigned(&packed.codes, col, 2);
+            let expected = (q as f32 - 1.5) * scale;
+            assert_eq!(affine_factor_value(&packed, 0, col), expected);
+        }
     }
 }

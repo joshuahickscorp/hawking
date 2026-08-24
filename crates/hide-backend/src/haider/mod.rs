@@ -9,17 +9,25 @@
 //! adapts it behind [`memgate::MemGate`] and records per-episode feedback so the
 //! real optimal concurrency can be learned.
 
+pub mod cli;
+pub mod context_governor;
 pub mod dag;
 pub mod harvest;
 pub mod lanes;
 pub mod memgate;
+pub mod tool_bus;
+pub mod ultragoal;
 
+pub use cli::run as run_cli;
+pub use context_governor::{ContextBudgets, ContextGovernor, TaskType};
 pub use dag::{HaiderDag, HaiderNode, NodeId, NodeResult, NodeStatus, ResourceClass, Scope};
 pub use harvest::{harvest, Contradiction, FrontierPacket, Harvest, LaneOutput, TestResult};
 pub use lanes::{
     ContextBudget, EvidencePacket, Lane, LaneId, LaneRole, LaneScheduler, LaneStatus,
 };
 pub use memgate::{AdmissionDecision, EpisodeFeedback, MemGate, MemoryPressure, SystemMemGate};
+pub use tool_bus::{ToolBus, ToolError, ToolRequest, ToolResult};
+pub use ultragoal::{IngestSummary, MissionState, Obligation, ObligationStatus, Steer};
 
 use std::time::Instant;
 
@@ -68,6 +76,12 @@ impl Haider {
         if let Some(start) = self.episode_start.take() {
             let p = self.gate.pressure();
             let elapsed = start.elapsed();
+            let successful_work = outputs
+                .iter()
+                .filter(|o| {
+                    o.test_results.iter().any(|t| t.passed) || !o.proposed_actions.is_empty()
+                })
+                .count();
             let fb = EpisodeFeedback {
                 admitted_lane_count: self.lanes.admitted_count(),
                 peak_wired_bytes: p.wired_bytes,
@@ -78,12 +92,21 @@ impl Haider {
                 wall_time_ms: elapsed.as_millis() as u64,
                 aggregate_token_throughput: h.per_lane_tokens.values().sum::<usize>() as f64
                     / elapsed.as_secs_f64().max(1e-6),
-                per_lane_latency_ms: Vec::new(),
-                successful_work: h.packet.agreements.len(),
+                per_lane_latency_ms: self.lanes.lane_latencies_ms(),
+                successful_work,
             };
             self.episodes.push(fb);
         }
+        for o in &outputs {
+            self.lanes.complete_lane_by_label(&o.lane);
+        }
         h
+    }
+
+    /// Mark a node complete and release its lane.
+    pub fn complete_node(&mut self, node: &NodeId, result: NodeResult) {
+        self.dag.complete(node, result);
+        self.lanes.complete_lane(node);
     }
 
     /// If the MemGate refuses a child, queue it (do not fail the Ultragoal).
@@ -99,6 +122,7 @@ impl Haider {
             n.status = NodeStatus::Failed;
             n.result = Some(preserve);
         }
+        self.lanes.fail_lane(node);
     }
 
     /// Compact status block for the UI (section 14).
@@ -115,7 +139,7 @@ impl Haider {
         out.push_str(&format!("MEM      {used_gb} / {total_gb} GB\n"));
         out.push_str(&format!("LANES    {admitted} / {ceiling} admitted\n\n"));
         for (i, lane) in self.lanes.lanes.iter().enumerate() {
-            let letter = char::from(b'A' + i as u8);
+            let letter = char::from(b'A' + (i % 26) as u8);
             out.push_str(&lane.render_line(letter));
             out.push('\n');
         }

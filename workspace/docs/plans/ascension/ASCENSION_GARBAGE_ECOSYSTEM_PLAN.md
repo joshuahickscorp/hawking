@@ -119,7 +119,7 @@ unclassified directories  (→ QUARANTINED, not EVICTABLE)
 - No filesystem deletion  
 - No daemon  
 - No edit to `reclaim_storage_keep_proto.py`  
-- No touch of `lab/operators/frankenstein_*` or frankenstein evidence  
+- No touch of `hawking-experiments/frankenstein/operators/frankenstein_*` or frankenstein evidence  
 - No Qwen / Gravity downloads  
 
 ---

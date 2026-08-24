@@ -13,8 +13,10 @@ import pytest
 _REPO = Path(__file__).resolve().parents[3]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
+from lab.layout import ensure_experiment_imports  # noqa: E402
+ensure_experiment_imports()
 
-from lab.operators import frankenstein_teacher_forced_executor as tfe  # noqa: E402
+import frankenstein_teacher_forced_executor as tfe  # noqa: E402
 from lab.operators import glm52_synthetic as synthetic  # noqa: E402
 from lab.operators.glm52_common import verify_sealed  # noqa: E402
 from tools.condense.merge_glm_teacher_forced_shards import merge_workers  # noqa: E402

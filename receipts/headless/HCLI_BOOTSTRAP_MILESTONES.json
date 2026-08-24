@@ -1,0 +1,81 @@
+{
+  "schema": "hawking.hcli.self_optimization_bootstrap.milestones.v1",
+  "generated_at": "2026-08-23T02:41:00Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "dirty_tree": true,
+  "dirty_note": "Working tree was already dirty with historical science. This lane only mutated HCLI/AgentOS control-plane files and exact tests/receipts.",
+  "FINAL_STATE": "BLOCKED",
+  "blocker": {
+    "id": "LIVE_GROK_TASK_DIR_SANDBOX",
+    "command": "GROK_RUN=$HOME/.claude-grok/bin/grok-run grok-run consult --prompt '...' --background --repo <ws>",
+    "source": "tools/haider/hcli/grok_bridge.py::GrokBridge._launch",
+    "evidence": "mkdir: /Users/scammermike/.claude-grok/tasks/consult-20260822-224017: Operation not permitted",
+    "why_retries_are_repetition": "Every live grok-run launch in this Seatbelt profile fails at tasks-dir creation. A redirected tasks_root still fails later: grok binary 'sandbox initialization failed: Operation not permitted' for the read-only sandbox profile.",
+    "needs_profile": "gate (unsandboxed)",
+    "next_workunit": {
+      "id": "WU-LIVE-GROK-GATE",
+      "title": "Re-run live Grok consult + two Grok WorkUnits + two Qwen decodes under the unsandboxed gate profile",
+      "command": "PYTHONUNBUFFERED=1 GROK_RUN=$HOME/.claude-grok/bin/grok-run python3 tools/headless/hcli_bootstrap_live_proof.py",
+      "depends_on": ["HCLI_COMMAND_INGRESS_UNIFIED", "GROK_ASYNC_LIFECYCLE"]
+    }
+  },
+  "milestones": {
+    "HCLI_COMMAND_INGRESS_UNIFIED": "PASS",
+    "HCLI_CLEAR": "PASS",
+    "GROK_ASYNC_LIFECYCLE": "PASS",
+    "AGENTOS_GROK_WORKUNITS": "PASS",
+    "AGENTOS_VERIFIER_AUTHORITY": "PASS",
+    "AGENTOS_SINGLE_WRITER": "PASS",
+    "HCLI_MIXED_BACKEND": "PASS",
+    "HCLI_BACKEND_REPORT_COMPACTION": "PASS",
+    "HCLI_GROK_MAX_EQUILIBRIUM": "PARTIAL",
+    "HCLI_RESTART_RESUME": "PASS",
+    "AGENTOS_STEERING_DURABLE": "PASS",
+    "HCLI_MIXED_MAX": "PARTIAL",
+    "HCLI_SELF_SUPPLEMENT": "PARTIAL",
+    "HCLI_SELF_OPTIMIZATION_BOOTSTRAP": "PARTIAL",
+    "HCLI_BOOTSTRAP_HANDOFF": "BLOCKED"
+  },
+  "evidence": {
+    "unit_tests": {
+      "command": "python3 -m pytest tools/haider/hcli/tests -q --tb=line",
+      "result": "221 passed, 1 skipped in 5.48s"
+    },
+    "ingress_scripts": {
+      "command": "python3 tools/headless/hcli_command_ingress_test.py && python3 tools/headless/hcli_grok_dispatch_test.py",
+      "result": "all checks passed"
+    },
+    "live_proof": {
+      "command": "PYTHONUNBUFFERED=1 python3 tools/headless/hcli_bootstrap_live_proof.py",
+      "receipt": "receipts/headless/HCLI_BOOTSTRAP_LIVE.json",
+      "result": "fail_count=0 blocker_count=1"
+    },
+    "authority_path": {
+      "tui": "tools/haider/hcli/app.py::_handle_input -> Controller.handle_command -> CommandHandler.handle",
+      "cli": "same App path",
+      "tests": "App._handle_input and Controller.handle_command"
+    }
+  },
+  "source_files_changed": [
+    "tools/haider/hcli/commands.py",
+    "tools/haider/hcli/controller.py",
+    "tools/haider/hcli/tui.py",
+    "tools/haider/hcli/grok_bridge.py",
+    "tools/haider/hcli/workunit.py",
+    "tools/haider/hcli/resources.py",
+    "tools/haider/hcli/mission.py",
+    "tools/haider/hcli/executors.py",
+    "tools/haider/hcli/max_policy.py",
+    "tools/haider/hcli/report_compiler.py",
+    "tools/haider/hcli/tests/test_command_ingress.py",
+    "tools/haider/hcli/tests/test_commands_grok.py",
+    "tools/haider/hcli/tests/test_grok_async.py",
+    "tools/haider/hcli/tests/test_executors.py",
+    "tools/haider/hcli/tests/test_mixed_backend.py",
+    "tools/haider/hcli/tests/test_scheduler_resources.py",
+    "tools/haider/hcli/tests/test_grok_bridge.py",
+    "tools/headless/hcli_command_ingress_test.py",
+    "tools/headless/hcli_bootstrap_live_proof.py"
+  ],
+  "continuation_command": "GROK_RUN=$HOME/.claude-grok/bin/grok-run PYTHONUNBUFFERED=1 python3 tools/headless/hcli_bootstrap_live_proof.py"
+}

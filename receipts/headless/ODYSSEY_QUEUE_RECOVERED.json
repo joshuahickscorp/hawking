@@ -1,0 +1,1338 @@
+{
+ "schema": "hawking.headless.odyssey_queue_recovered.v1",
+ "generated_at": "2026-08-24T18:31:28Z",
+ "git_head": "bab8f140631fb7463f4cdb548eebbeb9bac0b54f",
+ "generated_by": "tools/headless/genome_libraries.py",
+ "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
+ "hand_authored": false,
+ "did_not_load_a_model": true,
+ "did_not_touch_gpu": true,
+ "did_not_run_cargo_or_metal_benchmarks": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_modify_odyssey_state": true,
+ "unmeasured_is_absent": true,
+ "s023": [
+  "\u00a734"
+ ],
+ "one_line": "Odyssey queue recovered: 14 manifest patients, 146 completions. Frontier reconciliation: UNRESOLVED=['T5V4'].",
+ "method": "READ ODYSSEY_MANIFEST / ODYSSEY_STATE / ODYSSEY_COMPLETIONS / PROVENANCE / REVIEW_QUEUE from disk. Reconcile user-designated frontier family NAMES. Never fabricate a repository id.",
+ "sources_read": [
+  "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+  "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+  "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json",
+  "workspace/campaign/odyssey/PROVENANCE.json",
+  "workspace/campaign/odyssey/REVIEW_QUEUE.jsonl",
+  "receipts/headless/MODEL_REGISTRY.json",
+  "receipts/DSV4F_NATIVE_PLUS_ZEROCOPY_COMBINED.json",
+  "workspace/campaign/evidence/models/glm52/GLM52_SOURCE_ADMISSION.json",
+  "workspace/campaign/evidence/models/kimi-k3/KIMI_K3_SOURCE_ADMISSION.json"
+ ],
+ "queue": [
+  {
+   "oxx": "O000",
+   "model": "gemma-3-1b-it",
+   "class": "tiny-dense",
+   "canonical_source": "google/gemma-3-1b-it",
+   "canonical_revision": "dcc83ea841ab6100d6b47a070329e1ba4cf78752",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "acquiring",
+   "blocked_reason": "HF-gated / BLOCKED-auth",
+   "state_source_field": "google/gemma-3-1b-it",
+   "state_canonical_source": "google/gemma-3-1b-it",
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O001",
+   "model": "Falcon-H1-7B-Instruct",
+   "class": "hybrid",
+   "canonical_source": "tiiuae/Falcon-H1-7B-Instruct",
+   "canonical_revision": "41e72f27effbab80cd45b6e884688452253a3686",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "phase": "SEALED",
+   "on_disk": false,
+   "ledger": "acquiring",
+   "blocked_reason": null,
+   "state_source_field": "tiiuae/Falcon-H1-7B-Instruct",
+   "state_canonical_source": "tiiuae/Falcon-H1-7B-Instruct",
+   "completions": [
+    {
+     "obligation_id": "O001:gravity-hybrid",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q4-g64-attn-mlp.json",
+     "completed_at": "2026-08-19T19:11:28Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-aggressive-hybrid",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q2-g32-attn-mlp.json",
+     "completed_at": "2026-08-19T22:18:48Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-nx-state-hybrid",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_NX_state.json",
+     "completed_at": "2026-08-19T22:51:34Z"
+    },
+    {
+     "obligation_id": "O001:novelty-adversarial-falsifier",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_NOVELTY_adversarial-falsifier.json",
+     "completed_at": "2026-08-19T22:46:47Z"
+    },
+    {
+     "obligation_id": "O001:novelty-arch",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_NOVELTY_arch.json",
+     "completed_at": "2026-08-19T22:50:57Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-mixed-q2q3-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_mixed-q2q3-attn-mlp.json",
+     "completed_at": "2026-08-19T23:50:02Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q3-g32-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q3-g32-attn-mlp.json",
+     "completed_at": "2026-08-19T23:52:29Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q4-g64-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q4-g64-attn-mlp.json",
+     "completed_at": "2026-08-19T23:53:15Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-mixed-q2q3",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_mixed-q2q3.json",
+     "completed_at": "2026-08-20T00:02:13Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-mixed-q2q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_mixed-q2q4.json",
+     "completed_at": "2026-08-20T00:04:15Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-mixed-q2q4-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_mixed-q2q4-attn-mlp.json",
+     "completed_at": "2026-08-20T00:06:08Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-mixed-q3q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_mixed-q3q4.json",
+     "completed_at": "2026-08-20T00:06:57Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-mixed-q3q4-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_mixed-q3q4-attn-mlp.json",
+     "completed_at": "2026-08-20T00:08:08Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q2-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q2-g128.json",
+     "completed_at": "2026-08-20T00:11:20Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q2-g128-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q2-g128-attn-mlp.json",
+     "completed_at": "2026-08-20T00:13:52Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q3-g64-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q3-g64-attn-mlp.json",
+     "completed_at": "2026-08-20T00:23:00Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q2-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q2-g32.json",
+     "completed_at": "2026-08-20T00:31:10Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q2-g32-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q2-g32-attn-mlp.json",
+     "completed_at": "2026-08-20T00:32:27Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q2-g64",
+     "status": "SUPERSEDED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q2-g64.json",
+     "completed_at": "2026-08-20T00:34:07Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q2-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q2-g64.json",
+     "completed_at": "2026-08-20T00:35:27Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q3-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q3-g128.json",
+     "completed_at": "2026-08-20T00:36:30Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q3-g128-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q3-g128-attn-mlp.json",
+     "completed_at": "2026-08-20T00:37:46Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q3-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q3-g32.json",
+     "completed_at": "2026-08-20T00:39:59Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q3-g64",
+     "status": "SUPERSEDED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q3-g64.json",
+     "completed_at": "2026-08-20T00:40:53Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q3-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q3-g64.json",
+     "completed_at": "2026-08-20T00:42:39Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q4-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q4-g128.json",
+     "completed_at": "2026-08-20T00:45:38Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q4-g128-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q4-g128-attn-mlp.json",
+     "completed_at": "2026-08-20T00:46:41Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q4-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q4-g32.json",
+     "completed_at": "2026-08-20T00:51:06Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q4-g32-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q4-g32-attn-mlp.json",
+     "completed_at": "2026-08-20T00:52:11Z"
+    },
+    {
+     "obligation_id": "AUTO-O001-gravity-q4-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_GRAVITY_q4-g64.json",
+     "completed_at": "2026-08-20T00:53:04Z"
+    },
+    {
+     "obligation_id": "O001:patient-sealed",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_PATIENT_SEAL.json",
+     "completed_at": "2026-08-20T00:53:05Z"
+    },
+    {
+     "obligation_id": "O001:external-science",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_EXTERNAL.json",
+     "completed_at": "2026-08-19T02:25:11-04:00"
+    },
+    {
+     "obligation_id": "O001:ssm-accounting",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_EXTERNAL.json",
+     "completed_at": "2026-08-19T02:25:11-04:00"
+    },
+    {
+     "obligation_id": "O001:sensitivity-map",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O001_SENSITIVITY.json",
+     "completed_at": "2026-08-19T02:49:27-04:00"
+    }
+   ],
+   "n_completions": 34,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O002",
+   "model": "gemma-3-4b-it",
+   "class": "mm-dense",
+   "canonical_source": "google/gemma-3-4b-it",
+   "canonical_revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "acquiring",
+   "blocked_reason": "HF-gated / BLOCKED-auth",
+   "state_source_field": "google/gemma-3-4b-it",
+   "state_canonical_source": "google/gemma-3-4b-it",
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O003",
+   "model": "Kimi-VL-A3B-Instruct",
+   "class": "mm-moe",
+   "canonical_source": "moonshotai/Kimi-VL-A3B-Instruct",
+   "canonical_revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "phase": "CENSUS",
+   "on_disk": true,
+   "ledger": "on-disk (relinked from cached blobs)",
+   "blocked_reason": null,
+   "state_source_field": "moonshotai/Kimi-VL-A3B-Instruct",
+   "state_canonical_source": "moonshotai/Kimi-VL-A3B-Instruct",
+   "completions": [
+    {
+     "obligation_id": "O003:sensitivity-map",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_SENSITIVITY.json",
+     "completed_at": "2026-08-19T18:48:39Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-aggressive-moe",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q2-g64-experts.json",
+     "completed_at": "2026-08-19T22:51:34Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-moe",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q3-g32-experts.json",
+     "completed_at": "2026-08-19T23:02:51Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-nx-gather-moe",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_NX_gather.json",
+     "completed_at": "2026-08-19T23:09:34Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-mixed-q2q3-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_mixed-q2q3-experts.json",
+     "completed_at": "2026-08-19T23:50:02Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q2-g32-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q2-g32-experts.json",
+     "completed_at": "2026-08-19T23:52:29Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q2-g64-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q2-g64-experts.json",
+     "completed_at": "2026-08-19T23:54:49Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q3-g32-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q3-g32-experts.json",
+     "completed_at": "2026-08-19T23:56:54Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-mixed-q2q3",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_mixed-q2q3.json",
+     "completed_at": "2026-08-20T00:02:36Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-mixed-q2q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_mixed-q2q4.json",
+     "completed_at": "2026-08-20T00:04:40Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-mixed-q2q4-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_mixed-q2q4-experts.json",
+     "completed_at": "2026-08-20T00:06:40Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-mixed-q3q4",
+     "status": "SUPERSEDED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_mixed-q3q4.json",
+     "completed_at": "2026-08-20T00:07:30Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-mixed-q3q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_mixed-q3q4.json",
+     "completed_at": "2026-08-20T00:09:41Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-mixed-q3q4-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_mixed-q3q4-experts.json",
+     "completed_at": "2026-08-20T00:11:57Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q2-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q2-g128.json",
+     "completed_at": "2026-08-20T00:13:52Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q2-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q2-g32.json",
+     "completed_at": "2026-08-20T00:31:10Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q2-g64",
+     "status": "SUPERSEDED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q2-g64.json",
+     "completed_at": "2026-08-20T00:32:27Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q2-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q2-g64.json",
+     "completed_at": "2026-08-20T00:33:57Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q3-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q3-g128.json",
+     "completed_at": "2026-08-20T00:35:17Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q3-g128-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q3-g128-experts.json",
+     "completed_at": "2026-08-20T00:36:30Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q3-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q3-g32.json",
+     "completed_at": "2026-08-20T00:37:40Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q3-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q3-g64.json",
+     "completed_at": "2026-08-20T00:39:59Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q3-g64-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q3-g64-experts.json",
+     "completed_at": "2026-08-20T00:42:39Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q4-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q4-g128.json",
+     "completed_at": "2026-08-20T00:45:38Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q4-g128-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q4-g128-experts.json",
+     "completed_at": "2026-08-20T00:50:03Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q4-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q4-g32.json",
+     "completed_at": "2026-08-20T00:51:10Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q4-g32-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q4-g32-experts.json",
+     "completed_at": "2026-08-20T00:52:11Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q4-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q4-g64.json",
+     "completed_at": "2026-08-20T00:53:08Z"
+    },
+    {
+     "obligation_id": "AUTO-O003-gravity-q4-g64-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_GRAVITY_q4-g64-experts.json",
+     "completed_at": "2026-08-20T00:53:51Z"
+    },
+    {
+     "obligation_id": "O003:patient-sealed",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_PATIENT_SEAL.json",
+     "completed_at": "2026-08-20T00:53:52Z"
+    },
+    {
+     "obligation_id": "O003:external-science",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_EXTERNAL.json",
+     "completed_at": "2026-08-19T03:25:01-04:00"
+    },
+    {
+     "obligation_id": "O003:route-map",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O003_EXTERNAL.json",
+     "completed_at": "2026-08-19T03:25:01-04:00"
+    }
+   ],
+   "n_completions": 32,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O004",
+   "model": "Mistral-Small-3.1-24B-Instruct-2503",
+   "class": "mm-dense",
+   "canonical_source": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "canonical_revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "phase": "SEALED",
+   "on_disk": false,
+   "ledger": "acquiring",
+   "blocked_reason": null,
+   "state_source_field": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "state_canonical_source": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "completions": [
+    {
+     "obligation_id": "AUTO-O004-external-science-dense",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_EXTERNAL.json",
+     "completed_at": "2026-08-19T22:51:34Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-sensitivity-map",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_SENSITIVITY.json",
+     "completed_at": "2026-08-19T23:02:51Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-aggressive-dense",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q2-g32.json",
+     "completed_at": "2026-08-19T23:09:34Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-dense",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q4-g64.json",
+     "completed_at": "2026-08-19T23:25:43Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-nx-dense",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_NX_dense.json",
+     "completed_at": "2026-08-19T23:40:46Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-mixed-q2q3",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_mixed-q2q3.json",
+     "completed_at": "2026-08-19T23:50:02Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q2-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q2-g32.json",
+     "completed_at": "2026-08-19T23:52:29Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q2-g64-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q2-g64-attn-mlp.json",
+     "completed_at": "2026-08-19T23:56:54Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q3-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q3-g64.json",
+     "completed_at": "2026-08-19T23:59:20Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q4-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q4-g64.json",
+     "completed_at": "2026-08-20T00:01:25Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-mixed-q2q3-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_mixed-q2q3-attn-mlp.json",
+     "completed_at": "2026-08-20T00:07:30Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-mixed-q2q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_mixed-q2q4.json",
+     "completed_at": "2026-08-20T00:09:41Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-mixed-q2q4-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_mixed-q2q4-attn-mlp.json",
+     "completed_at": "2026-08-20T00:11:57Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-mixed-q3q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_mixed-q3q4.json",
+     "completed_at": "2026-08-20T00:13:52Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-mixed-q3q4-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_mixed-q3q4-attn-mlp.json",
+     "completed_at": "2026-08-20T00:16:34Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q2-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q2-g128.json",
+     "completed_at": "2026-08-20T00:20:30Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q2-g128-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q2-g128-attn-mlp.json",
+     "completed_at": "2026-08-20T00:21:52Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q2-g32-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q2-g32-attn-mlp.json",
+     "completed_at": "2026-08-20T00:31:30Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q3-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q3-g128.json",
+     "completed_at": "2026-08-20T00:32:56Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q3-g128-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q3-g128-attn-mlp.json",
+     "completed_at": "2026-08-20T00:34:22Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q3-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q3-g32.json",
+     "completed_at": "2026-08-20T00:35:45Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q4-g32-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q4-g32-attn-mlp.json",
+     "completed_at": "2026-08-20T00:37:20Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q3-g32-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q3-g32-attn-mlp.json",
+     "completed_at": "2026-08-20T00:39:59Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q3-g64-attn-mlp",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q3-g64-attn-mlp.json",
+     "completed_at": "2026-08-20T00:42:39Z"
+    },
+    {
+     "obligation_id": "AUTO-O004-gravity-q4-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O004_GRAVITY_q4-g128.json",
+     "completed_at": "2026-08-20T00:45:38Z"
+    }
+   ],
+   "n_completions": 25,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O005",
+   "model": "Qwen3-30B-A3B",
+   "class": "moe",
+   "canonical_source": "Qwen/Qwen3-30B-A3B",
+   "canonical_revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "phase": "SEALED",
+   "on_disk": false,
+   "ledger": "acquiring",
+   "blocked_reason": null,
+   "state_source_field": "Qwen/Qwen3-30B-A3B",
+   "state_canonical_source": "Qwen/Qwen3-30B-A3B",
+   "completions": [
+    {
+     "obligation_id": "O005:sensitivity-map",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_SENSITIVITY.json",
+     "completed_at": "2026-08-19T14:40:08-04:00"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-aggressive-moe",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q2-g32-experts.json",
+     "completed_at": "2026-08-19T23:50:02Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-mixed-q2q3-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_mixed-q2q3-experts.json",
+     "completed_at": "2026-08-19T23:52:29Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q2-g128-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q2-g128-experts.json",
+     "completed_at": "2026-08-19T23:56:54Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q2-g32-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q2-g32-experts.json",
+     "completed_at": "2026-08-19T23:59:20Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q3-g32-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q3-g32-experts.json",
+     "completed_at": "2026-08-20T00:01:25Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-mixed-q2q3",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_mixed-q2q3.json",
+     "completed_at": "2026-08-20T00:09:41Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-mixed-q2q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_mixed-q2q4.json",
+     "completed_at": "2026-08-20T00:13:52Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-mixed-q2q4-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_mixed-q2q4-experts.json",
+     "completed_at": "2026-08-20T00:16:51Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-mixed-q3q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_mixed-q3q4.json",
+     "completed_at": "2026-08-20T00:23:00Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-mixed-q3q4-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_mixed-q3q4-experts.json",
+     "completed_at": "2026-08-20T00:25:55Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q2-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q2-g128.json",
+     "completed_at": "2026-08-20T00:30:36Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q2-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q2-g32.json",
+     "completed_at": "2026-08-20T00:32:18Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q2-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q2-g64.json",
+     "completed_at": "2026-08-20T00:34:22Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q3-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q3-g128.json",
+     "completed_at": "2026-08-20T00:35:59Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q3-g128-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q3-g128-experts.json",
+     "completed_at": "2026-08-20T00:37:53Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q3-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q3-g32.json",
+     "completed_at": "2026-08-20T00:39:59Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q3-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q3-g64.json",
+     "completed_at": "2026-08-20T00:42:39Z"
+    },
+    {
+     "obligation_id": "AUTO-O005-gravity-q3-g64-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q3-g64-experts.json",
+     "completed_at": "2026-08-20T00:45:38Z"
+    },
+    {
+     "obligation_id": "O005:external-science",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_EXTERNAL.json",
+     "completed_at": "2026-08-19T01:08:47-04:00"
+    },
+    {
+     "obligation_id": "O005:route-map",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_EXTERNAL.json",
+     "completed_at": "2026-08-19T01:08:47-04:00"
+    },
+    {
+     "obligation_id": "O005:gravity-moe",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_GRAVITY_q3-g32-experts.json",
+     "completed_at": "2026-08-19T20:20:52-04:00"
+    },
+    {
+     "obligation_id": "O005:nx-gather-moe",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O005_NX_gather.json",
+     "completed_at": "2026-08-19T13:44:31-04:00"
+    }
+   ],
+   "n_completions": 23,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O006",
+   "model": "Qwen3-VL-30B-A3B-Instruct",
+   "class": "mm-moe",
+   "canonical_source": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+   "canonical_revision": "9c4b90e1e4ba969fd3b5378b57d966d725f1b86c",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "phase": "",
+   "on_disk": true,
+   "ledger": "on-disk",
+   "blocked_reason": null,
+   "state_source_field": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+   "state_canonical_source": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+   "completions": [
+    {
+     "obligation_id": "O006:sensitivity-map",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_SENSITIVITY.json",
+     "completed_at": "2026-08-19T19:16:38Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-aggressive-moe",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q2-g32-experts.json",
+     "completed_at": "2026-08-19T22:51:34Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-moe",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q3-g32-experts.json",
+     "completed_at": "2026-08-19T23:02:51Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-mixed-q2q3-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_mixed-q2q3-experts.json",
+     "completed_at": "2026-08-20T00:01:25Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-mixed-q2q3",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_mixed-q2q3.json",
+     "completed_at": "2026-08-20T00:09:41Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-mixed-q2q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_mixed-q2q4.json",
+     "completed_at": "2026-08-20T00:13:52Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-mixed-q2q4-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_mixed-q2q4-experts.json",
+     "completed_at": "2026-08-20T00:20:30Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-mixed-q3q4",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_mixed-q3q4.json",
+     "completed_at": "2026-08-20T00:23:00Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-mixed-q3q4-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_mixed-q3q4-experts.json",
+     "completed_at": "2026-08-20T00:25:55Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q2-g128",
+     "status": "SUPERSEDED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q2-g128.json",
+     "completed_at": "2026-08-20T00:30:29Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q2-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q2-g128.json",
+     "completed_at": "2026-08-20T00:31:49Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q2-g128-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q2-g128-experts.json",
+     "completed_at": "2026-08-20T00:33:15Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q2-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q2-g32.json",
+     "completed_at": "2026-08-20T00:35:10Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q2-g32-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q2-g32-experts.json",
+     "completed_at": "2026-08-20T00:36:42Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q2-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q2-g64.json",
+     "completed_at": "2026-08-20T00:38:21Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q3-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q3-g128.json",
+     "completed_at": "2026-08-20T00:39:59Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q3-g128-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q3-g128-experts.json",
+     "completed_at": "2026-08-20T00:42:39Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q3-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q3-g32.json",
+     "completed_at": "2026-08-20T00:45:38Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q3-g32-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q3-g32-experts.json",
+     "completed_at": "2026-08-20T00:50:03Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q3-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q3-g64.json",
+     "completed_at": "2026-08-20T00:51:18Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q3-g64-experts",
+     "status": "SUPERSEDED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q3-g64-experts.json",
+     "completed_at": "2026-08-20T00:52:19Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q3-g64-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q3-g64-experts.json",
+     "completed_at": "2026-08-20T00:53:17Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q4-g128",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q4-g128.json",
+     "completed_at": "2026-08-20T00:54:08Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q4-g128-experts",
+     "status": "SUPERSEDED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q4-g128-experts.json",
+     "completed_at": "2026-08-20T00:54:55Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q4-g128-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q4-g128-experts.json",
+     "completed_at": "2026-08-20T00:55:40Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q4-g32",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q4-g32.json",
+     "completed_at": "2026-08-20T00:56:29Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q4-g32-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q4-g32-experts.json",
+     "completed_at": "2026-08-20T00:57:20Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q4-g64",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q4-g64.json",
+     "completed_at": "2026-08-20T00:58:11Z"
+    },
+    {
+     "obligation_id": "AUTO-O006-gravity-q4-g64-experts",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_GRAVITY_q4-g64-experts.json",
+     "completed_at": "2026-08-20T00:58:59Z"
+    },
+    {
+     "obligation_id": "O006:external-science",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_EXTERNAL.json",
+     "completed_at": "2026-08-19T13:46:17-04:00"
+    },
+    {
+     "obligation_id": "O006:route-map",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_EXTERNAL.json",
+     "completed_at": "2026-08-19T13:46:17-04:00"
+    },
+    {
+     "obligation_id": "O006:transfer-control",
+     "status": "VERIFIED",
+     "receipt_ref": "receipts/odyssey-i/O006_TRANSFER.json",
+     "completed_at": "2026-08-19T13:46:17-04:00"
+    }
+   ],
+   "n_completions": 32,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O007",
+   "model": "Kimi-Linear-48B-A3B-Instruct",
+   "class": "moe",
+   "canonical_source": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+   "canonical_revision": "e1df551a447157d4658b573f9a695d57658590e9",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "acquiring",
+   "blocked_reason": null,
+   "state_source_field": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+   "state_canonical_source": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O008",
+   "model": "AI21-Jamba-Mini-1.5",
+   "class": "hybrid",
+   "canonical_source": "ai21labs/AI21-Jamba-Mini-1.5",
+   "canonical_revision": "5a844bbacf32cf46d9561d11622833340aa426b9",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "acquiring",
+   "blocked_reason": null,
+   "state_source_field": "ai21labs/AI21-Jamba-Mini-1.5",
+   "state_canonical_source": "ai21labs/AI21-Jamba-Mini-1.5",
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O009",
+   "model": "Qwen2.5-72B-Instruct",
+   "class": "large-dense",
+   "canonical_source": "Qwen/Qwen2.5-72B-Instruct",
+   "canonical_revision": "495f39366efef23836d0cfae4fbe635880d2be31",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "acquiring",
+   "blocked_reason": null,
+   "state_source_field": "Qwen/Qwen2.5-72B-Instruct",
+   "state_canonical_source": "Qwen/Qwen2.5-72B-Instruct",
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O010",
+   "model": "GLM-4.5-Air",
+   "class": "large-moe",
+   "canonical_source": "zai-org/GLM-4.5-Air",
+   "canonical_revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "queued (~220GB)",
+   "blocked_reason": null,
+   "state_source_field": "zai-org/GLM-4.5-Air",
+   "state_canonical_source": "zai-org/GLM-4.5-Air",
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O011",
+   "model": "DSV4F",
+   "class": "large-moe",
+   "canonical_source": "deepseek-ai/DeepSeek-V4-Flash",
+   "canonical_revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "queued (control)",
+   "blocked_reason": null,
+   "state_source_field": "reconstruct from receipts",
+   "state_canonical_source": null,
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O012",
+   "model": "GLM-4.5",
+   "class": "large-moe",
+   "canonical_source": "zai-org/GLM-4.5",
+   "canonical_revision": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "queued (partial-residency)",
+   "blocked_reason": null,
+   "state_source_field": "zai-org/GLM-4.5",
+   "state_canonical_source": null,
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  },
+  {
+   "oxx": "O013",
+   "model": "Kimi-K3",
+   "class": "streamed",
+   "canonical_source": "moonshotai/Kimi-K3",
+   "canonical_revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "phase": "",
+   "on_disk": false,
+   "ledger": "queued (streamed capstone)",
+   "blocked_reason": null,
+   "state_source_field": "moonshotai/Kimi-K3",
+   "state_canonical_source": null,
+   "completions": [],
+   "n_completions": 0,
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+   ]
+  }
+ ],
+ "n_patients": 14,
+ "completions_summary": {
+  "n": 146,
+  "schema": "hawking.odyssey.completions.v1",
+  "patient_ids": [
+   "O001",
+   "O003",
+   "O004",
+   "O005",
+   "O006"
+  ],
+  "source": "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json"
+ },
+ "provenance_recovered": {
+  "obligation": "G37 -- Odyssey candidate provenance (from repo metadata inspection, no wrong-checkpoint substitution).",
+  "candidate_A_repo": "huihui-ai/Huihui-Qwen3-30B-A3B-Thinking-2507-abliterated",
+  "candidate_B_repo": "ArliAI/GLM-4.5-Air-Derestricted",
+  "note": "PROVENANCE.json is a G37 inspection snapshot (Qwen3-30B-A3B abliterated + GLM-4.5-Air derestricted). Copied, not extended.",
+  "source": "workspace/campaign/odyssey/PROVENANCE.json"
+ },
+ "review_queue": [
+  {
+   "task": "odyssey-o005-sensitivity-map-20260819-015644",
+   "files": [
+    "receipts/odyssey-i/O005_SENSITIVITY.json",
+    "tools/odyssey_patient_runner.py",
+    "workspace/campaign/odyssey/patients/O005/ODYSSEY_PATIENT_O005.json"
+   ],
+   "report": "/Users/scammermike/.claude-grok/tasks/odyssey-o005-sensitivity-map-20260819-015644/grok-report.md",
+   "worktree": null
+  }
+ ],
+ "frontier_families": [
+  {
+   "shorthand": "Qwen3.8",
+   "identity_status": "RESOLVED",
+   "repository": "huihui-ai/Huihui-Qwen3.8-27B-abliterated",
+   "revision": "f6c407f6897b4c45c765339b792fe726a1fe6fe8",
+   "registry_parent": "qwen38-huihui-bf16-P0",
+   "local_artifact": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+   "notes": "TRUE P0 (steer S001): direct parent of the production Q5_K GGUF. base Qwen/Qwen3.8-27B, abliterated with remove-refusals-with-transformers, first 15 layers retained.",
+   "in_odyssey_manifest": false,
+   "role": "current Qwen 3.8 research family (not an Odyssey Oxx patient)",
+   "citations": [
+    "receipts/headless/MODEL_REGISTRY.json"
+   ]
+  },
+  {
+   "shorthand": "DeepSeek V4 Flash",
+   "identity_status": "RESOLVED",
+   "repository": "deepseek-ai/DeepSeek-V4-Flash",
+   "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+   "odyssey_oxx": "O011",
+   "manifest_canonical_source": "deepseek-ai/DeepSeek-V4-Flash",
+   "state_source_field": "reconstruct from receipts",
+   "state_canonical_source": null,
+   "notes": "MANIFEST and DSV4F_NATIVE_PLUS_ZEROCOPY_COMBINED.artifact agree on deepseek-ai/DeepSeek-V4-Flash @ 60d8d707\u2026. ODYSSEY_STATE lists source='reconstruct from receipts' and canonical_source=null \u2014 recovered, not overwritten.",
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "receipts/DSV4F_NATIVE_PLUS_ZEROCOPY_COMBINED.json"
+   ]
+  },
+  {
+   "shorthand": "GLM 5.x",
+   "identity_status": "RESOLVED",
+   "repository": "zai-org/GLM-5.2",
+   "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+   "admission_status": "ADMITTED_CONTROL_PLANE_HEADERS_AND_PLAN_BODY_PENDING",
+   "not_odyssey_glm45": {
+    "note": "Odyssey patients O010/O012 are GLM-4.5-Air / GLM-4.5. That is a different family from GLM 5.x. Not aliased.",
+    "glm45_oxx": [
+     "O010",
+     "O012"
+    ]
+   },
+   "notes": "Resolved from GLM52_SOURCE_ADMISSION.json as zai-org/GLM-5.2. Conversational 'GLM 5.x' maps to that sealed admission; no GLM-5 repo id was invented.",
+   "citations": [
+    "workspace/campaign/evidence/models/glm52/GLM52_SOURCE_ADMISSION.json",
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json"
+   ]
+  },
+  {
+   "shorthand": "T5V4",
+   "identity_status": "UNRESOLVED",
+   "repository": null,
+   "revision": null,
+   "canonical_source": null,
+   "needs_verification": true,
+   "notes": "Conversational shorthand. No exact source identity (HF repo + revision) is on disk in the Odyssey queue, MODEL_REGISTRY, or a sealed admission receipt. Left UNRESOLVED. No repository id invented.",
+   "citations": [
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json",
+    "workspace/campaign/odyssey/ODYSSEY_STATE.json",
+    "receipts/headless/MODEL_REGISTRY.json"
+   ]
+  },
+  {
+   "shorthand": "Kimi K3",
+   "identity_status": "RESOLVED",
+   "repository": "moonshotai/Kimi-K3",
+   "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+   "admission_status": "KIMI_K3_OFFICIAL_SOURCE_ADMITTED_METADATA_ONLY",
+   "odyssey_oxx": "O013",
+   "manifest_canonical_source": "moonshotai/Kimi-K3",
+   "notes": "KIMI_K3_SOURCE_ADMISSION.json (metadata-only) and ODYSSEY_MANIFEST O013 agree on moonshotai/Kimi-K3 @ 9f62e4e9\u2026. Body not resident.",
+   "citations": [
+    "workspace/campaign/evidence/models/kimi-k3/KIMI_K3_SOURCE_ADMISSION.json",
+    "workspace/campaign/odyssey/ODYSSEY_MANIFEST.json"
+   ]
+  }
+ ],
+ "unresolved_shorthands": [
+  "T5V4"
+ ],
+ "did_not_invent_hf_repo_ids": true,
+ "unresolved_kept_unresolved": true
+}

@@ -1,0 +1,769 @@
+{
+  "gate": "REPAIR_DISPOSITION",
+  "generated_at": "2026-08-23T07:58:06Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "max_repair_depth": 3,
+  "max_repairs_per_root": 6,
+  "bootstrap_pytest": {
+    "failed": 1,
+    "passed": 365,
+    "skipped": 1,
+    "expected_failure": "tools/haider/hcli/tests/test_evidence_freshness.py::TestContextEfficiencyReceipt::test_receipt_fields_come_from_observed_assembly (379 != 377)"
+  },
+  "table": [
+    {
+      "item": 1,
+      "property": "Repair-tree depth is bounded",
+      "disposition": "VERIFIED_EXISTING",
+      "evidence": {
+        "mechanism": "scheduler.MAX_REPAIR_DEPTH=3; MAX_REPAIRS_PER_ROOT=6",
+        "homeostasis": {
+          "bounded_tree": {
+            "name": "a permanently dead backend produces a BOUNDED repair tree",
+            "ok": true,
+            "detail": "2 units in the lineage: ['dead', 'dead.repair.1']"
+          },
+          "depth_bound_when_failures_differ": {
+            "name": "with every failure distinct, the DEPTH bound stops the lineage",
+            "ok": true,
+            "detail": "deepest=3 bound=3 exhausted=['dead', 'dead.repair.1', 'dead.repair.1.repair.1', 'dead.repair.2', 'dead.repair.1.repair.1.repair.1', 'dead.repair.1.repair.2', 'dead.repair.2.repair.1'] units=7"
+          },
+          "count_cap": {
+            "name": "with cycle detection defeated, the per-root COUNT cap bounds the tree",
+            "ok": true,
+            "detail": "6 repairs for one root, cap is 6 (depth bound alone allowed 3+9+27=39 before this cap existed)"
+          },
+          "negative_control": {
+            "name": "NEGATIVE CONTROL: raising the bound really does let the lineage grow",
+            "ok": true,
+            "detail": "deepest=12 with both bounds lifted (defaults: depth 3, per-root 6)"
+          }
+        },
+        "negative_control_lifts_BOTH_bounds": true,
+        "note": "Negative control raises MAX_REPAIR_DEPTH to 12 AND MAX_REPAIRS_PER_ROOT to 500 AND replaces _failure_signature with a unique value each call. Lifting only the depth bound is not a demonstration once the count cap exists."
+      }
+    },
+    {
+      "item": 2,
+      "property": "Repair lineage identity is persisted",
+      "disposition": "VERIFIED_EXISTING",
+      "evidence": {
+        "unit_fields": "repair_root/repair_depth/repair_reason/repair_exhausted survive WorkUnit.to_dict/from_dict and dag.json",
+        "structured_lineage": {
+          "name": "repair lineage is structured, not parsed back out of the id string",
+          "ok": true,
+          "detail": "[('dead.repair.1', 'dead', 1), ('dead.repair.1.repair.1', 'dead', 2), ('dead.repair.2', 'dead', 1), ('dead.repair.1.repair.1.repair.1', 'dead', 3), ('dead.repair.1.repair.2', 'dead', 2), ('dead.repair.2.repair.1', 'dead', 2)]"
+        },
+        "serialization": {
+          "name": "repair lineage survives serialization",
+          "ok": true,
+          "detail": "root=root depth=2 exhausted=True"
+        },
+        "persist_probe": {
+          "sigs_before": {
+            "dead": [
+              "5ecc00640e99da7c"
+            ]
+          },
+          "counts_before": {
+            "dead": 1
+          },
+          "sigs_after_restart": {},
+          "counts_after_restart": {},
+          "signatures_persisted": false,
+          "counts_persisted": false,
+          "sigs_on_disk": false,
+          "repair_emitted": "dead.repair.1",
+          "lineage_on_unit_persisted": true,
+          "exhausted_roundtrip": true,
+          "same_failure_emits_again_after_restart": true,
+          "again_id": "dead.repair.1.repair.1",
+          "unit_ok": true
+        },
+        "gap": "Scheduler._repair_signatures and _repair_counts are in-memory only. After from_workspace they are empty, so the same failure signature can emit another repair."
+      }
+    },
+    {
+      "item": 3,
+      "property": "Terminal repair exhaustion reaches an explicit, durable state",
+      "disposition": "VERIFIED_EXISTING",
+      "evidence": {
+        "exhausted_state": {
+          "name": "the lineage terminates in an explicit exhausted state",
+          "ok": true,
+          "detail": "exhausted=[('dead', 'repair cycle: failure signature already seen in lineage dead'), ('fine', 'repair cycle: failure signature already seen in lineage fine'), ('dead.repair.1', 'repair cycle: failure signature already seen in lineage dead'), ('fine.repair.1', 'repair cycle: failure signature already seen in lineage fine')]"
+        },
+        "not_rereadied": {
+          "name": "an exhausted unit is never re-readied",
+          "ok": true,
+          "detail": "is_ready returned False as required"
+        },
+        "durable_flag": true,
+        "reason_examples": "exhausted=[('dead', 'repair cycle: failure signature already seen in lineage dead'), ('fine', 'repair cycle: failure signature already seen in lineage fine'), ('dead.repair.1', 'repair cycle: failure signature already seen in lineage dead'), ('fine.repair.1', 'repair cycle: failure signature already seen in lineage fine')]"
+      }
+    },
+    {
+      "item": 4,
+      "property": "Repair cycles are detected",
+      "disposition": "VERIFIED_EXISTING",
+      "evidence": {
+        "dead_backend_bounded_by_signature": {
+          "name": "a permanently dead backend produces a BOUNDED repair tree",
+          "ok": true,
+          "detail": "2 units in the lineage: ['dead', 'dead.repair.1']"
+        },
+        "depth_bound_used_when_signatures_vary": {
+          "name": "with every failure distinct, the DEPTH bound stops the lineage",
+          "ok": true,
+          "detail": "deepest=3 bound=3 exhausted=['dead', 'dead.repair.1', 'dead.repair.1.repair.1', 'dead.repair.2', 'dead.repair.1.repair.1.repair.1', 'dead.repair.1.repair.2', 'dead.repair.2.repair.1'] units=7"
+        },
+        "in_process_only": true,
+        "gap": "Cycle set is not persisted across process restart (see item 2)."
+      }
+    },
+    {
+      "item": 5,
+      "property": "Failures are classified by retryability",
+      "disposition": "VERIFIED_EXISTING",
+      "evidence": {
+        "seven_kinds": {
+          "TRANSIENT_BACKEND": {
+            "kind": "TRANSIENT_BACKEND",
+            "retryable": true,
+            "observed": "HTTP 503",
+            "counts_toward_budget": true
+          },
+          "VERIFIER_FAILURE": {
+            "kind": "VERIFIER_FAILURE",
+            "retryable": true,
+            "observed": "TEST_FAILED",
+            "counts_toward_budget": true
+          },
+          "DETERMINISTIC_IMPLEMENTATION": {
+            "kind": "DETERMINISTIC_IMPLEMENTATION",
+            "retryable": false,
+            "observed": "NO_OP_MUTATION",
+            "counts_toward_budget": false
+          },
+          "INVALID_OUTPUT": {
+            "kind": "INVALID_OUTPUT",
+            "retryable": true,
+            "observed": "invalid JSON",
+            "counts_toward_budget": true
+          },
+          "RATE_LIMIT": {
+            "kind": "RATE_LIMIT",
+            "retryable": true,
+            "observed": "HTTP 429",
+            "counts_toward_budget": true
+          },
+          "UNAVAILABLE_DEPENDENCY": {
+            "kind": "UNAVAILABLE_DEPENDENCY",
+            "retryable": false,
+            "observed": "GrokNotAvailable",
+            "counts_toward_budget": false
+          },
+          "IMPOSSIBLE_CONTRACT": {
+            "kind": "IMPOSSIBLE_CONTRACT",
+            "retryable": false,
+            "observed": "GrokContractError",
+            "counts_toward_budget": false
+          }
+        },
+        "all_seven_produced": true,
+        "retryable_map": {
+          "TRANSIENT_BACKEND": true,
+          "VERIFIER_FAILURE": true,
+          "DETERMINISTIC_IMPLEMENTATION": false,
+          "INVALID_OUTPUT": true,
+          "RATE_LIMIT": true,
+          "UNAVAILABLE_DEPENDENCY": false,
+          "IMPOSSIBLE_CONTRACT": false
+        },
+        "counts_toward_retry_budget_matches_retryable": true,
+        "scheduler_fail_consults_classifier": false,
+        "gap": "classify_failure / counts_toward_retry_budget exist and behave, but Scheduler.fail does not call them. A NO_OP_MUTATION still emitted repair noop.repair.1."
+      }
+    },
+    {
+      "item": 6,
+      "property": "Backoff applies only to retryable failures",
+      "disposition": "REJECT",
+      "evidence": {
+        "no_retry_sleep_in_scheduler_fail": true,
+        "fail_elapsed_s": 0.0002758750051725656,
+        "nearest_mechanism": "BackendHealth circuit cooling (30.0s)",
+        "NO_OP_MUTATION_non_retryable_does_not_trip_circuit": true,
+        "GrokNotAvailable_non_retryable_DOES_open_circuit_and_cool": true,
+        "HTTP_503_retryable_opens_circuit": true,
+        "cooling_reopens": true,
+        "negative_science": "There is no retry backoff. The only time-gated refusal is circuit cooling, and it is keyed on _CIRCUIT_KINDS not on retryable. GrokNotAvailable is NON_RETRYABLE yet two records open the grok breaker and hold it for the cooling window. The property is false.",
+        "raw": {
+          "retry_sleep_in_fail_s": 0.0002758750051725656,
+          "no_retry_sleep": true,
+          "noop_retryable": false,
+          "noop_trips_circuit": false,
+          "noop_consecutive": 0,
+          "grok_na_retryable": false,
+          "grok_na_state_after_2": "circuit_open",
+          "grok_na_opens_circuit": true,
+          "qwen_retryable": true,
+          "qwen_state_after_2": "circuit_open",
+          "qwen_opens_circuit": true,
+          "cooling_still_open_at_29s": true,
+          "cooling_reopens_after_30s": true,
+          "non_retryable_grok_na_still_cooled": true,
+          "circuit_cooling_seconds": 30.0,
+          "failure_threshold": 3,
+          "qwen2_kind": "TRANSIENT_BACKEND",
+          "grok_na2_kind": "UNAVAILABLE_DEPENDENCY"
+        }
+      }
+    },
+    {
+      "item": 7,
+      "property": "Backend health is persisted",
+      "disposition": "VERIFIED_EXISTING",
+      "evidence": {
+        "method": "child process wrote backend_health.json and exited; a second process constructed BackendHealth on the same workspace and read grok consecutive_failures=2, cpu last_success_time set, qwen healthy",
+        "writer_returncode": 0,
+        "reader_returncode": 0,
+        "path_exists": true,
+        "snap": {
+          "grok": {
+            "backend": "grok",
+            "consecutive_failures": 2,
+            "last_failure_time": 1787471881.8287842,
+            "last_success_time": null,
+            "state": "degraded",
+            "updated_at": 1787471881.8291059,
+            "stale": false,
+            "allows_new": true
+          },
+          "cpu": {
+            "backend": "cpu",
+            "consecutive_failures": 0,
+            "last_failure_time": null,
+            "last_success_time": 1787471881.8291059,
+            "state": "healthy",
+            "updated_at": 1787471881.8291059,
+            "stale": false,
+            "allows_new": true
+          },
+          "qwen": {
+            "backend": "qwen",
+            "consecutive_failures": 0,
+            "last_failure_time": null,
+            "last_success_time": null,
+            "state": "healthy",
+            "updated_at": 1787471881.8291059,
+            "stale": false,
+            "allows_new": true
+          }
+        }
+      }
+    },
+    {
+      "item": 8,
+      "property": "The circuit breaker is bounded",
+      "disposition": "VERIFIED_EXISTING",
+      "evidence": {
+        "threshold": 3,
+        "opens_at_n_consecutive_backend_failures": true,
+        "other_backends_untouched": true,
+        "still_open_inside_cooling_window": true,
+        "reopens_degraded_after_cooling": "degraded",
+        "success_resets": true,
+        "assign_ready_ignores_breaker": true,
+        "gap": "BackendHealth.allows_new_assignments is bounded, but assign_ready / Scheduler.dispatch never call it. A unit with preferred_backend=qwen was dispatched while that breaker was open. The object is bounded; live dispatch is not.",
+        "raw": {
+          "threshold": 3,
+          "qwen_open": true,
+          "qwen_consecutive": 3,
+          "grok_untouched": true,
+          "cpu_untouched": true,
+          "still_open_before_cooling": true,
+          "reopens_to": "degraded",
+          "reopens_allows_new": true,
+          "success_closes": true,
+          "allows_new_false_when_open": true,
+          "assign_ready_dispatches_through_open_circuit": true,
+          "cooling_seconds": 30.0
+        }
+      }
+    },
+    {
+      "item": 9,
+      "property": "Cancellation semantics are sound",
+      "disposition": "REJECT",
+      "evidence": {
+        "cooperative_engine": {
+          "phase": "cancelled",
+          "cancel_reason": "probe-cancel",
+          "engine_cancel_called": true,
+          "status_at_cancel": "running",
+          "status_after": "failed",
+          "repairs": [],
+          "thread_alive": false,
+          "join_s": 0.03145049999875482,
+          "child_pid": null,
+          "child_alive_before": false,
+          "child_alive_after_cancel": false,
+          "state_durable": true,
+          "state_reason": "probe-cancel",
+          "state_phase": "cancelled",
+          "n_units": 1
+        },
+        "blocking_child_engine": {
+          "phase": "cancelled",
+          "cancel_reason": "probe-cancel",
+          "engine_cancel_called": true,
+          "status_at_cancel": "running",
+          "status_after": "failed",
+          "repairs": [],
+          "thread_alive": false,
+          "join_s": 1.1761750000005122,
+          "child_pid": 90893,
+          "child_alive_before": true,
+          "child_alive_after_cancel": false,
+          "state_durable": true,
+          "state_reason": "probe-cancel",
+          "state_phase": "cancelled",
+          "n_units": 1
+        },
+        "grok_path": {
+          "consulted": true,
+          "phase": "cancelled",
+          "status_after": "failed",
+          "repairs": [],
+          "engine_cancel_called": true,
+          "thread_alive": false,
+          "child_pid": 90894,
+          "child_alive_before": true,
+          "child_alive_after_cancel": true,
+          "wait_finished": false,
+          "backend_task_id": "fake-grok-task",
+          "child_pids_on_mission": [],
+          "GrokBridge_has_cancel": false,
+          "GrokBridge_has_cleanup": true,
+          "wait_terminal_states": "done, failed only (cancelled/stale-running not terminal)"
+        },
+        "observed": "Mission.cancel sets an event, calls engine.cancel(), fails in-flight units WITHOUT emitting a repair, joins worker threads for 1s, then _stop_children on mission.child_pids and engine.child_pids. A cooperative engine unit ends failed, phase=cancelled, reason durable in state.json, no repair. A grok unit's launch_pid is NOT registered; GrokBridge has no cancel(); wait() only treats done/failed as terminal; grok-run cleanup does not send a signal. Cancelling a dispatched grok-like unit left the child process alive."
+      }
+    },
+    {
+      "item": 10,
+      "property": "Orphan tasks are handled",
+      "disposition": "OPEN",
+      "evidence": {
+        "real_grok_launch": {
+          "ok": true,
+          "task_id": "consult-20260823-035804",
+          "launch_pid": 90949,
+          "child_alive_after_parent_killed": true,
+          "status_after_orphan": {
+            "state": "running",
+            "exit_code": null,
+            "successful": false,
+            "grok_state": "running",
+            "task_id": "consult-20260823-035804",
+            "raw_returncode": 0,
+            "launch_pid": 90949,
+            "process_alive": true
+          },
+          "cleanup_kills": true,
+          "error": null
+        },
+        "fallback_detach": {},
+        "adoption": {
+          "scheduler_load_status": "running",
+          "adopted_running": [
+            {
+              "unit_id": "g1",
+              "backend_task_id": "consult-20260823-035804",
+              "grok_state": "running"
+            }
+          ],
+          "mission_from_workspace_status": "failed",
+          "liveness_state": "running",
+          "liveness_process_alive": true
+        },
+        "observed": "grok-run --background is `(trap '' HUP INT; execute_task) &` then the grok-run parent exits. Killing the HCLI parent therefore cannot deliver HUP/INT to the task, and TERM is never sent. DagStore can keep a live grok unit `running` when grok_liveness reports running. Mission.from_workspace then walks in_flight and transition_status(running -> failed) \u2014 undoing adoption. Mission._loop has no waiter for adopted running units; a running unit with no inflight thread is `blocked`. grok-run cleanup removes a worktree; it does not kill the process. RuntimePool.reap_orphans is llama-server only. Nothing reaps a Grok task whose parent died.",
+        "mission_undoes_adoption": "failed",
+        "orphan_survived_parent_death": true
+      }
+    }
+  ],
+  "probes": {
+    "persist": {
+      "sigs_before": {
+        "dead": [
+          "5ecc00640e99da7c"
+        ]
+      },
+      "counts_before": {
+        "dead": 1
+      },
+      "sigs_after_restart": {},
+      "counts_after_restart": {},
+      "signatures_persisted": false,
+      "counts_persisted": false,
+      "sigs_on_disk": false,
+      "repair_emitted": "dead.repair.1",
+      "lineage_on_unit_persisted": true,
+      "exhausted_roundtrip": true,
+      "same_failure_emits_again_after_restart": true,
+      "again_id": "dead.repair.1.repair.1",
+      "unit_ok": true
+    },
+    "classification": {
+      "kinds_closed_set": [
+        "TRANSIENT_BACKEND",
+        "VERIFIER_FAILURE",
+        "DETERMINISTIC_IMPLEMENTATION",
+        "INVALID_OUTPUT",
+        "RATE_LIMIT",
+        "UNAVAILABLE_DEPENDENCY",
+        "IMPOSSIBLE_CONTRACT"
+      ],
+      "produced": {
+        "TRANSIENT_BACKEND": {
+          "kind": "TRANSIENT_BACKEND",
+          "retryable": true,
+          "observed": "HTTP 503",
+          "counts_toward_budget": true
+        },
+        "VERIFIER_FAILURE": {
+          "kind": "VERIFIER_FAILURE",
+          "retryable": true,
+          "observed": "TEST_FAILED",
+          "counts_toward_budget": true
+        },
+        "DETERMINISTIC_IMPLEMENTATION": {
+          "kind": "DETERMINISTIC_IMPLEMENTATION",
+          "retryable": false,
+          "observed": "NO_OP_MUTATION",
+          "counts_toward_budget": false
+        },
+        "INVALID_OUTPUT": {
+          "kind": "INVALID_OUTPUT",
+          "retryable": true,
+          "observed": "invalid JSON",
+          "counts_toward_budget": true
+        },
+        "RATE_LIMIT": {
+          "kind": "RATE_LIMIT",
+          "retryable": true,
+          "observed": "HTTP 429",
+          "counts_toward_budget": true
+        },
+        "UNAVAILABLE_DEPENDENCY": {
+          "kind": "UNAVAILABLE_DEPENDENCY",
+          "retryable": false,
+          "observed": "GrokNotAvailable",
+          "counts_toward_budget": false
+        },
+        "IMPOSSIBLE_CONTRACT": {
+          "kind": "IMPOSSIBLE_CONTRACT",
+          "retryable": false,
+          "observed": "GrokContractError",
+          "counts_toward_budget": false
+        }
+      },
+      "all_seven_produced": true,
+      "retryable_map": {
+        "TRANSIENT_BACKEND": true,
+        "VERIFIER_FAILURE": true,
+        "DETERMINISTIC_IMPLEMENTATION": false,
+        "INVALID_OUTPUT": true,
+        "RATE_LIMIT": true,
+        "UNAVAILABLE_DEPENDENCY": false,
+        "IMPOSSIBLE_CONTRACT": false
+      },
+      "retry_ok": true,
+      "budget_ok": true,
+      "non_retryable_set": [
+        "ContextPreflightError",
+        "EMPTY_COMMAND",
+        "GrokContractError",
+        "GrokNotAvailable",
+        "NO_OP_MUTATION",
+        "VACUOUS_COMMAND"
+      ],
+      "scheduler_fail_consults_classifier": false,
+      "non_retryable_still_emits_repair": "noop.repair.1"
+    },
+    "backoff": {
+      "retry_sleep_in_fail_s": 0.0002758750051725656,
+      "no_retry_sleep": true,
+      "noop_retryable": false,
+      "noop_trips_circuit": false,
+      "noop_consecutive": 0,
+      "grok_na_retryable": false,
+      "grok_na_state_after_2": "circuit_open",
+      "grok_na_opens_circuit": true,
+      "qwen_retryable": true,
+      "qwen_state_after_2": "circuit_open",
+      "qwen_opens_circuit": true,
+      "cooling_still_open_at_29s": true,
+      "cooling_reopens_after_30s": true,
+      "non_retryable_grok_na_still_cooled": true,
+      "circuit_cooling_seconds": 30.0,
+      "failure_threshold": 3,
+      "qwen2_kind": "TRANSIENT_BACKEND",
+      "grok_na2_kind": "UNAVAILABLE_DEPENDENCY"
+    },
+    "health": {
+      "writer_returncode": 0,
+      "writer_stdout": "wrote",
+      "writer_stderr": "",
+      "reader_returncode": 0,
+      "reader_stderr": "",
+      "path_exists": true,
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/repair-health-rria_6n7/.hcli/backend_health.json",
+      "snap": {
+        "grok": {
+          "backend": "grok",
+          "consecutive_failures": 2,
+          "last_failure_time": 1787471881.8287842,
+          "last_success_time": null,
+          "state": "degraded",
+          "updated_at": 1787471881.8291059,
+          "stale": false,
+          "allows_new": true
+        },
+        "cpu": {
+          "backend": "cpu",
+          "consecutive_failures": 0,
+          "last_failure_time": null,
+          "last_success_time": 1787471881.8291059,
+          "state": "healthy",
+          "updated_at": 1787471881.8291059,
+          "stale": false,
+          "allows_new": true
+        },
+        "qwen": {
+          "backend": "qwen",
+          "consecutive_failures": 0,
+          "last_failure_time": null,
+          "last_success_time": null,
+          "state": "healthy",
+          "updated_at": 1787471881.8291059,
+          "stale": false,
+          "allows_new": true
+        }
+      },
+      "ok": true
+    },
+    "circuit": {
+      "threshold": 3,
+      "qwen_open": true,
+      "qwen_consecutive": 3,
+      "grok_untouched": true,
+      "cpu_untouched": true,
+      "still_open_before_cooling": true,
+      "reopens_to": "degraded",
+      "reopens_allows_new": true,
+      "success_closes": true,
+      "allows_new_false_when_open": true,
+      "assign_ready_dispatches_through_open_circuit": true,
+      "cooling_seconds": 30.0
+    },
+    "cancel": {
+      "cooperative_engine": {
+        "phase": "cancelled",
+        "cancel_reason": "probe-cancel",
+        "engine_cancel_called": true,
+        "status_at_cancel": "running",
+        "status_after": "failed",
+        "repairs": [],
+        "thread_alive": false,
+        "join_s": 0.03145049999875482,
+        "child_pid": null,
+        "child_alive_before": false,
+        "child_alive_after_cancel": false,
+        "state_durable": true,
+        "state_reason": "probe-cancel",
+        "state_phase": "cancelled",
+        "n_units": 1
+      },
+      "blocking_child_engine": {
+        "phase": "cancelled",
+        "cancel_reason": "probe-cancel",
+        "engine_cancel_called": true,
+        "status_at_cancel": "running",
+        "status_after": "failed",
+        "repairs": [],
+        "thread_alive": false,
+        "join_s": 1.1761750000005122,
+        "child_pid": 90893,
+        "child_alive_before": true,
+        "child_alive_after_cancel": false,
+        "state_durable": true,
+        "state_reason": "probe-cancel",
+        "state_phase": "cancelled",
+        "n_units": 1
+      },
+      "grok_path": {
+        "consulted": true,
+        "phase": "cancelled",
+        "status_after": "failed",
+        "repairs": [],
+        "engine_cancel_called": true,
+        "thread_alive": false,
+        "child_pid": 90894,
+        "child_alive_before": true,
+        "child_alive_after_cancel": true,
+        "wait_finished": false,
+        "backend_task_id": "fake-grok-task",
+        "child_pids_on_mission": [],
+        "GrokBridge_has_cancel": false,
+        "GrokBridge_has_cleanup": true,
+        "wait_terminal_states": "done, failed only (cancelled/stale-running not terminal)"
+      }
+    },
+    "orphan": {
+      "grok_run": "/Users/scammermike/.claude-grok/bin/grok-run",
+      "grok_run_exists": true,
+      "patched_grok_run": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/repair-orphan-hoxjgedu/grok-run",
+      "tasks_root": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/repair-orphan-hoxjgedu/tasks",
+      "ok": true,
+      "task_id": "consult-20260823-035804",
+      "launch_pid": 90949,
+      "parent_pid": 90904,
+      "parent_alive_before": true,
+      "parent_alive_after_sigkill": true,
+      "child_alive_before_kill": true,
+      "child_alive_after_parent_killed": true,
+      "status_after_orphan": {
+        "state": "running",
+        "exit_code": null,
+        "successful": false,
+        "grok_state": "running",
+        "task_id": "consult-20260823-035804",
+        "raw_returncode": 0,
+        "launch_pid": 90949,
+        "process_alive": true
+      },
+      "adoption": {
+        "scheduler_load_status": "running",
+        "adopted_running": [
+          {
+            "unit_id": "g1",
+            "backend_task_id": "consult-20260823-035804",
+            "grok_state": "running"
+          }
+        ],
+        "mission_from_workspace_status": "failed",
+        "liveness_state": "running",
+        "liveness_process_alive": true
+      },
+      "cleanup": {
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "grok-run: task artifacts kept at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/repair-orphan-hoxjgedu/tasks/consult-20260823-035804 \u2014 delete manually if you want them gone\n",
+        "pid_alive_after_cleanup": true
+      },
+      "handle": {
+        "task_id": "consult-20260823-035804",
+        "launch_pid": 90949,
+        "parent_pid": 90904,
+        "task_dir": "/Users/scammermike/.claude-grok/tasks/consult-20260823-035804",
+        "stdout": "consult-20260823-035804\n",
+        "stderr": "grok-run: started in background (pid 90949) \u2014 poll with: grok-run wait --id consult-20260823-035804\n"
+      },
+      "task_status_file": "running",
+      "task_stderr_excerpt": null,
+      "child_alive_after_reap": false
+    }
+  },
+  "homeostasis": {
+    "ok": true,
+    "returncode": 0,
+    "failed": [],
+    "receipt_result": "PASS",
+    "results": [
+      {
+        "name": "a permanently dead backend produces a BOUNDED repair tree",
+        "ok": true,
+        "detail": "2 units in the lineage: ['dead', 'dead.repair.1']"
+      },
+      {
+        "name": "the lineage terminates in an explicit exhausted state",
+        "ok": true,
+        "detail": "exhausted=[('dead', 'repair cycle: failure signature already seen in lineage dead'), ('fine', 'repair cycle: failure signature already seen in lineage fine'), ('dead.repair.1', 'repair cycle: failure signature already seen in lineage dead'), ('fine.repair.1', 'repair cycle: failure signature already seen in lineage fine')]"
+      },
+      {
+        "name": "repair depth never exceeds the bound",
+        "ok": true,
+        "detail": "deepest=1 bound=3"
+      },
+      {
+        "name": "with every failure distinct, the DEPTH bound stops the lineage",
+        "ok": true,
+        "detail": "deepest=3 bound=3 exhausted=['dead', 'dead.repair.1', 'dead.repair.1.repair.1', 'dead.repair.2', 'dead.repair.1.repair.1.repair.1', 'dead.repair.1.repair.2', 'dead.repair.2.repair.1'] units=7"
+      },
+      {
+        "name": "repair lineage is structured, not parsed back out of the id string",
+        "ok": true,
+        "detail": "[('dead.repair.1', 'dead', 1), ('dead.repair.1.repair.1', 'dead', 2), ('dead.repair.2', 'dead', 1), ('dead.repair.1.repair.1.repair.1', 'dead', 3), ('dead.repair.1.repair.2', 'dead', 2), ('dead.repair.2.repair.1', 'dead', 2)]"
+      },
+      {
+        "name": "an exhausted unit is never re-readied",
+        "ok": true,
+        "detail": "is_ready returned False as required"
+      },
+      {
+        "name": "repair lineage survives serialization",
+        "ok": true,
+        "detail": "root=root depth=2 exhausted=True"
+      },
+      {
+        "name": "with cycle detection defeated, the per-root COUNT cap bounds the tree",
+        "ok": true,
+        "detail": "6 repairs for one root, cap is 6 (depth bound alone allowed 3+9+27=39 before this cap existed)"
+      },
+      {
+        "name": "NEGATIVE CONTROL: raising the bound really does let the lineage grow",
+        "ok": true,
+        "detail": "deepest=12 with both bounds lifted (defaults: depth 3, per-root 6)"
+      }
+    ],
+    "stdout": "ok   a permanently dead backend produces a BOUNDED repair tree: 2 units in the lineage: ['dead', 'dead.repair.1']\nok   the lineage terminates in an explicit exhausted state: exhausted=[('dead', 'repair cycle: failure signature already seen in lineage dead'), ('fine', 'repair cycle: failure signature already seen in lineage fine'), ('dead.repair.1', 'repair cycle: failure signature already seen in lineage dead'), ('fine.repair.1', 'repair cycle: failure signature already seen in lineage fine')]\nok   repair depth never exceeds the bound: deepest=1 bound=3\nok   with every failure distinct, the DEPTH bound stops the lineage: deepest=3 bound=3 exhausted=['dead', 'dead.repair.1', 'dead.repair.1.repair.1', 'dead.repair.2', 'dead.repair.1.repair.1.repair.1', 'dead.repair.1.repair.2', 'dead.repair.2.repair.1'] units=7\nok   repair lineage is structured, not parsed back out of the id string: [('dead.repair.1', 'dead', 1), ('dead.repair.1.repair.1', 'dead', 2), ('dead.repair.2', 'dead', 1), ('dead.repair.1.repair.1.repair.1', 'dead', 3), ('dead.repair.1.repair.2', 'dead', 2), ('dead.repair.2.repair.1', 'dead', 2)]\nok   an exhausted unit is never re-readied: is_ready returned False as required\nok   repair lineage survives serialization: root=root depth=2 exhausted=True\nok   with cycle detection defeated, the per-root COUNT cap bounds the tree: 6 repairs for one root, cap is 6 (depth bound alone allowed 3+9+27=39 before this cap existed)\nok   NEGATIVE CONTROL: raising the bound really does let the lineage grow: deepest=12 with both bounds lifted (defaults: depth 3, per-root 6)\n\n9/9 checks passed\nreceipt: /Users/scammermike/.claude-grok/worktrees/i3disp-20260823-033726/receipts/headless/REPAIR_HOMEOSTASIS.json\n"
+  },
+  "what_i_watched_fail": [
+    "After Scheduler.from_workspace, _repair_signatures was empty and the same failure emitted dead.repair.1.repair.1.",
+    "NO_OP_MUTATION (non-retryable) still emitted noop.repair.1 because Scheduler.fail does not consult classify_failure.",
+    "GrokNotAvailable is NON_RETRYABLE but opened the grok circuit and held it for the cooling window \u2014 backoff is not gated on retryable, and there is no retry sleep.",
+    "assign_ready dispatched a qwen unit while that backend's circuit was open. allows_new_assignments is not consulted.",
+    "Cancelled a dispatched grok-like unit (pid 90894); the child was still alive after Mission.cancel. GrokBridge has no cancel(); launch_pid is not in mission.child_pids.",
+    "Blocking engine child WAS reaped by _stop_children (engine.child_pids). That path works when the pid is registered; grok does not register it.",
+    "Killed parent pid 90904; grok launch_pid 90949 (task consult-20260823-035804) was still alive. Orphan not handled.",
+    "grok-run cleanup --id returned with the launch_pid still alive; cleanup does not kill the process.",
+    "DagStore+liveness adopted the live grok unit as running; Mission.from_workspace then failed the in_flight unit, undoing adoption.",
+    "Bootstrap pytest: 1 failed (test_evidence_freshness context_efficiency receipt 379 != 377), 365 passed, 1 skipped. Expected known defect."
+  ],
+  "handoff": [
+    {
+      "file": "tools/haider/hcli/scheduler.py",
+      "why": "Persist cycle signatures and per-root counts so restart cannot re-open a closed lineage (items 2, 4).",
+      "patch": "# in Scheduler._persist extra= and Scheduler.from_workspace restore:\n\"repair_signatures\": {k: sorted(v) for k, v in self._repair_signatures.items()},\n\"repair_counts\": dict(self._repair_counts),\n# from_workspace after load:\nsigs = meta.get(\"repair_signatures\") or {}\nif isinstance(sigs, dict):\n    sched._repair_signatures = {str(k): set(v) for k, v in sigs.items() if isinstance(v, list)}\ncounts = meta.get(\"repair_counts\") or {}\nif isinstance(counts, dict):\n    sched._repair_counts = {str(k): int(v) for k, v in counts.items()}"
+    },
+    {
+      "file": "tools/haider/hcli/scheduler.py + workunit.py",
+      "why": "Consult classify_failure / allows_new_assignments (items 5, 6, 8).",
+      "patch": "# Scheduler.fail, before _emit_repair:\nfrom .resources import counts_toward_retry_budget, classify_failure\nclf = classify_failure(context)\nif not clf.retryable:\n    wu.repair_exhausted = True\n    wu.repair_reason = f\"non-retryable: {clf.observed or clf.kind}\"\n    self._persist()\n    return None\n\n# assign_ready, after can_admit succeeds, before transition_status running:\n# caller must pass health: Optional[BackendHealth]\nbackend = getattr(wu, \"preferred_backend\", None) or \"cpu\"\nif health is not None and not health.allows_new_assignments(backend):\n    continue"
+    },
+    {
+      "file": "tools/haider/hcli/grok_bridge.py + mission.py",
+      "why": "Cancellation of a grok unit must kill launch_pid; wait must treat cancelled/stale-running as terminal (item 9).",
+      "patch": "# GrokBridge.cancel(task_id):\ndef cancel(self, task_id: str) -> Dict[str, Any]:\n    receipt = self._read_receipt(task_id) or {}\n    pid = receipt.get(\"launch_pid\")\n    killed = False\n    if pid:\n        try:\n            os.kill(int(pid), signal.SIGTERM)\n            killed = True\n        except OSError:\n            pass\n    return {\"task_id\": task_id, \"killed\": killed, \"launch_pid\": pid}\n\n# wait() terminal states:\nif state in (\"done\", \"failed\", \"cancelled\", \"stale-running\", \"unknown\"):\n    return last\n\n# Mission.cancel: for each inflight wu with backend_task_id, GrokBridge.cancel\n# Mission._start_unit: register_child_pid(handle.launch_pid) when grok\n# Mission.from_workspace: do NOT fail in_flight units that DagStore just adopted\n#   (skip uid if uid in {a['unit_id'] for a in sched.store.adopted_running})"
+    },
+    {
+      "file": "tools/haider/hcli/mission.py",
+      "why": "Adopted running grok units must be waited, not declared blocked (item 10).",
+      "patch": "# _loop: if a unit is status=running with backend_task_id and no inflight\n# thread, spawn a waiter that GrokBridge.wait()s it (and honour _cancel).\n# Do not take the \"no ready work and mission is not done\" branch while\n# adopted_running is non-empty.\n# On parent death the grok process is designed to survive (trap HUP INT);\n# handling orphans MEANS adopting-and-waiting or killing, not ignoring."
+    }
+  ],
+  "probe_errors": {}
+}

@@ -1,0 +1,21 @@
+{
+  "gate": "HCLI_LONG_CONTEXT_ROOT_INGRESS",
+  "stage": "runtime capability established; canonical HCLI path still pending the context authority",
+  "generated_at": "2026-08-23T03:49:32Z",
+  "runtime_identity": {
+    "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "total_slots": 4,
+    "per_slot_n_ctx": 262144,
+    "endpoint": "http://127.0.0.1:8080",
+    "launch_argv": "llama-server --ctx-size 500000 (no explicit --parallel; kv-unified, slots share the window)"
+  },
+  "request": {
+    "prompt_tokens_server_counted": 29982,
+    "completion_tokens": 30,
+    "wall_s": 4.617,
+    "max_tokens": 64,
+    "http_status": 200
+  },
+  "answer_excerpt": "The file `tools/headless/hcli_bootstrap_live_proof.py` defines the mixed-max WorkUnits in the `stage_mixed_max` function.",
+  "meaning": "A >24K-token request completes against this model and this runtime. The 11008 ceiling is HCLI's own --ctx-size 32768 / --parallel 3 arithmetic, not a model or hardware limit."
+}

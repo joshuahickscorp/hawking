@@ -1,0 +1,853 @@
+{
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "counting": {
+    "after_mlp_pair": 900,
+    "after_mlp_swiglu": 836,
+    "after_mlp_swiglu_qkv_dn": 756,
+    "before": 964,
+    "command_buffers": 1,
+    "method": "TokenCommandBuffer.dispatch_count, one kernel launch = one dispatch, same as production_dispatches_per_token"
+  },
+  "decode": {
+    "mlp_pair": {
+      "decode_wall_ns_reps": [
+        450029250,
+        450358542
+      ],
+      "dense_w_materialized": 0,
+      "dispatches_last_step_reps": [
+        900,
+        900
+      ],
+      "expanded_to_float_gemv": 0,
+      "expanded_to_q4": 0,
+      "fallbacks_reps": [
+        0,
+        0
+      ],
+      "generated_text_all_reps": [
+        "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+      ],
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "median_gpu_ns_per_token_reps": [
+        28366749,
+        28408333
+      ],
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "new_token_ids_all_reps": [
+        [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ]
+      ],
+      "reps": 2,
+      "tok_s_max": 33.331166807490845,
+      "tok_s_mean": 33.318981309097026,
+      "tok_s_min": 33.3067958107032,
+      "tok_s_reps": [
+        33.331166807490845,
+        33.3067958107032
+      ]
+    },
+    "mlp_swiglu": {
+      "decode_wall_ns_reps": [
+        445518250,
+        447333500
+      ],
+      "dense_w_materialized": 0,
+      "dispatches_last_step_reps": [
+        836,
+        836
+      ],
+      "expanded_to_float_gemv": 0,
+      "expanded_to_q4": 0,
+      "fallbacks_reps": [
+        0,
+        0
+      ],
+      "generated_text_all_reps": [
+        "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+      ],
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "median_gpu_ns_per_token_reps": [
+        28214249,
+        28195374
+      ],
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "new_token_ids_all_reps": [
+        [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ]
+      ],
+      "reps": 2,
+      "tok_s_max": 33.668654426614395,
+      "tok_s_mean": 33.600341831036474,
+      "tok_s_min": 33.53202923545856,
+      "tok_s_reps": [
+        33.668654426614395,
+        33.53202923545856
+      ]
+    },
+    "mlp_swiglu_qkv_dn": {
+      "decode_wall_ns_reps": [
+        439709666,
+        442769250
+      ],
+      "dense_w_materialized": 0,
+      "dispatches_last_step_reps": [
+        756,
+        756
+      ],
+      "expanded_to_float_gemv": 0,
+      "expanded_to_q4": 0,
+      "fallbacks_reps": [
+        0,
+        0
+      ],
+      "generated_text_all_reps": [
+        "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+      ],
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "median_gpu_ns_per_token_reps": [
+        27827750,
+        27879374
+      ],
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "new_token_ids_all_reps": [
+        [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ]
+      ],
+      "reps": 2,
+      "tok_s_max": 34.11341883032428,
+      "tok_s_mean": 33.995555100584056,
+      "tok_s_min": 33.87769137084384,
+      "tok_s_reps": [
+        34.11341883032428,
+        33.87769137084384
+      ]
+    },
+    "unfused": {
+      "decode_wall_ns_reps": [
+        464304166,
+        468372041
+      ],
+      "dense_w_materialized": 0,
+      "dispatches_last_step_reps": [
+        964,
+        964
+      ],
+      "expanded_to_float_gemv": 0,
+      "expanded_to_q4": 0,
+      "fallbacks_reps": [
+        0,
+        0
+      ],
+      "generated_text_all_reps": [
+        "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+        "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+      ],
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler",
+      "median_gpu_ns_per_token_reps": [
+        29433958,
+        29435041
+      ],
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ],
+      "new_token_ids_all_reps": [
+        [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ]
+      ],
+      "reps": 2,
+      "tok_s_max": 32.30640838144019,
+      "tok_s_mean": 32.16611560188608,
+      "tok_s_min": 32.02582282233196,
+      "tok_s_reps": [
+        32.30640838144019,
+        32.02582282233196
+      ]
+    }
+  },
+  "dense_w_materialized": 0,
+  "did_not_load_second_27b": true,
+  "did_not_write_under_models": true,
+  "dispatch_probes": [
+    {
+      "id": "unfused",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 116079208,
+        "matches_theoretical": true,
+        "measured": 964,
+        "mlp_fusion": "off",
+        "sampled": 8678,
+        "theoretical": 964,
+        "wait_ns": 227238708
+      }
+    },
+    {
+      "id": "mlp_pair",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 28246875,
+        "matches_theoretical": true,
+        "measured": 900,
+        "mlp_fusion": "pair",
+        "sampled": 8678,
+        "theoretical": 900,
+        "wait_ns": 29091333
+      }
+    },
+    {
+      "id": "mlp_swiglu",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 28064208,
+        "matches_theoretical": true,
+        "measured": 836,
+        "mlp_fusion": "swiglu",
+        "sampled": 8678,
+        "theoretical": 836,
+        "wait_ns": 28359042
+      }
+    },
+    {
+      "id": "mlp_swiglu_qkv_dn",
+      "probe": {
+        "fuse_dn_inproj": true,
+        "fuse_gqa_qkv": true,
+        "gpu_ns": 27520333,
+        "matches_theoretical": true,
+        "measured": 756,
+        "mlp_fusion": "swiglu",
+        "sampled": 8678,
+        "theoretical": 756,
+        "wait_ns": 28007333
+      }
+    }
+  ],
+  "expanded_to_float_gemv": 0,
+  "expanded_to_q4": 0,
+  "fusions_attempted": [
+    "affine2 gate_up_pair (same-row dual geo_tpr64, still a SwiGLU dispatch)",
+    "affine2 gate_up_swiglu (same-row dual + silu(g)*up in-register)",
+    "gqa_qkv concat geo_tpr64 (3 q4 matvecs -> 1, 16 GQA layers)",
+    "dn_qkvz_ba concat geo_tpr64 (2 q4 matvecs -> 1, 48 DeltaNet layers)"
+  ],
+  "generated_at": "unix:1787540067",
+  "git_head": "99a737fff3a6e46f1847e0cc447c66023b743d34",
+  "kernel_cost": {
+    "affine_shader_compile_s": 0.001451375,
+    "method": "MTLCommandBuffer GPUEndTime-GPUStartTime after wait; synthetic packed codes, no dense W",
+    "note": "affine2 standalone shader uses f32 scale+bias; q4 geo uses f16 scale. Same occupancy (geo_tpr64 tg128). Production mixed affine2 uses f16; live_affine2_gate_matvec is that path.",
+    "q4_shader_compile_s": 0.001935667,
+    "runtime_div_is_the_old_g64_body": true,
+    "shapes": [
+      {
+        "affine2_g32_specialized": {
+          "body_bpw": 3.0,
+          "group_size": 32,
+          "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+          "payload_bytes": 44564480,
+          "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+          "timing": {
+            "gpu_ns_median": 144291,
+            "gpu_ns_reps": [
+              144291,
+              144625,
+              143958,
+              144499,
+              144249,
+              144458,
+              144291,
+              143916
+            ],
+            "reps": 8,
+            "wait_ns_median": 400709,
+            "wait_ns_reps": [
+              368542,
+              366750,
+              460292,
+              415833,
+              595958,
+              386000,
+              369416,
+              400709
+            ],
+            "warmup": 4
+          }
+        },
+        "affine2_g64_runtime_div": {
+          "body_bpw": 2.5,
+          "group_size": 64,
+          "kernel": "affine2_group32_matvec_geo_tpr64_tg128_runtime_div",
+          "payload_bytes": 33423360,
+          "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+          "timing": {
+            "gpu_ns_median": 196708,
+            "gpu_ns_reps": [
+              197166,
+              196624,
+              196249,
+              196708,
+              196374,
+              197000,
+              197083,
+              196624
+            ],
+            "reps": 8,
+            "wait_ns_median": 455042,
+            "wait_ns_reps": [
+              459750,
+              448000,
+              457541,
+              455042,
+              448208,
+              435833,
+              439083,
+              460750
+            ],
+            "warmup": 4
+          }
+        },
+        "affine2_g64_specialized": {
+          "body_bpw": 2.5,
+          "group_size": 64,
+          "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+          "payload_bytes": 33423360,
+          "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+          "timing": {
+            "gpu_ns_median": 143666,
+            "gpu_ns_reps": [
+              143833,
+              142708,
+              144333,
+              143500,
+              143375,
+              142625,
+              143666,
+              143958
+            ],
+            "reps": 8,
+            "wait_ns_median": 393542,
+            "wait_ns_reps": [
+              390167,
+              392750,
+              393542,
+              362834,
+              368834,
+              1582208,
+              696584,
+              418458
+            ],
+            "warmup": 4
+          }
+        },
+        "label": "gate_up",
+        "q4_g64_geo_tpr64": {
+          "body_bpw": 4.25,
+          "group_size": 64,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "payload_bytes": 47349760,
+          "timing": {
+            "gpu_ns_median": 134124,
+            "gpu_ns_reps": [
+              133374,
+              134541,
+              134124,
+              134708,
+              134000,
+              134250,
+              133875,
+              133749
+            ],
+            "reps": 8,
+            "wait_ns_median": 394333,
+            "wait_ns_reps": [
+              345792,
+              352417,
+              405333,
+              397166,
+              394333,
+              392375,
+              399458,
+              391084
+            ],
+            "warmup": 4
+          }
+        },
+        "shape": [
+          17408,
+          5120
+        ],
+        "why_this_shape": "production MLP GEMV; gate/up is 17408x5120, down is 5120x17408"
+      },
+      {
+        "affine2_g32_specialized": {
+          "body_bpw": 3.0,
+          "group_size": 32,
+          "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+          "payload_bytes": 44564480,
+          "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+          "timing": {
+            "gpu_ns_median": 154499,
+            "gpu_ns_reps": [
+              154499,
+              154124,
+              154791,
+              153500,
+              154499,
+              154666,
+              155916,
+              153583
+            ],
+            "reps": 8,
+            "wait_ns_median": 426625,
+            "wait_ns_reps": [
+              437042,
+              426625,
+              433917,
+              411417,
+              460708,
+              413875,
+              401291,
+              411542
+            ],
+            "warmup": 4
+          }
+        },
+        "affine2_g64_runtime_div": {
+          "body_bpw": 2.5,
+          "group_size": 64,
+          "kernel": "affine2_group32_matvec_geo_tpr64_tg128_runtime_div",
+          "payload_bytes": 33423360,
+          "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+          "timing": {
+            "gpu_ns_median": 212375,
+            "gpu_ns_reps": [
+              217749,
+              217666,
+              209041,
+              223124,
+              212375,
+              208291,
+              208416,
+              207500
+            ],
+            "reps": 8,
+            "wait_ns_median": 482666,
+            "wait_ns_reps": [
+              499750,
+              449375,
+              505667,
+              482666,
+              411875,
+              511875,
+              475292,
+              465458
+            ],
+            "warmup": 4
+          }
+        },
+        "affine2_g64_specialized": {
+          "body_bpw": 2.5,
+          "group_size": 64,
+          "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+          "payload_bytes": 33423360,
+          "scale_dtype": "f32 (standalone parity shader; production mixed path uses f16)",
+          "timing": {
+            "gpu_ns_median": 152874,
+            "gpu_ns_reps": [
+              152874,
+              153000,
+              152749,
+              152208,
+              151875,
+              152874,
+              154291,
+              153249
+            ],
+            "reps": 8,
+            "wait_ns_median": 429541,
+            "wait_ns_reps": [
+              417250,
+              429541,
+              411125,
+              468125,
+              417292,
+              425375,
+              1028709,
+              1085959
+            ],
+            "warmup": 4
+          }
+        },
+        "label": "down",
+        "q4_g64_geo_tpr64": {
+          "body_bpw": 4.25,
+          "group_size": 64,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+          "payload_bytes": 47349760,
+          "timing": {
+            "gpu_ns_median": 150583,
+            "gpu_ns_reps": [
+              161208,
+              161749,
+              159000,
+              150583,
+              149875,
+              144124,
+              144500,
+              143833
+            ],
+            "reps": 8,
+            "wait_ns_median": 408458,
+            "wait_ns_reps": [
+              380416,
+              380542,
+              357417,
+              499417,
+              477916,
+              456084,
+              372833,
+              408458
+            ],
+            "warmup": 4
+          }
+        },
+        "shape": [
+          5120,
+          17408
+        ],
+        "why_this_shape": "production MLP GEMV; gate/up is 17408x5120, down is 5120x17408"
+      }
+    ],
+    "specialized_uses_compile_time_shift": true
+  },
+  "kernels": [
+    "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+    "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128",
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+  ],
+  "live_affine2_gate_matvec": {
+    "gpu_ns_median": 143833,
+    "gpu_ns_reps": [
+      154333,
+      149999,
+      142375,
+      143833,
+      143666,
+      143333
+    ],
+    "group_size": 64,
+    "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+    "note": "live HGRAVF01 gate_proj layer 0 on the mixed catalog; production bind",
+    "ok": true,
+    "shape": [
+      17408,
+      5120
+    ],
+    "tensor": "language_model.model.layers.0.mlp.gate_proj.weight"
+  },
+  "max_new_tokens": 16,
+  "parity": {
+    "dn_qkvz_ba": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 131124,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 131124,
+      "fusion": "dn_qkvz_ba",
+      "layer": 0,
+      "max_abs_diff": 0.0,
+      "max_abs_diff_act": 0.0,
+      "max_abs_diff_gate": 0.0,
+      "max_abs_diff_up": 0.0,
+      "unfused_dispatches": 2,
+      "unfused_gpu_ns": 140750
+    },
+    "gqa_qkv": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 116208,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 116208,
+      "fusion": "gqa_qkv",
+      "layer": 3,
+      "max_abs_diff": 0.0,
+      "max_abs_diff_act": 0.0,
+      "max_abs_diff_gate": 0.0,
+      "max_abs_diff_up": 0.0,
+      "unfused_dispatches": 3,
+      "unfused_gpu_ns": 134708
+    },
+    "mlp_gate_up_swiglu": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 254124,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 250916,
+      "fusion": "gate_up_swiglu",
+      "layer": 0,
+      "max_abs_diff": 2.9802322387695312e-8,
+      "max_abs_diff_act": 1.3969838619232178e-9,
+      "max_abs_diff_gate": 2.9802322387695312e-8,
+      "max_abs_diff_up": 2.9802322387695312e-8,
+      "unfused_dispatches": 3,
+      "unfused_gpu_ns": 287874
+    }
+  },
+  "prompt": "Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.",
+  "prompt_ids": [
+    248045,
+    846,
+    198,
+    814,
+    20139,
+    11,
+    303,
+    18541,
+    58655,
+    321,
+    506,
+    2984,
+    11,
+    1204,
+    264,
+    18826,
+    10263,
+    264,
+    364,
+    58621,
+    1083,
+    6557,
+    9714,
+    321,
+    1179,
+    1083,
+    5484,
+    1970,
+    13,
+    248046,
+    198,
+    248045,
+    74455,
+    198
+  ],
+  "question": "Why is affine2 g64 slower than q4, and does fusing it on the affine2 MLP path cross the boundary?",
+  "rendered_prompt": "<|im_start|>user\nExplain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.<|im_end|>\n<|im_start|>assistant\n",
+  "schema": "hawking.headless.noetic_fused_subbit.v1",
+  "session_open_s": 3.321424625,
+  "skip_decode": false,
+  "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+}

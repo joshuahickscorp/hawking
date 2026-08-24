@@ -1,0 +1,44 @@
+{
+  "gate": "HCLI_BOOTSTRAP_HANDOFF",
+  "generated_at": "2026-08-23T08:37:55Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "what_crossed_over": "ownership of Grok dispatch",
+  "before": {
+    "owner": "Claude, by hand",
+    "mechanism": "each lane launched with `grok-run delegate --contract <file> --background`, one Bash invocation per lane, with Claude choosing the contract, the profile and the moment",
+    "count_in_this_campaign": 51,
+    "why_it_was_right_then": "HCLI could not yet dispatch Grok safely: the bridge refused without grok-run on PATH, `_run_grok` refuses a unit with no verifier, and until the repair tree was bounded a failing Grok unit would have spawned repairs without limit."
+  },
+  "crossover": {
+    "workunit_id": "grok.audit_status",
+    "workunit_status": "completed",
+    "grok_task_id": "consult-20260823-042517",
+    "grok_task_mode": "consult",
+    "grok_task_started_at": "2026-08-23T08:25:17Z",
+    "dispatched_by": "hcli.mission.Mission via hcli.executors._run_grok -> GrokBridge.consult",
+    "not_dispatched_by": "Claude. No `grok-run` command was issued by hand for this task.",
+    "mission_receipt": "receipts/headless/HCLI_TRUE_MIXED_MAX.json",
+    "campaign_generated_at": "2026-08-23T08:28:13Z",
+    "wall_s": 176.24,
+    "telemetry_wall_ms": 174019
+  },
+  "after": {
+    "owner": "HCLI/AgentOS",
+    "mechanism": "a WorkUnit with `preferred_backend='grok'` and `resource_class='GROK'` is dispatched by the Mission scheduler; `GrokBridge.consult` mints the task id; acceptance is the unit's own verifier, formatted with the REAL task id so it checks that task's artifacts.",
+    "acceptance_evidence": {
+      "ok": true,
+      "exit_code": 0,
+      "command": "python3 -c \"import sys,pathlib;p=pathlib.Path.home()/'.claude-grok/tasks/consult-20260823-042517';r=[f for f in p.glob('grok-report*.md') if f.stat().st_size>200];print('report bytes:', [f.stat().st_size for f in r]);sys.exit(0 if r else 1)\"",
+      "output": "report bytes: [15103]\n",
+      "acceptance_source": "backend_executor_verdict"
+    }
+  },
+  "what_makes_this_a_real_crossover_and_not_a_relabelling": [
+    "The task id was minted by GrokBridge, not chosen by Claude: consult-20260823-042517 is a `consult` task, while every Claude-launched lane in this campaign is a `delegate` task with a hand-written slug.",
+    "`_run_grok` consults the task's TERMINAL STATE before the verifier is allowed to speak, so a failed, timed-out or stale-running task cannot be accepted by a verifier that happens to exit 0.",
+    "`_run_grok` REFUSES a Grok unit that carries no verifier -- 'Grok text is evidence, not acceptance' -- so the model's own report cannot accept the unit.",
+    "GrokBridge REFUSES to invent a task id when grok-run is absent. An earlier run of the campaign produced an empty Grok arm for exactly that reason, and that refusal is why it was diagnosable rather than silently green."
+  ],
+  "what_did_NOT_cross_over": "Claude still launches the campaign's own hardening lanes by hand. That is deliberate: those lanes WRITE to the repository under a reviewed contract, and HCLI-owned Grok dispatch is currently read-only consult. Handing write-scoped delegation to the scheduler is a larger step than this obligation asks for, and it is recorded here as not done rather than implied by the crossover.",
+  "result": "PASS"
+}

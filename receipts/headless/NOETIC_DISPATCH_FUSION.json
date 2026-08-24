@@ -1,0 +1,980 @@
+{
+  "schema": "hawking.headless.noetic_dispatch_fusion.v1",
+  "generated_at": "2026-08-24T00:25:06Z",
+  "git_head": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+  "question": "Does fusing operators cut dispatches per token below 964 while staying coherent?",
+  "why_not_more_density": "Four grouped-code matvecs exhausted the density axis. 44.7% fewer bits bought 1.9% throughput; the densest coherent artifact is the slowest. SOURCE and EXECUTABLE sit at 964 dispatches/token. Decode is dispatch-bound.",
+  "did_not_load_second_27b": true,
+  "did_not_write_under_models": true,
+  "enable": {
+    "default": "off — production graph stays 964",
+    "HAWKING_QWEN38_FUSE_MLP": "pair | swiglu",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "combo_that_measured_756": {
+      "HAWKING_QWEN38_FUSE_MLP": "swiglu",
+      "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+      "HAWKING_QWEN38_FUSE_DN_INPROJ": "1"
+    }
+  },
+  "counting_method": "TokenCommandBuffer.dispatch_count: one kernel launch = one dispatch. Same counter as production_dispatches_per_token / generate_greedy timing.dispatches.",
+  "dispatches_per_token": {
+    "before": 964,
+    "after": 756,
+    "measured_before": 964,
+    "measured_after": 756,
+    "theoretical": {
+      "unfused": 964,
+      "mlp_pair": 900,
+      "mlp_swiglu": 836,
+      "mlp_swiglu_qkv_dn": 756
+    },
+    "command_buffers": 1
+  },
+  "decode_tok_s": {
+    "before": {
+      "tok_s_reps": [
+        33.69115836664429,
+        33.75828130306345,
+        33.70118809224867
+      ],
+      "tok_s_mean": 33.716875920652136,
+      "tok_s_min": 33.69115836664429,
+      "tok_s_max": 33.75828130306345,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        58655,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264
+      ],
+      "dispatches_last_step_reps": [
+        964,
+        964,
+        964
+      ],
+      "dense_w_materialized": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 14,
+        "n_new_tokens": 16
+      }
+    },
+    "after": {
+      "tok_s_reps": [
+        35.666599385986174,
+        35.63879722623241,
+        35.7049486151875
+      ],
+      "tok_s_mean": 35.67011507580202,
+      "tok_s_min": 35.63879722623241,
+      "tok_s_max": 35.7049486151875,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        58655,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264
+      ],
+      "dispatches_last_step_reps": [
+        756,
+        756,
+        756
+      ],
+      "dense_w_materialized": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 14,
+        "n_new_tokens": 16
+      }
+    },
+    "after_mlp_swiglu": {
+      "tok_s_reps": [
+        35.20912902297307,
+        35.31294085705327,
+        35.1688235413071
+      ],
+      "tok_s_mean": 35.23029780711115,
+      "tok_s_min": 35.1688235413071,
+      "tok_s_max": 35.31294085705327,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        58655,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264
+      ],
+      "dispatches_last_step_reps": [
+        836,
+        836,
+        836
+      ],
+      "dense_w_materialized": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 14,
+        "n_new_tokens": 16
+      }
+    },
+    "after_mlp_swiglu_qkv_dn": {
+      "tok_s_reps": [
+        35.666599385986174,
+        35.63879722623241,
+        35.7049486151875
+      ],
+      "tok_s_mean": 35.67011507580202,
+      "tok_s_min": 35.63879722623241,
+      "tok_s_max": 35.7049486151875,
+      "generated_text_verbatim": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        58655,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264
+      ],
+      "dispatches_last_step_reps": [
+        756,
+        756,
+        756
+      ],
+      "dense_w_materialized": 0,
+      "coherence": {
+        "coherent": true,
+        "reason": "emits varied tokens",
+        "repeated_single_token": false,
+        "whitespace_only": false,
+        "two_token_cycle": false,
+        "n_unique_ids": 14,
+        "n_new_tokens": 16
+      }
+    }
+  },
+  "verbatim": {
+    "prompt": "Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.",
+    "prompt_ids": [
+      248045,
+      846,
+      198,
+      814,
+      20139,
+      11,
+      303,
+      18541,
+      58655,
+      321,
+      506,
+      2984,
+      11,
+      1204,
+      264,
+      18826,
+      10263,
+      264,
+      364,
+      58621,
+      1083,
+      6557,
+      9714,
+      321,
+      1179,
+      1083,
+      5484,
+      1970,
+      13,
+      248046,
+      198,
+      248045,
+      74455,
+      198
+    ],
+    "before": {
+      "generated_text": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        58655,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264
+      ]
+    },
+    "after": {
+      "generated_text": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        58655,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264
+      ]
+    }
+  },
+  "parity": {
+    "mlp_gate_up_swiglu": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 244208,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 225124,
+      "fusion": "gate_up_swiglu",
+      "layer": 0,
+      "max_abs_diff": 4.470348358154297e-08,
+      "max_abs_diff_act": 2.7939677238464355e-09,
+      "max_abs_diff_gate": 4.470348358154297e-08,
+      "max_abs_diff_up": 2.9802322387695312e-08,
+      "unfused_dispatches": 3,
+      "unfused_gpu_ns": 280375
+    },
+    "gqa_qkv": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 106249,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 106249,
+      "fusion": "gqa_qkv",
+      "layer": 3,
+      "max_abs_diff": 0.0,
+      "max_abs_diff_act": 0.0,
+      "max_abs_diff_gate": 0.0,
+      "max_abs_diff_up": 0.0,
+      "unfused_dispatches": 3,
+      "unfused_gpu_ns": 112791
+    },
+    "dn_qkvz_ba": {
+      "dense_w_materialized": 0,
+      "fused_dispatches": 1,
+      "fused_pair_dispatches": 1,
+      "fused_pair_gpu_ns": 118125,
+      "fused_swiglu_dispatches": 1,
+      "fused_swiglu_gpu_ns": 118125,
+      "fusion": "dn_qkvz_ba",
+      "layer": 0,
+      "max_abs_diff": 0.0,
+      "max_abs_diff_act": 0.0,
+      "max_abs_diff_gate": 0.0,
+      "max_abs_diff_up": 0.0,
+      "unfused_dispatches": 2,
+      "unfused_gpu_ns": 138374
+    },
+    "max_abs_diff": 4.470348358154297e-08,
+    "fused_kernel_against": "unfused geo_tpr64 matvec + gk_swiglu_f32"
+  },
+  "dense_parent": {
+    "dense_w_materialized": 0,
+    "expanded_to_q4": 0,
+    "expanded_to_float_gemv": 0,
+    "note": "fused kernels consume packed Q4 in-register; no parent W is written"
+  },
+  "fusions_attempted": [
+    "gate_up_pair (same-row dual geo_tpr64, still a SwiGLU dispatch)",
+    "gate_up_swiglu (same-row dual + silu(g)*up in-register)",
+    "gqa_qkv concat geo_tpr64 (3 matvecs -> 1, 16 GQA layers)",
+    "dn_qkvz_ba concat geo_tpr64 (2 matvecs -> 1, 48 DeltaNet layers)"
+  ],
+  "kernels": [
+    "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
+    "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+  ],
+  "shader_evidence": {
+    "shader_present": true,
+    "shader_path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+    "kernel_needles": {
+      "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128": 74029,
+      "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128": 76344,
+      "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128": 78895,
+      "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128": 81382
+    },
+    "all_kernels_declared": true,
+    "wired_in_encode_dense_mlp": true,
+    "wired_in_encode_gqa": true,
+    "wired_in_encode_deltanet": true,
+    "production_964_untouched": true,
+    "does_not_write_dense_w": true,
+    "workhorse_unchanged": true
+  },
+  "prior_art": {
+    "q80_command_buffers_before": 337,
+    "q80_command_buffers_after": 49,
+    "megakernel_8layer_f16": "measured 4.4x SLOWER; fusion is not automatically a win",
+    "note": "anchors, not re-derived in this run"
+  },
+  "gpu": {
+    "ok": true,
+    "exit_code": 0,
+    "wall_s": 18.480993709003087,
+    "binary": "/Users/scammermike/.claude-grok/worktrees/g012fuse-20260823-194039/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_dispatch_fusion",
+    "stderr_tail": "qwen38 dispatch fusion: open /Users/scammermike/models/qwen38-gravity-uniform-q4-v1 max_seq=128\nqwen38-decode opening Metal + 755 catalog tensors\nqwen38-decode upload 0/755\nqwen38-decode upload 50/755\nqwen38-decode upload 100/755\nqwen38-decode upload 150/755\nqwen38-decode upload 200/755\nqwen38-decode upload 250/755\nqwen38-decode upload 300/755\nqwen38-decode upload 350/755\nqwen38-decode upload 400/755\nqwen38-decode upload 450/755\nqwen38-decode upload 500/755\nqwen38-decode upload 550/755\nqwen38-decode upload 600/755\nqwen38-decode upload 650/755\nqwen38-decode upload 700/755\nqwen38-decode upload 750/755\nsession open 5.103s\nparity: MLP gate+up+swiglu layer 0\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\n  unfused=3 pair=1 swiglu=1 max_abs gate=0.000000044703484 up=0.000000029802322 act=0.0000000027939677\nparity: GQA QKV layer 3\n  unfused=3 fused=1 max_abs q=0 k=0 v=0\nparity: DeltaNet qkvz+ba layer 0\n  unfused=2 fused=1 max_abs qkvz=0 ba=0\ndispatch probe: unfused\ndispatch probe: mlp pair\ndispatch probe: mlp swiglu\ndispatch probe: mlp swiglu + qkv + dn\ndecode BEFORE (unfused) reps=3\n  rep 0: tok/s=Some(33.69115836664429) dispatches=Some(964) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\n  rep 1: tok/s=Some(33.75828130306345) dispatches=Some(964) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\n  rep 2: tok/s=Some(33.70118809224867) dispatches=Some(964) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\ndecode AFTER mlp swiglu reps=3\n  rep 0: tok/s=Some(35.20912902297307) dispatches=Some(836) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\n  rep 1: tok/s=Some(35.31294085705327) dispatches=Some(836) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\n  rep 2: tok/s=Some(35.1688235413071) dispatches=Some(836) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\ndecode AFTER mlp swiglu + qkv + dn reps=3\n  rep 0: tok/s=Some(35.666599385986174) dispatches=Some(756) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\n  rep 1: tok/s=Some(35.63879722623241) dispatches=Some(756) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\n  rep 2: tok/s=Some(35.7049486151875) dispatches=Some(756) new=16 text=\"<think>\\nThe user wants a detailed, prose explanation of how a compiler transforms a\"\nwrote /Users/scammermike/.claude-grok/worktrees/g012fuse-20260823-194039/receipts/headless/_dispatch_fusion_raw.json\n"
+  },
+  "verdict": "dispatches 964 -> 756 (cut 208); tok/s 33.717 -> 35.670 (faster); fused generate is coherent; mlp max_abs_diff=4.470348358154297e-08",
+  "gpu_ran": true,
+  "dispatch_probes": [
+    {
+      "id": "unfused",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 60735499,
+        "matches_theoretical": true,
+        "measured": 964,
+        "mlp_fusion": "off",
+        "sampled": 8678,
+        "theoretical": 964,
+        "wait_ns": 104294375
+      }
+    },
+    {
+      "id": "mlp_pair",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 27271500,
+        "matches_theoretical": true,
+        "measured": 900,
+        "mlp_fusion": "pair",
+        "sampled": 8678,
+        "theoretical": 900,
+        "wait_ns": 27672833
+      }
+    },
+    {
+      "id": "mlp_swiglu",
+      "probe": {
+        "fuse_dn_inproj": false,
+        "fuse_gqa_qkv": false,
+        "gpu_ns": 26957708,
+        "matches_theoretical": true,
+        "measured": 836,
+        "mlp_fusion": "swiglu",
+        "sampled": 8678,
+        "theoretical": 836,
+        "wait_ns": 27401000
+      }
+    },
+    {
+      "id": "mlp_swiglu_qkv_dn",
+      "probe": {
+        "fuse_dn_inproj": true,
+        "fuse_gqa_qkv": true,
+        "gpu_ns": 26760541,
+        "matches_theoretical": true,
+        "measured": 756,
+        "mlp_fusion": "swiglu",
+        "sampled": 8678,
+        "theoretical": 756,
+        "wait_ns": 27161459
+      }
+    }
+  ],
+  "raw_example": {
+    "artifact_root": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "counting": {
+      "after_mlp_pair": 900,
+      "after_mlp_swiglu": 836,
+      "after_mlp_swiglu_qkv_dn": 756,
+      "before": 964,
+      "command_buffers": 1,
+      "method": "TokenCommandBuffer.dispatch_count, one kernel launch = one dispatch, same as production_dispatches_per_token"
+    },
+    "decode": {
+      "mlp_swiglu": {
+        "decode_wall_ns_reps": [
+          426025875,
+          424773458,
+          426514125
+        ],
+        "dense_w_materialized": 0,
+        "dispatches_last_step_reps": [
+          836,
+          836,
+          836
+        ],
+        "fallbacks_reps": [
+          0,
+          0,
+          0
+        ],
+        "generated_text_all_reps": [
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a"
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+        "median_gpu_ns_per_token_reps": [
+          27164250,
+          27162208,
+          27220125
+        ],
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          58655,
+          15673,
+          314,
+          1204,
+          264,
+          18826,
+          27545,
+          264
+        ],
+        "new_token_ids_all_reps": [
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ]
+        ],
+        "reps": 3,
+        "tok_s_max": 35.31294085705327,
+        "tok_s_mean": 35.23029780711115,
+        "tok_s_min": 35.1688235413071,
+        "tok_s_reps": [
+          35.20912902297307,
+          35.31294085705327,
+          35.1688235413071
+        ]
+      },
+      "mlp_swiglu_qkv_dn": {
+        "decode_wall_ns_reps": [
+          420561541,
+          420889625,
+          420109833
+        ],
+        "dense_w_materialized": 0,
+        "dispatches_last_step_reps": [
+          756,
+          756,
+          756
+        ],
+        "fallbacks_reps": [
+          0,
+          0,
+          0
+        ],
+        "generated_text_all_reps": [
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a"
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+        "median_gpu_ns_per_token_reps": [
+          26880625,
+          26906916,
+          26801249
+        ],
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          58655,
+          15673,
+          314,
+          1204,
+          264,
+          18826,
+          27545,
+          264
+        ],
+        "new_token_ids_all_reps": [
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ]
+        ],
+        "reps": 3,
+        "tok_s_max": 35.7049486151875,
+        "tok_s_mean": 35.67011507580202,
+        "tok_s_min": 35.63879722623241,
+        "tok_s_reps": [
+          35.666599385986174,
+          35.63879722623241,
+          35.7049486151875
+        ]
+      },
+      "unfused": {
+        "decode_wall_ns_reps": [
+          445220667,
+          444335417,
+          445088166
+        ],
+        "dense_w_materialized": 0,
+        "dispatches_last_step_reps": [
+          964,
+          964,
+          964
+        ],
+        "fallbacks_reps": [
+          0,
+          0,
+          0
+        ],
+        "generated_text_all_reps": [
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+          "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a"
+        ],
+        "generated_text_verbatim": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a",
+        "median_gpu_ns_per_token_reps": [
+          28406958,
+          28371874,
+          28373499
+        ],
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          58655,
+          15673,
+          314,
+          1204,
+          264,
+          18826,
+          27545,
+          264
+        ],
+        "new_token_ids_all_reps": [
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ],
+          [
+            248068,
+            198,
+            760,
+            1156,
+            6587,
+            264,
+            11346,
+            11,
+            58655,
+            15673,
+            314,
+            1204,
+            264,
+            18826,
+            27545,
+            264
+          ]
+        ],
+        "reps": 3,
+        "tok_s_max": 33.75828130306345,
+        "tok_s_mean": 33.716875920652136,
+        "tok_s_min": 33.69115836664429,
+        "tok_s_reps": [
+          33.69115836664429,
+          33.75828130306345,
+          33.70118809224867
+        ]
+      }
+    },
+    "dense_w_materialized": 0,
+    "did_not_load_second_27b": true,
+    "did_not_write_under_models": true,
+    "dispatch_probes": [
+      {
+        "id": "unfused",
+        "probe": {
+          "fuse_dn_inproj": false,
+          "fuse_gqa_qkv": false,
+          "gpu_ns": 60735499,
+          "matches_theoretical": true,
+          "measured": 964,
+          "mlp_fusion": "off",
+          "sampled": 8678,
+          "theoretical": 964,
+          "wait_ns": 104294375
+        }
+      },
+      {
+        "id": "mlp_pair",
+        "probe": {
+          "fuse_dn_inproj": false,
+          "fuse_gqa_qkv": false,
+          "gpu_ns": 27271500,
+          "matches_theoretical": true,
+          "measured": 900,
+          "mlp_fusion": "pair",
+          "sampled": 8678,
+          "theoretical": 900,
+          "wait_ns": 27672833
+        }
+      },
+      {
+        "id": "mlp_swiglu",
+        "probe": {
+          "fuse_dn_inproj": false,
+          "fuse_gqa_qkv": false,
+          "gpu_ns": 26957708,
+          "matches_theoretical": true,
+          "measured": 836,
+          "mlp_fusion": "swiglu",
+          "sampled": 8678,
+          "theoretical": 836,
+          "wait_ns": 27401000
+        }
+      },
+      {
+        "id": "mlp_swiglu_qkv_dn",
+        "probe": {
+          "fuse_dn_inproj": true,
+          "fuse_gqa_qkv": true,
+          "gpu_ns": 26760541,
+          "matches_theoretical": true,
+          "measured": 756,
+          "mlp_fusion": "swiglu",
+          "sampled": 8678,
+          "theoretical": 756,
+          "wait_ns": 27161459
+        }
+      }
+    ],
+    "expanded_to_float_gemv": 0,
+    "expanded_to_q4": 0,
+    "fusions_attempted": [
+      "gate_up_pair (same-row dual geo_tpr64, still a SwiGLU dispatch)",
+      "gate_up_swiglu (same-row dual + silu(g)*up in-register)",
+      "gqa_qkv concat geo_tpr64 (3 matvecs -> 1, 16 GQA layers)",
+      "dn_qkvz_ba concat geo_tpr64 (2 matvecs -> 1, 48 DeltaNet layers)"
+    ],
+    "generated_at": "unix:1787531106",
+    "git_head": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+    "kernels": [
+      "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+    ],
+    "max_new_tokens": 16,
+    "parity": {
+      "dn_qkvz_ba": {
+        "dense_w_materialized": 0,
+        "fused_dispatches": 1,
+        "fused_pair_dispatches": 1,
+        "fused_pair_gpu_ns": 118125,
+        "fused_swiglu_dispatches": 1,
+        "fused_swiglu_gpu_ns": 118125,
+        "fusion": "dn_qkvz_ba",
+        "layer": 0,
+        "max_abs_diff": 0.0,
+        "max_abs_diff_act": 0.0,
+        "max_abs_diff_gate": 0.0,
+        "max_abs_diff_up": 0.0,
+        "unfused_dispatches": 2,
+        "unfused_gpu_ns": 138374
+      },
+      "gqa_qkv": {
+        "dense_w_materialized": 0,
+        "fused_dispatches": 1,
+        "fused_pair_dispatches": 1,
+        "fused_pair_gpu_ns": 106249,
+        "fused_swiglu_dispatches": 1,
+        "fused_swiglu_gpu_ns": 106249,
+        "fusion": "gqa_qkv",
+        "layer": 3,
+        "max_abs_diff": 0.0,
+        "max_abs_diff_act": 0.0,
+        "max_abs_diff_gate": 0.0,
+        "max_abs_diff_up": 0.0,
+        "unfused_dispatches": 3,
+        "unfused_gpu_ns": 112791
+      },
+      "mlp_gate_up_swiglu": {
+        "dense_w_materialized": 0,
+        "fused_dispatches": 1,
+        "fused_pair_dispatches": 1,
+        "fused_pair_gpu_ns": 244208,
+        "fused_swiglu_dispatches": 1,
+        "fused_swiglu_gpu_ns": 225124,
+        "fusion": "gate_up_swiglu",
+        "layer": 0,
+        "max_abs_diff": 4.470348358154297e-08,
+        "max_abs_diff_act": 2.7939677238464355e-09,
+        "max_abs_diff_gate": 4.470348358154297e-08,
+        "max_abs_diff_up": 2.9802322387695312e-08,
+        "unfused_dispatches": 3,
+        "unfused_gpu_ns": 280375
+      }
+    },
+    "prior_art": {
+      "megakernel_8layer_f16": "measured 4.4x SLOWER; fusion is not automatically a win",
+      "note": "those numbers are anchors, not re-derived in this run",
+      "q80_command_buffers_after": 49,
+      "q80_command_buffers_before": 337
+    },
+    "production_path": "qwen38_uniform_q4_fused",
+    "prompt": "Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.",
+    "prompt_ids": [
+      248045,
+      846,
+      198,
+      814,
+      20139,
+      11,
+      303,
+      18541,
+      58655,
+      321,
+      506,
+      2984,
+      11,
+      1204,
+      264,
+      18826,
+      10263,
+      264,
+      364,
+      58621,
+      1083,
+      6557,
+      9714,
+      321,
+      1179,
+      1083,
+      5484,
+      1970,
+      13,
+      248046,
+      198,
+      248045,
+      74455,
+      198
+    ],
+    "question": "Does fusing operators cut dispatches per token below 964 while staying coherent?",
+    "rendered_prompt": "<|im_start|>user\nExplain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.<|im_end|>\n<|im_start|>assistant\n",
+    "schema": "hawking.headless.noetic_dispatch_fusion.v1",
+    "session_open_s": 5.103082041,
+    "skip_decode": false,
+    "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+  }
+}

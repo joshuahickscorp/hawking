@@ -1,0 +1,1980 @@
+{
+ "schema": "hawking.headless.production_bench.v1",
+ "generated_at": "2026-08-24T03:44:18Z",
+ "git_head": "eb3525e36a999ac581e89fb948d2d9e4cfffdbaf",
+ "elapsed_s": 384.701,
+ "obligation": "N007 \u2014 given the ~1.32x concurrency ceiling, what actually maximizes verified accepted useful work per wall second?",
+ "question": "Which configuration of {q4 incumbent, sealed parent A} \u00d7 {c=1,2,4} (and c=8 only if physically meaningful) maximizes VERIFIED accepted Hawking WorkUnits per hour?",
+ "answer": "Winner is q4_incumbent c=4 concurrent_independent at 669.2 verified WUs/hour (aggregate 26.60 tok/s, TTFT p50 4.883s). Highest aggregate tok/s was parent_a c=4 concurrent_independent at 29.03 tok/s but only 491.5 verified WUs/hour \u2014 TPS is not the ranking quantity. Reclaimed bytes did not convert into tokens or verified WUs. Parent achieved 231.5 GB/s vs q4 289.9 GB/s. The affine2 fused kernel did not keep the memory system fed at the incumbent's 468.9 GB/s; ALU / scale-bias / ceremony on the 756-dispatch graph ate the bandwidth the 3.14 EBPW pack theoretically returned. Concurrent sessions cannot spend bytes the kernel is not streaming. c=8 skipped: c=8 is not physically meaningful on this box: one shared body is already bandwidth-bound (GPU_LEDGER 468.9 GB/s streaming 13.62 GB/token). NOETIC_MULTISESSION concurrent_independent scaled 1.000 -> 1.325 -> 1.323; c=4 did not beat c=2. Extra streams past the memory-system delivery limit split the same tokens, stretch TTFT, and cannot raise verified WUs/hour. 6 measured cells; completed vs verified is the gap the bench exists to see.",
+ "ranking_quantity": "verified_accepted_workunits_per_hour",
+ "did_not_load_second_27b": true,
+ "did_not_write_ascent_or_campaign": true,
+ "did_not_mutate_parent": true,
+ "parent_immutable": {
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "catalog_present": true,
+  "mix_report_present": true,
+  "catalog_mtime": 1787540041.5747533,
+  "writable_check": "driver only reads; python never opens the catalog for write",
+  "outside_worktree": true
+ },
+ "workunits": [
+  {
+   "id": "wu_fact_france",
+   "role": "FACTUAL",
+   "kind": "contains",
+   "expected": "Paris"
+  },
+  {
+   "id": "wu_fact_arith",
+   "role": "REASONING",
+   "kind": "number",
+   "expected": "323"
+  },
+  {
+   "id": "wu_fact_tungsten",
+   "role": "FACTUAL",
+   "kind": "contains",
+   "expected": "tungsten"
+  },
+  {
+   "id": "wu_reason_expr",
+   "role": "REASONING",
+   "kind": "number",
+   "expected": "86"
+  },
+  {
+   "id": "wu_proc_reverse",
+   "role": "PROCEDURAL",
+   "kind": "contains",
+   "expected": "ananab"
+  },
+  {
+   "id": "wu_proc_count",
+   "role": "PROCEDURAL",
+   "kind": "number",
+   "expected": "2"
+  },
+  {
+   "id": "wu_lang_are",
+   "role": "LANGUAGE",
+   "kind": "word",
+   "expected": "are"
+  },
+  {
+   "id": "wu_tool_json_tokyo",
+   "role": "TOOL",
+   "kind": "json_city",
+   "expected": "Tokyo"
+  },
+  {
+   "id": "wu_code_dedupe",
+   "role": "CODE",
+   "kind": "python_fn",
+   "expected": "dedupe"
+  },
+  {
+   "id": "wu_mutation_add",
+   "role": "MUTATION",
+   "kind": "json_mutation_add",
+   "expected": "a + b"
+  },
+  {
+   "id": "wu_json_exact",
+   "role": "TOOL",
+   "kind": "json_keys",
+   "expected": "kind,content,operations,tests"
+  },
+  {
+   "id": "wu_reason_modules",
+   "role": "REASONING",
+   "kind": "number",
+   "expected": "21"
+  },
+  {
+   "id": "wu_token_generator",
+   "role": "CONTROL",
+   "kind": "json_city",
+   "expected": "THIS_STRING_MUST_NOT_MATCH"
+  }
+ ],
+ "n_workunits": 13,
+ "negative_control": "wu_token_generator",
+ "gpu_gate": {
+  "device": "Apple M3 Ultra",
+  "source": "MTLDevice.recommendedMaxWorkingSetSize (measured)",
+  "recommendedMaxWorkingSetSize_gib": 77.760009765625,
+  "hasUnifiedMemory": true
+ },
+ "finalists": {
+  "q4_incumbent": {
+   "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+   "complete_physical_bpw": 4.252735126866492,
+   "active_bytes_per_token": 13622266960,
+   "dispatches_per_token": 964,
+   "fusion": "off",
+   "resident_weight_bytes": 14297675776,
+   "rss_after_load_bytes": 15122366464,
+   "rss_final_bytes": 16428269568,
+   "metal_final": {
+    "current_allocated_size": 16106799104,
+    "has_unified_memory": true,
+    "recommended_max_working_set_size": 83494174720
+   },
+   "attached_sessions": 8,
+   "weights_ptr_shared": true,
+   "theoretical_dispatches": 964
+  },
+  "parent_a": {
+   "artifact": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "complete_physical_bpw": 3.139300850311054,
+   "active_bytes_per_token": 9878901136,
+   "dispatches_per_token": 756,
+   "fusion": "parent (mlp swiglu + gqa qkv + dn inproj)",
+   "resident_weight_bytes": 10554259456,
+   "rss_after_load_bytes": 11329028096,
+   "rss_final_bytes": 12679806976,
+   "metal_final": {
+    "current_allocated_size": 12363382784,
+    "has_unified_memory": true,
+    "recommended_max_working_set_size": 83494174720
+   },
+   "attached_sessions": 8,
+   "weights_ptr_shared": true,
+   "theoretical_dispatches": 756
+  }
+ },
+ "workspace": {
+  "max_seq_len": 512,
+  "activation_bytes": 1691396,
+  "deltanet_state_bytes": 156893184,
+  "gqa_kv_bytes": 67108864,
+  "total_bytes": 225693444
+ },
+ "memory_pressure": {
+  "kind": "MEASURED",
+  "page_size_bytes": 16384,
+  "free_bytes": 18970329088,
+  "compressor_bytes": 1152794624,
+  "vm_stat": {
+   "pages_free": 1157857,
+   "pages_active": 2070783,
+   "pages_inactive": 2528865,
+   "pages_speculative": 26160,
+   "pages_wired": 383957,
+   "pages_purgeable": 36042,
+   "pages_compressor": 70361
+  },
+  "free_percent": null,
+  "pressure": null,
+  "command": "vm_stat; memory_pressure",
+  "note": "Host unified-memory pressure, not a Metal occupancy counter. Compressor pages growing while free RAM looks fine is the swap-risk signal."
+ },
+ "occupancy": {
+  "hardware_occupancy_counter": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "fraction",
+   "command": "MTLDevice.counterSets",
+   "absent_reason": "MTLDevice.counterSets on this Apple M3 Ultra contains only the 'timestamp' set. There is no occupancy or SIMD-utilization counter. Launch-geometry occupancy is DERIVED, not MEASURED."
+  },
+  "launch_geometry_threadgroups_per_core": {
+   "value": 145.06666666666666,
+   "kind": "DERIVED",
+   "unit": "threadgroups/core",
+   "command": "GPU_LEDGER.json fields.active_threadgroups / 60",
+   "absent_reason": null,
+   "note": "Workhorse gate_proj launch ceil(17408/2)=8704 TGs of 128 threads on 60 cores. Bandwidth-saturated, not occupancy-starved. Not re-derived."
+  },
+  "metal_working_set": {
+   "q4_final": {
+    "current_allocated_size": 16106799104,
+    "has_unified_memory": true,
+    "recommended_max_working_set_size": 83494174720
+   },
+   "parent_final": {
+    "current_allocated_size": 12363382784,
+    "has_unified_memory": true,
+    "recommended_max_working_set_size": 83494174720
+   },
+   "kind": "MEASURED",
+   "note": "MTLDevice.currentAllocatedSize / recommendedMaxWorkingSetSize in-process"
+  }
+ },
+ "c8": {
+  "ran": false,
+  "run": false,
+  "reason": "c=8 is not physically meaningful on this box: one shared body is already bandwidth-bound (GPU_LEDGER 468.9 GB/s streaming 13.62 GB/token). NOETIC_MULTISESSION concurrent_independent scaled 1.000 -> 1.325 -> 1.323; c=4 did not beat c=2. Extra streams past the memory-system delivery limit split the same tokens, stretch TTFT, and cannot raise verified WUs/hour.",
+  "prior_ceiling": 1.323,
+  "measured_c2_vs_c1": 1.097766878529111,
+  "measured_c4_vs_c1": 1.2499596868915244,
+  "c4_over_c2": 1.1386385500775313,
+  "memory_would_fit": true,
+  "memory_note": "Workspace is ~225 MiB/session at seq 512; c=8 is ~1.8 GiB extra on a 13\u201314 GiB body (same 1.04x-class resident ratio as c=4). Memory is not the reason c=8 is skipped. Bandwidth is."
+ },
+ "prior_ceiling_not_rederived": {
+  "concurrent_independent": {
+   "1": 1.0,
+   "2": 1.325,
+   "4": 1.323
+  },
+  "sequential_per_session": {
+   "1": 1.0,
+   "2": 1.002,
+   "4": 0.989
+  }
+ },
+ "cells": [
+  {
+   "artifact": "q4_incumbent",
+   "topology": "concurrent_independent",
+   "concurrency": 1,
+   "wall_s": 67.24615725,
+   "completed_workunits": 13,
+   "verified_workunits": 10,
+   "truncated_workunits": 1,
+   "rejected_workunits": 3,
+   "verified_ids": [
+    "wu_fact_france",
+    "wu_fact_arith",
+    "wu_fact_tungsten",
+    "wu_reason_expr",
+    "wu_proc_reverse",
+    "wu_proc_count",
+    "wu_lang_are",
+    "wu_tool_json_tokyo",
+    "wu_code_dedupe",
+    "wu_json_exact"
+   ],
+   "tokens": 1431,
+   "aggregate_tok_s": 21.280026376525775,
+   "per_stream_tok_s_shared_wall": [
+    21.280026376525775
+   ],
+   "ttft_s": [
+    1.584676584,
+    1.476041583,
+    1.512997333,
+    1.6973995,
+    1.426314042,
+    1.542511041,
+    1.637074333,
+    1.971564625,
+    1.808203458,
+    3.261556958,
+    1.784141583,
+    2.332884083,
+    1.538157375
+   ],
+   "ttft_from_batch_start_s": [
+    1.584676626,
+    4.804508375,
+    8.880980833,
+    13.486670875,
+    18.195482667,
+    22.473446083,
+    28.6642475,
+    32.450465042,
+    36.671356791,
+    41.647461791,
+    49.313161125,
+    53.971705375,
+    61.395462542
+   ],
+   "ttft_p50_s": 1.637074333,
+   "ttft_p95_s": 2.7043532329999986,
+   "token_latency_p50_ms": 30.640625,
+   "token_latency_p95_ms": 31.76377945,
+   "fallbacks": 0,
+   "dispatches_last_step": [
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964
+   ],
+   "dispatch_mode": 964,
+   "active_bytes_per_token": 13622266960,
+   "kv_bytes": 67108864,
+   "kv_bytes_one_session": 67108864,
+   "achieved_gb_s": 289.8822002168756,
+   "completed_wu_per_hour": 695.9505481631072,
+   "verified_wu_per_hour": 535.3465755100824,
+   "verifier_throughput_wu_per_hour": 695.9505481631072,
+   "accepted_wu_per_hour": 535.3465755100824,
+   "concurrency_slowdown": {
+    "aggregate_vs_c1": 1.0,
+    "vs_linear": 1.0
+   },
+   "metal_current_allocated_size": 16106799104,
+   "metal_working_set_occupancy": 0.19290925574166812,
+   "rss_after_cell_bytes": 16429580288,
+   "workunit_ledger": [
+    {
+     "id": "wu_fact_france",
+     "n_new_tokens": 58,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_france",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_fact_arith",
+     "n_new_tokens": 85,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_arith",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_fact_tungsten",
+     "n_new_tokens": 95,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_tungsten",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_reason_expr",
+     "n_new_tokens": 107,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_expr",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_proc_reverse",
+     "n_new_tokens": 90,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_reverse",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_proc_count",
+     "n_new_tokens": 149,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_count",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_lang_are",
+     "n_new_tokens": 56,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_lang_are",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "word",
+      "role": "LANGUAGE"
+     }
+    },
+    {
+     "id": "wu_tool_json_tokyo",
+     "n_new_tokens": 80,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_tool_json_tokyo",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_city",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_code_dedupe",
+     "n_new_tokens": 57,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_code_dedupe",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "python_fn",
+      "role": "CODE"
+     }
+    },
+    {
+     "id": "wu_mutation_add",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_mutation_add",
+      "accepted": false,
+      "truncated": false,
+      "reason": "mutation JSON did not rewrite a - b to a + b on calc.py",
+      "kind": "json_mutation_add",
+      "role": "MUTATION"
+     }
+    },
+    {
+     "id": "wu_json_exact",
+     "n_new_tokens": 78,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_json_exact",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_keys",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_reason_modules",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_modules",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_token_generator",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_token_generator",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON city field missing or wrong",
+      "kind": "json_city",
+      "role": "CONTROL"
+     }
+    }
+   ]
+  },
+  {
+   "artifact": "q4_incumbent",
+   "topology": "concurrent_independent",
+   "concurrency": 2,
+   "wall_s": 61.257229167,
+   "completed_workunits": 13,
+   "verified_workunits": 10,
+   "truncated_workunits": 1,
+   "rejected_workunits": 3,
+   "verified_ids": [
+    "wu_fact_france",
+    "wu_fact_arith",
+    "wu_fact_tungsten",
+    "wu_reason_expr",
+    "wu_proc_reverse",
+    "wu_proc_count",
+    "wu_lang_are",
+    "wu_tool_json_tokyo",
+    "wu_code_dedupe",
+    "wu_json_exact"
+   ],
+   "tokens": 1431,
+   "aggregate_tok_s": 23.360508130375848,
+   "per_stream_tok_s_shared_wall": [
+    10.21920201929789,
+    13.141306111077958
+   ],
+   "ttft_s": [
+    2.182834375,
+    2.272795,
+    2.330099542,
+    2.617890041,
+    2.175647417,
+    2.334914625,
+    2.43330175,
+    2.867719,
+    2.797641042,
+    5.022122375,
+    3.838771625,
+    5.077230375,
+    1.509045333
+   ],
+   "ttft_from_batch_start_s": [
+    2.182834417,
+    2.272795042,
+    8.070117292,
+    8.357907791,
+    15.200324209,
+    15.359591417,
+    23.667167208,
+    24.101584458,
+    30.01467625,
+    32.239157583,
+    42.10691275,
+    43.3453715,
+    55.440384041
+   ],
+   "ttft_p50_s": 2.43330175,
+   "ttft_p95_s": 5.044165575000001,
+   "token_latency_p50_ms": 45.9314165,
+   "token_latency_p95_ms": 79.16586249999999,
+   "fallbacks": 0,
+   "dispatches_last_step": [
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964
+   ],
+   "dispatch_mode": 964,
+   "active_bytes_per_token": 13622266960,
+   "kv_bytes": 134217728,
+   "kv_bytes_one_session": 67108864,
+   "achieved_gb_s": 318.2230780732303,
+   "completed_wu_per_hour": 763.9914608676378,
+   "verified_wu_per_hour": 587.6857391289522,
+   "verifier_throughput_wu_per_hour": 763.9914608676378,
+   "accepted_wu_per_hour": 587.6857391289522,
+   "concurrency_slowdown": {
+    "aggregate_vs_c1": 1.097766878529111,
+    "vs_linear": 0.5488834392645555
+   },
+   "metal_current_allocated_size": 16106799104,
+   "metal_working_set_occupancy": 0.19290925574166812,
+   "rss_after_cell_bytes": 16395698176,
+   "workunit_ledger": [
+    {
+     "id": "wu_fact_france",
+     "n_new_tokens": 58,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_france",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_fact_arith",
+     "n_new_tokens": 85,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_arith",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_fact_tungsten",
+     "n_new_tokens": 95,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_tungsten",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_reason_expr",
+     "n_new_tokens": 107,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_expr",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_proc_reverse",
+     "n_new_tokens": 90,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_reverse",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_proc_count",
+     "n_new_tokens": 149,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_count",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_lang_are",
+     "n_new_tokens": 56,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_lang_are",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "word",
+      "role": "LANGUAGE"
+     }
+    },
+    {
+     "id": "wu_tool_json_tokyo",
+     "n_new_tokens": 80,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_tool_json_tokyo",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_city",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_code_dedupe",
+     "n_new_tokens": 57,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_code_dedupe",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "python_fn",
+      "role": "CODE"
+     }
+    },
+    {
+     "id": "wu_mutation_add",
+     "n_new_tokens": 192,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_mutation_add",
+      "accepted": false,
+      "truncated": false,
+      "reason": "mutation JSON did not rewrite a - b to a + b on calc.py",
+      "kind": "json_mutation_add",
+      "role": "MUTATION"
+     }
+    },
+    {
+     "id": "wu_json_exact",
+     "n_new_tokens": 78,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_json_exact",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_keys",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_reason_modules",
+     "n_new_tokens": 192,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_modules",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_token_generator",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_token_generator",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON city field missing or wrong",
+      "kind": "json_city",
+      "role": "CONTROL"
+     }
+    }
+   ]
+  },
+  {
+   "artifact": "q4_incumbent",
+   "topology": "concurrent_independent",
+   "concurrency": 4,
+   "wall_s": 53.798660833,
+   "completed_workunits": 13,
+   "verified_workunits": 10,
+   "truncated_workunits": 1,
+   "rejected_workunits": 3,
+   "verified_ids": [
+    "wu_fact_france",
+    "wu_fact_arith",
+    "wu_fact_tungsten",
+    "wu_reason_expr",
+    "wu_proc_reverse",
+    "wu_proc_count",
+    "wu_lang_are",
+    "wu_tool_json_tokyo",
+    "wu_code_dedupe",
+    "wu_json_exact"
+   ],
+   "tokens": 1431,
+   "aggregate_tok_s": 26.59917510664554,
+   "per_stream_tok_s_shared_wall": [
+    7.379365840208441,
+    7.918412715185884,
+    4.25661152999429,
+    7.044785021256925
+   ],
+   "ttft_s": [
+    4.312962917,
+    4.522353959,
+    4.659561083,
+    5.203184542,
+    4.378770416,
+    4.674170833,
+    4.883462167,
+    5.762866583,
+    5.661610083,
+    10.08339625,
+    5.637606583,
+    7.290525917,
+    1.513241458
+   ],
+   "ttft_from_batch_start_s": [
+    4.312962917,
+    4.522353959,
+    4.659561083,
+    5.203184542,
+    17.116256166,
+    17.411656583,
+    17.620947917,
+    18.500352333,
+    32.428198208,
+    36.849984375,
+    32.404194708,
+    34.057114042,
+    47.960975041
+   ],
+   "ttft_p50_s": 4.883462167,
+   "ttft_p95_s": 8.407674050199995,
+   "token_latency_p50_ms": 69.960229,
+   "token_latency_p95_ms": 115.51788565,
+   "fallbacks": 0,
+   "dispatches_last_step": [
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964,
+    964
+   ],
+   "dispatch_mode": 964,
+   "active_bytes_per_token": 13622266960,
+   "kv_bytes": 268435456,
+   "kv_bytes_one_session": 67108864,
+   "achieved_gb_s": 362.34106421851203,
+   "completed_wu_per_hour": 869.9101292739422,
+   "verified_wu_per_hour": 669.1616379030324,
+   "verifier_throughput_wu_per_hour": 869.9101292739422,
+   "accepted_wu_per_hour": 669.1616379030324,
+   "concurrency_slowdown": {
+    "aggregate_vs_c1": 1.2499596868915244,
+    "vs_linear": 0.3124899217228811
+   },
+   "metal_current_allocated_size": 16106799104,
+   "metal_working_set_occupancy": 0.19290925574166812,
+   "rss_after_cell_bytes": 16428269568,
+   "workunit_ledger": [
+    {
+     "id": "wu_fact_france",
+     "n_new_tokens": 58,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_france",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_fact_arith",
+     "n_new_tokens": 85,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_arith",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_fact_tungsten",
+     "n_new_tokens": 95,
+     "session_index": 2,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_tungsten",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_reason_expr",
+     "n_new_tokens": 107,
+     "session_index": 3,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_expr",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_proc_reverse",
+     "n_new_tokens": 90,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_reverse",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_proc_count",
+     "n_new_tokens": 149,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_count",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_lang_are",
+     "n_new_tokens": 56,
+     "session_index": 2,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_lang_are",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "word",
+      "role": "LANGUAGE"
+     }
+    },
+    {
+     "id": "wu_tool_json_tokyo",
+     "n_new_tokens": 80,
+     "session_index": 3,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_tool_json_tokyo",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_city",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_code_dedupe",
+     "n_new_tokens": 57,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_code_dedupe",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "python_fn",
+      "role": "CODE"
+     }
+    },
+    {
+     "id": "wu_mutation_add",
+     "n_new_tokens": 192,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_mutation_add",
+      "accepted": false,
+      "truncated": false,
+      "reason": "mutation JSON did not rewrite a - b to a + b on calc.py",
+      "kind": "json_mutation_add",
+      "role": "MUTATION"
+     }
+    },
+    {
+     "id": "wu_json_exact",
+     "n_new_tokens": 78,
+     "session_index": 2,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_json_exact",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_keys",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_reason_modules",
+     "n_new_tokens": 192,
+     "session_index": 3,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_modules",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_token_generator",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_token_generator",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON city field missing or wrong",
+      "kind": "json_city",
+      "role": "CONTROL"
+     }
+    }
+   ]
+  },
+  {
+   "artifact": "parent_a",
+   "topology": "concurrent_independent",
+   "concurrency": 1,
+   "wall_s": 72.573512792,
+   "completed_workunits": 13,
+   "verified_workunits": 8,
+   "truncated_workunits": 2,
+   "rejected_workunits": 5,
+   "verified_ids": [
+    "wu_fact_france",
+    "wu_fact_arith",
+    "wu_fact_tungsten",
+    "wu_reason_expr",
+    "wu_proc_count",
+    "wu_lang_are",
+    "wu_tool_json_tokyo",
+    "wu_reason_modules"
+   ],
+   "tokens": 1701,
+   "aggregate_tok_s": 23.4383032398496,
+   "per_stream_tok_s_shared_wall": [
+    23.4383032398496
+   ],
+   "ttft_s": [
+    1.452794417,
+    1.405341583,
+    1.435560833,
+    1.602760625,
+    1.358171625,
+    1.476571208,
+    1.542400416,
+    1.810852208,
+    1.776314375,
+    3.178244792,
+    1.736842125,
+    2.265076792,
+    1.476622459
+   ],
+   "ttft_from_batch_start_s": [
+    1.452794459,
+    4.577501083,
+    8.177847083,
+    14.121884709,
+    18.652412709,
+    25.790458208,
+    29.86351475,
+    35.745596167,
+    39.470017125,
+    48.354402167,
+    55.832477625,
+    59.711858626,
+    66.898211418
+   ],
+   "ttft_p50_s": 1.542400416,
+   "ttft_p95_s": 2.6303439919999985,
+   "token_latency_p50_ms": 29.596000500000002,
+   "token_latency_p95_ms": 30.5108329,
+   "fallbacks": 0,
+   "dispatches_last_step": [
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756
+   ],
+   "dispatch_mode": 756,
+   "active_bytes_per_token": 9878901136,
+   "kv_bytes": 67108864,
+   "kv_bytes_one_session": 67108864,
+   "achieved_gb_s": 231.54468050206268,
+   "completed_wu_per_hour": 644.8633695619995,
+   "verified_wu_per_hour": 396.8389966535382,
+   "verifier_throughput_wu_per_hour": 644.8633695619995,
+   "accepted_wu_per_hour": 396.8389966535382,
+   "concurrency_slowdown": {
+    "aggregate_vs_c1": 1.0,
+    "vs_linear": 1.0
+   },
+   "metal_current_allocated_size": 12363382784,
+   "metal_working_set_occupancy": 0.14807479474419555,
+   "rss_after_cell_bytes": 12677660672,
+   "workunit_ledger": [
+    {
+     "id": "wu_fact_france",
+     "n_new_tokens": 60,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_france",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_fact_arith",
+     "n_new_tokens": 75,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_arith",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_fact_tungsten",
+     "n_new_tokens": 149,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_tungsten",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_reason_expr",
+     "n_new_tokens": 109,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_expr",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_proc_reverse",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_reverse",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_proc_count",
+     "n_new_tokens": 87,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_count",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_lang_are",
+     "n_new_tokens": 138,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_lang_are",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "word",
+      "role": "LANGUAGE"
+     }
+    },
+    {
+     "id": "wu_tool_json_tokyo",
+     "n_new_tokens": 67,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_tool_json_tokyo",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_city",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_code_dedupe",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_code_dedupe",
+      "accepted": false,
+      "truncated": false,
+      "reason": "no python code block",
+      "kind": "python_fn",
+      "role": "CODE"
+     }
+    },
+    {
+     "id": "wu_mutation_add",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_mutation_add",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_json_exact",
+     "n_new_tokens": 56,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_json_exact",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON missing ['kind', 'content', 'operations', 'tests']",
+      "kind": "json_keys",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_reason_modules",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_modules",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_token_generator",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_token_generator",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON city field missing or wrong",
+      "kind": "json_city",
+      "role": "CONTROL"
+     }
+    }
+   ]
+  },
+  {
+   "artifact": "parent_a",
+   "topology": "concurrent_independent",
+   "concurrency": 2,
+   "wall_s": 61.325302959,
+   "completed_workunits": 13,
+   "verified_workunits": 8,
+   "truncated_workunits": 2,
+   "rejected_workunits": 5,
+   "verified_ids": [
+    "wu_fact_france",
+    "wu_fact_arith",
+    "wu_fact_tungsten",
+    "wu_reason_expr",
+    "wu_proc_count",
+    "wu_lang_are",
+    "wu_tool_json_tokyo",
+    "wu_reason_modules"
+   ],
+   "tokens": 1701,
+   "aggregate_tok_s": 27.737327300889657,
+   "per_stream_tok_s_shared_wall": [
+    15.964046694633142,
+    11.773280606256515
+   ],
+   "ttft_s": [
+    2.18066675,
+    2.236925416,
+    2.313394166,
+    2.593953791,
+    2.211226542,
+    2.3671515,
+    2.434431667,
+    2.881567042,
+    2.748112625,
+    4.950121125,
+    2.811666584,
+    3.647044583,
+    1.474493208
+   ],
+   "ttft_from_batch_start_s": [
+    2.180666792,
+    2.236925458,
+    7.704248625,
+    7.98480825,
+    16.247662542,
+    16.4035875,
+    25.946196542,
+    26.393331917,
+    33.96829,
+    36.1702985,
+    46.990105209,
+    47.825483208,
+    55.617652792
+   ],
+   "ttft_p50_s": 2.434431667,
+   "ttft_p95_s": 4.168275199799998,
+   "token_latency_p50_ms": 45.4228125,
+   "token_latency_p95_ms": 47.63653575,
+   "fallbacks": 0,
+   "dispatches_last_step": [
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756
+   ],
+   "dispatch_mode": 756,
+   "active_bytes_per_token": 9878901136,
+   "kv_bytes": 134217728,
+   "kv_bytes_one_session": 67108864,
+   "achieved_gb_s": 274.0143141823626,
+   "completed_wu_per_hour": 763.143396638234,
+   "verified_wu_per_hour": 469.6267056235286,
+   "verifier_throughput_wu_per_hour": 763.143396638234,
+   "accepted_wu_per_hour": 469.6267056235286,
+   "concurrency_slowdown": {
+    "aggregate_vs_c1": 1.1834187405567351,
+    "vs_linear": 0.5917093702783676
+   },
+   "metal_current_allocated_size": 12363382784,
+   "metal_working_set_occupancy": 0.14807479474419555,
+   "rss_after_cell_bytes": 12651413504,
+   "workunit_ledger": [
+    {
+     "id": "wu_fact_france",
+     "n_new_tokens": 60,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_france",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_fact_arith",
+     "n_new_tokens": 75,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_arith",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_fact_tungsten",
+     "n_new_tokens": 149,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_tungsten",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_reason_expr",
+     "n_new_tokens": 109,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_expr",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_proc_reverse",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_reverse",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_proc_count",
+     "n_new_tokens": 87,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_count",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_lang_are",
+     "n_new_tokens": 138,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_lang_are",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "word",
+      "role": "LANGUAGE"
+     }
+    },
+    {
+     "id": "wu_tool_json_tokyo",
+     "n_new_tokens": 67,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_tool_json_tokyo",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_city",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_code_dedupe",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_code_dedupe",
+      "accepted": false,
+      "truncated": false,
+      "reason": "no python code block",
+      "kind": "python_fn",
+      "role": "CODE"
+     }
+    },
+    {
+     "id": "wu_mutation_add",
+     "n_new_tokens": 192,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_mutation_add",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_json_exact",
+     "n_new_tokens": 56,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_json_exact",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON missing ['kind', 'content', 'operations', 'tests']",
+      "kind": "json_keys",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_reason_modules",
+     "n_new_tokens": 192,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_modules",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_token_generator",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_token_generator",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON city field missing or wrong",
+      "kind": "json_city",
+      "role": "CONTROL"
+     }
+    }
+   ]
+  },
+  {
+   "artifact": "parent_a",
+   "topology": "concurrent_independent",
+   "concurrency": 4,
+   "wall_s": 58.59753975,
+   "completed_workunits": 13,
+   "verified_workunits": 8,
+   "truncated_workunits": 2,
+   "rejected_workunits": 5,
+   "verified_ids": [
+    "wu_fact_france",
+    "wu_fact_arith",
+    "wu_fact_tungsten",
+    "wu_reason_expr",
+    "wu_proc_count",
+    "wu_lang_are",
+    "wu_tool_json_tokyo",
+    "wu_reason_modules"
+   ],
+   "tokens": 1701,
+   "aggregate_tok_s": 29.028522481611525,
+   "per_stream_tok_s_shared_wall": [
+    10.853698000179264,
+    6.041209264250723,
+    5.853488072423723,
+    6.280127144757813
+   ],
+   "ttft_s": [
+    4.168137125,
+    4.404169292,
+    4.540089959,
+    5.06980775,
+    4.2186,
+    4.635122334,
+    4.843495791,
+    5.645634708,
+    5.560711583,
+    9.893840666,
+    5.478041916,
+    7.028891125,
+    1.460461541
+   ],
+   "ttft_from_batch_start_s": [
+    4.168137125,
+    4.404169292,
+    4.540089959,
+    5.06980775,
+    17.931636417,
+    18.348158751,
+    18.556532208,
+    19.358671125,
+    35.448880625,
+    39.782009708,
+    35.366210958,
+    36.917060167,
+    52.999314166
+   ],
+   "ttft_p50_s": 4.843495791,
+   "ttft_p95_s": 8.174870941399995,
+   "token_latency_p50_ms": 68.604625,
+   "token_latency_p95_ms": 113.7827215,
+   "fallbacks": 0,
+   "dispatches_last_step": [
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756,
+    756
+   ],
+   "dispatch_mode": 756,
+   "active_bytes_per_token": 9878901136,
+   "kv_bytes": 268435456,
+   "kv_bytes_one_session": 67108864,
+   "achieved_gb_s": 286.76990371999364,
+   "completed_wu_per_hour": 798.6683434094176,
+   "verified_wu_per_hour": 491.4882113288723,
+   "verifier_throughput_wu_per_hour": 798.6683434094176,
+   "accepted_wu_per_hour": 491.4882113288723,
+   "concurrency_slowdown": {
+    "aggregate_vs_c1": 1.2385078469442055,
+    "vs_linear": 0.30962696173605136
+   },
+   "metal_current_allocated_size": 12363382784,
+   "metal_working_set_occupancy": 0.14807479474419555,
+   "rss_after_cell_bytes": 12679806976,
+   "workunit_ledger": [
+    {
+     "id": "wu_fact_france",
+     "n_new_tokens": 60,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_france",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_fact_arith",
+     "n_new_tokens": 75,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_arith",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_fact_tungsten",
+     "n_new_tokens": 149,
+     "session_index": 2,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_fact_tungsten",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "contains",
+      "role": "FACTUAL"
+     }
+    },
+    {
+     "id": "wu_reason_expr",
+     "n_new_tokens": 109,
+     "session_index": 3,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_expr",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_proc_reverse",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_reverse",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_proc_count",
+     "n_new_tokens": 87,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_proc_count",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "PROCEDURAL"
+     }
+    },
+    {
+     "id": "wu_lang_are",
+     "n_new_tokens": 138,
+     "session_index": 2,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_lang_are",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "word",
+      "role": "LANGUAGE"
+     }
+    },
+    {
+     "id": "wu_tool_json_tokyo",
+     "n_new_tokens": 67,
+     "session_index": 3,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_tool_json_tokyo",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "json_city",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_code_dedupe",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_code_dedupe",
+      "accepted": false,
+      "truncated": false,
+      "reason": "no python code block",
+      "kind": "python_fn",
+      "role": "CODE"
+     }
+    },
+    {
+     "id": "wu_mutation_add",
+     "n_new_tokens": 192,
+     "session_index": 1,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_mutation_add",
+      "accepted": false,
+      "truncated": true,
+      "reason": "still inside <think> or empty generation \u2014 not a scorable answer"
+     }
+    },
+    {
+     "id": "wu_json_exact",
+     "n_new_tokens": 56,
+     "session_index": 2,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_json_exact",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON missing ['kind', 'content', 'operations', 'tests']",
+      "kind": "json_keys",
+      "role": "TOOL"
+     }
+    },
+    {
+     "id": "wu_reason_modules",
+     "n_new_tokens": 192,
+     "session_index": 3,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_reason_modules",
+      "accepted": true,
+      "truncated": false,
+      "reason": "ok",
+      "kind": "number",
+      "role": "REASONING"
+     }
+    },
+    {
+     "id": "wu_token_generator",
+     "n_new_tokens": 192,
+     "session_index": 0,
+     "fallbacks": 0,
+     "verification": {
+      "id": "wu_token_generator",
+      "accepted": false,
+      "truncated": false,
+      "reason": "JSON city field missing or wrong",
+      "kind": "json_city",
+      "role": "CONTROL"
+     }
+    }
+   ]
+  }
+ ],
+ "scaling_vs_c1_aggregate_tps": {
+  "q4_incumbent": {
+   "sequential_per_session": {},
+   "concurrent_independent": {
+    "1": 1.0,
+    "2": 1.097766878529111,
+    "4": 1.2499596868915244
+   }
+  },
+  "parent_a": {
+   "sequential_per_session": {},
+   "concurrent_independent": {
+    "1": 1.0,
+    "2": 1.1834187405567351,
+    "4": 1.2385078469442055
+   }
+  }
+ },
+ "bandwidth_eaten": {
+  "at_c1": {
+   "comparable": true,
+   "q4_active_bytes_per_token": 13622266960,
+   "parent_active_bytes_per_token": 9878901136,
+   "reclaimed_bytes_per_token": 3743365824,
+   "byte_ratio_q4_over_parent": 1.3789253250403213,
+   "q4_aggregate_tok_s": 21.280026376525775,
+   "parent_aggregate_tok_s": 23.4383032398496,
+   "expected_parent_tok_s_if_same_gb_s": 29.343567288117416,
+   "parent_tok_s_gap_vs_byte_cut": 5.905264048267817,
+   "q4_achieved_gb_s": 289.8822002168756,
+   "parent_achieved_gb_s": 231.54468050206268,
+   "q4_verified_wu_per_hour": 535.3465755100824,
+   "parent_verified_wu_per_hour": 396.8389966535382,
+   "expected_parent_wu_per_hour_if_same_gb_s": 738.2029506444633,
+   "converted_into_useful_work": false,
+   "what_ate_the_reclaimed_bandwidth": "Reclaimed bytes did not convert into tokens or verified WUs. Parent achieved 231.5 GB/s vs q4 289.9 GB/s. The affine2 fused kernel did not keep the memory system fed at the incumbent's 468.9 GB/s; ALU / scale-bias / ceremony on the 756-dispatch graph ate the bandwidth the 3.14 EBPW pack theoretically returned. Concurrent sessions cannot spend bytes the kernel is not streaming.",
+   "gpu_ledger_incumbent_gb_s": 468.9,
+   "roof_gb_s": 595.9
+  },
+  "at_c4_concurrent": {
+   "comparable": true,
+   "q4_active_bytes_per_token": 13622266960,
+   "parent_active_bytes_per_token": 9878901136,
+   "reclaimed_bytes_per_token": 3743365824,
+   "byte_ratio_q4_over_parent": 1.3789253250403213,
+   "q4_aggregate_tok_s": 26.59917510664554,
+   "parent_aggregate_tok_s": 29.028522481611525,
+   "expected_parent_tok_s_if_same_gb_s": 36.678276179735626,
+   "parent_tok_s_gap_vs_byte_cut": 7.649753698124101,
+   "q4_achieved_gb_s": 362.34106421851203,
+   "parent_achieved_gb_s": 286.76990371999364,
+   "q4_verified_wu_per_hour": 669.1616379030324,
+   "parent_verified_wu_per_hour": 491.4882113288723,
+   "expected_parent_wu_per_hour_if_same_gb_s": 922.7239290499527,
+   "converted_into_useful_work": false,
+   "what_ate_the_reclaimed_bandwidth": "Reclaimed bytes did not convert into tokens or verified WUs. Parent achieved 286.8 GB/s vs q4 362.3 GB/s. The affine2 fused kernel did not keep the memory system fed at the incumbent's 468.9 GB/s; ALU / scale-bias / ceremony on the 756-dispatch graph ate the bandwidth the 3.14 EBPW pack theoretically returned. Concurrent sessions cannot spend bytes the kernel is not streaming.",
+   "gpu_ledger_incumbent_gb_s": 468.9,
+   "roof_gb_s": 595.9
+  }
+ },
+ "winner": {
+  "winner": {
+   "artifact": "q4_incumbent",
+   "concurrency": 4,
+   "topology": "concurrent_independent",
+   "verified_wu_per_hour": 669.1616379030324,
+   "completed_wu_per_hour": 869.9101292739422,
+   "aggregate_tok_s": 26.59917510664554,
+   "ttft_p50_s": 4.883462167,
+   "token_latency_p50_ms": 69.960229
+  },
+  "ranking_quantity": "verified_accepted_workunits_per_hour",
+  "not_the_ranking_quantity": [
+   "stream_count",
+   "single_stream_tps",
+   "aggregate_tok_s"
+  ],
+  "highest_aggregate_tok_s_cell": {
+   "artifact": "parent_a",
+   "concurrency": 4,
+   "topology": "concurrent_independent",
+   "aggregate_tok_s": 29.028522481611525,
+   "verified_wu_per_hour": 491.4882113288723
+  },
+  "highest_concurrency_cell": {
+   "artifact": "q4_incumbent",
+   "concurrency": 4,
+   "verified_wu_per_hour": 669.1616379030324
+  },
+  "winner_differs_from_highest_tps": true,
+  "why": "A configuration with lower aggregate tok/s can win if it verifies more WorkUnits per wall second (less truncation, fewer unusable answers, better TTFT so the same token budget closes </think>)."
+ },
+ "raw": {
+  "q4": "/Users/scammermike/.claude-grok/worktrees/n007prodbench-20260823-232201/receipts/headless/PRODUCTION_BENCH.q4.raw.json",
+  "parent": "/Users/scammermike/.claude-grok/worktrees/n007prodbench-20260823-232201/receipts/headless/PRODUCTION_BENCH.parent.raw.json"
+ },
+ "sentinels": {
+  "weights_ptr_shared_q4": true,
+  "weights_ptr_shared_parent": true,
+  "q4_theoretical_dispatches": 964,
+  "parent_theoretical_dispatches": 756,
+  "token_generator_must_not_verify": "wu_token_generator",
+  "noop_control": "wu_token_generator is completed tokens that the verifier rejects; a harness that counted tokens as WorkUnits would score it",
+  "bad_control": "the same verifier rejects a missing JSON city and an unclosed <think>; those WUs stay in completed and out of verified"
+ }
+}

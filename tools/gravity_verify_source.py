@@ -12,7 +12,7 @@ Usage:  python3 tools/gravity_verify_source.py [--quick]
 from __future__ import annotations
 import argparse, glob, hashlib, json, os, struct, sys
 
-PIN = "workspace/superwave/g1/GRAVITY1_SOURCE_PIN.json"
+PIN = "hawking-experiments/superwave/g1/GRAVITY1_SOURCE_PIN.json"
 
 
 def sha256(path):

@@ -1,0 +1,1634 @@
+{
+ "schema": "hawking.headless.noetic_multisession.v1",
+ "generated_at": "2026-08-24T03:04:10Z",
+ "git_head": "7200c96c4cd77bf51f958c207a79b9194f4b7559",
+ "elapsed_s": 0.0,
+ "question": "Can one immutable resident Noetic body serve N isolated sessions, and how do sequential vs round-robin (and operator-microbatch) topologies scale on this machine?",
+ "answer": "Yes: one Arc of Metal-resident Qwen3.8 weights, 4 isolated workspaces. Metal 13.50 GiB at c=1 and 14.03 GiB at c=4 (ratio 1.040). Four copies would be 53.98 GiB. KV pointers distinct; session-0 continuation after session-1 traffic matches a control. Sequential c=4 aggregate 0.99x, round-robin 0.98x (serial GPU steps). Concurrent independent peaks at 1.32x \u2014 same ceiling class as the prior 1.21x process/slot campaign. Operator microbatch of lm_head is 1.00x vs serial: the weight stream is not amortised. Sequential is throughput/background (later-session TTFT piles up). Round-robin is latency-fair foreground (TTFTs clustered, per-stream token latency stretches with c).",
+ "NOETIC_MULTISESSION_SHARED_BODY": "PASS",
+ "did_not_load_second_27b": true,
+ "did_not_write_ascent_or_campaign": true,
+ "shared": [
+  "model representation",
+  "kernels",
+  "Metal pipelines",
+  "immutable structures",
+  "codebooks",
+  "shared bases",
+  "static routing"
+ ],
+ "isolated": [
+  "context",
+  "KV/state",
+  "sampling",
+  "session/tool state"
+ ],
+ "shape": "one Arc<Qwen38HybridWeights> / N Qwen38HybridDecodeSession workspaces",
+ "gpu_gate": {
+  "device": "Apple M3 Ultra",
+  "source": "MTLDevice.recommendedMaxWorkingSetSize (measured)",
+  "recommendedMaxWorkingSetSize_gib": 77.760009765625,
+  "hasUnifiedMemory": true,
+  "admission": "METAL WORKING SET is the admission gate, not free RAM. mmap shares pages but each process gets its own MTLBuffers."
+ },
+ "workspace_formula": {
+  "max_seq_len": 256,
+  "activation_bytes": 1691396,
+  "deltanet_state_bytes": 156893184,
+  "gqa_kv_bytes": 33554432,
+  "total_bytes": 192139012
+ },
+ "cpu_policy_model": {
+  "note": "Equal step cost, no overlap: sequential and round-robin have the same aggregate tok/s. Sequential piles TTFT onto later sessions (background throughput). Round-robin keeps TTFTs clustered and stretches per-stream token latency (foreground fairness). Operator microbatch is the only topology here that can amortize a weight stream.",
+  "simulations": {
+   "1": {
+    "sessions": 1,
+    "prefill_steps": 8,
+    "decode_tokens": 8,
+    "step_s": 0.03,
+    "sequential_per_session": {
+     "policy": "throughput_background",
+     "wall_s": 0.44999999999999996,
+     "aggregate_tps": 17.77777777777778,
+     "per_stream_tps_shared_wall": [
+      17.77777777777778
+     ],
+     "ttft_s": [
+      0.24
+     ],
+     "token_latency_s": [
+      [
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03
+      ]
+     ]
+    },
+    "round_robin_token": {
+     "policy": "latency_fair_foreground",
+     "wall_s": 0.4500000000000002,
+     "aggregate_tps": 17.77777777777777,
+     "per_stream_tps_shared_wall": [
+      17.77777777777777
+     ],
+     "ttft_s": [
+      0.24
+     ],
+     "token_latency_s": [
+      [
+       0.030000000000000027,
+       0.030000000000000027,
+       0.030000000000000027,
+       0.030000000000000027,
+       0.030000000000000027,
+       0.030000000000000027,
+       0.030000000000000027
+      ]
+     ]
+    }
+   },
+   "2": {
+    "sessions": 2,
+    "prefill_steps": 8,
+    "decode_tokens": 8,
+    "step_s": 0.03,
+    "sequential_per_session": {
+     "policy": "throughput_background",
+     "wall_s": 0.8999999999999999,
+     "aggregate_tps": 17.77777777777778,
+     "per_stream_tps_shared_wall": [
+      8.88888888888889,
+      8.88888888888889
+     ],
+     "ttft_s": [
+      0.24,
+      0.69
+     ],
+     "token_latency_s": [
+      [
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03
+      ],
+      [
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03
+      ]
+     ]
+    },
+    "round_robin_token": {
+     "policy": "latency_fair_foreground",
+     "wall_s": 0.9000000000000006,
+     "aggregate_tps": 17.777777777777768,
+     "per_stream_tps_shared_wall": [
+      8.888888888888884,
+      8.888888888888884
+     ],
+     "ttft_s": [
+      0.4500000000000002,
+      0.4800000000000002
+     ],
+     "token_latency_s": [
+      [
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005
+      ],
+      [
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005,
+       0.06000000000000005
+      ]
+     ]
+    }
+   },
+   "4": {
+    "sessions": 4,
+    "prefill_steps": 8,
+    "decode_tokens": 8,
+    "step_s": 0.03,
+    "sequential_per_session": {
+     "policy": "throughput_background",
+     "wall_s": 1.7999999999999998,
+     "aggregate_tps": 17.77777777777778,
+     "per_stream_tps_shared_wall": [
+      4.444444444444445,
+      4.444444444444445,
+      4.444444444444445,
+      4.444444444444445
+     ],
+     "ttft_s": [
+      0.24,
+      0.69,
+      1.14,
+      1.5899999999999999
+     ],
+     "token_latency_s": [
+      [
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03
+      ],
+      [
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03
+      ],
+      [
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03
+      ],
+      [
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03,
+       0.03
+      ]
+     ]
+    },
+    "round_robin_token": {
+     "policy": "latency_fair_foreground",
+     "wall_s": 1.8000000000000014,
+     "aggregate_tps": 17.777777777777764,
+     "per_stream_tps_shared_wall": [
+      4.444444444444441,
+      4.444444444444441,
+      4.444444444444441,
+      4.444444444444441
+     ],
+     "ttft_s": [
+      0.8700000000000006,
+      0.9000000000000006,
+      0.9300000000000006,
+      0.9600000000000006
+     ],
+     "token_latency_s": [
+      [
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001
+      ],
+      [
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001
+      ],
+      [
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001
+      ],
+      [
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001,
+       0.1200000000000001
+      ]
+     ]
+    }
+   }
+  }
+ },
+ "live": {
+  "artifact_root": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+  "attached_sessions": 4,
+  "did_not_load_second_27b": true,
+  "host_after": {
+   "free_bytes": 4501520384,
+   "memsize_bytes": 103079215104,
+   "page_size_bytes": 16384,
+   "pages_free": 274751,
+   "pages_purgeable": 25792,
+   "pages_speculative": 9132
+  },
+  "host_before": {
+   "free_bytes": 17868226560,
+   "memsize_bytes": 103079215104,
+   "page_size_bytes": 16384,
+   "pages_free": 1090590,
+   "pages_purgeable": 25730,
+   "pages_speculative": 9174
+  },
+  "isolated": true,
+  "isolation": {
+   "buffer_identities": [
+    {
+     "conv_state_ptr": 493745946624,
+     "gqa_key_bytes": 16777216,
+     "gqa_key_ptr": 493902839808,
+     "gqa_value_bytes": 16777216,
+     "gqa_value_ptr": 493919617024,
+     "logits_ptr": 493744947200,
+     "rec_state_ptr": 493751844864,
+     "sampled_ptr": 492304247040
+    },
+    {
+     "conv_state_ptr": 493938262016,
+     "gqa_key_bytes": 16777216,
+     "gqa_key_ptr": 494095155200,
+     "gqa_value_bytes": 16777216,
+     "gqa_value_ptr": 494111932416,
+     "logits_ptr": 493937262592,
+     "rec_state_ptr": 493944160256,
+     "sampled_ptr": 492304259840
+    },
+    {
+     "conv_state_ptr": 494130626560,
+     "gqa_key_bytes": 16777216,
+     "gqa_key_ptr": 494287519744,
+     "gqa_value_bytes": 16777216,
+     "gqa_value_ptr": 494304296960,
+     "logits_ptr": 494129627136,
+     "rec_state_ptr": 494136524800,
+     "sampled_ptr": 492304272640
+    },
+    {
+     "conv_state_ptr": 494322941952,
+     "gqa_key_bytes": 16777216,
+     "gqa_key_ptr": 494479835136,
+     "gqa_value_bytes": 16777216,
+     "gqa_value_ptr": 494496612352,
+     "logits_ptr": 494321942528,
+     "rec_state_ptr": 494328840192,
+     "sampled_ptr": 492304285440
+    }
+   ],
+   "continuation_matches_control": true,
+   "control_token_ids": [
+    248068,
+    198,
+    760,
+    1156
+   ],
+   "different_prompts_different_tokens": false,
+   "isolated": true,
+   "kv_pointers_distinct": true,
+   "n_distinct_session_buffers": 24,
+   "n_session_buffers": 24,
+   "other_session_did_not_mutate_session0_state": true,
+   "reset_a_does_not_reset_b": true,
+   "session0_continued_token_ids": [
+    248068,
+    198,
+    760,
+    1156
+   ],
+   "session1_token_ids": [
+    248068,
+    198,
+    760,
+    1156
+   ]
+  },
+  "load_ns": 4169346167,
+  "max_new_tokens": 8,
+  "max_seq_len": 256,
+  "metal_after_each_attach": [
+   {
+    "current_allocated_size": 14492024832,
+    "has_unified_memory": true,
+    "max_buffer_length": 62620631040,
+    "recommended_max_working_set_size": 83494174720
+   },
+   {
+    "current_allocated_size": 14684340224,
+    "has_unified_memory": true,
+    "max_buffer_length": 62620631040,
+    "recommended_max_working_set_size": 83494174720
+   },
+   {
+    "current_allocated_size": 14876655616,
+    "has_unified_memory": true,
+    "max_buffer_length": 62620631040,
+    "recommended_max_working_set_size": 83494174720
+   },
+   {
+    "current_allocated_size": 15068971008,
+    "has_unified_memory": true,
+    "max_buffer_length": 62620631040,
+    "recommended_max_working_set_size": 83494174720
+   }
+  ],
+  "metal_final": {
+   "current_allocated_size": 15068971008,
+   "has_unified_memory": true,
+   "max_buffer_length": 62620631040,
+   "recommended_max_working_set_size": 83494174720
+  },
+  "operator_microbatch": [
+   {
+    "concurrent": {
+     "concurrent": true,
+     "dispatches": 1,
+     "gpu_ns": 1055000,
+     "sessions": 1,
+     "wait_ns": 1323375,
+     "weight_name": "language_model.lm_head.weight"
+    },
+    "concurrent_vs_serial_speedup": 0.9646919431279621,
+    "serial": {
+     "concurrent": false,
+     "dispatches": 1,
+     "gpu_ns": 1017750,
+     "sessions": 1,
+     "wait_ns": 2507417,
+     "weight_name": "language_model.lm_head.weight"
+    },
+    "sessions": 1,
+    "weight_name": "language_model.lm_head.weight"
+   },
+   {
+    "concurrent": {
+     "concurrent": true,
+     "dispatches": 2,
+     "gpu_ns": 2026624,
+     "sessions": 2,
+     "wait_ns": 3081666,
+     "weight_name": "language_model.lm_head.weight"
+    },
+    "concurrent_vs_serial_speedup": 1.0608775974231037,
+    "serial": {
+     "concurrent": false,
+     "dispatches": 2,
+     "gpu_ns": 2150000,
+     "sessions": 2,
+     "wait_ns": 3161750,
+     "weight_name": "language_model.lm_head.weight"
+    },
+    "sessions": 2,
+    "weight_name": "language_model.lm_head.weight"
+   },
+   {
+    "concurrent": {
+     "concurrent": true,
+     "dispatches": 4,
+     "gpu_ns": 4023583,
+     "sessions": 4,
+     "wait_ns": 4781667,
+     "weight_name": "language_model.lm_head.weight"
+    },
+    "concurrent_vs_serial_speedup": 1.0047634160895897,
+    "serial": {
+     "concurrent": false,
+     "dispatches": 4,
+     "gpu_ns": 4042749,
+     "sessions": 4,
+     "wait_ns": 4373333,
+     "weight_name": "language_model.lm_head.weight"
+    },
+    "sessions": 4,
+    "weight_name": "language_model.lm_head.weight"
+   }
+  ],
+  "pid": 40406,
+  "process_count": 1,
+  "proof_one_body": {
+   "body_bytes": 14297675776,
+   "deltanet_state_bytes": 156893184,
+   "gqa_kv_bytes": 33554432,
+   "measured_c4_bytes": 15068971008,
+   "metal_c1_bytes": 14492024832,
+   "metal_c4_bytes": 15068971008,
+   "metal_c4_over_c1": 1.0398112881180026,
+   "one_body_not_n_copies": true,
+   "one_body_not_n_copies_metal": true,
+   "one_body_not_n_copies_rss": true,
+   "predicted_four_copies_c4_bytes": 57959259152,
+   "predicted_one_body_c4_bytes": 15066231824,
+   "rss_c1_bytes": 15311159296,
+   "rss_c4_bytes": 15882649600,
+   "rss_c4_over_c1": 1.0373250838131702,
+   "workspace_bytes": 192139012
+  },
+  "requested_sessions": 4,
+  "resident_weight_bytes": 14297675776,
+  "rss_after_each_attach_bytes": [
+   15311159296,
+   15501705216,
+   15692185600,
+   15882649600
+  ],
+  "rss_after_load_bytes": 15120646144,
+  "rss_before_bytes": 7356416,
+  "rss_final_bytes": 15303327744,
+  "scaling_vs_c1_aggregate_tps": {
+   "concurrent_independent": {
+    "1": 1.0,
+    "2": 1.325226153797321,
+    "4": 1.3234949804103806
+   },
+   "round_robin_token": {
+    "1": 1.0,
+    "2": 0.9899563105975135,
+    "4": 0.9797874167075185
+   },
+   "sequential_per_session": {
+    "1": 1.0,
+    "2": 1.0019577528959196,
+    "4": 0.9893340308453019
+   }
+  },
+  "schema": "hawking.qwen38.noetic_multisession.raw.v1",
+  "shared_body": true,
+  "topologies": {
+   "concurrent_independent": {
+    "1": {
+     "aggregate_tps": 8.422615611925096,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      36.558079649773596
+     ],
+     "per_stream_tps_shared_wall": [
+      8.422615611925096
+     ],
+     "policy": "throughput_attempt_thread_per_session",
+     "sessions": 1,
+     "token_latency_p50_ms": 31.3725,
+     "token_latency_p95_ms": 33.568875,
+     "topology": "concurrent_independent",
+     "total_new_tokens": 8,
+     "ttft_ms": [
+      730.093042
+     ],
+     "wall_s": 0.949823709
+    },
+    "2": {
+     "aggregate_tps": 11.161870492304763,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      24.664666516366356,
+      24.341616328964776
+     ],
+     "per_stream_tps_shared_wall": [
+      5.580935246152381,
+      5.580935246152381
+     ],
+     "policy": "throughput_attempt_thread_per_session",
+     "sessions": 2,
+     "token_latency_p50_ms": 46.862541,
+     "token_latency_p95_ms": 48.197667,
+     "topology": "concurrent_independent",
+     "total_new_tokens": 16,
+     "ttft_ms": [
+      1106.865417,
+      1089.375625
+     ],
+     "wall_s": 1.4334515
+    },
+    "4": {
+     "aggregate_tps": 11.14728948430897,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      12.30885848681876,
+      12.09114302402395,
+      12.619476709799807,
+      11.825093574626102
+     ],
+     "per_stream_tps_shared_wall": [
+      2.7868223710772426,
+      2.7868223710772426,
+      2.7868223710772426,
+      2.7868223710772426
+     ],
+     "policy": "throughput_attempt_thread_per_session",
+     "sessions": 4,
+     "token_latency_p50_ms": 84.139792,
+     "token_latency_p95_ms": 120.502,
+     "topology": "concurrent_independent",
+     "total_new_tokens": 32,
+     "ttft_ms": [
+      2168.842917,
+      2168.929667,
+      2232.39875,
+      2184.278917
+     ],
+     "wall_s": 2.870653
+    }
+   },
+   "round_robin_token": {
+    "1": {
+     "aggregate_tps": 8.753350147818699,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      37.619788106355394
+     ],
+     "per_stream_tps_shared_wall": [
+      8.753350147818699
+     ],
+     "policy": "latency_fair_foreground",
+     "sessions": 1,
+     "token_latency_p50_ms": 30.24675,
+     "token_latency_p95_ms": 30.808,
+     "topology": "round_robin_token",
+     "total_new_tokens": 8,
+     "ttft_ms": [
+      701.28175
+     ],
+     "wall_s": 0.913935792
+    },
+    "2": {
+     "aggregate_tps": 8.6654342177028,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      16.848710241340253,
+      18.10047063531462
+     ],
+     "per_stream_tps_shared_wall": [
+      4.3327171088514,
+      4.3327171088514
+     ],
+     "policy": "latency_fair_foreground",
+     "sessions": 2,
+     "token_latency_p50_ms": 63.071625,
+     "token_latency_p95_ms": 66.077292,
+     "topology": "round_robin_token",
+     "total_new_tokens": 16,
+     "ttft_ms": [
+      1371.602625,
+      1404.438959
+     ],
+     "wall_s": 1.846416417
+    },
+    "4": {
+     "aggregate_tps": 8.576422328867658,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      8.327700207997324,
+      8.59706009817632,
+      8.884880001415983,
+      9.193712822025953
+     ],
+     "per_stream_tps_shared_wall": [
+      2.1441055822169144,
+      2.1441055822169144,
+      2.1441055822169144,
+      2.1441055822169144
+     ],
+     "policy": "latency_fair_foreground",
+     "sessions": 4,
+     "token_latency_p50_ms": 122.01575,
+     "token_latency_p95_ms": 137.254667,
+     "topology": "round_robin_token",
+     "total_new_tokens": 32,
+     "ttft_ms": [
+      2770.510166,
+      2800.608875,
+      2830.753458,
+      2860.999666
+     ],
+     "wall_s": 3.731159541
+    }
+   },
+   "sequential_per_session": {
+    "1": {
+     "aggregate_tps": 8.763439041860346,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      37.71204919582072
+     ],
+     "per_stream_tps_shared_wall": [
+      8.763439041860346
+     ],
+     "policy": "throughput_background",
+     "sessions": 1,
+     "token_latency_p50_ms": 30.202791,
+     "token_latency_p95_ms": 30.747125,
+     "topology": "sequential_per_session",
+     "total_new_tokens": 8,
+     "ttft_ms": [
+      699.887041
+     ],
+     "wall_s": 0.912883625
+    },
+    "2": {
+     "aggregate_tps": 8.780595690022764,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      37.72712910695169,
+      37.758609483323035
+     ],
+     "per_stream_tps_shared_wall": [
+      4.390297845011382,
+      4.390297845011382
+     ],
+     "policy": "throughput_background",
+     "sessions": 2,
+     "token_latency_p50_ms": 30.292209,
+     "token_latency_p95_ms": 30.646666,
+     "topology": "sequential_per_session",
+     "total_new_tokens": 16,
+     "ttft_ms": [
+      695.400291,
+      1607.912666
+     ],
+     "wall_s": 1.822199833
+    },
+    "4": {
+     "aggregate_tps": 8.669968471350787,
+     "new_token_ids": [
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ],
+      [
+       248068,
+       198,
+       760,
+       1156,
+       6587,
+       728,
+       310,
+       9559
+      ]
+     ],
+     "per_stream_tps_exclusive": [
+      37.288381096129434,
+      37.42802421348013,
+      37.6517542187614,
+      37.65772863145022
+     ],
+     "per_stream_tps_shared_wall": [
+      2.1674921178376967,
+      2.1674921178376967,
+      2.1674921178376967,
+      2.1674921178376967
+     ],
+     "policy": "throughput_background",
+     "sessions": 4,
+     "token_latency_p50_ms": 30.386708,
+     "token_latency_p95_ms": 31.131,
+     "topology": "sequential_per_session",
+     "total_new_tokens": 32,
+     "ttft_ms": [
+      705.811583,
+      1621.765667,
+      2544.722708,
+      3459.267208
+     ],
+     "wall_s": 3.690901542
+    }
+   }
+  },
+  "weight_loads": 1,
+  "weight_tensors": {
+   "f32": 353,
+   "mixed": 0,
+   "q4": 402
+  },
+  "weights_ptr_shared": true,
+  "workspace": {
+   "activation_bytes": 1691396,
+   "deltanet_state_bytes": 156893184,
+   "gqa_kv_bytes": 33554432,
+   "max_seq_len": 256,
+   "total_bytes": 192139012
+  },
+  "workspace_resident_bytes": 192139012
+ },
+ "proof_one_body": {
+  "body_bytes": 14297675776,
+  "deltanet_state_bytes": 156893184,
+  "gqa_kv_bytes": 33554432,
+  "measured_c4_bytes": 15068971008,
+  "metal_c1_bytes": 14492024832,
+  "metal_c4_bytes": 15068971008,
+  "metal_c4_over_c1": 1.0398112881180026,
+  "one_body_not_n_copies": true,
+  "one_body_not_n_copies_metal": true,
+  "one_body_not_n_copies_rss": true,
+  "predicted_four_copies_c4_bytes": 57959259152,
+  "predicted_one_body_c4_bytes": 15066231824,
+  "rss_c1_bytes": 15311159296,
+  "rss_c4_bytes": 15882649600,
+  "rss_c4_over_c1": 1.0373250838131702,
+  "workspace_bytes": 192139012
+ },
+ "isolation": {
+  "buffer_identities": [
+   {
+    "conv_state_ptr": 493745946624,
+    "gqa_key_bytes": 16777216,
+    "gqa_key_ptr": 493902839808,
+    "gqa_value_bytes": 16777216,
+    "gqa_value_ptr": 493919617024,
+    "logits_ptr": 493744947200,
+    "rec_state_ptr": 493751844864,
+    "sampled_ptr": 492304247040
+   },
+   {
+    "conv_state_ptr": 493938262016,
+    "gqa_key_bytes": 16777216,
+    "gqa_key_ptr": 494095155200,
+    "gqa_value_bytes": 16777216,
+    "gqa_value_ptr": 494111932416,
+    "logits_ptr": 493937262592,
+    "rec_state_ptr": 493944160256,
+    "sampled_ptr": 492304259840
+   },
+   {
+    "conv_state_ptr": 494130626560,
+    "gqa_key_bytes": 16777216,
+    "gqa_key_ptr": 494287519744,
+    "gqa_value_bytes": 16777216,
+    "gqa_value_ptr": 494304296960,
+    "logits_ptr": 494129627136,
+    "rec_state_ptr": 494136524800,
+    "sampled_ptr": 492304272640
+   },
+   {
+    "conv_state_ptr": 494322941952,
+    "gqa_key_bytes": 16777216,
+    "gqa_key_ptr": 494479835136,
+    "gqa_value_bytes": 16777216,
+    "gqa_value_ptr": 494496612352,
+    "logits_ptr": 494321942528,
+    "rec_state_ptr": 494328840192,
+    "sampled_ptr": 492304285440
+   }
+  ],
+  "continuation_matches_control": true,
+  "control_token_ids": [
+   248068,
+   198,
+   760,
+   1156
+  ],
+  "different_prompts_different_tokens": false,
+  "isolated": true,
+  "kv_pointers_distinct": true,
+  "n_distinct_session_buffers": 24,
+  "n_session_buffers": 24,
+  "other_session_did_not_mutate_session0_state": true,
+  "reset_a_does_not_reset_b": true,
+  "session0_continued_token_ids": [
+   248068,
+   198,
+   760,
+   1156
+  ],
+  "session1_token_ids": [
+   248068,
+   198,
+   760,
+   1156
+  ]
+ },
+ "topologies_measured": [
+  "concurrent_independent",
+  "round_robin_token",
+  "sequential_per_session"
+ ],
+ "measurements": {
+  "concurrent_independent": {
+   "1": {
+    "aggregate_tps": 8.422615611925096,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     36.558079649773596
+    ],
+    "per_stream_tps_shared_wall": [
+     8.422615611925096
+    ],
+    "policy": "throughput_attempt_thread_per_session",
+    "sessions": 1,
+    "token_latency_p50_ms": 31.3725,
+    "token_latency_p95_ms": 33.568875,
+    "topology": "concurrent_independent",
+    "total_new_tokens": 8,
+    "ttft_ms": [
+     730.093042
+    ],
+    "wall_s": 0.949823709
+   },
+   "2": {
+    "aggregate_tps": 11.161870492304763,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     24.664666516366356,
+     24.341616328964776
+    ],
+    "per_stream_tps_shared_wall": [
+     5.580935246152381,
+     5.580935246152381
+    ],
+    "policy": "throughput_attempt_thread_per_session",
+    "sessions": 2,
+    "token_latency_p50_ms": 46.862541,
+    "token_latency_p95_ms": 48.197667,
+    "topology": "concurrent_independent",
+    "total_new_tokens": 16,
+    "ttft_ms": [
+     1106.865417,
+     1089.375625
+    ],
+    "wall_s": 1.4334515
+   },
+   "4": {
+    "aggregate_tps": 11.14728948430897,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     12.30885848681876,
+     12.09114302402395,
+     12.619476709799807,
+     11.825093574626102
+    ],
+    "per_stream_tps_shared_wall": [
+     2.7868223710772426,
+     2.7868223710772426,
+     2.7868223710772426,
+     2.7868223710772426
+    ],
+    "policy": "throughput_attempt_thread_per_session",
+    "sessions": 4,
+    "token_latency_p50_ms": 84.139792,
+    "token_latency_p95_ms": 120.502,
+    "topology": "concurrent_independent",
+    "total_new_tokens": 32,
+    "ttft_ms": [
+     2168.842917,
+     2168.929667,
+     2232.39875,
+     2184.278917
+    ],
+    "wall_s": 2.870653
+   }
+  },
+  "round_robin_token": {
+   "1": {
+    "aggregate_tps": 8.753350147818699,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     37.619788106355394
+    ],
+    "per_stream_tps_shared_wall": [
+     8.753350147818699
+    ],
+    "policy": "latency_fair_foreground",
+    "sessions": 1,
+    "token_latency_p50_ms": 30.24675,
+    "token_latency_p95_ms": 30.808,
+    "topology": "round_robin_token",
+    "total_new_tokens": 8,
+    "ttft_ms": [
+     701.28175
+    ],
+    "wall_s": 0.913935792
+   },
+   "2": {
+    "aggregate_tps": 8.6654342177028,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     16.848710241340253,
+     18.10047063531462
+    ],
+    "per_stream_tps_shared_wall": [
+     4.3327171088514,
+     4.3327171088514
+    ],
+    "policy": "latency_fair_foreground",
+    "sessions": 2,
+    "token_latency_p50_ms": 63.071625,
+    "token_latency_p95_ms": 66.077292,
+    "topology": "round_robin_token",
+    "total_new_tokens": 16,
+    "ttft_ms": [
+     1371.602625,
+     1404.438959
+    ],
+    "wall_s": 1.846416417
+   },
+   "4": {
+    "aggregate_tps": 8.576422328867658,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     8.327700207997324,
+     8.59706009817632,
+     8.884880001415983,
+     9.193712822025953
+    ],
+    "per_stream_tps_shared_wall": [
+     2.1441055822169144,
+     2.1441055822169144,
+     2.1441055822169144,
+     2.1441055822169144
+    ],
+    "policy": "latency_fair_foreground",
+    "sessions": 4,
+    "token_latency_p50_ms": 122.01575,
+    "token_latency_p95_ms": 137.254667,
+    "topology": "round_robin_token",
+    "total_new_tokens": 32,
+    "ttft_ms": [
+     2770.510166,
+     2800.608875,
+     2830.753458,
+     2860.999666
+    ],
+    "wall_s": 3.731159541
+   }
+  },
+  "sequential_per_session": {
+   "1": {
+    "aggregate_tps": 8.763439041860346,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     37.71204919582072
+    ],
+    "per_stream_tps_shared_wall": [
+     8.763439041860346
+    ],
+    "policy": "throughput_background",
+    "sessions": 1,
+    "token_latency_p50_ms": 30.202791,
+    "token_latency_p95_ms": 30.747125,
+    "topology": "sequential_per_session",
+    "total_new_tokens": 8,
+    "ttft_ms": [
+     699.887041
+    ],
+    "wall_s": 0.912883625
+   },
+   "2": {
+    "aggregate_tps": 8.780595690022764,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     37.72712910695169,
+     37.758609483323035
+    ],
+    "per_stream_tps_shared_wall": [
+     4.390297845011382,
+     4.390297845011382
+    ],
+    "policy": "throughput_background",
+    "sessions": 2,
+    "token_latency_p50_ms": 30.292209,
+    "token_latency_p95_ms": 30.646666,
+    "topology": "sequential_per_session",
+    "total_new_tokens": 16,
+    "ttft_ms": [
+     695.400291,
+     1607.912666
+    ],
+    "wall_s": 1.822199833
+   },
+   "4": {
+    "aggregate_tps": 8.669968471350787,
+    "new_token_ids": [
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ],
+     [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      728,
+      310,
+      9559
+     ]
+    ],
+    "per_stream_tps_exclusive": [
+     37.288381096129434,
+     37.42802421348013,
+     37.6517542187614,
+     37.65772863145022
+    ],
+    "per_stream_tps_shared_wall": [
+     2.1674921178376967,
+     2.1674921178376967,
+     2.1674921178376967,
+     2.1674921178376967
+    ],
+    "policy": "throughput_background",
+    "sessions": 4,
+    "token_latency_p50_ms": 30.386708,
+    "token_latency_p95_ms": 31.131,
+    "topology": "sequential_per_session",
+    "total_new_tokens": 32,
+    "ttft_ms": [
+     705.811583,
+     1621.765667,
+     2544.722708,
+     3459.267208
+    ],
+    "wall_s": 3.690901542
+   }
+  }
+ },
+ "operator_microbatch": [
+  {
+   "concurrent": {
+    "concurrent": true,
+    "dispatches": 1,
+    "gpu_ns": 1055000,
+    "sessions": 1,
+    "wait_ns": 1323375,
+    "weight_name": "language_model.lm_head.weight"
+   },
+   "concurrent_vs_serial_speedup": 0.9646919431279621,
+   "serial": {
+    "concurrent": false,
+    "dispatches": 1,
+    "gpu_ns": 1017750,
+    "sessions": 1,
+    "wait_ns": 2507417,
+    "weight_name": "language_model.lm_head.weight"
+   },
+   "sessions": 1,
+   "weight_name": "language_model.lm_head.weight"
+  },
+  {
+   "concurrent": {
+    "concurrent": true,
+    "dispatches": 2,
+    "gpu_ns": 2026624,
+    "sessions": 2,
+    "wait_ns": 3081666,
+    "weight_name": "language_model.lm_head.weight"
+   },
+   "concurrent_vs_serial_speedup": 1.0608775974231037,
+   "serial": {
+    "concurrent": false,
+    "dispatches": 2,
+    "gpu_ns": 2150000,
+    "sessions": 2,
+    "wait_ns": 3161750,
+    "weight_name": "language_model.lm_head.weight"
+   },
+   "sessions": 2,
+   "weight_name": "language_model.lm_head.weight"
+  },
+  {
+   "concurrent": {
+    "concurrent": true,
+    "dispatches": 4,
+    "gpu_ns": 4023583,
+    "sessions": 4,
+    "wait_ns": 4781667,
+    "weight_name": "language_model.lm_head.weight"
+   },
+   "concurrent_vs_serial_speedup": 1.0047634160895897,
+   "serial": {
+    "concurrent": false,
+    "dispatches": 4,
+    "gpu_ns": 4042749,
+    "sessions": 4,
+    "wait_ns": 4373333,
+    "weight_name": "language_model.lm_head.weight"
+   },
+   "sessions": 4,
+   "weight_name": "language_model.lm_head.weight"
+  }
+ ],
+ "scaling_vs_c1_aggregate_tps": {
+  "concurrent_independent": {
+   "1": 1.0,
+   "2": 1.325226153797321,
+   "4": 1.3234949804103806
+  },
+  "round_robin_token": {
+   "1": 1.0,
+   "2": 0.9899563105975135,
+   "4": 0.9797874167075185
+  },
+  "sequential_per_session": {
+   "1": 1.0,
+   "2": 1.0019577528959196,
+   "4": 0.9893340308453019
+  }
+ },
+ "kv_bytes": 33554432,
+ "peak_unified_memory_bytes": 15068971008,
+ "judge": {
+  "NOETIC_MULTISESSION_SHARED_BODY": "PASS",
+  "reasons": [],
+  "formula_matches_rust": true,
+  "c4_over_c1": 1.0373250838131702,
+  "have_two_topologies_at_1_2_4": true,
+  "metrics_present": true,
+  "isolated": true,
+  "one_body_not_n_copies": true,
+  "weights_ptr_shared": true,
+  "did_not_load_second_27b": true
+ },
+ "ceiling": {
+  "prior_campaign_decode_concurrency": "Decode concurrency topped out at ~1.21x on BOTH process-per-runtime and llama.cpp slot topologies. A shared Noetic body is the untested third option. If it also tops out near 1.21x, that is a real negative.",
+  "observations": [
+   "concurrent_independent c=2 aggregate scaling vs c=1 is 1.325x",
+   "concurrent_independent c=4 aggregate scaling vs c=1 is 1.323x",
+   "round_robin_token c=2 aggregate scaling vs c=1 is 0.990x",
+   "round_robin_token c=4 aggregate scaling vs c=1 is 0.980x",
+   "sequential_per_session c=2 aggregate scaling vs c=1 is 1.002x",
+   "sequential_per_session c=4 aggregate scaling vs c=1 is 0.989x"
+  ]
+ },
+ "policy": {
+  "sequential_per_session": "throughput_background \u2014 later sessions wait",
+  "round_robin_token": "latency_fair_foreground \u2014 every session steps each round",
+  "concurrent_independent": "throughput attempt, one thread per session, same Metal queue",
+  "operator_microbatch": "concurrent encoder, N GEMVs against one resident weight",
+  "measured_as": "latency-sensitive foreground = round_robin_token; throughput background = sequential_per_session"
+ }
+}

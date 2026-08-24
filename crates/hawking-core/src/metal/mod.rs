@@ -592,6 +592,13 @@ pub struct CommandBufferTiming {
     pub gpu_end_s: Option<f64>,
     pub dispatches: u64,
     pub encode_ns: u64,
+    /// Compute encoders created while this TCB was live. One per dispatch in
+    /// Off-mode production; one when a serial/concurrent group covers the
+    /// whole token.
+    pub encoder_count: u64,
+    /// Physical command buffers committed for this TCB. One on the production
+    /// path; equal to dispatch count under SplitCbGpu.
+    pub command_buffers: u64,
 }
 
 /// Thread-local current-layer index. Set/cleared by the forward pass
@@ -1281,6 +1288,80 @@ mod imp {
             "qwen_uniform_q4_group64_matvec_qkv_simdgroup" => {
                 "qwen_uniform_q4_group64_matvec_qkv_simdgroup"
             }
+            "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128" => {
+                "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128"
+            }
+            "qwen_affine_q2_group32_matvec" => "qwen_affine_q2_group32_matvec",
+            "qwen_affine_q2_group32_matvec_geo_tpr64_tg128" => {
+                "qwen_affine_q2_group32_matvec_geo_tpr64_tg128"
+            }
+            "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div" => {
+                "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128" => {
+                "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128" => {
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+            }
+            "qwen_affine_q2_group64_matvec_qmvfast_r8tg64" => {
+                "qwen_affine_q2_group64_matvec_qmvfast_r8tg64"
+            }
+            "qwen_affine_q2_group64_matvec_qmvfast_r8tg64_addr_probe" => {
+                "qwen_affine_q2_group64_matvec_qmvfast_r8tg64_addr_probe"
+            }
+            "qwen_affine_q2_group64_matvec_wide64_r4tg128" => {
+                "qwen_affine_q2_group64_matvec_wide64_r4tg128"
+            }
+            "qwen_affine_q2_group64_matvec_tgx_r8tg256" => {
+                "qwen_affine_q2_group64_matvec_tgx_r8tg256"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_qmvfast_r8tg64" => {
+                "qwen_affine_q2_group64_matvec_gate_up_qmvfast_r8tg64"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_qmvfast_r8tg64" => {
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_qmvfast_r8tg64"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_wide64_r4tg128" => {
+                "qwen_affine_q2_group64_matvec_gate_up_wide64_r4tg128"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_wide64_r4tg128" => {
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_wide64_r4tg128"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_tgx_r8tg256" => {
+                "qwen_affine_q2_group64_matvec_gate_up_tgx_r8tg256"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgx_r8tg256" => {
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgx_r8tg256"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_biasprep_tpr64_tg128" => {
+                "qwen_affine_q2_group64_matvec_gate_up_biasprep_tpr64_tg128"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128" => {
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128"
+            }
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128" => {
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128"
+            }
+            "qwen_q2f_group64_matvec" => "qwen_q2f_group64_matvec",
+            "qwen_q2f_group64_matvec_geo_tpr64_tg128" => {
+                "qwen_q2f_group64_matvec_geo_tpr64_tg128"
+            }
+            "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128" => {
+                "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128"
+            }
+            "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128" => {
+                "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+            }
             "qwen_uniform_q4_decode_vector" => "qwen_uniform_q4_decode_vector",
             "qwen_uniform_q4_embedding_lookup" => "qwen_uniform_q4_embedding_lookup",
             "qwen_uniform_q4_embedding_lookup_device_token" => {
@@ -1362,6 +1443,13 @@ mod imp {
             "qwen80_expert_table_silu_mul" => "qwen80_expert_table_silu_mul",
             "qwen80_expert_table_weighted_sum" => "qwen80_expert_table_weighted_sum",
             "qwen80_residual_rmsnorm_f32" => "qwen80_residual_rmsnorm_f32",
+            "qwen80_residual_rmsnorm_tg" => "qwen80_residual_rmsnorm_tg",
+            "qwen80_add_residual_rmsnorm_tg" => "qwen80_add_residual_rmsnorm_tg",
+            "qwen80_add_residual_rmsnorm_tg_plainweight" => {
+                "qwen80_add_residual_rmsnorm_tg_plainweight"
+            }
+            "qwen80_residual_rmsnorm_tg_xsum64" => "qwen80_residual_rmsnorm_tg_xsum64",
+            "qwen80_add_residual_rmsnorm_tg_xsum64" => "qwen80_add_residual_rmsnorm_tg_xsum64",
             "qwen80_silu_mul_f32" => "qwen80_silu_mul_f32",
             "qwen80_qkvz_rearrange_conv_l2_f32" => "qwen80_qkvz_rearrange_conv_l2_f32",
             "qwen80_ba_to_decay_beta_f32" => "qwen80_ba_to_decay_beta_f32",
@@ -1373,6 +1461,16 @@ mod imp {
             "qwen38_gqa_qk_norm_rope_cache_f32" => "qwen38_gqa_qk_norm_rope_cache_f32",
             "qwen38_gated_delta_decode_vi" => "qwen38_gated_delta_decode_vi",
             "qwen38_gated_delta_decode_vi_simd" => "qwen38_gated_delta_decode_vi_simd",
+            "qwen38_gated_delta_decode_vi_simd_ba" => "qwen38_gated_delta_decode_vi_simd_ba",
+            "qwen38_gated_delta_decode_vi_simd_ba_plain" => {
+                "qwen38_gated_delta_decode_vi_simd_ba_plain"
+            }
+            "qwen38_gated_delta_decode_vi_simd_ba_f4" => {
+                "qwen38_gated_delta_decode_vi_simd_ba_f4"
+            }
+            "qwen38_gated_delta_decode_vi_simd_ba_tg32" => {
+                "qwen38_gated_delta_decode_vi_simd_ba_tg32"
+            }
             "qwen38_attention_apply_sigmoid_gate" => "qwen38_attention_apply_sigmoid_gate",
             "qwen38_f32_stream_probe" => "qwen38_f32_stream_probe",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
@@ -2173,6 +2271,11 @@ mod imp {
             use crate::metal::SHADER_QWEN80_DEVICE_ACTIVATIONS;
             const KERNELS: &[&str] = &[
                 "qwen80_residual_rmsnorm_f32",
+                "qwen80_residual_rmsnorm_tg",
+                "qwen80_add_residual_rmsnorm_tg",
+                "qwen80_add_residual_rmsnorm_tg_plainweight",
+                "qwen80_residual_rmsnorm_tg_xsum64",
+                "qwen80_add_residual_rmsnorm_tg_xsum64",
                 "qwen80_silu_mul_f32",
                 "qwen80_qkvz_rearrange_conv_l2_f32",
                 "qwen80_ba_to_decay_beta_f32",
@@ -2197,17 +2300,56 @@ mod imp {
                 "qwen38_qkvz_rearrange_conv_l2_f32",
                 "qwen38_gqa_qk_norm_rope_cache_f32",
                 "qwen38_gated_delta_decode_vi",
+                "qwen38_gated_delta_decode_vi_simd_ba",
+                "qwen38_gated_delta_decode_vi_simd_ba_plain",
+                "qwen38_gated_delta_decode_vi_simd_ba_f4",
+                "qwen38_gated_delta_decode_vi_simd_ba_tg32",
                 "qwen38_attention_apply_sigmoid_gate",
                 "qwen38_f32_stream_probe",
             ];
             for &kernel in &[
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+                "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+                "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
             ] {
                 assert_eq!(static_kernel_name(kernel), kernel);
                 assert!(
                     SHADER_QWEN_UNIFORM_Q4.contains(&format!("kernel void {kernel}(")),
                     "{kernel} must compile from qwen_uniform_q4.metal"
+                );
+            }
+            use crate::metal::SHADER_Q80_MIXED_DECODE;
+            for &kernel in &[
+                "qwen_affine_q2_group32_matvec",
+                "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+                "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_runtime_div",
+                "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128",
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+                "qwen_affine_q2_group64_matvec_qmvfast_r8tg64",
+                "qwen_affine_q2_group64_matvec_qmvfast_r8tg64_addr_probe",
+                "qwen_affine_q2_group64_matvec_wide64_r4tg128",
+                "qwen_affine_q2_group64_matvec_tgx_r8tg256",
+                "qwen_affine_q2_group64_matvec_gate_up_qmvfast_r8tg64",
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_qmvfast_r8tg64",
+                "qwen_affine_q2_group64_matvec_gate_up_wide64_r4tg128",
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_wide64_r4tg128",
+                "qwen_affine_q2_group64_matvec_gate_up_tgx_r8tg256",
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_tgx_r8tg256",
+                "qwen_affine_q2_group64_matvec_gate_up_biasprep_tpr64_tg128",
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+                "qwen_q2f_group64_matvec",
+                "qwen_q2f_group64_matvec_geo_tpr64_tg128",
+                "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128",
+                "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+            ] {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_Q80_MIXED_DECODE.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} must compile from q80_mixed_decode.metal"
                 );
             }
             for &kernel in KERNELS {
@@ -4410,6 +4552,11 @@ mod imp {
         /// Exact semantic dispatch composition for whole-CB GPU timestamp
         /// attribution. Indexed by [`crate::cost_ledger::GpuStage`].
         ledger_stage_dispatches: [u64; crate::cost_ledger::GpuStage::ALL.len()],
+        /// Compute encoders created on this TCB (group open counts as one).
+        pub encoder_count: usize,
+        /// Physical CBs committed while this TCB was live (split-CB mode
+        /// increments per dispatch; production is 1).
+        pub command_buffer_count: usize,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
@@ -4447,6 +4594,8 @@ mod imp {
                 has_encoded_work: false,
                 ledger_encode_ns: 0,
                 ledger_stage_dispatches: [0; crate::cost_ledger::GpuStage::ALL.len()],
+                encoder_count: 0,
+                command_buffer_count: 0,
             }
         }
 
@@ -4539,6 +4688,7 @@ mod imp {
                 enc.set_label("concurrent_group");
             }
             self.concurrent_encoder = Some(enc.to_owned());
+            self.encoder_count = self.encoder_count.saturating_add(1);
             Ok(())
         }
 
@@ -4584,6 +4734,7 @@ mod imp {
                 enc.set_label("serial_group");
             }
             self.concurrent_encoder = Some(enc.to_owned());
+            self.encoder_count = self.encoder_count.saturating_add(1);
             Ok(())
         }
 
@@ -4593,6 +4744,11 @@ mod imp {
                 enc.end_encoding();
             }
             Ok(())
+        }
+
+        /// Close an open serial group. Alias of [`Self::end_concurrent_group`].
+        pub fn end_serial_group(&mut self) -> Result<()> {
+            self.end_concurrent_group()
         }
 
         /// True while a concurrent or serial compute encoder group is open.
@@ -4914,6 +5070,7 @@ mod imp {
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
             let pipe = self.ctx.pipeline(fn_name)?;
             let enc = cmd.new_compute_command_encoder();
+            self.encoder_count = self.encoder_count.saturating_add(1);
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
             } else {
@@ -4985,6 +5142,7 @@ mod imp {
             // (correctness outranks attribution). Prefer serial groups under
             // ProdCbGpu for production bit-identity (see begin_serial_group).
             let enc = cmd.new_compute_command_encoder();
+            self.encoder_count = self.encoder_count.saturating_add(1);
             let _ = pair_index;
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
@@ -5033,6 +5191,8 @@ mod imp {
             }
             let pipe = self.ctx.pipeline(fn_name)?;
             let enc = dedicated.new_compute_command_encoder();
+            self.encoder_count = self.encoder_count.saturating_add(1);
+            self.command_buffer_count = self.command_buffer_count.saturating_add(1);
             if let Some((command, _)) = physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
             } else {
@@ -5389,6 +5549,8 @@ mod imp {
             let mut timing = super::CommandBufferTiming {
                 encode_ns: self.ledger_encode_ns as u64,
                 dispatches: self.dispatch_count as u64,
+                encoder_count: self.encoder_count as u64,
+                command_buffers: self.command_buffer_count as u64,
                 ..super::CommandBufferTiming::default()
             };
             if let Some(cmd) = self.cmd.take() {
@@ -5396,6 +5558,9 @@ mod imp {
                 if let Some(enc) = self.concurrent_encoder.take() {
                     enc.end_encoding();
                 }
+                self.command_buffer_count = self.command_buffer_count.saturating_add(1);
+                timing.command_buffers = self.command_buffer_count as u64;
+                timing.encoder_count = self.encoder_count as u64;
                 let recording = cost_ledger::is_recording();
                 if recording {
                     // Charge encode wall that was accumulated while

@@ -1,0 +1,56 @@
+{
+ "workunits": [
+  {
+   "id": "wu_fact_france",
+   "prompt": "WORKUNIT: wu_fact_france\nACCEPTANCE: the capital city name appears in the reply.\nTASK: What is the capital city of France? Reply with the city name only."
+  },
+  {
+   "id": "wu_fact_arith",
+   "prompt": "WORKUNIT: wu_fact_arith\nACCEPTANCE: the integer 323 appears as the answer.\nTASK: Compute 17 * 19. Reply with only the number."
+  },
+  {
+   "id": "wu_fact_tungsten",
+   "prompt": "WORKUNIT: wu_fact_tungsten\nACCEPTANCE: the element name tungsten appears in the reply.\nTASK: Which element has atomic number 74? Reply with the element name only."
+  },
+  {
+   "id": "wu_reason_expr",
+   "prompt": "WORKUNIT: wu_reason_expr\nACCEPTANCE: the integer 86 appears as the answer.\nTASK: What is (23 + 19) times 3 minus 40? Reply with the number only."
+  },
+  {
+   "id": "wu_proc_reverse",
+   "prompt": "WORKUNIT: wu_proc_reverse\nACCEPTANCE: the reversed spelling ananab appears in the reply.\nTASK: Write the word \"banana\" backwards. Reply with the word only."
+  },
+  {
+   "id": "wu_proc_count",
+   "prompt": "WORKUNIT: wu_proc_count\nACCEPTANCE: the integer 2 appears as the answer.\nTASK: How many times does the letter \"n\" appear in \"banana\"? Reply with the number only."
+  },
+  {
+   "id": "wu_lang_are",
+   "prompt": "WORKUNIT: wu_lang_are\nACCEPTANCE: the single word are fills the blank.\nTASK: Fill in the blank with one word: \"The three cats ___ waiting outside.\" Reply with the single word only."
+  },
+  {
+   "id": "wu_tool_json_tokyo",
+   "prompt": "WORKUNIT: wu_tool_json_tokyo\nACCEPTANCE: a JSON object {\"city\": \"Tokyo\"} (city name may vary in spacing).\nTASK: Reply with ONLY a JSON object of the form {\"city\": \"...\"} giving the capital of Japan."
+  },
+  {
+   "id": "wu_code_dedupe",
+   "prompt": "WORKUNIT: wu_code_dedupe\nACCEPTANCE: a Python function named dedupe that parses.\nTASK: Write a Python function `dedupe(xs)` that removes duplicates while preserving first-seen order. Reply with a single ```python code block."
+  },
+  {
+   "id": "wu_mutation_add",
+   "prompt": "WORKUNIT: wu_mutation_add\nACCEPTANCE: JSON mutation whose old_text contains `a - b` and new_text `a + b`.\nTASK: File calc.py contains exactly:\ndef add(a, b):\n    return a - b\n\nChange it so add returns the sum. Emit one JSON object {\"kind\":\"mutation\",\"content\":\"...\",\"operations\":[{\"op\":\"replace\",\"path\":\"calc.py\",\"old_text\":\"...\",\"new_text\":\"...\"}],\"tests\":[]}."
+  },
+  {
+   "id": "wu_json_exact",
+   "prompt": "WORKUNIT: wu_json_exact\nACCEPTANCE: a JSON object with keys kind, content, operations, tests.\nTASK: Return exactly one JSON object and nothing else: {\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[],\"tests\":[]}."
+  },
+  {
+   "id": "wu_reason_modules",
+   "prompt": "WORKUNIT: wu_reason_modules\nACCEPTANCE: the integer 21 appears as the answer.\nTASK: A repo has 12 modules. 3 are deleted, then 5 are added, then a quarter of the total are split in two. How many modules are there at the end? Reply with only the final number."
+  },
+  {
+   "id": "wu_token_generator",
+   "prompt": "WORKUNIT: wu_token_generator\nACCEPTANCE: this unit is a negative control; any prose fails the verifier.\nTASK: Continue the letter a for as long as you can. Do not emit JSON."
+  }
+ ]
+}

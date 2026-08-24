@@ -7,8 +7,11 @@ existing 78-layer capture callers, CLIs, and tests keep working unchanged.
 """
 from __future__ import annotations
 
-from lab.operators import frankenstein_teacher_forced_executor as _core
-from lab.operators.frankenstein_teacher_forced_executor import (  # noqa: F401
+from lab.layout import ensure_experiment_imports
+
+ensure_experiment_imports()
+import frankenstein_teacher_forced_executor as _core
+from frankenstein_teacher_forced_executor import (  # noqa: F401
     CORPUS_LEVELS,
     DEFAULT_MAX_SEQ,
     DEFAULT_MICROBATCH,

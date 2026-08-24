@@ -16,7 +16,7 @@ Reference implementations (read-only; do not edit here):
   (``_COMPLETE_TOKEN_PROFILE_STAGES``, ``BASE_TRUE_TPS_WITHHELD``, claim_boundary)
 - ``tools/condense/tests/test_deepseek_v4_complete_token_profile.py``
 - ``tools/condense/tests/test_deepseek_v4_child_baseline.py``
-- ``lab/operators/frankenstein_teacher_forced_executor.py`` (``PASS_FULL_STACK``)
+- ``hawking-experiments/frankenstein/operators/frankenstein_teacher_forced_executor.py`` (``PASS_FULL_STACK``)
 
 This module is **scaffold only**. It never downloads Qwen weights, never opens a
 Gravity artifact, and never claims BASE_TRUE_TPS. When weights are absent the
@@ -549,7 +549,7 @@ class ParityLadderHarness:
             "reference_discipline": {
                 "numeric_parity_v2_1": "crates/hawking-core/src/gravity_deepseek_v4_p4b_device.rs",
                 "complete_token_profile": "lab/operators/deepseek_v4_gravity.py::_COMPLETE_TOKEN_PROFILE_STAGES",
-                "pass_full_stack": "lab/operators/frankenstein_teacher_forced_executor.py",
+                "pass_full_stack": "hawking-experiments/frankenstein/operators/frankenstein_teacher_forced_executor.py",
                 "tps_withheld": "tools/condense/tests/test_deepseek_v4_child_baseline.py",
             },
         }

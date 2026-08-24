@@ -1,0 +1,1227 @@
+{
+  "anchors_cited_not_rederived": {
+    "artifact_bytes": 14297933604,
+    "artifact_files": 756,
+    "machine": "Apple M3 Ultra, 60 GPU cores, 103079215104 B unified, Metal 4",
+    "native_ms_per_token": 30.606,
+    "native_tps": 32.73,
+    "parameter_count": 26895998464,
+    "roof_GB_s": 595.9,
+    "tensors": 755
+  },
+  "artifact": {
+    "a_log_payload": {
+      "dropped": false,
+      "measured": true,
+      "note": "48 f32 per DeltaNet layer, read from the gravity artifact on disk",
+      "value": {
+        "elements": 2304,
+        "files": 48,
+        "max": 4.9375,
+        "mean": -0.7593834665086534,
+        "min": -5.5625
+      }
+    },
+    "bytes": 14297933604,
+    "bytes_match_anchor": true,
+    "complete_physical_bpw": 4.252735126866492,
+    "f32_tensors": 353,
+    "files": 756,
+    "files_match_anchor": true,
+    "manifest_source_weight_elements": 26895998464,
+    "manifest_tensor_count": 755,
+    "moe_like_tensor_names": [],
+    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "present": true,
+    "q4_tensors": 402,
+    "route_table_candidates": {
+      "in_proj_ba.weight": {
+        "bytes": 12535680,
+        "elements": 23592960,
+        "kind": "q4",
+        "n": 48,
+        "shape": [
+          96,
+          5120
+        ]
+      },
+      "k_proj.weight": {
+        "bytes": 44565120,
+        "elements": 83886080,
+        "kind": "q4",
+        "n": 16,
+        "shape": [
+          1024,
+          5120
+        ]
+      },
+      "linear_attn.A_log": {
+        "bytes": 9600,
+        "elements": 2304,
+        "kind": "f32",
+        "n": 48,
+        "shape": [
+          48
+        ]
+      },
+      "linear_attn.dt_bias": {
+        "bytes": 9600,
+        "elements": 2304,
+        "kind": "f32",
+        "n": 48,
+        "shape": [
+          48
+        ]
+      },
+      "q_proj.weight": {
+        "bytes": 534774400,
+        "elements": 1006632960,
+        "kind": "q4",
+        "n": 16,
+        "shape": [
+          12288,
+          5120
+        ]
+      },
+      "v_proj.weight": {
+        "bytes": 44565120,
+        "elements": 83886080,
+        "kind": "q4",
+        "n": 16,
+        "shape": [
+          1024,
+          5120
+        ]
+      }
+    },
+    "state_bytes": {
+      "deltanet_conv_resident_bytes": 5898240,
+      "deltanet_recurrent_resident_bytes": 150994944,
+      "gqa_kv_write_bytes_one_pos": 131072,
+      "note": "recurrent/conv state is the DeltaNet path's memory; GQA KV is the full-attention path's memory. Neither is an expert cache."
+    }
+  },
+  "cases": {
+    "deltanet_beta_continuous": {
+      "PARENT_WEIGHT_EQUIVALENTS_PER_ROUTE": {
+        "dropped": false,
+        "measured": true,
+        "unit": "parent weights / route",
+        "value": 10240.0
+      },
+      "ROUTES_PER_MILLION_PARENT_WEIGHTS": {
+        "dropped": false,
+        "measured": true,
+        "unit": "routes / 1e6 parent weights",
+        "value": 97.65625
+      },
+      "constructed": false,
+      "mechanism": {
+        "delta_net_layers": 48,
+        "discrete": false,
+        "kind": "per_token_continuous_gate",
+        "per_token_decision": true,
+        "sites": {
+          "dispatch": {
+            "excerpt": "\"qwen80_ba_to_decay_beta_f32\",",
+            "line": 3363,
+            "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+          },
+          "gated_delta": {
+            "excerpt": "fn encode_gated_delta(",
+            "line": 2218,
+            "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+          },
+          "kernel": {
+            "excerpt": "kernel void qwen80_ba_to_decay_beta_f32(",
+            "line": 188,
+            "path": "crates/hawking-core/shaders/qwen80_device_activations.metal"
+          }
+        },
+        "value_heads": 48
+      },
+      "n_routes": 2304,
+      "name": "DeltaNet ba_to_decay_beta per value-head (real, continuous, not a skip)",
+      "notes": "48 beta/decay scalars per DeltaNet layer \u00d7 48 layers = 2304 selector applications per token. Every value head still runs gated-delta. in_proj_ba is the selector projection (96\u00d75120 q4), not a skip table.",
+      "parent_weights": 23592960,
+      "skips_parent_compute": false,
+      "verdict": {
+        "because": "one route replaces 10240.000 parent values and skips no parent compute (below 1000000 and not a skip)",
+        "label": "NOT_WORTH_IT",
+        "skips_parent_compute": false
+      }
+    },
+    "distinguishes": true,
+    "favourable": {
+      "PARENT_WEIGHT_EQUIVALENTS_PER_ROUTE": {
+        "dropped": false,
+        "measured": true,
+        "unit": "parent weights / route",
+        "value": 13107200.0
+      },
+      "ROUTES_PER_MILLION_PARENT_WEIGHTS": {
+        "dropped": false,
+        "measured": true,
+        "unit": "routes / 1e6 parent weights",
+        "value": 0.0762939453125
+      },
+      "constructed": false,
+      "mechanism": {
+        "gqa_layers": 16,
+        "group_size": 6,
+        "kind": "static_head_grouping",
+        "kv_heads": 4,
+        "per_token_decision": false,
+        "q_heads": 24,
+        "sites": {
+          "encode_gqa": {
+            "excerpt": "fn encode_gqa(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {",
+            "line": 3431,
+            "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+          },
+          "geometry": {
+            "excerpt": "/// Source rule: GQA iff `(layer + 1) % 4 == 0` (layers 3, 7, \u2026, 63).",
+            "line": 85,
+            "path": "crates/hawking-core/src/model/qwen38_geometry.rs"
+          },
+          "group_size_rust": {
+            "excerpt": "let group_size = (n_heads / n_kv_heads) as u32;",
+            "line": 10524,
+            "path": "crates/hawking-core/src/kernels/mod.rs"
+          },
+          "kv_head_index_metal": {
+            "excerpt": "const uint kv_h   = h / GROUP;",
+            "line": 618,
+            "path": "crates/hawking-core/shaders/mha.metal"
+          }
+        }
+      },
+      "n_routes": 64,
+      "name": "GQA KV-sharing (real)",
+      "notes": "24 query heads share 4 KV heads (group=6) on 16 layers. Each KV-head route skips 20 explicit K/V head projections of 256\u00d75120. Static: the same grouping every token. Kernel: mha_decode_f32 `kv_h = h / GROUP`.",
+      "parent_weights": 838860800,
+      "skips_parent_compute": true,
+      "verdict": {
+        "because": "one route replaces 13107200.000 parent values (>= 1000000) and skips their compute",
+        "label": "WORTH_IT",
+        "skips_parent_compute": true
+      }
+    },
+    "moe_absent": {
+      "PARENT_WEIGHT_EQUIVALENTS_PER_ROUTE": {
+        "dropped": true,
+        "measured": false,
+        "reason": "n_routes == 0; inverse would be inf and is dropped rather than faked",
+        "value": null
+      },
+      "ROUTES_PER_MILLION_PARENT_WEIGHTS": {
+        "dropped": false,
+        "measured": true,
+        "note": "zero routes against a real parent-weight denominator",
+        "unit": "routes / 1e6 parent weights",
+        "value": 0.0
+      },
+      "constructed": false,
+      "mechanism": {
+        "kind": "absent_moe",
+        "per_token_decision": false,
+        "sites": {
+          "dense_refuse": {
+            "excerpt": "\"qwen38 is dense; config contains MoE keys\".into(),",
+            "line": 171,
+            "path": "crates/hawking-core/src/model/qwen38_geometry.rs"
+          },
+          "schedule_no_moe": {
+            "excerpt": ".any(|name| name.contains(\"expert\") || name.contains(\"router\") || name.contains(\"moe\")));",
+            "line": 179,
+            "path": "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs"
+          }
+        }
+      },
+      "n_routes": 0,
+      "name": "MoE expert top-k (absent)",
+      "notes": "qwen38_accept_config refuses num_experts / moe_intermediate_size. The 64-layer schedule asserts the MLP suffix contains no expert/router/moe kernel. Zero discrete expert decisions is the finding.",
+      "parent_weights": 26895998464,
+      "skips_parent_compute": false,
+      "verdict": {
+        "because": "measured route count is zero; nothing to judge as worth or not",
+        "label": "ABSENT",
+        "skips_parent_compute": false
+      }
+    },
+    "unfavourable_eight_cheap_values": {
+      "PARENT_WEIGHT_EQUIVALENTS_PER_ROUTE": {
+        "dropped": false,
+        "measured": true,
+        "unit": "parent weights / route",
+        "value": 1.0
+      },
+      "ROUTES_PER_MILLION_PARENT_WEIGHTS": {
+        "dropped": false,
+        "measured": true,
+        "unit": "routes / 1e6 parent weights",
+        "value": 1000000.0
+      },
+      "constructed": true,
+      "mechanism": {
+        "kind": "constructed_eight_value_route"
+      },
+      "n_routes": 8,
+      "name": "eight cheap values (constructed)",
+      "notes": "The steer: a route replacing eight cheap values is stupid.",
+      "parent_weights": 8,
+      "skips_parent_compute": false,
+      "verdict": {
+        "because": "one route replaces 1.000 parent values (< 64, the 'eight cheap values' bar)",
+        "label": "NOT_WORTH_IT",
+        "skips_parent_compute": false
+      }
+    },
+    "unfavourable_real_alog_misread": {
+      "PARENT_WEIGHT_EQUIVALENTS_PER_ROUTE": {
+        "dropped": false,
+        "measured": true,
+        "unit": "parent weights / route",
+        "value": 1.0
+      },
+      "ROUTES_PER_MILLION_PARENT_WEIGHTS": {
+        "dropped": false,
+        "measured": true,
+        "unit": "routes / 1e6 parent weights",
+        "value": 1000000.0
+      },
+      "constructed": true,
+      "mechanism": {
+        "bytes": 9600,
+        "elements": 2304,
+        "kind": "parameter_vector_misread_as_routing",
+        "per_token_decision": false,
+        "sites": {
+          "ba_kernel": {
+            "excerpt": "kernel void qwen80_ba_to_decay_beta_f32(",
+            "line": 188,
+            "path": "crates/hawking-core/shaders/qwen80_device_activations.metal"
+          }
+        },
+        "tensor": "linear_attn.A_log"
+      },
+      "n_routes": 2304,
+      "name": "DeltaNet A_log as if it were a route table (real tensor, dishonest reading)",
+      "notes": "A_log is 2304 f32 decay-scale parameters (9600 bytes). Treating each scalar as a 'route' replaces one cheap value and skips no head of gated-delta. This is the constructed unfavourable pole using a real tensor.",
+      "parent_weights": 2304,
+      "skips_parent_compute": false,
+      "verdict": {
+        "because": "one route replaces 1.000 parent values (< 64, the 'eight cheap values' bar)",
+        "label": "NOT_WORTH_IT",
+        "skips_parent_compute": false
+      }
+    },
+    "unfavourable_real_gate": {
+      "PARENT_WEIGHT_EQUIVALENTS_PER_ROUTE": {
+        "dropped": true,
+        "measured": false,
+        "reason": "parent_weights <= 0; inverse is undefined, not zero",
+        "value": null
+      },
+      "ROUTES_PER_MILLION_PARENT_WEIGHTS": {
+        "dropped": true,
+        "measured": false,
+        "reason": "parent_weights <= 0; a rate against nothing is not a measurement",
+        "value": null
+      },
+      "constructed": false,
+      "mechanism": {
+        "added_q_proj_parent_weights": 503316480,
+        "discrete": false,
+        "gates_per_gqa_layer": 24,
+        "gqa_layers": 16,
+        "kind": "per_token_continuous_gate",
+        "per_token_decision": true,
+        "sites": {
+          "dispatch": {
+            "excerpt": "\"qwen38_attention_apply_sigmoid_gate\",",
+            "line": 3539,
+            "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+          },
+          "kernel": {
+            "excerpt": "kernel void qwen38_attention_apply_sigmoid_gate(",
+            "line": 430,
+            "path": "crates/hawking-core/shaders/qwen38_device_activations.metal"
+          }
+        }
+      },
+      "n_routes": 384,
+      "name": "GQA sigmoid attention gate (real)",
+      "notes": "qwen38_attention_apply_sigmoid_gate multiplies already-computed attention by a per-head sigmoid from the extra 6144 q_proj rows. 384 gates/token. Parent weights REPLACED = 0 (the extra q_proj rows are a cost of 503316480 values, not a skip). A zero denominator drops the rates rather than reporting 0.",
+      "parent_weights": 0,
+      "skips_parent_compute": false,
+      "verdict": {
+        "because": "384 routes replace 0 parent values and skip no parent compute",
+        "label": "NOT_WORTH_IT",
+        "skips_parent_compute": false
+      }
+    }
+  },
+  "dropped": {
+    "deltanet_beta_entropy_from_activations": {
+      "dropped": true,
+      "measured": false,
+      "reason": "per-token DeltaNet beta / GQA sigmoid-gate entropy needs device buffers from a native decode. Loading the gravity 27B while llama-server is resident is forbidden (occupancy collapse 33.47 \u2192 3.986 tok/s). Not filled with zeros.",
+      "value": null,
+      "would_require": "ascension_qwen38_hybrid_greedy against qwen38-gravity-uniform-q4-v1"
+    },
+    "gqa_sigmoid_entropy_from_activations": {
+      "dropped": true,
+      "measured": false,
+      "reason": "per-token DeltaNet beta / GQA sigmoid-gate entropy needs device buffers from a native decode. Loading the gravity 27B while llama-server is resident is forbidden (occupancy collapse 33.47 \u2192 3.986 tok/s). Not filled with zeros.",
+      "value": null,
+      "would_require": "ascension_qwen38_hybrid_greedy against qwen38-gravity-uniform-q4-v1"
+    },
+    "route_cache_hit_rate": {
+      "dropped": true,
+      "measured": false,
+      "mentions": [],
+      "reason": "no route/expert cache on the Qwen3.8 decode path; a 0% hit rate would mean 'not measured' and is the defect this campaign keeps finding",
+      "searched": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs for expert_cache/route_cache",
+      "value": null
+    },
+    "selector_token_ns_inside_production_cb": {
+      "dropped": true,
+      "measured": false,
+      "reason": "selector GPU ns below is an isolated CB at production launch geometry, not a slice of the 964-dispatch production token CB. Partitioning production GPU time requires the native 27B session.",
+      "value": null
+    }
+  },
+  "executions": {
+    "llama_server": {
+      "dropped": true,
+      "measured": false,
+      "reason": "llama-server :52484 health failed: URLError: <urlopen error [Errno 61] Connection refused>",
+      "value": null
+    },
+    "metal_selector_microbench": {
+      "compiled_production_kernels": true,
+      "loaded_gravity_weights": false,
+      "spawned_second_27b": false
+    },
+    "native_gravity_receipt": {
+      "bar": "PASS",
+      "dropped": false,
+      "measured": true,
+      "measurement_spread_pct": 0.2,
+      "median_complete_wall_ns": 30388625,
+      "n_process_runs": 3,
+      "note": "Prior native complete-wall on the gravity artifact. Not re-run: GPU occupancy is NOT free: a native run measured 3.986 tok/s with two model servers resident against 33.47 with one. This process will not load the gravity artifact.",
+      "source": "receipts/headless/QWEN38_GRAVITY_NATIVE.json",
+      "value": 32.907049924108115
+    }
+  },
+  "geometry": {
+    "delta_net_layers": 48,
+    "gqa_group_size": 6,
+    "gqa_layers": 16,
+    "hidden": 5120,
+    "layers": 64,
+    "mixer_per_layer": [
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa",
+      "delta_net",
+      "delta_net",
+      "delta_net",
+      "gqa"
+    ],
+    "sites": {
+      "ba_kernel": {
+        "excerpt": "kernel void qwen80_ba_to_decay_beta_f32(",
+        "line": 188,
+        "path": "crates/hawking-core/shaders/qwen80_device_activations.metal"
+      },
+      "ba_to_decay_dispatch": {
+        "excerpt": "\"qwen80_ba_to_decay_beta_f32\",",
+        "line": 3363,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "dense_refuse_moe": {
+        "excerpt": "\"qwen38 is dense; config contains MoE keys\".into(),",
+        "line": 171,
+        "path": "crates/hawking-core/src/model/qwen38_geometry.rs"
+      },
+      "encode_deltanet": {
+        "excerpt": "fn encode_deltanet(",
+        "line": 3305,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "encode_gqa": {
+        "excerpt": "fn encode_gqa(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {",
+        "line": 3431,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "encode_layers_match": {
+        "excerpt": "fn encode_layers(&self, tcb: &mut TokenCommandBuffer<'_>) -> Result<()> {",
+        "line": 3565,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "encode_mixer": {
+        "excerpt": "fn encode_mixer(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {",
+        "line": 2264,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "gated_delta_dispatch": {
+        "excerpt": "fn encode_gated_delta(",
+        "line": 2218,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "mha_group_size": {
+        "excerpt": "let group_size = (n_heads / n_kv_heads) as u32;",
+        "line": 10524,
+        "path": "crates/hawking-core/src/kernels/mod.rs"
+      },
+      "mha_kv_h": {
+        "excerpt": "const uint kv_h   = h / GROUP;",
+        "line": 618,
+        "path": "crates/hawking-core/shaders/mha.metal"
+      },
+      "mha_tcb": {
+        "excerpt": "pub fn mha_decode_f32_tcb(",
+        "line": 10506,
+        "path": "crates/hawking-core/src/kernels/mod.rs"
+      },
+      "mixer_kind_fn": {
+        "excerpt": "pub fn qwen38_mixer_kind(layer: usize) -> Result<Qwen38MixerKind> {",
+        "line": 86,
+        "path": "crates/hawking-core/src/model/qwen38_geometry.rs"
+      },
+      "mixer_kind_rule": {
+        "excerpt": "/// Source rule: GQA iff `(layer + 1) % 4 == 0` (layers 3, 7, \u2026, 63).",
+        "line": 85,
+        "path": "crates/hawking-core/src/model/qwen38_geometry.rs"
+      },
+      "schedule_no_moe": {
+        "excerpt": ".any(|name| name.contains(\"expert\") || name.contains(\"router\") || name.contains(\"moe\")));",
+        "line": 179,
+        "path": "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs"
+      },
+      "sigmoid_dispatch": {
+        "excerpt": "\"qwen38_attention_apply_sigmoid_gate\",",
+        "line": 3539,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "sigmoid_kernel": {
+        "excerpt": "kernel void qwen38_attention_apply_sigmoid_gate(",
+        "line": 430,
+        "path": "crates/hawking-core/shaders/qwen38_device_activations.metal"
+      }
+    }
+  },
+  "git": "0d0ff83f0631a9bb952817c7982e82bb8ae6da66",
+  "kernel_binding": {
+    "anchor_note": "Anchor '38 dispatched against 554 declared' is the bindable-name literals in qwen38_hybrid_decode.rs (41) against kernel-void count in crates/hawking-core/shaders (561). Default-on unique production kernels are fewer; dispatches/token are 964.",
+    "dispatch_identity": "1 embed + 64 layers \u00d7 15 + 3 terminal = 964",
+    "hybrid_decode_bindable_kernel_name_literals": 41,
+    "hybrid_decode_bindable_names": [
+      "q80_binary_group_csr_matvec_bytes",
+      "q80_binary_group_csr_matvec_tg256",
+      "q80_binary_group_matvec_simd_bytes",
+      "q80_binary_group_matvec_tg256",
+      "q80_hgravs01_factor_matvec_simd",
+      "q80_hgravs01_factor_matvec_simd3",
+      "q80_sparse_q1_apply_csr",
+      "q80_uniform8_matvec_simd_bytes",
+      "q80_uniform8_matvec_tg256",
+      "qwen38_attention_apply_sigmoid_gate",
+      "qwen38_f32_stream_probe",
+      "qwen38_fuse_split_ba_f32",
+      "qwen38_fuse_split_qkvz_f32",
+      "qwen38_gated_delta_decode_vi",
+      "qwen38_gated_delta_decode_vi_simd",
+      "qwen38_gqa_qk_norm_rope_cache_f32",
+      "qwen38_gqa_qk_norm_rope_cache_tg",
+      "qwen38_hgrafv_embedding_lookup",
+      "qwen38_hgravu_embedding_lookup",
+      "qwen38_qkvz_rearrange_conv_l2_f32",
+      "qwen80_ba_to_decay_beta_f32",
+      "qwen80_deltanet_gated_rmsnorm_f32",
+      "qwen80_deltanet_gated_rmsnorm_tg",
+      "qwen80_gated_delta_decode_tg",
+      "qwen80_residual_rmsnorm_f32",
+      "qwen80_residual_rmsnorm_tg",
+      "qwen_affine_q2_group32_matvec",
+      "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "qwen_uniform_hgravu_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_embedding_lookup",
+      "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+      "qwen_uniform_q4_group64_matvec_vecgroup",
+      "qwen_uniform_q4_group64_matvec_vecgroup_r4",
+      "qwen_uniform_q4_group64_matvec_vecgroup_x64",
+      "sample_argmax_f32_pass1",
+      "sample_argmax_f32_pass2"
+    ],
+    "production_default_unique_count": 13,
+    "production_default_unique_kernels": [
+      "mha_decode_f32",
+      "qwen38_attention_apply_sigmoid_gate",
+      "qwen38_gated_delta_decode_vi_simd",
+      "qwen38_gqa_qk_norm_rope_cache_tg",
+      "qwen38_qkvz_rearrange_conv_l2_f32",
+      "qwen80_ba_to_decay_beta_f32",
+      "qwen80_deltanet_gated_rmsnorm_tg",
+      "qwen80_residual_rmsnorm_tg",
+      "qwen80_silu_mul_f32",
+      "qwen_next_add_residual",
+      "qwen_uniform_q4_embedding_lookup",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "sample_argmax_f32"
+    ],
+    "production_dispatches_per_token": 964,
+    "shader_declared_kernel_voids": 561,
+    "shader_files": [
+      {
+        "file": "affine2_group32_matvec.metal",
+        "kernel_void": 3
+      },
+      {
+        "file": "attn.metal",
+        "kernel_void": 9
+      },
+      {
+        "file": "common.metal",
+        "kernel_void": 45
+      },
+      {
+        "file": "deepseek_v4_mhc_control_exp.metal",
+        "kernel_void": 0
+      },
+      {
+        "file": "deepseek_v4_p7.metal",
+        "kernel_void": 3
+      },
+      {
+        "file": "dsv4f_activation_x_batch.metal",
+        "kernel_void": 6
+      },
+      {
+        "file": "dsv4f_native_token_graph.metal",
+        "kernel_void": 11
+      },
+      {
+        "file": "gk_family.metal",
+        "kernel_void": 11
+      },
+      {
+        "file": "gravity_pq.metal",
+        "kernel_void": 47
+      },
+      {
+        "file": "matmul.metal",
+        "kernel_void": 39
+      },
+      {
+        "file": "megakernel_qwen3b.metal",
+        "kernel_void": 3
+      },
+      {
+        "file": "mha.metal",
+        "kernel_void": 19
+      },
+      {
+        "file": "moe.metal",
+        "kernel_void": 38
+      },
+      {
+        "file": "q80_codec_activity.metal",
+        "kernel_void": 2
+      },
+      {
+        "file": "q80_matvec_geometry_gen.metal",
+        "kernel_void": 3
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel_void": 42
+      },
+      {
+        "file": "quant.metal",
+        "kernel_void": 76
+      },
+      {
+        "file": "qwen30_device_expert_table.metal",
+        "kernel_void": 18
+      },
+      {
+        "file": "qwen30_quality_repack_sparse_gate_up.metal",
+        "kernel_void": 1
+      },
+      {
+        "file": "qwen38_device_activations.metal",
+        "kernel_void": 10
+      },
+      {
+        "file": "qwen80_all_ten_routed_expert_wave.metal",
+        "kernel_void": 4
+      },
+      {
+        "file": "qwen80_device_activations.metal",
+        "kernel_void": 13
+      },
+      {
+        "file": "qwen80_device_expert_table.metal",
+        "kernel_void": 6
+      },
+      {
+        "file": "qwen80_direct_packed_attention_stage.metal",
+        "kernel_void": 2
+      },
+      {
+        "file": "qwen80_direct_packed_terminal_head_preflight.metal",
+        "kernel_void": 5
+      },
+      {
+        "file": "qwen80_gqa_kv_cache_preflight.metal",
+        "kernel_void": 4
+      },
+      {
+        "file": "qwen80_moe_wave_aggregate_second_residual.metal",
+        "kernel_void": 2
+      },
+      {
+        "file": "qwen80_postnorm_router_top10.metal",
+        "kernel_void": 3
+      },
+      {
+        "file": "qwen80_routed_expert_wave.metal",
+        "kernel_void": 3
+      },
+      {
+        "file": "qwen80_shared_expert_wave.metal",
+        "kernel_void": 5
+      },
+      {
+        "file": "qwen_binary.metal",
+        "kernel_void": 10
+      },
+      {
+        "file": "qwen_binary_precision_safe_tiled_candidate.metal",
+        "kernel_void": 1
+      },
+      {
+        "file": "qwen_complete_runtime.metal",
+        "kernel_void": 9
+      },
+      {
+        "file": "qwen_direct_packed_gate_up_pair.metal",
+        "kernel_void": 2
+      },
+      {
+        "file": "qwen_direct_packed_gate_up_swiglu_fused.metal",
+        "kernel_void": 3
+      },
+      {
+        "file": "qwen_direct_packed_gate_up_swiglu_paired_scalar_order.metal",
+        "kernel_void": 1
+      },
+      {
+        "file": "qwen_next.metal",
+        "kernel_void": 7
+      },
+      {
+        "file": "qwen_uniform_q4.metal",
+        "kernel_void": 28
+      },
+      {
+        "file": "qwen_uniform_qn.metal",
+        "kernel_void": 3
+      },
+      {
+        "file": "rwkv7.metal",
+        "kernel_void": 28
+      },
+      {
+        "file": "sample.metal",
+        "kernel_void": 10
+      },
+      {
+        "file": "strand_bitslice.metal",
+        "kernel_void": 26
+      }
+    ]
+  },
+  "live_27b_policy": "GPU occupancy is NOT free: a native run measured 3.986 tok/s with two model servers resident against 33.47 with one. This process will not load the gravity artifact.",
+  "per_token_decisions": {
+    "continuous_deltanet_beta_decay_per_token": {
+      "dropped": false,
+      "kind": "per_token_continuous_gate",
+      "measured": true,
+      "note": "48 value heads \u00d7 48 DeltaNet layers; all heads still run",
+      "site": {
+        "excerpt": "\"qwen80_ba_to_decay_beta_f32\",",
+        "line": 3363,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "value": 2304
+    },
+    "continuous_gqa_sigmoid_gates_per_token": {
+      "dropped": false,
+      "kind": "per_token_continuous_gate",
+      "measured": true,
+      "note": "24 heads \u00d7 16 GQA layers; attention already computed",
+      "site": {
+        "excerpt": "\"qwen38_attention_apply_sigmoid_gate\",",
+        "line": 3539,
+        "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      },
+      "value": 384
+    },
+    "discrete_expert_routes_per_token": {
+      "dropped": false,
+      "kind": "measured_absent",
+      "measured": true,
+      "note": "dense model; zero is a count, not a missing measurement",
+      "site": {
+        "excerpt": "\"qwen38 is dense; config contains MoE keys\".into(),",
+        "line": 171,
+        "path": "crates/hawking-core/src/model/qwen38_geometry.rs"
+      },
+      "value": 0
+    },
+    "discrete_gqa_grouping_choices_per_token": {
+      "dropped": false,
+      "kind": "static_architecture",
+      "measured": true,
+      "note": "kv_h = h / 6 in mha_decode_f32. Index arithmetic, identical every token.",
+      "site": {
+        "excerpt": "const uint kv_h   = h / GROUP;",
+        "line": 618,
+        "path": "crates/hawking-core/shaders/mha.metal"
+      },
+      "value": 0
+    },
+    "discrete_mixer_kind_choices_per_token": {
+      "dropped": false,
+      "kind": "static_architecture",
+      "measured": true,
+      "note": "qwen38_mixer_kind(layer) is a function of layer index only ((layer+1)%4==0 \u2192 GQA). Not a per-token decision.",
+      "site": {
+        "excerpt": "pub fn qwen38_mixer_kind(layer: usize) -> Result<Qwen38MixerKind> {",
+        "line": 86,
+        "path": "crates/hawking-core/src/model/qwen38_geometry.rs"
+      },
+      "value": 0
+    },
+    "genuine_discrete_route_decisions_per_token": {
+      "dropped": false,
+      "kind": "measured_absent",
+      "measured": true,
+      "note": "The decode path makes no learned discrete per-token route decision. Mixer kind and GQA grouping are static. DeltaNet beta and the GQA sigmoid gate are continuous and skip no parent weights. Recording zero is the finding.",
+      "value": 0
+    },
+    "mixer_entropy_bits_given_layer": {
+      "dropped": false,
+      "measured": true,
+      "note": "given layer index the mixer is determined; entropy is zero",
+      "unit": "bits",
+      "value": 0.0
+    },
+    "mixer_layer_type_entropy_bits": {
+      "distribution": {
+        "delta_net": 48,
+        "gqa": 16
+      },
+      "dropped": false,
+      "measured": true,
+      "note": "entropy of the 48/16 DeltaNet/GQA mix across layers, not per token",
+      "unit": "bits / layer",
+      "value": 0.8112781244591328
+    },
+    "route_reuse_across_layers": {
+      "deltanet_beta_shared_across_layers": {
+        "dropped": false,
+        "measured": true,
+        "note": "each DeltaNet layer has its own in_proj_ba, A_log, dt_bias",
+        "value": false
+      },
+      "gqa_grouping_identical_on_all_gqa_layers": {
+        "dropped": false,
+        "measured": true,
+        "value": true
+      },
+      "mixer_pattern_period": {
+        "dropped": false,
+        "measured": true,
+        "note": "GQA on layers 3,7,\u2026,63; the 4-layer pattern repeats 16 times",
+        "value": 4
+      }
+    },
+    "route_reuse_across_tokens": {
+      "deltanet_beta": {
+        "dropped": false,
+        "measured": true,
+        "note": "beta/decay recomputed every token from in_proj_ba; decision not cached",
+        "unit": "fraction",
+        "value": 0.0
+      },
+      "gqa_grouping": {
+        "dropped": false,
+        "measured": true,
+        "note": "static, identical every token",
+        "unit": "fraction",
+        "value": 1.0
+      },
+      "gqa_sigmoid_gate": {
+        "dropped": false,
+        "measured": true,
+        "note": "gate taken from this token's q_proj; decision not cached",
+        "unit": "fraction",
+        "value": 0.0
+      },
+      "mixer_kind": {
+        "dropped": false,
+        "measured": true,
+        "note": "static, identical every token",
+        "unit": "fraction",
+        "value": 1.0
+      }
+    }
+  },
+  "recorded_at": "2026-08-23T20:09:49Z",
+  "repo": "/Users/scammermike/Downloads/hawking",
+  "route_decisions_per_second": {
+    "continuous_live": {
+      "dropped": true,
+      "measured": false,
+      "reason": "no measured tokens/s to multiply by",
+      "value": null
+    },
+    "continuous_native_receipt": {
+      "decisions_per_token": 2688,
+      "dropped": false,
+      "measured": true,
+      "tokens_per_second": 32.907049924108115,
+      "unit": "1/s",
+      "value": 88454.1501960026
+    },
+    "discrete_live": {
+      "dropped": true,
+      "measured": false,
+      "reason": "no measured tokens/s to multiply by",
+      "value": null
+    },
+    "discrete_native_receipt": {
+      "decisions_per_token": 0,
+      "dropped": false,
+      "measured": true,
+      "tokens_per_second": 32.907049924108115,
+      "unit": "1/s",
+      "value": 0.0
+    }
+  },
+  "route_decisions_per_token": {
+    "continuous_selector_applications": {
+      "breakdown": {
+        "deltanet_beta_decay": 2304,
+        "gqa_sigmoid": 384
+      },
+      "dropped": false,
+      "measured": true,
+      "value": 2688
+    },
+    "discrete": {
+      "dropped": false,
+      "kind": "measured_absent",
+      "measured": true,
+      "note": "The decode path makes no learned discrete per-token route decision. Mixer kind and GQA grouping are static. DeltaNet beta and the GQA sigmoid gate are continuous and skip no parent weights. Recording zero is the finding.",
+      "value": 0
+    }
+  },
+  "route_state_bytes": {
+    "deltanet_conv_resident_bytes": 5898240,
+    "deltanet_recurrent_resident_bytes": 150994944,
+    "gqa_kv_write_bytes_one_pos": 131072,
+    "note": "recurrent/conv state is the DeltaNet path's memory; GQA KV is the full-attention path's memory. Neither is an expert cache."
+  },
+  "route_table_bytes": {
+    "deltanet_A_log_bytes": {
+      "dropped": false,
+      "elements": 2304,
+      "kind": "f32",
+      "measured": true,
+      "value": 9600
+    },
+    "deltanet_dt_bias_bytes": {
+      "dropped": false,
+      "elements": 2304,
+      "kind": "f32",
+      "measured": true,
+      "value": 9600
+    },
+    "deltanet_selector_projection_bytes": {
+      "dropped": false,
+      "elements": 23592960,
+      "kind": "q4",
+      "measured": true,
+      "n": 48,
+      "note": "96\u00d75120 q4 per DeltaNet layer; computes beta/decay, does not skip heads",
+      "shape": [
+        96,
+        5120
+      ],
+      "tensor": "linear_attn.in_proj_ba.weight",
+      "value": 12535680
+    },
+    "gqa_grouping_table_bytes": {
+      "dropped": false,
+      "kind": "measured_absent",
+      "measured": true,
+      "note": "grouping is `kv_h = h / GROUP`; there is no table to store",
+      "value": 0
+    },
+    "moe_router_bytes": {
+      "dropped": false,
+      "kind": "measured_absent",
+      "measured": true,
+      "moe_like_names": [],
+      "note": "no router/expert tensors in the 755-tensor catalog",
+      "value": 0
+    }
+  },
+  "schema": "hawking.headless.noetic_route_ledger.v1",
+  "selector_token_ns": {
+    "benches": {
+      "ba_to_decay_1_layer": {
+        "dispatches": 1,
+        "gpu_ns_reps": [
+          14416.655176319182,
+          7875.001756474376,
+          9749.986929818988,
+          7499.998901039362,
+          10250.005288980901,
+          7750.0008046627045,
+          9041.657904163003
+        ],
+        "kernel": "qwen80_ba_to_decay_beta_f32",
+        "layers": 1,
+        "median_gpu_ns": 9041.657904163003,
+        "name": "ba_to_decay_1_layer",
+        "threads_per_dispatch": 48
+      },
+      "ba_to_decay_48_layers": {
+        "dispatches": 48,
+        "gpu_ns_reps": [
+          214166.6627721861,
+          275916.6673058644,
+          222749.99355431646,
+          285624.99210238457,
+          213208.33184290677,
+          284875.00094342977,
+          233916.66763927788
+        ],
+        "kernel": "qwen80_ba_to_decay_beta_f32",
+        "layers": 48,
+        "median_gpu_ns": 233916.66763927788,
+        "name": "ba_to_decay_48_layers",
+        "threads_per_dispatch": 48
+      },
+      "eight_value_1_dispatch": {
+        "dispatches": 1,
+        "gpu_ns_reps": [
+          6666.668923571706,
+          5624.9991757795215,
+          6999.995093792677,
+          5875.001079402864,
+          6666.654371656477,
+          5499.99822396785,
+          6875.008693896234
+        ],
+        "kernel": "eight_value_route",
+        "layers": 1,
+        "median_gpu_ns": 6666.654371656477,
+        "name": "eight_value_1_dispatch",
+        "threads_per_dispatch": 8
+      },
+      "eight_value_48_dispatches": {
+        "dispatches": 48,
+        "gpu_ns_reps": [
+          149666.6664024815,
+          160374.99881349504,
+          155291.66557826102,
+          162500.00044237822,
+          153375.00371970236,
+          164625.0020712614,
+          141708.32582749426
+        ],
+        "kernel": "eight_value_route",
+        "layers": 48,
+        "median_gpu_ns": 155291.66557826102,
+        "name": "eight_value_48_dispatches",
+        "threads_per_dispatch": 8
+      },
+      "selector_token_shaped": {
+        "dispatches": 64,
+        "gpu_ns_reps": [
+          267625.0005606562,
+          343833.3369558677,
+          264375.0049173832,
+          353458.33748579025,
+          267875.00246427953,
+          363583.32727104425,
+          259874.9997559935
+        ],
+        "kernel": "ba_to_decay_48 + sigmoid_16",
+        "layers": 64,
+        "median_gpu_ns": 267875.00246427953,
+        "name": "selector_token_shaped",
+        "threads_per_dispatch": 0
+      },
+      "sigmoid_gate_16_layers": {
+        "dispatches": 16,
+        "gpu_ns_reps": [
+          62624.996644444764,
+          76124.99757669866,
+          62999.99949987978,
+          75999.99662488699,
+          62999.99949987978,
+          76333.33734702319,
+          62958.33736658096
+        ],
+        "kernel": "qwen38_attention_apply_sigmoid_gate",
+        "layers": 16,
+        "median_gpu_ns": 62999.99949987978,
+        "name": "sigmoid_gate_16_layers",
+        "threads_per_dispatch": 6144
+      },
+      "sigmoid_gate_1_layer": {
+        "dispatches": 1,
+        "gpu_ns_reps": [
+          8583.33078213036,
+          6833.332008682191,
+          8874.994819052517,
+          6999.995093792677,
+          8958.333637565374,
+          7249.996997416019,
+          8749.993867240846
+        ],
+        "kernel": "qwen38_attention_apply_sigmoid_gate",
+        "layers": 1,
+        "median_gpu_ns": 8583.33078213036,
+        "name": "sigmoid_gate_1_layer",
+        "threads_per_dispatch": 6144
+      }
+    },
+    "device": "Apple M3 Ultra",
+    "dropped": false,
+    "gpu_timestamp_authority": "MTLCommandBuffer.gpuEndTime - gpuStartTime after waitUntilCompleted; never a CPU-wait proxy",
+    "kernels_compiled_from": [
+      "crates/hawking-core/shaders/qwen80_device_activations.metal",
+      "crates/hawking-core/shaders/qwen38_device_activations.metal"
+    ],
+    "launch_geometry": {
+      "ba_to_decay": "grid (48,1,1) tg (16,1,1) \u00d7 48 DeltaNet layers",
+      "sigmoid_gate": "grid (6144,1,1) tg (256,1,1) \u00d7 16 GQA layers"
+    },
+    "measured": true,
+    "note": "Isolated selector command buffer at production launch geometry. Not inside the production 964-dispatch token CB, so this is the selector's own GPU time, not its contribution to token wall (a small kernel's isolated ns overstates its in-token cost).",
+    "unit": "ns",
+    "value": 267875.00246427953
+  },
+  "self_check_fails": [],
+  "what_i_watched_fail": [
+    {
+      "what": "treat mixer_kind as a per-token route",
+      "what_happened": "qwen38_mixer_kind is a function of layer index only (crates/hawking-core/src/model/qwen38_geometry.rs:86). Counting 64 mixer choices/token would invent routes. Recorded as static, 0 per-token decisions."
+    },
+    {
+      "what": "count MoE expert top-k on Qwen3.8",
+      "what_happened": "geometry refuses num_experts; the 64-layer schedule asserts the MLP suffix has no expert/router/moe kernel; the artifact catalog has 0 moe-like names. Zero discrete expert routes is the finding."
+    },
+    {
+      "what": "count continuous DeltaNet beta as discrete routes that skip work",
+      "what_happened": "ba_to_decay_beta writes 48 decay/beta scalars per DeltaNet layer and encode_gated_delta still runs all 48 value heads. The ledger marks skips_parent_compute=False and verdict NOT_WORTH_IT / MARGINAL."
+    },
+    {
+      "what": "report route_cache_hit_rate = 0 because there is no cache",
+      "what_happened": "Dropped. A zero that means 'not measured' is the defect this campaign keeps finding."
+    },
+    {
+      "what": "measure beta entropy from a native 27B decode",
+      "what_happened": "GPU occupancy is NOT free: a native run measured 3.986 tok/s with two model servers resident against 33.47 with one. This process will not load the gravity artifact."
+    },
+    {
+      "what": "apply tree-state.patch onto tools/haider in this sparse checkout",
+      "what_happened": "git apply failed with 'tools/haider/hcli/*.py: No such file or directory'. Applied with --exclude tools/haider. Baseline suite was run from ~/Downloads/hawking-copy."
+    },
+    {
+      "what": "reproduce 464 passed, 1 skipped",
+      "what_happened": "HCLI_SWAP_CEILING_GIB=64 pytest tools/haider/hcli/tests from hawking-copy: 463 passed, 2 skipped. The extra skip is test_mlx_backend.py: mlx_lm.server --help did not answer in this environment. The expected skip is the live grok-run audit."
+    },
+    {
+      "what": "a ledger that only ever reports routing is fine",
+      "what_happened": "favourable verdict=WORTH_IT; A_log-as-route verdict=NOT_WORTH_IT; eight-cheap-values verdict=NOT_WORTH_IT; sigmoid-gate rates dropped because parent_weights replaced = 0. distinguishes=True"
+    },
+    {
+      "what": "live llama decode",
+      "what_happened": "llama-server :52484 health failed: URLError: <urlopen error [Errno 61] Connection refused>"
+    }
+  ]
+}

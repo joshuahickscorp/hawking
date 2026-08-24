@@ -1,0 +1,866 @@
+{
+  "schema": "hawking.headless.noetic_organ_census.v1",
+  "generated_at": "2026-08-23T18:42:17Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "artifact": {
+    "root": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "files": 756,
+    "bytes": 14297933604,
+    "tensor_count": 755,
+    "parameter_count": 26895998464,
+    "complete_physical_bpw": 4.252735126866492,
+    "codec_families": {
+      "grouped_absmax_q4_group64": 402,
+      "raw_f32": 353
+    },
+    "manifest_schema": "hawking.ascent.qwen38_language_uniform_q4.v1",
+    "anchors_not_rederived": {
+      "measured_tps": 32.73,
+      "measured_ms_per_token": 30.606,
+      "machine": "Apple M3 Ultra, 60 GPU cores, 103079215104 B, Metal 4",
+      "measured_roof_GB_s": 595.9,
+      "kernel_binding": "38 dispatched against 554 declared (G104 NX genome)",
+      "decode_source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "two_servers_tps": 3.986,
+      "one_server_tps": 33.47
+    }
+  },
+  "capture": {
+    "kind": "cpu_hybrid_prefill_of_gravity_q4_on_real_token_ids",
+    "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "tokenizer": "live llama-server :52484 /tokenize (Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf tokenizer, not a second load)",
+    "n_tokens": 128,
+    "token_ids_head": [
+      814,
+      20139,
+      11,
+      303,
+      18541,
+      58655,
+      321,
+      506,
+      2984,
+      11,
+      1204,
+      264,
+      18826,
+      10263,
+      264,
+      364
+    ],
+    "prompts": [
+      "Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code. Start from the AST.",
+      "def merge(a, b):\n    i = j = 0\n    out = []\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            out.append(a[i]); i += 1\n        else:\n            out.append(b[j]); j += 1\n    return out + a[i:] + b[j:]\n",
+      "Prove that the sum of the first n odd numbers is n squared, by induction.",
+      "Write a step-by-step plan to bisect a Metal shader that silently drops a remainder tile."
+    ],
+    "math": "Qwen3_5 hybrid: Gated-DeltaNet (fused QKVZ/BA, causal conv+silu, L2 Q/K, recurrent gated delta, gated RMSNorm, out_proj) and GQA (q_proj+output_gate, qk RMSNorm as 1+\u03b4, rotate_half RoPE \u03b8=1e7 on first 64 of 256, sigmoid gate, o_proj) then SwiGLU MLP. Norms packed as hf_gemma_delta. Weights are the gravity HQ30UQ4/f32v2 artifact, dequantized per tensor on CPU. No GPU, no second 27B.",
+    "not_synthetic": true,
+    "gaussian_proxy_used": false,
+    "resident_llama_server": "127.0.0.1:52484 used as tokenizer only"
+  },
+  "forward_status": "MEASURED",
+  "forward_reason": null,
+  "forward_elapsed_s": 103.85604270899785,
+  "scale_rejection": {
+    "statement": "0.01*W must not score perfect. Cosine is scale-invariant; scale_aware = cosine * min(s,1/s) and relative_l2 are the gates.",
+    "probe": {
+      "site": "embed_tokens[real token ids]  \u2014 real activations, not gaussian",
+      "identity": {
+        "cosine": 1.0,
+        "relative_l2": 0.0,
+        "skill_vs_mean_null": 1.0,
+        "scale_ratio": 1.0,
+        "scale_match": 1.0,
+        "scale_aware": 1.0,
+        "norm_true": 11.572444869149914,
+        "norm_pred": 11.572444869149914,
+        "rejects_perfect_cosine_as_sufficient": true
+      },
+      "scaled_0p01": {
+        "cosine": 0.9999999999999949,
+        "relative_l2": 0.990000000221166,
+        "skill_vs_mean_null": 0.019899858457939734,
+        "scale_ratio": 0.009999999778828074,
+        "scale_match": 0.009999999778828074,
+        "scale_aware": 0.009999999778828024,
+        "norm_true": 11.572444869149914,
+        "norm_pred": 0.11572444613199923,
+        "rejects_perfect_cosine_as_sufficient": true
+      },
+      "zero": {
+        "cosine": 0.0,
+        "relative_l2": 1.0,
+        "skill_vs_mean_null": -1.4396912528802375e-07,
+        "scale_ratio": 0.0,
+        "scale_match": 0.0,
+        "scale_aware": 0.0,
+        "norm_true": 11.572444869149914,
+        "norm_pred": 0.0,
+        "rejects_perfect_cosine_as_sufficient": true
+      }
+    },
+    "passes": true
+  },
+  "codec_spot_check_vs_bf16": {
+    "status": "MEASURED",
+    "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+    "dtype": "BF16",
+    "cosine": 0.9940659721350217,
+    "relative_l2": 0.10942454280572439,
+    "skill_vs_mean_null": 0.9880254983155345,
+    "scale_ratio": 1.0059355772248213,
+    "scale_match": 0.9940994459692972,
+    "scale_aware": 0.9882004321563559,
+    "norm_true": 2.3038180326488313,
+    "norm_pred": 2.3174925224935543,
+    "rejects_perfect_cosine_as_sufficient": true
+  },
+  "prior_science_respected": {
+    "never_synthetic_activations": true,
+    "cosine_is_scale_blind": true,
+    "raw_activation_cosine_null_around_0p898": "not re-derived; cited. Local skill-vs-mean-null is the comparable statistic here.",
+    "complete_bpw_does_not_predict_coherence": true,
+    "attention_set_the_bpw_floor": true,
+    "mlp_3p25_first_coherent_low_bpw": true
+  },
+  "organs": {
+    "embedding": {
+      "status": "MEASURED",
+      "capture_site": "embed_tokens[token_ids]  (T, 5120)",
+      "physical": {
+        "bytes": 675430440,
+        "elements": 1271398400,
+        "tensor_count": 1,
+        "q4_tensors": 1,
+        "f32_tensors": 0,
+        "active_bytes_per_token": 2720,
+        "active_bytes_note": "embed: one gathered row per token, table excluded from the stream. All other GEMV organs stream their full packed payload every decode step."
+      },
+      "token_ns": {
+        "status": "MEASURED",
+        "ns_per_token": 4999.0,
+        "share_of_token_ns": 0.00014190450147818844,
+        "arithmetic": "embed_gather_ns = 4999 (ledger closure residual_reason)"
+      },
+      "functional_sensitivity_local": {
+        "site": "embed_tokens gather of real token ids",
+        "identity": {
+          "cosine": 1.0,
+          "relative_l2": 0.0,
+          "skill_vs_mean_null": 1.0,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 1.0,
+          "norm_true": 11.572444869149914,
+          "norm_pred": 11.572444869149914,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_0p01_W": {
+          "cosine": 0.9999999999999949,
+          "relative_l2": 0.990000000221166,
+          "skill_vs_mean_null": 0.019899858457939734,
+          "scale_ratio": 0.009999999778828074,
+          "scale_match": 0.009999999778828074,
+          "scale_aware": 0.009999999778828024,
+          "norm_true": 11.572444869149914,
+          "norm_pred": 0.11572444613199923,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "null_W": {
+          "cosine": 0.0,
+          "relative_l2": 1.0,
+          "skill_vs_mean_null": -1.4396912528802375e-07,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": 0.0,
+          "norm_true": 11.572444869149914,
+          "norm_pred": 0.0,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_rejected": true
+      },
+      "null_representation": {
+        "probe": "zero this organ's residual (embed: zero rows; output: zero logits; mixer/MLP: drop residual add)",
+        "consequence": {
+          "cosine": 0.0,
+          "relative_l2": 1.0,
+          "skill_vs_mean_null": -1.0559248679420268,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": 0.0,
+          "norm_true": 17968.218503538654,
+          "norm_pred": 0.0,
+          "rejects_perfect_cosine_as_sufficient": true,
+          "kl_last_token": 11.010452824561245,
+          "tv_last_token": 0.9948077395631986,
+          "argmax_match": 0.0,
+          "survival": 0.0
+        },
+        "function_lost": 1.0,
+        "reading": "zeroing this organ moves the logits; it carries function on this capture"
+      },
+      "shared_structure_across_layers": {
+        "status": "NOT_MEASURED",
+        "reason": "embedding is a single table, not a per-layer family; cross-layer alignment is undefined"
+      },
+      "activation_rank": {
+        "n_rows": 128,
+        "n_cols": 5120,
+        "status": "MEASURED",
+        "participation_ratio": 47.41747267423971,
+        "effective_rank_of_captured_spectrum": 47.41747267423971,
+        "rank_99_of_captured_spectrum": 69,
+        "spectrum_dim": 128,
+        "top5_energy_frac": [
+          0.0635517775868351,
+          0.04106437091921164,
+          0.036244992507220276,
+          0.03485116698823751,
+          0.032222496907034895
+        ],
+        "ambient_rank_99": "NOT_MEASURED",
+        "ambient_rank_99_reason": "n_rows=128 < hidden=5120; 99% energy rank is of the 128-dimensional captured spectrum, not the ambient 5120-space"
+      },
+      "residual_sparsity_after_cheapest_fit": {
+        "status": "MEASURED",
+        "fit": "mean + rank-1 SVD",
+        "n_rows": 128,
+        "n_cols": 5120,
+        "rank1_energy_frac": 0.06355177758683549,
+        "residual_rms_over_centered_rms": 0.9677025485205486,
+        "residual_sparsity_at_0p01_rms": 0.0239532470703125,
+        "threshold": 0.0001353268405559583
+      }
+    },
+    "attention_gqa": {
+      "status": "MEASURED",
+      "capture_site": "post-input_ln hidden at every GQA layer, concatenated (16T, 5120)",
+      "physical": {
+        "bytes": 891652992,
+        "elements": 1677811712,
+        "tensor_count": 112,
+        "q4_tensors": 64,
+        "f32_tensors": 48,
+        "active_bytes_per_token": 891289600,
+        "active_bytes_note": "decode streams the full packed organ every token (no MoE)."
+      },
+      "token_ns": {
+        "status": "MEASURED",
+        "ns_per_token": 4875760.710265884,
+        "share_of_token_ns": 0.13840615981540674,
+        "arithmetic": "isolated_gqa_gemv 1894625 + gqa_component 2443470.7102658837 + kv_state 537665.0"
+      },
+      "functional_sensitivity_local": {
+        "site": "layer 3 q_proj on post-input_ln hidden",
+        "identity": {
+          "cosine": 1.0000000000000002,
+          "relative_l2": 0.0,
+          "skill_vs_mean_null": 1.0,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 1.0000000000000002,
+          "norm_true": 3912.6425544536273,
+          "norm_pred": 3912.6425544536273,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_0p01_W": {
+          "cosine": 0.9999999999999739,
+          "relative_l2": 0.990000000222942,
+          "skill_vs_mean_null": -0.8350068159255204,
+          "scale_ratio": 0.009999999777047212,
+          "scale_match": 0.009999999777047212,
+          "scale_aware": 0.009999999777046952,
+          "norm_true": 3912.6425544536273,
+          "norm_pred": 39.12642467220171,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "null_W": {
+          "cosine": 0.0,
+          "relative_l2": 1.0,
+          "skill_vs_mean_null": -0.8722648863371245,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": 0.0,
+          "norm_true": 3912.6425544536273,
+          "norm_pred": 0.0,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_rejected": true
+      },
+      "null_representation": {
+        "probe": "zero this organ's residual (embed: zero rows; output: zero logits; mixer/MLP: drop residual add)",
+        "consequence": {
+          "cosine": 0.7951657832797691,
+          "relative_l2": 0.6070411601515365,
+          "skill_vs_mean_null": 0.24239380352312345,
+          "scale_ratio": 0.8232298709590209,
+          "scale_match": 0.8232298709590209,
+          "scale_aware": 0.654604225160433,
+          "norm_true": 17968.218503538654,
+          "norm_pred": 14791.974200031618,
+          "rejects_perfect_cosine_as_sufficient": true,
+          "kl_last_token": 6.974256018868109,
+          "tv_last_token": 0.967764349244367,
+          "argmax_match": 0.5546875,
+          "survival": 0.39295883984846347
+        },
+        "function_lost": 0.6070411601515365,
+        "reading": "zeroing this organ moves the logits; it carries function on this capture"
+      },
+      "shared_structure_across_layers": {
+        "status": "MEASURED",
+        "n_layers": 16,
+        "n_pairs": 120,
+        "mean_pairwise_scale_aware": 0.9172387552426001,
+        "min_pairwise_scale_aware": 0.7851042015099315,
+        "mean_pairwise_cosine": 0.9822674124441336,
+        "frobenius_cv_across_layers": 0.05928438599793178,
+        "metric": "cosine(row-RMS || col-RMS-sketch)*min(s,1/s); cosine alone is scale-blind and is reported only as a contrast"
+      },
+      "activation_rank": {
+        "n_rows": 2048,
+        "n_cols": 5120,
+        "status": "MEASURED",
+        "participation_ratio": 31.454202966732538,
+        "effective_rank_of_captured_spectrum": 31.454202966732538,
+        "rank_99_of_captured_spectrum": 1250,
+        "spectrum_dim": 2048,
+        "top5_energy_frac": [
+          0.1527321994569791,
+          0.05860736338036539,
+          0.026361293979816434,
+          0.02339740439958828,
+          0.02158884255137923
+        ],
+        "ambient_rank_99": "NOT_MEASURED",
+        "ambient_rank_99_reason": "n_rows=2048 < hidden=5120; 99% energy rank is of the 2048-dimensional captured spectrum, not the ambient 5120-space"
+      },
+      "residual_sparsity_after_cheapest_fit": {
+        "status": "MEASURED",
+        "fit": "mean + rank-1 SVD",
+        "n_rows": 2048,
+        "n_cols": 5120,
+        "rank1_energy_frac": 0.152732199456979,
+        "residual_rms_over_centered_rms": 0.9204715099029522,
+        "residual_sparsity_at_0p01_rms": 0.014093017578125,
+        "threshold": 0.007037496747376336
+      }
+    },
+    "deltanet": {
+      "status": "MEASURED",
+      "capture_site": "post-input_ln hidden at every DeltaNet layer, concatenated (48T, 5120)",
+      "physical": {
+        "bytes": 2962687488,
+        "elements": 5562296832,
+        "tensor_count": 384,
+        "q4_tensors": 144,
+        "f32_tensors": 240,
+        "active_bytes_per_token": 2953789440,
+        "active_bytes_note": "decode streams the full packed organ every token (no MoE)."
+      },
+      "token_ns": {
+        "status": "MEASURED",
+        "ns_per_token": 9269460.932624074,
+        "share_of_token_ns": 0.2631282721775481,
+        "arithmetic": "isolated_dn_gemv 5536666 + deltanet_component 3732794.9326240737"
+      },
+      "functional_sensitivity_local": {
+        "site": "layer 0 in_proj_qkvz on post-input_ln hidden",
+        "identity": {
+          "cosine": 0.9999999999999999,
+          "relative_l2": 0.0,
+          "skill_vs_mean_null": 1.0,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 0.9999999999999999,
+          "norm_true": 4942.028875782612,
+          "norm_pred": 4942.028875782612,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_0p01_W": {
+          "cosine": 0.9999999999999801,
+          "relative_l2": 0.9900000002243762,
+          "skill_vs_mean_null": -0.00103070566992991,
+          "scale_ratio": 0.009999999775613035,
+          "scale_match": 0.009999999775613035,
+          "scale_aware": 0.009999999775612835,
+          "norm_true": 4942.028875782612,
+          "norm_pred": 49.42028764889926,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "null_W": {
+          "cosine": 0.0,
+          "relative_l2": 1.0,
+          "skill_vs_mean_null": -0.02135568331410642,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": 0.0,
+          "norm_true": 4942.028875782612,
+          "norm_pred": 0.0,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_rejected": true
+      },
+      "null_representation": {
+        "probe": "zero this organ's residual (embed: zero rows; output: zero logits; mixer/MLP: drop residual add)",
+        "consequence": {
+          "cosine": 0.5620281231365354,
+          "relative_l2": 0.8556759274497626,
+          "skill_vs_mean_null": -0.5053097277445364,
+          "scale_ratio": 0.7812469727220241,
+          "scale_match": 0.7812469727220241,
+          "scale_aware": 0.4390827697850593,
+          "norm_true": 17968.218503538654,
+          "norm_pred": 14037.616311097432,
+          "rejects_perfect_cosine_as_sufficient": true,
+          "kl_last_token": 10.73541385193357,
+          "tv_last_token": 0.992266356021229,
+          "argmax_match": 0.03125,
+          "survival": 0.14432407255023738
+        },
+        "function_lost": 0.8556759274497626,
+        "reading": "zeroing this organ moves the logits; it carries function on this capture"
+      },
+      "shared_structure_across_layers": {
+        "status": "MEASURED",
+        "n_layers": 48,
+        "n_pairs": 1128,
+        "mean_pairwise_scale_aware": 0.9674074459504687,
+        "min_pairwise_scale_aware": 0.9020820305591005,
+        "mean_pairwise_cosine": 0.9917714650292463,
+        "frobenius_cv_across_layers": 0.022659057329497554,
+        "metric": "cosine(row-RMS || col-RMS-sketch)*min(s,1/s); cosine alone is scale-blind and is reported only as a contrast"
+      },
+      "activation_rank": {
+        "n_rows": 6144,
+        "n_cols": 5120,
+        "status": "MEASURED",
+        "participation_ratio": 62.460292927157326,
+        "effective_rank_of_captured_spectrum": 62.460292927157326,
+        "rank_99_of_captured_spectrum": 2082,
+        "spectrum_dim": 5120,
+        "top5_energy_frac": [
+          0.07585484002507234,
+          0.0655790703832722,
+          0.04266034397372251,
+          0.024469683012309975,
+          0.01923174936163281
+        ],
+        "ambient_rank_99": 2082
+      },
+      "residual_sparsity_after_cheapest_fit": {
+        "status": "MEASURED",
+        "fit": "mean + rank-1 SVD",
+        "n_rows": 6144,
+        "n_cols": 5120,
+        "rank1_energy_frac": 0.07585484002507246,
+        "residual_rms_over_centered_rms": 0.9613246901931353,
+        "residual_sparsity_at_0p01_rms": 0.013825098673502604,
+        "threshold": 0.00676022587462826
+      }
+    },
+    "mlp": {
+      "status": "MEASURED",
+      "capture_site": "post-attention_ln hidden concatenated over 64 layers (64T, 5120); down_proj Wx is scored on real post-SwiGLU at layer 0",
+      "physical": {
+        "bytes": 9092472832,
+        "elements": 17113088000,
+        "tensor_count": 256,
+        "q4_tensors": 192,
+        "f32_tensors": 64,
+        "active_bytes_per_token": 9091153920,
+        "active_bytes_note": "decode streams the full packed organ every token (no MoE)."
+      },
+      "token_ns": {
+        "status": "MEASURED",
+        "ns_per_token": 16854363.53227228,
+        "share_of_token_ns": 0.4784376984955505,
+        "arithmetic": "isolated_mlp_gemv 15850166 + dense_swiglu 1004197.5322722804"
+      },
+      "functional_sensitivity_local": {
+        "site": "layer 0 down_proj on real post-SwiGLU",
+        "identity": {
+          "cosine": 1.0,
+          "relative_l2": 0.0,
+          "skill_vs_mean_null": 1.0,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 1.0,
+          "norm_true": 18.916595219843682,
+          "norm_pred": 18.916595219843682,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_0p01_W": {
+          "cosine": 0.9999999999999941,
+          "relative_l2": 0.9900000001757179,
+          "skill_vs_mean_null": 0.019784170833797354,
+          "scale_ratio": 0.009999999824281049,
+          "scale_match": 0.009999999824281049,
+          "scale_aware": 0.00999999982428099,
+          "norm_true": 18.916595219843682,
+          "norm_pred": 0.18916594887443255,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "null_W": {
+          "cosine": 0.0,
+          "relative_l2": 1.0,
+          "skill_vs_mean_null": -0.00011818061242530042,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": 0.0,
+          "norm_true": 18.916595219843682,
+          "norm_pred": 0.0,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_rejected": true
+      },
+      "null_representation": {
+        "probe": "zero this organ's residual (embed: zero rows; output: zero logits; mixer/MLP: drop residual add)",
+        "consequence": {
+          "cosine": 0.6416325262581957,
+          "relative_l2": 0.9153984562611263,
+          "skill_vs_mean_null": -0.7227711529056249,
+          "scale_ratio": 1.1412790337792793,
+          "scale_match": 0.8762099104620874,
+          "scale_aware": 0.5622047783822566,
+          "norm_true": 17968.218503538654,
+          "norm_pred": 20506.75105245356,
+          "rejects_perfect_cosine_as_sufficient": true,
+          "kl_last_token": 8.880842426908286,
+          "tv_last_token": 0.9842683201889995,
+          "argmax_match": 0.0625,
+          "survival": 0.08460154373887374
+        },
+        "function_lost": 0.9153984562611263,
+        "reading": "zeroing this organ moves the logits; it carries function on this capture"
+      },
+      "shared_structure_across_layers": {
+        "status": "MEASURED",
+        "n_layers": 64,
+        "n_pairs": 2016,
+        "mean_pairwise_scale_aware": 0.9568624478230858,
+        "min_pairwise_scale_aware": 0.8407911119189079,
+        "mean_pairwise_cosine": 0.9972245652782332,
+        "frobenius_cv_across_layers": 0.03815132299348703,
+        "metric": "cosine(row-RMS || col-RMS-sketch)*min(s,1/s); cosine alone is scale-blind and is reported only as a contrast"
+      },
+      "activation_rank": {
+        "n_rows": 8192,
+        "n_cols": 5120,
+        "status": "MEASURED",
+        "participation_ratio": 59.260047805099966,
+        "effective_rank_of_captured_spectrum": 59.260047805099966,
+        "rank_99_of_captured_spectrum": 2329,
+        "spectrum_dim": 5120,
+        "top5_energy_frac": [
+          0.09489149094717593,
+          0.0452347791213099,
+          0.04353810873500357,
+          0.024660670254872934,
+          0.017602695892403115
+        ],
+        "ambient_rank_99": 2329
+      },
+      "residual_sparsity_after_cheapest_fit": {
+        "status": "MEASURED",
+        "fit": "mean + rank-1 SVD",
+        "n_rows": 8192,
+        "n_cols": 5120,
+        "rank1_energy_frac": 0.09489149094717592,
+        "residual_rms_over_centered_rms": 0.9513719089046219,
+        "residual_sparsity_at_0p01_rms": 0.014600324630737304,
+        "threshold": 0.006373145850725632
+      }
+    },
+    "output": {
+      "status": "MEASURED",
+      "capture_site": "final RMSNorm hidden (T, 5120) \u2014 lm_head input",
+      "physical": {
+        "bytes": 675450928,
+        "elements": 1271403520,
+        "tensor_count": 2,
+        "q4_tensors": 1,
+        "f32_tensors": 1,
+        "active_bytes_per_token": 675430400,
+        "active_bytes_note": "decode streams the full packed organ every token (no MoE)."
+      },
+      "token_ns": {
+        "status": "MEASURED",
+        "ns_per_token": 1436408.9494716367,
+        "share_of_token_ns": 0.040774734125541306,
+        "arithmetic": "isolated_lm_head_gemv 1052874 + terminal_head 383534.9494716367"
+      },
+      "functional_sensitivity_local": {
+        "site": "lm_head on final RMSNorm hidden",
+        "identity": {
+          "cosine": 1.0000000000000002,
+          "relative_l2": 0.0,
+          "skill_vs_mean_null": 1.0,
+          "scale_ratio": 1.0,
+          "scale_match": 1.0,
+          "scale_aware": 1.0000000000000002,
+          "norm_true": 17968.218503538654,
+          "norm_pred": 17968.218503538654,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_0p01_W": {
+          "cosine": 0.9999999999998588,
+          "relative_l2": 0.9900000002234405,
+          "skill_vs_mean_null": -1.0150119639798936,
+          "scale_ratio": 0.009999999776474316,
+          "scale_match": 0.009999999776474316,
+          "scale_aware": 0.009999999776472904,
+          "norm_true": 17968.218503538654,
+          "norm_pred": 179.6821810190282,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "null_W": {
+          "cosine": 0.0,
+          "relative_l2": 1.0,
+          "skill_vs_mean_null": -1.0559248679420268,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": 0.0,
+          "norm_true": 17968.218503538654,
+          "norm_pred": 0.0,
+          "rejects_perfect_cosine_as_sufficient": true
+        },
+        "scaled_rejected": true
+      },
+      "null_representation": {
+        "probe": "zero this organ's residual (embed: zero rows; output: zero logits; mixer/MLP: drop residual add)",
+        "consequence": {
+          "cosine": 0.0,
+          "relative_l2": 1.0,
+          "skill_vs_mean_null": -1.0559248679420268,
+          "scale_ratio": 0.0,
+          "scale_match": 0.0,
+          "scale_aware": 0.0,
+          "norm_true": 17968.218503538654,
+          "norm_pred": 0.0,
+          "rejects_perfect_cosine_as_sufficient": true,
+          "kl_last_token": 11.010452824561245,
+          "tv_last_token": 0.9948077395631986,
+          "argmax_match": 0.0,
+          "survival": 0.0
+        },
+        "function_lost": 1.0,
+        "reading": "zeroing this organ moves the logits; it carries function on this capture"
+      },
+      "shared_structure_across_layers": {
+        "status": "NOT_MEASURED",
+        "reason": "output is lm_head + final norm, not a per-layer family"
+      },
+      "activation_rank": {
+        "n_rows": 128,
+        "n_cols": 5120,
+        "status": "MEASURED",
+        "participation_ratio": 28.153140119082458,
+        "effective_rank_of_captured_spectrum": 28.153140119082458,
+        "rank_99_of_captured_spectrum": 117,
+        "spectrum_dim": 128,
+        "top5_energy_frac": [
+          0.12919789308178983,
+          0.0680013913673269,
+          0.05751546483939161,
+          0.044923590254015974,
+          0.04134377660654379
+        ],
+        "ambient_rank_99": "NOT_MEASURED",
+        "ambient_rank_99_reason": "n_rows=128 < hidden=5120; 99% energy rank is of the 128-dimensional captured spectrum, not the ambient 5120-space"
+      },
+      "residual_sparsity_after_cheapest_fit": {
+        "status": "MEASURED",
+        "fit": "mean + rank-1 SVD",
+        "n_rows": 128,
+        "n_cols": 5120,
+        "rank1_energy_frac": 0.12919789308178967,
+        "residual_rms_over_centered_rms": 0.9331677806901661,
+        "residual_sparsity_at_0p01_rms": 0.0099822998046875,
+        "threshold": 0.015185695733894744
+      }
+    }
+  },
+  "ranking": {
+    "definition": "marginal functional survival per marginal physical byte, estimated from the NULL representation: function_lost = 1 - survival(logits_base, logits_organ_zeroed); preciousness = function_lost / bytes. Higher = an allocator should keep these bytes. An organ that can be zeroed with little loss ranks last even if it 'compresses well'.",
+    "by_stored_byte": [
+      {
+        "organ": "embedding",
+        "function_lost": 1.0,
+        "bytes": 675430440,
+        "active_bytes_per_token": 2720,
+        "function_lost_per_stored_byte": 1.4805373592578978e-09,
+        "function_lost_per_active_byte": 0.0003676470588235294,
+        "survival_null": 0.0,
+        "relative_l2_null": 1.0,
+        "kl_last_token": 11.010452824561245,
+        "argmax_match_null": 0.0,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.000000) / 675430440",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.000000) / 2720",
+        "rank_by_function_per_stored_byte": 1,
+        "rank_by_function_per_active_byte": 1
+      },
+      {
+        "organ": "output",
+        "function_lost": 1.0,
+        "bytes": 675450928,
+        "active_bytes_per_token": 675430400,
+        "function_lost_per_stored_byte": 1.4804924511111191e-09,
+        "function_lost_per_active_byte": 1.4805374469375379e-09,
+        "survival_null": 0.0,
+        "relative_l2_null": 1.0,
+        "kl_last_token": 11.010452824561245,
+        "argmax_match_null": 0.0,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.000000) / 675450928",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.000000) / 675430400",
+        "rank_by_function_per_stored_byte": 2,
+        "rank_by_function_per_active_byte": 2
+      },
+      {
+        "organ": "attention_gqa",
+        "function_lost": 0.6070411601515365,
+        "bytes": 891652992,
+        "active_bytes_per_token": 891289600,
+        "function_lost_per_stored_byte": 6.808042653341273e-10,
+        "function_lost_per_active_byte": 6.810818393387924e-10,
+        "survival_null": 0.39295883984846347,
+        "relative_l2_null": 0.6070411601515365,
+        "kl_last_token": 6.974256018868109,
+        "argmax_match_null": 0.5546875,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.392959) / 891652992",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.392959) / 891289600",
+        "rank_by_function_per_stored_byte": 3,
+        "rank_by_function_per_active_byte": 3
+      },
+      {
+        "organ": "deltanet",
+        "function_lost": 0.8556759274497626,
+        "bytes": 2962687488,
+        "active_bytes_per_token": 2953789440,
+        "function_lost_per_stored_byte": 2.888174776838841e-10,
+        "function_lost_per_active_byte": 2.8968751660570724e-10,
+        "survival_null": 0.14432407255023738,
+        "relative_l2_null": 0.8556759274497626,
+        "kl_last_token": 10.73541385193357,
+        "argmax_match_null": 0.03125,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.144324) / 2962687488",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.144324) / 2953789440",
+        "rank_by_function_per_stored_byte": 4,
+        "rank_by_function_per_active_byte": 4
+      },
+      {
+        "organ": "mlp",
+        "function_lost": 0.9153984562611263,
+        "bytes": 9092472832,
+        "active_bytes_per_token": 9091153920,
+        "function_lost_per_stored_byte": 1.0067651266875143e-10,
+        "function_lost_per_active_byte": 1.0069111845607452e-10,
+        "survival_null": 0.08460154373887374,
+        "relative_l2_null": 0.9153984562611263,
+        "kl_last_token": 8.880842426908286,
+        "argmax_match_null": 0.0625,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.084602) / 9092472832",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.084602) / 9091153920",
+        "rank_by_function_per_stored_byte": 5,
+        "rank_by_function_per_active_byte": 5
+      }
+    ],
+    "by_active_byte_per_token": [
+      {
+        "organ": "embedding",
+        "function_lost": 1.0,
+        "bytes": 675430440,
+        "active_bytes_per_token": 2720,
+        "function_lost_per_stored_byte": 1.4805373592578978e-09,
+        "function_lost_per_active_byte": 0.0003676470588235294,
+        "survival_null": 0.0,
+        "relative_l2_null": 1.0,
+        "kl_last_token": 11.010452824561245,
+        "argmax_match_null": 0.0,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.000000) / 675430440",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.000000) / 2720",
+        "rank_by_function_per_stored_byte": 1,
+        "rank_by_function_per_active_byte": 1
+      },
+      {
+        "organ": "output",
+        "function_lost": 1.0,
+        "bytes": 675450928,
+        "active_bytes_per_token": 675430400,
+        "function_lost_per_stored_byte": 1.4804924511111191e-09,
+        "function_lost_per_active_byte": 1.4805374469375379e-09,
+        "survival_null": 0.0,
+        "relative_l2_null": 1.0,
+        "kl_last_token": 11.010452824561245,
+        "argmax_match_null": 0.0,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.000000) / 675450928",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.000000) / 675430400",
+        "rank_by_function_per_stored_byte": 2,
+        "rank_by_function_per_active_byte": 2
+      },
+      {
+        "organ": "attention_gqa",
+        "function_lost": 0.6070411601515365,
+        "bytes": 891652992,
+        "active_bytes_per_token": 891289600,
+        "function_lost_per_stored_byte": 6.808042653341273e-10,
+        "function_lost_per_active_byte": 6.810818393387924e-10,
+        "survival_null": 0.39295883984846347,
+        "relative_l2_null": 0.6070411601515365,
+        "kl_last_token": 6.974256018868109,
+        "argmax_match_null": 0.5546875,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.392959) / 891652992",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.392959) / 891289600",
+        "rank_by_function_per_stored_byte": 3,
+        "rank_by_function_per_active_byte": 3
+      },
+      {
+        "organ": "deltanet",
+        "function_lost": 0.8556759274497626,
+        "bytes": 2962687488,
+        "active_bytes_per_token": 2953789440,
+        "function_lost_per_stored_byte": 2.888174776838841e-10,
+        "function_lost_per_active_byte": 2.8968751660570724e-10,
+        "survival_null": 0.14432407255023738,
+        "relative_l2_null": 0.8556759274497626,
+        "kl_last_token": 10.73541385193357,
+        "argmax_match_null": 0.03125,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.144324) / 2962687488",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.144324) / 2953789440",
+        "rank_by_function_per_stored_byte": 4,
+        "rank_by_function_per_active_byte": 4
+      },
+      {
+        "organ": "mlp",
+        "function_lost": 0.9153984562611263,
+        "bytes": 9092472832,
+        "active_bytes_per_token": 9091153920,
+        "function_lost_per_stored_byte": 1.0067651266875143e-10,
+        "function_lost_per_active_byte": 1.0069111845607452e-10,
+        "survival_null": 0.08460154373887374,
+        "relative_l2_null": 0.9153984562611263,
+        "kl_last_token": 8.880842426908286,
+        "argmax_match_null": 0.0625,
+        "arithmetic_stored": "(1 - survival_null) / bytes = (1 - 0.084602) / 9092472832",
+        "arithmetic_active": "(1 - survival_null) / active_bytes_per_token = (1 - 0.084602) / 9091153920",
+        "rank_by_function_per_stored_byte": 5,
+        "rank_by_function_per_active_byte": 5
+      }
+    ]
+  },
+  "token_ns_ledger": {
+    "status": "MEASURED",
+    "source": "/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_LEDGER.json",
+    "total_token_ns": 35227917
+  },
+  "what_i_watched_fail": [
+    "cosine(embed, 0.01*embed)=1.000000 looks perfect; scale_aware=0.0100 and relative_l2=0.9900 reject it. This is the failure mode the metric exists to catch.",
+    "v1 activation capture (workspace/campaign/records/runs/qwen38-27b/activation-capture-v1) is not on disk. Recaptured from the packed artifact rather than replaying numbers.",
+    "native gravity greedy decode (QWEN38_GRAVITY_NATIVE) collapsed to token 150910 with replacement characters. That run is not used as functional ground truth.",
+    "CPU residual-stream RMS at the last layer was 1.744 (started ~0.21 after embed+L0). Native Metal decode is the bit-identity oracle and is currently collapsed (QWEN38_GRAVITY_NATIVE); this CPU path is internally consistent for organ ablations but is not claimed bit-identical to the GPU kernels.",
+    "torch MPS is unavailable in this process; census ran on CPU. A second 27B was not loaded. llama-server :52484 stayed resident.",
+    "protected HCLI suite on hawking-copy with HCLI_SWAP_CEILING_GIB=64: 463 passed, 2 skipped (contract named 464 passed, 1 skipped). This worktree is a sparse checkout; tools/haider is not materialized here and git sparse-checkout add is forbidden, so the suite cannot be reproduced inside this lane. Headless hcli_* tests ImportError without hcli."
+  ],
+  "wall_s": 189.14542650000658
+}

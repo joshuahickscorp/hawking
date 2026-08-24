@@ -1,0 +1,609 @@
+{
+  "schema": "hawking.headless.noetic_ascension_loop.v1",
+  "generated_at": "2026-08-23T23:02:48Z",
+  "git_head": "e2669b3b6dedd0df652bc498c73bde248518068e",
+  "builder": "tools/headless/noetic_ascension_loop.py",
+  "canonical_hcli_launch": "python3 -m hcli",
+  "durable_reproduce": [
+    "python3",
+    "tools/headless/noetic_ascension_loop.py"
+  ],
+  "hcli_source": {
+    "ok": true,
+    "command": [
+      "git",
+      "archive",
+      "--format=tar",
+      "HEAD",
+      "hcli",
+      "|",
+      "tar",
+      "-x",
+      "-C",
+      "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/extract"
+    ],
+    "dest": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/extract",
+    "package": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/extract/hcli",
+    "stderr": "",
+    "wall_s": 0.0389,
+    "verified_against": "HEAD:hcli (git archive, not the working tree)"
+  },
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws",
+  "scratch": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom",
+  "did_not_load_second_27b": true,
+  "did_not_modify_hcli_tree": true,
+  "sparse_note": "hcli/ is not materialized in this worktree. HEAD:hcli was extracted with git archive. git sparse-checkout add is blocked in this sandbox.",
+  "mission": {
+    "status": "completed",
+    "reason": null,
+    "cancelled": false,
+    "mission_id": "a277d13a-19a5-4695-b0da-7a2dd047a46d",
+    "accepted": 8,
+    "no_progress_warning": null
+  },
+  "units": [
+    {
+      "id": "agentos.boot",
+      "status": "completed",
+      "backend": "tool",
+      "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/agentos_boot.py",
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/agentos_boot.py",
+        "output": "{\"ok\": true, \"obligation_id\": \"G001\"}\n"
+      },
+      "attempts": 1,
+      "classification": null
+    },
+    {
+      "id": "resident.observe",
+      "status": "completed",
+      "backend": "tool",
+      "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/resident_observe.py",
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/resident_observe.py",
+        "output": "{\"ok\": true, \"did_not_spawn_resident\": true, \"did_not_load_second_27b\": true, \"probes\": [{\"port\": 52484, \"http\": null, \"error\": \"URLError: <urlopen error [Errno 61] Connection refused>\"}, {\"port\": 11434, \"http\": 200, \"error\": null}]}\n"
+      },
+      "attempts": 1,
+      "classification": null
+    },
+    {
+      "id": "doctor.read",
+      "status": "completed",
+      "backend": "tool",
+      "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/doctor_read.py",
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/doctor_read.py",
+        "output": "{\"ok\": true, \"mlp\": \"flat_q3_g64\", \"gqa\": \"q4_g128\", \"differ\": true}\n"
+      },
+      "attempts": 1,
+      "classification": null
+    },
+    {
+      "id": "gravity.experiment",
+      "status": "completed",
+      "backend": "tool",
+      "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gravity_experiment.py",
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gravity_experiment.py",
+        "output": "{\"ok\": true, \"scoring_without_kernel_refused\": true, \"kernel_win_refused\": true}\n"
+      },
+      "attempts": 1,
+      "classification": null
+    },
+    {
+      "id": "tools.scoreboard",
+      "status": "completed",
+      "backend": "tool",
+      "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/tools_scoreboard.py",
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/tools_scoreboard.py",
+        "output": "{\"ok\": true, \"verdict\": \"NO_CANDIDATE_YET_BEATS_PARENT\", \"reading\": \"44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.\"}\n"
+      },
+      "attempts": 1,
+      "classification": null
+    },
+    {
+      "id": "verifier.settle",
+      "status": "completed",
+      "backend": "tool",
+      "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/verifier_settle.py",
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/verifier_settle.py",
+        "output": "{\"ok\": true, \"settled\": \"FALSE\", \"verdict\": \"NO_CANDIDATE_YET_BEATS_PARENT\"}\n"
+      },
+      "attempts": 1,
+      "classification": null
+    },
+    {
+      "id": "gate.reject",
+      "status": "completed",
+      "backend": "tool",
+      "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gate_reject.py",
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gate_reject.py",
+        "output": "{\"ok\": true, \"gate\": \"REJECTED\", \"candidate\": \"mix_all_mlp_hgravu01_q3_g64\"}\n"
+      },
+      "attempts": 1,
+      "classification": null
+    },
+    {
+      "id": "science.update",
+      "status": "completed",
+      "backend": "tool",
+      "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/science_update.py",
+      "verification": {
+        "ok": true,
+        "exit_code": 0,
+        "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/science_update.py",
+        "output": "{\"ok\": true, \"written\": \"/Users/scammermike/.claude-grok/worktrees/g015handoff-20260823-183520/receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json\", \"gate\": \"REJECTED\"}\n"
+      },
+      "attempts": 1,
+      "classification": null
+    }
+  ],
+  "mission_log_tail": "{\"event\": \"term\", \"msg\": \"phase: running\", \"ts\": 1787526167.531151, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"observe\", \"fingerprint\": \"n=1\", \"pressure\": null, \"ts\": 1787526167.53159, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"dispatch\", \"id\": \"agentos.boot\", \"class\": \"LIGHT_CONTROL\", \"ts\": 1787526167.533857, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"accepted: agentos.boot\", \"ts\": 1787526167.637471, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"accepted\", \"id\": \"agentos.boot\", \"fingerprint\": \"n=2|agentos.boot.json:815\", \"ts\": 1787526167.6375701, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"dispatch\", \"id\": \"resident.observe\", \"class\": \"LIGHT_CONTROL\", \"ts\": 1787526167.639095, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"heartbeat phase=running running=1 accepted=1 elapsed=0.2s\", \"ts\": 1787526167.7536519, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"accepted: resident.observe\", \"ts\": 1787526167.7772002, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"accepted\", \"id\": \"resident.observe\", \"fingerprint\": \"n=3|agentos.boot.json:815|resident.observe.json:1776\", \"ts\": 1787526167.777306, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"dispatch\", \"id\": \"doctor.read\", \"class\": \"LIGHT_CONTROL\", \"ts\": 1787526167.778921, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"accepted: doctor.read\", \"ts\": 1787526167.868337, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"accepted\", \"id\": \"doctor.read\", \"fingerprint\": \"n=4|agentos.boot.json:815|doctor.read.json:1395|resident.observe.json:1776\", \"ts\": 1787526167.8684218, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"dispatch\", \"id\": \"gravity.experiment\", \"class\": \"LIGHT_CONTROL\", \"ts\": 1787526167.8698628, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"accepted: gravity.experiment\", \"ts\": 1787526167.977062, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"accepted\", \"id\": \"gravity.experiment\", \"fingerprint\": \"n=5|agentos.boot.json:815|doctor.read.json:1395|gravity.experiment.json:866|resident.observe.json:1776\", \"ts\": 1787526167.977173, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"dispatch\", \"id\": \"tools.scoreboard\", \"class\": \"LIGHT_CONTROL\", \"ts\": 1787526167.9787211, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"accepted: tools.scoreboard\", \"ts\": 1787526168.048071, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"accepted\", \"id\": \"tools.scoreboard\", \"fingerprint\": \"n=6|agentos.boot.json:815|doctor.read.json:1395|gravity.experiment.json:866|resident.observe.json:1776|tools.scoreboard.json:1108\", \"ts\": 1787526168.0481448, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"dispatch\", \"id\": \"verifier.settle\", \"class\": \"LIGHT_CONTROL\", \"ts\": 1787526168.0496728, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"accepted: verifier.settle\", \"ts\": 1787526168.182035, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"accepted\", \"id\": \"verifier.settle\", \"fingerprint\": \"n=7|agentos.boot.json:815|doctor.read.json:1395|gravity.experiment.json:866|resident.observe.json:1776|tools.scoreboard.json:1108|verifier.settle.json:592\", \"ts\": 1787526168.1821508, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"dispatch\", \"id\": \"gate.reject\", \"class\": \"LIGHT_CONTROL\", \"ts\": 1787526168.184096, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"accepted: gate.reject\", \"ts\": 1787526168.220533, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"accepted\", \"id\": \"gate.reject\", \"fingerprint\": \"n=8|agentos.boot.json:815|doctor.read.json:1395|gate.reject.json:1187|gravity.experiment.json:866|resident.observe.json:1776|tools.scoreboard.json:1108|verifier.settle.json:592\", \"ts\": 1787526168.220618, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"dispatch\", \"id\": \"science.update\", \"class\": \"LIGHT_CONTROL\", \"ts\": 1787526168.222118, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"accepted: science.update\", \"ts\": 1787526168.2793658, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"accepted\", \"id\": \"science.update\", \"fingerprint\": \"n=9|agentos.boot.json:815|doctor.read.json:1395|gate.reject.json:1187|gravity.experiment.json:866|resident.observe.json:1776|science.update.json:226|tools.scoreboard.json:1108|verifier.settle.json:592\", \"ts\": 1787526168.2794602, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"term\", \"msg\": \"phase: completed\", \"ts\": 1787526168.2819378, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}\n{\"event\": \"cancel\", \"reason\": \"shutdown\", \"ts\": 1787526168.28989, \"mission_id\": \"a277d13a-19a5-4695-b0da-7a2dd047a46d\"}",
+  "stages_required": [
+    "HCLI",
+    "AgentOS",
+    "resident",
+    "Doctor",
+    "Gravity experiment",
+    "tools",
+    "verifier",
+    "accepted or rejected",
+    "updated science"
+  ],
+  "steps": [
+    {
+      "stage": "HCLI",
+      "name": "extract_hcli_from_HEAD",
+      "command": [
+        "git",
+        "archive",
+        "--format=tar",
+        "HEAD",
+        "hcli"
+      ],
+      "command_pretty": "git archive --format=tar HEAD hcli | tar -x -C <scratch>/extract",
+      "exit_code": 0,
+      "status": "RUN",
+      "wall_s": 0.0389,
+      "stdout_tail": "{\"dest\": \"/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/extract\", \"package\": \"/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/extract/hcli\", \"ok\": true}",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "command": [
+          "git",
+          "archive",
+          "--format=tar",
+          "HEAD",
+          "hcli",
+          "|",
+          "tar",
+          "-x",
+          "-C",
+          "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/extract"
+        ],
+        "dest": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/extract",
+        "package": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/extract/hcli",
+        "stderr": "",
+        "wall_s": 0.0389,
+        "verified_against": "HEAD:hcli (git archive, not the working tree)"
+      },
+      "notes": "HEAD:hcli (git archive, not the working tree)"
+    },
+    {
+      "stage": "HCLI",
+      "name": "python3 -m hcli /help",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "--workspace",
+        "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws",
+        "/help"
+      ],
+      "command_pretty": "python3 -m hcli --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws /help",
+      "exit_code": 0,
+      "status": "RUN",
+      "wall_s": 0.1669,
+      "stdout_tail": "Commands:\n  /help - show this help\n  /status - show session status\n  /models - list available models\n  /model - select model\n  /goal - set active goal\n  /ultragoal - create or show the durable Goal + ledger + DAG\n  /mission - run a persistent mission\n  /steer - queue steering instruction\n  /grok - delegate, audit, consult, or inspect a Grok task\n  /cancel - cancel the active mission\n  /context - show context summary\n  /compact - compact context\n  /clear - clear transcript (does not forget the mission)\n  /resume - resume session\n  /exit - exit HCLI\n",
+      "stderr_tail": "",
+      "produced": null,
+      "notes": "canonical product entry from docs/CURRENT_ARCHITECTURE.md"
+    },
+    {
+      "stage": "HCLI",
+      "name": "python3 -m hcli /status",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "--workspace",
+        "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws",
+        "/status"
+      ],
+      "command_pretty": "python3 -m hcli --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws /status",
+      "exit_code": 0,
+      "status": "RUN",
+      "wall_s": 0.2238,
+      "stdout_tail": "mission \u2014  phase=\u2014\nGoal: (unset)\nWU ready=0 running=0 blocked=0 completed=0 failed=0\nQwen health=down resident=0 active=0 queued=0 n_ctx=unknown prompt=unknown tps=unknown\nGrok admitted=1 active=2 queued=0 done=163 failed=1 latency=927s\nCPU unknown\nMutation held=false pid=unknown owner=unknown waiters=0\nVerifier backlog=unknown  accepted/h=unknown  ckpt=unknown  watchdog=unknown\n",
+      "stderr_tail": "",
+      "produced": null,
+      "notes": "observes this process's pool; does not spawn a resident"
+    },
+    {
+      "stage": "AgentOS",
+      "name": "agentos.boot",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/agentos_boot.py"
+      ],
+      "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/agentos_boot.py",
+      "durable_reproduce": [
+        "python3",
+        "tools/headless/noetic_ascension_loop.py"
+      ],
+      "script_name": "agentos_boot.py",
+      "script_body": "\n\"\"\"Prove AgentOS is the importable ownership surface, then write a GOAL ledger.\"\"\"\nfrom __future__ import annotations\nimport json, os, sys\nfrom pathlib import Path\n\nextract = Path(os.environ[\"HCLI_EXTRACT\"])\nrepo = Path(os.environ[\"NOETIC_REPO\"])\nws = Path(os.environ[\"NOETIC_WS\"])\nsys.path.insert(0, str(extract))\n\nfrom hcli.agentos import (  # noqa: E402\n    DagStore, Ledger, Mission, Scheduler, WorkUnit, command_is_admissible,\n)\nfrom hcli import doctor, gravity  # noqa: E402\n\ngoal_md = ws / \".hcli\" / \"GOAL.md\"\ngoal_md.parent.mkdir(parents=True, exist_ok=True)\nledger = Ledger()\nledger._preamble = (\n    \"# Ultragoal\\n\\n\"\n    \"No Noetic candidate may be promoted unless it beats the parent on \"\n    \"capability AND performance. An honest REJECTED is the correct gate \"\n    \"output when none does.\\n\\n\"\n)\nob = ledger.add(\n    \"No Noetic candidate currently beats the qualified parent \"\n    \"(qwen38-gravity-uniform-q4-v1).\",\n    acceptance=(\n        \"receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json has \"\n        \"verdict == NO_CANDIDATE_YET_BEATS_PARENT and no candidate is marked promoted\"\n    ),\n    verify_command=(\n        f\"python3 {repo / 'tools/headless/test_no_candidate_beats_parent.py'}\"\n    ),\n    tier=\"V1\",\n    risk=\"high\",\n)\nledger.save(goal_md)\n\nok_cmd, why = command_is_admissible(\"true\")\nassert ok_cmd is False, why\n\ndoc = {\n    \"ok\": True,\n    \"agentos_exports\": [\"DagStore\", \"Ledger\", \"Mission\", \"Scheduler\", \"WorkUnit\"],\n    \"mission_cls\": Mission.__module__ + \".\" + Mission.__name__,\n    \"workunit_cls\": WorkUnit.__module__ + \".\" + WorkUnit.__name__,\n    \"scheduler_cls\": Scheduler.__module__ + \".\" + Scheduler.__name__,\n    \"ledger_cls\": Ledger.__module__ + \".\" + Ledger.__name__,\n    \"dagstore_cls\": DagStore.__module__ + \".\" + DagStore.__name__,\n    \"doctor_owned_paths\": list(doctor.OWNED_PATHS),\n    \"gravity_owned_prefixes\": list(gravity.OWNED_PREFIXES),\n    \"vacuous_true_admissible\": False,\n    \"vacuous_true_reason\": why,\n    \"obligation_id\": ob.id,\n    \"goal_md\": str(goal_md),\n}\n(ws / \"steps\" / \"agentos.boot.json\").write_text(json.dumps(doc, indent=2) + \"\\n\")\nprint(json.dumps({\"ok\": True, \"obligation_id\": ob.id}))\n",
+      "exit_code": 0,
+      "status": "RUN",
+      "workunit_status": "completed",
+      "stdout_tail": "{\"ok\": true, \"obligation_id\": \"G001\"}\n",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "agentos_exports": [
+          "DagStore",
+          "Ledger",
+          "Mission",
+          "Scheduler",
+          "WorkUnit"
+        ],
+        "mission_cls": "hcli.mission.Mission",
+        "workunit_cls": "hcli.workunit.WorkUnit",
+        "scheduler_cls": "hcli.scheduler.Scheduler",
+        "ledger_cls": "hcli.ledger.Ledger",
+        "dagstore_cls": "hcli.dag_store.DagStore",
+        "doctor_owned_paths": [
+          "tools/doctor_seal.py",
+          "tools/gravity_doctor_capability.py",
+          "tools/gravity_doctor_dimensions.py",
+          "tools/gravity_doctor_gate.py"
+        ],
+        "gravity_owned_prefixes": [
+          "tools/gravity_",
+          "tools/nos_pipeline.py"
+        ],
+        "vacuous_true_admissible": false,
+        "vacuous_true_reason": "VACUOUS_COMMAND",
+        "obligation_id": "G001",
+        "goal_md": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/.hcli/GOAL.md"
+      },
+      "verification_ok": true,
+      "driven_by": "hcli.mission.Mission via WorkUnitExecutor backend=tool",
+      "note": "The absolute verifier path is the command that ran in this process. Scratch is reaped; re-run the durable_reproduce command to regenerate the chain."
+    },
+    {
+      "stage": "resident",
+      "name": "resident.observe",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/resident_observe.py"
+      ],
+      "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/resident_observe.py",
+      "durable_reproduce": [
+        "python3",
+        "tools/headless/noetic_ascension_loop.py"
+      ],
+      "script_name": "resident_observe.py",
+      "script_body": "\n\"\"\"Observe a resident without spawning one. Never load a second 27B.\"\"\"\nfrom __future__ import annotations\nimport json, os, sys, urllib.request\nfrom pathlib import Path\n\nextract = Path(os.environ[\"HCLI_EXTRACT\"])\nrepo = Path(os.environ[\"NOETIC_REPO\"])\nws = Path(os.environ[\"NOETIC_WS\"])\nsys.path.insert(0, str(extract))\n\nfrom hcli.machine import resolve_runtime_limits  # noqa: E402\nfrom hcli.runtime import RuntimePool  # noqa: E402\n\ngenome = json.loads((repo / \"receipts/headless/MACHINE_GENOME.json\").read_text())\nmetrics = json.loads((repo / \"receipts/headless/NOETIC_METRICS.json\").read_text())\ncited = (\n    ((metrics.get(\"time\") or {}).get(\"COMPLETE_DECODE_TPS\") or {}).get(\"not_re_run\")\n    or \"\"\n)\n\nlimits = resolve_runtime_limits(repo_root=str(repo), start_dir=str(repo))\n# Instantiate the pool object. Do NOT call start() / ensure \u2014 that would spawn.\npool_cls = RuntimePool.__name__\n\nprobes = []\nfor port, label in ((52484, \"cited_llama_server_from_NOETIC_METRICS\"), (11434, \"ollama\")):\n    url = f\"http://127.0.0.1:{port}/v1/models\"\n    try:\n        with urllib.request.urlopen(url, timeout=0.5) as resp:\n            body = resp.read()[:500].decode(\"utf-8\", \"replace\")\n            probes.append({\n                \"port\": port, \"label\": label, \"url\": url,\n                \"status\": \"RUN\", \"http\": resp.status, \"body_head\": body,\n            })\n    except Exception as exc:\n        probes.append({\n            \"port\": port, \"label\": label, \"url\": url,\n            \"status\": \"RUN\", \"http\": None,\n            \"error\": f\"{type(exc).__name__}: {exc}\",\n        })\n\nps = {\n    \"status\": \"NOT_RUN\",\n    \"reason\": \"ps is blocked in this sandbox (operation not permitted); HTTP probes ran instead\",\n}\n\n# Did we spawn? The pool was constructed, never started.\ndoc = {\n    \"ok\": True,\n    \"did_not_spawn_resident\": True,\n    \"did_not_load_second_27b\": True,\n    \"pool_class\": \"hcli.runtime.RuntimePool\",\n    \"pool_started\": False,\n    \"recorded_RESIDENT_RUNTIME_LIMIT\": genome.get(\"RESIDENT_RUNTIME_LIMIT\"),\n    \"recorded_ACTIVE_DECODE_LIMIT\": genome.get(\"ACTIVE_DECODE_LIMIT\"),\n    \"resolve_runtime_limits\": {\n        \"resident_limit\": getattr(limits, \"resident_limit\", None),\n        \"resident_source\": getattr(limits, \"resident_source\", None),\n        \"gpu_decode\": getattr(limits, \"gpu_decode\", None),\n    },\n    \"cited_prior_resident\": cited,\n    \"http_probes\": probes,\n    \"process_table\": ps,\n}\n(ws / \"steps\" / \"resident.observe.json\").write_text(json.dumps(doc, indent=2) + \"\\n\")\nprint(json.dumps({\n    \"ok\": True,\n    \"did_not_spawn_resident\": True,\n    \"did_not_load_second_27b\": True,\n    \"probes\": [\n        {\"port\": p[\"port\"], \"http\": p.get(\"http\"), \"error\": p.get(\"error\")}\n        for p in probes\n    ],\n}))\n",
+      "exit_code": 0,
+      "status": "RUN",
+      "workunit_status": "completed",
+      "stdout_tail": "{\"ok\": true, \"did_not_spawn_resident\": true, \"did_not_load_second_27b\": true, \"probes\": [{\"port\": 52484, \"http\": null, \"error\": \"URLError: <urlopen error [Errno 61] Connection refused>\"}, {\"port\": 11434, \"http\": 200, \"error\": null}]}\n",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "did_not_spawn_resident": true,
+        "did_not_load_second_27b": true,
+        "pool_class": "hcli.runtime.RuntimePool",
+        "pool_started": false,
+        "recorded_RESIDENT_RUNTIME_LIMIT": 3,
+        "recorded_ACTIVE_DECODE_LIMIT": 2,
+        "resolve_runtime_limits": {
+          "resident_limit": 3,
+          "resident_source": "/Users/scammermike/.config/hcli/machine_genome.json",
+          "gpu_decode": null
+        },
+        "cited_prior_resident": "A llama-server is already resident on 52484. A native run with two 27B servers was measured at 3.986 tok/s vs 33.47 with one. This process did not spawn a second 27B.",
+        "http_probes": [
+          {
+            "port": 52484,
+            "label": "cited_llama_server_from_NOETIC_METRICS",
+            "url": "http://127.0.0.1:52484/v1/models",
+            "status": "RUN",
+            "http": null,
+            "error": "URLError: <urlopen error [Errno 61] Connection refused>"
+          },
+          {
+            "port": 11434,
+            "label": "ollama",
+            "url": "http://127.0.0.1:11434/v1/models",
+            "status": "RUN",
+            "http": 200,
+            "body_head": "{\"object\":\"list\",\"data\":[{\"id\":\"gemma3:1b\",\"object\":\"model\",\"created\":1785806189,\"owned_by\":\"library\"},{\"id\":\"qwen3:1.7b\",\"object\":\"model\",\"created\":1785806126,\"owned_by\":\"library\"},{\"id\":\"qwen2.5:1.5b\",\"object\":\"model\",\"created\":1785805813,\"owned_by\":\"library\"},{\"id\":\"qwen2.5:3b\",\"object\":\"model\",\"created\":1785805682,\"owned_by\":\"library\"},{\"id\":\"qwen3:4b\",\"object\":\"model\",\"created\":1785802540,\"owned_by\":\"library\"},{\"id\":\"nomic-embed-text:latest\",\"object\":\"model\",\"created\":1785779704,\"owned_by\":"
+          }
+        ],
+        "process_table": {
+          "status": "NOT_RUN",
+          "reason": "ps is blocked in this sandbox (operation not permitted); HTTP probes ran instead"
+        }
+      },
+      "verification_ok": true,
+      "driven_by": "hcli.mission.Mission via WorkUnitExecutor backend=tool",
+      "note": "The absolute verifier path is the command that ran in this process. Scratch is reaped; re-run the durable_reproduce command to regenerate the chain."
+    },
+    {
+      "stage": "Doctor",
+      "name": "doctor.read",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/doctor_read.py"
+      ],
+      "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/doctor_read.py",
+      "durable_reproduce": [
+        "python3",
+        "tools/headless/noetic_ascension_loop.py"
+      ],
+      "script_name": "doctor_read.py",
+      "script_body": "\n\"\"\"Doctor: consume the v2 prescription. Do not re-prescribe (that streams parent shards).\"\"\"\nfrom __future__ import annotations\nimport json, os, sys\nfrom pathlib import Path\n\nextract = Path(os.environ[\"HCLI_EXTRACT\"])\nrepo = Path(os.environ[\"NOETIC_REPO\"])\nws = Path(os.environ[\"NOETIC_WS\"])\nsys.path.insert(0, str(extract))\n\nfrom hcli import doctor  # noqa: E402\n\npath = repo / \"receipts/headless/DOCTOR_V2_PRESCRIPTION.json\"\nd = json.loads(path.read_text())\nassert d[\"schema\"] == \"hawking.headless.doctor_v2_prescription.v1\"\nassert d[\"organs_need_different_prescriptions\"] is True\nassert d[\"live_27b_policy\"][\"did_not_load_second_27b\"] is True\norgans = []\nfor o in d.get(\"organs\") or []:\n    presc = o.get(\"prescription\") or {}\n    organs.append({\n        \"organ_id\": o.get(\"organ_id\"),\n        \"kind\": o.get(\"kind\"),\n        \"layer\": o.get(\"layer\"),\n        \"physical_computation\": presc.get(\"physical_computation\"),\n        \"candidate_id\": presc.get(\"candidate_id\"),\n        \"real_organ_of_qualified_parent\": o.get(\"real_organ_of_qualified_parent\"),\n    })\nmlp = next(x for x in organs if x[\"kind\"] == \"mlp_swiglu\")\ngqa = next(x for x in organs if x[\"kind\"] == \"attention_gqa\")\nassert mlp[\"physical_computation\"] != gqa[\"physical_computation\"]\ndoc = {\n    \"ok\": True,\n    \"did_not_re_prescribe\": True,\n    \"did_not_load_second_27b\": True,\n    \"doctor_owned_paths\": list(doctor.OWNED_PATHS),\n    \"question\": d.get(\"question\"),\n    \"rejected_question\": d.get(\"rejected_question\"),\n    \"qualified_parent\": d.get(\"qualified_parent\"),\n    \"organs_need_different_prescriptions\": True,\n    \"organs\": organs,\n    \"source_receipt\": \"receipts/headless/DOCTOR_V2_PRESCRIPTION.json\",\n}\n(ws / \"steps\" / \"doctor.read.json\").write_text(json.dumps(doc, indent=2) + \"\\n\")\nprint(json.dumps({\n    \"ok\": True,\n    \"mlp\": mlp[\"candidate_id\"],\n    \"gqa\": gqa[\"candidate_id\"],\n    \"differ\": True,\n}))\n",
+      "exit_code": 0,
+      "status": "RUN",
+      "workunit_status": "completed",
+      "stdout_tail": "{\"ok\": true, \"mlp\": \"flat_q3_g64\", \"gqa\": \"q4_g128\", \"differ\": true}\n",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "did_not_re_prescribe": true,
+        "did_not_load_second_27b": true,
+        "doctor_owned_paths": [
+          "tools/doctor_seal.py",
+          "tools/gravity_doctor_capability.py",
+          "tools/gravity_doctor_dimensions.py",
+          "tools/gravity_doctor_gate.py"
+        ],
+        "question": "what physical computation should this ORGAN perform",
+        "rejected_question": "how many bits should this tensor get",
+        "qualified_parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+        "organs_need_different_prescriptions": true,
+        "organs": [
+          {
+            "organ_id": "qwen38.L0.mlp",
+            "kind": "mlp_swiglu",
+            "layer": 0,
+            "physical_computation": "in-register grouped-absmax q3 matvec, group 64. Same kernel family as shipping Q4; first coherent low-bpw point on this MLP (3.25 bpw).",
+            "candidate_id": "flat_q3_g64",
+            "real_organ_of_qualified_parent": true
+          },
+          {
+            "organ_id": "qwen38.L3.attention_gqa",
+            "kind": "attention_gqa",
+            "layer": 3,
+            "physical_computation": "same grouped-absmax q4 matvec with group 128 (4.125 bpw). This is the recorded attention floor: a 2.9% scale-overhead save, not a new bit regime. Hessian-optimal scales make the mass HEALTHY; composed GQA still gated at Q4.",
+            "candidate_id": "q4_g128",
+            "real_organ_of_qualified_parent": true
+          }
+        ],
+        "source_receipt": "receipts/headless/DOCTOR_V2_PRESCRIPTION.json"
+      },
+      "verification_ok": true,
+      "driven_by": "hcli.mission.Mission via WorkUnitExecutor backend=tool",
+      "note": "The absolute verifier path is the command that ran in this process. Scratch is reaped; re-run the durable_reproduce command to regenerate the chain."
+    },
+    {
+      "stage": "Gravity experiment",
+      "name": "gravity.experiment",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gravity_experiment.py"
+      ],
+      "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gravity_experiment.py",
+      "durable_reproduce": [
+        "python3",
+        "tools/headless/noetic_ascension_loop.py"
+      ],
+      "script_name": "gravity_experiment.py",
+      "script_body": "\n\"\"\"Gravity experiment: scoring without a kernel is refused; a kernel win on reconstruct is refused.\"\"\"\nfrom __future__ import annotations\nimport json, os, sys\nfrom pathlib import Path\n\nrepo = Path(os.environ[\"NOETIC_REPO\"])\nws = Path(os.environ[\"NOETIC_WS\"])\nsys.path.insert(0, str(repo / \"tools\" / \"headless\"))\n\nfrom gravity_compiler_search import (  # noqa: E402\n    ScoringRefused, KernelWinRefused,\n    candidate_without_kernel, candidate_q4_reconstruct_gemv, candidate_q4_geo_tpr64,\n    try_score, try_credit_kernel_win, kernel_catalog, score, credit_kernel_win,\n)\n\ncatalog = kernel_catalog()\nno_kernel = try_score(candidate_without_kernel(), catalog=catalog)\nassert no_kernel[\"refused\"] is True\nassert no_kernel[\"scored\"] is False\nassert no_kernel[\"defaulted_kernel\"] in (None, False)\n\nrecon = candidate_q4_reconstruct_gemv()\nfused = candidate_q4_geo_tpr64()\n# score() requires a kernel; both of these name one.\nscore(recon, catalog=catalog)\nscore(fused, catalog=catalog)\nwin = try_credit_kernel_win(recon, fused, catalog=catalog)\nassert win[\"refused\"] is True\nassert win[\"credited\"] is False\n\nraised_score = False\ntry:\n    score(candidate_without_kernel(), catalog=catalog)\nexcept ScoringRefused:\n    raised_score = True\nraised_win = False\ntry:\n    credit_kernel_win(recon, fused, catalog=catalog)\nexcept KernelWinRefused:\n    raised_win = True\nassert raised_score and raised_win\n\ndoc = {\n    \"ok\": True,\n    \"did_not_load_second_27b\": True,\n    \"scoring_without_kernel\": {\n        \"refused\": True,\n        \"scored\": False,\n        \"exception\": no_kernel.get(\"exception\"),\n        \"reason\": no_kernel.get(\"reason\"),\n    },\n    \"kernel_win_on_reconstruct\": {\n        \"refused\": True,\n        \"credited\": False,\n        \"decision\": (win.get(\"payload\") or {}).get(\"decision\") or win.get(\"decision\"),\n        \"exception\": win.get(\"exception\"),\n    },\n    \"ScoringRefused_raised\": raised_score,\n    \"KernelWinRefused_raised\": raised_win,\n    \"all_required_kernels_declared\": catalog.get(\"all_required_declared\"),\n    \"source_module\": \"tools/headless/gravity_compiler_search.py\",\n    \"source_receipt\": \"receipts/headless/GRAVITY_COMPILER_SEARCH.json\",\n}\n(ws / \"steps\" / \"gravity.experiment.json\").write_text(json.dumps(doc, indent=2) + \"\\n\")\nprint(json.dumps({\n    \"ok\": True,\n    \"scoring_without_kernel_refused\": True,\n    \"kernel_win_refused\": True,\n}))\n",
+      "exit_code": 0,
+      "status": "RUN",
+      "workunit_status": "completed",
+      "stdout_tail": "{\"ok\": true, \"scoring_without_kernel_refused\": true, \"kernel_win_refused\": true}\n",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "did_not_load_second_27b": true,
+        "scoring_without_kernel": {
+          "refused": true,
+          "scored": false,
+          "exception": "ScoringRefused",
+          "reason": "scoring without a kernel is impossible. Refusing rather than defaulting (saw kernel=None). A default to qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 would collapse the serial 1-thread-per-row kernel and production tpr64 into one 4-tuple \u2014 the bug this obligation exists to catch."
+        },
+        "kernel_win_on_reconstruct": {
+          "refused": true,
+          "credited": false,
+          "decision": "KERNEL_WIN_REFUSED",
+          "exception": "KernelWinRefused"
+        },
+        "ScoringRefused_raised": true,
+        "KernelWinRefused_raised": true,
+        "all_required_kernels_declared": true,
+        "source_module": "tools/headless/gravity_compiler_search.py",
+        "source_receipt": "receipts/headless/GRAVITY_COMPILER_SEARCH.json"
+      },
+      "verification_ok": true,
+      "driven_by": "hcli.mission.Mission via WorkUnitExecutor backend=tool",
+      "note": "The absolute verifier path is the command that ran in this process. Scratch is reaped; re-run the durable_reproduce command to regenerate the chain."
+    },
+    {
+      "stage": "tools",
+      "name": "tools.scoreboard",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/tools_scoreboard.py"
+      ],
+      "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/tools_scoreboard.py",
+      "durable_reproduce": [
+        "python3",
+        "tools/headless/noetic_ascension_loop.py"
+      ],
+      "script_name": "tools_scoreboard.py",
+      "script_body": "\n\"\"\"Tools: the honest-negative scoreboard still holds.\"\"\"\nfrom __future__ import annotations\nimport json, os, subprocess, sys\nfrom pathlib import Path\n\nrepo = Path(os.environ[\"NOETIC_REPO\"])\nws = Path(os.environ[\"NOETIC_WS\"])\ncmd = [sys.executable, str(repo / \"tools/headless/test_no_candidate_beats_parent.py\")]\nproc = subprocess.run(cmd, cwd=str(repo), capture_output=True, text=True)\nparent = json.loads((repo / \"receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json\").read_text())\nassert proc.returncode == 0, proc.stdout + proc.stderr\nassert parent[\"verdict\"] == \"NO_CANDIDATE_YET_BEATS_PARENT\"\nmeasured = parent[\"blocker\"][\"measured\"]\ndoc = {\n    \"ok\": True,\n    \"command\": cmd,\n    \"exit_code\": proc.returncode,\n    \"stdout\": proc.stdout,\n    \"verdict\": parent[\"verdict\"],\n    \"incumbent\": parent[\"incumbent\"],\n    \"best_coherent_candidate_id\": parent[\"best_coherent_candidate\"][\"id\"],\n    \"bytes_reduction_fraction\": measured[\"bytes_reduction_fraction\"],\n    \"throughput_gain_fraction\": measured[\"throughput_gain_fraction\"],\n    \"reading\": measured[\"reading\"],\n    \"next_family\": parent[\"next_representation_family\"][\"family\"],\n    \"source_receipt\": \"receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json\",\n}\n(ws / \"steps\" / \"tools.scoreboard.json\").write_text(json.dumps(doc, indent=2) + \"\\n\")\nprint(json.dumps({\n    \"ok\": True,\n    \"verdict\": parent[\"verdict\"],\n    \"reading\": measured[\"reading\"],\n}))\n",
+      "exit_code": 0,
+      "status": "RUN",
+      "workunit_status": "completed",
+      "stdout_tail": "{\"ok\": true, \"verdict\": \"NO_CANDIDATE_YET_BEATS_PARENT\", \"reading\": \"44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.\"}\n",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "command": [
+          "/opt/homebrew/opt/python@3.14/bin/python3.14",
+          "/Users/scammermike/.claude-grok/worktrees/g015handoff-20260823-183520/tools/headless/test_no_candidate_beats_parent.py"
+        ],
+        "exit_code": 0,
+        "stdout": "ok  test_blocker_carries_measured_numbers_not_adjectives\nok  test_density_really_did_not_buy_speed\nok  test_g014_dependency_is_stated_not_substituted\nok  test_next_family_has_a_reopen_condition\nok  test_no_candidate_is_marked_promoted\nok  test_verdict_is_the_negative\n6/6 passed\n",
+        "verdict": "NO_CANDIDATE_YET_BEATS_PARENT",
+        "incumbent": {
+          "complete_ebpw": 4.252735126866492,
+          "artifact": "qwen38-gravity-uniform-q4-v1"
+        },
+        "best_coherent_candidate_id": "mix_all_mlp_hgravu01_q3_g64",
+        "bytes_reduction_fraction": 0.4474385738410269,
+        "throughput_gain_fraction": 0.01935949738621434,
+        "reading": "44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.",
+        "next_family": "non-matvec operator that survives composition",
+        "source_receipt": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      },
+      "verification_ok": true,
+      "driven_by": "hcli.mission.Mission via WorkUnitExecutor backend=tool",
+      "note": "The absolute verifier path is the command that ran in this process. Scratch is reaped; re-run the durable_reproduce command to regenerate the chain."
+    },
+    {
+      "stage": "verifier",
+      "name": "verifier.settle",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/verifier_settle.py"
+      ],
+      "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/verifier_settle.py",
+      "durable_reproduce": [
+        "python3",
+        "tools/headless/noetic_ascension_loop.py"
+      ],
+      "script_name": "verifier_settle.py",
+      "script_body": "\n\"\"\"Mechanical settle: 'a Noetic candidate beats the parent' is FALSE.\"\"\"\nfrom __future__ import annotations\nimport json, os\nfrom pathlib import Path\n\nrepo = Path(os.environ[\"NOETIC_REPO\"])\nws = Path(os.environ[\"NOETIC_WS\"])\nextract = Path(os.environ[\"HCLI_EXTRACT\"])\nsys_path_insert = str(extract)\nimport sys\nsys.path.insert(0, sys_path_insert)\nfrom hcli.verifier_pipeline import command_is_admissible  # noqa: E402\n\nparent = json.loads((repo / \"receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json\").read_text())\nclaim = \"A Noetic candidate beats the qualified parent on capability AND performance.\"\ncmd = (\n    f\"python3 {repo / 'tools/headless/test_no_candidate_beats_parent.py'}\"\n)\nadmissible, why = command_is_admissible(cmd)\nassert admissible is True, why\n\n# The discriminator exits 0 when the NEGATIVE holds. That settles the\n# promotion claim as FALSE \u2014 not as a vacuous pass.\nimport subprocess\nproc = subprocess.run(cmd, shell=True, cwd=str(repo), capture_output=True, text=True)\nassert proc.returncode == 0\nassert parent[\"verdict\"] == \"NO_CANDIDATE_YET_BEATS_PARENT\"\npromoted = \"promoted\" in json.dumps(parent).lower() and \"no promotion is claimed\" not in json.dumps(parent).lower()\nassert not promoted\n\ndoc = {\n    \"ok\": True,\n    \"claim\": claim,\n    \"settled\": \"FALSE\",\n    \"discriminator\": cmd,\n    \"discriminator_exit\": proc.returncode,\n    \"command_is_admissible\": True,\n    \"vacuous_true_rejected_earlier\": True,\n    \"receipt_verdict\": parent[\"verdict\"],\n    \"faking_the_shift\": parent.get(\"faking_the_shift\"),\n    \"source_receipt\": \"receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json\",\n}\n(ws / \"steps\" / \"verifier.settle.json\").write_text(json.dumps(doc, indent=2) + \"\\n\")\nprint(json.dumps({\"ok\": True, \"settled\": \"FALSE\", \"verdict\": parent[\"verdict\"]}))\n",
+      "exit_code": 0,
+      "status": "RUN",
+      "workunit_status": "completed",
+      "stdout_tail": "{\"ok\": true, \"settled\": \"FALSE\", \"verdict\": \"NO_CANDIDATE_YET_BEATS_PARENT\"}\n",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "claim": "A Noetic candidate beats the qualified parent on capability AND performance.",
+        "settled": "FALSE",
+        "discriminator": "python3 /Users/scammermike/.claude-grok/worktrees/g015handoff-20260823-183520/tools/headless/test_no_candidate_beats_parent.py",
+        "discriminator_exit": 0,
+        "command_is_admissible": true,
+        "vacuous_true_rejected_earlier": true,
+        "receipt_verdict": "NO_CANDIDATE_YET_BEATS_PARENT",
+        "faking_the_shift": "forbidden by S006 \u00a733; no promotion is claimed here",
+        "source_receipt": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      },
+      "verification_ok": true,
+      "driven_by": "hcli.mission.Mission via WorkUnitExecutor backend=tool",
+      "note": "The absolute verifier path is the command that ran in this process. Scratch is reaped; re-run the durable_reproduce command to regenerate the chain."
+    },
+    {
+      "stage": "accepted or rejected",
+      "name": "gate.reject",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gate_reject.py"
+      ],
+      "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/gate_reject.py",
+      "durable_reproduce": [
+        "python3",
+        "tools/headless/noetic_ascension_loop.py"
+      ],
+      "script_name": "gate_reject.py",
+      "script_body": "\n\"\"\"Accept-or-reject the science candidate. REJECTED is a real gate output.\"\"\"\nfrom __future__ import annotations\nimport json, os\nfrom pathlib import Path\n\nrepo = Path(os.environ[\"NOETIC_REPO\"])\nws = Path(os.environ[\"NOETIC_WS\"])\nparent = json.loads((repo / \"receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json\").read_text())\nverifier = json.loads((ws / \"steps\" / \"verifier.settle.json\").read_text())\nassert verifier[\"settled\"] == \"FALSE\"\ngate = \"REJECTED\"\nreason = parent[\"blocker\"][\"statement\"]\nmeasured = parent[\"blocker\"][\"measured\"]\ndoc = {\n    \"ok\": True,\n    \"gate\": gate,\n    \"science_candidate\": parent.get(\"best_coherent_candidate\", {}).get(\"id\"),\n    \"why\": reason,\n    \"measured\": measured,\n    \"would_have_accepted_if\": (\n        \"a candidate won protected qualification on capability AND performance, \"\n        \"which none of the recorded mixes did\"\n    ),\n    \"did_not_engineer_an_acceptance\": True,\n    \"source_receipt\": \"receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json\",\n}\n(ws / \"steps\" / \"gate.reject.json\").write_text(json.dumps(doc, indent=2) + \"\\n\")\nprint(json.dumps({\"ok\": True, \"gate\": gate, \"candidate\": doc[\"science_candidate\"]}))\n",
+      "exit_code": 0,
+      "status": "RUN",
+      "workunit_status": "completed",
+      "stdout_tail": "{\"ok\": true, \"gate\": \"REJECTED\", \"candidate\": \"mix_all_mlp_hgravu01_q3_g64\"}\n",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "gate": "REJECTED",
+        "science_candidate": "mix_all_mlp_hgravu01_q3_g64",
+        "why": "Every candidate that generates coherently is a grouped-code matvec, and cutting its bytes does not buy decode speed on this machine. Promotion requires winning protected qualification on capability AND performance; these candidates trade real density for no measurable throughput, so there is nothing to promote on.",
+        "measured": {
+          "cheapest_candidate": "mix_c_all_mlp_binary_g64",
+          "cheapest_ebpw": 2.343974955991431,
+          "cheapest_tok_s": 33.44218765414758,
+          "dearest_candidate": "mix_a_l0_down_binary_g1024",
+          "dearest_ebpw": 4.242016986754093,
+          "dearest_tok_s": 32.80705947204907,
+          "bytes_reduction_fraction": 0.4474385738410269,
+          "throughput_gain_fraction": 0.01935949738621434,
+          "reading": "44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound."
+        },
+        "would_have_accepted_if": "a candidate won protected qualification on capability AND performance, which none of the recorded mixes did",
+        "did_not_engineer_an_acceptance": true,
+        "source_receipt": "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json"
+      },
+      "verification_ok": true,
+      "driven_by": "hcli.mission.Mission via WorkUnitExecutor backend=tool",
+      "note": "The absolute verifier path is the command that ran in this process. Scratch is reaped; re-run the durable_reproduce command to regenerate the chain."
+    },
+    {
+      "stage": "updated science",
+      "name": "science.update",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/science_update.py"
+      ],
+      "command_pretty": "/opt/homebrew/opt/python@3.14/bin/python3.14 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/scripts/science_update.py",
+      "durable_reproduce": [
+        "python3",
+        "tools/headless/noetic_ascension_loop.py"
+      ],
+      "script_name": "science_update.py",
+      "script_body": "\n\"\"\"Update recorded science with the REJECTED outcome of this loop.\"\"\"\nfrom __future__ import annotations\nimport json, os, subprocess, time\nfrom pathlib import Path\n\nrepo = Path(os.environ[\"NOETIC_REPO\"])\nws = Path(os.environ[\"NOETIC_WS\"])\nreceipts = repo / \"receipts\" / \"headless\"\nparent = json.loads((receipts / \"NO_CANDIDATE_YET_BEATS_PARENT.json\").read_text())\ngate = json.loads((ws / \"steps\" / \"gate.reject.json\").read_text())\nhead = subprocess.run(\n    [\"git\", \"rev-parse\", \"HEAD\"], cwd=str(repo), capture_output=True, text=True\n).stdout.strip()\ndoc = {\n    \"schema\": \"hawking.headless.noetic_ascension_science_update.v1\",\n    \"generated_at\": time.strftime(\"%Y-%m-%dT%H:%M:%SZ\", time.gmtime()),\n    \"git_head\": head,\n    \"updated_by\": \"HCLI AgentOS WorkUnit science.update\",\n    \"gate\": gate[\"gate\"],\n    \"verdict\": parent[\"verdict\"],\n    \"did_not_promote\": True,\n    \"strongest_candidate_still\": parent[\"best_coherent_candidate\"][\"id\"],\n    \"blocker_id\": parent[\"blocker\"][\"id\"],\n    \"blocker_reading\": parent[\"blocker\"][\"measured\"][\"reading\"],\n    \"next_family\": parent[\"next_representation_family\"],\n    \"cites\": [\n        \"receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json\",\n        \"receipts/headless/NOETIC_ASCENSION_LOOP.json\",\n    ],\n    \"workspace_gate_artifact\": str(ws / \"steps\" / \"gate.reject.json\"),\n}\nout = receipts / \"NOETIC_ASCENSION_SCIENCE_UPDATE.json\"\ntmp = out.with_suffix(out.suffix + \".tmp\")\ntmp.write_text(json.dumps(doc, indent=2) + \"\\n\")\nos.replace(tmp, out)\n(ws / \"steps\" / \"science.update.json\").write_text(json.dumps({\n    \"ok\": True,\n    \"written\": str(out),\n    \"gate\": doc[\"gate\"],\n    \"verdict\": doc[\"verdict\"],\n}, indent=2) + \"\\n\")\nprint(json.dumps({\"ok\": True, \"written\": str(out), \"gate\": doc[\"gate\"]}))\n",
+      "exit_code": 0,
+      "status": "RUN",
+      "workunit_status": "completed",
+      "stdout_tail": "{\"ok\": true, \"written\": \"/Users/scammermike/.claude-grok/worktrees/g015handoff-20260823-183520/receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json\", \"gate\": \"REJECTED\"}\n",
+      "stderr_tail": "",
+      "produced": {
+        "ok": true,
+        "written": "/Users/scammermike/.claude-grok/worktrees/g015handoff-20260823-183520/receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json",
+        "gate": "REJECTED",
+        "verdict": "NO_CANDIDATE_YET_BEATS_PARENT"
+      },
+      "verification_ok": true,
+      "driven_by": "hcli.mission.Mission via WorkUnitExecutor backend=tool",
+      "note": "The absolute verifier path is the command that ran in this process. Scratch is reaped; re-run the durable_reproduce command to regenerate the chain."
+    }
+  ],
+  "science_update_path": "/Users/scammermike/.claude-grok/worktrees/g015handoff-20260823-183520/receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json",
+  "elapsed_s": 1.291,
+  "gate": "REJECTED",
+  "scratch_reaped": true
+}

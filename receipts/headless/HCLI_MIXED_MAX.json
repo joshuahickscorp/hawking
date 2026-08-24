@@ -1,0 +1,277 @@
+{
+  "gates": [
+    "HCLI_GROK_MAX_EQUILIBRIUM",
+    "MAX_NO_ARTIFICIAL_WORK",
+    "HCLI_MIXED_MAX"
+  ],
+  "generated_at": "2026-08-23T06:59:49Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "work_is_real": {
+    "unit_count": 23,
+    "principle": "every unit runs a real check over this repository and is accepted only on that check's own exit code; none sleeps, none greps for a nonce the harness wrote, and no unit exists to occupy capacity",
+    "units": [
+      {
+        "id": "check.hcli_runtimepool_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_runtimepool_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_runtimepool_test.py"
+      },
+      {
+        "id": "check.hcli_scheduler_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_scheduler_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_scheduler_test.py"
+      },
+      {
+        "id": "check.hcli_dag_consolidation_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_dag_consolidation_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_dag_consolidation_test.py"
+      },
+      {
+        "id": "check.hcli_command_ingress_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_command_ingress_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_command_ingress_test.py"
+      },
+      {
+        "id": "check.hcli_verifier_pipeline_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_verifier_pipeline_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_verifier_pipeline_test.py"
+      },
+      {
+        "id": "check.hcli_validation_authority_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_validation_authority_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_validation_authority_test.py"
+      },
+      {
+        "id": "check.rollback_integrity_test",
+        "class": "TEST",
+        "description": "headless regression: rollback_integrity_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/rollback_integrity_test.py"
+      },
+      {
+        "id": "check.hcli_callpath_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_callpath_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_callpath_test.py"
+      },
+      {
+        "id": "check.hcli_containment_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_containment_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_containment_test.py"
+      },
+      {
+        "id": "check.hcli_mission_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_mission_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_mission_test.py"
+      },
+      {
+        "id": "check.hcli_agentos_ledger_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_agentos_ledger_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_agentos_ledger_test.py"
+      },
+      {
+        "id": "check.hcli_max_isolation_test",
+        "class": "TEST",
+        "description": "headless regression: hcli_max_isolation_test.py",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_max_isolation_test.py"
+      },
+      {
+        "id": "pytest.ledger",
+        "class": "TEST",
+        "description": "unit tests matching 'ledger'",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests -q -k \"ledger\""
+      },
+      {
+        "id": "pytest.context",
+        "class": "TEST",
+        "description": "unit tests matching 'context or budget'",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests -q -k \"context or budget\""
+      },
+      {
+        "id": "pytest.grok",
+        "class": "TEST",
+        "description": "unit tests matching 'grok'",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests -q -k \"grok\""
+      },
+      {
+        "id": "pytest.verifier",
+        "class": "TEST",
+        "description": "unit tests matching 'verif or mutation'",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests -q -k \"verif or mutation\""
+      },
+      {
+        "id": "pytest.scheduler",
+        "class": "TEST",
+        "description": "unit tests matching 'scheduler or workunit or dag'",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests -q -k \"scheduler or workunit or dag\""
+      },
+      {
+        "id": "pytest.report",
+        "class": "TEST",
+        "description": "unit tests matching 'report or compact'",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests -q -k \"report or compact\""
+      },
+      {
+        "id": "prop.p0gates",
+        "class": "TEST",
+        "description": "the environment-independent P0 gates are all green",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/Downloads/hawking-copy/tools/headless/hcli_p0_gates.py --gate P0-1 --gate P0-2 --gate P0-3 --gate P0-4 --gate P0-6 --gate P0-8 --gate P0-11 --gate P0-12"
+      },
+      {
+        "id": "prop.context_authority",
+        "class": "TEST",
+        "description": "the context authority still reproduces the 11008 regression arithmetic",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -c \"import sys;sys.path.insert(0,r'/Users/scammermike/Downloads/hawking-copy/tools/haider');from hcli import context_budget as cb;assert cb.per_seq_context(32768,3)==11008;assert cb.solve_parallel(32768,11008)==3;print('ok')\""
+      },
+      {
+        "id": "prop.gguf_ceiling",
+        "class": "TEST",
+        "description": "the GGUF parser still reads the model's real context ceiling",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -c \"import sys;sys.path.insert(0,r'/Users/scammermike/Downloads/hawking-copy/tools/haider');from hcli import context_budget as cb;v=cb.gguf_context_length(r'/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf');assert v==262144, v; print('ok', v)\""
+      },
+      {
+        "id": "chain.compile",
+        "class": "TEST",
+        "description": "imports resolve across the whole hcli package",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -c \"import sys;sys.path.insert(0,r'/Users/scammermike/Downloads/hawking-copy/tools/haider');import hcli.engine,hcli.mission,hcli.scheduler,hcli.controller,hcli.executors,hcli.grok_bridge,hcli.ledger,hcli.context_budget;print('ok')\""
+      },
+      {
+        "id": "chain.suite",
+        "class": "TEST",
+        "description": "full unit suite, gated on imports resolving first",
+        "verifier": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests -q"
+      }
+    ]
+  },
+  "rungs": [
+    {
+      "requested_concurrency": 1,
+      "admitted_concurrency": {},
+      "peak_actually_active": 1,
+      "mean_actually_active": 1.0,
+      "units_total": 23,
+      "units_original": 23,
+      "verified": 23,
+      "rejected_or_failed": 0,
+      "repair_units_created": 0,
+      "retries": 23,
+      "wall_s": 276.535,
+      "queue_delay_p50_s": 67.082,
+      "queue_delay_p95_s": 152.438,
+      "completion_p50_s": 0.332,
+      "completion_p95_s": 81.842,
+      "scheduler_overhead_s": 2.6083002012455836e-05,
+      "mutation_blocked_at_last_dispatch": 0,
+      "verified_units_per_hour": 299.42,
+      "failed_ids": [],
+      "throughput_vs_rung1": 1.0
+    },
+    {
+      "requested_concurrency": 2,
+      "admitted_concurrency": {},
+      "peak_actually_active": 2,
+      "mean_actually_active": 1.485,
+      "units_total": 26,
+      "units_original": 23,
+      "verified": 22,
+      "rejected_or_failed": 4,
+      "repair_units_created": 3,
+      "retries": 29,
+      "wall_s": 189.001,
+      "queue_delay_p50_s": 1.677,
+      "queue_delay_p95_s": 64.459,
+      "completion_p50_s": 0.208,
+      "completion_p95_s": 84.624,
+      "scheduler_overhead_s": 3.4166998375440016e-05,
+      "mutation_blocked_at_last_dispatch": 0,
+      "verified_units_per_hour": 419.05,
+      "failed_ids": [
+        "pytest.scheduler",
+        "pytest.scheduler.repair.1",
+        "pytest.scheduler.repair.1.repair.1",
+        "pytest.scheduler.repair.1.repair.1.repair.1"
+      ],
+      "throughput_vs_rung1": 1.3995,
+      "gain_over_previous_pct": 39.95
+    },
+    {
+      "requested_concurrency": 4,
+      "admitted_concurrency": {},
+      "peak_actually_active": 4,
+      "mean_actually_active": 2.195,
+      "units_total": 23,
+      "units_original": 23,
+      "verified": 23,
+      "rejected_or_failed": 0,
+      "repair_units_created": 0,
+      "retries": 23,
+      "wall_s": 129.631,
+      "queue_delay_p50_s": 0.816,
+      "queue_delay_p95_s": 2.651,
+      "completion_p50_s": 0.359,
+      "completion_p95_s": 84.89,
+      "scheduler_overhead_s": 2.4665998353157192e-05,
+      "mutation_blocked_at_last_dispatch": 0,
+      "verified_units_per_hour": 638.74,
+      "failed_ids": [],
+      "throughput_vs_rung1": 2.1333,
+      "gain_over_previous_pct": 52.43
+    },
+    {
+      "requested_concurrency": 8,
+      "admitted_concurrency": {},
+      "peak_actually_active": 8,
+      "mean_actually_active": 2.252,
+      "units_total": 23,
+      "units_original": 23,
+      "verified": 23,
+      "rejected_or_failed": 0,
+      "repair_units_created": 0,
+      "retries": 23,
+      "wall_s": 128.003,
+      "queue_delay_p50_s": 0.158,
+      "queue_delay_p95_s": 1.111,
+      "completion_p50_s": 0.394,
+      "completion_p95_s": 84.909,
+      "scheduler_overhead_s": 2.608399881864898e-05,
+      "mutation_blocked_at_last_dispatch": 0,
+      "verified_units_per_hour": 646.86,
+      "failed_ids": [],
+      "throughput_vs_rung1": 2.1604,
+      "gain_over_previous_pct": 1.27,
+      "rejected_as_equilibrium": "only 1.3% over c=4, below the 5.0% bar"
+    }
+  ],
+  "useful_equilibrium": 4,
+  "equilibrium_rule": "the highest rung that beat its predecessor by more than 5% in VERIFIED units per hour -- the knee, not the argmax, and explicitly not the largest integer reached",
+  "min_gain_pct": 5.0,
+  "critical_path_bound": "completion p95 is flat at ~84.9s across every rung because one unit (the full unit suite) dominates it, and total wall converges to ~128s at c=4 and c=8 alike. Past c=4 this campaign is CRITICAL-PATH bound, not capacity bound: adding workers cannot beat the longest chain.",
+  "scope_honesty": {
+    "what_this_measured": "CPU/TEST-class concurrency, end to end, through HCLI's own scheduler, over 23 real WorkUnits whose acceptance is each command's own exit code.",
+    "what_this_did_NOT_measure": "It is NOT a MIXED campaign. Every unit ran on the CPU backend; the engine was a NullEngine that refuses to execute a unit, so no Qwen cognition and no Grok dispatch took part. It therefore does NOT satisfy HCLI_MIXED_MAX (G019) or HCLI_GROK_MAX_EQUILIBRIUM (G015), both of which require the other backends to be in the run.",
+    "what_it_DOES_satisfy": "MAX_NO_ARTIFICIAL_WORK (G018), and it supplies a measured useful equilibrium for the CPU class."
+  },
+  "earlier_attempt_and_why_it_was_wrong": {
+    "symptom": "the first run reported peak_actually_active=22 at rungs 1, 2 AND 4, with flat throughput of 329.7 / 314.7 / 314.8 WU/h",
+    "cause": "the rung was decoration. runtime_count gates GPU_DECODE, while the TEST class is capped at ncpu, so every ready unit ran at once whatever the rung said and the independent variable never varied.",
+    "fix": "the rung now sets ResourceLimits.test directly. peak_actually_active is now 1 / 2 / 4 / 8, matching the request.",
+    "also_repaired": [
+      "chain.suite exceeded the executor's 120s CPU timeout and failed for a reason unrelated to what it checks, then retried into the same wall; the campaign now sets HCLI_CPU_TIMEOUT=600",
+      "prop.p0gates exits 1 when P0-7 is INCONCLUSIVE, which depends on whether a Grok lane happens to be live; the unit now asks only for the environment-independent gates"
+    ]
+  },
+  "equilibrium_rule_correction": {
+    "was": "argmax of verified units per hour, which selected c=8",
+    "why_wrong": "c=8 beat c=4 by 1.27% for twice the concurrency. Selecting it is exactly the 'largest integer reached' the directive warns against.",
+    "now": "the highest rung beating its predecessor by more than 5%, which selects c=4"
+  },
+  "finding_critical_path_bound": "completion p95 is flat at ~84.9s at every rung, because one unit -- the full unit suite -- dominates it, and total wall converges to 129.6s at c=4 and 128.0s at c=8. Past c=4 this campaign is CRITICAL-PATH bound, not capacity bound: more workers cannot beat the longest chain. That is also why queue delay collapses from 67.1s at c=1 to 0.16s at c=8 while throughput does not follow -- the queue empties, the chain does not shorten.",
+  "coincidence_noted_not_claimed": "The CPU-class equilibrium (4) equals the measured Qwen decode equilibrium (4). Different workloads on the same machine; this is most likely the box's parallelism showing through twice, not a shared law. Recorded as an observation, not a conclusion."
+}

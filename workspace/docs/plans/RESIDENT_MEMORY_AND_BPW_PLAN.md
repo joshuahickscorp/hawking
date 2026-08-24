@@ -1,7 +1,7 @@
 # Resident Memory & BPW Reality Plan
 
 **Status:** PLAN ONLY — honest memory/density law for the 96 GB box.  
-**Seal companion:** `workspace/campaign/evidence/models/frankenstein/RESIDENT_MEMORY_AND_BPW_PLAN.json`  
+**Seal companion:** `hawking-experiments/frankenstein/data/RESIDENT_MEMORY_AND_BPW_PLAN.json`  
 **Machine:** Apple M3 Ultra Studio, **96 GB UMA**, ~819 GB/s advertised BW, 1 TB SSD  
 **Process admission budget (coding-agent tenant):** **78 GiB**, not full 96 GB  
   (see `workspace/docs/reference/BASELINES.md`)

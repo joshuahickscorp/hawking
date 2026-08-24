@@ -20,7 +20,7 @@ Sandbox models produce **reports**, not **verdicts**. Every finished evaluation 
 
 | Pattern | Where | Generalization here |
 |---------|--------|---------------------|
-| `evaluate_promotion` → ACCEPT / REJECT / **PENDING** | `lab/operators/frankenstein_promotion_gate.py` | `map_promotion_gate_verdict` + `classify_check_aggregate`; PENDING → `INSUFFICIENT_EVIDENCE` (never fabricate ACCEPT) |
+| `evaluate_promotion` → ACCEPT / REJECT / **PENDING** | `hawking-experiments/frankenstein/operators/frankenstein_promotion_gate.py` | `map_promotion_gate_verdict` + `classify_check_aggregate`; PENDING → `INSUFFICIENT_EVIDENCE` (never fabricate ACCEPT) |
 | Independent verify / seal | `frankenstein_v0_seal.py` `verify` | Controller certifies; builder lane cannot self-seal promotion |
 | Author ≠ admitter | `lab/rules.apply_governance` | `SelfPromotionError` if sandbox certifies or signs |
 | Builder ≠ challenger ≠ verifier | `lab/receipts.GateEvidence` | `AuthoritativeVerdict.certified_by` ∈ {protected_controller, human_operator} |
@@ -203,7 +203,7 @@ Models emit this as a **candidate**. The human or protected controller decides: 
 ## Non-goals (this scaffold)
 
 - No live held-out corpus or Numeric Parity runs
-- No edits to `lab/operators/frankenstein_*` or frankenstein evidence trees
+- No edits to `hawking-experiments/frankenstein/operators/frankenstein_*` or frankenstein evidence trees
 - No cryptographic owner-key signing yet (seal_sha256 integrity only, same as lab receipts)
 - No push/PR, no remote, no daemon
 
@@ -213,5 +213,5 @@ Models emit this as a **candidate**. The human or protected controller decides: 
 
 - `workspace/docs/plans/ascension/HCLI_EXECUTION_SANDBOX_PLAN.md` — what models may *do*
 - `lab/execution_sandbox.py` — filesystem / action enforcement
-- `lab/operators/frankenstein_promotion_gate.py` — reference pattern (read-only for this programme)
+- `hawking-experiments/frankenstein/operators/frankenstein_promotion_gate.py` — reference pattern (read-only for this programme)
 - Bible §2, §21, §22

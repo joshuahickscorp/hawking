@@ -3,7 +3,7 @@
 **Status:** plan + scaffold only  
 **Bible:** HAWKING_ASCENSION_BIBLE §4  
 **Scaffold:** `lab/operators/research_registry.py`  
-**Shape reference:** `workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_ARCHITECTURE_OPTIONS.md`
+**Shape reference:** `hawking-experiments/frankenstein/data/FRANKENSTEIN_ARCHITECTURE_OPTIONS.md`
 
 ---
 

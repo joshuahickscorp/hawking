@@ -1,0 +1,2398 @@
+{
+ "schema": "hawking.headless.organ_roof_ledger.v1",
+ "generated_at": "2026-08-24T16:48:32Z",
+ "git_head": "b9db37d617e0e2d3664d8e83289127f307aa00f7",
+ "obligation": "N027 \u2014 THREE_ROOFS + ORGAN_ROOF_LEDGER (S022 \u00a71, \u00a711, \u00a712): rank organs by recoverable token_ns, not %BW",
+ "one_line": "Three roofs stay separate: DEVICE_THEORETICAL 819 GB/s, DEVICE_MEASURED_SUSTAINED 778.8 GB/s (BANDWIDTH_ROOF, not re-derived), MODEL_REACHABLE 729.7 GB/s (AI+occupancy+1-CB). Ranked by recoverable token_ns: mlp_gate_up 5.29ms, mlp_down 3.45ms, deltanet 3.39ms. Not ranked by %BW.",
+ "question": "What are the three roofs, what MODEL_REACHABLE can each organ hit, and which organs hold recoverable token_ns?",
+ "answer": "Three roofs stay separate: DEVICE_THEORETICAL 819 GB/s, DEVICE_MEASURED_SUSTAINED 778.8 GB/s (BANDWIDTH_ROOF, not re-derived), MODEL_REACHABLE 729.7 GB/s (AI+occupancy+1-CB). Ranked by recoverable token_ns: mlp_gate_up 5.29ms, mlp_down 3.45ms, deltanet 3.39ms. Not ranked by %BW.",
+ "ranking_quantity": "recoverable_token_ns",
+ "not_the_ranking_quantity": [
+  "pct_of_778p8",
+  "pct_BW",
+  "achieved_gb_s",
+  "fraction_of_roof_gap"
+ ],
+ "s022": {
+  "section_1": "three roofs never collapsed",
+  "section_11": "rank by recoverable token_ns (ORGAN_ROOF_LEDGER)",
+  "section_12": "the goal is COMPLETE_TOKEN_NS, not GB/s"
+ },
+ "three_roofs": {
+  "DEVICE_THEORETICAL": {
+   "value": 819.0,
+   "kind": "CITED",
+   "unit": "GB/s",
+   "command": "BANDWIDTH_ROOF.hardware.published_peak_gb_s",
+   "absent_reason": null,
+   "note": "Datasheet peak. Not a measured decode roof. S022 \u00a71.",
+   "source": "receipts/headless/BANDWIDTH_ROOF.json"
+  },
+  "DEVICE_MEASURED_SUSTAINED": {
+   "value": 778.8,
+   "kind": "CITED",
+   "unit": "GB/s",
+   "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+   "absent_reason": null,
+   "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+   "source": "receipts/headless/BANDWIDTH_ROOF.json"
+  },
+  "MODEL_REACHABLE": {
+   "value": 729.6978633780673,
+   "kind": "DERIVED",
+   "unit": "GB/s",
+   "command": "parent_active_bytes / sum(organ_reachable_ns)",
+   "absent_reason": null,
+   "note": "Roof THIS token graph can hit given AI + occupancy + 1-CB serial structure, expressed as active-weight GB/s so it sits next to production 358.2 without collapsing onto 778.8 or 819."
+  },
+  "never_collapsed": true,
+  "not_a_single_number": true,
+  "s022_section": 1,
+  "distinct": true
+ },
+ "model_reachable_method": {
+  "statement": "MODEL_REACHABLE is derived per organ from arithmetic intensity, launch-geometry occupancy, and the 1-CB serial dependency graph. A memory-bound organ can in principle reach DEVICE_MEASURED_SUSTAINED (778.8 GB/s) only if it issues enough threadgroups to saturate DRAM; a compute-bound organ is capped at COMPUTE_PEAK/AI, which is below the DRAM roof. Occupancy-starved organs (1\u201324 TGs) cannot reach either DRAM roof. Organs are encoded serially in one command buffer (concurrent_independent=false); sibling overlap is not claimed.",
+  "formula": "AI = FLOPs / traffic_bytes. ridge_measured = 8979 GFLOP/s / 778.8 GB/s = 11.529 FLOP/byte; ridge_theoretical = 8979 / 819.0 = 10.963 FLOP/byte. bound = compute if AI > ridge_measured else memory (launch if FLOPs=0). occupancy_factor = min(1, threadgroups / (60 cores \u00d7 4 TG/core)). Byte-weighted across the organ's operators. organ_reachable_gb_s = min(DEVICE_MEASURED_SUSTAINED \u00d7 occupancy_factor, COMPUTE_PEAK/AI). organ_reachable_ns = max(traffic_bytes / reachable_bw, FLOPs / (COMPUTE_PEAK \u00d7 occupancy_factor)). recoverable_token_ns = max(0, measured_gpu_ns \u2212 organ_reachable_ns). Device MODEL_REACHABLE_GB_S = parent_active_bytes / sum(organ_reachable_ns).",
+  "why_not_pct_bw": "Sampling and embedding sit at ~0% of 778.8 GB/s because they are occupancy-starved (1\u201320 TGs), not because they hold recoverable token_ns. mlp_gate_up at 361 GB/s (46% of 778.8) holds ~5.3 ms. Ranking by %BW would invert the doctor. S022 \u00a711, \u00a712.",
+  "why_three_roofs": "819 is datasheet peak (DEVICE_THEORETICAL). 778.8 is the N017 sequential unique-once DRAM measurement (DEVICE_MEASURED_SUSTAINED), copied from BANDWIDTH_ROOF.json and not re-derived. MODEL_REACHABLE is the roof THIS graph can hit given AI + occupancy + 1-CB serial structure, and is a third number. Collapsing them Goodharts GB/s (S022 \u00a71).",
+  "dependency_structure": "Production TokenCommandBuffer is one command buffer, one host wait, concurrent_independent=false. Intra-CB dispatches are encoded in layer order; ba_to_decay is a sibling of rearrange on paper and a serial launch in the graph. Overlap is unmeasured (atDispatchBoundary=false) and is not subtracted from reachable ns.",
+  "occupancy_source": "Hardware occupancy / SIMD utilization ABSENT (GPU_LEDGER MTLDevice.counterSets = {timestamp}). Launch geometry is DERIVED from qwen38_hybrid_decode.rs / kernels/mod.rs dispatch_threads.",
+  "saturating_threadgroups": 240,
+  "saturating_tg_per_core": 4,
+  "gpu_cores": 60,
+  "compute_peak_gflops": 8979.0,
+  "compute_peak_source": "NOETIC_TRAFFIC_MODEL.machine.compute_peak_gflops / G143_FLOPS_PER_TOKEN.json; not re-derived"
+ },
+ "compute_peak_gflops": {
+  "value": 8979.0,
+  "kind": "CITED",
+  "unit": "GFLOP/s",
+  "command": "NOETIC_TRAFFIC_MODEL.machine.compute_peak_gflops",
+  "absent_reason": null,
+  "note": "G143; not re-derived.",
+  "source": "receipts/headless/NOETIC_TRAFFIC_MODEL.json"
+ },
+ "ridge": {
+  "theoretical_flop_per_byte": 10.963369963369964,
+  "measured_flop_per_byte": 11.529275808936827,
+  "formula": "COMPUTE_PEAK_GFLOPS / roof_GB_s"
+ },
+ "token": {
+  "vehicle": "NOETIC_PARENT_A fused 756 (N025 organ CBs)",
+  "production_gpu_ns": {
+   "value": 27579625,
+   "kind": "CITED",
+   "unit": "ns/token",
+   "command": "ORGAN_BANDWIDTH.organ_attribution.production_gpu_ns_median",
+   "absent_reason": null,
+   "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+  },
+  "production_achieved_gb_s": {
+   "value": 358.1956294184566,
+   "kind": "CITED",
+   "unit": "GB/s",
+   "command": "ORGAN_BANDWIDTH.organ_attribution.production_achieved_gb_s",
+   "absent_reason": null,
+   "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+  },
+  "parent_active_bytes": {
+   "value": 9878901136,
+   "kind": "CITED",
+   "unit": "bytes/token",
+   "command": "ORGAN_BANDWIDTH.prior_not_rederived.parent_active_bytes_per_token",
+   "absent_reason": null,
+   "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+  },
+  "complete_ns": {
+   "parent_tok_s_sealed": {
+    "value": 34.873,
+    "kind": "CITED",
+    "unit": "tok/s",
+    "command": "DISPATCH_LEDGER.parent.tok_s_sealed",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "parent_complete_wall_ns_from_tok_s": {
+    "value": 28675479.59739627,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "1e9 / DISPATCH_LEDGER.parent.tok_s_sealed",
+    "absent_reason": null
+   },
+   "q4_incumbent_complete_wall_ns": {
+    "value": 30375208,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "GPU_LEDGER.fields.COMPLETE_TOKEN_WALL_NS",
+    "absent_reason": null,
+    "note": "Different vehicle (q4 incumbent, 964 dispatches). Cited, not mixed into parent organ recoverable ns.",
+    "source": "receipts/headless/GPU_LEDGER.json"
+   }
+  },
+  "token_sync": {
+   "synchronization_count": {
+    "value": 1,
+    "kind": "CITED",
+    "unit": "waits/token",
+    "command": "GPU_LEDGER.fields.synchronization_count",
+    "absent_reason": null,
+    "note": "One host wait per token. Not split onto organs.",
+    "source": "receipts/headless/GPU_LEDGER.json"
+   },
+   "queue_wait_ns": {
+    "value": 421416,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "GPU_LEDGER.fields.GPU_QUEUE_WAIT_NS",
+    "absent_reason": null,
+    "note": "q4 vehicle. Host wait \u2212 GPU interval. Not intra-CB idle.",
+    "source": "receipts/headless/GPU_LEDGER.json"
+   },
+   "host_encode_ns": {
+    "value": 851500,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "GPU_LEDGER.fields.host_encode_ns",
+    "absent_reason": null,
+    "note": "q4 vehicle. Token ceremony, not an organ.",
+    "source": "receipts/headless/GPU_LEDGER.json"
+   }
+  },
+  "model_reachable_ns": {
+   "value": 13538344.610557802,
+   "kind": "DERIVED",
+   "unit": "ns/token",
+   "command": "sum(organ_reachable_ns)  # 1 serial CB",
+   "absent_reason": null
+  },
+  "recoverable_token_ns_sum": {
+   "value": 14041280.3894422,
+   "kind": "DERIVED",
+   "unit": "ns/token",
+   "command": "sum(organ recoverable_token_ns)",
+   "absent_reason": null
+  },
+  "model_reachable_gb_s_on_traffic": {
+   "value": 757.3060000263631,
+   "kind": "DERIVED",
+   "unit": "GB/s",
+   "command": "sum(traffic_bytes) / sum(organ_reachable_ns)",
+   "absent_reason": null,
+   "note": "Traffic-normalized sibling of three_roofs.MODEL_REACHABLE. Still not 778.8 or 819."
+  }
+ },
+ "organs_named": [
+  "embedding",
+  "gqa_attention",
+  "deltanet",
+  "mlp_gate_up",
+  "mlp_down",
+  "q4_remainder",
+  "lm_head",
+  "sampling"
+ ],
+ "organs": {
+  "embedding": {
+   "organ": "embedding",
+   "bytes": {
+    "weight_read": {
+     "value": 2720,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "DISPATCH_LEDGER + ORGAN_BANDWIDTH.organ_bytes_from_dispatch_ledger",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "activation_read": 0,
+    "activation_write": 20480,
+    "traffic_bytes": {
+     "value": 23200,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "sum(weight_read+activation_read+activation_write)",
+     "absent_reason": null,
+     "note": "Roofline ns uses traffic, not weight-only.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "flops": {
+    "value": 5120.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "arithmetic_intensity": {
+    "value": 0.2206896551724138,
+    "kind": "DERIVED",
+    "unit": "FLOP/byte",
+    "command": "FLOPs / traffic_bytes",
+    "absent_reason": null
+   },
+   "bound_class": "memory",
+   "measured_bw": {
+    "weight_gb_s": {
+     "value": 0.3065143937443467,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.achieved_gb_s",
+     "absent_reason": null,
+     "note": "weight_read / scaled_gpu_ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "traffic_gb_s": {
+     "value": 2.614387476054722,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "traffic_bytes / scaled_gpu_ns",
+     "absent_reason": null
+    },
+    "pct_of_device_measured_sustained": {
+     "value": 0.00039357266787923306,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "weight_gb_s / DEVICE_MEASURED_SUSTAINED",
+     "absent_reason": null,
+     "note": "Diagnostic only. NOT the ranking quantity (S022 \u00a711)."
+    }
+   },
+   "measured_compute": {
+    "value": 0.5769682705775938,
+    "kind": "DERIVED",
+    "unit": "GFLOP/s",
+    "command": "FLOPs / scaled_gpu_ns",
+    "absent_reason": null
+   },
+   "dispatch_sync": {
+    "n_dispatches": {
+     "value": 1,
+     "kind": "CITED",
+     "unit": "dispatches/token",
+     "command": "count(DISPATCH_LEDGER.dispatches) for organ",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "launch_overhead_ns": {
+     "value": 4969.210580380072,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum(isolated_family/n \u2212 traffic/778.8). Diagnostic. Production per_dispatch_gpu_ns is ABSENT.",
+     "absent_reason": null,
+     "note": "Isolated TOKEN_NS families, not a production-CB split. Not added on top of organ_reachable_ns (that would double-count).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "intra_cb_synchronization_ns": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "DISPATCH_LEDGER.dispatches.synchronization_ns",
+     "absent_reason": null,
+     "note": "0 for every intra-CB dispatch. One wait_until_completed per token.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "per_dispatch_gpu_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/dispatch",
+     "command": "MTLCounterSampleBuffer atDispatchBoundary",
+     "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    }
+   },
+   "occupancy": {
+    "hardware_counter": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "fraction",
+     "command": "MTLDevice.counterSets",
+     "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    },
+    "launch_geometry_factor": {
+     "value": 0.08333333333333333,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "byte-weighted min(1, TGs / (60*4))",
+     "absent_reason": null,
+     "note": "min_tgs=20 max_tgs=20 dominant_tgs=20. Not a hardware counter. Saturating bar = 240 TGs."
+    },
+    "class": "occupancy_starved",
+    "threadgroups_min": 20,
+    "threadgroups_max": 20,
+    "threadgroups_dominant": 20
+   },
+   "complete_ns": {
+    "gpu_ns": {
+     "value": 8873.971518181492,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.scaled_gpu_ns",
+     "absent_reason": null,
+     "note": "Isolated organ CB GPUEnd\u2212GPUStart, scaled onto production GPU ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "complete_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/token",
+     "command": "per-organ complete-wall",
+     "absent_reason": "Production is one mixed command buffer. Complete-wall (encode+submit+wait+epilogue) cannot be split onto organs; atDispatchBoundary=false. Token-level complete-wall lives under token.complete_ns, not here."
+    }
+   },
+   "limits": {
+    "theoretical_gb_s": {
+     "value": 819.0,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_THEORETICAL, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "Device theoretical applied to this organ's AI. Occupancy not applied."
+    },
+    "measured_device_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "778.8 copied from BANDWIDTH_ROOF; not re-derived."
+    },
+    "reachable_gb_s": {
+     "value": 64.89999999999999,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED\u00d7occupancy_factor, COMPUTE_PEAK/AI)",
+     "absent_reason": null
+    },
+    "theoretical_ns": {
+     "value": 28.32722832722833,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/819e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "measured_device_ns": {
+     "value": 29.789419619928097,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/778.8e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "reachable_ns": {
+     "value": 357.47303543913716,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/reachable_bw, FLOPs/(8979e9\u00d7occupancy))",
+     "absent_reason": null
+    }
+   },
+   "recoverable_token_ns": {
+    "value": 8516.498482742354,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8."
+   },
+   "operators": [
+    "embed_lookup"
+   ],
+   "kernels": [
+    "qwen_uniform_q4_embedding_lookup"
+   ],
+   "fusion": {
+    "n": 1,
+    "n_candidate": 0,
+    "n_already_fused": 0,
+    "n_not_a_candidate": 1,
+    "labels_unique": [
+     "not_a_candidate"
+    ]
+   },
+   "dependencies": [
+    "token_id"
+   ],
+   "dense_w_materialized": 0,
+   "ridge_measured_flop_per_byte": 11.529275808936827,
+   "ridge_theoretical_flop_per_byte": 10.963369963369964
+  },
+  "gqa_attention": {
+   "organ": "gqa_attention",
+   "bytes": {
+    "weight_read": {
+     "value": 624263168,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "DISPATCH_LEDGER + ORGAN_BANDWIDTH.organ_bytes_from_dispatch_ledger",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "activation_read": 8912896,
+    "activation_write": 2883584,
+    "traffic_bytes": {
+     "value": 636059648,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "sum(weight_read+activation_read+activation_write)",
+     "absent_reason": null,
+     "note": "Roofline ns uses traffic, not weight-only.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "flops": {
+    "value": 2367126272.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "arithmetic_intensity": {
+    "value": 3.7215476244139922,
+    "kind": "DERIVED",
+    "unit": "FLOP/byte",
+    "command": "FLOPs / traffic_bytes",
+    "absent_reason": null
+   },
+   "bound_class": "memory",
+   "measured_bw": {
+    "weight_gb_s": {
+     "value": 349.88890792970267,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.achieved_gb_s",
+     "absent_reason": null,
+     "note": "weight_read / scaled_gpu_ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "traffic_gb_s": {
+     "value": 356.5006347080709,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "traffic_bytes / scaled_gpu_ns",
+     "absent_reason": null
+    },
+    "pct_of_device_measured_sustained": {
+     "value": 0.44926670252915085,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "weight_gb_s / DEVICE_MEASURED_SUSTAINED",
+     "absent_reason": null,
+     "note": "Diagnostic only. NOT the ranking quantity (S022 \u00a711)."
+    }
+   },
+   "measured_compute": {
+    "value": 1326.7340901999016,
+    "kind": "DERIVED",
+    "unit": "GFLOP/s",
+    "command": "FLOPs / scaled_gpu_ns",
+    "absent_reason": null
+   },
+   "dispatch_sync": {
+    "n_dispatches": {
+     "value": 96,
+     "kind": "CITED",
+     "unit": "dispatches/token",
+     "command": "count(DISPATCH_LEDGER.dispatches) for organ",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "launch_overhead_ns": {
+     "value": 3132963.4242424257,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum(isolated_family/n \u2212 traffic/778.8). Diagnostic. Production per_dispatch_gpu_ns is ABSENT.",
+     "absent_reason": null,
+     "note": "Isolated TOKEN_NS families, not a production-CB split. Not added on top of organ_reachable_ns (that would double-count).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "intra_cb_synchronization_ns": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "DISPATCH_LEDGER.dispatches.synchronization_ns",
+     "absent_reason": null,
+     "note": "0 for every intra-CB dispatch. One wait_until_completed per token.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "per_dispatch_gpu_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/dispatch",
+     "command": "MTLCounterSampleBuffer atDispatchBoundary",
+     "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    }
+   },
+   "occupancy": {
+    "hardware_counter": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "fraction",
+     "command": "MTLDevice.counterSets",
+     "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    },
+    "launch_geometry_factor": {
+     "value": 0.9843864303745302,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "byte-weighted min(1, TGs / (60*4))",
+     "absent_reason": null,
+     "note": "min_tgs=1 max_tgs=7168 dominant_tgs=7168. Not a hardware counter. Saturating bar = 240 TGs."
+    },
+    "class": "bandwidth_saturated",
+    "threadgroups_min": 1,
+    "threadgroups_max": 7168,
+    "threadgroups_dominant": 7168
+   },
+   "complete_ns": {
+    "gpu_ns": {
+     "value": 1784175.3592412332,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.scaled_gpu_ns",
+     "absent_reason": null,
+     "note": "Isolated organ CB GPUEnd\u2212GPUStart, scaled onto production GPU ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "complete_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/token",
+     "command": "per-organ complete-wall",
+     "absent_reason": "Production is one mixed command buffer. Complete-wall (encode+submit+wait+epilogue) cannot be split onto organs; atDispatchBoundary=false. Token-level complete-wall lives under token.complete_ns, not here."
+    }
+   },
+   "limits": {
+    "theoretical_gb_s": {
+     "value": 819.0,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_THEORETICAL, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "Device theoretical applied to this organ's AI. Occupancy not applied."
+    },
+    "measured_device_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "778.8 copied from BANDWIDTH_ROOF; not re-derived."
+    },
+    "reachable_gb_s": {
+     "value": 766.640151975684,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED\u00d7occupancy_factor, COMPUTE_PEAK/AI)",
+     "absent_reason": null
+    },
+    "theoretical_ns": {
+     "value": 776629.6068376068,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/819e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "measured_device_ns": {
+     "value": 816717.5757575757,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/778.8e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "reachable_ns": {
+     "value": 829671.7128118464,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/reachable_bw, FLOPs/(8979e9\u00d7occupancy))",
+     "absent_reason": null
+    }
+   },
+   "recoverable_token_ns": {
+    "value": 954503.6464293868,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8."
+   },
+   "operators": [
+    "input_rmsnorm",
+    "gqa_qkv_concat",
+    "qk_norm_rope_cache",
+    "mha_decode",
+    "sigmoid_gate",
+    "mixer_residual"
+   ],
+   "kernels": [
+    "qwen80_residual_rmsnorm_tg",
+    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+    "qwen38_gqa_qk_norm_rope_cache_tg",
+    "mha_decode_f32",
+    "qwen38_attention_apply_sigmoid_gate",
+    "qwen_next_add_residual"
+   ],
+   "fusion": {
+    "n": 96,
+    "n_candidate": 64,
+    "n_already_fused": 16,
+    "n_not_a_candidate": 16,
+    "labels_unique": [
+     "already_fused:gqa_qkv",
+     "candidate:attention_preparation",
+     "candidate:projection+activation",
+     "candidate:residual+rmsnorm",
+     "not_a_candidate:seq_len_softmax"
+    ]
+   },
+   "dependencies": [
+    "L2.mlp.residual",
+    "input_rmsnorm",
+    "gqa_qkv_concat",
+    "qk_norm_rope_cache",
+    "mha_decode",
+    "o_proj",
+    "L6.mlp.residual",
+    "L10.mlp.residual",
+    "L14.mlp.residual",
+    "L18.mlp.residual",
+    "L22.mlp.residual",
+    "L26.mlp.residual",
+    "L30.mlp.residual",
+    "L34.mlp.residual",
+    "L38.mlp.residual",
+    "L42.mlp.residual",
+    "L46.mlp.residual",
+    "L50.mlp.residual",
+    "L54.mlp.residual",
+    "L58.mlp.residual",
+    "L62.mlp.residual"
+   ],
+   "dense_w_materialized": 0,
+   "ridge_measured_flop_per_byte": 11.529275808936827,
+   "ridge_theoretical_flop_per_byte": 10.963369963369964
+  },
+  "deltanet": {
+   "organ": "deltanet",
+   "bytes": {
+    "weight_read": {
+     "value": 2161674240,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "DISPATCH_LEDGER + ORGAN_BANDWIDTH.organ_bytes_from_dispatch_ledger",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "activation_read": 168726528,
+    "activation_write": 169119744,
+    "traffic_bytes": {
+     "value": 2499520512,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "sum(weight_read+activation_read+activation_write)",
+     "absent_reason": null,
+     "note": "Roofline ns uses traffic, not weight-only.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "flops": {
+    "value": 8374840320.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "arithmetic_intensity": {
+    "value": 3.3505787529220323,
+    "kind": "DERIVED",
+    "unit": "FLOP/byte",
+    "command": "FLOPs / traffic_bytes",
+    "absent_reason": null
+   },
+   "bound_class": "memory",
+   "measured_bw": {
+    "weight_gb_s": {
+     "value": 325.5340876311656,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.achieved_gb_s",
+     "absent_reason": null,
+     "note": "weight_read / scaled_gpu_ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "traffic_gb_s": {
+     "value": 376.41153987628775,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "traffic_bytes / scaled_gpu_ns",
+     "absent_reason": null
+    },
+    "pct_of_device_measured_sustained": {
+     "value": 0.417994462803243,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "weight_gb_s / DEVICE_MEASURED_SUSTAINED",
+     "absent_reason": null,
+     "note": "Diagnostic only. NOT the ranking quantity (S022 \u00a711)."
+    }
+   },
+   "measured_compute": {
+    "value": 1261.196507864154,
+    "kind": "DERIVED",
+    "unit": "GFLOP/s",
+    "command": "FLOPs / scaled_gpu_ns",
+    "absent_reason": null
+   },
+   "dispatch_sync": {
+    "n_dispatches": {
+     "value": 336,
+     "kind": "CITED",
+     "unit": "dispatches/token",
+     "command": "count(DISPATCH_LEDGER.dispatches) for organ",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "launch_overhead_ns": {
+     "value": 5714788.906009249,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum(isolated_family/n \u2212 traffic/778.8). Diagnostic. Production per_dispatch_gpu_ns is ABSENT.",
+     "absent_reason": null,
+     "note": "Isolated TOKEN_NS families, not a production-CB split. Not added on top of organ_reachable_ns (that would double-count).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "intra_cb_synchronization_ns": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "DISPATCH_LEDGER.dispatches.synchronization_ns",
+     "absent_reason": null,
+     "note": "0 for every intra-CB dispatch. One wait_until_completed per token.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "per_dispatch_gpu_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/dispatch",
+     "command": "MTLCounterSampleBuffer atDispatchBoundary",
+     "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    }
+   },
+   "occupancy": {
+    "hardware_counter": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "fraction",
+     "command": "MTLDevice.counterSets",
+     "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    },
+    "launch_geometry_factor": {
+     "value": 0.985933389131556,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "byte-weighted min(1, TGs / (60*4))",
+     "absent_reason": null,
+     "note": "min_tgs=1 max_tgs=8240 dominant_tgs=8240. Not a hardware counter. Saturating bar = 240 TGs."
+    },
+    "class": "bandwidth_saturated",
+    "threadgroups_min": 1,
+    "threadgroups_max": 8240,
+    "threadgroups_dominant": 8240
+   },
+   "complete_ns": {
+    "gpu_ns": {
+     "value": 6640392.887055211,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.scaled_gpu_ns",
+     "absent_reason": null,
+     "note": "Isolated organ CB GPUEnd\u2212GPUStart, scaled onto production GPU ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "complete_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/token",
+     "command": "per-organ complete-wall",
+     "absent_reason": "Production is one mixed command buffer. Complete-wall (encode+submit+wait+epilogue) cannot be split onto organs; atDispatchBoundary=false. Token-level complete-wall lives under token.complete_ns, not here."
+    }
+   },
+   "limits": {
+    "theoretical_gb_s": {
+     "value": 819.0,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_THEORETICAL, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "Device theoretical applied to this organ's AI. Occupancy not applied."
+    },
+    "measured_device_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "778.8 copied from BANDWIDTH_ROOF; not re-derived."
+    },
+    "reachable_gb_s": {
+     "value": 767.8449234556558,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED\u00d7occupancy_factor, COMPUTE_PEAK/AI)",
+     "absent_reason": null
+    },
+    "theoretical_ns": {
+     "value": 3051917.5970695973,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/819e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "measured_device_ns": {
+     "value": 3209451.0939907553,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/778.8e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "reachable_ns": {
+     "value": 3255241.3067354886,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/reachable_bw, FLOPs/(8979e9\u00d7occupancy))",
+     "absent_reason": null
+    }
+   },
+   "recoverable_token_ns": {
+    "value": 3385151.580319722,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8."
+   },
+   "operators": [
+    "input_rmsnorm",
+    "dn_qkvz_ba_concat",
+    "qkvz_rearrange_conv_l2",
+    "ba_to_decay_beta",
+    "gated_delta",
+    "gated_rmsnorm",
+    "mixer_residual"
+   ],
+   "kernels": [
+    "qwen80_residual_rmsnorm_tg",
+    "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+    "qwen38_qkvz_rearrange_conv_l2_f32",
+    "qwen80_ba_to_decay_beta_f32",
+    "qwen38_gated_delta_decode_vi_simd",
+    "qwen80_deltanet_gated_rmsnorm_tg",
+    "qwen_next_add_residual"
+   ],
+   "fusion": {
+    "n": 336,
+    "n_candidate": 144,
+    "n_already_fused": 48,
+    "n_not_a_candidate": 144,
+    "labels_unique": [
+     "already_fused:dn_qkvz_ba",
+     "candidate:norm+projection",
+     "candidate:residual+rmsnorm",
+     "not_a_candidate:recurrent_state",
+     "not_a_candidate:stateful",
+     "not_a_candidate:tiny_independent"
+    ]
+   },
+   "dependencies": [
+    "embed_lookup",
+    "input_rmsnorm",
+    "dn_qkvz_ba_concat",
+    "qkvz_rearrange_conv_l2",
+    "ba_to_decay_beta",
+    "gated_delta",
+    "out_proj",
+    "L0.mlp.residual",
+    "L1.hidden_in",
+    "L1.mlp.residual",
+    "L2.hidden_in",
+    "L3.mlp.residual",
+    "L4.hidden_in",
+    "L4.mlp.residual",
+    "L5.hidden_in",
+    "L5.mlp.residual",
+    "L6.hidden_in",
+    "L7.mlp.residual",
+    "L8.hidden_in",
+    "L8.mlp.residual",
+    "L9.hidden_in",
+    "L9.mlp.residual",
+    "L10.hidden_in",
+    "L11.mlp.residual",
+    "L12.hidden_in",
+    "L12.mlp.residual",
+    "L13.hidden_in",
+    "L13.mlp.residual",
+    "L14.hidden_in",
+    "L15.mlp.residual",
+    "L16.hidden_in",
+    "L16.mlp.residual",
+    "L17.hidden_in",
+    "L17.mlp.residual",
+    "L18.hidden_in",
+    "L19.mlp.residual",
+    "L20.hidden_in",
+    "L20.mlp.residual",
+    "L21.hidden_in",
+    "L21.mlp.residual",
+    "L22.hidden_in",
+    "L23.mlp.residual",
+    "L24.hidden_in",
+    "L24.mlp.residual",
+    "L25.hidden_in",
+    "L25.mlp.residual",
+    "L26.hidden_in",
+    "L27.mlp.residual",
+    "L28.hidden_in",
+    "L28.mlp.residual",
+    "L29.hidden_in",
+    "L29.mlp.residual",
+    "L30.hidden_in",
+    "L31.mlp.residual",
+    "L32.hidden_in",
+    "L32.mlp.residual",
+    "L33.hidden_in",
+    "L33.mlp.residual",
+    "L34.hidden_in",
+    "L35.mlp.residual",
+    "L36.hidden_in",
+    "L36.mlp.residual",
+    "L37.hidden_in",
+    "L37.mlp.residual",
+    "L38.hidden_in",
+    "L39.mlp.residual",
+    "L40.hidden_in",
+    "L40.mlp.residual",
+    "L41.hidden_in",
+    "L41.mlp.residual",
+    "L42.hidden_in",
+    "L43.mlp.residual",
+    "L44.hidden_in",
+    "L44.mlp.residual",
+    "L45.hidden_in",
+    "L45.mlp.residual",
+    "L46.hidden_in",
+    "L47.mlp.residual",
+    "L48.hidden_in",
+    "L48.mlp.residual",
+    "L49.hidden_in",
+    "L49.mlp.residual",
+    "L50.hidden_in",
+    "L51.mlp.residual",
+    "L52.hidden_in",
+    "L52.mlp.residual",
+    "L53.hidden_in",
+    "L53.mlp.residual",
+    "L54.hidden_in",
+    "L55.mlp.residual",
+    "L56.hidden_in",
+    "L56.mlp.residual",
+    "L57.hidden_in",
+    "L57.mlp.residual",
+    "L58.hidden_in",
+    "L59.mlp.residual",
+    "L60.hidden_in",
+    "L60.mlp.residual",
+    "L61.hidden_in",
+    "L61.mlp.residual",
+    "L62.hidden_in"
+   ],
+   "dense_w_materialized": 0,
+   "ridge_measured_flop_per_byte": 11.529275808936827,
+   "ridge_theoretical_flop_per_byte": 10.963369963369964
+  },
+  "mlp_gate_up": {
+   "organ": "mlp_gate_up",
+   "bytes": {
+    "weight_read": {
+     "value": 3566469120,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "DISPATCH_LEDGER + ORGAN_BANDWIDTH.organ_bytes_from_dispatch_ledger",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "activation_read": 2621440,
+    "activation_write": 5767168,
+    "traffic_bytes": {
+     "value": 3574857728,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "sum(weight_read+activation_read+activation_write)",
+     "absent_reason": null,
+     "note": "Roofline ns uses traffic, not weight-only.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "flops": {
+    "value": 22824222720.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "arithmetic_intensity": {
+    "value": 6.38465204957102,
+    "kind": "DERIVED",
+    "unit": "FLOP/byte",
+    "command": "FLOPs / traffic_bytes",
+    "absent_reason": null
+   },
+   "bound_class": "memory",
+   "measured_bw": {
+    "weight_gb_s": {
+     "value": 360.70618245384145,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.achieved_gb_s",
+     "absent_reason": null,
+     "note": "weight_read / scaled_gpu_ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "traffic_gb_s": {
+     "value": 361.5545909682496,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "traffic_bytes / scaled_gpu_ns",
+     "absent_reason": null
+    },
+    "pct_of_device_measured_sustained": {
+     "value": 0.4631563719232685,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "weight_gb_s / DEVICE_MEASURED_SUSTAINED",
+     "absent_reason": null,
+     "note": "Diagnostic only. NOT the ranking quantity (S022 \u00a711)."
+    }
+   },
+   "measured_compute": {
+    "value": 2308.4002602572464,
+    "kind": "DERIVED",
+    "unit": "GFLOP/s",
+    "command": "FLOPs / scaled_gpu_ns",
+    "absent_reason": null
+   },
+   "dispatch_sync": {
+    "n_dispatches": {
+     "value": 128,
+     "kind": "CITED",
+     "unit": "dispatches/token",
+     "command": "count(DISPATCH_LEDGER.dispatches) for organ",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "launch_overhead_ns": {
+     "value": 7350645.20082177,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum(isolated_family/n \u2212 traffic/778.8). Diagnostic. Production per_dispatch_gpu_ns is ABSENT.",
+     "absent_reason": null,
+     "note": "Isolated TOKEN_NS families, not a production-CB split. Not added on top of organ_reachable_ns (that would double-count).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "intra_cb_synchronization_ns": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "DISPATCH_LEDGER.dispatches.synchronization_ns",
+     "absent_reason": null,
+     "note": "0 for every intra-CB dispatch. One wait_until_completed per token.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "per_dispatch_gpu_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/dispatch",
+     "command": "MTLCounterSampleBuffer atDispatchBoundary",
+     "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    }
+   },
+   "occupancy": {
+    "hardware_counter": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "fraction",
+     "command": "MTLDevice.counterSets",
+     "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    },
+    "launch_geometry_factor": {
+     "value": 0.9989046344503923,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "byte-weighted min(1, TGs / (60*4))",
+     "absent_reason": null,
+     "note": "min_tgs=1 max_tgs=8704 dominant_tgs=8704. Not a hardware counter. Saturating bar = 240 TGs."
+    },
+    "class": "bandwidth_saturated",
+    "threadgroups_min": 1,
+    "threadgroups_max": 8704,
+    "threadgroups_dominant": 8704
+   },
+   "complete_ns": {
+    "gpu_ns": {
+     "value": 9887463.24151622,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.scaled_gpu_ns",
+     "absent_reason": null,
+     "note": "Isolated organ CB GPUEnd\u2212GPUStart, scaled onto production GPU ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "complete_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/token",
+     "command": "per-organ complete-wall",
+     "absent_reason": "Production is one mixed command buffer. Complete-wall (encode+submit+wait+epilogue) cannot be split onto organs; atDispatchBoundary=false. Token-level complete-wall lives under token.complete_ns, not here."
+    }
+   },
+   "limits": {
+    "theoretical_gb_s": {
+     "value": 819.0,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_THEORETICAL, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "Device theoretical applied to this organ's AI. Occupancy not applied."
+    },
+    "measured_device_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "778.8 copied from BANDWIDTH_ROOF; not re-derived."
+    },
+    "reachable_gb_s": {
+     "value": 777.9469293099655,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED\u00d7occupancy_factor, COMPUTE_PEAK/AI)",
+     "absent_reason": null
+    },
+    "theoretical_ns": {
+     "value": 4364905.65079365,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/819e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "measured_device_ns": {
+     "value": 4590212.799178222,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/778.8e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "reachable_ns": {
+     "value": 4595246.273638329,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/reachable_bw, FLOPs/(8979e9\u00d7occupancy))",
+     "absent_reason": null
+    }
+   },
+   "recoverable_token_ns": {
+    "value": 5292216.967877891,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8."
+   },
+   "operators": [
+    "post_attention_rmsnorm",
+    "gate_up_swiglu"
+   ],
+   "kernels": [
+    "qwen80_residual_rmsnorm_tg",
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+   ],
+   "fusion": {
+    "n": 128,
+    "n_candidate": 64,
+    "n_already_fused": 64,
+    "n_not_a_candidate": 0,
+    "labels_unique": [
+     "already_fused:gate_up_swiglu",
+     "candidate:residual+rmsnorm"
+    ]
+   },
+   "dependencies": [
+    "mixer_residual",
+    "post_attention_rmsnorm"
+   ],
+   "dense_w_materialized": 0,
+   "ridge_measured_flop_per_byte": 11.529275808936827,
+   "ridge_theoretical_flop_per_byte": 10.963369963369964
+  },
+  "mlp_down": {
+   "organ": "mlp_down",
+   "bytes": {
+    "weight_read": {
+     "value": 1782579200,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "DISPATCH_LEDGER + ORGAN_BANDWIDTH.organ_bytes_from_dispatch_ledger",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "activation_read": 7077888,
+    "activation_write": 2621440,
+    "traffic_bytes": {
+     "value": 1792278528,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "sum(weight_read+activation_read+activation_write)",
+     "absent_reason": null,
+     "note": "Roofline ns uses traffic, not weight-only.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "flops": {
+    "value": 11408834560.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "arithmetic_intensity": {
+    "value": 6.365547754863244,
+    "kind": "DERIVED",
+    "unit": "FLOP/byte",
+    "command": "FLOPs / traffic_bytes",
+    "absent_reason": null
+   },
+   "bound_class": "memory",
+   "measured_bw": {
+    "weight_gb_s": {
+     "value": 309.5045692889859,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.achieved_gb_s",
+     "absent_reason": null,
+     "note": "weight_read / scaled_gpu_ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "traffic_gb_s": {
+     "value": 311.1886382689407,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "traffic_bytes / scaled_gpu_ns",
+     "absent_reason": null
+    },
+    "pct_of_device_measured_sustained": {
+     "value": 0.39741213313942725,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "weight_gb_s / DEVICE_MEASURED_SUSTAINED",
+     "absent_reason": null,
+     "note": "Diagnostic only. NOT the ranking quantity (S022 \u00a711)."
+    }
+   },
+   "measured_compute": {
+    "value": 1980.8861376718057,
+    "kind": "DERIVED",
+    "unit": "GFLOP/s",
+    "command": "FLOPs / scaled_gpu_ns",
+    "absent_reason": null
+   },
+   "dispatch_sync": {
+    "n_dispatches": {
+     "value": 128,
+     "kind": "CITED",
+     "unit": "dispatches/token",
+     "command": "count(DISPATCH_LEDGER.dispatches) for organ",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "launch_overhead_ns": {
+     "value": 3117418.5023112497,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum(isolated_family/n \u2212 traffic/778.8). Diagnostic. Production per_dispatch_gpu_ns is ABSENT.",
+     "absent_reason": null,
+     "note": "Isolated TOKEN_NS families, not a production-CB split. Not added on top of organ_reachable_ns (that would double-count).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "intra_cb_synchronization_ns": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "DISPATCH_LEDGER.dispatches.synchronization_ns",
+     "absent_reason": null,
+     "note": "0 for every intra-CB dispatch. One wait_until_completed per token.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "per_dispatch_gpu_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/dispatch",
+     "command": "MTLCounterSampleBuffer atDispatchBoundary",
+     "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    }
+   },
+   "occupancy": {
+    "hardware_counter": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "fraction",
+     "command": "MTLDevice.counterSets",
+     "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    },
+    "launch_geometry_factor": {
+     "value": 0.9979888840134562,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "byte-weighted min(1, TGs / (60*4))",
+     "absent_reason": null,
+     "note": "min_tgs=20 max_tgs=2560 dominant_tgs=2560. Not a hardware counter. Saturating bar = 240 TGs."
+    },
+    "class": "bandwidth_saturated",
+    "threadgroups_min": 20,
+    "threadgroups_max": 2560,
+    "threadgroups_dominant": 2560
+   },
+   "complete_ns": {
+    "gpu_ns": {
+     "value": 5759460.043174991,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.scaled_gpu_ns",
+     "absent_reason": null,
+     "note": "Isolated organ CB GPUEnd\u2212GPUStart, scaled onto production GPU ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "complete_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/token",
+     "command": "per-organ complete-wall",
+     "absent_reason": "Production is one mixed command buffer. Complete-wall (encode+submit+wait+epilogue) cannot be split onto organs; atDispatchBoundary=false. Token-level complete-wall lives under token.complete_ns, not here."
+    }
+   },
+   "limits": {
+    "theoretical_gb_s": {
+     "value": 819.0,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_THEORETICAL, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "Device theoretical applied to this organ's AI. Occupancy not applied."
+    },
+    "measured_device_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "778.8 copied from BANDWIDTH_ROOF; not re-derived."
+    },
+    "reachable_gb_s": {
+     "value": 777.2337428696796,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED\u00d7occupancy_factor, COMPUTE_PEAK/AI)",
+     "absent_reason": null
+    },
+    "theoretical_ns": {
+     "value": 2188374.271062271,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/819e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "measured_device_ns": {
+     "value": 2301333.4976887517,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/778.8e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "reachable_ns": {
+     "value": 2305971.072978126,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/reachable_bw, FLOPs/(8979e9\u00d7occupancy))",
+     "absent_reason": null
+    }
+   },
+   "recoverable_token_ns": {
+    "value": 3453488.9701968655,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8."
+   },
+   "operators": [
+    "down_proj",
+    "mlp_residual"
+   ],
+   "kernels": [
+    "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+    "qwen_next_add_residual"
+   ],
+   "fusion": {
+    "n": 128,
+    "n_candidate": 128,
+    "n_already_fused": 0,
+    "n_not_a_candidate": 0,
+    "labels_unique": [
+     "candidate:output_projection+residual",
+     "candidate:residual+rmsnorm"
+    ]
+   },
+   "dependencies": [
+    "gate_up_swiglu",
+    "down_proj",
+    "mixer_residual"
+   ],
+   "dense_w_materialized": 0,
+   "ridge_measured_flop_per_byte": 11.529275808936827,
+   "ridge_theoretical_flop_per_byte": 10.963369963369964
+  },
+  "q4_remainder": {
+   "organ": "q4_remainder",
+   "bytes": {
+    "weight_read": {
+     "value": 1069547520,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "DISPATCH_LEDGER + ORGAN_BANDWIDTH.organ_bytes_from_dispatch_ledger",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "activation_read": 1572864,
+    "activation_write": 1310720,
+    "traffic_bytes": {
+     "value": 1072431104,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "sum(weight_read+activation_read+activation_write)",
+     "absent_reason": null,
+     "note": "Roofline ns uses traffic, not weight-only.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "flops": {
+    "value": 4026531840.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "arithmetic_intensity": {
+    "value": 3.754583231483745,
+    "kind": "DERIVED",
+    "unit": "FLOP/byte",
+    "command": "FLOPs / traffic_bytes",
+    "absent_reason": null
+   },
+   "bound_class": "memory",
+   "measured_bw": {
+    "weight_gb_s": {
+     "value": 503.2516887627687,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.achieved_gb_s",
+     "absent_reason": null,
+     "note": "weight_read / scaled_gpu_ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "traffic_gb_s": {
+     "value": 504.6084947863938,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "traffic_bytes / scaled_gpu_ns",
+     "absent_reason": null
+    },
+    "pct_of_device_measured_sustained": {
+     "value": 0.6461886090944642,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "weight_gb_s / DEVICE_MEASURED_SUSTAINED",
+     "absent_reason": null,
+     "note": "Diagnostic only. NOT the ranking quantity (S022 \u00a711)."
+    }
+   },
+   "measured_compute": {
+    "value": 1894.5945929892468,
+    "kind": "DERIVED",
+    "unit": "GFLOP/s",
+    "command": "FLOPs / scaled_gpu_ns",
+    "absent_reason": null
+   },
+   "dispatch_sync": {
+    "n_dispatches": {
+     "value": 64,
+     "kind": "CITED",
+     "unit": "dispatches/token",
+     "command": "count(DISPATCH_LEDGER.dispatches) for organ",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "launch_overhead_ns": {
+     "value": 587449.8202362614,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum(isolated_family/n \u2212 traffic/778.8). Diagnostic. Production per_dispatch_gpu_ns is ABSENT.",
+     "absent_reason": null,
+     "note": "Isolated TOKEN_NS families, not a production-CB split. Not added on top of organ_reachable_ns (that would double-count).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "intra_cb_synchronization_ns": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "DISPATCH_LEDGER.dispatches.synchronization_ns",
+     "absent_reason": null,
+     "note": "0 for every intra-CB dispatch. One wait_until_completed per token.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "per_dispatch_gpu_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/dispatch",
+     "command": "MTLCounterSampleBuffer atDispatchBoundary",
+     "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    }
+   },
+   "occupancy": {
+    "hardware_counter": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "fraction",
+     "command": "MTLDevice.counterSets",
+     "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    },
+    "launch_geometry_factor": {
+     "value": 1.0,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "byte-weighted min(1, TGs / (60*4))",
+     "absent_reason": null,
+     "note": "min_tgs=2560 max_tgs=2560 dominant_tgs=2560. Not a hardware counter. Saturating bar = 240 TGs."
+    },
+    "class": "bandwidth_saturated",
+    "threadgroups_min": 2560,
+    "threadgroups_max": 2560,
+    "threadgroups_dominant": 2560
+   },
+   "complete_ns": {
+    "gpu_ns": {
+     "value": 2125273.58354118,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.scaled_gpu_ns",
+     "absent_reason": null,
+     "note": "Isolated organ CB GPUEnd\u2212GPUStart, scaled onto production GPU ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "complete_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/token",
+     "command": "per-organ complete-wall",
+     "absent_reason": "Production is one mixed command buffer. Complete-wall (encode+submit+wait+epilogue) cannot be split onto organs; atDispatchBoundary=false. Token-level complete-wall lives under token.complete_ns, not here."
+    }
+   },
+   "limits": {
+    "theoretical_gb_s": {
+     "value": 819.0,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_THEORETICAL, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "Device theoretical applied to this organ's AI. Occupancy not applied."
+    },
+    "measured_device_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "778.8 copied from BANDWIDTH_ROOF; not re-derived."
+    },
+    "reachable_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED\u00d7occupancy_factor, COMPUTE_PEAK/AI)",
+     "absent_reason": null
+    },
+    "theoretical_ns": {
+     "value": 1309439.6874236874,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/819e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "measured_device_ns": {
+     "value": 1377030.179763739,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/778.8e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "reachable_ns": {
+     "value": 1377030.179763739,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/reachable_bw, FLOPs/(8979e9\u00d7occupancy))",
+     "absent_reason": null
+    }
+   },
+   "recoverable_token_ns": {
+    "value": 748243.403777441,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8."
+   },
+   "operators": [
+    "out_proj",
+    "o_proj"
+   ],
+   "kernels": [
+    "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+   ],
+   "fusion": {
+    "n": 64,
+    "n_candidate": 64,
+    "n_already_fused": 0,
+    "n_not_a_candidate": 0,
+    "labels_unique": [
+     "candidate:output_projection+residual"
+    ]
+   },
+   "dependencies": [
+    "gated_rmsnorm",
+    "sigmoid_gate"
+   ],
+   "dense_w_materialized": 0,
+   "ridge_measured_flop_per_byte": 11.529275808936827,
+   "ridge_theoretical_flop_per_byte": 10.963369963369964
+  },
+  "lm_head": {
+   "organ": "lm_head",
+   "bytes": {
+    "weight_read": {
+     "value": 675450880,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "DISPATCH_LEDGER + ORGAN_BANDWIDTH.organ_bytes_from_dispatch_ledger",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "activation_read": 40960,
+    "activation_write": 1013760,
+    "traffic_bytes": {
+     "value": 676505600,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "sum(weight_read+activation_read+activation_write)",
+     "absent_reason": null,
+     "note": "Roofline ns uses traffic, not weight-only.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "flops": {
+    "value": 2542822400.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "arithmetic_intensity": {
+    "value": 3.7587603118141226,
+    "kind": "DERIVED",
+    "unit": "FLOP/byte",
+    "command": "FLOPs / traffic_bytes",
+    "absent_reason": null
+   },
+   "bound_class": "memory",
+   "measured_bw": {
+    "weight_gb_s": {
+     "value": 652.9293122699839,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.achieved_gb_s",
+     "absent_reason": null,
+     "note": "weight_read / scaled_gpu_ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "traffic_gb_s": {
+     "value": 653.9488647269109,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "traffic_bytes / scaled_gpu_ns",
+     "absent_reason": null
+    },
+    "pct_of_device_measured_sustained": {
+     "value": 0.8383786752311042,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "weight_gb_s / DEVICE_MEASURED_SUSTAINED",
+     "absent_reason": null,
+     "note": "Diagnostic only. NOT the ranking quantity (S022 \u00a711)."
+    }
+   },
+   "measured_compute": {
+    "value": 2458.0370386914146,
+    "kind": "DERIVED",
+    "unit": "GFLOP/s",
+    "command": "FLOPs / scaled_gpu_ns",
+    "absent_reason": null
+   },
+   "dispatch_sync": {
+    "n_dispatches": {
+     "value": 2,
+     "kind": "CITED",
+     "unit": "dispatches/token",
+     "command": "count(DISPATCH_LEDGER.dispatches) for organ",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "launch_overhead_ns": {
+     "value": 168097.74165382632,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum(isolated_family/n \u2212 traffic/778.8). Diagnostic. Production per_dispatch_gpu_ns is ABSENT.",
+     "absent_reason": null,
+     "note": "Isolated TOKEN_NS families, not a production-CB split. Not added on top of organ_reachable_ns (that would double-count).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "intra_cb_synchronization_ns": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "DISPATCH_LEDGER.dispatches.synchronization_ns",
+     "absent_reason": null,
+     "note": "0 for every intra-CB dispatch. One wait_until_completed per token.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "per_dispatch_gpu_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/dispatch",
+     "command": "MTLCounterSampleBuffer atDispatchBoundary",
+     "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    }
+   },
+   "occupancy": {
+    "hardware_counter": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "fraction",
+     "command": "MTLDevice.counterSets",
+     "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    },
+    "launch_geometry_factor": {
+     "value": 0.9999095587678801,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "byte-weighted min(1, TGs / (60*4))",
+     "absent_reason": null,
+     "note": "min_tgs=1 max_tgs=124160 dominant_tgs=124160. Not a hardware counter. Saturating bar = 240 TGs."
+    },
+    "class": "bandwidth_saturated",
+    "threadgroups_min": 1,
+    "threadgroups_max": 124160,
+    "threadgroups_dominant": 124160
+   },
+   "complete_ns": {
+    "gpu_ns": {
+     "value": 1034493.1178716992,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.scaled_gpu_ns",
+     "absent_reason": null,
+     "note": "Isolated organ CB GPUEnd\u2212GPUStart, scaled onto production GPU ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "complete_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/token",
+     "command": "per-organ complete-wall",
+     "absent_reason": "Production is one mixed command buffer. Complete-wall (encode+submit+wait+epilogue) cannot be split onto organs; atDispatchBoundary=false. Token-level complete-wall lives under token.complete_ns, not here."
+    }
+   },
+   "limits": {
+    "theoretical_gb_s": {
+     "value": 819.0,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_THEORETICAL, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "Device theoretical applied to this organ's AI. Occupancy not applied."
+    },
+    "measured_device_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "778.8 copied from BANDWIDTH_ROOF; not re-derived."
+    },
+    "reachable_gb_s": {
+     "value": 778.729564368425,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED\u00d7occupancy_factor, COMPUTE_PEAK/AI)",
+     "absent_reason": null
+    },
+    "theoretical_ns": {
+     "value": 826014.1636141635,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/819e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "measured_device_ns": {
+     "value": 868651.2583461736,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/778.8e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "reachable_ns": {
+     "value": 868729.8273421377,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/reachable_bw, FLOPs/(8979e9\u00d7occupancy))",
+     "absent_reason": null
+    }
+   },
+   "recoverable_token_ns": {
+    "value": 165763.29052956146,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8."
+   },
+   "operators": [
+    "final_rmsnorm",
+    "lm_head"
+   ],
+   "kernels": [
+    "qwen80_residual_rmsnorm_tg",
+    "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+   ],
+   "fusion": {
+    "n": 2,
+    "n_candidate": 2,
+    "n_already_fused": 0,
+    "n_not_a_candidate": 0,
+    "labels_unique": [
+     "candidate:dequant+matvec_already_fused",
+     "candidate:residual+rmsnorm"
+    ]
+   },
+   "dependencies": [
+    "mlp_residual",
+    "final_rmsnorm"
+   ],
+   "dense_w_materialized": 0,
+   "ridge_measured_flop_per_byte": 11.529275808936827,
+   "ridge_theoretical_flop_per_byte": 10.963369963369964
+  },
+  "sampling": {
+   "organ": "sampling",
+   "bytes": {
+    "weight_read": {
+     "value": 0,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "DISPATCH_LEDGER + ORGAN_BANDWIDTH.organ_bytes_from_dispatch_ledger",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "activation_read": 993280,
+    "activation_write": 4,
+    "traffic_bytes": {
+     "value": 993284,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "sum(weight_read+activation_read+activation_write)",
+     "absent_reason": null,
+     "note": "Roofline ns uses traffic, not weight-only.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    }
+   },
+   "flops": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "FLOP/token",
+    "command": "DISPATCH_LEDGER.dispatches.flops",
+    "absent_reason": "sampling records 0 FLOPs in DISPATCH_LEDGER (argmax comparison count was not inventoried). AI and compute-limited BW are therefore launch-class, not a fake zero GFLOP/s.",
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "arithmetic_intensity": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "FLOP/byte",
+    "command": "FLOPs / traffic_bytes",
+    "absent_reason": "FLOPs ABSENT or zero; arithmetic intensity not a number"
+   },
+   "bound_class": "launch",
+   "measured_bw": {
+    "weight_gb_s": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "GB/s",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.achieved_gb_s",
+     "absent_reason": null,
+     "note": "weight_read / scaled_gpu_ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "traffic_gb_s": {
+     "value": 2.9257881506333163,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "traffic_bytes / scaled_gpu_ns",
+     "absent_reason": null
+    },
+    "pct_of_device_measured_sustained": {
+     "value": 0.0,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "weight_gb_s / DEVICE_MEASURED_SUSTAINED",
+     "absent_reason": null,
+     "note": "Diagnostic only. NOT the ranking quantity (S022 \u00a711)."
+    }
+   },
+   "measured_compute": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "GFLOP/s",
+    "command": "FLOPs / scaled_gpu_ns",
+    "absent_reason": "FLOPs ABSENT; compute throughput not a number"
+   },
+   "dispatch_sync": {
+    "n_dispatches": {
+     "value": 1,
+     "kind": "CITED",
+     "unit": "dispatches/token",
+     "command": "count(DISPATCH_LEDGER.dispatches) for organ",
+     "absent_reason": null,
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "launch_overhead_ns": {
+     "value": 334223.59681561374,
+     "kind": "DERIVED",
+     "unit": "ns/token",
+     "command": "sum(isolated_family/n \u2212 traffic/778.8). Diagnostic. Production per_dispatch_gpu_ns is ABSENT.",
+     "absent_reason": null,
+     "note": "Isolated TOKEN_NS families, not a production-CB split. Not added on top of organ_reachable_ns (that would double-count).",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "intra_cb_synchronization_ns": {
+     "value": 0.0,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "DISPATCH_LEDGER.dispatches.synchronization_ns",
+     "absent_reason": null,
+     "note": "0 for every intra-CB dispatch. One wait_until_completed per token.",
+     "source": "receipts/headless/DISPATCH_LEDGER.json"
+    },
+    "per_dispatch_gpu_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/dispatch",
+     "command": "MTLCounterSampleBuffer atDispatchBoundary",
+     "absent_reason": "atDispatchBoundary sampling is unsupported. ProdCbGpu boundary samples on ComputePassDescriptor changed Qwen3.8 greedy token ids vs plain new_compute_command_encoder (documented in crates/hawking-core/src/metal/mod.rs dispatch_threads_prod_cb). Correctness outranks attribution; production stays Off mode.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    }
+   },
+   "occupancy": {
+    "hardware_counter": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "fraction",
+     "command": "MTLDevice.counterSets",
+     "absent_reason": "No SIMD-utilization or occupancy counter is in MTLDevice.counterSets (sets=['timestamp']). Instruments Metal System Trace can show occupancy but is not a CLI measurement this box can seal. Launch-geometry occupancy is labelled DERIVED, not MEASURED.",
+     "source": "receipts/headless/GPU_LEDGER.json"
+    },
+    "launch_geometry_factor": {
+     "value": 0.004166666666666667,
+     "kind": "DERIVED",
+     "unit": "fraction",
+     "command": "byte-weighted min(1, TGs / (60*4))",
+     "absent_reason": null,
+     "note": "min_tgs=1 max_tgs=1 dominant_tgs=1. Not a hardware counter. Saturating bar = 240 TGs."
+    },
+    "class": "occupancy_starved",
+    "threadgroups_min": 1,
+    "threadgroups_max": 1,
+    "threadgroups_dominant": 1
+   },
+   "complete_ns": {
+    "gpu_ns": {
+     "value": 339492.7960812862,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_BANDWIDTH.organ_attribution.organs.*.scaled_gpu_ns",
+     "absent_reason": null,
+     "note": "Isolated organ CB GPUEnd\u2212GPUStart, scaled onto production GPU ns. N025, not re-measured.",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+    },
+    "complete_wall_ns": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "ns/token",
+     "command": "per-organ complete-wall",
+     "absent_reason": "Production is one mixed command buffer. Complete-wall (encode+submit+wait+epilogue) cannot be split onto organs; atDispatchBoundary=false. Token-level complete-wall lives under token.complete_ns, not here."
+    }
+   },
+   "limits": {
+    "theoretical_gb_s": {
+     "value": 819.0,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_THEORETICAL, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "Device theoretical applied to this organ's AI. Occupancy not applied."
+    },
+    "measured_device_gb_s": {
+     "value": 778.8,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED, COMPUTE_PEAK/AI)",
+     "absent_reason": null,
+     "note": "778.8 copied from BANDWIDTH_ROOF; not re-derived."
+    },
+    "reachable_gb_s": {
+     "value": 3.2449999999999997,
+     "kind": "DERIVED",
+     "unit": "GB/s",
+     "command": "min(DEVICE_MEASURED_SUSTAINED\u00d7occupancy_factor, COMPUTE_PEAK/AI)",
+     "absent_reason": null
+    },
+    "theoretical_ns": {
+     "value": 1212.8009768009767,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/819e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "measured_device_ns": {
+     "value": 1275.4031843862351,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/778.8e9, FLOPs/8979e9)\u00d71e9",
+     "absent_reason": null
+    },
+    "reachable_ns": {
+     "value": 306096.7642526965,
+     "kind": "DERIVED",
+     "unit": "ns",
+     "command": "max(traffic/reachable_bw, FLOPs/(8979e9\u00d7occupancy))",
+     "absent_reason": null
+    }
+   },
+   "recoverable_token_ns": {
+    "value": 33396.03182858974,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8."
+   },
+   "operators": [
+    "argmax"
+   ],
+   "kernels": [
+    "sample_argmax_f32"
+   ],
+   "fusion": {
+    "n": 1,
+    "n_candidate": 1,
+    "n_already_fused": 0,
+    "n_not_a_candidate": 0,
+    "labels_unique": [
+     "candidate:sampling_preprocessing"
+    ]
+   },
+   "dependencies": [
+    "lm_head"
+   ],
+   "dense_w_materialized": 0,
+   "ridge_measured_flop_per_byte": 11.529275808936827,
+   "ridge_theoretical_flop_per_byte": 10.963369963369964
+  }
+ },
+ "ranked_by_recoverable_token_ns": [
+  {
+   "organ": "mlp_gate_up",
+   "recoverable_token_ns": 5292216.967877891,
+   "measured_gpu_ns": 9887463.24151622,
+   "reachable_ns": 4595246.273638329,
+   "achieved_gb_s": 360.70618245384145,
+   "reachable_gb_s": 777.9469293099655,
+   "bound_class": "memory",
+   "occupancy_factor": 0.9989046344503923,
+   "pct_of_device_measured_sustained": 0.4631563719232685,
+   "rank": 1,
+   "rank_if_pct_bw": 6
+  },
+  {
+   "organ": "mlp_down",
+   "recoverable_token_ns": 3453488.9701968655,
+   "measured_gpu_ns": 5759460.043174991,
+   "reachable_ns": 2305971.072978126,
+   "achieved_gb_s": 309.5045692889859,
+   "reachable_gb_s": 777.2337428696796,
+   "bound_class": "memory",
+   "occupancy_factor": 0.9979888840134562,
+   "pct_of_device_measured_sustained": 0.39741213313942725,
+   "rank": 2,
+   "rank_if_pct_bw": 3
+  },
+  {
+   "organ": "deltanet",
+   "recoverable_token_ns": 3385151.580319722,
+   "measured_gpu_ns": 6640392.887055211,
+   "reachable_ns": 3255241.3067354886,
+   "achieved_gb_s": 325.5340876311656,
+   "reachable_gb_s": 767.8449234556558,
+   "bound_class": "memory",
+   "occupancy_factor": 0.985933389131556,
+   "pct_of_device_measured_sustained": 0.417994462803243,
+   "rank": 3,
+   "rank_if_pct_bw": 4
+  },
+  {
+   "organ": "gqa_attention",
+   "recoverable_token_ns": 954503.6464293868,
+   "measured_gpu_ns": 1784175.3592412332,
+   "reachable_ns": 829671.7128118464,
+   "achieved_gb_s": 349.88890792970267,
+   "reachable_gb_s": 766.640151975684,
+   "bound_class": "memory",
+   "occupancy_factor": 0.9843864303745302,
+   "pct_of_device_measured_sustained": 0.44926670252915085,
+   "rank": 4,
+   "rank_if_pct_bw": 5
+  },
+  {
+   "organ": "q4_remainder",
+   "recoverable_token_ns": 748243.403777441,
+   "measured_gpu_ns": 2125273.58354118,
+   "reachable_ns": 1377030.179763739,
+   "achieved_gb_s": 503.2516887627687,
+   "reachable_gb_s": 778.8,
+   "bound_class": "memory",
+   "occupancy_factor": 1.0,
+   "pct_of_device_measured_sustained": 0.6461886090944642,
+   "rank": 5,
+   "rank_if_pct_bw": 7
+  },
+  {
+   "organ": "lm_head",
+   "recoverable_token_ns": 165763.29052956146,
+   "measured_gpu_ns": 1034493.1178716992,
+   "reachable_ns": 868729.8273421377,
+   "achieved_gb_s": 652.9293122699839,
+   "reachable_gb_s": 778.729564368425,
+   "bound_class": "memory",
+   "occupancy_factor": 0.9999095587678801,
+   "pct_of_device_measured_sustained": 0.8383786752311042,
+   "rank": 6,
+   "rank_if_pct_bw": 8
+  },
+  {
+   "organ": "sampling",
+   "recoverable_token_ns": 33396.03182858974,
+   "measured_gpu_ns": 339492.7960812862,
+   "reachable_ns": 306096.7642526965,
+   "achieved_gb_s": 0.0,
+   "reachable_gb_s": 3.2449999999999997,
+   "bound_class": "launch",
+   "occupancy_factor": 0.004166666666666667,
+   "pct_of_device_measured_sustained": 0.0,
+   "rank": 7,
+   "rank_if_pct_bw": 1
+  },
+  {
+   "organ": "embedding",
+   "recoverable_token_ns": 8516.498482742354,
+   "measured_gpu_ns": 8873.971518181492,
+   "reachable_ns": 357.47303543913716,
+   "achieved_gb_s": 0.3065143937443467,
+   "reachable_gb_s": 64.89999999999999,
+   "bound_class": "memory",
+   "occupancy_factor": 0.08333333333333333,
+   "pct_of_device_measured_sustained": 0.00039357266787923306,
+   "rank": 8,
+   "rank_if_pct_bw": 2
+  }
+ ],
+ "ranked_by_pct_of_measured_bw_is_not_the_ranking": {
+  "note": "If we ranked by % of 778.8, occupancy-starved sampling/embedding would lead. That ranking is recorded so a reader can see it was considered and rejected (S022 \u00a711).",
+  "rows": [
+   {
+    "organ": "sampling",
+    "recoverable_token_ns": 33396.03182858974,
+    "measured_gpu_ns": 339492.7960812862,
+    "reachable_ns": 306096.7642526965,
+    "achieved_gb_s": 0.0,
+    "reachable_gb_s": 3.2449999999999997,
+    "bound_class": "launch",
+    "occupancy_factor": 0.004166666666666667,
+    "pct_of_device_measured_sustained": 0.0,
+    "rank": 7,
+    "rank_if_pct_bw": 1
+   },
+   {
+    "organ": "embedding",
+    "recoverable_token_ns": 8516.498482742354,
+    "measured_gpu_ns": 8873.971518181492,
+    "reachable_ns": 357.47303543913716,
+    "achieved_gb_s": 0.3065143937443467,
+    "reachable_gb_s": 64.89999999999999,
+    "bound_class": "memory",
+    "occupancy_factor": 0.08333333333333333,
+    "pct_of_device_measured_sustained": 0.00039357266787923306,
+    "rank": 8,
+    "rank_if_pct_bw": 2
+   },
+   {
+    "organ": "mlp_down",
+    "recoverable_token_ns": 3453488.9701968655,
+    "measured_gpu_ns": 5759460.043174991,
+    "reachable_ns": 2305971.072978126,
+    "achieved_gb_s": 309.5045692889859,
+    "reachable_gb_s": 777.2337428696796,
+    "bound_class": "memory",
+    "occupancy_factor": 0.9979888840134562,
+    "pct_of_device_measured_sustained": 0.39741213313942725,
+    "rank": 2,
+    "rank_if_pct_bw": 3
+   },
+   {
+    "organ": "deltanet",
+    "recoverable_token_ns": 3385151.580319722,
+    "measured_gpu_ns": 6640392.887055211,
+    "reachable_ns": 3255241.3067354886,
+    "achieved_gb_s": 325.5340876311656,
+    "reachable_gb_s": 767.8449234556558,
+    "bound_class": "memory",
+    "occupancy_factor": 0.985933389131556,
+    "pct_of_device_measured_sustained": 0.417994462803243,
+    "rank": 3,
+    "rank_if_pct_bw": 4
+   },
+   {
+    "organ": "gqa_attention",
+    "recoverable_token_ns": 954503.6464293868,
+    "measured_gpu_ns": 1784175.3592412332,
+    "reachable_ns": 829671.7128118464,
+    "achieved_gb_s": 349.88890792970267,
+    "reachable_gb_s": 766.640151975684,
+    "bound_class": "memory",
+    "occupancy_factor": 0.9843864303745302,
+    "pct_of_device_measured_sustained": 0.44926670252915085,
+    "rank": 4,
+    "rank_if_pct_bw": 5
+   },
+   {
+    "organ": "mlp_gate_up",
+    "recoverable_token_ns": 5292216.967877891,
+    "measured_gpu_ns": 9887463.24151622,
+    "reachable_ns": 4595246.273638329,
+    "achieved_gb_s": 360.70618245384145,
+    "reachable_gb_s": 777.9469293099655,
+    "bound_class": "memory",
+    "occupancy_factor": 0.9989046344503923,
+    "pct_of_device_measured_sustained": 0.4631563719232685,
+    "rank": 1,
+    "rank_if_pct_bw": 6
+   },
+   {
+    "organ": "q4_remainder",
+    "recoverable_token_ns": 748243.403777441,
+    "measured_gpu_ns": 2125273.58354118,
+    "reachable_ns": 1377030.179763739,
+    "achieved_gb_s": 503.2516887627687,
+    "reachable_gb_s": 778.8,
+    "bound_class": "memory",
+    "occupancy_factor": 1.0,
+    "pct_of_device_measured_sustained": 0.6461886090944642,
+    "rank": 5,
+    "rank_if_pct_bw": 7
+   },
+   {
+    "organ": "lm_head",
+    "recoverable_token_ns": 165763.29052956146,
+    "measured_gpu_ns": 1034493.1178716992,
+    "reachable_ns": 868729.8273421377,
+    "achieved_gb_s": 652.9293122699839,
+    "reachable_gb_s": 778.729564368425,
+    "bound_class": "memory",
+    "occupancy_factor": 0.9999095587678801,
+    "pct_of_device_measured_sustained": 0.8383786752311042,
+    "rank": 6,
+    "rank_if_pct_bw": 8
+   }
+  ]
+ },
+ "largest_recoverable_organ": "mlp_gate_up",
+ "inputs_reused_not_remeasured": {
+  "ORGAN_BANDWIDTH.json": "N025 per-organ GPU ns, achieved GB/s, production GPU ns",
+  "DISPATCH_LEDGER.json": "bytes, FLOPs, launch overhead, sync=0, fusion, deps",
+  "GPU_LEDGER.json": "hardware occupancy ABSENT, per-dispatch ABSENT, token ceremony",
+  "BANDWIDTH_ROOF.json": "DEVICE_THEORETICAL 819, DEVICE_MEASURED_SUSTAINED 778.8"
+ },
+ "did_not_rederive_dram_roof": true,
+ "did_not_load_second_27b": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "gpu_confirm": {
+  "ran": false,
+  "optional": true,
+  "reason": "N027 is CPU analysis over sealed receipts. A short GPU confirm is optional and was not required to derive the three roofs or the recoverable-ns ranking."
+ },
+ "occupancy": {
+  "ps_matches": [],
+  "loaded_a_second_27b": false,
+  "ps_ok": false,
+  "note": "A second Qwen3.8-27B would show RSS in the 10+ GiB class and is refused. ps occupancy ABSENT this process: PermissionError: [Errno 1] Operation not permitted: 'ps'"
+ },
+ "dense_w_materialized": 0,
+ "causal_benchmark_law": {
+  "kernel_identity": "none new \u2014 N027 does not ship a kernel",
+  "sentinel": "three_roofs keys DEVICE_THEORETICAL / DEVICE_MEASURED_SUSTAINED / MODEL_REACHABLE are three distinct numbers",
+  "noop_would_not_pass": "A receipt that ranked by %BW, collapsed the three roofs, or re-derived 778.8 from the sweep would fail.",
+  "bad_control": "rank-by-%BW list is recorded and must not equal rank-by-recoverable-ns"
+ }
+}

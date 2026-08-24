@@ -1,0 +1,127 @@
+{
+  "blocker_count": 0,
+  "blockers": [],
+  "fail_count": 2,
+  "fails": [
+    "grok-compact-smaller-or-bounded: compact=716 raw=39",
+    "selfopt-compaction-gate: compact=716 raw=39"
+  ],
+  "generated_at": "2026-08-23T02:45:44.405906+00:00",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "schema": "hawking.hcli.self_optimization_bootstrap.v1",
+  "stages": {
+    "grok_dryrun": {
+      "command_run": [
+        "/Users/scammermike/.claude-grok/bin/grok-run",
+        "consult",
+        "--prompt",
+        "dry-run ping",
+        "--background",
+        "--repo",
+        "/Users/scammermike/Downloads/hawking-copy/.hcli/live-workspaces/bootstrap/grok-dryrun"
+      ],
+      "dry_run": true,
+      "ok": true,
+      "receipt_path": "/Users/scammermike/Downloads/hawking-copy/.hcli/live-workspaces/bootstrap/grok-dryrun/.hcli/grok/consult-20260822-224544.json",
+      "task_id": "consult-20260822-224544"
+    },
+    "grok_live": {
+      "compact_task_id": "consult-20260822-224545",
+      "elapsed_s": 11.947661876678467,
+      "grok_bin": "/Users/scammermike/.claude-grok/bin/grok-run",
+      "nonce": "nonce-99127db133804df3a2bd6d6b187b1870",
+      "ok": true,
+      "status": {
+        "exit_code": 0,
+        "raw_returncode": 0,
+        "report_path": "/Users/scammermike/.claude-grok/tasks/consult-20260822-224545/grok-report.md",
+        "state": "done",
+        "task_id": "consult-20260822-224545"
+      },
+      "task_id": "consult-20260822-224545"
+    },
+    "ingress": {
+      "goal": "Unify HCLI command ingress. Tests must pass. Do not forget the mission.",
+      "ledger_path": "/Users/scammermike/Downloads/hawking-copy/.hcli/live-workspaces/bootstrap/ingress/.hcli/GOAL.md",
+      "mission_id": "f12cd7d3-57dd-41ef-aaf1-9abe0f59dbd0",
+      "obligation_ids": [
+        "G001"
+      ],
+      "workunit_ids": [
+        "implement",
+        "validate"
+      ]
+    },
+    "mixed_max": {
+      "accepted": 4,
+      "cpu_validators": 4,
+      "elapsed_s": 12.367425203323364,
+      "grok_admitted": 2,
+      "mutation_writer": 1,
+      "qwen_active_decode": 2,
+      "qwen_resident": 3,
+      "result": {
+        "accepted": 4,
+        "cancelled": false,
+        "mission_id": "323dbf11-2ec7-4a17-9858-c87c51031d60",
+        "no_progress_warning": null,
+        "reason": null,
+        "status": "completed"
+      },
+      "source": "live-mixed-max",
+      "units": {
+        "cpu1": "completed",
+        "cpu2": "completed",
+        "grok1": "completed",
+        "grok2": "completed"
+      },
+      "verified_units_per_hour": 1164.349067268298
+    },
+    "restart": {
+      "mission_id": "restart-mission-1",
+      "nonce": "97ea40140c4b457097c708c5e6b261d8"
+    },
+    "self_opt": {
+      "baseline": {
+        "command_ingress": "unified CommandHandler via Controller.handle_command",
+        "grok_live_elapsed_s": 11.947661876678467,
+        "grok_wait": "poll status; no subprocess 120s kill"
+      },
+      "iteration_1": {
+        "compact_bytes": 716,
+        "decision": "reject",
+        "hypothesis": "Compiling Grok reports will keep TUI/context bounded while raw traces remain on disk.",
+        "ratio": 18.358974358974358,
+        "raw_bytes": 39
+      },
+      "iteration_2": {
+        "chosen_because": "iteration_1 showed compiled reports stay bounded",
+        "cpu_compact": {
+          "backend": "cpu",
+          "claims": [],
+          "commands_executed": [],
+          "errors": [],
+          "evidence_refs": [],
+          "files_touched": [],
+          "final_summary": "(no report yet)",
+          "mode": null,
+          "raw_report_path": null,
+          "status": null,
+          "task_id": "cpu_compact",
+          "verifier_inputs": [
+            "wc -l /Users/scammermike/Downloads/hawking-copy/.hcli/live-workspaces/bootstrap/selfopt/out.txt | awk '{exit($1>=200?0:1)}'"
+          ],
+          "workspace": null
+        },
+        "decision": "promote",
+        "hypothesis": "CPU validator output should also be compiled rather than dumped; executors._run_cpu already stores compact.",
+        "validation": {
+          "command": "wc -l /Users/scammermike/Downloads/hawking-copy/.hcli/live-workspaces/bootstrap/selfopt/out.txt | awk '{exit($1>=200?0:1)}'",
+          "exit_code": 0,
+          "ok": true,
+          "output": ""
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "gate": "HCLI_RUNTIME_AUTHORITY",
+  "generated_at": "2026-08-23T07:43:41Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "genome_is_a_prior_not_a_constant": "The genome says active_decode_limit 2. The Qwen ladder measured a useful equilibrium of 4 with aggregate scaling 1.264. Those do not contradict each other: the genome was probed with --max-runtimes 3 and could not have observed 4. Promotion belongs to tools/headless/machine_probe.py re-run with a higher ceiling, NOT to an editor. This gate fails if anyone types the number in.",
+  "single_stream_penalty": {
+    "relative_loss": 0.0522,
+    "basis": "5-slot c=1 22.489 tok/s vs 2-slot 23.727 tok/s",
+    "kind": "PRIOR from receipts/headless/QWEN_MAX_EQUILIBRIUM*.json, not a live measurement of any one spawn",
+    "cause": "NOT_DETERMINED. What is ruled out: it is not decode arithmetic, since the same weights and the same single sequence are involved either way. The remaining candidates are KV reservation per slot and scheduler overhead across idle slots; distinguishing them needs a slot-count sweep at fixed context, which is not run here.",
+    "actionable": "pass requested_n=1 for a single deep decode; extra resident slots are justified by warm state and prefix locality, not by aggregate tok/s"
+  },
+  "results": [
+    {
+      "name": "the genome was NOT hand-edited to match the measured ladder",
+      "ok": true,
+      "detail": "active_decode_limit=2 (the ladder peaked at 4; the genome still reports what its own probe measured with --max-runtimes 3, which could not have observed 4)"
+    },
+    {
+      "name": "the genome names the probe that produced it, so promotion has a path",
+      "ok": true,
+      "detail": "measured_by=tools/headless/machine_probe.py (metal-gated)"
+    },
+    {
+      "name": "the genome carries the receipt it came from",
+      "ok": true,
+      "detail": "source_receipt=~/Downloads/hawking-copy/receipts/headless/MACHINE_GENOME.json"
+    },
+    {
+      "name": "a matching current genome assesses FRESH",
+      "ok": true,
+      "detail": "status=FRESH reasons=[]"
+    },
+    {
+      "name": "a genome from a DIFFERENT machine is refused, with a reason",
+      "ok": true,
+      "detail": "status=STALE reasons=[\"machine identity mismatch: genome hw_model='Mac00,0-not-this-box' live hw_model='Mac15,14'\"]"
+    },
+    {
+      "name": "a genome older than the horizon is refused, with a reason",
+      "ok": true,
+      "detail": "status=STALE reasons=['older than staleness horizon: generated_at=2020-01-01T00:00:00Z age=209634032s horizon=604800s']"
+    },
+    {
+      "name": "the long-context ingress still passes through the canonical path",
+      "ok": true,
+      "detail": "exit=0; receipt: /Users/scammermike/Downloads/hawking-copy/receipts/headless/HCLI_LONG_CONTEXT_ROOT_INGRESS.json"
+    },
+    {
+      "name": "allocating five slots for ONE decode is recorded at the decision, not silent",
+      "ok": true,
+      "detail": "oversized=True single_stream_cost={'kind': 'prior', 'relative_loss': 0.05217684494457789, 'baseline_slots': 2, 'planned_slots': 5, 'baseline_c1_tps': 23.727, 'planned_c1_tps': 22.489, 'source': 'receipts/headless/QWEN_MAX_EQUILIBRIUM*.json', 'reason': None}"
+    },
+    {
+      "name": "NEGATIVE CONTROL: a single slot for one decode is NOT flagged oversized",
+      "ok": true,
+      "detail": "oversized=False"
+    }
+  ],
+  "failed": [],
+  "result": "PASS"
+}

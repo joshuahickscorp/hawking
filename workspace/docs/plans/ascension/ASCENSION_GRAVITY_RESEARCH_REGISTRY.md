@@ -407,7 +407,7 @@ Use DSV4F lesson: **GPU µs can be fine while wall is awful** if S is high (P4A:
 |---|---|
 | `workspace/docs/plans/ascension/ASCENSION_GRAVITY_RESEARCH_REGISTRY.md` | **This registry** |
 | `/Users/scammermike/Downloads/HAWKING_ASCENSION_BIBLE.md` | Governing §3, §5, §6 |
-| `workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_ARCHITECTURE_OPTIONS.md` | Research-registry template |
+| `hawking-experiments/frankenstein/data/FRANKENSTEIN_ARCHITECTURE_OPTIONS.md` | Research-registry template |
 | `workspace/docs/plans/KERNEL_BROKERS_TUNING_PLAN.md` | Dispatch inventory + broker priorities |
 | `workspace/campaign/records/runs/deepseek-v4/DSV4F_P4A_LAYER0_ATTENTION_TOPOLOGY_SWEEP-v1.json` | **21→1 CB, 13.3% p50** |
 | `workspace/campaign/records/runs/deepseek-v4/fp4-metal-component-probe-receipt.json` | FP4 fused matvec parity |
@@ -419,7 +419,7 @@ Use DSV4F lesson: **GPU µs can be fine while wall is awful** if S is high (P4A:
 | `receipts/dsv4f_multi_layer_gpu_forward_*.json` | Multi-layer CB/dispatch wall tax |
 | `workspace/campaign/evidence/systems/hawking/HAWKING_ASCENSION_CLOSED.json` | GLM 76→1 CB measured |
 
-**Not touched (contract):** `lab/operators/frankenstein_*`, live frankenstein evidence, remote/push/PR, Qwen downloads.
+**Not touched (contract):** `hawking-experiments/frankenstein/operators/frankenstein_*`, live frankenstein evidence, remote/push/PR, Qwen downloads.
 
 ---
 

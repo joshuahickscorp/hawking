@@ -1,0 +1,77 @@
+{
+ "schema": "hawking.headless.writer_authority.v1",
+ "recorded_at": "2026-08-22T22:20:09.233971Z",
+ "primary_repo": "/Users/scammermike/Downloads/hawking-copy",
+ "recovery_tree_read_only": "/Users/scammermike/Downloads/hawking",
+ "writers_found": [
+  {
+   "kind": "launchd",
+   "label": "com.hawking.odyssey",
+   "pid_at_discovery": 1685,
+   "wrote_to": "/Users/scammermike/Downloads/hawking",
+   "scope": "git add receipts/odyssey-i workspace/campaign/odyssey/{ODYSSEY_COMPLETIONS,ODYSSEY_STATE,TRANSFER_MATRIX,GRAVITY_RULEBASE,NEGATIVE_SCIENCE}.json RUN_LOG.jsonl patients; auto-commit every ~300s",
+   "disposition": "STOPPED",
+   "reason": "contends for GPU/unified memory; every decode measurement in G005/G006 would be poisoned. Writes only to the recovery tree, so it was never a git-level second writer against the primary repo.",
+   "restore": "launchctl bootstrap gui/503 /Users/scammermike/Library/LaunchAgents/com.hawking.odyssey.plist",
+   "state_preserved": "driver auto-committed data every ~300s; ODYSSEY_STATE.json / RUN_LOG.jsonl / receipts/odyssey-i on disk in the recovery tree"
+  },
+  {
+   "kind": "process",
+   "label": "tools/odyssey_ctl.py cycle --go --max-lanes 14 --grok-lanes 0 --loop-secs 300 --inner-sleep 3",
+   "pid_at_discovery": 4505,
+   "disposition": "STOPPED (child of the driver)"
+  },
+  {
+   "kind": "process",
+   "label": "tools/odyssey_patient_runner.py --oxx O006 --runtime mlx --nx-gather",
+   "pid_at_discovery": 5950,
+   "reparented_pid": 6130,
+   "disposition": "KILLED",
+   "orphan_finding": "ORPHAN_CHILD_LEAK: killing odyssey_driver.sh + odyssey_ctl.py left the MLX patient runner alive, reparented to PID 1. odyssey_ctl.py does not clean up its model children. This is exactly the failure directive \u00a77/\u00a730 requires HCLI to not have.",
+   "resume": "python3 tools/odyssey_patient_runner.py --oxx O006 --weights /Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-VL-30B-A3B-Instruct/snapshots/9c4b90e1e4ba969fd3b5378b57d966d725f1b86c --runtime mlx --out receipts/odyssey-i/O006_NX_gather.json --packet workspace/campaign/odyssey/patients/O006/ODYSSEY_PATIENT_O006.json --nx-gather"
+  }
+ ],
+ "stale_lock_removed": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/.resident.lock",
+ "other_hawking_launchd_jobs_inspected": [
+  "-\t78\tcom.hawking.glm52.readiness-gate",
+  "-\t2\tcom.hawking.odyssey-ready-finalize",
+  "-\t78\tcom.hawking.glm52.safe-to-leave",
+  "-\t127\tcom.hawking.glm52.math-prometheus-pass1",
+  "-\t75\tcom.hawking.doctorv5.telegram",
+  "-\t1\tcom.hawking.genesis",
+  "-\t2\tcom.hawking.doctorv5ultra.post120b",
+  "-\t2\tcom.hawking.doctor.campaign.supervisor",
+  "-\t127\tcom.hawking.overnight.handoff",
+  "-\t127\tcom.hawking.glm52.math-prometheus-pass3",
+  "-\t75\tcom.hawking.deepseek-v4.telegram",
+  "-\t127\tcom.hawking.glm52.source-fetch"
+ ],
+ "note_other_jobs": "all other com.hawking.* launchd jobs show a last-exit status and no live PID; none were running. Not touched.",
+ "after_state": {
+  "odyssey_procs": "",
+  "llama_procs": "",
+  "hcli_procs": "",
+  "swap": "total = 0.00M  used = 0.00M  free = 0.00M  (encrypted)",
+  "free_pct": "System-wide memory free percentage: 96%"
+ },
+ "conclusion": "SINGLE_MUTATION_AUTHORITY=CLAUDE for the repository: no Hawking writer process or launchd job is mutating hawking-copy. The MACHINE, however, is shared \u2014 an operator-owned llama-server is resident on port 8080 and intermittently decoding. That is not a mutation conflict, but it is a measurement co-tenant, and every performance receipt now declares whether it was clean-room.",
+ "corrections": [
+  {
+   "at": "2026-08-22T23:00:00Z",
+   "corrects": "the claim that the port-8080 llama-server was an HCLI orphan, and the conclusion that no unowned model process remained",
+   "what_actually_happened": "At 18:38 a llama-server on port 8080 (pid 6893) was killed on the assumption it was an orphan leaked by HCLI's RuntimePool. It was not. A server with the same signature (--host 127.0.0.1 --port 8080 --ctx-size 32768, no mmproj) reappeared at 18:48:27 as pid 10803, and its parent chain is `-zsh` <- `login -pf scammermike` <- Terminal.app \u2014 a HUMAN-OWNED interactive shell. It has 4 slots with 1 actively processing, so it is in use. The process killed at 18:38 was almost certainly the same operator-owned server, not an HCLI leak.",
+   "why_the_misattribution_happened": "HCLI's RuntimePool spawns with start_new_session=True and its _command() shape is `--model X --port P --host 127.0.0.1 --ctx-size N`, which is very close to what the operator's server looked like. But HCLI allocates EPHEMERAL ports via allocate_port() (bind to port 0), so it can never produce port 8080. That single fact was available and would have refuted the orphan theory before the kill.",
+   "what_stands": "The odyssey findings are unaffected and independently evidenced: odyssey_ctl.py DID leak its MLX patient runner, which reparented to PID 1 after its parents were terminated (observed directly as pid 5950 -> 6130). That is a real orphan-child defect. The port-8080 attribution is the part that was wrong.",
+   "policy_change": "Model processes are no longer killed on inference. The probes now call foreign_model_load(), refuse to measure by default when a process they did not start is resident, and require an explicit --allow-foreign-load which records the co-tenant and its slot activity into the receipt. A contended measurement is now labelled a floor rather than a roof."
+  }
+ ],
+ "operator_authorized_actions": [
+  {
+   "at": "2026-08-22T23:05:00Z",
+   "authorization": "operator answered: 'I stop it, with your say-so' and 'Machine is mine for the session'",
+   "action": "terminate the operator-owned llama-server on port 8080 (pid 10803) so the GPU probes are clean-room",
+   "restore_command": "/opt/homebrew/bin/llama-server --model /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --host 127.0.0.1 --port 8080 --ctx-size 32768",
+   "standing_policy": "for this session, model processes may be cleared for measurement, but the exact restart command is recorded first"
+  }
+ ]
+}

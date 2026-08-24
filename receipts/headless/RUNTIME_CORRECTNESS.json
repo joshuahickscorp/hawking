@@ -1,0 +1,70 @@
+{
+  "gate": "RUNTIME_CORRECTNESS",
+  "generated_at": "2026-08-23T08:07:42Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "mode": "live",
+  "artifact": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+  "why": "A tok/s number from an artifact whose output nobody checked measures how fast something produces text. This gate qualifies the arms that RUNTIME_EXPERIMENT.json timed.",
+  "cases": [
+    {
+      "id": "factual",
+      "prompt": "The capital of France is",
+      "accept": [
+        "\\bparis\\b"
+      ]
+    },
+    {
+      "id": "arithmetic",
+      "prompt": "17 * 19 =",
+      "accept": [
+        "\\b323\\b"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "arm": "native_gravity_q4",
+      "case": "factual",
+      "prompt": "The capital of France is",
+      "exit_code": 0,
+      "text": "<think>\nThe user is asking a simple factual question about the capital of France. The answer is Paris.\n</think>\n\nParis.",
+      "text_source": "json",
+      "pass": true
+    },
+    {
+      "arm": "llama_cpp_q5k",
+      "case": "factual",
+      "prompt": "The capital of France is",
+      "error": null,
+      "text": " Paris.\nThe capital of Germany is Berlin.\nThe capital of Italy is",
+      "pass": true
+    },
+    {
+      "arm": "native_gravity_q4",
+      "case": "arithmetic",
+      "prompt": "17 * 19 =",
+      "exit_code": 0,
+      "text": "<think>\nThe user is asking me to multiply 17 by 19.\n\n17 \u00d7 19 = 17 \u00d7 20 - 17 = 340 - 17 = 323\n\nLet me verify: 17 \u00d7 19 = 17 \u00d7 (20 - 1) = 340 - 17 = 323. Yes, that's correct.\n</think>\n\n17 \u00d7 19 = **323**",
+      "text_source": "json",
+      "pass": true
+    },
+    {
+      "arm": "llama_cpp_q5k",
+      "case": "arithmetic",
+      "prompt": "17 * 19 =",
+      "error": null,
+      "text": " 323.\n17 * 19 = 32",
+      "pass": true
+    }
+  ],
+  "verdict_by_arm": {
+    "native_gravity_q4": "PASS",
+    "llama_cpp_q5k": "PASS"
+  },
+  "rule": "If an arm FAILS, its tok/s is not a result. A fast incoherent artifact is a negative result, not a win.",
+  "promotion": {
+    "decision": "NOT_PROMOTED",
+    "basis": "the paired A/B found no improvement against the historical native anchor of 33.03 tok/s; correctness alone does not promote anything",
+    "owner": "the measuring harness does NOT own promotion; it reports and a human decides"
+  }
+}

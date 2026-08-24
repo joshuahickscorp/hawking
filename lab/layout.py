@@ -8,10 +8,21 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Final
+import sys
 
 
 REPO_ROOT: Final = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT: Final = REPO_ROOT / "workspace"
+HAWKING_EXPERIMENTS_ROOT: Final = REPO_ROOT / "hawking-experiments"
+FRANKENSTEIN_ROOT: Final = HAWKING_EXPERIMENTS_ROOT / "frankenstein"
+FRANKENSTEIN_DATA_ROOT: Final = FRANKENSTEIN_ROOT / "data"
+FRANKENSTEIN_OPERATORS_ROOT: Final = FRANKENSTEIN_ROOT / "operators"
+FRANKENSTEIN_CONDENSE_ROOT: Final = FRANKENSTEIN_ROOT / "condense"
+PROMETHEUS_ROOT: Final = HAWKING_EXPERIMENTS_ROOT / "prometheus"
+PROMETHEUS_TOOLS_ROOT: Final = PROMETHEUS_ROOT / "tools"
+PROMETHEUS_CONFIG_ROOT: Final = PROMETHEUS_ROOT / "config"
+PROMETHEUS_EVIDENCE_ROOT: Final = PROMETHEUS_ROOT / "evidence"
+SUPERWAVE_ROOT: Final = HAWKING_EXPERIMENTS_ROOT / "superwave"
 
 CAMPAIGN_ROOT: Final = WORKSPACE_ROOT / "campaign"
 CONFIG_ROOT: Final = CAMPAIGN_ROOT / "config"
@@ -100,12 +111,41 @@ EVIDENCE_AREAS: Final = {
     "doctor": "research",
     "one-mountain": "research",
     "overread": "research",
-    "prometheus": "research",
+    "prometheus": "research",  # physical home is PROMETHEUS_EVIDENCE_ROOT
+    "frankenstein": "models",  # physical home is FRANKENSTEIN_DATA_ROOT
 }
+
+
+def experiment_pythonpath() -> tuple[Path, ...]:
+    """Directories that expose frankenstein_* and prometheus as importable modules.
+
+    ``hawking-experiments`` contains a dash, so it is not a Python package.
+    Putting these three directories on ``sys.path`` makes the moved modules
+    importable by their bare filenames (``import frankenstein_ablation``,
+    ``import prometheus``). Operators is last-inserted / first-searched so it
+    wins the frankenstein_* name collision with the thin condense CLI wrappers.
+    """
+    return (
+        PROMETHEUS_TOOLS_ROOT,
+        FRANKENSTEIN_CONDENSE_ROOT,
+        FRANKENSTEIN_OPERATORS_ROOT,
+    )
+
+
+def ensure_experiment_imports() -> None:
+    """Put moved frankenstein/prometheus module dirs on ``sys.path``."""
+    for path in experiment_pythonpath():
+        rendered = str(path)
+        if path.is_dir() and rendered not in sys.path:
+            sys.path.insert(0, rendered)
 
 
 def evidence_dir(campaign: str) -> Path:
     """Return the physical directory for a named evidence campaign."""
+    if campaign == "prometheus":
+        return PROMETHEUS_EVIDENCE_ROOT
+    if campaign == "frankenstein":
+        return FRANKENSTEIN_DATA_ROOT
     try:
         area = EVIDENCE_AREAS[campaign]
     except KeyError as exc:
@@ -148,6 +188,8 @@ def find_profile(name: str) -> Path | None:
     if not name or name != Path(name).name:
         raise ValueError(f"find_profile expects a basename, got {name!r}")
     matches = sorted(PROFILES_ROOT.rglob(name))
+    if PROMETHEUS_CONFIG_ROOT.is_dir():
+        matches.extend(sorted(PROMETHEUS_CONFIG_ROOT.rglob(name)))
     return next((path for path in matches if path.is_file()), None)
 
 
@@ -166,6 +208,30 @@ def resolve_workspace_path(value: str | Path) -> Path:
             return path
     if not path.parts:
         return REPO_ROOT
+    if path.parts[0] == "hawking-experiments":
+        return REPO_ROOT / path
+    moved_prefixes: tuple[tuple[tuple[str, ...], Path], ...] = (
+        (("workspace", "campaign", "evidence", "models", "frankenstein"), FRANKENSTEIN_DATA_ROOT),
+        (("workspace", "campaign", "config", "profiles", "prometheus"), PROMETHEUS_CONFIG_ROOT),
+        (("workspace", "campaign", "evidence", "research", "prometheus"), PROMETHEUS_EVIDENCE_ROOT),
+        (("workspace", "superwave"), SUPERWAVE_ROOT),
+        (("tools", "prometheus"), PROMETHEUS_TOOLS_ROOT),
+        (("lab", "operators"), FRANKENSTEIN_OPERATORS_ROOT),
+        (("tools", "condense", "tests"), FRANKENSTEIN_CONDENSE_ROOT / "tests"),
+        (("tools", "condense"), FRANKENSTEIN_CONDENSE_ROOT),
+    )
+    for prefix, dest in moved_prefixes:
+        n = len(prefix)
+        if path.parts[:n] != prefix:
+            continue
+        rest = path.parts[n:]
+        # lab/operators and tools/condense prefixes are only remapped for
+        # frankenstein_* module files that actually moved.
+        if dest in {FRANKENSTEIN_OPERATORS_ROOT, FRANKENSTEIN_CONDENSE_ROOT, FRANKENSTEIN_CONDENSE_ROOT / "tests"}:
+            leaf = str(rest[0]) if rest else ""
+            if not leaf.startswith(("frankenstein", "test_frankenstein")):
+                continue
+        return dest.joinpath(*rest)
     if path.parts[0] == "workspace":
         return REPO_ROOT / path
 

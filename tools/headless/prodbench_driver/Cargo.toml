@@ -1,0 +1,30 @@
+[package]
+name = "prodbench-driver"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "One resident Qwen3.8 body, N sessions, real WorkUnit prompts. Not a workspace member."
+
+# Own workspace so this crate can live under tools/headless without editing the
+# repo Cargo.toml (N007 write scope is tools/headless + receipts/headless).
+[workspace]
+
+[[bin]]
+name = "ascension_qwen38_production_bench"
+path = "src/main.rs"
+
+[dependencies]
+hawking-core = { path = "../../../crates/hawking-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+metal = "0.29"
+
+[profile.release-fast]
+inherits = "release"
+lto = false
+codegen-units = 16
+incremental = true
+strip = false
+debug = false

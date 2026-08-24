@@ -1,0 +1,806 @@
+{
+  "schema": "hawking.headless.noetic_traffic_model.v1",
+  "generated_at": "2026-08-23T19:32:06Z",
+  "commit": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "question": "For a proposed representation (bytes/token, FLOP/token, dispatches/token, reconstruction cost), can it beat the uniform-q4 incumbent on this machine BEFORE anyone writes a kernel?",
+  "answer": "Yes, the model can say WIN / LOSE / CANNOT_TELL on traffic. It cannot say the candidate is coherent. Incumbent is bandwidth-side of the 964/1CB line (bandwidth), residual 6.430 ms vs the 595.9 GB/s roof+ceremony floor. A candidate that only halves bytes in a 49-CB regime is still a LOSE. A candidate that halves bytes fused at 1 CB is a traffic WIN even under the measured q3 1.343\u00d7 ALU envelope. A 17% byte cut at the same MAC count is CANNOT_TELL \u2014 and was measured NET-LOSS.",
+  "anchors_not_rederived": {
+    "tps": 32.73,
+    "ms_per_token": 30.606,
+    "token_ns": 30606000,
+    "dispatches_per_token": 964,
+    "command_buffers_per_token": 1,
+    "bpw": 4.253,
+    "parameter_count": 26895998464,
+    "artifact_bytes": 14297933604,
+    "tensors": 755,
+    "roof_gb_s": 595.9,
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "chipset": "Apple M3 Ultra",
+    "metal": "Metal 4",
+    "kernels_bound_g071": 38,
+    "kernels_declared": 554,
+    "gemv_mac_flops": 51243909120,
+    "active_budget_bytes": 13622264240,
+    "dense_f32_w_bytes": 102487818240,
+    "mlx_4bit_tps_live": 35.51,
+    "llamacpp_q5k_tps_archived": 24.12
+  },
+  "machine": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal": "Metal 4",
+    "measured_roof_gb_s": 595.9,
+    "datasheet_peak_gb_s": 819.0,
+    "honest_decode_ceiling_gb_s": 411.51,
+    "compute_peak_gflops": 8979.0,
+    "compute_peak_source": "receipts/ascent-2026-08-16/G143_FLOPS_PER_TOKEN.json compute_peak_gflops",
+    "roof_source": "NOETIC_* anchors_not_rederived.measured_roof_gb_s; not re-derived",
+    "datasheet_source": "qwen38_token_ns_ledger.rs M3_ULTRA_PEAK_GB_S = 819; GPU_ATTACK.json m3_ultra_peak_GB_s"
+  },
+  "model": {
+    "signature": "predict_token_ns(bytes_per_token, flop_per_token, dispatches_per_token, reconstruction_cost, command_buffers=1)",
+    "formula": "token_ns = max(traffic/595.9e9, flop/8979e9)*1e9 + dispatches*(919250/964) + CBs*(12084 + 384250) + [serial_extract ? \u00d723.7 on the GPU-work term]",
+    "traffic": "bytes_per_token + dense_W_write + dense_W_reread",
+    "reconstruction_cost": "0 = fused native. A positive number is dense-W bytes written (reread assumed). A dict may set dense_w_bytes, reread, extra_dispatches, extra_flops, command_buffers, occupancy_class.",
+    "why_max_not_sum_for_bw_and_flop": "Inside a kernel, compute and bandwidth overlap; the roofline is a max. Across kernels the same class still sums to total_bytes/BW, so the aggregate bandwidth floor is total traffic / roof.",
+    "why_ceremony_is_added": "Production encodes one CB then waits. Host encode and CB gap are not inside the GEMV. Q80 at 98 CBs paid 36 ms of wait-minus-gpu; Qwen3.8 at 1 CB paid 0.384 ms. That is the dispatch-bound regime.",
+    "dense_reconstruction_law": "representation \u2192 reconstruct dense W \u2192 ordinary GEMM may exist as a labelled correctness ORACLE. It is NOT a production implementation. The reconstruct candidate is scored so the model can reject it, not so anyone ships it.",
+    "constants": {
+      "encode_ns_per_dispatch": {
+        "value": 953.5788381742739,
+        "status": "MEASURED",
+        "source": "QWEN38_TOKEN_NS_LEDGER.json median_encode_ns / 964",
+        "label": "DIRTY_ENGINEERING"
+      },
+      "submit_ns_per_cb": {
+        "value": 12084.0,
+        "status": "MEASURED",
+        "source": "ledger median_submit_ns / 1"
+      },
+      "gap_ns_per_cb": {
+        "value": 384250.0,
+        "status": "MEASURED",
+        "source": "ledger wait_minus_gpu_ns / 1; Q80 36e6/98 CBs = 367 \u00b5s agrees in order"
+      },
+      "roof_gb_s": {
+        "value": 595.9,
+        "status": "MEASURED"
+      },
+      "compute_peak_gflops": {
+        "value": 8979.0,
+        "status": "MEASURED",
+        "source": "G143_FLOPS_PER_TOKEN.json"
+      },
+      "q3_overprediction": {
+        "value": 1.3429396284578419,
+        "status": "MEASURED",
+        "source": "DENSITY_LEADER_SPEED.json arithmetic.measured_over_prediction"
+      },
+      "q80_serial_speedup": {
+        "value": 23.7,
+        "status": "MEASURED",
+        "source": "Q80_RECONSTRUCTION_WON.json / NOETIC_TPR64_REOPEN"
+      }
+    }
+  },
+  "calibration": {
+    "incumbent_inputs": {
+      "bytes_per_token": {
+        "value": 13622264240,
+        "status": "MEASURED",
+        "unit": "bytes/token",
+        "source": "qwen38_token_ns_ledger.rs::ACTIVE_BUDGET_BYTES",
+        "note": "codes+scales+norms, embed table excluded except one row"
+      },
+      "flop_per_token": {
+        "value": 51243909120,
+        "status": "MEASURED",
+        "unit": "FLOP/token",
+        "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json analytic_vs_measured.dispatched_gemv_mac_flops",
+        "note": "51.24 GFLOP of GEMV MACs. G143 paper 2N is 53.79 GFLOP and includes a full embed-table matvec the path never launches."
+      },
+      "dispatches_per_token": {
+        "value": 964,
+        "status": "MEASURED",
+        "unit": "dispatches/token",
+        "source": "qwen38_token_ns_ledger.rs::production_dispatches_per_token; unit test production_dispatch_count_is_964"
+      },
+      "reconstruction_cost": {
+        "value": 0,
+        "status": "MEASURED",
+        "unit": "dense_W_bytes/token",
+        "source": "NOETIC_OPERATION_CENSUS reconstruction_sites; NOETIC_KERNEL_CENSUS dispatched_reconstructs_dense.NO=38",
+        "note": "in-register unpack+FMA. Ledger weight_decode_reconstruction bytes_read=bytes_written=0. The 1.808 ms recon_ns is ALU, not a dense W."
+      },
+      "command_buffers": {
+        "value": 1,
+        "status": "MEASURED",
+        "unit": "command_buffers/token",
+        "source": "qwen38_token_ns_ledger.rs production_command_buffers=1"
+      }
+    },
+    "measured_wall": {
+      "campaign_tps": {
+        "value": 32.73,
+        "status": "MEASURED",
+        "source": "contract / NOETIC_* anchors_not_rederived"
+      },
+      "campaign_token_ms": {
+        "value": 30.606,
+        "status": "MEASURED",
+        "source": "contract / NOETIC_* anchors_not_rederived"
+      },
+      "campaign_token_ns": {
+        "value": 30606000,
+        "status": "MEASURED",
+        "method": "1e6 * 30.606, the millisecond figure as stated"
+      },
+      "native_median_wall_ns": {
+        "value": 30388625,
+        "status": "MEASURED",
+        "source": "receipts/headless/QWEN38_GRAVITY_NATIVE.json decode.median_complete_wall_ns"
+      },
+      "native_median_gpu_ns": {
+        "value": 29204250,
+        "status": "MEASURED",
+        "source": "QWEN38_GRAVITY_NATIVE.json runs[0].headline_gpu_ns_per_token (paired with wall median)"
+      },
+      "native_median_tps": {
+        "value": 32.907049924108115,
+        "status": "MEASURED",
+        "source": "QWEN38_GRAVITY_NATIVE.json decode.median_complete_wall_tps"
+      },
+      "native_spread_pct": {
+        "value": 0.2,
+        "status": "MEASURED",
+        "source": "QWEN38_GRAVITY_NATIVE.json decode.measurement_spread_pct"
+      },
+      "native_host_ns": {
+        "value": 1184375,
+        "status": "MEASURED",
+        "method": "median_wall_ns \u2212 median_gpu_ns",
+        "note": "encode+submit+CPU tail on the native run; 1.184 ms vs ledger encode+submit 0.931 ms"
+      },
+      "anchor_tps_vs_ms_inconsistency": {
+        "tps_implied_by_30p606_ms": 32.673332026400054,
+        "ns_implied_by_32p73_tps": 30553009.47143294,
+        "rel_gap_pct": 0.17313771341259676,
+        "note": "Both figures are campaign anchors. Gap 0.17% sits inside the 0.2% native spread. Wall-to-beat is 30,606,000 ns."
+      }
+    },
+    "prediction": {
+      "inputs": {
+        "bytes_per_token": 13622264240.0,
+        "flop_per_token": 51243909120.0,
+        "dispatches_per_token": 964.0,
+        "reconstruction_cost": {
+          "dense_w_write_bytes": 0.0,
+          "dense_w_reread_bytes": 0.0,
+          "extra_dispatches": 0,
+          "extra_flops": null,
+          "extra_flops_null_reason": null,
+          "command_buffers": null,
+          "occupancy_class": "unknown",
+          "reread_assumed": false,
+          "note": "fused native (no dense W)"
+        },
+        "command_buffers": 1
+      },
+      "traffic_bytes_including_recon": 13622264240.0,
+      "flops_including_recon_extra": 51243909120.0,
+      "dispatches_including_recon_extra": 964.0,
+      "floors_ns": {
+        "bandwidth_at_measured_roof_595p9": 22859983.62141299,
+        "bandwidth_at_honest_ceiling_411p51": 33103118.368933927,
+        "bandwidth_at_datasheet_819": 16632801.26984127,
+        "compute_at_g143_8979_gflops": 5707084.20982292,
+        "dispatch_ceremony": 1315584.0
+      },
+      "ceremony": {
+        "encode_ns": 919250.0,
+        "submit_ns": 12084.0,
+        "gpu_gap_ns": 384250.0,
+        "total_ns": 1315584.0,
+        "source": "encode 919250 ns / 964 disp; submit 12084 ns / 1 CB; wait-minus-gpu 384250 ns / 1 CB from DIRTY_ENGINEERING QWEN38_TOKEN_NS_LEDGER.json (wall 35227917 ns, not scaled to the native 30388625 ns)"
+      },
+      "gpu_work_ns": 22859983.62141299,
+      "token_ns": 24175567.62141299,
+      "token_ms": 24.175567621412988,
+      "tok_s": 41.364075320170414,
+      "binding_term": "bandwidth",
+      "arithmetic_intensity_flop_per_byte": 3.7617761788476365,
+      "ridge_flop_per_byte": 15.067964423561,
+      "on_bandwidth_side_of_ridge": true,
+      "occupancy_applied_to_point": false,
+      "occupancy_note": "Point prediction is the roofline. ALU/occupancy lives in the error bar unless occupancy_class=serial_extract.",
+      "dense_reconstruction_is_oracle": false
+    },
+    "residual_ns": 6430432.378587011,
+    "residual_frac_of_campaign_wall": 0.21010365217888685,
+    "residual_ms": 6.430432378587011,
+    "residual_is": "campaign_token_ns \u2212 (bandwidth_floor_at_595.9 + ceremony). Positive means the incumbent is slower than the roof+ceremony floor. Contents, not uniquely split: (1) not hitting 595.9 GB/s (campaign implied 445.1 GB/s, native GPU 466.4 GB/s); (2) sequential non-weight GPU (DeltaNet/GQA/SwiGLU/RMS in the DIRTY ledger, ~9.5 ms on a 35.2 ms wall, not scaled); (3) in-register dequant ALU 1.808 ms (ledger, overlapping some of the GEMV); (4) ceremony taken from a dirtier 35.2 ms wall. Attributing this residual to dispatch alone would be the lie this model exists to stop.",
+    "implied_gb_s": {
+      "campaign_wall_over_active_budget": {
+        "value": 445.0847624648762,
+        "status": "MEASURED",
+        "unit": "GB/s",
+        "formula": "ACTIVE_BUDGET_BYTES / (30.606 ms)"
+      },
+      "native_gpu_over_active_budget": {
+        "value": 466.4480080810156,
+        "status": "MEASURED",
+        "unit": "GB/s",
+        "formula": "ACTIVE_BUDGET_BYTES / native_median_gpu_ns"
+      },
+      "pct_of_measured_roof_campaign": 74.69118349804937,
+      "pct_of_measured_roof_native_gpu": 78.27622219852586,
+      "pct_of_datasheet_819_campaign": 54.344903841865225,
+      "honest_ceiling_411p51_is_exceeded": true
+    },
+    "error_bar": {
+      "lo_ns": 24175567.62141299,
+      "mid_ns": 30606000.0,
+      "hi_ns": 37036432.37858701,
+      "lo_tok_s": 41.364075320170414,
+      "mid_tok_s": 32.673332026400054,
+      "hi_tok_s": 27.000440803206526,
+      "implied_incumbent_gb_s": 465.0758200224947,
+      "implied_from": "ACTIVE_BUDGET_BYTES / (campaign_token_ns \u2212 incumbent_ceremony_ns)",
+      "hi_reason": "no byte cut (or FLOP fell): hi = calibrated mid + incumbent independent-roof residual 6430432 ns",
+      "spread_floor_pct": 0.2,
+      "q3_alu_envelope_applied": false,
+      "q3_alu_envelope_is_optimistic_for_heavier_alu": true
+    },
+    "controls": {
+      "mlx_4bit_tps": {
+        "value": 35.51,
+        "status": "MEASURED",
+        "source": "contract LIVE control; GPU_ATTACK.json has 35.506"
+      },
+      "mlx_token_ns": {
+        "value": 28161081.385525204,
+        "status": "MEASURED",
+        "method": "1e9 / 35.51"
+      },
+      "llamacpp_q5k_tps": {
+        "value": 24.12,
+        "status": "MEASURED",
+        "source": "contract ARCHIVED; GPU_ATTACK.json llama_cpp_single_stream_tps=24.1186; artifact off disk"
+      },
+      "llamacpp_token_ns": {
+        "value": 41459369.81757877,
+        "status": "MEASURED",
+        "method": "1e9 / 24.12"
+      }
+    }
+  },
+  "boundary": {
+    "at_incumbent_964_1cb": {
+      "dispatches": 964,
+      "command_buffers": 1,
+      "ceremony_ns": 1315584.0,
+      "bytes_at_measured_roof_595p9": 783956505.6,
+      "bytes_at_honest_ceiling_411p51": 541375971.84,
+      "bytes_at_datasheet_819": 1077463296.0,
+      "reading": "At 964 dispatches / 1 CB, ceremony is 1.316 ms. A candidate streaming fewer than 784.0 MB/token (at the 595.9 GB/s roof) is dispatch-bound: cutting bytes further does not cut token_ns. Incumbent stream is 13.622 GB; this shape is bandwidth-side of the line. Ceremony + incumbent roof floor = 24.2 ms vs the 30.606 ms wall."
+    },
+    "at_q80_fused_49cb": {
+      "dispatches": 964,
+      "command_buffers": 49,
+      "ceremony_ns": 20339616.0,
+      "bytes_at_measured_roof_595p9": 12120377174.400002,
+      "bytes_at_honest_ceiling_411p51": 8369955380.160001,
+      "bytes_at_datasheet_819": 16658145504.000002,
+      "reading": "At 964 dispatches / 49 CB, ceremony is 20.340 ms. A candidate streaming fewer than 12120.4 MB/token (at the 595.9 GB/s roof) is dispatch-bound: cutting bytes further does not cut token_ns. Incumbent stream is 13.622 GB; this shape is bandwidth-side of the line. Ceremony + incumbent roof floor = 43.2 ms vs the 30.606 ms wall."
+    },
+    "at_q80_lane_98cb": {
+      "dispatches": 1155,
+      "command_buffers": 98,
+      "ceremony_ns": 39942115.55809128,
+      "bytes_at_measured_roof_595p9": 23801506661.066593,
+      "bytes_at_honest_ceiling_411p51": 16436579973.310143,
+      "bytes_at_datasheet_819": 32712592642.07676,
+      "reading": "At 1155 dispatches / 98 CB, ceremony is 39.942 ms. A candidate streaming fewer than 23801.5 MB/token (at the 595.9 GB/s roof) is dispatch-bound: cutting bytes further does not cut token_ns. Incumbent stream is 13.622 GB; this shape is dispatch-side of the line. Ceremony + incumbent roof floor = 62.8 ms vs the 30.606 ms wall."
+    },
+    "at_q80_unfused_337cb": {
+      "dispatches": 964,
+      "command_buffers": 337,
+      "ceremony_ns": 134483808.0,
+      "bytes_at_measured_roof_595p9": 80138901187.20001,
+      "bytes_at_honest_ceiling_411p51": 55341431830.08,
+      "bytes_at_datasheet_819": 110142238752.00002,
+      "reading": "At 964 dispatches / 337 CB, ceremony is 134.484 ms. A candidate streaming fewer than 80138.9 MB/token (at the 595.9 GB/s roof) is dispatch-bound: cutting bytes further does not cut token_ns. Incumbent stream is 13.622 GB; this shape is dispatch-side of the line. Ceremony + incumbent roof floor = 157.3 ms vs the 30.606 ms wall."
+    },
+    "how_to_read": "bytes_at_measured_roof_595p9 is the dispatch/bandwidth line at that shape. A candidate below the line is dispatch-bound: more compression does not win. Ceremony uses ledger encode/submit/gap, not the residual."
+  },
+  "candidates": [
+    {
+      "name": "fused_half_bytes_native_tpr64",
+      "why_this_candidate": "Halve the active stream, keep 964/1CB, fused native (recon=0). Affine-Q2 tpr64 is REACHABLE today (qwen_affine_q2_group32_matvec_geo_tpr64_tg128). Even the measured q3 1.343\u00d7 ALU envelope stays under 30.606 ms, so the model can say WIN on traffic. Quality is NULL. Q2 ALU could be heavier than q3 \u2014 that is named under cannot_predict, and is why the envelope is pessimistic relative to Q4, not relative to rANS.",
+      "family": "grouped_absmax_q4",
+      "executable_today": true,
+      "executable_today_means": "A representation is executable TODAY only if it is grouped-absmax Q4, binary\u00b1CSR, HGRAVS01 factors, PQ codebook lookup, MoE worklists, or a recurrent state op (NOETIC_KERNEL_CENSUS). Reconstruct-then-GEMM is an oracle, not a member of this list.",
+      "prediction": {
+        "inputs": {
+          "bytes_per_token": 6811132120.0,
+          "flop_per_token": 51243909120.0,
+          "dispatches_per_token": 964.0,
+          "reconstruction_cost": {
+            "dense_w_write_bytes": 0.0,
+            "dense_w_reread_bytes": 0.0,
+            "extra_dispatches": 0,
+            "extra_flops": null,
+            "extra_flops_null_reason": null,
+            "command_buffers": null,
+            "occupancy_class": "tpr64_free",
+            "reread_assumed": false,
+            "note": "tpr64 recon excess 0 ns on 32/33 variants (NOETIC_TPR64_REOPEN)"
+          },
+          "command_buffers": 1
+        },
+        "traffic_bytes_including_recon": 6811132120.0,
+        "flops_including_recon_extra": 51243909120.0,
+        "dispatches_including_recon_extra": 964.0,
+        "floors_ns": {
+          "bandwidth_at_measured_roof_595p9": 11429991.810706494,
+          "bandwidth_at_honest_ceiling_411p51": 16551559.184466964,
+          "bandwidth_at_datasheet_819": 8316400.634920635,
+          "compute_at_g143_8979_gflops": 5707084.20982292,
+          "dispatch_ceremony": 1315584.0
+        },
+        "ceremony": {
+          "encode_ns": 919250.0,
+          "submit_ns": 12084.0,
+          "gpu_gap_ns": 384250.0,
+          "total_ns": 1315584.0,
+          "source": "encode 919250 ns / 964 disp; submit 12084 ns / 1 CB; wait-minus-gpu 384250 ns / 1 CB from DIRTY_ENGINEERING QWEN38_TOKEN_NS_LEDGER.json (wall 35227917 ns, not scaled to the native 30388625 ns)"
+        },
+        "gpu_work_ns": 11429991.810706494,
+        "token_ns": 12745575.810706494,
+        "token_ms": 12.745575810706494,
+        "tok_s": 78.45859730872131,
+        "binding_term": "bandwidth",
+        "arithmetic_intensity_flop_per_byte": 7.523552357695273,
+        "ridge_flop_per_byte": 15.067964423561,
+        "on_bandwidth_side_of_ridge": true,
+        "occupancy_applied_to_point": false,
+        "occupancy_note": "Point prediction is the roofline. ALU/occupancy lives in the error bar unless occupancy_class=serial_extract.",
+        "dense_reconstruction_is_oracle": false
+      },
+      "error_bar": {
+        "lo_ns": 12745575.810706494,
+        "mid_ns": 15960792.0,
+        "hi_ns": 21434380.078372896,
+        "lo_tok_s": 78.45859730872131,
+        "mid_tok_s": 62.653532481345536,
+        "hi_tok_s": 46.65402014630651,
+        "implied_incumbent_gb_s": 465.0758200224947,
+        "implied_from": "ACTIVE_BUDGET_BYTES / (campaign_token_ns \u2212 incumbent_ceremony_ns)",
+        "hi_reason": "DENSITY_LEADER_SPEED measured_over_prediction=1.3429 on a 17.4% byte cut at the same MAC count. Applied to mid because this candidate also cuts bytes without a measured FLOP cut.",
+        "spread_floor_pct": 0.2,
+        "q3_alu_envelope_applied": true,
+        "q3_alu_envelope_is_optimistic_for_heavier_alu": true
+      },
+      "regime": "bandwidth_bound",
+      "regime_note": "traffic is above the ceremony=roof-BW line; byte cuts move the floor",
+      "boundary_at_this_shape": {
+        "dispatches": 964.0,
+        "command_buffers": 1,
+        "ceremony_ns": 1315584.0,
+        "bytes_at_measured_roof_595p9": 783956505.6,
+        "bytes_at_honest_ceiling_411p51": 541375971.84,
+        "bytes_at_datasheet_819": 1077463296.0,
+        "reading": "At 964 dispatches / 1 CB, ceremony is 1.316 ms. A candidate streaming fewer than 784.0 MB/token (at the 595.9 GB/s roof) is dispatch-bound: cutting bytes further does not cut token_ns. Incumbent stream is 13.622 GB; this shape is bandwidth-side of the line. Ceremony + incumbent roof floor = 24.2 ms vs the 30.606 ms wall."
+      },
+      "verdict_vs_incumbent": {
+        "against": "incumbent_30.606ms",
+        "beat_ns": 30606000,
+        "label": "WIN",
+        "why": "pessimistic envelope 21.434 ms < incumbent_30.606ms 30.606 ms by more than the 0.2% spread",
+        "spread_ns": 61212.0
+      },
+      "verdict_vs_mlx": {
+        "against": "mlx_4bit_35.51tps",
+        "beat_ns": 28161081.385525204,
+        "label": "WIN",
+        "why": "pessimistic envelope 21.434 ms < mlx_4bit_35.51tps 28.161 ms by more than the 0.2% spread",
+        "spread_ns": 56322.16277105041
+      },
+      "verdict_vs_llamacpp_archived": {
+        "against": "llamacpp_q5k_24.12tps_ARCHIVED",
+        "beat_ns": 41459369.81757877,
+        "label": "WIN",
+        "why": "pessimistic envelope 21.434 ms < llamacpp_q5k_24.12tps_ARCHIVED 41.459 ms by more than the 0.2% spread",
+        "spread_ns": 82918.73963515754
+      },
+      "expected_label": "WIN",
+      "matches_expected": true,
+      "quality": {
+        "value": null,
+        "status": "NULL",
+        "null_reason": "This is a traffic model. It does not predict cosine, gain, held-out gap, or coherence. MLP function distillation is NO-GO as of today (+0.4206 held-out gap vs q3 at 72% of its active bytes) \u2014 a traffic WIN on a distilled MLP would still be a quality LOSE."
+      }
+    },
+    {
+      "name": "reconstruct_then_gemm_oracle",
+      "why_this_candidate": "The labelled correctness oracle: unpack every GEMV to dense f32 (102,487,818,240 B write), reread it, +401 decode_vector dispatches. NOETIC_OPERATION_CENSUS trap_reconstruct_then_gemm. qwen_uniform_q4_decode_vector exists and is NOT on the uniform-q4 path. Production eligibility requires a native operator.",
+      "family": null,
+      "executable_today": null,
+      "executable_today_means": "A representation is executable TODAY only if it is grouped-absmax Q4, binary\u00b1CSR, HGRAVS01 factors, PQ codebook lookup, MoE worklists, or a recurrent state op (NOETIC_KERNEL_CENSUS). Reconstruct-then-GEMM is an oracle, not a member of this list.",
+      "prediction": {
+        "inputs": {
+          "bytes_per_token": 13622264240.0,
+          "flop_per_token": 51243909120.0,
+          "dispatches_per_token": 964.0,
+          "reconstruction_cost": {
+            "dense_w_write_bytes": 102487818240.0,
+            "dense_w_reread_bytes": 102487818240.0,
+            "extra_dispatches": 401,
+            "extra_flops": null,
+            "extra_flops_null_reason": "Extra dequant FLOP for a new codec is not a function of bytes. Q4 adds one scale-mul per weight on top of 2N MACs (operation census 77.16 GFLOP vs 51.24 GEMV). Q3's extra ALU was measured only as a wall-clock overprediction (1.343\u00d7), not as a FLOP count. Pass extra_flops if you have one; otherwise it stays NULL.",
+            "command_buffers": 1,
+            "occupancy_class": "unknown",
+            "reread_assumed": true,
+            "note": "oracle path; never a production implementation"
+          },
+          "command_buffers": 1
+        },
+        "traffic_bytes_including_recon": 218597900720.0,
+        "flops_including_recon_extra": 51243909120.0,
+        "dispatches_including_recon_extra": 1365.0,
+        "floors_ns": {
+          "bandwidth_at_measured_roof_595p9": 366836550.964927,
+          "bandwidth_at_honest_ceiling_411p51": 531209206.8722509,
+          "bandwidth_at_datasheet_819": 266908303.68742368,
+          "compute_at_g143_8979_gflops": 5707084.20982292,
+          "dispatch_ceremony": 1697969.1141078838
+        },
+        "ceremony": {
+          "encode_ns": 1301635.1141078838,
+          "submit_ns": 12084.0,
+          "gpu_gap_ns": 384250.0,
+          "total_ns": 1697969.1141078838,
+          "source": "encode 919250 ns / 964 disp; submit 12084 ns / 1 CB; wait-minus-gpu 384250 ns / 1 CB from DIRTY_ENGINEERING QWEN38_TOKEN_NS_LEDGER.json (wall 35227917 ns, not scaled to the native 30388625 ns)"
+        },
+        "gpu_work_ns": 366836550.964927,
+        "token_ns": 368534520.0790349,
+        "token_ms": 368.5345200790349,
+        "tok_s": 2.7134500176144765,
+        "binding_term": "bandwidth",
+        "arithmetic_intensity_flop_per_byte": 0.2344208656680461,
+        "ridge_flop_per_byte": 15.067964423561,
+        "on_bandwidth_side_of_ridge": true,
+        "occupancy_applied_to_point": false,
+        "occupancy_note": "Point prediction is the roofline. ALU/occupancy lives in the error bar unless occupancy_class=serial_extract.",
+        "dense_reconstruction_is_oracle": true
+      },
+      "error_bar": {
+        "lo_ns": 368534520.0790349,
+        "mid_ns": 471724341.82345855,
+        "hi_ns": 471724341.82345855,
+        "lo_tok_s": 2.7134500176144765,
+        "mid_tok_s": 2.1198821246630666,
+        "hi_tok_s": 2.1198821246630666,
+        "implied_incumbent_gb_s": 465.0758200224947,
+        "implied_from": "ACTIVE_BUDGET_BYTES / (campaign_token_ns \u2212 incumbent_ceremony_ns)",
+        "hi_reason": "dense-W oracle: calibrated mid already includes write+reread at incumbent-implied GB/s; ALU envelope is a rounding error on 200 GB+",
+        "spread_floor_pct": 0.2,
+        "q3_alu_envelope_applied": false,
+        "q3_alu_envelope_is_optimistic_for_heavier_alu": true
+      },
+      "regime": "bandwidth_bound",
+      "regime_note": "traffic is above the ceremony=roof-BW line; byte cuts move the floor",
+      "boundary_at_this_shape": {
+        "dispatches": 1365.0,
+        "command_buffers": 1,
+        "ceremony_ns": 1697969.1141078838,
+        "bytes_at_measured_roof_595p9": 1011819795.096888,
+        "bytes_at_honest_ceiling_411p51": 698731270.1465353,
+        "bytes_at_datasheet_819": 1390636704.454357,
+        "reading": "At 1365 dispatches / 1 CB, ceremony is 1.698 ms. A candidate streaming fewer than 1011.8 MB/token (at the 595.9 GB/s roof) is dispatch-bound: cutting bytes further does not cut token_ns. Incumbent stream is 13.622 GB; this shape is bandwidth-side of the line. Ceremony + incumbent roof floor = 24.6 ms vs the 30.606 ms wall."
+      },
+      "verdict_vs_incumbent": {
+        "against": "incumbent_30.606ms",
+        "beat_ns": 30606000,
+        "label": "LOSE",
+        "why": "optimistic roof+ceremony 368.535 ms > incumbent_30.606ms 30.606 ms by more than the 0.2% spread",
+        "spread_ns": 61212.0
+      },
+      "verdict_vs_mlx": {
+        "against": "mlx_4bit_35.51tps",
+        "beat_ns": 28161081.385525204,
+        "label": "LOSE",
+        "why": "optimistic roof+ceremony 368.535 ms > mlx_4bit_35.51tps 28.161 ms by more than the 0.2% spread",
+        "spread_ns": 56322.16277105041
+      },
+      "verdict_vs_llamacpp_archived": {
+        "against": "llamacpp_q5k_24.12tps_ARCHIVED",
+        "beat_ns": 41459369.81757877,
+        "label": "LOSE",
+        "why": "optimistic roof+ceremony 368.535 ms > llamacpp_q5k_24.12tps_ARCHIVED 41.459 ms by more than the 0.2% spread",
+        "spread_ns": 82918.73963515754
+      },
+      "expected_label": "LOSE",
+      "matches_expected": true,
+      "quality": {
+        "value": null,
+        "status": "NULL",
+        "null_reason": "This is a traffic model. It does not predict cosine, gain, held-out gap, or coherence. MLP function distillation is NO-GO as of today (+0.4206 held-out gap vs q3 at 72% of its active bytes) \u2014 a traffic WIN on a distilled MLP would still be a quality LOSE."
+      }
+    },
+    {
+      "name": "q3_class_17pct_fewer_bytes",
+      "why_this_candidate": "The backtest. compact-q3attn-r1p2-v1 moved 17.4% fewer GEMV bytes (11,244,907,853) at the same MAC count and 964/1CB. Naive BW predicted 23.976 ms GPU; measured 32.198 ms GPU (1.343\u00d7). G043 labelled it NET-LOSS. A traffic model that declared WIN here would be repeating the refuted BPW-linear projection. The envelope overlaps the incumbent, so the model must say CANNOT_TELL \u2014 and the wall clock already did.",
+      "family": "grouped_absmax_q4",
+      "executable_today": true,
+      "executable_today_means": "A representation is executable TODAY only if it is grouped-absmax Q4, binary\u00b1CSR, HGRAVS01 factors, PQ codebook lookup, MoE worklists, or a recurrent state op (NOETIC_KERNEL_CENSUS). Reconstruct-then-GEMM is an oracle, not a member of this list.",
+      "prediction": {
+        "inputs": {
+          "bytes_per_token": 11244907853.0,
+          "flop_per_token": 51243909120.0,
+          "dispatches_per_token": 964.0,
+          "reconstruction_cost": {
+            "dense_w_write_bytes": 0.0,
+            "dense_w_reread_bytes": 0.0,
+            "extra_dispatches": 0,
+            "extra_flops": null,
+            "extra_flops_null_reason": null,
+            "command_buffers": null,
+            "occupancy_class": "unknown",
+            "reread_assumed": false,
+            "note": "q3 nibble unpack; ALU/weight higher than q4, not passed as extra_flops because it was never counted, only timed"
+          },
+          "command_buffers": 1
+        },
+        "traffic_bytes_including_recon": 11244907853.0,
+        "flops_including_recon_extra": 51243909120.0,
+        "dispatches_including_recon_extra": 964.0,
+        "floors_ns": {
+          "bandwidth_at_measured_roof_595p9": 18870461.240140963,
+          "bandwidth_at_honest_ceiling_411p51": 27325964.98991519,
+          "bandwidth_at_datasheet_819": 13730046.218559219,
+          "compute_at_g143_8979_gflops": 5707084.20982292,
+          "dispatch_ceremony": 1315584.0
+        },
+        "ceremony": {
+          "encode_ns": 919250.0,
+          "submit_ns": 12084.0,
+          "gpu_gap_ns": 384250.0,
+          "total_ns": 1315584.0,
+          "source": "encode 919250 ns / 964 disp; submit 12084 ns / 1 CB; wait-minus-gpu 384250 ns / 1 CB from DIRTY_ENGINEERING QWEN38_TOKEN_NS_LEDGER.json (wall 35227917 ns, not scaled to the native 30388625 ns)"
+        },
+        "gpu_work_ns": 18870461.240140963,
+        "token_ns": 20186045.240140963,
+        "token_ms": 20.186045240140963,
+        "tok_s": 49.53917362730615,
+        "binding_term": "bandwidth",
+        "arithmetic_intensity_flop_per_byte": 4.557076837790962,
+        "ridge_flop_per_byte": 15.067964423561,
+        "on_bandwidth_side_of_ridge": true,
+        "occupancy_applied_to_point": false,
+        "occupancy_note": "Point prediction is the roofline. ALU/occupancy lives in the error bar unless occupancy_class=serial_extract.",
+        "dense_reconstruction_is_oracle": false
+      },
+      "error_bar": {
+        "lo_ns": 20186045.240140963,
+        "mid_ns": 25494239.11145281,
+        "hi_ns": 34237224.000149816,
+        "lo_tok_s": 49.53917362730615,
+        "mid_tok_s": 39.224547774433034,
+        "hi_tok_s": 29.207975506297593,
+        "implied_incumbent_gb_s": 465.0758200224947,
+        "implied_from": "ACTIVE_BUDGET_BYTES / (campaign_token_ns \u2212 incumbent_ceremony_ns)",
+        "hi_reason": "DENSITY_LEADER_SPEED measured_over_prediction=1.3429 on a 17.4% byte cut at the same MAC count. Applied to mid because this candidate also cuts bytes without a measured FLOP cut.",
+        "spread_floor_pct": 0.2,
+        "q3_alu_envelope_applied": true,
+        "q3_alu_envelope_is_optimistic_for_heavier_alu": true
+      },
+      "regime": "bandwidth_bound",
+      "regime_note": "traffic is above the ceremony=roof-BW line; byte cuts move the floor",
+      "boundary_at_this_shape": {
+        "dispatches": 964.0,
+        "command_buffers": 1,
+        "ceremony_ns": 1315584.0,
+        "bytes_at_measured_roof_595p9": 783956505.6,
+        "bytes_at_honest_ceiling_411p51": 541375971.84,
+        "bytes_at_datasheet_819": 1077463296.0,
+        "reading": "At 964 dispatches / 1 CB, ceremony is 1.316 ms. A candidate streaming fewer than 784.0 MB/token (at the 595.9 GB/s roof) is dispatch-bound: cutting bytes further does not cut token_ns. Incumbent stream is 13.622 GB; this shape is bandwidth-side of the line. Ceremony + incumbent roof floor = 24.2 ms vs the 30.606 ms wall."
+      },
+      "verdict_vs_incumbent": {
+        "against": "incumbent_30.606ms",
+        "beat_ns": 30606000,
+        "label": "CANNOT_TELL",
+        "why": "envelope [20.186, 34.237] ms overlaps incumbent_30.606ms 30.606 ms. Writing the kernel is cheaper than trusting the midpoint 25.494 ms.",
+        "spread_ns": 61212.0
+      },
+      "verdict_vs_mlx": {
+        "against": "mlx_4bit_35.51tps",
+        "beat_ns": 28161081.385525204,
+        "label": "CANNOT_TELL",
+        "why": "envelope [20.186, 34.237] ms overlaps mlx_4bit_35.51tps 28.161 ms. Writing the kernel is cheaper than trusting the midpoint 25.494 ms.",
+        "spread_ns": 56322.16277105041
+      },
+      "verdict_vs_llamacpp_archived": {
+        "against": "llamacpp_q5k_24.12tps_ARCHIVED",
+        "beat_ns": 41459369.81757877,
+        "label": "WIN",
+        "why": "pessimistic envelope 34.237 ms < llamacpp_q5k_24.12tps_ARCHIVED 41.459 ms by more than the 0.2% spread",
+        "spread_ns": 82918.73963515754
+      },
+      "expected_label": "CANNOT_TELL",
+      "matches_expected": true,
+      "quality": {
+        "value": null,
+        "status": "NULL",
+        "null_reason": "This is a traffic model. It does not predict cosine, gain, held-out gap, or coherence. MLP function distillation is NO-GO as of today (+0.4206 held-out gap vs q3 at 72% of its active bytes) \u2014 a traffic WIN on a distilled MLP would still be a quality LOSE."
+      }
+    }
+  ],
+  "cannot_predict": [
+    {
+      "what": "quality, coherence, gain, held-out gap",
+      "why": "Traffic is not fidelity. Cosine is scale-invariant (0.01*W scored 1.000000). Raw activation cosine has a null near 0.898. MLP function distillation is NO-GO (+0.4206 held-out gap vs q3 at 72% of its active bytes). A candidate can WIN on token_ns and still be dead on the organ."
+    },
+    {
+      "what": "ALU / occupancy / work geometry, unless occupancy_class is passed",
+      "why": "Q80 serial extract vs in-register was 23.7\u00d7 at unchanged codec bytes. tpr64 recon is free on 32/33 variants. q3 was 1.109\u00d7 slower at 17.4% fewer bytes. The 4-tuple does not contain threadgroup shape. Passing the same (bytes, FLOP, dispatches, recon=0) for tpr64 Q4 and 1-thread serial extract is how the last campaign transferred a 5.9\u00d7 penalty onto the wrong vehicle."
+    },
+    {
+      "what": "Q2/rANS ALU envelope beyond the q3 1.343\u00d7",
+      "why": "The hi bar uses DENSITY_LEADER's 1.343\u00d7, measured at q3. rANS decode is MORE ALU per weight than q3 nibble unpacking (same receipt, consequence_for_rans). A fused-half-bytes WIN under the q3 envelope can still lose if the actual codec is heavier. That is not in the 4-tuple unless extra_flops is measured and passed."
+    },
+    {
+      "what": "K>1 slot amortization / multi-stream",
+      "why": "GPU_ATTACK: one MLX stream at 35.506 tok/s beats every llama.cpp concurrency config. Slot topology amortises the weight sweep; this model is per-token single-stream. MLX\u00d71.38 concurrency is UNMEASURED and must not be quoted as a number."
+    },
+    {
+      "what": "cross-process contention",
+      "why": "Two model servers resident: 3.986 tok/s vs 33.47 with one. Occupancy of the 595.9 GB/s roof is not a free resource. The model assumes a clean room."
+    },
+    {
+      "what": "sharing / cross-layer bases / expert BPW without a health verdict",
+      "why": "G035 G-SHARE: shared_beats_independent=false. 223 components measured below 0.5 local BPW with ZERO healthy. GLM 0.167 expert BPW and HGRAVS01 0.13 on down_proj ONLY are named traps. Q80 storage BPW 0.6462 against ACTIVE 2.518 \u2014 a factor of ~3.9; report both or neither. A low number is not a result until paired with a health verdict."
+    },
+    {
+      "what": "synthetic activations",
+      "why": "Never evaluate on them. The campaign already paid for this."
+    },
+    {
+      "what": "a kernel that does not exist",
+      "why": "Executable today: grouped-absmax Q4, binary\u00b1CSR, HGRAVS01 factors, PQ codebook lookup, MoE worklists, recurrent state op. A new family is a kernel-writing project, not a traffic prediction. representation \u2192 reconstruct dense W \u2192 ordinary GEMM is an oracle."
+    },
+    {
+      "what": "per-CB gap linearity far from 1 and ~50\u2013100 CBs",
+      "why": "384 \u00b5s/CB from the 1-CB Qwen3.8 ledger; 367 \u00b5s/CB from Q80's 36 ms wait-minus-gpu / 98 CBs. Those two points agree. Nothing in between or beyond 337 CBs was re-timed for this model. Host expert-table bind (Q80 leftover 54\u201379 ms) is NOT in ceremony_ns."
+    },
+    {
+      "what": "Metal GPU-busy percent on the incumbent",
+      "why": "Q80 had a measured ~51% GPU idle. The Qwen3.8 native receipt exposes GPU timestamps, not an occupancy counter. geo_tpr64 occupancy in the ledger is launch-geometry derived, not a hardware counter. NULL here."
+    }
+  ],
+  "density_leader_backtest": {
+    "source": "receipts/ascent-2026-08-16/DENSITY_LEADER_SPEED.json",
+    "git_show": {
+      "found": true,
+      "measured_over_prediction": 1.3429396284578419,
+      "matches_hardcoded_1p343": true,
+      "g0_gpu": 29022249,
+      "q3_gpu": 32198249
+    },
+    "g0_gpu_ns": {
+      "value": 29022249,
+      "status": "MEASURED"
+    },
+    "q3_gpu_ns": {
+      "value": 32198249,
+      "status": "MEASURED"
+    },
+    "naive_prediction_ns": {
+      "value": 23975946.73483178,
+      "status": "MEASURED"
+    },
+    "measured_over_prediction": {
+      "value": 1.3429396284578419,
+      "status": "MEASURED"
+    },
+    "verdict_was": "NO. 1.109x G0 GPU time while moving 17.4% fewer weight bytes.",
+    "this_model_on_that_candidate": "CANNOT_TELL (required; a WIN would re-refute the refutation)",
+    "measured_q3_wall_ns": {
+      "value": 33448916,
+      "status": "MEASURED",
+      "source": "DENSITY_LEADER_SPEED.json density_leader.wall"
+    },
+    "measured_wall_inside_this_model_envelope": true
+  },
+  "executable_today": [
+    "grouped_absmax_q4",
+    "binary_pm_csr",
+    "hgravs01_factors",
+    "pq_codebook_lookup",
+    "moe_worklists",
+    "recurrent_state_op"
+  ],
+  "prior_science_respected": {
+    "storage_compression_is_not_less_work": true,
+    "source_and_executable_both_964_and_51p24_gflop": true,
+    "dispatched_reconstructs_dense_NO_on_all_38": true,
+    "g035_shared_beats_independent_false": true,
+    "q80_storage_0p6462_vs_active_2p518": true,
+    "low_bpw_without_health_is_not_a_result": true,
+    "mlp_distillation_nogo": true,
+    "never_synthetic_activations": true,
+    "cosine_blind_to_0p01W": true,
+    "tpr64_recon_free_32_of_33": true,
+    "dense_recon_is_oracle_not_production": true
+  },
+  "what_i_watched_fail": [
+    {
+      "what": "naive BPW-linear / bandwidth-only predictor",
+      "result": "ALREADY FAILED (cited, not re-run)",
+      "why": "DENSITY_LEADER_SPEED: q3 gemv 11,244,907,853 B vs G0 13,611,663,360 B (ratio 0.8261). Naive prediction 23.976 ms GPU; measured 32.198 ms GPU (1.343\u00d7). G0 wall 30.084 ms \u2192 q3 wall 33.449 ms (1.109\u00d7). The projection ms = 1.229 + (38.217-1.229)*(bpw/4.253) is the same lie. This model exists because that one failed."
+    },
+    {
+      "what": "attributing the incumbent residual to dispatch",
+      "result": "REFUSED",
+      "why": "Independent-roof residual is 6.430 ms (21.0% of wall). If that were all dispatch, the 964/1CB boundary would sit at 3.83 GB and a byte cut below that would look like a no-op. The residual also contains not-at-roof GEMV, sequential non-weight GPU, and dequant ALU. Ceremony is taken from the ledger's encode/submit/gap (1315584 ns), not from the residual."
+    },
+    {
+      "what": "HONEST_DECODE_CEILING_GB_S = 411.51 as a hard cap",
+      "result": "EXCEEDED BY THE INCUMBENT",
+      "why": "Campaign implied 445.1 GB/s; native GPU 466.4 GB/s. RUNTIME_EXPERIMENT already noted native_pct_of_honest=115%. The ceiling is conservative. The predictor uses the measured 595.9 GB/s roof as the floor and the campaign implied GB/s as the calibrated mid."
+    },
+    {
+      "what": "G143 53.79 GFLOP vs dispatched 51.24 GFLOP",
+      "result": "DISAGREE (reported, not smoothed)",
+      "why": "Paper 2N includes a full embed-table matvec the path never launches (2.54 GFLOP). Compute-floor uses 51.24 GFLOP. Using 53.79 would invent 0.28 ms of compute that does not run."
+    },
+    {
+      "what": "live 27B native re-time",
+      "result": "NOT RUN (refused)",
+      "why": "A llama-server is the live control. Two resident 27B copies measured 3.986 tok/s against 33.47 with one. TPS/token-ns used here are the supplied anchors and the sealed native receipt, not a new run."
+    },
+    {
+      "what": "baseline suite 464 passed, 1 skipped (HCLI_SWAP_CEILING_GIB=64)",
+      "result": "NOT RUN",
+      "why": "That suite lives under tools/haider/hcli/tests (DENY, not on disk). git sparse-checkout add is forbidden (sparse-checkout.lock: Operation not permitted)."
+    },
+    {
+      "what": ".lane-bootstrap/census/ (n1arch, n15neg, n16clos)",
+      "result": "NOT ON DISK",
+      "why": "Sparse checkout. git ls-tree HEAD | grep lane-bootstrap was empty. Prior science was taken from receipts/headless/NOETIC_*.json and the ascent-2026-08-16 receipts via git show, not rediscovered."
+    },
+    {
+      "what": "Q80 host expert-table bind as a ceremony term",
+      "result": "LEFT NULL",
+      "why": "Q80 leftover 54\u201379 ms of host bind is real and is why 0.79% of a 700\u2013800 GB/s ceiling is not just CB count. It is model-specific (router readback + mixed expert bind) and is not a function of the 4-tuple. A Qwen3.8 dense candidate does not pay it. A MoE candidate must pass it some other way or the model will under-predict wall."
+    },
+    {
+      "what": "32.73 tok/s vs 30.606 ms as a single number",
+      "result": "INCONSISTENT AT 0.17%",
+      "why": "1e9/32.73 = 30553009 ns; 30.606 ms = 30606000 ns. Both are campaign anchors. Wall-to-beat is the millisecond figure. Native median 30,388,625 ns / 32.907 tok/s is the more precise pair."
+    }
+  ],
+  "self_check": {
+    "has_win": true,
+    "has_lose": true,
+    "has_cannot_tell": true,
+    "all_expected_labels_match": true,
+    "incumbent_residual_stated": true,
+    "incumbent_residual_is_not_zero": true,
+    "incumbent_binding_is_bandwidth": true,
+    "dense_w_on_incumbent_is_zero": true,
+    "dispatches_964": true,
+    "q3_backtest_is_cannot_tell": true,
+    "reconstruct_is_lose": true,
+    "half_bytes_is_win": true,
+    "density_leader_hardcoded_matches_git": true,
+    "anchor_tps_ms_gap_pct_under_spread": true,
+    "incumbent_mid_recovers_campaign_wall": true,
+    "envelopes_ordered": true,
+    "q3_measured_wall_inside_envelope": true
+  },
+  "written_to": "/Users/scammermike/.claude-grok/worktrees/d4traffic-20260823-151656/receipts/headless/NOETIC_TRAFFIC_MODEL.json"
+}

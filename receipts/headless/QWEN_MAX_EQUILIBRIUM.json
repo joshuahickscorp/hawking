@@ -1,0 +1,151 @@
+{
+  "gate": "QWEN_MAX_EQUILIBRIUM",
+  "result": "PASS",
+  "generated_at": "2026-08-23T05:17:35Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "probe": "tools/headless/qwen_equilibrium_probe.py",
+  "protocol": {
+    "runtime": "spawned by HCLI's own RuntimePool, not an attached server",
+    "ordering": "alternating paired reps, interleaved rather than blocked, so page-cache and thermal drift is common-mode",
+    "warmup": "one discarded 32-token decode per run",
+    "equilibrium_rule": "the highest rung whose median aggregate tok/s beats its predecessor by more than the observed measurement spread",
+    "machine_state": "quiet: zero grok-run lanes in flight for every run below"
+  },
+  "runs": {
+    "rungs_1_2": {
+      "reps": 5,
+      "pool_slots": 2,
+      "by_rung": {
+        "1": {
+          "reps": 5,
+          "median_aggregate_tps": 23.7268,
+          "min": 23.7134,
+          "max": 23.7473,
+          "spread_pct": 0.143,
+          "scaling_vs_rung1": 1.0
+        },
+        "2": {
+          "reps": 5,
+          "median_aggregate_tps": 26.2741,
+          "min": 25.6755,
+          "max": 26.2809,
+          "spread_pct": 2.304,
+          "scaling_vs_rung1": 1.1074
+        }
+      },
+      "equilibrium": 2
+    },
+    "rungs_1_2_3": {
+      "reps": 4,
+      "pool_slots": 3,
+      "by_rung": {
+        "1": {
+          "reps": 4,
+          "median_aggregate_tps": 23.6906,
+          "min": 23.6772,
+          "max": 23.6965,
+          "spread_pct": 0.081,
+          "scaling_vs_rung1": 1.0
+        },
+        "2": {
+          "reps": 4,
+          "median_aggregate_tps": 26.1981,
+          "min": 25.59,
+          "max": 26.2005,
+          "spread_pct": 2.33,
+          "scaling_vs_rung1": 1.1058
+        },
+        "3": {
+          "reps": 4,
+          "median_aggregate_tps": 27.5725,
+          "min": 26.9171,
+          "max": 27.577,
+          "spread_pct": 2.393,
+          "scaling_vs_rung1": 1.1639
+        }
+      },
+      "equilibrium": 3
+    },
+    "ladder_1_to_5": {
+      "reps": 3,
+      "pool_slots": 5,
+      "by_rung": {
+        "1": {
+          "reps": 3,
+          "median_aggregate_tps": 22.4856,
+          "min": 22.4821,
+          "max": 22.4888,
+          "spread_pct": 0.03,
+          "scaling_vs_rung1": 1.0
+        },
+        "2": {
+          "reps": 3,
+          "median_aggregate_tps": 24.8394,
+          "min": 24.2913,
+          "max": 24.8464,
+          "spread_pct": 2.235,
+          "scaling_vs_rung1": 1.1047
+        },
+        "3": {
+          "reps": 3,
+          "median_aggregate_tps": 26.0501,
+          "min": 25.6726,
+          "max": 26.0518,
+          "spread_pct": 1.456,
+          "scaling_vs_rung1": 1.1585
+        },
+        "4": {
+          "reps": 3,
+          "median_aggregate_tps": 28.4217,
+          "min": 28.3516,
+          "max": 28.4282,
+          "spread_pct": 0.27,
+          "scaling_vs_rung1": 1.264
+        },
+        "5": {
+          "reps": 3,
+          "median_aggregate_tps": 28.2589,
+          "min": 28.1246,
+          "max": 28.3398,
+          "spread_pct": 0.762,
+          "scaling_vs_rung1": 1.2568
+        }
+      },
+      "equilibrium": 4
+    }
+  },
+  "finding": {
+    "measured_equilibrium_active_decodes": 4,
+    "ceiling_vs_single_decoder": 1.264,
+    "c5_regresses": true,
+    "detail": "On the 5-slot pool the ladder reads 22.489 / 24.839 / 26.050 / 28.422 / 28.259 tok/s aggregate for c=1..5, i.e. 1.000 / 1.105 / 1.159 / 1.264 / 1.257. Aggregate peaks at FOUR concurrent decodes and goes DOWN at five. Concurrency is a real but small lever here: four decoders buy 26% over one, not 4x."
+  },
+  "slot_count_costs_single_stream_throughput": {
+    "c1_on_a_2_slot_pool": 23.727,
+    "c1_on_a_3_slot_pool": 23.691,
+    "c1_on_a_5_slot_pool": 22.489,
+    "note": "A pool allocated for five sequences decodes a SINGLE stream about 5% slower than one allocated for two. Scaling ratios are therefore only compared within a run, never across runs, because each run's own c=1 is its baseline."
+  },
+  "reproducibility": {
+    "c1_across_the_two_2_and_3_slot_runs": [
+      23.7268,
+      23.6906
+    ],
+    "c2_across_the_two_2_and_3_slot_runs": [
+      26.2741,
+      26.1981
+    ],
+    "agreement_pct": 0.29,
+    "tightest_spread_seen_pct": 0.03,
+    "note": "Two independent runs agree to under 0.3%, and the tightest single rung spread is 0.03%. Compare the first attempt at this measurement, which was taken with ten grok lanes in flight and showed a 50% spread; it was recorded as CONTAMINATED and rejected rather than reported."
+  },
+  "contradicts_the_machine_genome": {
+    "genome_active_decode_limit": 2,
+    "genome_aggregate_scaling_vs_1": 1.1934,
+    "measured_active_decode_limit": 4,
+    "measured_scaling_at_2": 1.105,
+    "measured_scaling_at_4": 1.264,
+    "note": "~/.config/hcli/machine_genome.json understates the limit (2 vs a measured 4) and overstates what two decoders buy (1.1934 claimed vs 1.105 measured). The genome was not edited: it is the operator's qualified profile, and changing it is a separate decision."
+  },
+  "superseded": "The earlier contaminated attempt is preserved at receipts/headless/QWEN_MAX_EQUILIBRIUM.json history and was never accepted."
+}

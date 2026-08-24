@@ -1,7 +1,7 @@
 # Frankenstein Programme — Full Multi-Stage Plan
 
 **Status:** PLAN ONLY (authoritative programme doc for the 3-generation path).  
-**Seal companion:** `workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_PROGRAM_PLAN.json`  
+**Seal companion:** `hawking-experiments/frankenstein/data/FRANKENSTEIN_PROGRAM_PLAN.json`  
 **Related plans:**  
 - Stage-2 detail → `STAGE2_KIMI_STREAMING_DISTILL_PLAN.md`  
 - Memory / BPW → `RESIDENT_MEMORY_AND_BPW_PLAN.md`  
@@ -266,7 +266,7 @@ Local revision pins:
 
 ## 10. Cross-references
 
-- Fusion op seal: `workspace/campaign/evidence/models/frankenstein/FRANKENSTEIN_FUSION_OPERATION.json`  
+- Fusion op seal: `hawking-experiments/frankenstein/data/FRANKENSTEIN_FUSION_OPERATION.json`  
 - Pipeline (K3 admitted): `workspace/campaign/evidence/models/deepseek-v4/DEEPSEEK_V4_FRANKENSTEIN_PIPELINE_PLAN_K3_ADMITTED.json`  
 - Odyssey substrate caution: `workspace/campaign/governance/odyssey/program/launch/SUBSTRATE_CAPABILITY.json`  
 - Q0–Q6: `ramanujan/governance/contracts/RAMANUJAN_Q0_Q6_CONTRACTS.json`  

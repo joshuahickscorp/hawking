@@ -1,0 +1,371 @@
+{
+  "schema": "hawking.headless.consolidation.v1",
+  "status": "BLOCKED",
+  "when_utc": "2026-08-24T05:44:35Z",
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/consolidate-20260824-012805",
+  "branch": "grok/consolidate-20260824-012805",
+  "base_commit": "11258b4b5a32b7504928cebe354465701331eb05",
+  "profile": "maximum / grokdev sandbox (not gate)",
+  "git_mvs_performed": [],
+  "git_status_renames": [],
+  "blockers": [
+    {
+      "id": "GIT_DIR_UNWRITABLE",
+      "needs": "--profile gate (unsandboxed)",
+      "why": "This worktree's git dir is /Users/scammermike/Downloads/hawking/.git/worktrees/consolidate-20260824-012805 (linked worktree). grokdev Seatbelt allows writes to the worktree under ~/.claude-grok/worktrees/ but denies every write under Downloads/hawking/.git/, including index, index.lock, objects, and sparse-checkout.lock. git mv, git add, git checkout, and git sparse-checkout add all fail with Operation not permitted.",
+      "evidence": [
+        "fatal: Unable to create '/Users/scammermike/Downloads/hawking/.git/worktrees/consolidate-20260824-012805/index.lock': Operation not permitted",
+        "touch index.lock -> Operation not permitted",
+        "GIT_INDEX_FILE workaround: git add still failed 'unable to create temporary file: Operation not permitted' / 'failed to insert into database' because objects live in the common git dir"
+      ]
+    },
+    {
+      "id": "SPARSE_SOURCES_NOT_MATERIALIZED",
+      "needs": "launcher widens sparse-checkout roots (do not git sparse-checkout add here; it also needs a git-dir write)",
+      "paths": [
+        "ramanujan",
+        "workspace/superwave",
+        "workspace/campaign/evidence/models/frankenstein",
+        "workspace/campaign/config/profiles/prometheus",
+        "workspace/campaign/evidence/research/prometheus",
+        "workspace/campaign/evidence/systems/ramanujan",
+        "receipts/headless",
+        "docs",
+        "README.md"
+      ],
+      "why": "Contract forbids git sparse-checkout add in this sandbox. Six of seven source dirs exist in git (2002 files) but are ABSENT_DISK, so even a writable index would still need them checked out for git mv of the worktree files. receipts/headless is required for `pytest tools/headless` (119 failed / 15 errors were almost entirely missing receipts + sandbox/Metal)."
+    }
+  ],
+  "moves": [
+    {
+      "from": "ramanujan/",
+      "to": "hawking-experiments/ramanujan/",
+      "git_file_count": 110,
+      "on_disk": false,
+      "performed": false,
+      "skip_reason": null,
+      "safety": "LIVE PYTHON PACKAGE. lab/layout.py does `from ramanujan.layout import resolve_ramanujan_path` and is outside WRITE scope. git mv without a root shim or sys.path change breaks that import. ramanujan/layout.py REPO_ROOT = Path(__file__).parents[1] would also become hawking-experiments/ after the move and must become parents[2]."
+    },
+    {
+      "from": "workspace/superwave/",
+      "to": "hawking-experiments/superwave/",
+      "git_file_count": 439,
+      "on_disk": false,
+      "performed": false,
+      "skip_reason": "source is in git but not materialized (sparse); git mv blocked (see blockers)"
+    },
+    {
+      "from": "workspace/campaign/evidence/models/frankenstein/",
+      "to": "hawking-experiments/frankenstein/",
+      "git_file_count": 1440,
+      "on_disk": false,
+      "performed": false,
+      "skip_reason": "source is in git but not materialized (sparse); git mv blocked (see blockers)"
+    },
+    {
+      "from": "tools/prometheus/",
+      "to": "hawking-experiments/prometheus/tools/",
+      "git_file_count": 6,
+      "on_disk": true,
+      "performed": false,
+      "skip_reason": "on disk, but git mv cannot write index.lock (see blockers). After move, HERE.parents[1] / parents[2] REPO walks MUST be rewritten to parents[3] or a Cargo.toml walk."
+    },
+    {
+      "from": "workspace/campaign/config/profiles/prometheus/",
+      "to": "hawking-experiments/prometheus/config/",
+      "git_file_count": 5,
+      "on_disk": false,
+      "performed": false,
+      "skip_reason": "source is in git but not materialized (sparse); git mv blocked (see blockers)"
+    },
+    {
+      "from": "workspace/campaign/evidence/research/prometheus/",
+      "to": "hawking-experiments/prometheus/evidence/",
+      "git_file_count": 1,
+      "on_disk": false,
+      "performed": false,
+      "skip_reason": "source is in git but not materialized (sparse); git mv blocked (see blockers)"
+    },
+    {
+      "from": "workspace/campaign/evidence/systems/ramanujan/",
+      "to": "hawking-experiments/ramanujan-campaign-evidence/",
+      "git_file_count": 1,
+      "on_disk": false,
+      "performed": false,
+      "skip_reason": "source is in git but not materialized (sparse); git mv blocked (see blockers)"
+    }
+  ],
+  "path_sweep": {
+    "grep1_command": "grep -rnE '(^|[^A-Za-z_])(ramanujan|frankenstein|superwave|prometheus)(/|[\"'\"'\"'])' tools crates",
+    "grep1_hits": 276,
+    "grep1_files": 50,
+    "grep2_command": "grep -rnE '[\"'\"'\"']([^\"'\"'\"']*/)?(ramanujan|frankenstein|superwave|prometheus)(/[^\"'\"'\"']*)?[\"'\"'\"']' tools crates | grep -v hawking-experiments",
+    "grep2_hits_before_move": 231,
+    "dangling_proof": "NOT RUN AFTER A MOVE \u2014 no git mv was performed, so the old paths are still the live paths. A zero-dangling proof after a fake path-string rewrite would have been a lie.",
+    "heuristic_update_hits": 243,
+    "heuristic_leave_hits": 33,
+    "update_files": [
+      "crates/hawking-adapters/src/evidence.rs",
+      "crates/hawking-core/examples/gravity_deepseek_v4_fullseq_capture.rs",
+      "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "tools/campaign/rung_gate.py",
+      "tools/condense/glm_teacher_forced_parallelism_probe.py",
+      "tools/condense/tests/test_frankenstein_corpus_id_map.py",
+      "tools/condense/tests/test_frankenstein_direct.py",
+      "tools/condense/tests/test_restream_guard.py",
+      "tools/eval/support_halo_gate.py",
+      "tools/glm_fast_intake.py",
+      "tools/graph/extract_python.py",
+      "tools/graph/graph_model.py",
+      "tools/gravity_container.py",
+      "tools/gravity_ir_roundtrip.py",
+      "tools/gravity_seal_artifact.py",
+      "tools/gravity_verify_source.py",
+      "tools/headless/authority_census.py",
+      "tools/headless/c1sharedbasis_design.py",
+      "tools/headless/c2tensorop_design.py",
+      "tools/headless/c3lowranksparse_design.py",
+      "tools/headless/c5structtransform_design.py",
+      "tools/headless/code_entropy.py",
+      "tools/headless/code_graph.py",
+      "tools/headless/dead_code_census.py",
+      "tools/headless/namespace_plan.py",
+      "tools/headless/noetic_archaeology.py",
+      "tools/headless/noetic_deltanet_design.py",
+      "tools/headless/noetic_gain_rescore.py",
+      "tools/headless/noetic_gqa_design.py",
+      "tools/headless/noetic_negative_science.py",
+      "tools/headless/nomenclature_census.py",
+      "tools/headless/ramanujan_disband.py",
+      "tools/headless/spring_clean_census.py",
+      "tools/headless/startup_census.py",
+      "tools/headless/subprocess_census.py",
+      "tools/loc/hawking_loc.py",
+      "tools/matryoshka_pack.py",
+      "tools/odyssey/contracts.py",
+      "tools/prometheus/architecture.py",
+      "tools/prometheus/math_pass1_cartography.py",
+      "tools/prometheus/math_pass2_allocation.py",
+      "tools/prometheus/math_pass3_pack.py",
+      "tools/prometheus/prometheus.py",
+      "tools/prometheus/test_prometheus.py",
+      "tools/qwen38_sub15_pack.py",
+      "tools/sovereignty/sovereignty.py",
+      "tools/verify/test_gate_runners_exist.py"
+    ],
+    "update_construction_gotchas": [
+      "tools/qwen38_sub15_pack.py ~956: Path(__file__).parents[1]/'workspace'/'superwave'/...  (not a single literal)",
+      "tools/odyssey/contracts.py and tools/prometheus/*.py: PROFILES_ROOT / 'prometheus' \u2014 PROFILES_ROOT is lab.layout CONFIG_ROOT/profiles = workspace/campaign/config/profiles. After the move, call sites must use repo/'hawking-experiments/prometheus/config' because lab/layout.py is outside WRITE and will keep returning the old location.",
+      "tools/prometheus math_pass2/3: evidence_dir('prometheus') likewise stays pointed at workspace/campaign/evidence/research/prometheus via lab.layout EVIDENCE_AREAS. Replace those call sites with an explicit hawking-experiments/prometheus/evidence path.",
+      "crates/hawking-adapters/src/evidence.rs:148-149 maps campaign names 'ramanujan'->systems and 'prometheus'->research, i.e. workspace/campaign/evidence/{systems,research}/{name}. That resolver must special-case the two moved campaigns to hawking-experiments/.",
+      "tools/prometheus/{architecture,math_pass*,test_prometheus,prometheus}.py: REPO = HERE.parents[1] or parents[2] assumes tools/prometheus depth. After git mv to hawking-experiments/prometheus/tools the repo root is parents[3]. Walk up for Cargo.toml rather than a magic parent count.",
+      "ramanujan/layout.py REPO_ROOT = Path(__file__).parents[1] becomes wrong after the move (would be hawking-experiments). Must be parents[2]. This file lives inside the moved tree so it is in WRITE once the dir is under hawking-experiments/.",
+      "Python imports `from ramanujan.layout import ...` / `from ramanujan.restream_guard import ...` in lab/layout.py (outside WRITE) and tools/condense/glm52_range_stream_executor.py plus several condense tests. git mv of ramanujan/ without a remaining importable package at repo-root ramanujan/ or hawking-experiments on sys.path is a runtime break. Partial consolidation: skip ramanujan/ OR leave a 2-file shim at ./ramanujan that extends __path__ to hawking-experiments/ramanujan."
+    ],
+    "leave_justified": [
+      {
+        "file": "tools/condense/deepseek_v4_telegram_monitor.py",
+        "lines": [
+          29,
+          34,
+          39
+        ],
+        "why": "Path.home()/Desktop/hawking-frankenstein and proto-frankenstein under it \u2014 external machine path, not a repo dir that moved"
+      },
+      {
+        "file": "tools/condense/deepseek_v4_telegram_monitor.py",
+        "lines": [
+          93,
+          123
+        ],
+        "why": "JSON/dict key 'frankenstein', not a filesystem path"
+      },
+      {
+        "file": "tools/condense/tests/test_frankenstein_v0_seal.py",
+        "lines": [
+          283
+        ],
+        "why": "tmp_path / 'proto-frankenstein' test fixture name, not campaign evidence"
+      },
+      {
+        "file": "tools/condense/tests/test_frankenstein_corpus_align.py",
+        "lines": [
+          86
+        ],
+        "why": "substring test that corpus sources mention 'ramanujan'; not a repo path"
+      },
+      {
+        "file": "tools/headless/nomenclature_census.py",
+        "lines": [
+          396,
+          432,
+          433,
+          536,
+          537,
+          707
+        ],
+        "why": "content_ere word-boundary lists and path_regex of the campaign name; regex r'frankenstein' still matches hawking-experiments/frankenstein"
+      },
+      {
+        "file": "tools/headless/nomenclature_census.py",
+        "lines": [
+          397,
+          434,
+          538,
+          708
+        ],
+        "why": "schema_prefixes hawking.{ramanujan,frankenstein,prometheus,superwave}.* \u2014 receipt schema ids, not paths"
+      },
+      {
+        "file": "tools/headless/authority_census.py",
+        "lines": [
+          931,
+          1686,
+          2266
+        ],
+        "why": "census plane label 'ramanujan' / human description, not a filesystem path"
+      },
+      {
+        "file": "crates/hawking-core/examples/gravity_deepseek_v4_fullseq_capture.rs",
+        "lines": [
+          85
+        ],
+        "why": "TRACE_SCHEMA hawking.frankenstein.paired_functional_trace.v1 is a schema id (the three corpus path strings on 91/93/96 ARE updates)"
+      },
+      {
+        "file": "crates/hawking-context/src/skill_foundry.rs",
+        "lines": [
+          16
+        ],
+        "why": "comment 'frankenstein evidence are out of scope' \u2014 English, not a path (this file did not even hit grep1's / or quote rule)"
+      }
+    ],
+    "also_update_directory_tokens": [
+      {
+        "file": "tools/graph/extract_python.py",
+        "line": 21,
+        "why": "roots list includes 'ramanujan' as a directory to walk"
+      },
+      {
+        "file": "tools/headless/dead_code_census.py",
+        "line": 1402,
+        "why": "directory token in a path list"
+      },
+      {
+        "file": "tools/headless/noetic_gqa_design.py",
+        "line": 1372,
+        "why": "deny list prefix 'ramanujan' will not match hawking-experiments/ramanujan"
+      },
+      {
+        "file": "tools/headless/noetic_deltanet_design.py",
+        "line": 1732,
+        "why": "deny list prefix"
+      },
+      {
+        "file": "tools/headless/c1sharedbasis_design.py",
+        "line": 1287,
+        "why": "deny list prefix"
+      },
+      {
+        "file": "tools/headless/c2tensorop_design.py",
+        "line": 1308,
+        "why": "deny list prefix"
+      },
+      {
+        "file": "tools/headless/c3lowranksparse_design.py",
+        "line": 1426,
+        "why": "for prefix in (..., 'ramanujan')"
+      },
+      {
+        "file": "tools/headless/startup_census.py",
+        "line": 1239,
+        "why": "directory token"
+      },
+      {
+        "file": "tools/headless/subprocess_census.py",
+        "line": 1833,
+        "why": "directory token"
+      },
+      {
+        "file": "tools/headless/namespace_plan.py",
+        "lines": [
+          1448,
+          1643
+        ],
+        "why": "directory token"
+      },
+      {
+        "file": "tools/headless/ramanujan_disband.py",
+        "lines": [
+          220,
+          234,
+          1395,
+          1587,
+          1606
+        ],
+        "why": "git porcelain path argument 'ramanujan' and receipt root name"
+      },
+      {
+        "file": "tools/headless/authority_census.py",
+        "line": 2065,
+        "why": "directory token in a list (plane labels on 931/1686 stay)"
+      }
+    ],
+    "out_of_write_scope_but_dangling": [
+      {
+        "file": "README.md",
+        "line": 140,
+        "text": "ramanujan/governance/boundary/HAWKING_COMPLETION_GATE.json markdown link. WRITE list is hawking-experiments tools crates workspace docs \u2014 README.md is none of those. Recorded, not edited."
+      },
+      {
+        "file": "lab/layout.py",
+        "why": "EVIDENCE_AREAS maps ramanujan->systems and prometheus->research; resolve_workspace_path('ramanujan/...') imports ramanujan.layout. Outside WRITE."
+      }
+    ],
+    "toml_json_sh_hits_in_tools_crates": [],
+    "rust_mod_use_hits": []
+  },
+  "verify": {
+    "cargo": {
+      "command": "CARGO_TARGET_DIR=workspace/ops/build/rust cargo build --profile release-fast -p hawking-core",
+      "exit": 0,
+      "finished": "Finished `release-fast` profile [optimized] target(s) in 42.85s",
+      "note": "9 existing hawking-core warnings, none introduced here. Tree had no code edits."
+    },
+    "pytest": {
+      "command": "python3 -m pytest tools/headless -q --tb=line",
+      "exit": 1,
+      "summary": "119 failed, 254 passed, 4 skipped, 15 errors in 365.11s",
+      "cause": "sparse hole of receipts/headless (FileNotFound on NO_CANDIDATE_YET_BEATS_PARENT, ONEBIT_FAMILIES, GLOBAL_ALLOCATOR, ORGAN_FRONTIERS, NOETIC_PARENT_A, NOETIC_SCOREBOARD, COMPOSITION_LADDER, \u2026), plus sandbox PermissionError on `ps`, plus Metal probe empty, plus an inner cargo build of ascension_qwen38_noetic_multisession rc=101. Not caused by consolidation (no path strings were rewritten).",
+      "receipts_side_effect": "The suite rewrote 10 tracked receipts/headless JSON files and created _PRODUCTION_BENCH_workunits.json. Those bytes were restored from HEAD blobs (git checkout is impossible without index.lock). git status is clean. This is why receipts/ must be materialized on relaunch AND why the suite should not be run until then."
+    },
+    "git_status_after": "## grok/consolidate-20260824-012805",
+    "no_path_rewrites": true
+  },
+  "relaunch": {
+    "profile": "gate",
+    "sparse_roots": [
+      "ramanujan",
+      "workspace/superwave",
+      "workspace/campaign/evidence/models/frankenstein",
+      "workspace/campaign/config/profiles/prometheus",
+      "workspace/campaign/evidence/research/prometheus",
+      "workspace/campaign/evidence/systems/ramanujan",
+      "receipts/headless",
+      "docs",
+      "tools",
+      "crates",
+      "hawking-experiments"
+    ],
+    "git_mv_plan": [
+      "git mv ramanujan hawking-experiments/ramanujan   # ONLY with a shim or skip; see safety",
+      "git mv workspace/superwave hawking-experiments/superwave",
+      "git mv workspace/campaign/evidence/models/frankenstein hawking-experiments/frankenstein",
+      "mkdir -p hawking-experiments/prometheus && git mv tools/prometheus hawking-experiments/prometheus/tools",
+      "git mv workspace/campaign/config/profiles/prometheus hawking-experiments/prometheus/config",
+      "git mv workspace/campaign/evidence/research/prometheus hawking-experiments/prometheus/evidence",
+      "git mv workspace/campaign/evidence/systems/ramanujan hawking-experiments/ramanujan-campaign-evidence"
+    ],
+    "then": "rewrite the UPDATE path strings listed above; fix prometheus REPO parent walks; special-case evidence.rs; do not use evidence_dir('prometheus')/PROFILES_ROOT/'prometheus'; run both greps; cargo build; pytest; write this receipt for real with git_mvs_performed and dangling_proof."
+  }
+}

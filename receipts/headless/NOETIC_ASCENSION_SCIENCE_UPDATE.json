@@ -1,0 +1,28 @@
+{
+  "schema": "hawking.headless.noetic_ascension_science_update.v1",
+  "generated_at": "2026-08-23T23:02:48Z",
+  "git_head": "e2669b3b6dedd0df652bc498c73bde248518068e",
+  "updated_by": "HCLI AgentOS WorkUnit science.update",
+  "gate": "REJECTED",
+  "verdict": "NO_CANDIDATE_YET_BEATS_PARENT",
+  "did_not_promote": true,
+  "strongest_candidate_still": "mix_all_mlp_hgravu01_q3_g64",
+  "blocker_id": "DENSITY_IS_NOT_THE_BINDING_CONSTRAINT",
+  "blocker_reading": "44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound.",
+  "next_family": {
+    "family": "non-matvec operator that survives composition",
+    "why": "Every candidate so far is a grouped-code matvec \u2014 the incumbent's own operator, narrower. S006 \u00a71 is explicit that Noetic is not better quantization. The next family must change the OPERATOR, not the code width, and the binding constraint to attack is DISPATCH COUNT, not bytes.",
+    "evidence_that_narrows_it": [
+      "Sign codes survive at 1.0156 bpw where pure low-rank dies at 2.0706 (NOETIC_COMPOSITION.json): operator class beats bit count.",
+      "Matched-bit low-rank carries 2.93x flat-q3 error (DENSE_SUBBIT_TRANSFER) and 4.39x (DOCTOR_V2_PRESCRIPTION): naive factorization is refuted on dense.",
+      "Sharing is refuted: G035 shared_beats_independent=false, Q80 experts mutually orthogonal at cosine 0.004.",
+      "Whole-model uniform sub-2-bit fails at 1.85 bpw and survives at 2.25 (NOETIC_COMPOSITION_WHOLEMODEL_*): the cliff is sharp and sits in between."
+    ],
+    "reopen_condition": "A representation whose executable reduces DISPATCHES per token, or fuses operators so the 964-dispatch graph shrinks, rather than one that only reduces bytes."
+  },
+  "cites": [
+    "receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+    "receipts/headless/NOETIC_ASCENSION_LOOP.json"
+  ],
+  "workspace_gate_artifact": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/noetic_ascension_ntnyenom/ws/steps/gate.reject.json"
+}

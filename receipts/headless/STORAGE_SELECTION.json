@@ -1,0 +1,626 @@
+{
+ "schema": "hawking.headless.storage_selection.v1",
+ "generated_at": "2026-08-22T23:26:59Z",
+ "policy": "select never deletes. It ranks and refuses. --execute prints commands for a human or a supervised WorkUnit to run.",
+ "why_conservative": "G28_STORAGE_RECLAIM.json listed the 51 GB bf16 SOURCE patient and the champion 3.3448 BPW artifacts on an explicit KEEP_LIST, and they were reclaimed anyway four days later. runs/ is gitignored so the deletion left no git trace. A KEEP_LIST in a receipt is a note; this module is the mechanism.",
+ "disk_free_gib": 109.2,
+ "ledger_total_gib": 458.364,
+ "by_class": {
+  "KEEP_ACTIVE_PARENT": {
+   "count": 25,
+   "gib": 98.983
+  },
+  "UNKNOWN_DO_NOT_DELETE": {
+   "count": 64,
+   "gib": 269.424
+  },
+  "REDOWNLOADABLE": {
+   "count": 21,
+   "gib": 89.943
+  }
+ },
+ "selection": {
+  "need_gib": 20.0,
+  "selected_gib": 23.27,
+  "selected": [
+   {
+    "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/blobs/db83e896b3d75f4bc51f621ae90ad61e8f6f7901f49a06b5c40348b839057206",
+    "size_gib": 4.655,
+    "classification": "REDOWNLOADABLE",
+    "hf_repo_id": "moonshotai/Kimi-VL-A3B-Instruct",
+    "atime": "2026-08-19T23:10:38Z",
+    "score": 1.2857,
+    "gib": 4.655,
+    "regen_hours": 0.09,
+    "uniqueness": 0.0,
+    "reuse_probability": 0.7
+   },
+   {
+    "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/blobs/8f7eb3fc5c12481fd1a81d2708fa4a299ff4c207a5dbafb5b8bef25ab9fd8b23",
+    "size_gib": 4.653,
+    "classification": "REDOWNLOADABLE",
+    "hf_repo_id": "moonshotai/Kimi-VL-A3B-Instruct",
+    "atime": "2026-08-19T05:05:34Z",
+    "score": 1.2852,
+    "gib": 4.653,
+    "regen_hours": 0.09,
+    "uniqueness": 0.0,
+    "reuse_probability": 0.7
+   },
+   {
+    "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/blobs/b9ba98f01e22eea43da8cfbf6f09ff0857616cd9e1df4603a735c111755109ef",
+    "size_gib": 4.653,
+    "classification": "REDOWNLOADABLE",
+    "hf_repo_id": "moonshotai/Kimi-VL-A3B-Instruct",
+    "atime": "2026-08-19T23:10:39Z",
+    "score": 1.2852,
+    "gib": 4.653,
+    "regen_hours": 0.09,
+    "uniqueness": 0.0,
+    "reuse_probability": 0.7
+   },
+   {
+    "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/blobs/abed41982a3f9c7d05f69bb560dad7bcb93cfa764c77a2b59127f35dc787983c",
+    "size_gib": 4.653,
+    "classification": "REDOWNLOADABLE",
+    "hf_repo_id": "moonshotai/Kimi-VL-A3B-Instruct",
+    "atime": "2026-08-19T05:05:34Z",
+    "score": 1.2852,
+    "gib": 4.653,
+    "regen_hours": 0.09,
+    "uniqueness": 0.0,
+    "reuse_probability": 0.7
+   },
+   {
+    "path": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/blobs/45ecd00decdad65e7d3f494028ed0c79d0cd56f145adae077ffa78b5b8ff95c0",
+    "size_gib": 4.652,
+    "classification": "REDOWNLOADABLE",
+    "hf_repo_id": "moonshotai/Kimi-VL-A3B-Instruct",
+    "atime": "2026-08-19T23:10:39Z",
+    "score": 1.2849,
+    "gib": 4.652,
+    "regen_hours": 0.09,
+    "uniqueness": 0.0,
+    "reuse_probability": 0.7
+   }
+  ],
+  "satisfied": true,
+  "considered": 21,
+  "refused": [
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 18.194,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00046-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 6.674,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit/model-00003-of-00003.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 4.989,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit/model-00002-of-00003.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 4.986,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit/model-00002-of-00003.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 4.986,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit/model-00001-of-00003.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 4.976,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit/model-00001-of-00003.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 4.962,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00010-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00007-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00008-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00011-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00009-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00006-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00005-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00012-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00004-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00003-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00002-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.655,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00001-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.654,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00047-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.424,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00031-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00034-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00042-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00014-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00011-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00029-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00026-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00023-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00043-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00030-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00035-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00027-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00022-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00015-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00028-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00013-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00016-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00019-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00021-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00024-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00036-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00033-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00045-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00039-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00040-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00020-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00018-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00025-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00012-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00017-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00044-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00038-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00041-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00037-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00032-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00009-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00003-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00006-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00002-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00007-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00008-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00010-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00004-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00005-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 4.361,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit/model-00003-of-00003.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 4.145,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00004-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.715,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00016-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.706,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00012-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.706,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00014-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.706,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00006-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.706,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00010-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.706,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00008-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.706,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00001-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.694,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00018-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 3.159,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00002-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 2.834,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/glm-4.5-air/bf16/model-00001-of-00047.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 2.766,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00003-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 2.368,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/.ollama/models/blobs/sha256-3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 2.326,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00013-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 1.964,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00017-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 1.964,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00011-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 1.964,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00009-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 1.964,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00015-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 1.964,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00007-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 1.964,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00005-of-00018.safetensors",
+    "classification": "KEEP_ACTIVE_PARENT",
+    "gib": 1.955,
+    "reason": "classification KEEP_ACTIVE_PARENT is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/.ollama/models/blobs/sha256-5ee4f07cdb9beadbbb293e85803c569b01bd37ed059d2715faa7bb405f31caa6",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 1.797,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/ckpt/grouped_k4_stable.pt",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 1.409,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/.ollama/models/blobs/sha256-3d0b790534fe4b79525fc3692950408dca41171676ed7e21db57af5c65ef6ab6",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 1.266,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   },
+   {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen3-30b-a3b/bf16/model-00013-of-00013.safetensors",
+    "classification": "UNKNOWN_DO_NOT_DELETE",
+    "gib": 1.019,
+    "reason": "classification UNKNOWN_DO_NOT_DELETE is a \u00a78 never-delete class"
+   }
+  ]
+ }
+}

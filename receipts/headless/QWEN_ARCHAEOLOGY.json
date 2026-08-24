@@ -1,0 +1,129 @@
+{
+ "schema": "hawking.headless.qwen_archaeology.v1",
+ "obligation": "G016 \u2014 recover the strongest historical Qwen3.8 realization exactly, or prove it unrecoverable.",
+ "generated_at": "2026-08-22T23:22:58Z",
+ "the_hint_being_chased": "directive section 9: 'historical hints of a substantially stronger native/runtime result near ~33.45 ms/token GPU, ~29.9 tok/s'",
+ "RESOLVED": true,
+ "what_the_hint_was": {
+  "source_receipt": "receipts/ascent-2026-08-18/GROUND_TRUTH_TPS.json (recovery tree)",
+  "session": "f5169750",
+  "date": "2026-08-18",
+  "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+  "commit": "3a526bc8e755876e7a9ce44f5c132e66472abc18",
+  "lane_witness": "no ascension/genesis-resident workers before or after each run (GPU lane owned)",
+  "runs": {
+   "uniform-q4-v1": {
+    "complete_bpw": 4.256,
+    "artifact_on_disk_bytes": 14308518399,
+    "new_tokens": 128,
+    "decode_steps": 127,
+    "median_gpu_ns_per_token": 29040000,
+    "gpu_only_tps": 34.44,
+    "steady_decode_wall_ns_per_token": 30213004,
+    "complete_wall_tps": 33.1,
+    "host_overhead_ms_per_token": 0.3,
+    "fallbacks": 0,
+    "dense_w_materialized": 0,
+    "prefill_wall_ns": 820800167,
+    "prefill_prompt_tokens": 25,
+    "prefill_ms_per_prompt_token": 32.8,
+    "note": "coherent long output (transformer explanation), on-topic and correct"
+   },
+   "mixed-q3mlp-q3attn-v1": {
+    "complete_bpw_declared": 3.3448,
+    "artifact_on_disk_bytes": 16904346694,
+    "on_disk_bpw": 5.0281,
+    "uncounted_bytes_vs_report": 5659222861,
+    "new_tokens": 8,
+    "median_gpu_ns_per_token": 31522083,
+    "gpu_only_tps": 31.72,
+    "steady_decode_wall_ns_per_token": 33020994,
+    "complete_wall_tps": 30.28,
+    "fallbacks": 0,
+    "dense_w_materialized": 0
+   },
+   "c-q3r1p22": {
+    "complete_bpw": 3.3448,
+    "artifact_on_disk_bytes": 11245158443,
+    "new_tokens": 8,
+    "median_gpu_ns_per_token": 31417750,
+    "gpu_only_tps": 31.83,
+    "steady_decode_wall_ns_per_token": 32840910,
+    "complete_wall_tps": 30.45,
+    "fallbacks": 0,
+    "dense_w_materialized": 0,
+    "note": "different (cleaner) tokens than mixed-q3mlp despite byte-identical payload -> r is a decode-time fidelity knob in the catalog"
+   }
+  },
+  "reading": "The 33.45 ms/token figure corresponds to mixed-q3mlp-q3attn-v1 at 33.02 ms/token steady decode wall (30.28 complete_wall_tps) and c-q3r1p22 at 32.84 ms/token (30.45 tok/s). The strongest COHERENT run recorded is uniform-q4-v1: 4.2560 complete BPW, 29.04 ms/token GPU, 34.44 gpu_only_tps, 33.10 complete_wall_tps, 0 fallbacks, 0 dense_w_materialized, and a noted coherent long output."
+ },
+ "strongest_historical_realizations": [
+  {
+   "name": "external MLX affine2 2-bit",
+   "tps": 37.7,
+   "source": "receipts/ascent-2026-08-18/BF16_VS_2BIT_DOCTOR.json",
+   "note": "fastest number in the whole 2026-08-18 corpus"
+  },
+  {
+   "name": "native Rust/Metal uniform-q4-v1",
+   "tps": 33.1,
+   "bpw": 4.256,
+   "ms_per_token": 30.213,
+   "artifact_bytes": 14308518399,
+   "note": "coherent long output; the strongest NATIVE result"
+  },
+  {
+   "name": "native affine-2bit NX decode",
+   "tps": 31.5488,
+   "source": "receipts/ascent-2026-08-18/G24_NATIVE_DECODE.json",
+   "decisive_finding": "Native affine-2bit = 31.5 TPS vs external mlx = 37.7 TPS on the SAME representation, and native affine-2bit (10.1GB) ~= our q3 (11.7GB, 30 TPS). PROVEN END-TO-END: the external's ~1.2x speed advantage is RUNTIME/KERNEL efficiency (mlx affine2 GEMV + dispatch/fusion), NOT the representation. Our runtime is not bandwidth-limited the way fewer bytes would need -- kernel/dispatch efficiency dominates."
+  }
+ ],
+ "recoverability": {
+  "binary": {
+   "path": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+   "on_disk": false,
+   "why": "workspace/ops/build was cleared by the odyssey driver's reclaim_safe",
+   "rebuildable": true,
+   "source_present": "crates/hawking-core/examples/ascension_qwen38_hybrid_greedy.rs exists in both trees"
+  },
+  "artifacts": {
+   "path": "workspace/campaign/records/runs/qwen38-27b/",
+   "on_disk": false,
+   "why": "Named on the 2026-08-18 G28_STORAGE_RECLAIM KEEP_LIST (including 'bf16 (51 GB, SOURCE patient)' and the champion 3.3448 BPW artifacts) and gone anyway. The path is gitignored (`runs/`), so the bytes had no version control and their deletion left no git trace.",
+   "reproducible": true,
+   "from": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+   "cost": "re-download plus a re-pack; the pack step was measured at ~470 s per candidate"
+  },
+  "verdict": "RECOVERABLE BY REPRODUCTION, NOT PRESENT. Every measurement, hash, command line and finding survives in receipts/; only the weight bytes and the compiled binary are gone, and both are reproducible from sources that still exist."
+ },
+ "the_true_P0_parent": {
+  "repo": "huihui-ai/Huihui-Qwen3.8-27B-abliterated",
+  "steer": "S001",
+  "local": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+  "bytes": 55563006216,
+  "gib": 51.75,
+  "shards": "18/18 present",
+  "arch": "Qwen3_5ForConditionalGeneration (dense, 28B params, base Qwen/Qwen3.8-27B)",
+  "why": "It is the direct parent of the model in production: the Q5_K GGUF that HCLI runs is a quantisation of this repo. PocketAiHub/Qwen3.8-27B-Abliterated-MLX, used by the 2026-08-18 campaign, is a DIFFERENT abliteration (layers 24-63 vs first-15-retained) and therefore a different model."
+ },
+ "measured_today_for_comparison": {
+  "note": "Today's numbers are on the Q5_K GGUF and a lineage-matched MLX 4-bit, both huihui-ai. They are NOT directly comparable to the 2026-08-18 native-runtime numbers, which were a different artifact family at different BPW on a different runtime. Recorded here so the gap is visible, not so the numbers are equated.",
+  "llama_cpp_q5k_tps": 24.048867298350245,
+  "llama_cpp_gib": 18.19,
+  "mlx_4bit_tps": 35.513,
+  "mlx_4bit_gib": 14.11,
+  "historical_native_q4_tps": 33.1,
+  "historical_external_mlx_tps": 37.7,
+  "reading": "Today's MLX 4-bit at 35.51 tok/s sits between the historical native q4 (33.10) and the historical external MLX affine-2bit (37.7), which is where a 4.5 BPW MLX artifact should sit. The bootstrap llama.cpp Q5_K at 24.05 is the outlier \u2014 it is the slowest realization of this model family measured on this machine, and it is what production has been running."
+ },
+ "bandwidth_wall_carried_forward": {
+  "source": "receipts/ascent-2026-08-18/PHYSICS_BANDWIDTH_WALL.json",
+  "claim": "Dense full-activation single-stream decode at the 3.3448 BPW coherent floor is bandwidth-walled at ~70 TPS (M3 Ultra peak) / ~40 TPS (current effective). 100 TPS is NOT reachable by kernel tuning alone at coherent density.",
+  "levers_ranked": [
+   "close bandwidth gap 471->819 GB/s (kernel/dispatch efficiency): 34.5 -> up to 60 TPS dense",
+   "activation sparsity in SwiGLU MLP (67% of active bytes): skip near-zero gated neurons",
+   "multi-token amortization G11/G12: only path to break the per-token weight-sweep wall for 100 TPS"
+  ]
+ }
+}

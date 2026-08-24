@@ -1,0 +1,65 @@
+{
+  "gate": "HCLI_REAL_ULTRAGOAL_CONTEXT_PREFLIGHT",
+  "result": "PASS",
+  "generated_at": "2026-08-23T04:32:15Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "subject": {
+    "file": "/Users/scammermike/.claude/ultragoal/hawking-headless-v3/ultragoal-directive.md",
+    "sha256": "7a08e5a130ef57407be7c1e87afaf415d90fd9677795d9416ed8863e01b542bb",
+    "chars": 17459,
+    "exact_tokens_measured_earlier": 4118,
+    "exact_token_note": "counted against the real model via llama-server /tokenize while that server was up"
+  },
+  "authority_preflight": {
+    "n_parallel_3_no_demand": {
+      "total_ctx": 32768,
+      "per_request_ctx": 11008,
+      "usable_input_tokens": 2816,
+      "fits": false,
+      "shortfall": 3006
+    },
+    "n_parallel_1": {
+      "total_ctx": 32768,
+      "per_request_ctx": 32768,
+      "usable_input_tokens": 24576,
+      "fits": true,
+      "shortfall": 0
+    },
+    "demand_aware_n_parallel_3": {
+      "total_ctx": 98304,
+      "per_request_ctx": 32768,
+      "source": "discovered:gguf",
+      "model_ceiling": 262144,
+      "fits": true,
+      "meaning": "given the demand, the authority RAISES the allocation to 3 x 32768 rather than truncating the goal"
+    }
+  },
+  "canonical_path_to_the_wire": {
+    "method": "Engine._post_completion replaced with a capture-and-stop; _call_model driven with the real directive",
+    "reached_wire": true,
+    "endpoint": "http://127.0.0.1:18765/v1/chat/completions",
+    "system_chars": 1037,
+    "user_chars": 17491,
+    "directive_fully_present_no_truncation": true,
+    "prompt_tokens_est": 6178,
+    "max_tokens": 8192,
+    "max_tokens_source": "derived",
+    "evidence_char_budget": 73728,
+    "evidence_files_inlined": 0
+  },
+  "contrast_with_the_original_failure": {
+    "before": {
+      "prompt_tokens": 23532,
+      "of_which_evidence": 17952,
+      "per_request_ctx": 11008,
+      "outcome": "llama-server HTTP 400"
+    },
+    "after": {
+      "prompt_tokens_est": 6178,
+      "of_which_evidence": 0,
+      "per_request_ctx": 32768,
+      "outcome": "passes preflight, reaches the wire untruncated"
+    }
+  },
+  "not_claimed": "This proves ingress and preflight, not inference. A real completion of a >24K-token root request through the canonical HCLI path is G006 and is still open; the runtime capability itself is already evidenced at receipts/headless/LONG_CONTEXT_RUNTIME_CAPABILITY.json (29982 prompt tokens, 4.62s, correct answer) against the original server."
+}

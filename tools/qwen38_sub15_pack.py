@@ -86,6 +86,7 @@ CODEC_RESIDUAL = 1
 CODEC_HGRAVS01 = 2
 CODEC_UNIFORM4 = 3
 CODEC_F32 = 4
+CODEC_AFFINE = 5
 ORGAN_GATE = 0
 ORGAN_UP = 1
 ORGAN_DOWN = 2
@@ -156,6 +157,30 @@ def decode_mixed_payload(codec: int, payload: bytes) -> np.ndarray:
         from lab.operators.ascension_dual_gravity_worker import _decode_uniform_codec
 
         return np.ascontiguousarray(_decode_uniform_codec(payload), dtype=np.float32)
+    if codec == CODEC_AFFINE:
+        header, body = _parse_container(payload, expected_magic=b"HGRAVF01")
+        rows, cols = [int(x) for x in header["shape"]]
+        groups = int(header["groups"])
+        scale_bytes = int(header["scale_bytes"])
+        bias_bytes = int(header["bias_bytes"])
+        scales = np.frombuffer(body[:scale_bytes], dtype="<f2", count=groups).astype(
+            np.float32
+        )
+        biases = np.frombuffer(
+            body[scale_bytes : scale_bytes + bias_bytes], dtype="<f2", count=groups
+        ).astype(np.float32)
+        codes = np.frombuffer(body[scale_bytes + bias_bytes :], dtype=np.uint8)
+        out = np.empty((rows, cols), dtype=np.float32)
+        gpr = cols // 32
+        for row in range(rows):
+            for col in range(cols):
+                group = row * gpr + col // 32
+                element = row * cols + col
+                bit0 = element * 2
+                byte = int(codes[bit0 >> 3])
+                q = (byte >> (bit0 & 7)) & 3
+                out[row, col] = float(q) * scales[group] + biases[group]
+        return out
     raise PackError(f"unknown mixed codec {codec}")
 
 

@@ -1,0 +1,20 @@
+=== BEFORE ===
+2026-08-22T22:19:09Z
+--- launchctl hawking ---
+-	78	com.hawking.glm52.readiness-gate
+-	2	com.hawking.odyssey-ready-finalize
+-	78	com.hawking.glm52.safe-to-leave
+1685	0	com.hawking.odyssey
+-	127	com.hawking.glm52.math-prometheus-pass1
+-	75	com.hawking.doctorv5.telegram
+-	1	com.hawking.genesis
+-	2	com.hawking.doctorv5ultra.post120b
+-	2	com.hawking.doctor.campaign.supervisor
+-	127	com.hawking.overnight.handoff
+-	127	com.hawking.glm52.math-prometheus-pass3
+-	75	com.hawking.deepseek-v4.telegram
+-	127	com.hawking.glm52.source-fetch
+--- procs ---
+ 1685     1   0.0   08:51 /bin/bash /Users/scammermike/Downloads/hawking/tools/odyssey_driver.sh
+ 4505  1685  36.2   03:29 /Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/odyssey_ctl.py cycle --go --max-lanes 14 --grok-lanes 0 --loop-secs 300 --inner-sleep 3
+ 5950  4505  99.7   00:06 /Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/odyssey_patient_runner.py --oxx O006 --weights /Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-VL-30B-A3B-Instruct/snapshots/9c4b90e1e4ba969fd3b5378b57d966d725f1b86c --runtime mlx --out receipts/odyssey-i/O006_NX_gather.json --packet workspace/campaign/odyssey/patients/O006/ODYSSEY_PATIENT_O006.json --nx-gather

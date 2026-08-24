@@ -1,0 +1,1750 @@
+{
+  "schema": "hawking.headless.noetic_tpr64_reopen.v1",
+  "generated_at": "2026-08-23T18:37:27Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/n15tpr-20260823-142257",
+  "obligation": "NNS-011 \u2014 tpr64 reconstruction is free (32/33). Codecs killed for the 5.9\u00d7 penalty are quality-eligible again.",
+  "census_kind": "ARTIFACT_OF_METHOD",
+  "sources": {
+    "receipts/ascent-2026-08-16/QWEN38_RECONSTRUCTION_IS_FREE.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_RECONSTRUCTION_IS_FREE.json",
+    "receipts/ascent-2026-08-16/QWEN38_RECON_MEASURED.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_RECON_MEASURED.json",
+    "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+    "receipts/ascent-2026-08-16/Q80_RECONSTRUCTION_WON.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/Q80_RECONSTRUCTION_WON.json",
+    "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+    "receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT.json",
+    "receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT_REVIEW.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT_REVIEW.json",
+    "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json",
+    "receipts/ascent-2026-08-16/Q80_MIXED_GENERATE.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/Q80_MIXED_GENERATE.json",
+    "receipts/ascent-2026-08-16/QWEN38_NATIVE_MIXED_READER.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_NATIVE_MIXED_READER.json",
+    "receipts/ascent-2026-08-16/QWEN38_NATIVE_MIXED_2P0_GENERATE.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_NATIVE_MIXED_2P0_GENERATE.json",
+    "receipts/ascent-2026-08-16/PROMOTION_QUEUE.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/PROMOTION_QUEUE.json",
+    "receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_DN_VI_SIMD.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_TOKEN_NS_DN_VI_SIMD.json",
+    "receipts/ascent-2026-08-16/QWEN38_COMPLETE_TOKEN_WALL.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/QWEN38_COMPLETE_TOKEN_WALL.json",
+    "receipts/ascent-2026-08-16/STALE_BASELINE_PATTERN.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/STALE_BASELINE_PATTERN.json",
+    "receipts/ascent-2026-08-16/G109_ORGAN_GEOMETRY.json": "disk:/Users/scammermike/Downloads/hawking-copy/receipts/ascent-2026-08-16/G109_ORGAN_GEOMETRY.json"
+  },
+  "scale_invariance_probe": {
+    "construction": "Wh = 0.01 * W on a 6-vector (same construction as tools/gravity_doctor_gate.py:_gain)",
+    "cosine_Wh_vs_W": 1.0000000000000002,
+    "cosine_is_1": true,
+    "gain_min_r_1_over_r": 0.01,
+    "gain_is_0_01": true,
+    "verdict": "cosine ACCEPTS the scaled artifact (1.000000). gain REJECTS it (0.01). Any fidelity number in this receipt that is cosine-only is flagged.",
+    "doctor_gate_citation": "tools/gravity_doctor_gate.py:_gain \u2014 L0 gate_proj Wh=0.01*W scores observed/probed/worst_unit = 1.000000 with relative weight error 0.9898"
+  },
+  "null_baseline_cosine": {
+    "value": 0.898,
+    "source": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json entries/NS-013",
+    "law": "Report every fidelity cosine against this null or it means nothing."
+  },
+  "free_reconstruction": {
+    "claim": "At the production tpr64 launch geometry, reconstruction costs NOTHING on Qwen3.8. Codec choice is not constrained by reconstruction time.",
+    "date": "2026-08-16",
+    "schema": "hawking.special_unit.reconstruction_is_free.v1",
+    "what_free_means": "At production tpr64 (64 threads/row, TG 128, 2 rows/TG) on Qwen3.8 MLP GEMVs, in-register packed kernels take the same GPU ns as uncompressed f32 (~15125 ns gate, ~7083 ns down). Reconstruction adds 0 ns above the packed-byte bandwidth floor on 32 of 33 variants. Codec choice at this geometry is not constrained by reconstruction time. 'Free' is NOT 'free at every geometry', NOT 'quality vs BF16', and NOT 'the shipped mixed reader'.",
+    "measured_how": {
+      "activation": {
+        "not_synthetic": true,
+        "note": "first holdout token of the 256-token real capture",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/activation-capture-v1",
+        "sha256_self": "fdd937e20500b862452cf4732aa525087e1a3d209c1271e6c021811620687512",
+        "status": "CAPTURED_REAL_BF16_POST_NORM_HIDDEN",
+        "token_index": 192
+      },
+      "gpu_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+      "device": "Apple M3 Ultra",
+      "launch": "64 threads/row, TG 128, 2 rows/TG (production Qwen3.8 q4 winner)",
+      "organs": 2,
+      "variants": 33,
+      "reps_per_variant": 5,
+      "honest_ceiling_gbps": 411.51,
+      "not_synthetic": true
+    },
+    "the_32": "Every variant except down/hgravs01_r160_q3 has recon_excess_ns=0. That includes f32 control, q4/q3/q2 (tpr64 and tg256), binary, ternary, additive, hadamard, rice CSR, and both serial artifact paths.",
+    "the_33rd": {
+      "organ": "down",
+      "name": "hgravs01_r160_q3",
+      "recon_excess_ns": 67851.73953717381,
+      "median_gpu_ns": 71458,
+      "cosine": 0.9317445022309366,
+      "max_abs": 0.12392914295196533,
+      "note": "two-stage algebra, never reconstructs W. Rank 160 on real X."
+    },
+    "prose_vs_table": {
+      "receipt_says_cosine_1_on_32_of_33": "32 of 33 variants",
+      "table_cosine_approx_1": 30,
+      "table_cosine_none": 2,
+      "table_cosine_not_1": 1,
+      "receipt_says_ns_band_includes_hadamard": true,
+      "hadamard_gate_ns": 17333,
+      "band_claimed": "15,124-15,541 for q4/q3/q2/binary/ternary/additive_q2q2/hadamard/rice - i.e. the SAME as uncompressed f32",
+      "correction": "Trust the per-variant table in QWEN38_RECON_MEASURED.json over the summary string in QWEN38_RECONSTRUCTION_IS_FREE.json."
+    },
+    "how_this_survived": "The lane DIED without writing grok-report.md or an exit code. tools/lane_health.py detected it processless and idle, preserved the worktree to 709820607, and the measurement survived. Without that tool this result would have been reaped.",
+    "what_this_retires": "The 5.9x rice reconstruction penalty. It was an artifact twice over: first measured against Q80's serial 1-thread-per-row extract, then TRANSFERRED to Qwen3.8 without re-measurement. Both steps were wrong and the second was flagged as unresolved by the lane that did it.",
+    "corroboration_q80": "Q80's reconstruction fix reached the same conclusion from the opposite direction - in-register consumption took gpu_matvec from 867.0 to 36.6 ms without changing a single codec.",
+    "q80_won_gpu_matvec_ms": {
+      "base": 867.040696,
+      "ours": 36.598269,
+      "speedup": 23.7
+    }
+  },
+  "measured": {
+    "n_variants": 33,
+    "counts": {
+      "total": 33,
+      "recon_excess_zero": 32,
+      "cosine_approx_1": 30,
+      "cosine_none": 2,
+      "cosine_not_1": 1,
+      "cosine_1_but_max_abs_not_tiny": 2,
+      "tpr64_inregister": 18,
+      "tg256": 8,
+      "serial_artifact": 4
+    },
+    "f32_control_tpr64_ns": {
+      "gate": 15125,
+      "down": 7083
+    },
+    "launch_primary": "64 threads/row, TG 128, 2 rows/TG (production Qwen3.8 q4 winner)",
+    "activation": {
+      "not_synthetic": true,
+      "note": "first holdout token of the 256-token real capture",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/activation-capture-v1",
+      "sha256_self": "fdd937e20500b862452cf4732aa525087e1a3d209c1271e6c021811620687512",
+      "status": "CAPTURED_REAL_BF16_POST_NORM_HIDDEN",
+      "token_index": 192
+    },
+    "the_33rd": [
+      {
+        "organ": "down",
+        "name": "hgravs01_r160_q3",
+        "recon_excess_ns": 67851.73953717381,
+        "median_gpu_ns": 71458,
+        "cosine": 0.9317445022309366,
+        "max_abs": 0.12392914295196533,
+        "note": "two-stage algebra, never reconstructs W. Rank 160 on real X."
+      }
+    ],
+    "hadamard": [
+      {
+        "organ": "gate",
+        "median_gpu_ns": 17333,
+        "f32_ns": 15125,
+        "delta_vs_f32_ns": 2208,
+        "cosine": 1.0,
+        "max_abs": 0.8912336826324463,
+        "recon_excess_ns": 0.0
+      },
+      {
+        "organ": "down",
+        "median_gpu_ns": 9875,
+        "f32_ns": 7083,
+        "delta_vs_f32_ns": 2792,
+        "cosine": 1.0,
+        "max_abs": 0.5623984336853027,
+        "recon_excess_ns": 0.0
+      }
+    ],
+    "rice_csr_storage_vs_traffic": [
+      {
+        "organ": "gate",
+        "storage_bpw": 1.287565523035386,
+        "storage_bytes": 14344922,
+        "traffic_bytes": 19956541,
+        "traffic_over_storage": 1.3911920190294518,
+        "median_gpu_ns": 15125,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999762,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 14916.0,
+          "max": 15333.0,
+          "median": 15125.0,
+          "range_ns": 417.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        }
+      },
+      {
+        "organ": "down",
+        "storage_bpw": 1.287540749942555,
+        "storage_bytes": 14344646,
+        "traffic_bytes": 19907389,
+        "traffic_over_storage": 1.38779228152441,
+        "median_gpu_ns": 7416,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.99999999999996,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 7374.0,
+          "max": 7666.0,
+          "median": 7416.0,
+          "range_ns": 292.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        }
+      }
+    ],
+    "gate_tpr64_inregister_within_500ns_of_f32": [
+      {
+        "name": "f32_tpr64",
+        "median_gpu_ns": 15125
+      },
+      {
+        "name": "prod_q4_nibble_g64",
+        "median_gpu_ns": 15500
+      },
+      {
+        "name": "uniform_q4_g64/disc_uniform_bits_tpr64",
+        "median_gpu_ns": 15208
+      },
+      {
+        "name": "uniform_q3_g64/disc_uniform_bits_tpr64",
+        "median_gpu_ns": 15125
+      },
+      {
+        "name": "uniform_q2_g64/disc_uniform_bits_tpr64",
+        "median_gpu_ns": 15374
+      },
+      {
+        "name": "binary_g128/disc_binary_tpr64",
+        "median_gpu_ns": 15416
+      },
+      {
+        "name": "ternary_t0.7_g128",
+        "median_gpu_ns": 15541
+      },
+      {
+        "name": "additive_q2q2_g64",
+        "median_gpu_ns": 15125
+      },
+      {
+        "name": "rice_q1_rms_2pct/csr_inregister",
+        "median_gpu_ns": 15125
+      }
+    ],
+    "what_free_means": {
+      "recon_excess_definition": "recon_excess_ns = max(0, median_gpu_ns - bandwidth_floor_ns). Zero means the kernel is not slower than streaming the packed bytes at the honest ceiling. Negative values are clamped to 0, so a kernel slower than f32 but faster than its (tiny) byte-floor still reads as free.",
+      "same_ns_as_f32": "The summary claim '15,124\u201315,541 ns = uncompressed f32' is the GATE tpr64 in-register family (q4/q3/q2/binary/ternary/additive/rice-CSR). It is NOT hadamard (gate 17333), NOT tg256 (~26541), NOT serial, NOT hgravs01.",
+      "kernel_fidelity_not_teacher_quality": "cosine \u2248 1.0 here is packed-kernel vs reference unpack, not vs BF16 W@x. hgravs cosine 0.9317 is the exception: two-stage algebra vs the real activation product on rank-160, i.e. approximation error, not unpack error."
+    },
+    "variants": [
+      {
+        "organ": "gate",
+        "name": "f32_tpr64",
+        "family": "f32_tpr64",
+        "kernel": "disc_f32_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15125,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999698,
+        "max_abs": 1.1920928955078125e-07,
+        "spread": {
+          "n": 5,
+          "min": 14958.0,
+          "max": 15499.0,
+          "median": 15125.0,
+          "range_ns": 541.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "uncompressed occupancy-tile control"
+      },
+      {
+        "organ": "gate",
+        "name": "prod_q4_nibble_g64",
+        "family": "prod_q4_nibble_g64",
+        "kernel": "disc_q4_nibble_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15500,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.999999999999975,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 14999.0,
+          "max": 15999.0,
+          "median": 15500.0,
+          "range_ns": 1000.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "production Qwen3.8 q4 layout, occupancy tile"
+      },
+      {
+        "organ": "gate",
+        "name": "uniform_q4_g64/disc_uniform_bits_tpr64",
+        "family": "uniform_q4_g64",
+        "kernel": "disc_uniform_bits_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15208,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999772,
+        "max_abs": 1.4901161193847656e-07,
+        "spread": {
+          "n": 5,
+          "min": 14874.0,
+          "max": 19125.0,
+          "median": 15208.0,
+          "range_ns": 4251.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "gravity bitstream, wide extract, occupancy tile"
+      },
+      {
+        "organ": "gate",
+        "name": "uniform_q4_g64/disc_uniform_bits_tg256",
+        "family": "uniform_q4_g64",
+        "kernel": "disc_uniform_bits_tg256",
+        "kernel_class": "TG256",
+        "median_gpu_ns": 26541,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999805,
+        "max_abs": 1.7881393432617188e-07,
+        "spread": {
+          "n": 5,
+          "min": 26375.0,
+          "max": 26749.0,
+          "median": 26541.0,
+          "range_ns": 374.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won 256 threads/row"
+      },
+      {
+        "organ": "gate",
+        "name": "uniform_q3_g64/disc_uniform_bits_tpr64",
+        "family": "uniform_q3_g64",
+        "kernel": "disc_uniform_bits_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15125,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999784,
+        "max_abs": 1.1920928955078125e-07,
+        "spread": {
+          "n": 5,
+          "min": 14749.0,
+          "max": 15375.0,
+          "median": 15125.0,
+          "range_ns": 626.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "gravity bitstream, wide extract, occupancy tile"
+      },
+      {
+        "organ": "gate",
+        "name": "uniform_q3_g64/disc_uniform_bits_tg256",
+        "family": "uniform_q3_g64",
+        "kernel": "disc_uniform_bits_tg256",
+        "kernel_class": "TG256",
+        "median_gpu_ns": 26541,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999819,
+        "max_abs": 1.1920928955078125e-07,
+        "spread": {
+          "n": 5,
+          "min": 26374.0,
+          "max": 26666.0,
+          "median": 26541.0,
+          "range_ns": 292.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won 256 threads/row"
+      },
+      {
+        "organ": "gate",
+        "name": "uniform_q2_g64/disc_uniform_bits_tpr64",
+        "family": "uniform_q2_g64",
+        "kernel": "disc_uniform_bits_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15374,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999861,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 15125.0,
+          "max": 15375.0,
+          "median": 15374.0,
+          "range_ns": 250.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "gravity bitstream, wide extract, occupancy tile"
+      },
+      {
+        "organ": "gate",
+        "name": "uniform_q2_g64/disc_uniform_bits_tg256",
+        "family": "uniform_q2_g64",
+        "kernel": "disc_uniform_bits_tg256",
+        "kernel_class": "TG256",
+        "median_gpu_ns": 26708,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999865,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 26499.0,
+          "max": 27000.0,
+          "median": 26708.0,
+          "range_ns": 501.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won 256 threads/row"
+      },
+      {
+        "organ": "gate",
+        "name": "uniform_q4_g64/disc_uniform_bits_serial",
+        "family": "uniform_q4_g64",
+        "kernel": "disc_uniform_bits_serial",
+        "kernel_class": "SERIAL_ARTIFACT",
+        "median_gpu_ns": 4624,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999994067,
+        "max_abs": 1.5497207641601562e-06,
+        "spread": {
+          "n": 5,
+          "min": 4375.0,
+          "max": 4791.0,
+          "median": 4624.0,
+          "range_ns": 416.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "DISPROVEN PATH: 1 thread/row serial extract"
+      },
+      {
+        "organ": "gate",
+        "name": "binary_g128/disc_binary_tpr64",
+        "family": "binary_g128",
+        "kernel": "disc_binary_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15416,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.999999999999974,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 15124.0,
+          "max": 22500.0,
+          "median": 15416.0,
+          "range_ns": 7376.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "in-register sign*scale, occupancy tile"
+      },
+      {
+        "organ": "gate",
+        "name": "binary_g128/disc_binary_tg256",
+        "family": "binary_g128",
+        "kernel": "disc_binary_tg256",
+        "kernel_class": "TG256",
+        "median_gpu_ns": 26541,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999819,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 26249.0,
+          "max": 26708.0,
+          "median": 26541.0,
+          "range_ns": 459.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won 256 threads/row"
+      },
+      {
+        "organ": "gate",
+        "name": "ternary_t0.7_g128",
+        "family": "ternary_t0.7_g128",
+        "kernel": "disc_ternary_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15541,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999842,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 15333.0,
+          "max": 15999.0,
+          "median": 15541.0,
+          "range_ns": 666.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "2-bit in-register {0,+s,-s}"
+      },
+      {
+        "organ": "gate",
+        "name": "additive_q2q2_g64",
+        "family": "additive_q2q2_g64",
+        "kernel": "disc_additive_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15125,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999664,
+        "max_abs": 1.4901161193847656e-07,
+        "spread": {
+          "n": 5,
+          "min": 14833.0,
+          "max": 15166.0,
+          "median": 15125.0,
+          "range_ns": 333.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "two in-register q2 lookups"
+      },
+      {
+        "organ": "gate",
+        "name": "hadamard_q2_g128",
+        "family": "hadamard_q2_g128",
+        "kernel": "disc_walsh_hadamard_x+disc_uniform_bits_tpr64",
+        "kernel_class": "TPR64_PLUS_WH",
+        "median_gpu_ns": 17333,
+        "recon_excess_ns": 0.0,
+        "cosine": 1.0,
+        "max_abs": 0.8912336826324463,
+        "spread": {
+          "n": 5,
+          "min": 17250.0,
+          "max": 18374.0,
+          "median": 17333.0,
+          "range_ns": 1124.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "per-token WH(x) + in-register q2; WH is O(cols log 128)"
+      },
+      {
+        "organ": "gate",
+        "name": "rice_q1_rms_2pct/csr_inregister",
+        "family": "rice_q1_rms_2pct",
+        "kernel": "disc_binary_csr_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 15125,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999762,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 14916.0,
+          "max": 15333.0,
+          "median": 15125.0,
+          "range_ns": 417.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won: bind-expanded CSR consumed in-register with binary"
+      },
+      {
+        "organ": "gate",
+        "name": "rice_q1_rms_2pct/serial_one_thread",
+        "family": "rice_q1_rms_2pct",
+        "kernel": "disc_csr_serial_one_thread",
+        "kernel_class": "SERIAL_ARTIFACT",
+        "median_gpu_ns": 3999,
+        "recon_excess_ns": 0.0,
+        "cosine": null,
+        "max_abs": null,
+        "spread": {
+          "n": 5,
+          "min": 2958.0,
+          "max": 4041.0,
+          "median": 3999.0,
+          "range_ns": 1083.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "ARTIFACT PATH: one thread walks every outlier. Not used for ranking."
+      },
+      {
+        "organ": "down",
+        "name": "f32_tpr64",
+        "family": "f32_tpr64",
+        "kernel": "disc_f32_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7083,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.999999999999963,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 7041.0,
+          "max": 7250.0,
+          "median": 7083.0,
+          "range_ns": 209.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "uncompressed occupancy-tile control"
+      },
+      {
+        "organ": "down",
+        "name": "prod_q4_nibble_g64",
+        "family": "prod_q4_nibble_g64",
+        "kernel": "disc_q4_nibble_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7500,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999759,
+        "max_abs": 1.30385160446167e-08,
+        "spread": {
+          "n": 5,
+          "min": 7499.0,
+          "max": 7999.0,
+          "median": 7500.0,
+          "range_ns": 500.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "production Qwen3.8 q4 layout, occupancy tile"
+      },
+      {
+        "organ": "down",
+        "name": "uniform_q4_g64/disc_uniform_bits_tpr64",
+        "family": "uniform_q4_g64",
+        "kernel": "disc_uniform_bits_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7374,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999584,
+        "max_abs": 1.1920928955078125e-07,
+        "spread": {
+          "n": 5,
+          "min": 7291.0,
+          "max": 7624.0,
+          "median": 7374.0,
+          "range_ns": 333.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "gravity bitstream, wide extract, occupancy tile"
+      },
+      {
+        "organ": "down",
+        "name": "uniform_q4_g64/disc_uniform_bits_tg256",
+        "family": "uniform_q4_g64",
+        "kernel": "disc_uniform_bits_tg256",
+        "kernel_class": "TG256",
+        "median_gpu_ns": 10791,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.99999999999997,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 10583.0,
+          "max": 11000.0,
+          "median": 10791.0,
+          "range_ns": 417.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won 256 threads/row"
+      },
+      {
+        "organ": "down",
+        "name": "uniform_q3_g64/disc_uniform_bits_tpr64",
+        "family": "uniform_q3_g64",
+        "kernel": "disc_uniform_bits_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7166,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999708,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 7124.0,
+          "max": 7333.0,
+          "median": 7166.0,
+          "range_ns": 209.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "gravity bitstream, wide extract, occupancy tile"
+      },
+      {
+        "organ": "down",
+        "name": "uniform_q3_g64/disc_uniform_bits_tg256",
+        "family": "uniform_q3_g64",
+        "kernel": "disc_uniform_bits_tg256",
+        "kernel_class": "TG256",
+        "median_gpu_ns": 10874,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999797,
+        "max_abs": 1.4901161193847656e-08,
+        "spread": {
+          "n": 5,
+          "min": 10499.0,
+          "max": 10958.0,
+          "median": 10874.0,
+          "range_ns": 459.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won 256 threads/row"
+      },
+      {
+        "organ": "down",
+        "name": "uniform_q2_g64/disc_uniform_bits_tpr64",
+        "family": "uniform_q2_g64",
+        "kernel": "disc_uniform_bits_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7708,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999858,
+        "max_abs": 1.1175870895385742e-08,
+        "spread": {
+          "n": 5,
+          "min": 7166.0,
+          "max": 7874.0,
+          "median": 7708.0,
+          "range_ns": 708.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "gravity bitstream, wide extract, occupancy tile"
+      },
+      {
+        "organ": "down",
+        "name": "uniform_q2_g64/disc_uniform_bits_tg256",
+        "family": "uniform_q2_g64",
+        "kernel": "disc_uniform_bits_tg256",
+        "kernel_class": "TG256",
+        "median_gpu_ns": 10958,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999812,
+        "max_abs": 2.9802322387695312e-08,
+        "spread": {
+          "n": 5,
+          "min": 10750.0,
+          "max": 11000.0,
+          "median": 10958.0,
+          "range_ns": 250.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won 256 threads/row"
+      },
+      {
+        "organ": "down",
+        "name": "uniform_q4_g64/disc_uniform_bits_serial",
+        "family": "uniform_q4_g64",
+        "kernel": "disc_uniform_bits_serial",
+        "kernel_class": "SERIAL_ARTIFACT",
+        "median_gpu_ns": 4124,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999979986,
+        "max_abs": 1.3709068298339844e-06,
+        "spread": {
+          "n": 5,
+          "min": 3333.0,
+          "max": 9166.0,
+          "median": 4124.0,
+          "range_ns": 5833.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "DISPROVEN PATH: 1 thread/row serial extract"
+      },
+      {
+        "organ": "down",
+        "name": "binary_g128/disc_binary_tpr64",
+        "family": "binary_g128",
+        "kernel": "disc_binary_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7374,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999772,
+        "max_abs": 7.683411240577698e-09,
+        "spread": {
+          "n": 5,
+          "min": 7208.0,
+          "max": 7458.0,
+          "median": 7374.0,
+          "range_ns": 250.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "in-register sign*scale, occupancy tile"
+      },
+      {
+        "organ": "down",
+        "name": "binary_g128/disc_binary_tg256",
+        "family": "binary_g128",
+        "kernel": "disc_binary_tg256",
+        "kernel_class": "TG256",
+        "median_gpu_ns": 10541,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999895,
+        "max_abs": 5.587935447692871e-09,
+        "spread": {
+          "n": 5,
+          "min": 10375.0,
+          "max": 10625.0,
+          "median": 10541.0,
+          "range_ns": 250.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won 256 threads/row"
+      },
+      {
+        "organ": "down",
+        "name": "ternary_t0.7_g128",
+        "family": "ternary_t0.7_g128",
+        "kernel": "disc_ternary_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7374,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999868,
+        "max_abs": 7.450580596923828e-09,
+        "spread": {
+          "n": 5,
+          "min": 7333.0,
+          "max": 7624.0,
+          "median": 7374.0,
+          "range_ns": 291.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "2-bit in-register {0,+s,-s}"
+      },
+      {
+        "organ": "down",
+        "name": "additive_q2q2_g64",
+        "family": "additive_q2q2_g64",
+        "kernel": "disc_additive_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7666,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.9999999999999657,
+        "max_abs": 2.0489096641540527e-08,
+        "spread": {
+          "n": 5,
+          "min": 7416.0,
+          "max": 7749.0,
+          "median": 7666.0,
+          "range_ns": 333.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "two in-register q2 lookups"
+      },
+      {
+        "organ": "down",
+        "name": "hadamard_q2_g128",
+        "family": "hadamard_q2_g128",
+        "kernel": "disc_walsh_hadamard_x+disc_uniform_bits_tpr64",
+        "kernel_class": "TPR64_PLUS_WH",
+        "median_gpu_ns": 9875,
+        "recon_excess_ns": 0.0,
+        "cosine": 1.0,
+        "max_abs": 0.5623984336853027,
+        "spread": {
+          "n": 5,
+          "min": 9249.0,
+          "max": 18583.0,
+          "median": 9875.0,
+          "range_ns": 9334.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "per-token WH(x) + in-register q2; WH is O(cols log 128)"
+      },
+      {
+        "organ": "down",
+        "name": "rice_q1_rms_2pct/csr_inregister",
+        "family": "rice_q1_rms_2pct",
+        "kernel": "disc_binary_csr_tpr64",
+        "kernel_class": "TPR64_INREGISTER",
+        "median_gpu_ns": 7416,
+        "recon_excess_ns": 0.0,
+        "cosine": 0.99999999999996,
+        "max_abs": 5.960464477539063e-08,
+        "spread": {
+          "n": 5,
+          "min": 7374.0,
+          "max": 7666.0,
+          "median": 7416.0,
+          "range_ns": 292.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "Q80-won: bind-expanded CSR consumed in-register with binary"
+      },
+      {
+        "organ": "down",
+        "name": "rice_q1_rms_2pct/serial_one_thread",
+        "family": "rice_q1_rms_2pct",
+        "kernel": "disc_csr_serial_one_thread",
+        "kernel_class": "SERIAL_ARTIFACT",
+        "median_gpu_ns": 3125,
+        "recon_excess_ns": 0.0,
+        "cosine": null,
+        "max_abs": null,
+        "spread": {
+          "n": 5,
+          "min": 2999.0,
+          "max": 4583.0,
+          "median": 3125.0,
+          "range_ns": 1584.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "ARTIFACT PATH: one thread walks every outlier. Not used for ranking."
+      },
+      {
+        "organ": "down",
+        "name": "hgravs01_r160_q3",
+        "family": "hgravs01_r160_q3",
+        "kernel": "L@(R@x) two disc_uniform_bits_tpr64",
+        "kernel_class": "TWO_STAGE_ALGEBRA",
+        "median_gpu_ns": 71458,
+        "recon_excess_ns": 67851.73953717381,
+        "cosine": 0.9317445022309366,
+        "max_abs": 0.12392914295196533,
+        "spread": {
+          "n": 5,
+          "min": 71124.0,
+          "max": 71749.0,
+          "median": 71458.0,
+          "range_ns": 625.0,
+          "protocol": "isolated-kernel 5-rep GPU timestamps, NOT paired alternating token-wall"
+        },
+        "note": "two-stage algebra, never reconstructs W. Rank 160 on real X."
+      }
+    ]
+  },
+  "five_point_nine": {
+    "slowdown_per_byte_x": 5.9,
+    "q4_gb_s": 15.2,
+    "mixed_gb_s": 2.57,
+    "q4_token_ms": 225,
+    "mixed_token_ms": 1171,
+    "claim": "Compressing Q80 from Q4 to 1.4444 BPW made the kernel ~6x SLOWER PER BYTE, because mixed codecs (binary / rice_q1 / low-rank) need expensive per-weight reconstruction.",
+    "ns006_retry_when": "never as an unqualified 'lower BPW is faster' rule on mixed codecs. Reopen a density-for-speed claim only after reconstruction is in-register or fused into consumption (S004 section 7 items 5-6) and a same-vehicle GB/s is remeasured at or above the Q4 15.2 GB/s mark.",
+    "stale_baseline_case": {
+      "case": "BPW descent screen rice penalty",
+      "claimed": "rice codecs carry a 5.9x reconstruction penalty",
+      "measured_against": "Q80 mixed-vs-Q4, transferred not re-measured",
+      "invalidated_by": "that 5.9x was a kernel artifact, not a codec property",
+      "outcome": "re-screen launched with the penalty removed; the lane had flagged the transfer as unresolved itself"
+    },
+    "q80_won_correction_0": "I recorded 'density is costing speed - mixed is 5.9x slower per byte than Q4 because binary/rice/low-rank reconstruction is expensive'. The codecs were never the cause. Q4's 15.2 GB/s came from a DIFFERENT KERNEL (simdgroup); isolated Q4 serial on the same shape is ~2.5 GB/s, the same as mixed. The cause was a kernel choice, not codec cost."
+  },
+  "codecs": [
+    {
+      "codec": "rice_q1_rms_2pct / HGRAVR02 (in-register CSR, tpr64)",
+      "family": "HGRAVR02",
+      "killing_receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT.json",
+          "field": "codec_catalog[rice_q1_rms_2pct].recon_penalty",
+          "number": 5.9,
+          "how": "only catalog entry priced at 5.9; 'Q80 paid 5.9x / byte'"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+          "field": "DENSITY_IS_COSTING_SPEED.slowdown_per_byte_x",
+          "number": 5.9,
+          "how": "named rice_q1 as needing expensive per-weight reconstruction"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+          "field": "entries/NS-006/what_was_measured/slowdown_per_byte_x",
+          "number": 5.9,
+          "how": "density-is-velocity refutation; mixed codecs include rice_q1"
+        }
+      ],
+      "verdict": "REOPENED",
+      "why_reopened": "disc_binary_csr_tpr64 on real post-norm X matches f32 gate ns (15125 vs 15125) with recon_excess_ns=0 and kernel cosine 1.0 at max_abs 6e-8. The 5.9\u00d7 was the serial extract, not the codec. Bind-time CSR expand is NS-018-allowed (~84 KiB/up).",
+      "second_reason": null,
+      "quality_at_bpw": {
+        "storage_bpw": 1.28757147695504,
+        "gate_hold_min": 0.8768175416268038,
+        "gate_hold_mean": 0.9014687964340246,
+        "gate_beats_null_mean": true,
+        "up_hold_min": 0.812629449415419,
+        "up_hold_mean": 0.8718263720282705,
+        "up_beats_null_mean": false,
+        "down_hold_min": 0.8036136117705948,
+        "down_hold_mean": 0.8650177267692047,
+        "down_beats_null_mean": false,
+        "null_cosine": 0.898,
+        "note": "gate mean 0.9015 is +0.0035 over the 0.898 null \u2014 not a GO (NS-013). up/down means sit BELOW the null. Generation is the gate. mixed-2p0 used rice on up as part of a bundle that collapsed; that does not isolate rice-gate-only."
+      },
+      "geometry_covered": true,
+      "geometry_note": "COVERED on isolated disc_binary_csr_tpr64 for gate 17408\u00d75120 and down 5120\u00d717408. NOT the shipped mixed reader (tg256 / simd_bytes).",
+      "storage_vs_active": {
+        "gate_storage_bytes": 14344922,
+        "gate_traffic_bytes": 19956541,
+        "gate_traffic_over_storage": 1.3911920190294518,
+        "note": "CSR bind-expand raises traffic ~1.39\u00d7 over stored bytes. Report both."
+      },
+      "rice_csr_free_confirmed": true
+    },
+    {
+      "codec": "rice_q1_rms_2pct / HGRAVR02 serial one-thread bitstream",
+      "family": "HGRAVR02_SERIAL",
+      "killing_receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+          "field": "entries/NS-031",
+          "number": null,
+          "how": "rice_q1 serial bitstream expand on the per-token path \u2014 never"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/QWEN38_RECON_MEASURED.json",
+          "field": "variants[rice_q1_rms_2pct/serial_one_thread].note",
+          "number": null,
+          "how": "ARTIFACT PATH: one thread walks every outlier. Not used for ranking. cosine=None"
+        }
+      ],
+      "verdict": "STILL_DEAD",
+      "why_reopened": null,
+      "second_reason": "NS-031: never as a per-token kernel. Bind-time expand stays. Free reconstruction at tpr64 is a different kernel. Serial rice is the original 5.9\u00d7 vehicle, not the reopen.",
+      "quality_at_bpw": null,
+      "geometry_covered": false,
+      "geometry_note": "Serial 1-thread walk is the DISPROVEN PATH. Do not reopen it."
+    },
+    {
+      "codec": "HGRAVR02 rice residual on attention GEMVs",
+      "family": "HGRAVR02_ATTENTION",
+      "killing_receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json",
+          "field": "codec_applicability.HGRAVR02_binary_residual.reconstruction",
+          "number": 5.9,
+          "how": "EXPENSIVE_SCATTER \u2014 a LOSS even if quality passed (mixed 5.9x slower per byte)"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json",
+          "field": "reconstruction_cost_classes.LOSS_EVEN_IF_QUALITY_PASSED",
+          "number": null,
+          "how": "HGRAVR02 listed as LOSS_EVEN_IF_QUALITY_PASSED"
+        }
+      ],
+      "verdict": "STILL_DEAD",
+      "why_reopened": "Cost veto is lifted at tpr64 in-register CSR on LARGE sequential GEMVs. That does not make attention rice quality-legal.",
+      "second_reason": "Quality: attention bar is mean row output cosine \u2265 0.990 vs BF16. HGRAVR02 max cosine 0.958 (q80 L3 q), typical 0.82\u20130.91, FAILS 0.99 everywhere. Qwen3.8 attn_in rice hold_min=0.8881514346319901 vs 0.99. encode_yes_recipe_no: 2% rice residual was fit for up_proj, not Q/K/V/O.",
+      "quality_at_bpw": {
+        "attn_in_bpw": 1.2879479132758247,
+        "attn_in_hold_min": 0.8881514346319901,
+        "attn_in_hold_mean": 0.9110189692024391,
+        "required_bar": 0.99
+      },
+      "geometry_covered": false,
+      "geometry_note": "tpr64 free-recon was measured on MLP gate/down, not on k_proj 1024\u00d75120 (G109: small organs are launch-bound, 2.5\u00d7 worse ps/element)."
+    },
+    {
+      "codec": "binary_g128 / HGRAVB01",
+      "family": "HGRAVB01",
+      "killing_receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+          "field": "DENSITY_IS_COSTING_SPEED.claim",
+          "number": 5.9,
+          "how": "lumped 'binary / rice_q1 / low-rank' as expensive reconstruction"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+          "field": "entries/NS-006/why_it_failed",
+          "number": 5.9,
+          "how": "Binary / rice_q1 / low-rank need expensive per-weight reconstruction"
+        }
+      ],
+      "verdict": "STILL_DEAD",
+      "why_reopened": "The 5.9\u00d7 attribution was a method artifact. Descent priced binary at recon_penalty=1.0 CHEAP_INREGISTER. disc_binary_tpr64 recon_excess=0, gate 15416 ns vs f32 15125. Q80_RECONSTRUCTION_WON: 'The codecs were never the cause.'",
+      "second_reason": "Quality, independently of cost. Descent verdict REJECT QUALITY: down hold_min=0.7297274499934864, up hold_min=0.7638894725041271. Attention HGRAVB01 max cosine 0.946, typical 0.75\u20130.88, FAILS 0.99. mixed-2p0 native generate used binary gate and collapsed to newline/punctuation salad (INCOHERENT, 0 fallbacks, reconstruct_to_q4=false).",
+      "quality_at_bpw": {
+        "bpw": 1.125,
+        "down_hold_min": 0.7297274499934864,
+        "up_hold_min": 0.7638894725041271
+      },
+      "geometry_covered": true,
+      "geometry_note": "tpr64 in-register binary is cost-free on the measured MLP shapes. Quality still dead."
+    },
+    {
+      "codec": "HGRAVS01 reconstruct-W (materialize dense W then multiply)",
+      "family": "HGRAVS01_MATERIALIZE",
+      "killing_receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+          "field": "DENSITY_IS_COSTING_SPEED.claim",
+          "number": 5.9,
+          "how": "lumped low-rank with rice/binary as expensive reconstruction"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json",
+          "field": "reconstruction_cost_classes.LOSS_EVEN_IF_QUALITY_PASSED",
+          "number": null,
+          "how": "HGRAVS01 materialized listed as LOSS"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+          "field": "entries/NS-018 and NS-019",
+          "number": null,
+          "how": "cache decoded W forbidden; reconstruct down W then multiply already refuted"
+        }
+      ],
+      "verdict": "STILL_DEAD",
+      "why_reopened": null,
+      "second_reason": "NS-018: never for all-(layer,expert) decoded W. Bind-time rice-index expand (~84 KiB/up) is not dense W and stays allowed. A cache of packed payloads (not decoded W) is a different mechanism. NS-019: never on Q80 down_proj. The remaining cost is occupancy of the two-stage factor matvec, not reconstruct-W. Free reconstruction of a packed code is not permission to materialize W.",
+      "quality_at_bpw": null,
+      "geometry_covered": false,
+      "geometry_note": "Not a tpr64 in-register codec path."
+    },
+    {
+      "codec": "HGRAVS01 fused y=L@(R@x) two-stage (r160 q3)",
+      "family": "HGRAVS01_TWOSTAGE",
+      "killing_receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+          "field": "DENSITY_IS_COSTING_SPEED.claim",
+          "number": 5.9,
+          "how": "lumped low-rank into the 5.9\u00d7 reconstruct class"
+        }
+      ],
+      "verdict": "STILL_DEAD",
+      "why_reopened": "Descent already treated two-stage as CHEAP_ALGEBRA (not 5.9\u00d7). The tpr64 free-recon result does not transfer: this IS the 33rd variant.",
+      "second_reason": "Measured NOT free. down hgravs01_r160_q3 median_gpu_ns=71458 vs f32 down 7083, recon_excess_ns=67851.73953717381 (~19.8\u00d7 vs its bandwidth floor). cosine=0.9317445022309366 max_abs=0.12392914295196533 on one real token \u2014 no doctor-gate health verdict. NS-019 remaining cost is occupancy of the two-stage factor matvec. Attention: 0 clears of 0.99 at ranks whose BPW beats Q4. Production mixed reader keeps HGRAVS on simd3 two-stage, not tpr64.",
+      "quality_at_bpw": {
+        "local_bpw_quote": 0.13,
+        "health_verdict": "UNSCORED \u2014 0.13 is a COMPONENT of down_proj only; 223 structured rows below 0.5 local BPW had healthy=true: 0",
+        "recon_measured_cosine": 0.9317445022309366
+      },
+      "geometry_covered": false,
+      "geometry_note": "The one variant reconstruction-is-free excludes. Do not reopen a family on the exception."
+    },
+    {
+      "codec": "Q80 mixed-1p5 vehicle (gate binary + up rice_q1 + down hgravs01, nonexpert q8)",
+      "family": "Q80_MIXED_1P5",
+      "killing_receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+          "field": "DENSITY_IS_COSTING_SPEED.slowdown_per_byte_x",
+          "number": 5.9,
+          "how": "THE 5.9\u00d7 measurement: q4 15.2 GB/s vs mixed 2.57 GB/s; token 225 vs 1171 ms"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+          "field": "entries/NS-006",
+          "number": 5.9,
+          "how": "density is velocity, refuted on this vehicle"
+        }
+      ],
+      "verdict": "ALREADY_CONSUMED",
+      "why_reopened": "Quality was never the kill: mixed-1p5 generated COHERENT text at 1.4444456847927971 complete_physical_bpw (status=COHERENT, codec=mixed_gate_binary_up_rice_q1_down_hgravs01_r160_b3_nonexpert_q8). Speed kill was the serial extract. Q80_RECONSTRUCTION_WON: occupancy tiles took gpu_matvec 867.04 \u2192 36.60 ms (23.7\u00d7) without changing a codec. NS-006 retry_when (in-register / fused) already holds on this vehicle.",
+      "second_reason": "Do not cite tpr64-on-Qwen3.8 as the Q80 win. Q80 experts are 512\u00d72048; the shipped Q80 fix is occupancy tiles, not geo_tpr64_tg128. G109: small organs are launch-bound. Transferring 'reconstruction is free' onto 512\u00d72048 without a same-shape remeasure is the trap.",
+      "quality_at_bpw": {
+        "complete_physical_bpw": 1.4444456847927971,
+        "coherence_class": "COHERENT",
+        "generation_gate": true
+      },
+      "geometry_covered": false,
+      "geometry_note": "Q80 tile geometry \u2260 Qwen3.8 tpr64 on 17408-row GEMVs."
+    },
+    {
+      "codec": "Qwen3.8 mixed-2p0-v1 (same Q80 recipe on dense MLP: binary gate / rice up / hgravs down / q4 attn)",
+      "family": "QWEN38_MIXED_2P0",
+      "killing_receipts": [
+        {
+          "path": "receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT.json",
+          "field": "candidate_table[REF_sibling_binary_rice_hgravs01_q4rest]",
+          "number": 2.925,
+          "how": "blended recon_penalty from rice 5.9\u00d7; adjusted 20.8 TPS called a REGRESSION vs Q4 29.8"
+        },
+        {
+          "path": "receipts/ascent-2026-08-16/QWEN38_BPW_DESCENT_REVIEW.json",
+          "field": "A_CAVEAT_THAT_MAY_INVALIDATE_THE_SCREEN",
+          "number": 5.9,
+          "how": "review: screen penalised rice on a number that was a kernel artifact"
+        }
+      ],
+      "verdict": "STILL_DEAD",
+      "why_reopened": "Cost veto on the isolated tpr64 kernels is lifted. The review's re-screen-with-penalty-removed is the correct cost move.",
+      "second_reason": "Quality, natively, after the mixed reader shipped. coherence_verdict=INCOHERENT on 6/6 prompts (newline/punctuation collapse). fallbacks=0, dense_w_materialized=0, reconstruct_to_q4=false \u2014 attributable to the packed representation plus Q80 occupancy-tile numerics, not double quant. Second geometry reason: shipped reader binds gate=HGRAVB01 -> q80_binary_group_matvec_tg256 (serial family fallback via decode_family::matvec_binary) ; up=HGRAVR02 -> q80_binary_group_csr_matvec_tg256 (CSR leftover q80_sparse_q1_apply_csr when fuse off) ; down=HGRAVS01 r160_b3 -> two-stage q80_hgravs01_factor_matvec_simd3 (L @ (R @ x), mid[160] only) \u2014 tg256/simd_bytes/simd3, NOT tpr64. uses_tpr64=False uses_tg256=True.",
+      "quality_at_bpw": {
+        "sibling_projected_bpw": 2.0853,
+        "native_generate": "INCOHERENT"
+      },
+      "geometry_covered": false,
+      "geometry_note": "Isolated tpr64 discriminator kernels cover the codec math. The production mixed path does not use those kernels.",
+      "review_caveat": {
+        "lane_stated": "rice 5.9x penalty transferred from Q80, not re-measured on dense sequential Qwen3.8",
+        "why_that_matters": "That 5.9x was DISPROVEN today. Q80's mixed matvec was slow because of a serial 1-thread-per-row extract doing 8 bit-loads per weight, NOT because rice/binary/low-rank codecs are expensive. Consuming codes in-register took gpu_matvec 867.0 -> 36.6 ms and made mixed FASTER per byte than Q4. See Q80_RECONSTRUCTION_WON.json.",
+        "consequence": "The screen penalised rice-based candidates using a number that turned out to be a kernel artifact. Cheaper-to-reconstruct codecs may no longer be the right axis to optimise, and rice vehicles may be viable again. The recipe should be re-screened with the reconstruction penalty REMOVED before it is treated as final.",
+        "status": "NOT a refutation of the lane - it flagged this transfer honestly as unresolved. It is a consequence of a result that landed after the lane started."
+      }
+    },
+    {
+      "codec": "uniform_q2/q3, ternary_t0.7, hadamard_q2, additive_q2q2 (NOT 5.9\u00d7-killed)",
+      "family": "NOT_IN_CLASS",
+      "killing_receipts": [],
+      "verdict": "NOT_KILLED_FOR_5_9X",
+      "why_reopened": null,
+      "second_reason": "Descent priced these at 1.0\u20131.2, not 5.9. q3 is the cheap coherence floor (hold_min 0.9679 at 3.25 BPW). ternary is the best cheap 2-bit rung. hadamard is worse than q2 on hold cosine AND the recon-measured cosine 1.0 hides max_abs 0.89/0.56 (scale trap). Do not reopen them under NNS-011; they were never in this graveyard.",
+      "quality_at_bpw": null,
+      "geometry_covered": true,
+      "geometry_note": "tpr64 in-register for q2/q3/ternary/additive is free. hadamard pays WH(x)."
+    }
+  ],
+  "geometry_transfer": {
+    "result_scope": {
+      "kernel_path": "isolated discriminator kernels disc_*_tpr64 (tools/qwen38_recon_disc)",
+      "launch_geometry": "64 threads/row, TG 128, 2 rows/TG (production Qwen3.8 q4 winner)",
+      "organs_measured": [
+        {
+          "name": "gate",
+          "rows": 17408,
+          "cols": 5120
+        },
+        {
+          "name": "down",
+          "rows": 5120,
+          "cols": 17408
+        }
+      ],
+      "activation": "REAL captured BF16 post-norm hidden, token 192 of 256-token holdout",
+      "gpu_authority": "MTLCommandBuffer.GPUEndTime-GPUStartTime after wait",
+      "reps": 5,
+      "paired_alternating_token_wall": false
+    },
+    "production_q4_path": {
+      "kernel": "Qwen38HybridDecodeSession + qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 + qwen38_gated_delta_decode_vi + qwen38_qkvz_rearrange_conv_l2_f32 + qwen38_gqa_qk_norm_rope_cache_f32; deltanet_vi_parallel=true concurrent_independent=false; 1 production CB / 964 dispatches; uniform-q4-v1 BPW=4.252735126866492; PocketAiHub/Qwen3.8-27B-Abliterated-MLX rev 1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+      "vehicle_bpw": 4.252735126866492,
+      "covers": true,
+      "why": "geo_tpr64_tg128 is the production Qwen3.8 q4 winner. Uniform q4/q3 at this geometry is in-scope."
+    },
+    "covers": [
+      "Qwen3.8 gate_proj 17408\u00d75120 at tpr64 TG128 2 rows/TG, in-register occupancy tile",
+      "Qwen3.8 down_proj 5120\u00d717408 at the same launch class",
+      "Families: prod_q4_nibble, uniform_q4/q3/q2, binary_g128, ternary_t0.7, additive_q2q2, rice CSR in-register",
+      "Kernel-numeric fidelity of those packed paths (cosine\u22481, max_abs~1e-7) against the unpack reference"
+    ],
+    "does_not_cover": [
+      "tg256 (Q80-won 256 threads/row): gate ~26541 ns vs tpr64 ~15125 \u2014 penalty is launch geometry, still recon_excess=0 vs byte floor",
+      "serial 1-thread-per-row extract (DISPROVEN PATH; the original 5.9\u00d7 vehicle)",
+      "rice serial bitstream (NS-031; cosine not even scored)",
+      "hgravs01 two-stage L@(R@x) \u2014 the 33rd variant, recon_excess 67852 ns",
+      "hadamard as 'same ns as f32': gate 17333 vs 15125; cosine 1.0 with max_abs 0.89 is the scale trap",
+      "Q80 routed experts 512\u00d72048 (occupancy-starved vs 17408-row GEMV; Q80 win was occupancy tiles, not this tpr64 result)",
+      "Qwen3.8 mixed production reader: HGRAVB01/HGRAVR02 bind q80_*_tg256 / simd_bytes, HGRAVS simd3 \u2014 uses_tpr64=False",
+      "attention k/v 1024-row organs (G109: 2.5\u00d7 worse ps/element, launch-bound; increasing R makes them worse)",
+      "lm_head 248320\u00d75120 (geo_tpr64 exists; reconstruction-is-free did not measure it; uint32 addressing overflow is a separate HGRAVU01 story)",
+      "teacher quality vs BF16 (except hgravs cosine 0.9317, which is approximation error)"
+    ],
+    "g109_small_organs": "k_proj and v_proj at 1024 rows cost 3.86-4.03 ps/element against 1.37-1.60 for the large organs -- 2.5x worse per element purely from being small. Increasing R makes them WORSE (up to 6.01 at R=8) because there are not enough rows to fill the tiles.",
+    "g109_optimum_organ_dependent": "R=2 for q_proj, v_proj, o_proj, gate_proj, down_proj and dn.in_proj_qkv; R=1 for k_proj; R=8 for lm_head. A single global tiling is leaving something on the table at every organ that is not its optimum, which is exactly what this obligation suspected.",
+    "judgement": "The free-reconstruction result is real and narrow. It covers in-register occupancy-tile GEMV of the production tpr64 launch class on the two large Qwen3.8 MLP shapes. It does not transfer to the shipped mixed reader, to Q80 expert shapes, to two-stage algebra, to serial rice, or to small attention organs. Reopening a codec is legal only on a named launch geometry that has been measured for THAT codec and shape.",
+    "mixed_reader": {
+      "gate_proj_bind": "HGRAVB01 -> q80_binary_group_matvec_tg256 (serial family fallback via decode_family::matvec_binary)",
+      "up_proj_bind": "HGRAVR02 -> q80_binary_group_csr_matvec_tg256 (CSR leftover q80_sparse_q1_apply_csr when fuse off)",
+      "down_proj_bind": "HGRAVS01 r160_b3 -> two-stage q80_hgravs01_factor_matvec_simd3 (L @ (R @ x), mid[160] only)",
+      "uses_tpr64": false,
+      "uses_tg256": true,
+      "coherence_verdict": "INCOHERENT",
+      "coherence_verdict_plain": "mixed-2p0-v1 is INCOHERENT natively. Every prompt collapsed to newlines / ')' / '.' salad. This is now attributable to the packed representation (plus whatever numeric error the existing Q80 occupancy tiles have), not to a mixed->float->Q4 double quantisation. The reconstructed-Q4 vehicle had produced a single <|im_end|>; the native path produces a different collapse. Neither is English or a correct France/Paris answer.",
+      "fallbacks_total": 0,
+      "dense_w_materialized_total": 0,
+      "reconstruct_to_q4": false,
+      "native_generate_receipt_prompts": 6,
+      "native_generate_fallbacks_total": 0,
+      "native_generate_dense_w": 0
+    }
+  },
+  "ranking": {
+    "ranking": [
+      {
+        "rank": 1,
+        "codec": "rice_q1_rms_2pct in-register CSR @ tpr64 on Qwen3.8 gate_proj",
+        "storage_bpw": 1.28757147695504,
+        "hold_min": 0.8768175416268038,
+        "hold_mean": 0.9014687964340246,
+        "vs_null": 0.0034687964340245347,
+        "kernel_fidelity": "cosine 1.0, max_abs 6e-8, recon_excess 0, median_ns = f32 15125",
+        "why_best": "Only codec uniquely priced at 5.9\u00d7 in the descent catalog whose tpr64 in-register path is measured free on the exact gate shape. Highest rice MLP hold (min 0.8768, mean 0.9015, 100% \u2265 0.86). Still not a GO: +0.0035 over the 0.898 null and no generation."
+      },
+      {
+        "rank": 2,
+        "codec": "rice_q1_rms_2pct on Qwen3.8 attn_in (quality second-reason on 0.99 bar)",
+        "storage_bpw": 1.2879,
+        "hold_min": null,
+        "hold_mean": null,
+        "why_not_best": "Attention 0.99 bar fails (HGRAVR02 typical 0.82\u20130.91, max 0.958)."
+      },
+      {
+        "rank": 3,
+        "codec": "rice_q1_rms_2pct on Qwen3.8 up_proj / down_proj",
+        "why_not_best": "hold means 0.872 / 0.865 sit BELOW the 0.898 null."
+      }
+    ],
+    "best": {
+      "name": "rice_q1_rms_2pct / HGRAVR02 in-register CSR at production tpr64 on Qwen3.8 gate_proj",
+      "storage_bpw": 1.287565523035386,
+      "active_traffic_over_storage": 1.39,
+      "expected_quality": "organ-cosine screen near-null on gate; unknown on doctor-gate gain; unknown on generate",
+      "cheapest_decisive_experiment": {
+        "what": "Pack a single layer (L0) with rice_q1_rms_2pct on gate_proj only; leave every other tensor HQ30UQ4. Bind the rice organ through a geo_tpr64_tg128 CSR kernel (disc_binary_csr_tpr64 class) \u2014 NOT q80_binary_group_csr_matvec_tg256, NOT serial expand, NOT reconstruct-to-Q4. Score vs BF16 on activation-capture-v1 (real X, fit_n=192, hold_n=64) with doctor-gate axes observed/probed/worst_unit/GAIN. The 0.01\u00b7W probe must FAIL gain and PASS cosine (this tool already shows that split). Report every cosine against the 0.898 null. If doctor-gate is healthy relative to same-tensor Q4, run one greedy generate (France/Paris + reverse-string) with 0 fallbacks, GPU timestamps, 3 paired alternating reps vs uniform-q4-v1 on the same binary. Kill on doctor-gate fail, null-only cosine, generate collapse, or silent dense-W. Promote only if generate stays coherent at 1.29 BPW on that organ with the tpr64 bind.",
+        "why_this_is_cheapest": "One organ, one layer, existing capture, no full mixed pack, no Q80 expert remeasure. Arithmetic re-screen of candidate_table with penalty=1.0 is cheaper but not decisive (cannot promote or kill quality). mixed-2p0 already killed the BUNDLE; it does not kill rice-gate-only.",
+        "must_not": [
+          "synthetic / Gaussian X",
+          "cosine-only GO",
+          "tg256 Q80 mixed reader",
+          "rice serial per-token expand",
+          "page-cache-confounded single Metal run offered as a wall",
+          "storage BPW quoted without traffic bytes"
+        ]
+      }
+    },
+    "n_reopened": 1
+  },
+  "promotion_queue_related": [
+    {
+      "lane": "q80-matvec-reconstruction-20260816-153956",
+      "status": "WON",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "qwen38-bpw-descent-20260816-154626",
+      "status": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "110-hgravu01-geo-tpr64-20260817-132150",
+      "status": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    },
+    {
+      "lane": "127-geo-tpr64-g128-20260817-152635",
+      "status": "UNKNOWN",
+      "disposition": "NO_REPORT_MANUAL_REVIEW",
+      "promoted": false
+    }
+  ],
+  "descent_quality": {
+    "catalog": [
+      {
+        "name": "uniform_q4_g64",
+        "cost_class": "CHEAP_INREGISTER",
+        "recon_penalty": 1.0,
+        "note": "Incumbent family. Hawking Qwen3.8 q4 path is 406 GB/s."
+      },
+      {
+        "name": "uniform_q3_g64",
+        "cost_class": "CHEAP_INREGISTER",
+        "recon_penalty": 1.0,
+        "note": "Same affine dequant as q4; one fewer bit."
+      },
+      {
+        "name": "uniform_q2_g64",
+        "cost_class": "CHEAP_INREGISTER",
+        "recon_penalty": 1.0,
+        "note": "Same affine dequant. MLX isolated eval on 5120x17408 was NOT faster than q4 (289 vs 276 us host-wall) \u2014 kernel must stay bandwidth-bound."
+      },
+      {
+        "name": "binary_g128",
+        "cost_class": "CHEAP_INREGISTER",
+        "recon_penalty": 1.0,
+        "note": "Sign * group mean-abs. Decode is one AND + FMA. Cheapest reconstruct."
+      },
+      {
+        "name": "ternary_t0.7_g128",
+        "cost_class": "CHEAP_TERNARY",
+        "recon_penalty": 1.05,
+        "note": "2-bit codes + scale; threshold stored but decode is still in-register."
+      },
+      {
+        "name": "hadamard_q2_g128",
+        "cost_class": "MEDIUM_TRANSFORM",
+        "recon_penalty": 1.15,
+        "note": "Affine q2 in Walsh-Hadamard domain. Extra butterfly per group."
+      },
+      {
+        "name": "additive_q2q2_g64",
+        "cost_class": "MEDIUM_TWO_STAGE",
+        "recon_penalty": 1.2,
+        "note": "Two q2 codebooks. ~4-bit payload, two lookups."
+      },
+      {
+        "name": "rice_q1_rms_2pct",
+        "cost_class": "EXPENSIVE_SPARSE",
+        "recon_penalty": 5.9,
+        "note": "Sibling up_proj recipe. Rice bitstream + scatter. Q80 paid 5.9x / byte."
+      }
+    ],
+    "rice_roles": [
+      {
+        "role": "attn_in",
+        "codec": "rice_q1_rms_2pct",
+        "physical_bpw_mean": 1.2879479132758247,
+        "hold_min": 0.8881514346319901,
+        "hold_mean": 0.9110189692024391,
+        "weight_cosine_min": 0.8427765971835426,
+        "frac_clears_0.86": 1.0,
+        "frac_clears_0.90": 0.5,
+        "recon_penalty_assumed": 5.9,
+        "hold_mean_minus_null": 0.013018969202439057,
+        "beats_null_on_mean": true
+      },
+      {
+        "role": "attn_out",
+        "codec": "rice_q1_rms_2pct",
+        "physical_bpw_mean": 1.2879046969943577,
+        "hold_min": null,
+        "hold_mean": null,
+        "weight_cosine_min": 0.8363961298964473,
+        "frac_clears_0.86": null,
+        "frac_clears_0.90": null,
+        "recon_penalty_assumed": 5.9,
+        "hold_mean_minus_null": null,
+        "beats_null_on_mean": null
+      },
+      {
+        "role": "down_proj",
+        "codec": "rice_q1_rms_2pct",
+        "physical_bpw_mean": 1.2875330307904411,
+        "hold_min": 0.8036136117705948,
+        "hold_mean": 0.8650177267692047,
+        "weight_cosine_min": 0.8371400350217236,
+        "frac_clears_0.86": 0.6666666666666666,
+        "frac_clears_0.90": 0.16666666666666666,
+        "recon_penalty_assumed": 5.9,
+        "hold_mean_minus_null": -0.03298227323079528,
+        "beats_null_on_mean": false
+      },
+      {
+        "role": "gate_proj",
+        "codec": "rice_q1_rms_2pct",
+        "physical_bpw_mean": 1.28757147695504,
+        "hold_min": 0.8768175416268038,
+        "hold_mean": 0.9014687964340246,
+        "weight_cosine_min": 0.841882740511393,
+        "frac_clears_0.86": 1.0,
+        "frac_clears_0.90": 0.16666666666666666,
+        "recon_penalty_assumed": 5.9,
+        "hold_mean_minus_null": 0.0034687964340245347,
+        "beats_null_on_mean": true
+      },
+      {
+        "role": "up_proj",
+        "codec": "rice_q1_rms_2pct",
+        "physical_bpw_mean": 1.2875429789225261,
+        "hold_min": 0.812629449415419,
+        "hold_mean": 0.8718263720282705,
+        "weight_cosine_min": 0.8409442151008109,
+        "frac_clears_0.86": 0.3333333333333333,
+        "frac_clears_0.90": 0.16666666666666666,
+        "recon_penalty_assumed": 5.9,
+        "hold_mean_minus_null": -0.026173627971729507,
+        "beats_null_on_mean": false
+      }
+    ],
+    "binary_roles": [
+      {
+        "role": "attn_in",
+        "codec": "binary_g128",
+        "physical_bpw_mean": 1.125034031338162,
+        "hold_min": 0.8417957037238608,
+        "hold_mean": 0.8637625343361949,
+        "weight_cosine_min": 0.7905012019523638,
+        "frac_clears_0.86": 0.3333333333333333,
+        "frac_clears_0.90": 0.16666666666666666,
+        "recon_penalty_assumed": 1.0,
+        "hold_mean_minus_null": -0.034237465663805144,
+        "beats_null_on_mean": false
+      },
+      {
+        "role": "attn_out",
+        "codec": "binary_g128",
+        "physical_bpw_mean": 1.1250656127929688,
+        "hold_min": null,
+        "hold_mean": null,
+        "weight_cosine_min": 0.7719085835080445,
+        "frac_clears_0.86": null,
+        "frac_clears_0.90": null,
+        "recon_penalty_assumed": 1.0,
+        "hold_mean_minus_null": null,
+        "beats_null_on_mean": null
+      },
+      {
+        "role": "down_proj",
+        "codec": "binary_g128",
+        "physical_bpw_mean": 1.1250234267290902,
+        "hold_min": 0.7297274499934864,
+        "hold_mean": 0.8199290033951224,
+        "weight_cosine_min": 0.783037478700668,
+        "frac_clears_0.86": 0.16666666666666666,
+        "frac_clears_0.90": 0.16666666666666666,
+        "recon_penalty_assumed": 1.0,
+        "hold_mean_minus_null": -0.0780709966048776,
+        "beats_null_on_mean": false
+      },
+      {
+        "role": "gate_proj",
+        "codec": "binary_g128",
+        "physical_bpw_mean": 1.1250234267290902,
+        "hold_min": 0.837793357856843,
+        "hold_mean": 0.8669480693509916,
+        "weight_cosine_min": 0.7944383810750556,
+        "frac_clears_0.86": 0.3333333333333333,
+        "frac_clears_0.90": 0.16666666666666666,
+        "recon_penalty_assumed": 1.0,
+        "hold_mean_minus_null": -0.031051930649008463,
+        "beats_null_on_mean": false
+      },
+      {
+        "role": "up_proj",
+        "codec": "binary_g128",
+        "physical_bpw_mean": 1.1250234267290902,
+        "hold_min": 0.7638894725041271,
+        "hold_mean": 0.8346261270426322,
+        "weight_cosine_min": 0.7941106171508765,
+        "frac_clears_0.86": 0.16666666666666666,
+        "frac_clears_0.90": 0.16666666666666666,
+        "recon_penalty_assumed": 1.0,
+        "hold_mean_minus_null": -0.06337387295736785,
+        "beats_null_on_mean": false
+      }
+    ],
+    "candidate_rice_containing": [
+      {
+        "codec": "REF_sibling_binary_rice_hgravs01_q4rest",
+        "projected_bpw": 2.0853,
+        "recon_penalty": 2.925,
+        "projected_tps": 60.81,
+        "projected_tps_cost_adjusted": 20.79,
+        "verdict": "REFERENCE ONLY. If L00 ratios hold globally, complete ~2.09 \u2014 may MISS 2.0. If rice inherits Q80's 5.9x/byte, adjusted 20.8 TPS is a REGRESSION vs Q4 29.8."
+      }
+    ],
+    "coherence_floor": {
+      "statement": "On real Qwen3.8 activations (256 tokens, 6 layers, holdout 64), the cheap-to-reconstruct coherence floor is uniform-q3 at 3.25 BPW. No cheap in-register codec is both below 2.0 BPW and quality-intact.",
+      "quality_intact": {
+        "codec": "uniform_q3_g64",
+        "physical_bpw": 3.25,
+        "hold_min_across_mlp_and_attn_in": 0.9679,
+        "frac_clears_0.95": 1.0
+      },
+      "next_cheap_rung": {
+        "codec": "ternary_t0.7_g128",
+        "physical_bpw": 2.25,
+        "hold_min": 0.8429,
+        "note": "gate/up/attn_in stay >=0.90; L63 down_proj is the first organ to dip (0.843)."
+      },
+      "below_2p0_requires": [
+        "a 1-bit organ (binary) on substantial mass \u2014 quality NOT intact at mid-depth",
+        "or a structured codec (HGRAVS01 two-stage on the wide down_proj, 0.13 BPW)",
+        "rice residual is a small quality bump over binary (~+0.04) and a reconstruction regression risk"
+      ],
+      "q30_warning": "Q30 lost coherence at <=1.5 BPW. binary_all at 1.42 is in that graveyard zone.",
+      "capture_limit": "256 tokens / 64 holdout. Organ cosine is a screen; generation is the gate. attn_out in-dim is 6144 and was weight-scored only."
+    },
+    "activation": {
+      "not_synthetic": true,
+      "n_tokens": 256,
+      "fit_n": 192,
+      "hold_n": 64,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/activation-capture-v1",
+      "sha256_self": "fdd937e20500b862452cf4732aa525087e1a3d209c1271e6c021811620687512"
+    }
+  },
+  "confirms": [
+    {
+      "field": "recon_measured.n_variants",
+      "observed": 33,
+      "expected": 33,
+      "confirmed": true
+    },
+    {
+      "field": "recon_excess_zero",
+      "observed": 32,
+      "expected": 32,
+      "confirmed": true
+    },
+    {
+      "field": "f32_gate_ns",
+      "observed": 15125,
+      "expected": 15125,
+      "confirmed": true
+    },
+    {
+      "field": "f32_down_ns",
+      "observed": 7083,
+      "expected": 7083,
+      "confirmed": true
+    },
+    {
+      "field": "free_receipt.f32_gate",
+      "observed": 15125,
+      "expected": 15125,
+      "confirmed": true
+    },
+    {
+      "field": "slowdown_per_byte_x",
+      "observed": 5.9,
+      "expected": 5.9,
+      "confirmed": true
+    },
+    {
+      "field": "q4_gb_s",
+      "observed": 15.2,
+      "expected": 15.2,
+      "confirmed": true
+    },
+    {
+      "field": "mixed_gb_s",
+      "observed": 2.57,
+      "expected": 2.57,
+      "confirmed": true
+    },
+    {
+      "field": "ns006.slowdown",
+      "observed": 5.9,
+      "expected": 5.9,
+      "confirmed": true
+    },
+    {
+      "field": "won.base_gpu_matvec_ns",
+      "observed": 867040696,
+      "expected": 867040696,
+      "confirmed": true
+    },
+    {
+      "field": "won.ours_gpu_matvec_ns",
+      "observed": 36598269,
+      "expected": 36598269,
+      "confirmed": true
+    },
+    {
+      "field": "q80_mixed_generate.status",
+      "observed": "COHERENT",
+      "expected": "COHERENT",
+      "confirmed": true
+    },
+    {
+      "field": "q80_mixed_bpw",
+      "observed": 1.444446,
+      "expected": 1.444446,
+      "confirmed": true
+    },
+    {
+      "field": "mixed2p0.coherence",
+      "observed": "INCOHERENT",
+      "expected": "INCOHERENT",
+      "confirmed": true
+    },
+    {
+      "field": "mixed2p0.fallbacks",
+      "observed": 0,
+      "expected": 0,
+      "confirmed": true
+    },
+    {
+      "field": "scale_probe.cosine_is_1",
+      "observed": true,
+      "expected": true,
+      "confirmed": true
+    },
+    {
+      "field": "scale_probe.gain_is_0_01",
+      "observed": true,
+      "expected": true,
+      "confirmed": true
+    },
+    {
+      "field": "null_cosine_ns013",
+      "observed": 0.898,
+      "expected": 0.898,
+      "confirmed": true
+    },
+    {
+      "field": "rice_catalog_5_9_count",
+      "observed": 1,
+      "expected": 1,
+      "confirmed": true
+    },
+    {
+      "field": "hgravs_is_the_33rd",
+      "observed": 1,
+      "expected": 1,
+      "confirmed": true
+    },
+    {
+      "field": "hgravs_name",
+      "observed": "hgravs01_r160_q3",
+      "expected": "hgravs01_r160_q3",
+      "confirmed": true
+    },
+    {
+      "field": "reader.uses_tpr64",
+      "observed": false,
+      "expected": false,
+      "confirmed": true
+    },
+    {
+      "field": "reader.uses_tg256",
+      "observed": true,
+      "expected": true,
+      "confirmed": true
+    }
+  ],
+  "all_pinned_numbers_confirmed": true,
+  "unconfirmed": [],
+  "what_i_watched_fail": [
+    {
+      "n": 1,
+      "what": "5.9\u00d7 transferred from Q80 serial extract to Qwen3.8 rice without re-measurement",
+      "evidence": "Q80_MIXED_RECONSTRUCTION_WALL slowdown_per_byte_x=5.9 (2.57 vs 15.2 GB/s). Descent catalog rice recon_penalty=5.9 'Q80 paid 5.9x / byte'. STALE_BASELINE_PATTERN case 'BPW descent screen rice penalty' marks it invalidated. QWEN38_RECON_MEASURED: rice CSR tpr64 recon_excess=0."
+    },
+    {
+      "n": 2,
+      "what": "reconstruction-is-free cosine 1.000000 is scale-invariant",
+      "evidence": "hadamard gate cosine=1.0 max_abs=0.8912336826324463; down cosine=1.0 max_abs=0.5623984336853027. This tool's 0.01\u00b7W probe: cosine=1.0000000000000002 (ACCEPTS), gain=0.01 (REJECTS). Standing law in gravity_doctor_gate._gain."
+    },
+    {
+      "n": 3,
+      "what": "prose 32/33 cosine and 15124\u201315541-includes-hadamard do not match the table",
+      "evidence": "counts={'total': 33, 'recon_excess_zero': 32, 'cosine_approx_1': 30, 'cosine_none': 2, 'cosine_not_1': 1, 'cosine_1_but_max_abs_not_tiny': 2, 'tpr64_inregister': 18, 'tg256': 8, 'serial_artifact': 4}. Nonzero recon_excess is 1/33 (hgravs) \u2014 that 32/33 is exact. cosine\u22481 is 30/33 (2 rice serial None, 1 hgravs 0.9317). hadamard gate 17333 ns is outside 15124\u201315541. recon_excess=0 because it is vs the byte floor, not vs f32."
+    },
+    {
+      "n": 4,
+      "what": "shipped mixed reader is tg256, not tpr64",
+      "evidence": "QWEN38_NATIVE_MIXED_READER what_landed.mlp binds HGRAVB01/HGRAVR02 to q80_*_tg256 / simd_bytes and HGRAVS to simd3. Reconstruction-is-free does not cover the production mixed path. tg256 gate ~26541 ns."
+    },
+    {
+      "n": 5,
+      "what": "Q80 mixed recipe on dense Qwen3.8 is natively INCOHERENT",
+      "evidence": "mixed-2p0-v1 6/6 prompts collapsed (newlines / ')' / '.'). 0 fallbacks, 0 dense_w, reconstruct_to_q4=false. Q80 mixed-1p5 on experts was COHERENT at 1.444 BPW. Recipe does not transfer."
+    },
+    {
+      "n": 6,
+      "what": "serial kernels look faster and are the original artifact",
+      "evidence": "gate rice serial [{'organ': 'gate', 'median_gpu_ns': 3999, 'cosine': None}, {'organ': 'down', 'median_gpu_ns': 3125, 'cosine': None}]; gate q4 serial [4624] ns vs tpr64 15125. Notes say DISPROVEN / ARTIFACT PATH. NS-031 forbids per-token rice serial."
+    },
+    {
+      "n": 7,
+      "what": "0.13 BPW hgravs looks like a result until paired with health and active cost",
+      "evidence": "hgravs is the 33rd: recon_excess 67852 ns, cosine 0.9317. Archaeology: 223 tensor-operator rows with local_bpw<0.5, healthy=true: 0. Q80 storage 0.6462 vs active 2.518 is the category-error cousin."
+    },
+    {
+      "n": 8,
+      "what": "0.8604 organ-cosine bar sits below the 0.898 null",
+      "evidence": "NS-013 / NS-016. mixed-1p5 generated coherent text with down_proj holdout cosine 0.7684. rice gate 100% \u2265 0.86 is not a GO."
+    },
+    {
+      "n": 9,
+      "what": "isolated 5-rep GPU timestamps are not a paired token wall",
+      "evidence": "QWEN38_RECON_MEASURED: 5 gpu_ns per variant, isolated organs. QWEN38_COMPLETE_TOKEN_WALL timing_label DIRTY_ENGINEERING. A single Metal run is page-cache confounded. This reopen does not offer a TPS."
+    },
+    {
+      "n": 10,
+      "what": "sparse checkout missing a file is not evidence it does not exist",
+      "evidence": "receipts/ascent-2026-08-16 is tracked and loaded via git-show when not materialized. Do not 'discover' that reconstruction-is-free is absent."
+    },
+    {
+      "n": 11,
+      "what": "number confirmations that this tool itself would have gotten wrong",
+      "evidence": "all pinned numbers confirmed against the receipts"
+    }
+  ],
+  "simd_vehicle": {
+    "bpw": 4.252735126866492,
+    "kernel_runtime_genome": "Qwen38HybridDecodeSession + qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 + qwen38_gated_delta_decode_vi + qwen38_qkvz_rearrange_conv_l2_f32 + qwen38_gqa_qk_norm_rope_cache_f32; deltanet_vi_parallel=true concurrent_independent=false; 1 production CB / 964 dispatches; uniform-q4-v1 BPW=4.252735126866492; PocketAiHub/Qwen3.8-27B-Abliterated-MLX rev 1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "occupancy_gate": {
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "rows": 17408,
+      "threadgroups": 8704,
+      "threads": 1114112,
+      "gpu_cores": 60,
+      "threadgroups_per_core_if_spread": 145.06666666666666,
+      "note": "Not a hardware occupancy counter. Derived from launch geometry vs 60 M3 Ultra cores. A 17408-row gate launches 8704 TGs; the kernel is bandwidth-saturated, not occupancy-starved."
+    }
+  },
+  "complete_token_wall": {
+    "timing_label": "DIRTY_ENGINEERING",
+    "timing_label_reason": "GPU lock held for the series; other CPU/memory lanes may still be live. Not offered as CLEAN_CANDIDATE or BASE_TRUE_TPS.",
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "bpw": 4.252735126866492
+  },
+  "wrote_to": "/Users/scammermike/.claude-grok/worktrees/n15tpr-20260823-142257/receipts/headless/NOETIC_TPR64_REOPEN.json"
+}

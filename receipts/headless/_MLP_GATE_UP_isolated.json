@@ -1,0 +1,279 @@
+{
+  "isolated": {
+    "arms": [
+      {
+        "dense_w_materialized": 0,
+        "gpu_ns_max": 252083,
+        "gpu_ns_median": 251833,
+        "gpu_ns_min": 251666,
+        "gpu_ns_reps": [
+          251708,
+          251666,
+          251750,
+          251833,
+          252041,
+          251874,
+          252083
+        ],
+        "id": "tpr64",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "launches": 1,
+        "reps": 7,
+        "role": "no_op_control",
+        "warmup": 3,
+        "weight_payload_bytes": 55705600
+      },
+      {
+        "dense_w_materialized": 0,
+        "gpu_ns_max": 276916,
+        "gpu_ns_median": 258291,
+        "gpu_ns_min": 251499,
+        "gpu_ns_reps": [
+          258291,
+          274624,
+          276125,
+          276916,
+          257000,
+          251499,
+          251499
+        ],
+        "id": "acc_only",
+        "kernel": "affine2_group64_matvec_gate_up_geo_tpr64_tg128",
+        "launches": 1,
+        "reps": 7,
+        "role": "component_accumulate",
+        "warmup": 3,
+        "weight_payload_bytes": 55705600
+      },
+      {
+        "dense_w_materialized": 0,
+        "gpu_ns_max": 147500,
+        "gpu_ns_median": 146500,
+        "gpu_ns_min": 146250,
+        "gpu_ns_reps": [
+          147458,
+          146291,
+          147500,
+          146416,
+          146749,
+          146250,
+          146500
+        ],
+        "id": "biasprep",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+        "launches": 1,
+        "reps": 7,
+        "role": "lever",
+        "warmup": 3,
+        "weight_payload_bytes": 55705600
+      },
+      {
+        "dense_w_materialized": 0,
+        "gpu_ns_max": 145666,
+        "gpu_ns_median": 145291,
+        "gpu_ns_min": 145124,
+        "gpu_ns_reps": [
+          145124,
+          145250,
+          145583,
+          145291,
+          145500,
+          145666,
+          145250
+        ],
+        "id": "dropbias",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+        "launches": 1,
+        "reps": 7,
+        "role": "deliberately_bad_control",
+        "warmup": 3,
+        "weight_payload_bytes": 55705600
+      },
+      {
+        "dense_w_materialized": 0,
+        "gpu_ns_max": 49750,
+        "gpu_ns_median": 47125,
+        "gpu_ns_min": 47041,
+        "gpu_ns_reps": [
+          48208,
+          47166,
+          47083,
+          47125,
+          47125,
+          47041,
+          49750
+        ],
+        "id": "decode_probe",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_decode_probe_tpr64_tg128",
+        "launches": 1,
+        "reps": 7,
+        "role": "component_packed_decode",
+        "warmup": 3,
+        "weight_payload_bytes": 55705600
+      },
+      {
+        "dense_w_materialized": 0,
+        "gpu_ns_max": 75499,
+        "gpu_ns_median": 51750,
+        "gpu_ns_min": 49124,
+        "gpu_ns_reps": [
+          49416,
+          51750,
+          49124,
+          53708,
+          51333,
+          51833,
+          75499
+        ],
+        "id": "addr_probe",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_addr_probe_tpr64_tg128",
+        "launches": 1,
+        "reps": 7,
+        "role": "component_load_only",
+        "warmup": 3,
+        "weight_payload_bytes": 55705600
+      },
+      {
+        "dense_w_materialized": 0,
+        "gpu_ns_max": 9481499,
+        "gpu_ns_median": 9365541,
+        "gpu_ns_min": 9219625,
+        "gpu_ns_reps": [
+          9481499,
+          9270375,
+          9365541,
+          9388000,
+          9219625,
+          9414375,
+          9243083
+        ],
+        "id": "launch64",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "launches": 64,
+        "reps": 7,
+        "role": "component_64_launches",
+        "warmup": 3,
+        "weight_payload_bytes": 55705600
+      },
+      {
+        "dense_w_materialized": 0,
+        "gpu_ns_max": 5791,
+        "gpu_ns_median": 5375,
+        "gpu_ns_min": 4624,
+        "gpu_ns_reps": [
+          5375,
+          5000,
+          5791,
+          4624,
+          5375,
+          4666,
+          5375
+        ],
+        "id": "xsum64",
+        "kernel": "affine2_xsum64",
+        "launches": 1,
+        "reps": 7,
+        "role": "component_xsum",
+        "warmup": 3,
+        "weight_payload_bytes": 55705600
+      }
+    ],
+    "compile_s": 0.109016917,
+    "dense_w_materialized": 0,
+    "did_not_load_second_27b": true,
+    "occupancy": [
+      {
+        "id": "tpr64",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "acc_only",
+        "kernel": "affine2_group64_matvec_gate_up_geo_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "biasprep",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "dropbias",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "decode_probe",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_decode_probe_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "addr_probe",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_addr_probe_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "launch64",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "xsum64",
+        "kernel": "affine2_xsum64",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      }
+    ],
+    "parity": [
+      {
+        "dense_w_materialized": 0,
+        "id": "tpr64",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "max_abs_diff": 4.76837158203125e-7,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "biasprep",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+        "max_abs_diff": 4.76837158203125e-7,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "dropbias",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+        "max_abs_diff": 3.687382698059082,
+        "must_fail": true,
+        "ok": false,
+        "rejected": true,
+        "tolerance": 0.019999999552965164
+      }
+    ],
+    "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+    "shape": {
+      "cols": 5120,
+      "label": "mlp.gate_up_swiglu",
+      "rows": 17408
+    }
+  },
+  "production": null,
+  "schema": "hawking.headless.mlp_gate_up.raw.v1"
+}

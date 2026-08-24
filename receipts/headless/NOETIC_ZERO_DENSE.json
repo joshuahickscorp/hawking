@@ -1,0 +1,941 @@
+{
+  "schema": "hawking.headless.noetic_zero_dense.v1",
+  "generated_at": "2026-08-23T20:46:00Z",
+  "git_head": "38ab698658b4c7966d1b85f96047d886c6e43ad0",
+  "python": "/Users/scammermike/.grok-vision/bin/python",
+  "torch": "2.13.0 mps=False",
+  "device": "cpu",
+  "mps_available": false,
+  "claim": "A representation that claims STRUCTURAL compression must never need to materialise the dense parent tensor to run. If it reconstructs dense W and then does an ordinary matvec, it is a STORAGE format wearing a compression costume: storage_bpw is fractional while active_bpw_cached is 16.",
+  "question": "For each structured representation available in this repo, does the forward pass ever allocate a dense parent-shaped tensor?",
+  "method": {
+    "instrument": "torch.utils._python_dispatch.TorchDispatchMode",
+    "new_storage_only": true,
+    "parent_rule": "ZERO_DENSE=false iff any NEW tensor allocated during the forward has numel >= parent_numel (the dense weight count). Views of existing storage do not count. Shape may be 2D parent, transpose, or a 4D pack of the same cardinality (q4 stack-before-reshape).",
+    "not_decided_by_reading_source": true,
+    "parent_weights_loaded": false,
+    "synthetic_factors": true,
+    "tokens": 4,
+    "compute_dtype": "float32",
+    "cache_dtype_for_active_bpw_cached": "float16"
+  },
+  "parent_geometry": {
+    "organ": "mlp.up_proj",
+    "rows": 17408,
+    "cols": 5120,
+    "numel": 89128960,
+    "model": "Qwen3.8-27B",
+    "note": "geometry only; no parent shard was opened"
+  },
+  "cited_prior": {
+    "receipt": "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+    "structure": "svd_w_r12_bpw0.05",
+    "storage_bpw": 0.0485,
+    "active_bpw_fused": 0.0485,
+    "active_bpw_cache_f16": 16.0,
+    "note": "Same structure, three answers depending on whether you fuse or materialise. This lane MEASURES the allocation, it does not re-score cosine."
+  },
+  "negative_controls": {
+    "dequant_then_matvec": {
+      "id": "uniform_q4_group64",
+      "path": "reconstruct_then_matvec",
+      "expected_zero_dense": false,
+      "observed_zero_dense": false,
+      "peak_allocation_bytes": 356515840,
+      "ok": true,
+      "meaning": "Ordinary q4 dequant-then-matvec MUST report ZERO_DENSE=false. If the detector calls it true, the detector is broken."
+    },
+    "fused": {
+      "id": "svd_w_r12_bpw0.05",
+      "path": "fused",
+      "expected_zero_dense": true,
+      "observed_zero_dense": true,
+      "peak_allocation_bytes": 278528,
+      "also_checked": {
+        "id": "uniform_q4_group64",
+        "path": "fused",
+        "observed_zero_dense": true
+      },
+      "ok": true,
+      "meaning": "A genuinely fused two-GEMM (and the production q4 group GEMV) MUST report ZERO_DENSE=true."
+    },
+    "both_ok": true
+  },
+  "structures": [
+    {
+      "id": "uniform_q4_group64",
+      "family": "grouped_absmax_q4",
+      "repo_anchor": "crates/hawking-core/shaders/qwen_uniform_q4.metal :: qwen_uniform_q4_group64_matvec",
+      "parent_shape": [
+        17408,
+        5120
+      ],
+      "parent_numel": 89128960,
+      "storage_bpw": 4.25,
+      "active_bpw_fused": 4.25,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 47349760,
+      "fused_resident_bytes": 47349760,
+      "cached_f16_parent_bytes": 178257920,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 5570560,
+        "peak_allocation_shape": [
+          17408,
+          80
+        ],
+        "peak_allocation_numel": 1392640,
+        "peak_allocation_op": "dtype",
+        "n_new_tensors": 882,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 356515840,
+        "peak_allocation_shape": [
+          17408,
+          80,
+          32,
+          2
+        ],
+        "peak_allocation_numel": 89128960,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 12,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              17408,
+              80,
+              32,
+              2
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": false
+          },
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": true
+          },
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "Tensor",
+            "matches_parent_shape": true
+          }
+        ],
+        "n_parent_shaped_allocations": 3
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 5570560,
+      "peak_allocation_bytes_reconstruct": 356515840,
+      "role": "negative_control_pair",
+      "fused_is_production_kernel_algebra": true,
+      "reconstruct_is_dequant_then_matvec": true,
+      "q4_bytes_per_group": 34,
+      "groups_per_row": 80
+    },
+    {
+      "id": "svd_w_r12_bpw0.05",
+      "family": "low_rank_svd",
+      "repo_anchor": "receipts/headless/DENSE_SUBBIT_TRANSFER.json (activation-aware SVD factors)",
+      "parent_shape": [
+        17408,
+        5120
+      ],
+      "parent_numel": 89128960,
+      "storage_bpw": 0.04852941176470588,
+      "active_bpw_fused": 0.04852941176470588,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 540672,
+      "fused_resident_bytes": 540672,
+      "cached_f16_parent_bytes": 178257920,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 278528,
+        "peak_allocation_shape": [
+          4,
+          17408
+        ],
+        "peak_allocation_numel": 69632,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 2,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 356515840,
+        "peak_allocation_shape": [
+          17408,
+          5120
+        ],
+        "peak_allocation_numel": 89128960,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 2,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": true
+          }
+        ],
+        "n_parent_shaped_allocations": 1
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 278528,
+      "peak_allocation_bytes_reconstruct": 356515840,
+      "rank": 12,
+      "factor_bpw_formula": "16*k*(m+n)/(m*n)",
+      "cited_storage_bpw": 0.0485,
+      "cited_active_bpw_fused": 0.0485,
+      "cited_active_bpw_cache_f16": 16.0
+    },
+    {
+      "id": "hgravs01_factor_r160",
+      "family": "low_rank_plus_sparse_correction",
+      "repo_anchor": "crates/hawking-core/shaders/q80_mixed_decode.metal :: q80_hgravs01_factor_matvec",
+      "parent_shape": [
+        17408,
+        5120
+      ],
+      "parent_numel": 89128960,
+      "storage_bpw": 0.6470588235294118,
+      "active_bpw_fused": 0.6470588235294118,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 7208960,
+      "fused_resident_bytes": 7208960,
+      "cached_f16_parent_bytes": 178257920,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 278528,
+        "peak_allocation_shape": [
+          4,
+          17408
+        ],
+        "peak_allocation_numel": 69632,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 2,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 356515840,
+        "peak_allocation_shape": [
+          17408,
+          5120
+        ],
+        "peak_allocation_numel": 89128960,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 2,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": true
+          }
+        ],
+        "n_parent_shaped_allocations": 1
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 278528,
+      "peak_allocation_bytes_reconstruct": 356515840,
+      "rank": 160,
+      "note": "Production kernel dequantises 3-bit factors in registers and runs L@(R@x). This probe runs the two-GEMM algebra on f16-billed factors; forming W = L@R.T is the reconstruct path."
+    },
+    {
+      "id": "gravity_pq_adc",
+      "family": "fused_dictionary_lookup_accumulate",
+      "repo_anchor": "crates/hawking-core/shaders/gravity_pq.metal :: gravity_pq_matvec",
+      "parent_shape": [
+        17408,
+        5120
+      ],
+      "parent_numel": 89128960,
+      "storage_bpw": 0.4852941176470588,
+      "active_bpw_fused": 0.4852941176470588,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 5406720,
+      "fused_resident_bytes": 5406720,
+      "cached_f16_parent_bytes": 178257920,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 278528,
+        "peak_allocation_shape": [
+          4,
+          17408
+        ],
+        "peak_allocation_numel": 69632,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 481,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 356515840,
+        "peak_allocation_shape": [
+          17408,
+          160,
+          32
+        ],
+        "peak_allocation_numel": 89128960,
+        "peak_allocation_op": "Tensor",
+        "n_new_tensors": 3,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              17408,
+              160,
+              32
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "Tensor",
+            "matches_parent_shape": false
+          }
+        ],
+        "n_parent_shaped_allocations": 1
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 278528,
+      "peak_allocation_bytes_reconstruct": 356515840,
+      "sub_dim": 32,
+      "card": 256,
+      "bits": 8,
+      "n_sub": 160
+    },
+    {
+      "id": "tensor_train_tt4_r8",
+      "family": "tensor_contraction",
+      "repo_anchor": "G1 tt_gemv_f16 / receipts/ascent-2026-08-16/G034_TENSOR_OPERATOR.json",
+      "parent_shape": [
+        17408,
+        5120
+      ],
+      "parent_numel": 89128960,
+      "storage_bpw": 0.002309283088235294,
+      "active_bpw_fused": 0.002309283088235294,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 25728,
+      "fused_resident_bytes": 25728,
+      "cached_f16_parent_bytes": 178257920,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 278528,
+        "peak_allocation_shape": [
+          4,
+          136,
+          128
+        ],
+        "peak_allocation_numel": 69632,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 5,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 356515840,
+        "peak_allocation_shape": [
+          136,
+          128,
+          40,
+          128
+        ],
+        "peak_allocation_numel": 89128960,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 4,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              136,
+              128,
+              40,
+              128
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": false
+          }
+        ],
+        "n_parent_shaped_allocations": 1
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 278528,
+      "peak_allocation_bytes_reconstruct": 356515840,
+      "I0": 136,
+      "I1": 128,
+      "J0": 40,
+      "J1": 128,
+      "ranks": [
+        8,
+        8,
+        8
+      ],
+      "named_kernel_in_shaders": false
+    },
+    {
+      "id": "binary_planes_k2",
+      "family": "structured_transform",
+      "repo_anchor": "crates/hawking-core/shaders/qwen_uniform_q4.metal :: qwen_binary_planes_k*_matvec",
+      "parent_shape": [
+        17408,
+        5120
+      ],
+      "parent_numel": 89128960,
+      "storage_bpw": 2.000000359030331,
+      "active_bpw_fused": 2.000000359030331,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 22282244,
+      "fused_resident_bytes": 22282244,
+      "cached_f16_parent_bytes": 178257920,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 4456448,
+        "peak_allocation_shape": [
+          17408,
+          8,
+          8
+        ],
+        "peak_allocation_numel": 1114112,
+        "peak_allocation_op": "Tensor",
+        "n_new_tensors": 1130,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 356515840,
+        "peak_allocation_shape": [
+          17408,
+          5120
+        ],
+        "peak_allocation_numel": 89128960,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 19,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": true
+          },
+          {
+            "shape": [
+              17408,
+              640,
+              8
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "int32",
+            "op": "Tensor",
+            "matches_parent_shape": false
+          },
+          {
+            "shape": [
+              17408,
+              640,
+              8
+            ],
+            "numel": 89128960,
+            "bytes": 89128960,
+            "dtype": "bool",
+            "op": "Scalar",
+            "matches_parent_shape": false
+          },
+          {
+            "shape": [
+              17408,
+              640,
+              8
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "self",
+            "matches_parent_shape": false
+          },
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "Tensor",
+            "matches_parent_shape": true
+          },
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "Tensor",
+            "matches_parent_shape": true
+          },
+          {
+            "shape": [
+              17408,
+              640,
+              8
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "int32",
+            "op": "Tensor",
+            "matches_parent_shape": false
+          },
+          {
+            "shape": [
+              17408,
+              640,
+              8
+            ],
+            "numel": 89128960,
+            "bytes": 89128960,
+            "dtype": "bool",
+            "op": "Scalar",
+            "matches_parent_shape": false
+          }
+        ],
+        "n_parent_shaped_allocations": 11
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 4456448,
+      "peak_allocation_bytes_reconstruct": 356515840,
+      "k": 2,
+      "bits_per_weight": 2
+    },
+    {
+      "id": "fwht_hadamard_n4096",
+      "family": "structured_transform",
+      "repo_anchor": "tools/gravity_xform_hadamard.py / G032_XFORM_HADAMARD_Q4",
+      "parent_shape": [
+        4096,
+        4096
+      ],
+      "parent_numel": 16777216,
+      "storage_bpw": 0.0,
+      "active_bpw_fused": 0.0,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 0,
+      "fused_resident_bytes": 0,
+      "cached_f16_parent_bytes": 33554432,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 65536,
+        "peak_allocation_shape": [
+          4,
+          4096
+        ],
+        "peak_allocation_numel": 16384,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 38,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 67108864,
+        "peak_allocation_shape": [
+          4096,
+          4096
+        ],
+        "peak_allocation_numel": 16777216,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 51,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              4096,
+              4096
+            ],
+            "numel": 16777216,
+            "bytes": 67108864,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": true
+          },
+          {
+            "shape": [
+              4096,
+              4096
+            ],
+            "numel": 16777216,
+            "bytes": 67108864,
+            "dtype": "float32",
+            "op": "Tensor",
+            "matches_parent_shape": true
+          }
+        ],
+        "n_parent_shaped_allocations": 2
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 65536,
+      "peak_allocation_bytes_reconstruct": 67108864,
+      "n": 4096,
+      "generated": true,
+      "note": "STORAGE_BPW=0: the operator is the butterfly, not a stored H."
+    },
+    {
+      "id": "lowrank_r32_plus_sparse_0p5pct",
+      "family": "low_rank_plus_sparse_correction",
+      "repo_anchor": "C3LOWRANKSPARSE_DESIGN / q80 rice CSR residual (no dense W)",
+      "parent_shape": [
+        17408,
+        5120
+      ],
+      "parent_numel": 89128960,
+      "storage_bpw": 0.6094109030330882,
+      "active_bpw_fused": 0.6094109030330882,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 6789520,
+      "fused_resident_bytes": 6789520,
+      "cached_f16_parent_bytes": 178257920,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 278528,
+        "peak_allocation_shape": [
+          4,
+          17408
+        ],
+        "peak_allocation_numel": 69632,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 114,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 356515840,
+        "peak_allocation_shape": [
+          17408,
+          5120
+        ],
+        "peak_allocation_numel": 89128960,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 4,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": true
+          }
+        ],
+        "n_parent_shaped_allocations": 1
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 278528,
+      "peak_allocation_bytes_reconstruct": 356515840,
+      "rank": 32,
+      "nnz": 445644,
+      "density": 0.005
+    },
+    {
+      "id": "shared_basis_r64",
+      "family": "shared_basis_x_coefficients",
+      "repo_anchor": "C1SHAREDBASIS_DESIGN / G035 shared_beats_independent=false",
+      "parent_shape": [
+        17408,
+        5120
+      ],
+      "parent_numel": 89128960,
+      "storage_bpw": 0.25882352941176473,
+      "active_bpw_fused": 0.25882352941176473,
+      "active_bpw_cached": 16.0,
+      "storage_bytes": 2883584,
+      "fused_resident_bytes": 2883584,
+      "cached_f16_parent_bytes": 178257920,
+      "fused": {
+        "zero_dense": true,
+        "peak_allocation_bytes": 278528,
+        "peak_allocation_shape": [
+          4,
+          17408
+        ],
+        "peak_allocation_numel": 69632,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 2,
+        "parent_shaped_allocations": [],
+        "n_parent_shaped_allocations": 0
+      },
+      "reconstruct_then_matvec": {
+        "zero_dense": false,
+        "peak_allocation_bytes": 356515840,
+        "peak_allocation_shape": [
+          17408,
+          5120
+        ],
+        "peak_allocation_numel": 89128960,
+        "peak_allocation_op": "default",
+        "n_new_tensors": 2,
+        "parent_shaped_allocations": [
+          {
+            "shape": [
+              17408,
+              5120
+            ],
+            "numel": 89128960,
+            "bytes": 356515840,
+            "dtype": "float32",
+            "op": "default",
+            "matches_parent_shape": true
+          }
+        ],
+        "n_parent_shaped_allocations": 1
+      },
+      "zero_dense": true,
+      "zero_dense_fused": true,
+      "zero_dense_reconstruct": false,
+      "peak_allocation_bytes_fused": 278528,
+      "peak_allocation_bytes_reconstruct": 356515840,
+      "rank": 64,
+      "amortised_over_layers": 64,
+      "storage_bpw_this_tensor": 0.25882352941176473,
+      "storage_bpw_amortised_64_layers": 0.20091911764705883,
+      "note": "Required three-BPW triple is billed on ONE organ (U+V). Amortised figure is extra and does not replace it."
+    }
+  ],
+  "summary": {
+    "n_structures": 9,
+    "zero_dense_fused_true": [
+      "uniform_q4_group64",
+      "svd_w_r12_bpw0.05",
+      "hgravs01_factor_r160",
+      "gravity_pq_adc",
+      "tensor_train_tt4_r8",
+      "binary_planes_k2",
+      "fwht_hadamard_n4096",
+      "lowrank_r32_plus_sparse_0p5pct",
+      "shared_basis_r64"
+    ],
+    "zero_dense_fused_false": [],
+    "reconstruct_then_matvec_zero_dense_false": [
+      "uniform_q4_group64",
+      "svd_w_r12_bpw0.05",
+      "hgravs01_factor_r160",
+      "gravity_pq_adc",
+      "tensor_train_tt4_r8",
+      "binary_planes_k2",
+      "fwht_hadamard_n4096",
+      "lowrank_r32_plus_sparse_0p5pct",
+      "shared_basis_r64"
+    ],
+    "all_three_bpw": true,
+    "peak_allocation_bytes_by_structure": {
+      "uniform_q4_group64": {
+        "fused": 5570560,
+        "reconstruct_then_matvec": 356515840,
+        "storage_bpw": 4.25,
+        "active_bpw_fused": 4.25,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      },
+      "svd_w_r12_bpw0.05": {
+        "fused": 278528,
+        "reconstruct_then_matvec": 356515840,
+        "storage_bpw": 0.04852941176470588,
+        "active_bpw_fused": 0.04852941176470588,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      },
+      "hgravs01_factor_r160": {
+        "fused": 278528,
+        "reconstruct_then_matvec": 356515840,
+        "storage_bpw": 0.6470588235294118,
+        "active_bpw_fused": 0.6470588235294118,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      },
+      "gravity_pq_adc": {
+        "fused": 278528,
+        "reconstruct_then_matvec": 356515840,
+        "storage_bpw": 0.4852941176470588,
+        "active_bpw_fused": 0.4852941176470588,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      },
+      "tensor_train_tt4_r8": {
+        "fused": 278528,
+        "reconstruct_then_matvec": 356515840,
+        "storage_bpw": 0.002309283088235294,
+        "active_bpw_fused": 0.002309283088235294,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      },
+      "binary_planes_k2": {
+        "fused": 4456448,
+        "reconstruct_then_matvec": 356515840,
+        "storage_bpw": 2.000000359030331,
+        "active_bpw_fused": 2.000000359030331,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      },
+      "fwht_hadamard_n4096": {
+        "fused": 65536,
+        "reconstruct_then_matvec": 67108864,
+        "storage_bpw": 0.0,
+        "active_bpw_fused": 0.0,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      },
+      "lowrank_r32_plus_sparse_0p5pct": {
+        "fused": 278528,
+        "reconstruct_then_matvec": 356515840,
+        "storage_bpw": 0.6094109030330882,
+        "active_bpw_fused": 0.6094109030330882,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      },
+      "shared_basis_r64": {
+        "fused": 278528,
+        "reconstruct_then_matvec": 356515840,
+        "storage_bpw": 0.25882352941176473,
+        "active_bpw_fused": 0.25882352941176473,
+        "active_bpw_cached": 16.0,
+        "zero_dense_fused": true,
+        "zero_dense_reconstruct": false
+      }
+    }
+  },
+  "detector_failure_mode": {
+    "what_it_measures": "New aten-visible torch tensors whose numel reaches the parent weight count, during the forward, under TorchDispatchMode.",
+    "would_miss": [
+      {
+        "id": "preallocated_in_place",
+        "what": "A parent-shaped buffer allocated BEFORE the probe window and filled in-place (copy_, index_put_ into an existing W). The fill is not a new storage."
+      },
+      {
+        "id": "custom_metal_scratch",
+        "what": "A Metal/C++ kernel that writes a (rows x cols) reconstruction into a device buffer never wrapped as a torch.Tensor. This probe is torch-side."
+      },
+      {
+        "id": "aten_workspace_not_returned",
+        "what": "BLAS/MPS scratch inside mm/addmm that is not returned as a tensor. A fused two-GEMM of rank 12 cannot hide a parent-sized workspace; a custom kernel could."
+      },
+      {
+        "id": "tiled_reconstruction_below_parent",
+        "what": "Decoding W in tiles smaller than parent (the fused q4 path does this). By the peak-allocation definition that IS zero-dense: the parent is never resident. A detector that wanted 'never decoded any weight' would need a different instrument (ALU counters), and G043 already named that as in-register dequant, not dense W."
+      },
+      {
+        "id": "parent_via_many_concats_into_prealloc",
+        "what": "torch.cat of tiles into a preallocated parent `out=` buffer created outside the probe. Same as preallocated_in_place."
+      }
+    ],
+    "would_false_positive": [
+      {
+        "id": "huge_batch",
+        "what": "An activation with numel >= parent_numel (T >= min(rows, cols)). This run uses T=4; parent is 17408 x 5120."
+      }
+    ],
+    "not_a_source_read": true
+  },
+  "what_i_watched_fail": [
+    {
+      "what": "detector calling q4 dequant-then-matvec ZERO_DENSE=true",
+      "happened": false,
+      "why_it_would_matter": "the instrument cannot see a parent-sized tensor"
+    },
+    {
+      "what": "detector calling fused SVD ZERO_DENSE=false",
+      "happened": false,
+      "why_it_would_matter": "the instrument is counting views, factors, or activations as parent W"
+    },
+    {
+      "what": "a structure with fewer than three BPW figures",
+      "happened": false,
+      "why_it_would_matter": "STORAGE vs FUSED vs CACHED collapse back into one costume number"
+    },
+    {
+      "what": "loading a second 27B into memory",
+      "happened": false,
+      "why_it_would_matter": "the brief forbids it; this run uses synthetic factors at organ geometry"
+    }
+  ],
+  "self_check": {
+    "dequant_then_matvec_is_false": true,
+    "fused_is_true": true,
+    "both_controls_ok": true,
+    "all_three_bpw": true,
+    "did_not_load_27b": true,
+    "wrote_receipt": true
+  },
+  "wall_s": 3.221903085708618,
+  "written_to": "/Users/scammermike/.claude-grok/worktrees/g023zerodense-20260823-162830/receipts/headless/NOETIC_ZERO_DENSE.json",
+  "write_scope": [
+    "tools/headless/noetic_zero_dense.py",
+    "receipts/headless/NOETIC_ZERO_DENSE.json"
+  ]
+}

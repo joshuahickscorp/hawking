@@ -1,0 +1,25 @@
+{
+  "obligation": "G37 -- Odyssey candidate provenance (from repo metadata inspection, no wrong-checkpoint substitution).",
+  "candidate_A_throughput": {
+    "repo": "huihui-ai/Huihui-Qwen3-30B-A3B-Thinking-2507-abliterated",
+    "revision": "174f8bf573e9", "model_type": "qwen3_moe", "arch": "Qwen3MoeForCausalLM",
+    "layers": 48, "hidden": 2048, "attn_heads": 32, "kv_heads": 4,
+    "experts": 128, "experts_per_tok": 8, "moe_intermediate": 768, "dense_intermediate": 6144,
+    "vocab": 151936, "bf16_GB": 61.1, "shards": 13,
+    "active_params_est": "~3B (8/128 experts + shared body) of ~30B total",
+    "behavioral_mod": "abliterated/uncensored (huihui-ai)", "fits_disk": true
+  },
+  "candidate_B_capability": {
+    "repo": "ArliAI/GLM-4.5-Air-Derestricted",
+    "revision": "09fba4859d9d", "model_type": "glm4_moe", "arch": "Glm4MoeForCausalLM",
+    "layers": 46, "hidden": 4096, "attn_heads": 96, "kv_heads": 8,
+    "routed_experts": 128, "shared_experts": 1, "experts_per_tok": 8, "moe_intermediate": 1408,
+    "dense_intermediate": 10944, "first_k_dense_replace": 1, "n_group": 1, "topk_group": 1,
+    "vocab": 151552, "bf16_GB": 220.9, "shards": 47,
+    "active_params_est": "~12B (8/128 + 1 shared) of ~106B total",
+    "behavioral_mod": "derestricted/abliterated (ArliAI)", "fits_disk": false,
+    "STORAGE_NOTE": "221GB bf16 EXCEEDS 182GB free -- need a quantized (e.g. mlx 4-bit ~55GB, or GGUF Q4) source or a partial/streamed inspection for the baseline. Do NOT download full bf16."
+  },
+  "owes": "content hashes per shard (G37 acceptance) + a measured active-param census; native-decoder support for qwen3_moe + glm4_moe does NOT exist in our Qwen3.8-hybrid decoder -- a major Odyssey engineering item.",
+  "classification_note": "Both MoE -> S042's conditional-architecture thesis. A3B ~3B active = throughput; GLM-Air ~12B active = capability. Our NX/decoder is Qwen3.8-hybrid-specific; MoE-native support is new."
+}

@@ -1,0 +1,2355 @@
+{
+  "schema": "hawking.headless.core_authorities.v1",
+  "obligation": "G028 CORE_AUTHORITIES: one implementation per concept",
+  "generated_at": "2026-08-23T21:38:33Z",
+  "git_head": "fef695d26eb89447125472c65f028b0e836cd4ad",
+  "method": "Built on receipts/headless/AUTHORITY_CENSUS.json and receipts/headless/CODE_ENTROPY.json. Working tree is a sparse checkout; hcli/, tools/haider, tools/headless were materialized via `git archive HEAD hcli tools/haider tools/headless | tar -x` (git sparse-checkout add is blocked in this sandbox). Paths below for those trees were verified against HEAD blobs as well as the extracted working tree. crates/ and lab/ classifications are from HEAD (ls-tree / git show) and were not rewritten.",
+  "sparse": {
+    "materialized_via": "git archive HEAD hcli tools/haider tools/headless",
+    "not_used": "git sparse-checkout add (fails: sparse-checkout.lock Operation not permitted)",
+    "verified_against_head": [
+      "hcli/",
+      "tools/haider/",
+      "tools/headless/",
+      "crates/hide-protocol/src/plan.rs",
+      "crates/hide-kernel/src/plan.rs",
+      "lab/runtime.py"
+    ]
+  },
+  "namespace": {
+    "canonical_package": "hcli",
+    "physical": "hcli/",
+    "tests": "tools/haider/hcli/tests/",
+    "fossil": "tools.haider.hcli raises ImportError (incident F24 closed). Do not create hcli/runtime/ as a package \u2014 it would shadow hcli.runtime."
+  },
+  "identity_untouched": {
+    "why": "Prior work found identity keyed on st_dev (mount artifact, 28s startup) and warm admission skip-rehash on size+mtime+inode rather than content.",
+    "left_alone": [
+      "hcli/engine.py evidence invalidation: mtime_ns + size (sha256 identifies the snapshot, invalidation is mtime+size)",
+      "hcli/goal.py gathered-file identity: size + mtime_ns",
+      "hcli/workunit.py content_identity: hash of WorkUnit fields, not filesystem",
+      "hcli/machine.py live_machine_identity: hw_model, cpu, ncpu, mem_bytes \u2014 not st_dev"
+    ],
+    "touched": "MachineGenome.save is now atomic and is not an admission path. Limit walkers now share resolve_runtime_limits freshness (machine+model identity on the genome JSON), which is a property of the genome document not of mount inodes."
+  },
+  "concepts": [
+    "Goal",
+    "mission",
+    "WorkUnit",
+    "DAG",
+    "scheduler",
+    "checkpoint",
+    "mutation lock",
+    "verifier",
+    "backend registry",
+    "context budget",
+    "runtime registry",
+    "receipt",
+    "experiment",
+    "model identity",
+    "machine identity",
+    "status",
+    "retry policy"
+  ],
+  "classification_values": [
+    "canonical",
+    "compatibility",
+    "obsolete",
+    "test-only",
+    "historical"
+  ],
+  "authorities": [
+    {
+      "id": "hcli.ledger.Ledger",
+      "concept": "Goal",
+      "path": "hcli/ledger.py",
+      "line": 395,
+      "file_line": "hcli/ledger.py:395",
+      "symbol": "Ledger",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Mission-level obligation ledger (GOAL.md). Answers 'is the overall goal satisfied?' via obligation VERIFIED. Identity space is G001-style ids, distinct from WorkUnit.id.",
+      "move": "Keep. Do not merge with WorkUnitDAG or hide-backend GoalStore. Callers that need 'goal met' must go through Ledger.outcome / assert_may_complete.",
+      "callers": [
+        "hcli/mission.py",
+        "hcli/commands.py",
+        "hcli/steering.py"
+      ],
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.goal.GoalCompiler",
+      "concept": "Goal",
+      "path": "hcli/goal.py",
+      "line": 172,
+      "file_line": "hcli/goal.py:172",
+      "symbol": "GoalCompiler",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Compiles natural-language goal text into implement/validate WorkUnits. A different identity space from Ledger obligations. Documented split, not an accidental duplicate.",
+      "move": "Keep as compiler. Do not teach it to decide GOAL_MET. Engine, Controller, and Mission already call GoalCompiler().compile.",
+      "callers": [
+        "hcli/engine.py",
+        "hcli/controller.py",
+        "hcli/mission.py"
+      ],
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-protocol.Goal",
+      "concept": "Goal",
+      "path": "crates/hide-protocol/src/plan.rs",
+      "line": 58,
+      "file_line": "crates/hide-protocol/src/plan.rs:58",
+      "symbol": "Goal",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE protocol schema (bible sec 14): declaration, not execution. This crate does not run plans.",
+      "move": "Keep as the HIDE wire/schema type. Do not import it into HCLI-py. A translation layer between GoalId and Ledger G-ids does not exist and must not be invented as a third Goal type.",
+      "callers": [
+        "crates/hide-protocol/src/plan.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.GoalStore",
+      "concept": "Goal",
+      "path": "crates/hide-backend/src/services_goal.rs",
+      "line": 126,
+      "file_line": "crates/hide-backend/src/services_goal.rs:126",
+      "symbol": "GoalStore / GoalRecord / GoalVerdict",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "Durable HIDE session goal over the KV `goals` namespace. One active goal per session. Evaluated model-free from verify.result evidence.",
+      "move": "Keep as HIDE's durable goal. Do not replace HCLI Ledger with this, or this with HCLI Ledger. TWO real authorities across products.",
+      "callers": [
+        "crates/hide-backend/src/services_goal.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "haider-v0.haider.py",
+      "concept": "Goal",
+      "path": "tools/haider/haider.py",
+      "line": 2,
+      "file_line": "tools/haider/haider.py:2",
+      "symbol": "haider.py (HCLI-v0 loop)",
+      "classification": "obsolete",
+      "plane": "haider-v0",
+      "two_real": false,
+      "survives": false,
+      "role": "Gate-zero bootstrap: one llama-server, one scoped edit, one receipt.",
+      "move": "Leave in tree (historical bootstrap). Do not route live missions through it. Live control plane is tools/haider/hcli/.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.mission.Mission",
+      "concept": "mission",
+      "path": "hcli/mission.py",
+      "line": 157,
+      "file_line": "hcli/mission.py:157",
+      "symbol": "Mission",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI run-loop: owns scheduler, heartbeat, cancel, adopted Grok tasks, phase, and the mission state.json checkpoint. Not the ledger and not the WorkUnit DAG.",
+      "move": "Keep. Lab ExperimentRuntime and hide-kernel AgentDriver stay in their planes.",
+      "callers": [
+        "hcli/controller.py",
+        "hcli/app.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-kernel.AgentDriver",
+      "concept": "mission",
+      "path": "crates/hide-kernel/src/machine.rs",
+      "line": 51,
+      "file_line": "crates/hide-kernel/src/machine.rs:51",
+      "symbol": "AgentDriver",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE FSM driver (bible ch.02 \u00a74.4). Name collision: this file is machine.rs but it is the agent loop, not hardware identity.",
+      "move": "Keep as HIDE's run-loop. Do not rename for the HCLI-py Mission.",
+      "callers": [
+        "crates/hide-kernel/src/machine.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.ExperimentRuntime",
+      "concept": "mission",
+      "path": "lab/runtime.py",
+      "line": 178,
+      "file_line": "lab/runtime.py:178",
+      "symbol": "ExperimentRuntime",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab science campaign run-loop (lease, checkpoint, operators, receipts).",
+      "move": "Keep. Name collision with 'runtime registry' is documented there. Do not drive HCLI WorkUnits through this.",
+      "callers": [
+        "lab/runtime.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.hcli.self_evolution",
+      "concept": "mission",
+      "path": "lab/hcli/self_evolution.py",
+      "line": 160,
+      "file_line": "lab/hcli/self_evolution.py:160",
+      "symbol": "EvolutionLedger",
+      "classification": "obsolete",
+      "plane": "lab",
+      "two_real": false,
+      "survives": false,
+      "role": "Experimental self-evolution ledger under lab/hcli, not the live HCLI Mission.",
+      "move": "Leave. Not a migration target for tools/haider/hcli/mission.py.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.workunit.WorkUnit",
+      "concept": "WorkUnit",
+      "path": "hcli/workunit.py",
+      "line": 42,
+      "file_line": "hcli/workunit.py:42",
+      "symbol": "WorkUnit",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "The WorkUnit dataclass plus identify_ready / transition_status / assign_ready / emit_repair. Shared identity space with the scheduler.",
+      "move": "Keep. All status writes go through transition_status.",
+      "callers": [
+        "hcli/scheduler.py",
+        "hcli/goal.py",
+        "hcli/dag_store.py",
+        "hcli/mission.py"
+      ],
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.goal.WorkUnitDAG",
+      "concept": "WorkUnit",
+      "path": "hcli/goal.py",
+      "line": 55,
+      "file_line": "hcli/goal.py:55",
+      "symbol": "WorkUnitDAG",
+      "classification": "compatibility",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "GoalCompiler IR. Readiness is identify_ready; completions walk transition_status. Persistence uses DagStore. Not a second DAG.",
+      "move": "Keep as compiler IR while GoalCompiler / engine.py / hcli_dag_consolidation_test.py call it. Do not restore the naive 'all deps completed' loop or direct wu.status writes.",
+      "callers": [
+        "hcli/goal.py",
+        "tools/headless/hcli_dag_consolidation_test.py"
+      ],
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.executors.WorkUnitExecutor",
+      "concept": "WorkUnit",
+      "path": "hcli/executors.py",
+      "line": 39,
+      "file_line": "hcli/executors.py:39",
+      "symbol": "WorkUnitExecutor",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Executes an already-admitted WorkUnit. Does not invent work or decide readiness.",
+      "move": "Keep. Not a second WorkUnit type.",
+      "callers": [
+        "hcli/mission.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab._WorkItem",
+      "concept": "WorkUnit",
+      "path": "lab/engine_support.py",
+      "line": 109,
+      "file_line": "lab/engine_support.py:109",
+      "symbol": "_WorkItem",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "Lab experiment step. Different identity space from HCLI WorkUnit.id.",
+      "move": "Keep in lab. Do not alias to hcli.workunit.WorkUnit.",
+      "callers": [
+        "lab/engine_support.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.workunit.identify_ready",
+      "concept": "DAG",
+      "path": "hcli/workunit.py",
+      "line": 490,
+      "file_line": "hcli/workunit.py:490",
+      "symbol": "identify_ready / assign_ready / is_ready",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Canonical HCLI DAG logic: repair-aware readiness, retry budget, resource-class admission, MUTATION lock in assign_ready.",
+      "move": "Keep. Scheduler.dispatch and WorkUnitDAG.get_ready_units both call this.",
+      "callers": [
+        "hcli/scheduler.py",
+        "hcli/goal.py"
+      ],
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.dag_store.DagStore",
+      "concept": "DAG",
+      "path": "hcli/dag_store.py",
+      "line": 207,
+      "file_line": "hcli/dag_store.py:207",
+      "symbol": "DagStore",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Durable atomic writer for the HCLI WorkUnit DAG (.hcli/dag.json).",
+      "move": "Keep as the only on-disk DAG for HCLI-py.",
+      "callers": [
+        "hcli/scheduler.py",
+        "hcli/goal.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-kernel.PlanDag",
+      "concept": "DAG",
+      "path": "crates/hide-kernel/src/plan.rs",
+      "line": 6,
+      "file_line": "crates/hide-kernel/src/plan.rs:6",
+      "symbol": "PlanDag",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE plan DAG: ready_steps is 'pending + all deps completed'. No repair-aware readiness. Used by AgentDriver.",
+      "move": "Keep as HIDE's plan DAG. Do not replace HCLI identify_ready with this, or this with identify_ready. TWO real DAG authorities.",
+      "callers": [
+        "crates/hide-kernel/src/machine.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.HaiderDag",
+      "concept": "DAG",
+      "path": "crates/hide-backend/src/haider/dag.rs",
+      "line": 117,
+      "file_line": "crates/hide-backend/src/haider/dag.rs:117",
+      "symbol": "HaiderDag / HaiderNode",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "Rust HAIDER parallel task DAG (disjoint write scopes + MemGate). Lives under a fossil namespace; it is not aider.",
+      "move": "Keep. Do not rename the crate path in this campaign (haider is a fossil namespace, not architecture). Do not merge with HCLI-py DAG.",
+      "callers": [
+        "crates/hide-backend/src/haider/lanes.rs",
+        "crates/hide-backend/src/haider/mod.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.scheduler.Scheduler",
+      "concept": "scheduler",
+      "path": "hcli/scheduler.py",
+      "line": 117,
+      "file_line": "hcli/scheduler.py:117",
+      "symbol": "Scheduler",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Dispatch existing WorkUnits. FIFO by ready_at. Does not invent work. complete() refuses without a passing verifier (UnverifiedCompletion).",
+      "move": "Keep. Delete the post-import MAX_REPAIR_* reassignment (merge shadow) on a later source lane; re-export workunit.py names only. _remaining_depth is dead in dispatch \u2014 do not reintroduce depth sort.",
+      "callers": [
+        "hcli/mission.py",
+        "hcli/controller.py"
+      ],
+      "evidence_receipt": "receipts/headless/HCLI_SCHEDULER_QUALITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.scheduler._remaining_depth",
+      "concept": "scheduler",
+      "path": "hcli/scheduler.py",
+      "line": null,
+      "file_line": "hcli/scheduler.py (removed)",
+      "symbol": "_remaining_depth",
+      "classification": "obsolete",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": false,
+      "role": "Hop-count helper. Dispatch does not call it (ready_at FIFO). LOG and MAX_REPAIR_* are redefined after this helper \u2014 merge artifact.",
+      "move": "Remove on a later source lane together with the duplicated LOG = and MAX_REPAIR_* assignments. Do not use it as a scheduling key.",
+      "callers": [],
+      "evidence_receipt": "tools/headless/hcli_scheduler_quality.py",
+      "in_head": true,
+      "g028_update": "REMOVED. Dispatch never called it. Measurement copy remains tools/headless/hcli_scheduler_quality.py::remaining_depth (test-only)."
+    },
+    {
+      "id": "headless.remaining_depth",
+      "concept": "scheduler",
+      "path": "tools/headless/hcli_scheduler_quality.py",
+      "line": 129,
+      "file_line": "tools/headless/hcli_scheduler_quality.py:129",
+      "symbol": "remaining_depth",
+      "classification": "test-only",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "Measurement copy used to refute depth-sort. Not a scheduler.",
+      "move": "Keep as the harness that proved depth-sort does not help.",
+      "callers": [
+        "tools/headless/hcli_scheduler_quality.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.engine_support.Scheduler",
+      "concept": "scheduler",
+      "path": "lab/engine_support.py",
+      "line": 122,
+      "file_line": "lab/engine_support.py:122",
+      "symbol": "Scheduler",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab experiment-step scheduler over ExperimentSpec.steps.",
+      "move": "Keep in lab. Same English name as HCLI Scheduler; different object.",
+      "callers": [
+        "lab/runtime.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-orch.Scheduler",
+      "concept": "scheduler",
+      "path": "crates/hawking-orch/src/scheduler.rs",
+      "line": 117,
+      "file_line": "crates/hawking-orch/src/scheduler.rs:117",
+      "symbol": "Scheduler",
+      "classification": "canonical",
+      "plane": "hawking-orch",
+      "two_real": true,
+      "survives": true,
+      "role": "Energy/thermal/RAM admission for model roles. Not WorkUnit dispatch.",
+      "move": "Keep. Do not merge with HCLI-py Scheduler.",
+      "callers": [
+        "crates/hawking-orch/src/scheduler.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-serve.batch.Scheduler",
+      "concept": "scheduler",
+      "path": "crates/hawking-serve/src/batch/scheduler.rs",
+      "line": 258,
+      "file_line": "crates/hawking-serve/src/batch/scheduler.rs:258",
+      "symbol": "Scheduler",
+      "classification": "canonical",
+      "plane": "hawking-serve",
+      "two_real": true,
+      "survives": true,
+      "role": "Decode-slot batch packer (KV slots, greedy-first, prefix reuse).",
+      "move": "Keep. This is inference batching, not campaign dispatch.",
+      "callers": [
+        "crates/hawking-serve/src/batch/scheduler.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.AgentScheduler",
+      "concept": "scheduler",
+      "path": "crates/hide-backend/src/agent_scheduler.rs",
+      "line": 372,
+      "file_line": "crates/hide-backend/src/agent_scheduler.rs:372",
+      "symbol": "AgentScheduler",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE backend agent/job scheduler (policy + metrics + checkpoint refs).",
+      "move": "Keep in hide-backend. Not HCLI-py Scheduler.",
+      "callers": [
+        "crates/hide-backend/src/agent_scheduler.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.LaneScheduler",
+      "concept": "scheduler",
+      "path": "crates/hide-backend/src/haider/lanes.rs",
+      "line": 96,
+      "file_line": "crates/hide-backend/src/haider/lanes.rs:96",
+      "symbol": "LaneScheduler",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "MemGate-controlled HAIDER lane scheduler (Architect/Implementer/Adversary).",
+      "move": "Keep with HaiderDag. Not a second HCLI-py scheduler.",
+      "callers": [
+        "crates/hide-backend/src/haider/lanes.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.dag_store.persist",
+      "concept": "checkpoint",
+      "path": "hcli/dag_store.py",
+      "line": 207,
+      "file_line": "hcli/dag_store.py:207",
+      "symbol": "DagStore (HCLI crash checkpoint)",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI has no Checkpoint class. Durable restart is DagStore + mission state.json + MutationLock record. Crash behaviour is proven by tools/headless/hcli_crash_checkpoint_test.py.",
+      "move": "Do not grow a third Checkpoint type in HCLI-py. If a name is needed, it is this pair, not hide-backend CheckpointStore.",
+      "callers": [
+        "hcli/scheduler.py",
+        "hcli/mission.py"
+      ],
+      "evidence_receipt": "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-kernel.AgentCheckpoint",
+      "concept": "checkpoint",
+      "path": "crates/hide-kernel/src/checkpoint.rs",
+      "line": 17,
+      "file_line": "crates/hide-kernel/src/checkpoint.rs:17",
+      "symbol": "AgentCheckpoint",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE event-log fold snapshot/restore/resume/fork (bible ch.02 \u00a74.13).",
+      "move": "Keep as HIDE's agent-state checkpoint. Not HCLI dag.json.",
+      "callers": [
+        "crates/hide-kernel/src/checkpoint.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.CheckpointStore",
+      "concept": "checkpoint",
+      "path": "crates/hide-backend/src/services_goal.rs",
+      "line": 223,
+      "file_line": "crates/hide-backend/src/services_goal.rs:223",
+      "symbol": "CheckpointStore / CheckpointRecord",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "Durable HIDE session checkpoint over KV `checkpoints` namespace.",
+      "move": "Keep. Protocol schema is hide-protocol::Checkpoint; this is the store.",
+      "callers": [
+        "crates/hide-backend/src/services_goal.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-protocol.Checkpoint",
+      "concept": "checkpoint",
+      "path": "crates/hide-protocol/src/model.rs",
+      "line": 247,
+      "file_line": "crates/hide-protocol/src/model.rs:247",
+      "symbol": "Checkpoint",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "HIDE protocol schema for a named restorable boundary (capsule + vcs_ref).",
+      "move": "Keep as schema. Execution is AgentCheckpoint / CheckpointStore.",
+      "callers": [
+        "crates/hide-protocol/src/model.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.checkpoint.CheckpointStore",
+      "concept": "checkpoint",
+      "path": "lab/checkpoint.py",
+      "line": 78,
+      "file_line": "lab/checkpoint.py:78",
+      "symbol": "CheckpointStore",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab campaign controller checkpoint + hash-chain event log.",
+      "move": "Keep in lab. Same class name as hide-backend and frankenstein; different schema.",
+      "callers": [
+        "lab/runtime.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "frankenstein.CheckpointStore",
+      "concept": "checkpoint",
+      "path": "lab/operators/frankenstein_latent_v0.py",
+      "line": 1589,
+      "file_line": "lab/operators/frankenstein_latent_v0.py:1589",
+      "symbol": "CheckpointStore (.pt slots)",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "Latent-v0 weight-slot store (slot.pt). Not a controller checkpoint.",
+      "move": "Keep local to the operator. Rename would clarify; not required for HCLI.",
+      "callers": [
+        "lab/operators/frankenstein_latent_v0.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-context.CheckpointId",
+      "concept": "checkpoint",
+      "path": "crates/hawking-context/src/kv.rs",
+      "line": 138,
+      "file_line": "crates/hawking-context/src/kv.rs:138",
+      "symbol": "CheckpointId / CheckpointMeta / KvCheckpoint",
+      "classification": "canonical",
+      "plane": "hawking-context",
+      "two_real": false,
+      "survives": true,
+      "role": "KV-cache checkpoint (prefix reuse), not a mission/controller checkpoint.",
+      "move": "Keep. Do not treat as HCLI crash checkpoint.",
+      "callers": [
+        "crates/hawking-context/src/lib.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-fleet.CheckpointId",
+      "concept": "checkpoint",
+      "path": "crates/hide-fleet/src/fabric_failure.rs",
+      "line": 16,
+      "file_line": "crates/hide-fleet/src/fabric_failure.rs:16",
+      "symbol": "CheckpointId (fleet fabric_failure)",
+      "classification": "historical",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "Newtype id in fabric_failure. Name collision with hawking-context::CheckpointId.",
+      "move": "Keep. Do not treat as HCLI or HIDE session checkpoint.",
+      "callers": [
+        "crates/hide-fleet/src/fabric_failure.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "tools.worker_checkpoint",
+      "concept": "checkpoint",
+      "path": "tools/worker_checkpoint.py",
+      "line": 45,
+      "file_line": "tools/worker_checkpoint.py:45",
+      "symbol": "worker_checkpoint (G132 rebind)",
+      "classification": "canonical",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "Gravity-worker rebind protocol. Measurements do not survive a parent change.",
+      "move": "Keep. Not HCLI dag.json and not hide-kernel AgentCheckpoint.",
+      "callers": [
+        "tools/worker_checkpoint.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "tools.llama_checkpoint_bisect",
+      "concept": "checkpoint",
+      "path": "tools/llama_checkpoint_bisect.py",
+      "line": null,
+      "file_line": "tools/llama_checkpoint_bisect.py",
+      "symbol": "llama_checkpoint_bisect (GGUF)",
+      "classification": "historical",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "GGUF/weight checkpoint bisect. English collision only.",
+      "move": "Keep. Do not cite as a control-plane checkpoint.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.resources.MutationLock",
+      "concept": "mutation lock",
+      "path": "hcli/resources.py",
+      "line": 420,
+      "file_line": "hcli/resources.py:420",
+      "symbol": "MutationLock",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Crash-safe exclusive lock for MUTATION WorkUnits. Replaced the advisory JSON check-then-replace that two processes could both win.",
+      "move": "Keep. Scheduler.assign_ready and GrokBridge.delegate must keep using it.",
+      "callers": [
+        "hcli/scheduler.py",
+        "hcli/workunit.py",
+        "hcli/commands.py",
+        "hcli/grok_bridge.py"
+      ],
+      "evidence_receipt": "receipts/headless/AGENTOS_SINGLE_WRITER.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.grok_bridge.mutation_lock_param",
+      "concept": "mutation lock",
+      "path": "hcli/grok_bridge.py",
+      "line": 618,
+      "file_line": "hcli/grok_bridge.py:618",
+      "symbol": "_as_mutation_lock / delegate(mutation_lock=)",
+      "classification": "compatibility",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Accepts a callable or context manager wrapping MutationLock for Grok delegate.",
+      "move": "Keep while CommandHandler._grok_mutation_lock and Mission pass it.",
+      "callers": [
+        "hcli/commands.py",
+        "hcli/grok_bridge.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.lease.SingletonLease",
+      "concept": "mutation lock",
+      "path": "lab/lease.py",
+      "line": 32,
+      "file_line": "lab/lease.py:32",
+      "symbol": "SingletonLease",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "fcntl exclusive lease for the lab campaign controller.",
+      "move": "Keep in lab. Do not replace MutationLock with this, or this with MutationLock.",
+      "callers": [
+        "lab/runtime.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.glm52.SingletonLease",
+      "concept": "mutation lock",
+      "path": "lab/operators/glm52_state.py",
+      "line": 1036,
+      "file_line": "lab/operators/glm52_state.py:1036",
+      "symbol": "glm52_state.SingletonLease",
+      "classification": "compatibility",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "Subclass of lab.lease.SingletonLease for the GLM-52 operator.",
+      "move": "Keep as a named subclass. Canonical lock remains lab.lease.SingletonLease.",
+      "callers": [
+        "lab/operators/glm52_state.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "tools.gpu_lane_guard",
+      "concept": "mutation lock",
+      "path": "tools/gpu_lane_guard.py",
+      "line": 49,
+      "file_line": "tools/gpu_lane_guard.py:49",
+      "symbol": "gpu_lane_guard / gpu_lane_lock.sh",
+      "classification": "canonical",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "GPU timing-lane witness. Marks contended timings VOID rather than claiming exclusive ownership of the repo.",
+      "move": "Keep. Different job from MutationLock.",
+      "callers": [
+        "tools/gpu_lane_guard.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.verifier_pipeline",
+      "concept": "verifier",
+      "path": "hcli/verifier_pipeline.py",
+      "line": 353,
+      "file_line": "hcli/verifier_pipeline.py:353",
+      "symbol": "verifier_pipeline.verify / plan / execute",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Verifier-first pipeline (plan \u2192 evidence \u2192 mechanical command). Defines its own Obligation dataclass (id, statement, angles) \u2014 not ledger.Obligation.",
+      "move": "Keep as the HCLI pipeline. Rename its Obligation to PipelineClaim on a later source lane so the two types cannot be confused. command_is_admissible stays the vacuity gate.",
+      "callers": [
+        "hcli/mission.py",
+        "hcli/scheduler.py"
+      ],
+      "evidence_receipt": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.ledger.Obligation",
+      "concept": "verifier",
+      "path": "hcli/ledger.py",
+      "line": 281,
+      "file_line": "hcli/ledger.py:281",
+      "symbol": "ledger.Obligation + Ledger.run_verify",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Durable GOAL.md obligation with verify_command. VerifyResult is fresh only when produced by run_verify (anti-forgery).",
+      "move": "Keep. Different type from verifier_pipeline.Obligation. TWO real authorities in one package.",
+      "callers": [
+        "hcli/mission.py"
+      ],
+      "evidence_receipt": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.scheduler.verification_passed",
+      "concept": "verifier",
+      "path": "hcli/scheduler.py",
+      "line": 91,
+      "file_line": "hcli/scheduler.py:91",
+      "symbol": "verification_passed / UnverifiedCompletion",
+      "classification": "compatibility",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Thin predicate: outcome is a dict with ok is True. complete() raises otherwise.",
+      "move": "Keep. Verified caller: Scheduler.complete.",
+      "callers": [
+        "hcli/scheduler.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.VerificationAuthority",
+      "concept": "verifier",
+      "path": "lab/verification_authority.py",
+      "line": 281,
+      "file_line": "lab/verification_authority.py:281",
+      "symbol": "VerificationAuthority",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab science certification: models emit candidates, only the controller certifies.",
+      "move": "Keep. Not the HCLI WorkUnit verifier.",
+      "callers": [
+        "lab/verification_authority.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-kernel.VerificationGate",
+      "concept": "verifier",
+      "path": "crates/hide-kernel/src/verify.rs",
+      "line": 792,
+      "file_line": "crates/hide-kernel/src/verify.rs:792",
+      "symbol": "VerificationGate / OracleSuite",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE oracle gate. AgentDriver will not advance without it.",
+      "move": "Keep as HIDE verify. Do not import into HCLI-py.",
+      "callers": [
+        "crates/hide-kernel/src/machine.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "ramanujan.VerifierRegistry",
+      "concept": "verifier",
+      "path": "ramanujan/scaffold/research/verifier/registry.py",
+      "line": 19,
+      "file_line": "ramanujan/scaffold/research/verifier/registry.py:19",
+      "symbol": "VerifierRegistry",
+      "classification": "canonical",
+      "plane": "ramanujan",
+      "two_real": false,
+      "survives": true,
+      "role": "Math verifier backends (lean / sympy / exact numeric).",
+      "move": "Keep in ramanujan. Not an HCLI WorkUnit verifier.",
+      "callers": [
+        "ramanujan/scaffold/research/verifier/registry.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-speculate.Verifier",
+      "concept": "verifier",
+      "path": "crates/hawking-speculate/src/verifier.rs",
+      "line": 66,
+      "file_line": "crates/hawking-speculate/src/verifier.rs:66",
+      "symbol": "Verifier (speculative decode)",
+      "classification": "historical",
+      "plane": "hawking-speculate",
+      "two_real": false,
+      "survives": true,
+      "role": "Draft-token accept rule for speculative decode. English collision with WorkUnit verification; not a control-plane verifier.",
+      "move": "Keep. Do not cite as HCLI/HIDE goal verification.",
+      "callers": [
+        "crates/hawking-speculate/src/verifier.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.backends.RuntimeBackend",
+      "concept": "backend registry",
+      "path": "hcli/backends.py",
+      "line": 325,
+      "file_line": "hcli/backends.py:325",
+      "symbol": "RuntimeBackend + LlamaServerBackend + MlxServerBackend",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI inference-server registry. supports() is the capability table; MLX reports response_format/grammar false so the engine degrades instead of silently sending ignored fields.",
+      "move": "Keep. New backends implement RuntimeBackend; do not add a second registry dict.",
+      "callers": [
+        "hcli/runtime.py",
+        "hcli/engine.py"
+      ],
+      "evidence_receipt": "receipts/headless/BACKEND_CAPABILITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.resources.BackendHealth",
+      "concept": "backend registry",
+      "path": "hcli/resources.py",
+      "line": 981,
+      "file_line": "hcli/resources.py:981",
+      "symbol": "BackendHealth",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Durable per-backend circuit breaker. Not a backend registry.",
+      "move": "Keep beside RuntimeBackend. Do not let it grow spawn/complete methods.",
+      "callers": [
+        "hcli/resources.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-orch.RoleRegistry",
+      "concept": "backend registry",
+      "path": "crates/hawking-orch/src/registry.rs",
+      "line": 13,
+      "file_line": "crates/hawking-orch/src/registry.rs:13",
+      "symbol": "RoleRegistry",
+      "classification": "canonical",
+      "plane": "hawking-orch",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE/Hawking model-role registry (roles.toml). Not llama vs MLX servers.",
+      "move": "Keep. Different object from RuntimeBackend.",
+      "callers": [
+        "crates/hawking-orch/src/registry.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "haider-v0.allocate_port",
+      "concept": "backend registry",
+      "path": "tools/haider/haider.py",
+      "line": 52,
+      "file_line": "tools/haider/haider.py:52",
+      "symbol": "allocate_port (HCLI-v0)",
+      "classification": "obsolete",
+      "plane": "haider-v0",
+      "two_real": false,
+      "survives": false,
+      "role": "Duplicate of backends.allocate_port in the v0 bootstrap.",
+      "move": "Leave the v0 file. Live callers use tools/haider/hcli/backends.py:allocate_port.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.context_budget.ContextBudget",
+      "concept": "context budget",
+      "path": "hcli/context_budget.py",
+      "line": 87,
+      "file_line": "hcli/context_budget.py:87",
+      "symbol": "ContextBudget / resolve / preflight / per_seq_context",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI per-request context authority. Divides allocation by slot count; preflight refuses an over-large root prompt before inference.",
+      "move": "Keep. Remaining gap (HCLI_CONTEXT_AUTHORITY): resolve() without demand_tokens still yields 32768/3=11008; root ingress must pass demand (G006/G007). Do not reintroduce a 32768 literal in config.py.",
+      "callers": [
+        "hcli/runtime.py",
+        "hcli/backends.py",
+        "hcli/config.py",
+        "hcli/engine.py",
+        "hcli/goal.py"
+      ],
+      "evidence_receipt": "receipts/headless/HCLI_CONTEXT_AUTHORITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.context.reexport",
+      "concept": "context budget",
+      "path": "hcli/context.py",
+      "line": 10,
+      "file_line": "hcli/context.py:10",
+      "symbol": "context.py (re-export)",
+      "classification": "compatibility",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Re-exports WorkerPacket from goal.py so there is not a second packet shape. No production importer of hcli.context was found.",
+      "move": "Removable: no named verified caller of hcli.context (only context_budget).",
+      "callers": [
+        "tools/headless/startup_census.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": "Kept. Same WorkerPacket object as hcli.goal. Verified caller: tools/headless/startup_census.py (module census). Production imports hcli.goal."
+    },
+    {
+      "id": "hawking-context.TokenBudget",
+      "concept": "context budget",
+      "path": "crates/hawking-context/src/budget.rs",
+      "line": 17,
+      "file_line": "crates/hawking-context/src/budget.rs:17",
+      "symbol": "TokenBudget / RegionBudget",
+      "classification": "canonical",
+      "plane": "hawking-context",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE shell-side context compiler (reservation-aware knapsack).",
+      "move": "Keep as HIDE's packer. Do not replace HCLI context_budget.py with this.",
+      "callers": [
+        "crates/hawking-context/src/lib.rs",
+        "crates/hawking-context/src/compiler.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.haider.ContextBudget",
+      "concept": "context budget",
+      "path": "crates/hide-backend/src/haider/lanes.rs",
+      "line": 62,
+      "file_line": "crates/hide-backend/src/haider/lanes.rs:62",
+      "symbol": "haider::lanes::ContextBudget",
+      "classification": "compatibility",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "Per-lane max_tokens newtype used by EvidencePacket. Not the HCLI authority.",
+      "move": "Keep as a field on EvidencePacket. Verified caller: crates/hide-backend/src/haider/lanes.rs EvidencePacket. Do not give it resolve/preflight logic.",
+      "callers": [
+        "crates/hide-backend/src/haider/lanes.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-context.ContextCompiler",
+      "concept": "context budget",
+      "path": "crates/hawking-context/src/compiler.rs",
+      "line": 276,
+      "file_line": "crates/hawking-context/src/compiler.rs:276",
+      "symbol": "ContextCompiler",
+      "classification": "canonical",
+      "plane": "hawking-context",
+      "two_real": false,
+      "survives": true,
+      "role": "Packs TokenBudget into a replayable manifest. Same plane as TokenBudget, not a second budget.",
+      "move": "Keep with TokenBudget. Do not merge with HCLI context_budget.py.",
+      "callers": [
+        "crates/hawking-context/src/lib.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.hcli_bridge.MAX_CONTEXT_TOKENS",
+      "concept": "context budget",
+      "path": "crates/hide-backend/src/hcli_bridge.rs",
+      "line": 55,
+      "file_line": "crates/hide-backend/src/hcli_bridge.rs:55",
+      "symbol": "MAX_CONTEXT_TOKENS (transport bound)",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "JSONL transport cap (2e6), independent of the model window.",
+      "move": "Keep as a transport bound. Not a substitute for context_budget.resolve.",
+      "callers": [
+        "crates/hide-backend/src/hcli_bridge.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.runtime.RuntimePool",
+      "concept": "runtime registry",
+      "path": "hcli/runtime.py",
+      "line": 520,
+      "file_line": "hcli/runtime.py:520",
+      "symbol": "RuntimePool / Runtime",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "HCLI owned llama/MLX process pool. Limits come from machine.resolve_runtime_limits (genome is a prior, not a constant).",
+      "move": "Keep. Do not hand-edit MACHINE_GENOME.json to change slot counts.",
+      "callers": [
+        "hcli/controller.py",
+        "hcli/mission.py"
+      ],
+      "evidence_receipt": "receipts/headless/RUNTIME_AUTHORITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.runtime.ExperimentRuntime",
+      "concept": "runtime registry",
+      "path": "lab/runtime.py",
+      "line": 178,
+      "file_line": "lab/runtime.py:178",
+      "symbol": "ExperimentRuntime",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab experiment runner. Name collision with HCLI RuntimePool.",
+      "move": "Keep in lab. Do not spawn llama-server from here.",
+      "callers": [
+        "lab/runtime.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "tools.glm52_gravity.Runtime",
+      "concept": "runtime registry",
+      "path": "tools/glm52_gravity.py",
+      "line": 81,
+      "file_line": "tools/glm52_gravity.py:81",
+      "symbol": "Runtime (glm52_gravity local)",
+      "classification": "obsolete",
+      "plane": "headless",
+      "two_real": false,
+      "survives": false,
+      "role": "Local helper in a gravity tool. Not RuntimePool.",
+      "move": "Leave in the tool. Do not import from hcli.runtime.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "headless.machine_probe.Runtime",
+      "concept": "runtime registry",
+      "path": "tools/headless/machine_probe.py",
+      "line": 120,
+      "file_line": "tools/headless/machine_probe.py:120",
+      "symbol": "Runtime (probe-local)",
+      "classification": "test-only",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "Local helper inside the genome probe. Not RuntimePool.",
+      "move": "Keep inside the probe. Do not import from hcli.runtime.",
+      "callers": [
+        "tools/headless/machine_probe.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.receipts.Receipt",
+      "concept": "receipt",
+      "path": "lab/receipts.py",
+      "line": 278,
+      "file_line": "lab/receipts.py:278",
+      "symbol": "Receipt / ReceiptAuthority / GateEvidence / seal",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab sealed receipt family (hawking.lab.receipt.v1).",
+      "move": "Keep as the lab seal. Do not rewrite historical receipts. Do not force HCLI engine receipts onto this schema.",
+      "callers": [
+        "lab/runtime.py",
+        "lab/verification_authority.py",
+        "lab/checkpoint.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.engine._write_receipt",
+      "concept": "receipt",
+      "path": "hcli/engine.py",
+      "line": 3479,
+      "file_line": "hcli/engine.py:3479",
+      "symbol": "Engine._write_receipt",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Per-goal mutation receipt under the workspace.",
+      "move": "Keep the schema and filenames (historical receipts cite them). Share the atomic-write primitive with grok_bridge and ledger on a later source lane; do not merge the three payload shapes.",
+      "callers": [
+        "hcli/engine.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": "Schema unchanged. Write primitive is now persist.atomic_write_text via resources._atomic_write_text re-export."
+    },
+    {
+      "id": "hcli.grok_bridge._write_receipt",
+      "concept": "receipt",
+      "path": "hcli/grok_bridge.py",
+      "line": 1194,
+      "file_line": "hcli/grok_bridge.py:1194",
+      "symbol": "GrokBridge._write_receipt",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Per-Grok-task receipt. Different payload from Engine.",
+      "move": "Keep. Share atomic-write only.",
+      "callers": [
+        "hcli/grok_bridge.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": "Schema unchanged. Now calls persist.atomic_write_json (was Path.write_text)."
+    },
+    {
+      "id": "hcli.ledger._write_receipt",
+      "concept": "receipt",
+      "path": "hcli/ledger.py",
+      "line": 954,
+      "file_line": "hcli/ledger.py:954",
+      "symbol": "Ledger._write_receipt",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Per-obligation verify receipt. Forgery of VERIFIED without this is demoted to STALE.",
+      "move": "Keep. Required by AGENTOS_VERIFIER_AUTHORITY.",
+      "callers": [
+        "hcli/ledger.py"
+      ],
+      "evidence_receipt": "receipts/headless/AGENTOS_VERIFIER_AUTHORITY.json",
+      "in_head": true,
+      "g028_update": "Schema unchanged. Write primitive is persist.atomic_write_text (was a private no-fsync helper)."
+    },
+    {
+      "id": "hide-backend.write_sealed_receipt",
+      "concept": "receipt",
+      "path": "crates/hide-backend/src/headless.rs",
+      "line": 342,
+      "file_line": "crates/hide-backend/src/headless.rs:342",
+      "symbol": "write_sealed_receipt",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE headless sealed receipt writer.",
+      "move": "Keep for hide-headless / rust hcli. Not HCLI-py engine receipts.",
+      "callers": [
+        "crates/hide-backend/src/bin/hide-headless.rs",
+        "crates/hide-backend/src/bin/hcli.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "haider-v0.write_receipt",
+      "concept": "receipt",
+      "path": "tools/haider/haider.py",
+      "line": 351,
+      "file_line": "tools/haider/haider.py:351",
+      "symbol": "haider.py write_receipt",
+      "classification": "obsolete",
+      "plane": "haider-v0",
+      "two_real": false,
+      "survives": false,
+      "role": "HCLI-v0 receipt writer.",
+      "move": "Leave. Historical .haider/receipts filenames are evidence.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.spec.ExperimentSpec",
+      "concept": "experiment",
+      "path": "lab/spec.py",
+      "line": 189,
+      "file_line": "lab/spec.py:189",
+      "symbol": "ExperimentSpec (hawking.lab.experiment_spec.v1)",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Lab campaign spec. lab.runtime and lab.engine_support import this one.",
+      "move": "Keep as the campaign spec. Accepts hawking.lab.experiment.v1 as a compatibility schema id.",
+      "callers": [
+        "lab/runtime.py",
+        "lab/engine_support.py",
+        "lab/__init__.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.bench_harness.ExperimentSpec",
+      "concept": "experiment",
+      "path": "lab/bench_harness/spec.py",
+      "line": 29,
+      "file_line": "lab/bench_harness/spec.py:29",
+      "symbol": "ExperimentSpec (hawking.lab.experiment.v1 stages)",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": true,
+      "survives": true,
+      "role": "Second ExperimentSpec: id + stages runner schema. Imported by tools/foundry/tests, not by lab.runtime.",
+      "move": "TWO real authorities. Rename this class to HarnessSpec on a later source lane; keep the sealed schema id hawking.lab.experiment.v1.",
+      "callers": [
+        "tools/foundry/tests/test_foundry_tables_lifecycle.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.science_registry",
+      "concept": "experiment",
+      "path": "lab/science_registry.py",
+      "line": 40,
+      "file_line": "lab/science_registry.py:40",
+      "symbol": "OperatorRegistry / OperatorRecord",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "Catalog of lab.operators. Not an ExperimentSpec.",
+      "move": "Keep. Runtime looks up operators here.",
+      "callers": [
+        "lab/runtime.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "headless.runtime_experiment",
+      "concept": "experiment",
+      "path": "tools/headless/runtime_experiment.py",
+      "line": 2,
+      "file_line": "tools/headless/runtime_experiment.py:2",
+      "symbol": "runtime_experiment.py (harness)",
+      "classification": "test-only",
+      "plane": "headless",
+      "two_real": false,
+      "survives": true,
+      "role": "Measurement harness writing RUNTIME_EXPERIMENT.json. No Experiment type.",
+      "move": "Keep as a harness. Do not promote into lab.spec.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.models.ModelRegistry",
+      "concept": "model identity",
+      "path": "hcli/models.py",
+      "line": 288,
+      "file_line": "hcli/models.py:288",
+      "symbol": "ModelRegistry / ModelInfo / resolve_model",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Local GGUF inventory and selection. Discovery never loads. Ambiguous discovery stays ambiguous.",
+      "move": "Keep as HCLI selection. Do not merge with the promotion registry.",
+      "callers": [
+        "hcli/cli.py",
+        "tools/headless/hcli_command_driver.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "headless.model_registry",
+      "concept": "model identity",
+      "path": "tools/headless/model_registry.py",
+      "line": 2,
+      "file_line": "tools/headless/model_registry.py:2",
+      "symbol": "model_registry.py + receipts/headless/MODEL_REGISTRY.json",
+      "classification": "canonical",
+      "plane": "headless",
+      "two_real": true,
+      "survives": true,
+      "role": "Parent/child promotion lineage. promote() reads PerformanceLedger + capability receipt + incumbent; a child cannot promote itself.",
+      "move": "Keep as the promotion authority. Different job from ModelRegistry path selection. TWO real authorities under the English name 'model identity'.",
+      "callers": [
+        "tools/headless/model_registry.py"
+      ],
+      "evidence_receipt": "receipts/headless/MODEL_REGISTRY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-comms.ModelIdentity",
+      "concept": "model identity",
+      "path": "crates/hawking-comms/src/level3.rs",
+      "line": 74,
+      "file_line": "crates/hawking-comms/src/level3.rs:74",
+      "symbol": "ModelIdentity",
+      "classification": "canonical",
+      "plane": "hawking-orch",
+      "two_real": true,
+      "survives": true,
+      "role": "Wire-level model identity in hawking-comms. Not HCLI path selection and not the promotion registry.",
+      "move": "Keep as the comms identity type. Do not merge with ModelRegistry or MODEL_REGISTRY.json.",
+      "callers": [
+        "crates/hawking-comms/src/level3.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-orch.ModelSpec",
+      "concept": "model identity",
+      "path": "crates/hawking-orch/src/registry.rs",
+      "line": 131,
+      "file_line": "crates/hawking-orch/src/registry.rs:131",
+      "symbol": "ModelSpec (roles.toml parse)",
+      "classification": "compatibility",
+      "plane": "hawking-orch",
+      "two_real": false,
+      "survives": true,
+      "role": "TOML parse shape for RoleRegistry. Not lab.operators.ModelSpec.",
+      "move": "Keep private to registry.rs. Verified caller: RoleRegistry::from_roles_toml.",
+      "callers": [
+        "crates/hawking-orch/src/registry.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hawking-serve.ModelInfo",
+      "concept": "model identity",
+      "path": "crates/hawking-serve/src/http.rs",
+      "line": 423,
+      "file_line": "crates/hawking-serve/src/http.rs:423",
+      "symbol": "ModelInfo (HTTP)",
+      "classification": "compatibility",
+      "plane": "hawking-serve",
+      "two_real": false,
+      "survives": true,
+      "role": "HTTP-layer model info. Name collision with hcli.models.ModelInfo.",
+      "move": "Keep in hawking-serve. Do not share a type with HCLI-py ModelInfo.",
+      "callers": [
+        "crates/hawking-serve/src/http.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "lab.operators.ModelSpec.copies",
+      "concept": "model identity",
+      "path": "lab/operators/ascension_qwen_state_kv.py",
+      "line": 85,
+      "file_line": "lab/operators/ascension_qwen_state_kv.py:85",
+      "symbol": "ModelSpec (copied across operators)",
+      "classification": "canonical",
+      "plane": "lab",
+      "two_real": false,
+      "survives": true,
+      "role": "class ModelSpec appears in at least four lab operators. Whether they are copies of one type or independent locals was not fully compared.",
+      "move": "Follow-up: diff the four ModelSpec bodies before deleting any.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": "Still four lab/operators ModelSpec classes. lab/ is outside this lane write scope; not byte-compared; not merged. Plane-local, not HCLI-py."
+    },
+    {
+      "id": "headless.machine_probe",
+      "concept": "machine identity",
+      "path": "tools/headless/machine_probe.py",
+      "line": 494,
+      "file_line": "tools/headless/machine_probe.py:494",
+      "symbol": "machine_probe.py (producer)",
+      "classification": "canonical",
+      "plane": "headless",
+      "two_real": true,
+      "survives": true,
+      "role": "Produces receipts/headless/MACHINE_GENOME.json. Promotion of a new knee is a re-run of this probe, not an editor.",
+      "move": "Keep as the sole producer of the live genome.",
+      "callers": [
+        "tools/headless/machine_probe.py"
+      ],
+      "evidence_receipt": "receipts/headless/RUNTIME_AUTHORITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.machine.live_machine_identity",
+      "concept": "machine identity",
+      "path": "hcli/machine.py",
+      "line": 555,
+      "file_line": "hcli/machine.py:555",
+      "symbol": "live_machine_identity / assess_genome_freshness / resolve_runtime_limits / MachineProbe / MemGate",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Consumer of the genome. Reads (1) env (2) ~/.config/hcli/machine_genome.json (3) receipts/headless/MACHINE_GENOME.json (4) worker-equilibrium.json. STALE genomes (wrong machine, wrong model, too old) are not used.",
+      "move": "Keep as the consumer. Do not let it grow a write() that bypasses the probe.",
+      "callers": [
+        "hcli/runtime.py",
+        "hcli/resources.py"
+      ],
+      "evidence_receipt": "receipts/headless/RUNTIME_AUTHORITY.json",
+      "in_head": true,
+      "g028_update": "Canonical consumer of the probe genome. resolve_active_decode_limit and cli.resolve_resident_runtime_limit now wrap resolve_runtime_limits; they no longer walk files."
+    },
+    {
+      "id": "hcli.machine.MachineGenome",
+      "concept": "machine identity",
+      "path": "hcli/machine.py",
+      "line": 969,
+      "file_line": "hcli/machine.py:969",
+      "symbol": "MachineGenome (HCLI_HOME/machine-genome.json)",
+      "classification": "compatibility",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Thin JSON blob at ~/.local/share/hcli/machine-genome.json via get_machine_genome_path(). Production limit resolution does not read this class. Only hcli_persistence_audit.py constructs it.",
+      "move": "Remove or wrap so it reads the same files as resolve_runtime_limits. Leaving it is a second genome authority.",
+      "callers": [
+        "tools/headless/hcli_persistence_audit.py",
+        "hcli/genomes/__init__.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": "Wrapped: save() uses persist.atomic_write_json; default path stays under HCLI_HOME so it cannot clobber ~/.config/hcli/machine_genome.json. Not an admission authority. Verified caller: tools/headless/hcli_persistence_audit.py."
+    },
+    {
+      "id": "agentos.machine_state",
+      "concept": "machine identity",
+      "path": "tools/agentos/machine_state.py",
+      "line": 2,
+      "file_line": "tools/agentos/machine_state.py:2",
+      "symbol": "machine_state.py (ancestor of Machine Genome)",
+      "classification": "canonical",
+      "plane": "agentos",
+      "two_real": false,
+      "survives": true,
+      "role": "Load/RAM/disk/heavy-lane snapshot for genesis. Not the HCLI genome.",
+      "move": "Keep for agentos. Do not feed it to resolve_runtime_limits.",
+      "callers": [
+        "tools/agentos/machine_state.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-kernel.machine.rs",
+      "concept": "machine identity",
+      "path": "crates/hide-kernel/src/machine.rs",
+      "line": 51,
+      "file_line": "crates/hide-kernel/src/machine.rs:51",
+      "symbol": "machine.rs (AgentDriver \u2014 name collision)",
+      "classification": "historical",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "File name says machine; contents are the HIDE agent FSM. Not hardware identity.",
+      "move": "Keep. Do not cite as machine identity.",
+      "callers": [
+        "crates/hide-kernel/src/machine.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.workunit.transition_status",
+      "concept": "status",
+      "path": "hcli/workunit.py",
+      "line": 433,
+      "file_line": "hcli/workunit.py:433",
+      "symbol": "transition_status / WORKUNIT_STATUSES",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "WorkUnit state machine (pending/ready/running/completed/failed/interrupted).",
+      "move": "Keep. Direct wu.status writes are forbidden (DAG consolidation).",
+      "callers": [
+        "hcli/scheduler.py",
+        "hcli/goal.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.ledger.outcome",
+      "concept": "status",
+      "path": "hcli/ledger.py",
+      "line": 395,
+      "file_line": "hcli/ledger.py:395",
+      "symbol": "Ledger.outcome / Ledger.status",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Mission completion: GOAL_MET / GOAL_NOT_MET / TERMINAL_BLOCKER / SAFETY_DISARM / ENFORCEMENT_FAILURE. .status remains the three-way compat property.",
+      "move": "Keep. Compatibility: .status still returns EMPTY_LEDGER/GOAL_MET/GOAL_NOT_MET.",
+      "callers": [
+        "hcli/commands.py",
+        "tools/headless/hcli_agentos_ledger_test.py"
+      ],
+      "evidence_receipt": "receipts/headless/DAG_CONSOLIDATION_DECISION.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.commands.format_status",
+      "concept": "status",
+      "path": "hcli/commands.py",
+      "line": 94,
+      "file_line": "hcli/commands.py:94",
+      "symbol": "format_status / enrich_status_snapshot",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "One-screen /status renderer. Unmeasured fields print as unknown, never as 0. HEAD has exactly one def format_status; the 'later shadows earlier' finding did not reproduce.",
+      "move": "Keep as the only human /status renderer. TUI.render_status is a transcript line, not this.",
+      "callers": [
+        "hcli/commands.py",
+        "tools/haider/hcli/tests/test_status_completeness.py",
+        "tools/haider/hcli/tests/test_status_truth.py"
+      ],
+      "evidence_receipt": "receipts/headless/HCLI_STATUS_OBSERVABILITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.controller.status",
+      "concept": "status",
+      "path": "hcli/controller.py",
+      "line": 190,
+      "file_line": "hcli/controller.py:190",
+      "symbol": "Controller.status (snapshot)",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Builds the snapshot format_status renders (qwen/grok/mutation/occupancy).",
+      "move": "Keep as the data side of /status. format_status must not grow its own probes.",
+      "callers": [
+        "hcli/commands.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.tui.render_status",
+      "concept": "status",
+      "path": "hcli/tui.py",
+      "line": 49,
+      "file_line": "hcli/tui.py:49",
+      "symbol": "TUI.render_status",
+      "classification": "obsolete",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Prints TUI.status string (idle/working). Not /status.",
+      "move": "Keep as a transcript chrome, or later call format_status. Do not treat as the operator status surface.",
+      "callers": [
+        "hcli/tui.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.grok.parse_grok_status",
+      "concept": "status",
+      "path": "hcli/grok_bridge.py",
+      "line": 282,
+      "file_line": "hcli/grok_bridge.py:282",
+      "symbol": "parse_grok_status / grok_succeeded",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Grok-run task liveness/terminal state. Input to Mission adoption and P0-3.",
+      "move": "Keep. Not WorkUnit.status and not Ledger.outcome.",
+      "callers": [
+        "hcli/grok_bridge.py",
+        "hcli/scheduler.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.StatusResponse",
+      "concept": "status",
+      "path": "crates/hide-backend/src/hcli_bridge.rs",
+      "line": 1810,
+      "file_line": "crates/hide-backend/src/hcli_bridge.rs:1810",
+      "symbol": "StatusResponse",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "Rust HCLI JSONL status. A second product named HCLI.",
+      "move": "Keep for crates/hide-backend/src/bin/hcli.rs. Do not make Python format_status emit this schema.",
+      "callers": [
+        "crates/hide-backend/src/bin/hcli.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "ramanujan.Status",
+      "concept": "status",
+      "path": "ramanujan/scaffold/research/prover.py",
+      "line": 56,
+      "file_line": "ramanujan/scaffold/research/prover.py:56",
+      "symbol": "Status (ramanujan prover)",
+      "classification": "canonical",
+      "plane": "ramanujan",
+      "two_real": false,
+      "survives": true,
+      "role": "Ramanujan prover enum. Unrelated to HCLI /status.",
+      "move": "Keep.",
+      "callers": [
+        "ramanujan/scaffold/research/prover.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.workunit.DEFAULT_RETRY_BUDGET",
+      "concept": "retry policy",
+      "path": "hcli/workunit.py",
+      "line": 26,
+      "file_line": "hcli/workunit.py:26",
+      "symbol": "DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": true,
+      "role": "Durable retry/repair caps on the unit and DAG document.",
+      "move": "Keep here. Scheduler must re-export, not reassign.",
+      "callers": [
+        "hcli/workunit.py",
+        "hcli/scheduler.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.scheduler.MAX_REPAIR_shadow",
+      "concept": "retry policy",
+      "path": "hcli/scheduler.py",
+      "line": 79,
+      "file_line": "hcli/scheduler.py (re-export only)",
+      "symbol": "MAX_REPAIR_DEPTH = 3 (shadows the import)",
+      "classification": "obsolete",
+      "plane": "hcli-py",
+      "two_real": true,
+      "survives": false,
+      "role": "Imported from workunit.py at line 20, then reassigned at line 79 after a duplicated LOG =. Same values today; a drift would split the repair cap between emit_repair and `from scheduler import`.",
+      "move": "Delete the reassignment; keep a re-export comment only.",
+      "callers": [
+        "tools/haider/hcli/tests/test_scheduler_quality.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": "REMOVED the reassignment. hcli.scheduler.MAX_REPAIR_* is now the workunit.py object (import re-export)."
+    },
+    {
+      "id": "hcli.resources.classify_failure",
+      "concept": "retry policy",
+      "path": "hcli/resources.py",
+      "line": 800,
+      "file_line": "hcli/resources.py:800",
+      "symbol": "classify_failure / counts_toward_retry_budget / NON_RETRYABLE / FailureClassification",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Retryability of a failure. Non-retryable names do not burn DEFAULT_RETRY_BUDGET.",
+      "move": "Keep as the retryability authority. emit_repair consults this.",
+      "callers": [
+        "hcli/workunit.py",
+        "tools/headless/repair_disposition_table.py"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-kernel.RetryPolicy",
+      "concept": "retry policy",
+      "path": "crates/hide-kernel/src/program_runtime_ast.rs",
+      "line": 76,
+      "file_line": "crates/hide-kernel/src/program_runtime_ast.rs:76",
+      "symbol": "RetryPolicy",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "HIDE program-runtime AST retry policy. Not WorkUnit DEFAULT_RETRY_BUDGET.",
+      "move": "Keep in hide-kernel. Do not import into HCLI-py workunit.py.",
+      "callers": [
+        "crates/hide-kernel/src/program_runtime_ast.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.backends.structured_output_attempts",
+      "concept": "retry policy",
+      "path": "hcli/backends.py",
+      "line": 441,
+      "file_line": "hcli/backends.py:441",
+      "symbol": "DEFAULT_STRUCTURED_OUTPUT_ATTEMPTS",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Bounded parse retries for structured output (especially MLX without grammar).",
+      "move": "Keep. Different budget from WorkUnit attempts.",
+      "callers": [
+        "hcli/backends.py"
+      ],
+      "evidence_receipt": "receipts/headless/BACKEND_CAPABILITY.json",
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.bin.hcli",
+      "concept": "mission",
+      "path": "crates/hide-backend/src/bin/hcli.rs",
+      "line": 1,
+      "file_line": "crates/hide-backend/src/bin/hcli.rs:1",
+      "symbol": "bin/hcli.rs (Rust HCLI)",
+      "classification": "canonical",
+      "plane": "hide-rs",
+      "two_real": true,
+      "survives": true,
+      "role": "A second product named HCLI: JSONL shell over hide-backend. Not tools/haider/hcli. bin/haider.rs is an empty blob (git e69de29).",
+      "move": "Keep as the HIDE product surface. Do not point ~/.local/bin/hcli at this binary without an explicit cutover. TWO real HCLI authorities.",
+      "callers": [
+        "crates/hide-backend/src/bin/hcli.rs"
+      ],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hide-backend.bin.haider_empty",
+      "concept": "mission",
+      "path": "crates/hide-backend/src/bin/haider.rs",
+      "line": null,
+      "file_line": "crates/hide-backend/src/bin/haider.rs",
+      "symbol": "bin/haider.rs (empty)",
+      "classification": "historical",
+      "plane": "hide-rs",
+      "two_real": false,
+      "survives": true,
+      "role": "Empty file (git blob e69de29). Fossil namespace, not a runner.",
+      "move": "Do not delete in this campaign (historical name). Do not implement into it.",
+      "callers": [],
+      "evidence_receipt": null,
+      "in_head": true,
+      "g028_update": null
+    },
+    {
+      "id": "hcli.persist.atomic_write_text",
+      "concept": "receipt",
+      "path": "hcli/persist.py",
+      "line": null,
+      "file_line": "hcli/persist.py:atomic_write_text",
+      "symbol": "atomic_write_text / atomic_write_json",
+      "classification": "canonical",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "The only crash-safe writer in HCLI-py (tmp + fsync + os.replace). JSON adapter is atomic_write_json.",
+      "move": "Keep. All HCLI-py durable JSON/text writes go through here.",
+      "callers": [
+        "hcli/dag_store.py",
+        "hcli/resources.py",
+        "hcli/ledger.py",
+        "hcli/runtime.py",
+        "hcli/grok_bridge.py",
+        "hcli/engine.py",
+        "hcli/session.py",
+        "hcli/steering.py",
+        "hcli/config.py",
+        "hcli/max_policy.py",
+        "hcli/machine.py",
+        "hcli/mission.py"
+      ],
+      "evidence_receipt": "receipts/headless/CORE_AUTHORITIES.json",
+      "in_head": true,
+      "g028_update": "Elevated from a dag_store helper. Private _atomic_write* copies deleted or re-exported."
+    },
+    {
+      "id": "hcli.resources.resolve_active_decode_limit",
+      "concept": "machine identity",
+      "path": "hcli/resources.py",
+      "line": null,
+      "file_line": "hcli/resources.py:resolve_active_decode_limit",
+      "symbol": "resolve_active_decode_limit",
+      "classification": "compatibility",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "Returns (active_decode_limit, source). Previously a second file-walker that skipped freshness.",
+      "move": "Keep as a named adapter. Body is resolve_runtime_limits(...).active_*. Verified caller: ResourceLimits.resolve, tests.",
+      "callers": [
+        "hcli/resources.py",
+        "tools/haider/hcli/tests/test_scheduler_resources.py"
+      ],
+      "evidence_receipt": "receipts/headless/CORE_AUTHORITIES.json",
+      "in_head": true,
+      "g028_update": "Consolidated onto hcli.machine.resolve_runtime_limits. STALE genomes no longer admit."
+    },
+    {
+      "id": "hcli.cli.resolve_resident_runtime_limit",
+      "concept": "machine identity",
+      "path": "hcli/cli.py",
+      "line": null,
+      "file_line": "hcli/cli.py:resolve_resident_runtime_limit",
+      "symbol": "resolve_resident_runtime_limit",
+      "classification": "compatibility",
+      "plane": "hcli-py",
+      "two_real": false,
+      "survives": true,
+      "role": "CLI `hcli max` resident count. Clamps 1-8. Previously walked genome files without freshness.",
+      "move": "Keep as CLI adapter. Body is resolve_runtime_limits + clamp. Verified caller: parse_haider_args.",
+      "callers": [
+        "hcli/cli.py",
+        "tools/haider/hcli/tests/test_grammar.py"
+      ],
+      "evidence_receipt": "receipts/headless/CORE_AUTHORITIES.json",
+      "in_head": true,
+      "g028_update": "Consolidated onto hcli.machine.resolve_runtime_limits. Source labels mapped for CLI."
+    }
+  ],
+  "consolidations": [
+    {
+      "id": "retry-policy-one-literal",
+      "concept": "retry policy",
+      "before_identity": "hcli.scheduler.MAX_REPAIR_DEPTH = 3 (and MAX_REPAIRS_PER_ROOT = 6) reassigned after importing the same names from workunit.py \u2014 two ints, same numbers, merge shadow",
+      "replacement_authority": "hcli.workunit.MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT; scheduler re-exports the same objects",
+      "tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestRetryPolicyOneLiteral",
+        "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "tools/haider/hcli/tests/test_workunit_identity.py",
+        "tools/headless/hcli_repair_homeostasis_test.py (module attribute, not a source grep)"
+      ],
+      "rollback": "Restore the two assignments and the second LOG = from git show HEAD:hcli/scheduler.py. The import from workunit.py was already present.",
+      "diff": "--- a/hcli/scheduler.py\n+++ b/hcli/scheduler.py\n@@ LOG = logging.getLogger(\"hcli.scheduler\")\n-LOG = logging.getLogger(\"hcli.scheduler\")  # second assignment\n-MAX_REPAIR_DEPTH = 3\n-MAX_REPAIRS_PER_ROOT = 6\n+# Re-exported from workunit.py (imported above). Do not reassign.\n"
+    },
+    {
+      "id": "scheduler-remaining-depth-removed",
+      "concept": "scheduler",
+      "before_identity": "hcli.scheduler._remaining_depth (unused by dispatch; FIFO by ready_at)",
+      "replacement_authority": "none in production. test-only copy: tools/headless/hcli_scheduler_quality.py::remaining_depth",
+      "tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestRetryPolicyOneLiteral::test_remaining_depth_is_not_on_scheduler",
+        "tools/headless/hcli_scheduler_quality.py (inspects Scheduler.dispatch source for a depth sort key; must stay false)"
+      ],
+      "rollback": "Restore def _remaining_depth from git show HEAD:hcli/scheduler.py. Do not wire it into dispatch().",
+      "diff": "--- a/hcli/scheduler.py\n+++ b/hcli/scheduler.py\n-def _remaining_depth(units):\n-    ... hop-count helper unused by dispatch ...\n"
+    },
+    {
+      "id": "machine-limits-one-resolver",
+      "concept": "machine identity",
+      "before_identity": "THREE file-walkers: machine.resolve_runtime_limits (FRESH-gated), resources.resolve_active_decode_limit (no freshness), cli.resolve_resident_runtime_limit (no freshness). Same files, split authority.",
+      "replacement_authority": "hcli.machine.resolve_runtime_limits. The other two are named adapters (clamp/labels only on CLI).",
+      "tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestLimitOneAuthority",
+        "tools/haider/hcli/tests/test_scheduler_resources.py::TestActiveDecodeLimit",
+        "tools/haider/hcli/tests/test_runtime_authority.py",
+        "tools/haider/hcli/tests/test_runtime_pool.py::TestLimitResolution",
+        "tools/haider/hcli/tests/test_grammar.py::TestGrammar::test_max_genome_then_equilibrium_then_fallback"
+      ],
+      "rollback": "git show HEAD:hcli/resources.py and HEAD:hcli/cli.py restore the independent walkers. Tests that now write FRESH genomes would still pass against the old walkers.",
+      "diff": "--- a/hcli/resources.py\n+++ b/hcli/resources.py\n-def resolve_active_decode_limit(repo_root=None):\n-    env = _limit_from_env()\n-    ... walk ~/.config/hcli/machine_genome.json without freshness ...\n+def resolve_active_decode_limit(repo_root=None):\n+    from .machine import resolve_runtime_limits\n+    resolved = resolve_runtime_limits(...)\n+    return resolved.active_decode_limit, resolved.active_source\n--- a/hcli/cli.py\n+++ b/hcli/cli.py\n-    read home genome / worker-equilibrium without freshness\n+    resolve_runtime_limits(repo_root=start, start_dir=start) + clamp 1-8\n",
+      "identity_note": "Did not change skip-rehash. Engine evidence invalidation remains mtime_ns+size (hcli/engine.py). WorkUnit identity remains content_identity (hash of unit fields). live_machine_identity remains hw_model/cpu/ncpu/mem_bytes, not st_dev. MachineGenome default path stays under HCLI_HOME so save cannot clobber the live genome."
+    },
+    {
+      "id": "machinegenome-not-admission",
+      "concept": "machine identity",
+      "before_identity": "class MachineGenome wrote ~/.local/share/hcli/machine-genome.json via Path.write_text (truncating)",
+      "replacement_authority": "resolve_runtime_limits for numbers; MachineGenome is a compatibility bag; save() is persist.atomic_write_json",
+      "tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestMachineGenomeIsNotAdmission"
+      ],
+      "rollback": "git show HEAD:hcli/machine.py (class MachineGenome / get_machine_genome_path).",
+      "diff": "--- a/hcli/machine.py\n+++ b/hcli/machine.py\n-        self.path.write_text(json.dumps(self.data, indent=2))\n+        from .persist import atomic_write_json\n+        atomic_write_json(self.path, self.data)\n"
+    },
+    {
+      "id": "atomic-write-one-primitive",
+      "concept": "receipt",
+      "before_identity": "persist.atomic_write_json; resources._atomic_write_text (fsync); runtime._atomic_write (fsync); ledger._atomic_write_text (no fsync); grok_bridge Path.write_text; session/steering/config path+\".tmp\" without fsync",
+      "replacement_authority": "hcli.persist.atomic_write_text (canonical) + atomic_write_json adapter. Re-exports kept for engine (resources._atomic_write_text) and dag_store.atomic_write_json.",
+      "tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestAtomicWriteOneAuthority",
+        "tools/haider/hcli/tests/test_dag_store.py::TestDagStore::test_atomic_write_uses_temp_and_replace",
+        "tools/haider/hcli/tests/test_backend_health.py::test_atomic_write_uses_temp_and_replace"
+      ],
+      "rollback": "git show HEAD for hcli/persist.py hcli/resources.py hcli/runtime.py hcli/ledger.py hcli/grok_bridge.py hcli/session.py hcli/steering.py hcli/config.py",
+      "diff": "--- a/hcli/persist.py\n+++ b/hcli/persist.py\n+def atomic_write_text(path, text):  # tmp + fsync + os.replace\n def atomic_write_json(path, obj):\n-    ... duplicated writer ...\n+    atomic_write_text(path, json.dumps(obj, indent=2, sort_keys=True))\n"
+    },
+    {
+      "id": "runtime-topology-keys-once",
+      "concept": "runtime registry",
+      "before_identity": "TOPOLOGY_KEYS assigned twice in hcli/runtime.py (merge artifact, identical tuples)",
+      "replacement_authority": "single TOPOLOGY_KEYS tuple in hcli/runtime.py",
+      "tests": [
+        "tools/haider/hcli/tests/test_core_authorities.py::TestTopologyKeysOnce",
+        "tools/haider/hcli/tests/test_runtime_authority.py"
+      ],
+      "rollback": "Re-add the duplicate assignment (no semantic change). git show HEAD:hcli/runtime.py.",
+      "diff": "--- a/hcli/runtime.py\n+++ b/hcli/runtime.py\n TOPOLOGY_KEYS = (...)\n-TOPOLOGY_KEYS = (...)  # identical second assignment\n"
+    }
+  ],
+  "compatibility_layers_kept": [
+    {
+      "id": "hcli.goal.WorkUnitDAG",
+      "caller": "hcli/goal.py GoalCompiler, hcli/engine.py, tools/headless/hcli_dag_consolidation_test.py",
+      "why": "Compiler IR over identify_ready / transition_status / DagStore. Not a second DAG."
+    },
+    {
+      "id": "hcli.context.reexport",
+      "caller": "tools/headless/startup_census.py",
+      "why": "Same WorkerPacket class object as hcli.goal."
+    },
+    {
+      "id": "hcli.resources.resolve_active_decode_limit",
+      "caller": "ResourceLimits.resolve, tools/haider/hcli/tests/test_scheduler_resources.py",
+      "why": "Named adapter; body is resolve_runtime_limits."
+    },
+    {
+      "id": "hcli.cli.resolve_resident_runtime_limit",
+      "caller": "parse_haider_args (token max)",
+      "why": "CLI clamp 1-8 + source labels over resolve_runtime_limits."
+    },
+    {
+      "id": "hcli.machine.MachineGenome",
+      "caller": "tools/headless/hcli_persistence_audit.py",
+      "why": "Crash-safety bag. Not admission. Default path is not the live genome."
+    },
+    {
+      "id": "hcli.grok_bridge.mutation_lock_param",
+      "caller": "hcli/commands.py CommandHandler._grok_mutation_lock, Mission",
+      "why": "Accepts callable/CM wrapping MutationLock."
+    },
+    {
+      "id": "hcli.scheduler.verification_passed",
+      "caller": "Scheduler.complete",
+      "why": "Predicate over verifier dict; not a second verifier."
+    },
+    {
+      "id": "hcli.persist re-exports",
+      "caller": "hcli.engine imports resources._atomic_write_text; tests import dag_store.atomic_write_json; mission imports dag_store.atomic_write_json",
+      "why": "Same function object as persist.atomic_write_text / atomic_write_json."
+    }
+  ],
+  "not_merged_two_real": {
+    "across_planes": "HIDE (Rust), lab, hawking-orch/serve/context, ramanujan, haider-v0, and HCLI-py are different products. Same English word is not the same authority. Merging Ledger with hide-backend GoalStore, or Scheduler with hawking-serve batch Scheduler, would invent a third type. Documented in AUTHORITY_CENSUS.json two_real_authority_concepts.",
+    "within_hcli_py": [
+      {
+        "concept": "Goal",
+        "ids": [
+          "hcli.ledger.Ledger",
+          "hcli.goal.GoalCompiler"
+        ],
+        "why": "Satisfaction (GOAL.md obligations) vs compilation (WorkUnits). Different identity spaces (G001 vs WorkUnit.id). DAG_CONSOLIDATION_DECISION.json."
+      },
+      {
+        "concept": "verifier",
+        "ids": [
+          "hcli.verifier_pipeline.Obligation",
+          "hcli.ledger.Obligation"
+        ],
+        "why": "PipelineClaim-shaped planner output vs GOAL.md obligation. Different fields and lifecycle. Renaming the pipeline type is a later source lane; merging them would forge VERIFIED."
+      },
+      {
+        "concept": "receipt",
+        "ids": [
+          "hcli.engine._write_receipt",
+          "hcli.grok_bridge._write_receipt",
+          "hcli.ledger._write_receipt"
+        ],
+        "why": "Three schemas (mission goal receipt, grok-run receipt, verify sidecar). Shared the write primitive; did not merge schemas. Historical receipts cite the filenames."
+      },
+      {
+        "concept": "status",
+        "ids": [
+          "hcli.workunit.transition_status",
+          "hcli.ledger.outcome",
+          "hcli.commands.format_status"
+        ],
+        "why": "WorkUnit state machine vs governor outcome vs human /status renderer. tui.render_status is transcript chrome (obsolete as an operator surface)."
+      },
+      {
+        "concept": "checkpoint",
+        "ids": [
+          "hcli.dag_store.persist"
+        ],
+        "why": "HCLI-py has one crash checkpoint: DagStore + mission state.json + MutationLock. Did not grow a Checkpoint class."
+      }
+    ],
+    "out_of_write_scope": [
+      "lab/operators/* ModelSpec copies (UNKNOWN in census; not byte-compared; lab/ denied)",
+      "crates/hide-* Goal/DAG/scheduler/checkpoint (Rust HIDE product)",
+      "haider-v0 tools/haider/haider.py (historical bootstrap; do not delete)"
+    ]
+  },
+  "hcli_py_canonical_after_g028": {
+    "Goal": [
+      "hcli.ledger.Ledger",
+      "hcli.goal.GoalCompiler"
+    ],
+    "mission": [
+      "hcli.mission.Mission"
+    ],
+    "WorkUnit": [
+      "hcli.workunit.WorkUnit",
+      "hcli.executors.WorkUnitExecutor"
+    ],
+    "DAG": [
+      "hcli.workunit.identify_ready",
+      "hcli.dag_store.DagStore"
+    ],
+    "scheduler": [
+      "hcli.scheduler.Scheduler"
+    ],
+    "checkpoint": [
+      "hcli.dag_store.persist"
+    ],
+    "mutation lock": [
+      "hcli.resources.MutationLock"
+    ],
+    "verifier": [
+      "hcli.verifier_pipeline",
+      "hcli.ledger.Obligation"
+    ],
+    "backend registry": [
+      "hcli.backends.RuntimeBackend",
+      "hcli.resources.BackendHealth"
+    ],
+    "context budget": [
+      "hcli.context_budget.ContextBudget"
+    ],
+    "runtime registry": [
+      "hcli.runtime.RuntimePool"
+    ],
+    "receipt": [
+      "hcli.engine._write_receipt",
+      "hcli.grok_bridge._write_receipt",
+      "hcli.ledger._write_receipt",
+      "hcli.persist.atomic_write_text"
+    ],
+    "model identity": [
+      "hcli.models.ModelRegistry"
+    ],
+    "machine identity": [
+      "hcli.machine.live_machine_identity"
+    ],
+    "status": [
+      "hcli.workunit.transition_status",
+      "hcli.ledger.outcome",
+      "hcli.commands.format_status",
+      "hcli.controller.status",
+      "hcli.grok.parse_grok_status"
+    ],
+    "retry policy": [
+      "hcli.workunit.DEFAULT_RETRY_BUDGET",
+      "hcli.resources.classify_failure",
+      "hcli.backends.structured_output_attempts"
+    ]
+  },
+  "counts": {
+    "authorities": 100,
+    "consolidations_performed": 6,
+    "by_class": {
+      "canonical": 73,
+      "obsolete": 8,
+      "compatibility": 11,
+      "test-only": 3,
+      "historical": 5
+    }
+  },
+  "pytest": {
+    "command": "HCLI_SWAP_CEILING_GIB=64 python3 -m pytest tools/haider tools/headless -q",
+    "floor": 749,
+    "result": "765 passed, 7 skipped in 336.91s",
+    "exit": 0,
+    "tail": "765 passed, 7 skipped in 336.91s (0:05:36)",
+    "note": "tools/haider/bootstrap_snapshots/ is historical and ignored by tools/haider/conftest.py so fossil test modules do not fail collection. Four tools/headless/test_noetic_zero_parent.py cases skip when live_native_decode.metal_refused (no Metal GPU in this sandbox); they are INCONCLUSIVE, not PASS, and are not counted as failures.",
+    "count_did_not_decrease": true
+  },
+  "receipt_sha256": "e9ef9f54f1074ea33bc88da93ed73e54df7f5d78fd269ad9a22b39330cbcf2c1"
+}

@@ -57,23 +57,53 @@ pub fn harvest(outputs: &[LaneOutput]) -> Harvest {
 
     // Collect + normalize + dedup.
     let mut all_files: BTreeSet<String> = BTreeSet::new();
-    let mut all_tests: BTreeMap<String, bool> = BTreeMap::new();
+    let mut all_tests: BTreeMap<String, Vec<(String, bool)>> = BTreeMap::new();
     let mut all_actions: BTreeSet<String> = BTreeSet::new();
+    let mut seen_contradictions: BTreeSet<(String, String, String)> = BTreeSet::new();
 
     for o in outputs {
         per_lane_tokens.insert(o.lane.clone(), o.text.split_whitespace().count());
         all_files.extend(o.changed_files.iter().cloned());
         for t in &o.test_results {
-            all_tests.insert(t.name.clone(), t.passed);
+            all_tests
+                .entry(t.name.clone())
+                .or_default()
+                .push((o.lane.clone(), t.passed));
         }
         all_actions.extend(o.proposed_actions.iter().cloned());
     }
 
     packet.changed_files = all_files;
-    packet.test_results = all_tests
-        .into_iter()
-        .map(|(name, passed)| TestResult { name, passed })
-        .collect();
+
+    let mut test_results = Vec::new();
+    for (name, results) in all_tests {
+        let has_pass = results.iter().any(|(_, p)| *p);
+        let has_fail = results.iter().any(|(_, p)| !*p);
+
+        if has_pass && has_fail {
+            if let (Some((lane_pass, _)), Some((lane_fail, _))) = (
+                results.iter().find(|(_, p)| *p),
+                results.iter().find(|(_, p)| !*p),
+            ) {
+                let topic = format!("test:{name}");
+                if seen_contradictions.insert((topic.clone(), lane_pass.clone(), lane_fail.clone()))
+                {
+                    packet.contradictions.push(Contradiction {
+                        topic,
+                        a: lane_pass.clone(),
+                        b: lane_fail.clone(),
+                    });
+                }
+            }
+        }
+
+        test_results.push(TestResult {
+            name,
+            passed: has_pass && !has_fail,
+        });
+    }
+    packet.test_results = test_results;
+
     packet.proposed_actions = all_actions.into_iter().collect();
 
     // Detect agreements: actions that appear in >1 lane.
@@ -99,11 +129,13 @@ pub fn harvest(outputs: &[LaneOutput]) -> Harvest {
             }
             for fa in &a.changed_files {
                 if b.changed_files.contains(fa) {
-                    packet.contradictions.push(Contradiction {
-                        topic: fa.clone(),
-                        a: a.lane.clone(),
-                        b: b.lane.clone(),
-                    });
+                    if seen_contradictions.insert((fa.clone(), a.lane.clone(), b.lane.clone())) {
+                        packet.contradictions.push(Contradiction {
+                            topic: fa.clone(),
+                            a: a.lane.clone(),
+                            b: b.lane.clone(),
+                        });
+                    }
                 }
             }
         }

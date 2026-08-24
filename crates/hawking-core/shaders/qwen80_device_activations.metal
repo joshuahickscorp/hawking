@@ -80,6 +80,171 @@ kernel void qwen80_residual_rmsnorm_tg(
     }
 }
 
+// Residual add + residual RMSNorm in one threadgroup. Same (1+w) math as
+// qwen80_residual_rmsnorm_tg, out-of-place residual write (residual_in may
+// alias residual_out). This is the working fusion shape: two launches that
+// already share the residual vector. Not a megakernel.
+//
+// Bindings:
+//   0 residual_in   (hidden,) f32
+//   1 delta         (hidden,) f32   mixer / down_proj output
+//   2 residual_out  (hidden,) f32   residual_in + delta
+//   3 weight        (hidden,) f32   MLX-delta RMS scale (kernel applies 1+w)
+//   4 x_norm        (hidden,) f32   RMSNorm(residual_out)
+//   5 hidden        uint
+//   6 eps           float
+kernel void qwen80_add_residual_rmsnorm_tg(
+    device const float* residual_in  [[buffer(0)]],
+    device const float* delta        [[buffer(1)]],
+    device float* residual_out       [[buffer(2)]],
+    device const float* weight       [[buffer(3)]],
+    device float* x_norm             [[buffer(4)]],
+    constant uint& hidden            [[buffer(5)]],
+    constant float& eps              [[buffer(6)]],
+    threadgroup float* scratch       [[threadgroup(0)]],
+    uint tid                         [[thread_index_in_threadgroup]],
+    uint tg_size                     [[threads_per_threadgroup]])
+{
+    float sum = 0.0f;
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const float v = residual_in[index] + delta[index];
+        residual_out[index] = v;
+        sum += v * v;
+    }
+    scratch[tid] = sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) scratch[tid] += scratch[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inverse_rms = 1.0f / sqrt(scratch[0] / float(hidden) + eps);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        x_norm[index] = residual_out[index] * inverse_rms * (1.0f + weight[index]);
+    }
+}
+
+// Deliberately BAD control: multiplies by weight[i] instead of (1+w).
+// A no-op fusion would match greedy ids; this one must not.
+kernel void qwen80_add_residual_rmsnorm_tg_plainweight(
+    device const float* residual_in  [[buffer(0)]],
+    device const float* delta        [[buffer(1)]],
+    device float* residual_out       [[buffer(2)]],
+    device const float* weight       [[buffer(3)]],
+    device float* x_norm             [[buffer(4)]],
+    constant uint& hidden            [[buffer(5)]],
+    constant float& eps              [[buffer(6)]],
+    threadgroup float* scratch       [[threadgroup(0)]],
+    uint tid                         [[thread_index_in_threadgroup]],
+    uint tg_size                     [[threads_per_threadgroup]])
+{
+    float sum = 0.0f;
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const float v = residual_in[index] + delta[index];
+        residual_out[index] = v;
+        sum += v * v;
+    }
+    scratch[tid] = sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) scratch[tid] += scratch[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inverse_rms = 1.0f / sqrt(scratch[0] / float(hidden) + eps);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        x_norm[index] = residual_out[index] * inverse_rms * weight[index];
+    }
+}
+
+// N030: same (1+w) RMSNorm, plus group-64 sums of x_norm. The fused
+// gate_up_swiglu biasprep kernel consumes xsum so the inner loop can
+// drop bias*x. One shared x; not a per-TG RMSNorm recompute.
+kernel void qwen80_residual_rmsnorm_tg_xsum64(
+    device const float* input  [[buffer(0)]],
+    device const float* weight [[buffer(1)]],
+    device float* output       [[buffer(2)]],
+    device float* xsum         [[buffer(3)]],
+    constant uint& hidden      [[buffer(4)]],
+    constant float& eps        [[buffer(5)]],
+    threadgroup float* scratch [[threadgroup(0)]],
+    uint tid                    [[thread_index_in_threadgroup]],
+    uint tg_size                [[threads_per_threadgroup]])
+{
+    float sum = 0.0f;
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const float value = input[index];
+        sum += value * value;
+    }
+    scratch[tid] = sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) scratch[tid] += scratch[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inverse_rms = 1.0f / sqrt(scratch[0] / float(hidden) + eps);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        output[index] = input[index] * inverse_rms * (1.0f + weight[index]);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const uint gpr = hidden >> 6u;
+    if ((hidden % 64u) == 0u) {
+        for (uint g = tid; g < gpr; g += tg_size) {
+            float s = 0.0f;
+            const uint base = g << 6u;
+            for (uint i = 0u; i < 64u; ++i) {
+                s += output[base + i];
+            }
+            xsum[g] = s;
+        }
+    }
+}
+
+kernel void qwen80_add_residual_rmsnorm_tg_xsum64(
+    device const float* residual_in  [[buffer(0)]],
+    device const float* delta        [[buffer(1)]],
+    device float* residual_out       [[buffer(2)]],
+    device const float* weight       [[buffer(3)]],
+    device float* x_norm             [[buffer(4)]],
+    device float* xsum               [[buffer(5)]],
+    constant uint& hidden            [[buffer(6)]],
+    constant float& eps              [[buffer(7)]],
+    threadgroup float* scratch       [[threadgroup(0)]],
+    uint tid                         [[thread_index_in_threadgroup]],
+    uint tg_size                     [[threads_per_threadgroup]])
+{
+    float sum = 0.0f;
+    for (uint index = tid; index < hidden; index += tg_size) {
+        const float v = residual_in[index] + delta[index];
+        residual_out[index] = v;
+        sum += v * v;
+    }
+    scratch[tid] = sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) scratch[tid] += scratch[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inverse_rms = 1.0f / sqrt(scratch[0] / float(hidden) + eps);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint index = tid; index < hidden; index += tg_size) {
+        x_norm[index] = residual_out[index] * inverse_rms * (1.0f + weight[index]);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const uint gpr = hidden >> 6u;
+    if ((hidden % 64u) == 0u) {
+        for (uint g = tid; g < gpr; g += tg_size) {
+            float s = 0.0f;
+            const uint base = g << 6u;
+            for (uint i = 0u; i < 64u; ++i) {
+                s += x_norm[base + i];
+            }
+            xsum[g] = s;
+        }
+    }
+}
+
 kernel void qwen80_silu_mul_f32(
     device const float* gate [[buffer(0)]],
     device const float* up   [[buffer(1)]],

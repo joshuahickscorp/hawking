@@ -1,0 +1,156 @@
+{
+  "archived": {
+    "artifact": "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "artifact_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "artifact_present": false,
+    "metrics": {
+      "concurrency": {
+        "source_receipt": "receipts/headless/DECODE_TOPOLOGY.json",
+        "status": "ARCHIVED",
+        "value": {
+          "mlx_single_stream_tps_cited": 35.506,
+          "note": "ONE MLX decoder (35.506 tok/s, GPU_ATTACK.json) beat FOUR concurrent llama.cpp slot decoders (27.749 tok/s aggregate). Best llama.cpp topology was slot k=6 at 31.541 tok/s, still below one MLX stream.",
+          "one_mlx_stream_beat_four_llama_slots": true,
+          "slot_k1_aggregate_tps_median": 22.818,
+          "slot_k4_aggregate_tps_median": 27.749,
+          "slot_k4_scaling_vs_1": 1.2161,
+          "slot_k4_spread_pct": 0.1,
+          "slot_k6_aggregate_tps_median": 31.541
+        }
+      },
+      "context_limit": {
+        "source_receipt": "receipts/headless/LONG_CONTEXT_RUNTIME_CAPABILITY.json",
+        "status": "ARCHIVED",
+        "value": 262144
+      },
+      "decode_tps": {
+        "source_receipt": "receipts/headless/RUNTIME_AB.json",
+        "status": "ARCHIVED",
+        "value": 24.048867298350245
+      },
+      "peak_memory": {
+        "source_receipt": "receipts/headless/MACHINE_GENOME.json",
+        "status": "ARCHIVED",
+        "value": 20553433088
+      },
+      "prefill": {
+        "source_receipt": "receipts/headless/RUNTIME_AB.json",
+        "status": "ARCHIVED",
+        "value": 82.68641811977446
+      },
+      "startup": {
+        "source_receipt": "receipts/headless/MACHINE_GENOME.json",
+        "status": "ARCHIVED",
+        "value": 1.51
+      },
+      "tool_shaped_tps": {
+        "source_receipt": "receipts/headless/STRUCTURED_OUTPUT_PROBE.json",
+        "status": "ARCHIVED",
+        "value": 12.965
+      }
+    },
+    "note": "llama.cpp Q5_K is archived science. The GGUF is gone. Numbers survive labelled ARCHIVED. No code path may require the file to exist.",
+    "quant": "Q5_K",
+    "remeasured": false,
+    "required": false,
+    "runtime": "llamacpp",
+    "source_receipt": "receipts/headless/CONVENTIONAL_CONTROL_SET.json",
+    "status": "ARCHIVED"
+  },
+  "census": {
+    "backend_abc": "hcli.backends.RuntimeBackend",
+    "backend_kinds": [
+      "mlx",
+      "llamacpp",
+      "noetic_native"
+    ],
+    "default_kind_without_path": "mlx",
+    "foreign_classes_defined_here": [],
+    "interface": "hcli.runtime_iface.RuntimeInterface",
+    "llamacpp_status": "archived science when the Q5_K GGUF is absent",
+    "missing_q5k_kind": "llamacpp",
+    "mlx_first_class": true,
+    "noetic_native": "interface reservation; complete() refuses to pretend",
+    "planes": {
+      "backend": "hcli.backends.RuntimeBackend",
+      "context": "hcli.context_budget.ContextBudget (held, not recomputed)",
+      "health": "hcli.runtime_iface.RuntimeHealth",
+      "model_semantics": "hcli.runtime_iface.ModelSemantics",
+      "performance_profile": "hcli.genomes.runtime_genome.RuntimeGenome",
+      "session": "hcli.session.Session (id only; SessionStore is not copied)"
+    },
+    "pool": "hcli.runtime.RuntimePool",
+    "pool_member": "hcli.runtime.Runtime",
+    "q5k_gguf_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "q5k_gguf_present": false,
+    "q5k_gguf_required": false,
+    "scheduler_duplicated": false,
+    "session_store_duplicated": false
+  },
+  "control_set_commit": "053e292c7bede20701ed4e67840daf65f29ccca5",
+  "control_set_generated_at": "2026-08-23T21:04:18Z",
+  "future": {
+    "noetic_native": {
+      "note": "Noetic native is a RuntimeBackend kind on the one interface. complete() refuses to invent tokens.",
+      "status": "INTERFACE_ONLY"
+    }
+  },
+  "live": {
+    "artifact": {
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
+      "bytes": 16081497073,
+      "lineage": "PocketAiHub",
+      "n_files": 16,
+      "note": "on-disk MLX abliterated 4-bit; huihui-lineage directory is absent so the live arm is the PocketAiHub conversion at ~/models/qwen3.8-27b-abliterated-mlx/4bit",
+      "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit",
+      "preferred_huihui_present": false,
+      "quant": {
+        "bits": 4,
+        "group_size": 64,
+        "mode": "affine"
+      }
+    },
+    "profile": {
+      "context_tokens": 262144,
+      "decode_tps": 38.05867772872637,
+      "headline": {
+        "context_tokens": 262144,
+        "decode_tps": 38.06,
+        "peak_memory_gb": 18.21,
+        "prefill_tps": 309.94,
+        "startup_s": 1.329
+      },
+      "metrics_present": [
+        "concurrency",
+        "context_limit",
+        "decode_tps",
+        "peak_memory",
+        "prefill",
+        "startup",
+        "tool_shaped_tps"
+      ],
+      "peak_memory_gb": 18.206123076,
+      "prefill_tps": 309.94407089207584,
+      "remeasured": false,
+      "runtime": "mlx",
+      "source_receipt": "receipts/headless/CONVENTIONAL_CONTROL_SET.json",
+      "startup_s": 1.32945,
+      "status": "RECORDED"
+    },
+    "runtime": "mlx",
+    "status": "LIVE"
+  },
+  "machine": {
+    "cpu": "Apple M3 Ultra",
+    "hw_model": "Mac15,14",
+    "mem_bytes": 103079215104,
+    "ncpu": 28
+  },
+  "producer": "hcli.genomes.runtime_genome.RuntimeGenome.from_control_set",
+  "q5k_gguf_opened": false,
+  "q5k_gguf_required": false,
+  "remeasured": false,
+  "schema": "hawking.headless.runtime_genome.v1"
+}

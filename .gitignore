@@ -178,3 +178,29 @@ workspace/campaign/records/ascension-sandbox/physical/**/source-bf16-capture-res
 # target-parallel/ was committed build output and served stale binaries; never track it again.
 target-parallel/
 workspace/campaign/odyssey/.resident.lock/
+.aider*
+.haider/
+
+.preserved/
+hcli.egg-info/
+visionmcp/
+
+# --- Repo storage optimization (S018 followup): large local artifacts, never tracked ---
+# Model-body segments: packed weights regenerable from BF16 parents. 20GB of git
+# history bloat came from these. Kept on disk, never in git.
+*.hq80seg
+*.hq38seg
+*.hqseg
+**/ranspack/out/segments/
+**/quality-candidates/**/segments/
+# Activation captures (f16 planes): local, regenerable. No .f16 is tracked today.
+*.f16
+# Large training checkpoints live under phaseB/ckpt; keep the small tracked
+# frankenstein fixture .pt files, ignore only the heavy checkpoint + capture dirs.
+workspace/campaign/phaseB/ckpt/
+workspace/campaign/phaseB/capture_diverse/
+workspace/campaign/phaseB/capture_diverse2/
+# Unbounded local run log: a log, not a deliverable (trips GitHub 50MB warning).
+workspace/campaign/odyssey/RUN_LOG.jsonl
+# Receipt archive tarballs: keep the extracted receipts, drop the archive.
+receipts/**/*.tar.xz

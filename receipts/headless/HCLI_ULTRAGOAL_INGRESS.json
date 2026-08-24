@@ -1,0 +1,120 @@
+{
+  "gate": "HCLI_ULTRAGOAL_INGRESS",
+  "generated_at": "2026-08-23T03:44:55Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "source_file": "/Users/scammermike/.claude/ultragoal/hawking-headless-v3/ultragoal-directive.md",
+  "source_sha256": "ba7c36b93154332460a95815ce8668b54b2401b3d03a7ebe2ac86148927858f6",
+  "source_chars": 17459,
+  "returned": {
+    "mission_id": "380248a7-9bb0-48ab-a771-63b9b4796a2b",
+    "goal": "# HAWKING HEADLESS COMPLETION + SELF-OPTIMIZATION ULTRAGOAL V3\n\n## Mission\n\nTake over the current dirty `~/Downloads/hawking-copy` repository and push the headless Hawking organism as far toward a physically verified, self-supplementing, self-optimizing system as this session can coherently reach.\n\nClaude is the session authority/integrator. Grok is an aggressively used parallel cognitive and engineering backend. Local Qwen is the resident local model backend. CPU/tool processes are deterministic executors and verifiers.\n\nPrimary objective:\n\n**MAXIMIZE VERIFIED ACCEPTED USEFUL WORK / WALL TIME**\n\nsubject to correctness, durable state, bounded mutation, independent verification, and preservation of valuable dirty-tree science.\n\nDesired end state:\n\n```text\nUser\n  -> HCLI / AgentOS\n  -> durable Goal / obligations / canonical WorkUnit DAG\n  -> MAX scheduler\n       -> local Qwen\n       -> multiple Grok workers\n       -> CPU/tools/verifiers\n  -> Context Compiler + receipts/evidence\n  -> protected verifier\n  -> single mutation authority\n  -> accepted Hawking state\n  -> restart/resume/steering\n  -> self-supplement\n  -> measured self-optimization\n```\n\nModels think. Tools know. Context is a cache. Disk state is authority.\n\n## Explicit exclusions\n\nDo NOT work on:\n\n- VMCP / VisionMCP\n- All-Seeing Eye\n- VMCP native AgentOS integration\n- competitive-copy / agent-archaeology arc\n- Claude/Codex/Grok/Nous behavioral archaeology\n- competitor reverse engineering or proprietary copying\n- HIDE GUI implementation\n\nHIDE remains downstream. Do not hide headless incompleteness behind GUI work.\n\n## Current known state \u2014 verify before trusting\n\nRecent evidence indicates:\n\n- workspace `~/Downloads/hawking-copy`\n- dirty tree with valuable unrelated work\n- HCLI launches interactively\n- Qwen 27B Q5_K is the local model\n- Grok executable is expected at `~/.claude-grok/bin/grok-run`\n- real Grok consult and two Grok WorkUnits have been physically demonstrated\n- restart/resume, steering, single-writer and overlapping CPU tests have passed bootstrap proofs\n- `/clear` was repaired\n- `/help` and `/mission` have returned blank in the real TUI and require live verification\n- report compaction has a known tiny-report failure: `compact=716 raw=39`\n- large MAX qualification currently fails at initial Qwen ingress: `request (23532 tokens) exceeds available context size (11008 tokens)`\n- another Qwen llama-server has been physically observed with `--ctx-size 500000`\n- historical HCLI/bootstrap code contains stale context defaults such as `32768`\n- mixed MAX, self-supplement and full self-optimization bootstrap are not yet physically accepted\n\nBefore mutation record: git HEAD, branch, dirty state, active HCLI/llama/Grok processes, existing mission state, bootstrap receipts, current model/runtime identity, runtime launch argv and current context allocation path.\n\n## Execution doctrine\n\n### Claude\n\nClaude owns session planning, decomposition, shared-tree integration until AgentOS mutation authority is qualified, final synthesis, and acceptance decisions after deterministic verification.\n\nClaude must not become a single-threaded bottleneck. Launch independent Grok work early.\n\n### Grok\n\nUse Grok aggressively for independent causal investigation, architecture review, adversarial review, bounded implementation candidates, tests, scheduler analysis, context/KV analysis, concurrency analysis, failure-mode analysis, performance hypotheses and negative-science review.\n\nPrefer parallel read-only Grok consult/audit work whenever possible. Mutating Grok delegates must use isolated candidate/worktree/stage state or the canonical single-writer authority once that path is live. Never let two Grok workers race shared-tree mutation.\n\nPrefer nonblocking launch -> persist task id -> continue useful work -> status -> report. Grok must not become durable mission authority.\n\n### Qwen\n\nUse Qwen for bounded local implementation, inspection, repetitive classification, small repair candidates, fixtures and cheap local iteration. Do not feed every Qwen worker the full root ultragoal.\n\n### CPU/tools\n\nUse deterministic tools for tests, compilation, static checks, hashes, process truth, token counts, timings, runtime metadata, benchmark execution and receipt validation.\n\n## Phase A \u2014 Context authority and root ultragoal ingress\n\nFirst blocker: `23532` prompt tokens versus `11008` available.\n\nProve the exact causal path:\n\n```text\nCLI parse\n-> max policy\n-> model selection\n-> ModelProbe/MachineGenome/defaults\n-> runtime admission\n-> llama-server argv\n-> context allocation\n-> parallel/session allocation\n-> generation/tool reserve\n-> effective input budget\n-> task-file submission\n```\n\nDistinguish model architectural ceiling, physically qualified context, allocated llama-server context, usable request context, prompt tokens, generation reserve and worker context target.\n\nDo not fix by blindly changing one constant.\n\nCreate one canonical context-budget authority. Preserve explicit CLI/env override as an override, not hidden universal truth. Prefer:\n\n```text\nexplicit override\n> qualified machine/model profile\n> discovered model/runtime capability + safe current-machine policy\n> conservative fallback\n```\n\nPreflight root mission demand before inference:\n\n`root prompt + generation/tool/safety reserve <= usable root context`\n\nIf impossible, fail before HTTP inference with a structured diagnostic.\n\nRoot context and worker context must differ. Compile focused worker context from global invariants + current phase + WorkUnit + precise evidence + dependency neighborhood + acceptance criteria.\n\nPhysically prove a harmless >24K-token root request through the canonical HCLI/MAX path, then preflight the actual `~/Downloads/ultra.md` without truncation.\n\nRequired gates:\n\n```text\nHCLI_CONTEXT_CAUSE_IDENTIFIED=PASS\nHCLI_CONTEXT_AUTHORITY_UNIFIED=PASS\nHCLI_ROOT_CONTEXT_PREFLIGHT=PASS\nHCLI_MAX_CONTEXT_NONREGRESSION=PASS\nHCLI_WORKUNIT_FOCUSED_CONTEXT=PASS\nHCLI_LONG_CONTEXT_ROOT_INGRESS=PASS\nHCLI_REAL_ULTRAGOAL_CONTEXT_PREFLIGHT=PASS\n```\n\n## Phase B \u2014 Command plane and mission ingress\n\nPhysically verify `/status`, `/help`, `/mission`, `/clear`, `/ultragoal`, `/steer`, `/grok` in the real TUI.\n\n`/help` and `/mission` must visibly return useful output. `/clear` must clear transcript only, preserving mission/Goal/DAG/receipts/steering. `/ultragoal` must compile into the canonical durable mission path rather than ordinary chat text.\n\nNo duplicate command dispatcher or mission engine.\n\n## Phase C \u2014 Report compaction\n\nFix `compact=716 raw=39` semantically, not by weakening the test.\n\nTest tiny, medium and large realistic reports. Tiny reports must not explode into a verbose context envelope. Medium/large reports must retain decision-critical information while removing repeated noise. Raw report path/provenance remains addressable.\n\nCanaries: material finding/state/verifier change must change the compact digest; repeated irrelevant noise should not balloon it.\n\n## Phase D \u2014 Grok as canonical AgentOS WorkUnit backend\n\nRequired lifecycle:\n\n```text\nready WorkUnit\n-> scheduler selects Grok\n-> nonblocking launch\n-> real task id persisted\n-> scheduler continues\n-> status reconciliation\n-> report acquisition/compaction\n-> deterministic verifier\n-> accepted/rejected WorkUnit\n```\n\nPersist task id, executable identity, argv, timestamps, terminal state, raw/compact report, retries, throttle/failure evidence and verifier outcome.\n\nRestart must reconcile existing Grok tasks rather than duplicate them. Grok prose cannot self-complete a WorkUnit.\n\n## Phase E \u2014 Single writer and verifier authority\n\nParallel cognition is encouraged; shared-tree integration is serialized.\n\nNo model may self-promote, self-verify, silently change acceptance criteria, or mark a WorkUnit complete from prose.\n\nCanaries: two mutation contenders -> one blocks; verifier failure -> no completion; no-op/hash repeat -> no progress; completed WorkUnit -> never replayed after restart.\n\n## Phase F \u2014 Real mixed MAX qualification\n\nAfter context ingress and Grok WorkUnits work, run a substantial useful campaign across Qwen + Grok + CPU/tools.\n\nDo not manufacture sleep tasks or fake work.\n\nUse real Hawking work around scheduler hardening, context compiler, Grok lifecycle, report compaction, mission persistence, status/observability, verifier integrity, runtime resource policy and failure recovery.\n\nMeasure Qwen equilibrium at 1 -> 2 active decodes and higher only if physically useful.\n\nRamp Grok useful concurrency:\n\n`1 -> 2 -> 4 -> 6 -> 8 -> higher only while verified throughput improves`\n\nAt each rung record requested/admitted/actual active concurrency, verified/rejected WorkUnits, failures, retries, queue latency, p50/p95 completion latency, throttle/rate-limit evidence, verifier wait, mutation wait, scheduler overhead and verified accepted useful WorkUnits/hour.\n\nStop when marginal verified throughput stops improving or another resource is the bottleneck. Persist the measured equilibrium.\n\nInject controlled Grok, Qwen/verifier and CPU validator failures where safe. Independent work must continue.\n\nRequired:\n\n```text\nQWEN_MAX_EQUILIBRIUM=PASS\nHCLI_GROK_MAX_EQUILIBRIUM=PASS\nBACKEND_FAILURE_ISOLATION=PASS\nMAX_DEPENDENCY_SCHEDULING=PASS\nMAX_NO_ARTIFICIAL_WORK=PASS\nHCLI_MIXED_MAX=PASS\n```\n\n## Phase G \u2014 Observability\n\n`/status` should compactly expose mission/phase/Goal, ready/running/blocked/completed WorkUnits, Qwen resident/active/queued/context/throughput, Grok admitted/active/queued/done/failed/throttle/latency, CPU/tool activity, mutation owner/waiters, verifier backlog, verified WorkUnits/hour, checkpoint age and no-progress/watchdog state.\n\n## Phase H \u2014 Restart/resume/steering under load\n\nRun a real mixed mission, checkpoint it with completed and unfinished WorkUnits and at least one external Grok task if practical, terminate HCLI, restart, recover the same mission and WorkUnit ids, do not replay completed work, reconcile external tasks, recover stale locks safely, continue, issue `/steer`, alter only appropriate future work, preserve verified history, then complete another verified WorkUnit.\n\n## Phase I \u2014 Self-supplement\n\nPhysically prove:\n\n```text\nHCLI\n-> ultragoal\n-> durable Goal\n-> obligations\n-> canonical WorkUnit DAG\n-> scheduler\n-> Qwen/Grok/CPU assignment\n-> actual tools\n-> deterministic verifier\n-> receipt\n-> VERIFIED\n-> checkpoint\n-> restart\n-> same mission\n-> steer\n-> next verified WorkUnit\n```\n\nRequired: `HCLI_SELF_SUPPLEMENT=PASS`.\n\n## Phase J \u2014 Self-optimization\n\nAfter mixed MAX and self-supplement pass, use the system to optimize itself:\n\n```text\nsense\n-> identify measured bottleneck\n-> bounded hypotheses\n-> rank expected value\n-> cheap screens\n-> correctness/equivalence gate\n-> realistic performance/capability gate\n-> promote/reject\n-> positive/negative science\n-> update priors\n-> choose next bottleneck from evidence\n```\n\nIteration 1 must target the actual measured top bottleneck. Iteration 2 must be selected partly from evidence produced by iteration 1, not simply be the next prewritten task.\n\nRequired:\n\n```text\nHCLI_SELF_OPT_ITERATION_1=PASS\nHCLI_SELF_OPT_ITERATION_2_EVIDENCE_CHOSEN=PASS\nHCLI_SELF_OPTIMIZATION_BOOTSTRAP=PASS\n```\n\n## Phase K \u2014 Runtime/Gravity hardening after control-plane acceptance\n\nOnly after the control plane is genuinely working, spend remaining useful session capacity on measured local runtime improvement.\n\nPrioritize runtime-level experiments: context/KV allocation and locality, prefill, decode, Metal kernels, layout, command topology, CPU/GPU split, residency, cache/checkpoint strategy, memory pressure and scheduler/runtime interaction.\n\nUse qualified parent -> disposable candidate. Every experiment must record exact model/runtime identity, configuration, baseline, candidate, correctness/capability gate, complete-token wall measurement, warm/cold regime, fallback count, negative science and promotion decision.\n\nDo not Goodhart tokens/sec while sacrificing capability. The optimizer cannot own promotion. Reprofile after any >20% verified complete-token improvement.\n\n## Grok parallelization plan\n\nAfter the initial census, launch independent Grok lanes immediately where evidence supports independence, for example:\n\n```text\nGROK-A  causal trace of the 11008 context regression\nGROK-B  /help /mission /ultragoal live-path audit\nGROK-C  report-compaction semantic design + canaries\nGROK-D  Grok WorkUnit lifecycle + restart reconciliation audit\nGROK-E  MAX scheduler/equilibrium instrumentation review\nGROK-F  verifier/single-writer adversarial audit\nGROK-G  Context Compiler / full-ultragoal duplication audit\nGROK-H  status/observability gap audit\n```\n\nDo not wait for A before starting unrelated B/C/D. Claude should integrate and verify while Grok tasks run.\n\nAs HCLI mixed MAX becomes qualified, transition from Claude-managed bootstrap Grok delegation into HCLI/AgentOS-owned WorkUnits and record the crossover point:\n\n`HCLI_BOOTSTRAP_HANDOFF=PASS`.\n\n# WRITE\n\nWrite access is authorized only within the active Hawking working repository:\n\n`~/Downloads/hawking-copy`\n\nAllowed mutation scope:\n\n- `tools/haider/**`\n- `tools/headless/**`\n- `core/**`\n- `gravity/**`\n- `odyssey/**`\n- `.hcli/**`\n- `.haider/**`\n- `receipts/headless/**`\n- `tests/**`\n- `docs/ultragoals/**`\n- exact small support artifacts directly required by those live headless control-plane/runtime paths\n\nExplicitly excluded from mutation:\n\n- `.git/**`\n- `visionmcp/**`\n- VMCP / All-Seeing Eye paths\n- competitive-copy / agent-archaeology implementation/evidence paths\n- HIDE GUI code\n- model weights by default\n- `~/Downloads/hawking`\n- `~/.claude-grok/**`\n- unrelated repositories\n- credentials/secrets\n\nConstraints: preserve unrelated dirty work; no `git reset --hard`, `git clean`, `git gc`, `git prune`, broad checkout/revert, `git add .`, or auto-commit; no deletion of historical receipts/negative science; no second scheduler, Goal engine, DAG authority or mutation authority; shared-tree mutation is serialized. If a required live file is outside scope, report the exact minimal scope expansion required instead of silently expanding authority.\n\nPermission to write is not permission to declare success.\n\n# VERIFY\n\nVerification is the sole completion authority.\n\nMinimum ladder:\n\n- V0 exact census and authority-path proof\n- V1 syntax/import/schema checks\n- V2 focused regression tests\n- V3 full current HCLI unit suite\n- V4 current headless integration tests, including command ingress, Grok dispatch, DAG consolidation, scheduler and bootstrap live proof\n- V5 real >24K-token root ingress\n- V6 real Grok task/report/verifier\n- V7 real Qwen inference with exact runtime/context identity\n- V8 mixed Qwen + Grok + CPU execution\n- V9 measured MAX equilibrium\n- V10 controlled failure isolation\n- V11 restart/resume\n- V12 durable steering\n- V13 self-supplement\n- V14 measured self-optimization iteration 1\n- V15 evidence-chosen iteration 2\n\nNo model-generated PASS counts without physical verifier evidence.\n\n## Final handoff\n\nPersist: git HEAD/branch/dirty state, files changed, tests/results, mission/Goal/WorkUnit ids, backend assignments, Grok task ids, Qwen runtime identities, context calibration, MAX calibration, Grok/Qwen equilibrium, verifier state, mutation authority state, restart/steering/self-supplement proofs, both self-optimization iterations, runtime/Gravity experiments, accepted/rejected candidates, negative science, blockers and exact continuation commands.\n\nSuggested durable summary:\n\n`.haider/HAWKING_HEADLESS_COMPLETION_V3.json`\n\n## Final acceptance\n\nStrongest target:\n\n```text\nHCLI_CONTEXT_AUTHORITY_UNIFIED=PASS\nHCLI_REAL_ULTRAGOAL_CONTEXT_PREFLIGHT=PASS\nHCLI_COMMAND_INGRESS_UNIFIED=PASS\nHCLI_ULTRAGOAL_INGRESS=PASS\nHCLI_REPORT_COMPACTION=PASS\nAGENTOS_GROK_WORKUNITS=PASS\nAGENTOS_VERIFIER_AUTHORITY=PASS\nAGENTOS_SINGLE_WRITER=PASS\nHCLI_RESTART_RESUME=PASS\nAGENTOS_STEERING_DURABLE=PASS\nQWEN_MAX_EQUILIBRIUM=PASS\nHCLI_GROK_MAX_EQUILIBRIUM=PASS\nBACKEND_FAILURE_ISOLATION=PASS\nHCLI_MIXED_MAX=PASS\nHCLI_SELF_SUPPLEMENT=PASS\nHCLI_SELF_OPT_ITERATION_1=PASS\nHCLI_SELF_OPT_ITERATION_2_EVIDENCE_CHOSEN=PASS\nHCLI_SELF_OPTIMIZATION_BOOTSTRAP=PASS\nHCLI_BOOTSTRAP_HANDOFF=PASS\n```\n\nOnly if physically proven:\n\n```text\nHAWKING_HEADLESS_SELF_OPTIMIZATION=PASS\nFINAL_STATE=SUCCESS\n```\n\nOtherwise emit truthful `FINAL_STATE=PARTIAL` or `FINAL_STATE=BLOCKED` with exact physical evidence and next dependency-ready WorkUnits.\n\n## Start now\n\n1. Census the live repository/process/receipt state.\n2. Launch independent Grok lanes immediately.\n3. Trace and repair the 11008 context regression causally.\n4. Repair root mission ingress, report compaction and real command-plane gaps.\n5. Make Grok a canonical WorkUnit backend.\n6. Run real mixed MAX and measure equilibrium.\n7. Restart/resume/steer the same mission.\n8. Use the new machinery to improve Hawking.\n9. Run two evidence-linked self-optimization iterations.\n10. Spend remaining useful capacity on measured runtime/Gravity hardening.\n11. Do not touch VMCP, the competitive-copy/archaeology arc, or HIDE.\n12. Continue until physical success, a real blocker, or no further verified progress is possible in this session.\n\n\n---\nSOURCE: /Users/scammermike/Downloads/HAWKING_HEADLESS_COMPLETION_ULTRAGOAL_V3.md\nSHA256: 7a08e5a130ef57407be7c1e87afaf415d90fd9677795d9416ed8863e01b542bb\nPERSISTED: 2026-08-23T03:18:32Z\nUSER STEER AT LAUNCH: no Claude Workflow tool; max Grok lanes, aggressive parallel Grok agents.",
+    "ledger_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpwy4qj3yp/.hcli/GOAL.md",
+    "obligation_ids": [
+      "G001",
+      "G002",
+      "G003",
+      "G004",
+      "G005",
+      "G006",
+      "G007",
+      "G008",
+      "G009",
+      "G010",
+      "G011",
+      "G012",
+      "G013",
+      "G014",
+      "G015",
+      "G016",
+      "G017",
+      "G018",
+      "G019",
+      "G020",
+      "G021",
+      "G022",
+      "G023",
+      "G024",
+      "G025",
+      "G026",
+      "G027",
+      "G028",
+      "G029",
+      "G030",
+      "G031",
+      "G032",
+      "G033",
+      "G034",
+      "G035",
+      "G036",
+      "G037",
+      "G038",
+      "G039",
+      "G040",
+      "G041",
+      "G042",
+      "G043",
+      "G044",
+      "G045",
+      "G046",
+      "G047",
+      "G048",
+      "G049",
+      "G050",
+      "G051",
+      "G052",
+      "G053",
+      "G054",
+      "G055",
+      "G056",
+      "G057"
+    ],
+    "workunit_ids": [
+      "implement",
+      "validate"
+    ]
+  },
+  "durable_state_on_disk": {
+    "GOAL.md_bytes": 32905,
+    "dag_units": [
+      "implement",
+      "validate"
+    ],
+    "mission_state_keys": [
+      "accepted_count",
+      "cancel_reason",
+      "child_pids",
+      "goal",
+      "id",
+      "in_flight",
+      "last_checkpoint",
+      "no_progress_threshold",
+      "no_progress_warning",
+      "phase",
+      "session_id",
+      "started_at"
+    ],
+    "mission_id_matches": true
+  },
+  "traceable_to_source": true,
+  "is_chat_text": false,
+  "obligations": [
+    "- [ ] G001 \u2014 - workspace `~/Downloads/hawking-copy` | status: PENDING | risk: medium | tier: V1",
+    "- [ ] G002 \u2014 - restart/resume, steering, single-writer and overlapping CPU tests have passed bootstrap proofs | status: PENDING | risk: medium | tier: V1",
+    "- [ ] G003 \u2014 Claude owns session planning, decomposition, shared-tree integration until AgentOS mutation authority is qualified, final synthesis, and acceptance decisions after deterministic verification. | status: PENDING | risk: medium | tier: V1",
+    "... 57 total, truncated"
+  ],
+  "verify_commands": {
+    "count": 57,
+    "distinct": [
+      "verify: python3 -c 'raise SystemExit(0)'"
+    ],
+    "note": "every one of the 57 obligations compiled from the real 17459-char directive carries the same unfailable verifier"
+  },
+  "defect_carried": {
+    "id": "P0-1",
+    "detail": "Every obligation compiled by start_ultragoal ships verify: python3 -c 'raise SystemExit(0)' (controller.py:580) and an acceptance criterion that restates itself. The ingress path is structurally correct; the obligations it produces cannot currently fail. Owned by G012."
+  },
+  "result": "PASS for ingress structure; obligation verifiability tracked separately as P0-1 under G012",
+  "obligation_count": 57,
+  "dag_decomposition_gap": "57 obligations compiled into exactly 2 generic WorkUnits ('implement','validate'). The WorkUnit DAG is not derived from the obligations, so per-obligation scheduling and per-obligation verification are both unavailable. Tracked as P0-12."
+}

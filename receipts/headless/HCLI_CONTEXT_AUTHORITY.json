@@ -1,0 +1,36 @@
+{
+  "gate": "HCLI_CONTEXT_AUTHORITY_UNIFIED + HCLI_ROOT_CONTEXT_PREFLIGHT",
+  "result": "PASS",
+  "generated_at": "2026-08-23T04:05:07Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "module": "tools/haider/hcli/context_budget.py (596 lines, new)",
+  "call_sites_rewritten": [
+    "runtime.py (ctx now from the authority, not a literal)",
+    "backends.py (LlamaServerBackend no longer carries its own 32768)",
+    "config.py (ctx_size() sources from the authority)",
+    "engine.py _evidence_char_budget (derives from usable_input_tokens, not ctx-reserve)",
+    "engine.py _resolve_max_tokens (uses per_request_ctx)",
+    "engine.py _call_model (preflight before _post_completion)"
+  ],
+  "verified_by_me_not_by_the_lane": {
+    "per_seq_32768_3": 11008,
+    "per_seq_32768_1": 32768,
+    "solve_parallel_32768_11008": 3,
+    "gguf_ceiling_real_model": 262144,
+    "gguf_ceiling_cross_check": "262144 also reported by the original server's /props default_generation_settings.n_ctx"
+  },
+  "preflight_blocks_http": {
+    "method": "Engine._post_completion replaced with a raiser; oversized prompt driven through _call_model",
+    "exception": "ContextPreflightError",
+    "message_excerpt": "context preflight failed (root): demand 35217 exceeds per-request ctx 32768 (shortfall 2449) ... Levers: reduce n_parallel; raise HCLI_CTX_SIZE/--ctx-size",
+    "http_attempts": 0
+  },
+  "single_authority_guard_is_not_vacuous": {
+    "method": "reintroduced an independent `32768` default into config.py and re-ran the guard test",
+    "with_reintroduced_literal": "1 failed",
+    "restored": "1 passed"
+  },
+  "red_before_green_caveat": "The lane's own red-before-green was weak: every new test failed against unmodified code only with ModuleNotFoundError, so the tests never exercised the old logic. The three checks above were therefore run by me against the merged tree to establish the behaviour directly rather than relying on that.",
+  "test_suite": "python3 -m pytest tools/haider/hcli/tests -q -> 251 passed, 1 skipped",
+  "remaining_gap": "resolve() without demand_tokens reproduces today's allocation (32768/3 -> 11008) by design; the preflight now catches the shortfall BEFORE inference instead of the model server returning HTTP 400. Raising the allocation for a large root ingress requires the root mission to pass its demand into the authority \u2014 that wiring is G006/G007 and is not yet done."
+}

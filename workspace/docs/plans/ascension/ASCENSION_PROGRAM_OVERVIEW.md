@@ -280,6 +280,6 @@ These predate the ascension wave and must not be confused with completion of asc
 
 - No live Qwen training/serve work in planning lanes  
 - No CUDA implementation  
-- No mutation of `lab/operators/frankenstein_*` or live frankenstein evidence during GLM recapture  
+- No mutation of `hawking-experiments/frankenstein/operators/frankenstein_*` or live frankenstein evidence during GLM recapture  
 - No remote push/PR as part of planning scaffolds  
 - No silent status flips to “done”

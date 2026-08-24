@@ -1,0 +1,42 @@
+{
+  "gate": "AGENTOS_GROK_WORKUNITS",
+  "stage": "complete",
+  "generated_at": "2026-08-23T06:48:02Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "closed": [
+    {
+      "defect": "P0-6 task-id collision",
+      "detail": "GrokBridge.consult hardcoded the slug 'consult', so grok-run's one-second-resolution id let two dispatches share one task directory. In the recorded mixed-max run grok1 and grok2 both resolved to consult-20260822-224557: two WorkUnits accepted off ONE Grok execution, and grok2's prompt was never sent.",
+      "fix": "unique_task_slug(prefix) -> '<prefix>-<pid>x<counter>x<micros>'; grok-run is outside this repo's mutation scope so uniqueness has to come from the caller.",
+      "evidence": "tests/test_grok_identity.py: 500 slugs distinct in one second; 1600 distinct across 8 threads. Gate P0-6 GREEN, and RED against the restored constant slug (50 dispatches, 1 distinct)."
+    },
+    {
+      "defect": "no per-task liveness signal",
+      "detail": "grok-run status reads a status FILE and carries no pid, and nothing in the process table carries a task id -- verified: `ps -axww -o command | grep claude-grok/tasks` returns nothing. A task whose process died reported `running` forever and held its scheduler slot for the full wait timeout.",
+      "fix": "extract_background_pid parses the pid grok-run prints once at launch and persists it in the receipt; status() downgrades `running` with a dead pid to `stale-running` with a reason, and never rewrites a terminal state.",
+      "evidence": "tests/test_grok_identity.py: dead pid -> stale-running, live pid -> running, done stays done."
+    },
+    {
+      "defect": "P0-5 restart duplicated a live Grok task instead of adopting it",
+      "detail": "DagStore.load flipped every leftover `running` unit to `failed`; it then re-readied under its retry budget and the executor launched a SECOND consult for work that was still running -- a duplicate plus an orphan, on every restart.",
+      "fix": "DagStore.load takes a `grok_liveness` callable and adopts a unit whose backend task is genuinely alive, recording it on `adopted_running` for polling. Scheduler.from_workspace now supplies GrokBridge.status by default, so the reconciliation is on rather than optional.",
+      "evidence": "tests/test_dag_store.py::TestGrokRestartAdoption -- live task stays `running` and Scheduler.dispatch does NOT assign it again; `stale-running` reloads as `failed` and is retry-eligible; with NO liveness checker the unit reloads `failed`, because unobservable must never mean adopted."
+    },
+    {
+      "defect": "`status=done` did not mean success",
+      "detail": "The on-disk task consult-20260822-223811 carries status=done AND exit_code=1 with a sandbox initialisation error and an empty output file. A caller reading only `state` would have treated that as a success.",
+      "fix": "success is now an explicit field requiring a terminal-good state AND exit code 0, rather than every caller recomputing it."
+    },
+    {
+      "defect": "receipt completeness",
+      "detail": "retries, verifier command, verifier outcome and grok_state were not persisted; one receipt still read `running` while grok-run reported `done`.",
+      "fix": "status() refreshes the receipt, and retries come from grok-run's telemetry.json when present -- recorded as null plus a reason when absent, never as a fabricated 0."
+    }
+  ],
+  "still_open": [
+    "Throttle/rate-limit signals are still not measured, so Grok admission is a configured number rather than a health-derived one (S002 P21-P22). Recorded, not claimed."
+  ],
+  "result": "PASS",
+  "integration_note": "The lane's worktree was at HEAD and therefore predated unique_task_slug, extract_background_pid, process_alive, launch_pid and the stale-running status. It said so plainly and wrote against those names instead of reimplementing them, and it flagged that Scheduler.from_workspace -- reserved to another lane -- still called store.load with no checker. That wiring was mine to do and is done.",
+  "test_suite": "tests/test_dag_store.py + test_grok_bridge.py + test_grok_identity.py -> 48 passed, 1 skipped"
+}

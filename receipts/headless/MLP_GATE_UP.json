@@ -1,0 +1,873 @@
+{
+  "schema": "hawking.headless.mlp_gate_up.v1",
+  "generated_at": "2026-08-24T17:05:33Z",
+  "git_head": "b9db37d617e0e2d3664d8e83289127f307aa00f7",
+  "elapsed_s": 0.18755908301682211,
+  "obligation": "N030 \u2014 MLP_GATE_UP_AUTOPSY (S022 \u00a76, \u00a79, \u00a712)",
+  "ranking_metric": "COMPLETE_TOKEN_NS",
+  "roof_gb_s": 778.8,
+  "n018_production_gb_s": 356.7,
+  "n025_mlp_gate_up_gap_share": 0.356,
+  "prior_not_rederived": {
+    "n017_dram_roof_gb_s": 778.8,
+    "n018_production_decode_gb_s": 356.7,
+    "n024_tile_ruled_out": true,
+    "n025_mlp_gate_up_gap_share": 0.356,
+    "did_not_retry_n018_tiles": [
+      "qmvfast",
+      "wide64",
+      "tgx"
+    ],
+    "did_not_retry_n024_levers": [
+      "tgsb",
+      "pipe",
+      "splitk4",
+      "accfuse"
+    ]
+  },
+  "did_not_load_second_27b": true,
+  "did_not_mutate_parent": true,
+  "did_not_write_under_models": true,
+  "did_not_write_ascent_or_campaign": true,
+  "parent_immutable": {
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "outside_worktree": true,
+    "catalog_present": true
+  },
+  "lever": {
+    "id": "biasprep",
+    "motif": "norm+projection (RMSNorm writes group-64 x-sums; GEMV defers bias)",
+    "not_load_geometry": true,
+    "same_tpr64_occupancy": true
+  },
+  "controls": {
+    "no_op": "tpr64",
+    "deliberately_bad": "dropbias (isolated) / biasprep_drop (production)",
+    "reps": 7,
+    "report": "min/median/max; overlap = NOT SEPARATED, no mean delta"
+  },
+  "kernel_autopsy": {
+    "exit_code": 0,
+    "ok": true,
+    "any_new_kernel_defective": false,
+    "stdout_tail": "files 43  kernels 636  {'DEFECTIVE': 89, 'SUSPECT': 464, 'CLEAR': 83}\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::q2f_group64_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group64_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE bandwidth_roof.metal::roof_seq_simd8x8  runtime_integer_divide -> tpg\n  DEFECTIVE common.metal::rope_q_f32_inplace  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_q_interleaved_concat  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_f32_batched_multiseq  runtime_integer_divide -> per_slot\n  DEFECTIVE common.metal::rope_qk_f32_batched_multiseq  runtime_integer_divide -> q_per_slot\n  DEFECTIVE common.metal::embed_lookup_f32_batched  runtime_integer_divide -> hidden\n  DEFECTIVE common.metal::rope_qk_f32_b1_bias  runtime_integer_divide -> pairs_per_head\nreceipt: /Users/scammermike/.claude-grok/worktrees/n030gateup-20260824-123501/receipts/headless/KERNEL_COMPETENCE.json\n",
+    "stderr_tail": "",
+    "new_kernels": [
+      {
+        "file": "affine2_group32_matvec.metal",
+        "kernel": "affine2_xsum64",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "tid",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "n;\n    const uint gpr = cols >> 6u;\n    if (tid >= gpr) return;\n    const uint base = tid << 6u"
+          }
+        ]
+      },
+      {
+        "file": "affine2_group32_matvec.metal",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "affine2_group32_matvec.metal",
+        "kernel": "affine2_group64_matvec_gate_up_geo_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "affine2_group32_matvec.metal",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "gpr",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "}\n        } else {\n            for (uint grp = 0u; grp < gpr; ++grp) {\n                const uint rg"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "affine2_group32_matvec.metal",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "affine2_group32_matvec.metal",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_decode_probe_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "affine2_group32_matvec.metal",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_addr_probe_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "gpr",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "}\n        } else {\n            for (uint grp = 0u; grp < gpr; ++grp) {\n                const uint rg"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_gate_up_biasprep_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "gpr",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "const uint gpr = cols >> 6u;\n        for (uint grp = 0u; grp < gpr; ++grp) {\n            const uint rgb ="
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "q80_mixed_decode.metal",
+        "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "c_g = 0.0f;\n    float acc_u = 0.0f;\n    if (row < rows && (cols % 64u) == 0u) {\n        const uint groups_per_"
+          }
+        ]
+      },
+      {
+        "file": "qwen80_device_activations.metal",
+        "kernel": "qwen80_residual_rmsnorm_tg_xsum64",
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "hidden",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "{\n    float sum = 0.0f;\n    for (uint index = tid; index < hidden; index += tg_size) {\n        const floa"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "tid",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "; stride > 0u; stride >>= 1u) {\n        if (tid < stride) scratch[tid] += scratch[tid + stride];"
+          }
+        ]
+      },
+      {
+        "file": "qwen80_device_activations.metal",
+        "kernel": "qwen80_add_residual_rmsnorm_tg_xsum64",
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "hidden",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "{\n    float sum = 0.0f;\n    for (uint index = tid; index < hidden; index += tg_size) {\n        const floa"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "tid",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "; stride > 0u; stride >>= 1u) {\n        if (tid < stride) scratch[tid] += scratch[tid + stride];"
+          }
+        ]
+      }
+    ],
+    "missing": []
+  },
+  "shader_evidence": {
+    "mixed_present": true,
+    "standalone_present": true,
+    "activations_present": true,
+    "production_kernels": {
+      "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128": true,
+      "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128": true,
+      "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128": true,
+      "qwen80_residual_rmsnorm_tg_xsum64": true,
+      "qwen80_add_residual_rmsnorm_tg_xsum64": true
+    },
+    "isolated_kernels": {
+      "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128": true,
+      "affine2_group64_matvec_gate_up_geo_tpr64_tg128": true,
+      "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128": true,
+      "affine2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128": true,
+      "affine2_group64_matvec_gate_up_swiglu_decode_probe_tpr64_tg128": true,
+      "affine2_group64_matvec_gate_up_swiglu_addr_probe_tpr64_tg128": true,
+      "affine2_xsum64": true
+    },
+    "wired_biasprep": true,
+    "wired_drop": true,
+    "incumbent_untouched": true,
+    "n018_tiles_kept_not_retried_as_levers": true,
+    "n024_levers_kept_not_retried": true,
+    "same_tpr64_occupancy": true,
+    "no_dense_w": true
+  },
+  "compile": {
+    "returncode": 0,
+    "skipped": true,
+    "bin_present": true,
+    "note": "reused existing raw; cargo not re-invoked"
+  },
+  "run": null,
+  "isolated_gemv": {
+    "kind": "MEASURED",
+    "parity": [
+      {
+        "dense_w_materialized": 0,
+        "id": "tpr64",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "max_abs_diff": 4.76837158203125e-07,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "biasprep",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+        "max_abs_diff": 4.76837158203125e-07,
+        "ok": true,
+        "tolerance": 0.019999999552965164
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "dropbias",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+        "max_abs_diff": 3.687382698059082,
+        "must_fail": true,
+        "ok": false,
+        "rejected": true,
+        "tolerance": 0.019999999552965164
+      }
+    ],
+    "parity_all_ok": true,
+    "dropbias_rejected": true,
+    "occupancy": [
+      {
+        "id": "tpr64",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "acc_only",
+        "kernel": "affine2_group64_matvec_gate_up_geo_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "biasprep",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "dropbias",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "decode_probe",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_decode_probe_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "addr_probe",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_addr_probe_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "launch64",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      },
+      {
+        "id": "xsum64",
+        "kernel": "affine2_xsum64",
+        "max_total_threads_per_threadgroup": 1024,
+        "registers_exposed": false,
+        "thread_execution_width": 32
+      }
+    ],
+    "shape": {
+      "cols": 5120,
+      "label": "mlp.gate_up_swiglu",
+      "rows": 17408
+    },
+    "arms": {
+      "tpr64": {
+        "role": "no_op_control",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "launches": 1,
+        "gpu_ns_min": 251666,
+        "gpu_ns_median": 251833,
+        "gpu_ns_max": 252083,
+        "gpu_ns_reps": [
+          251708,
+          251666,
+          251750,
+          251833,
+          252041,
+          251874,
+          252083
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "acc_only": {
+        "role": "component_accumulate",
+        "kernel": "affine2_group64_matvec_gate_up_geo_tpr64_tg128",
+        "launches": 1,
+        "gpu_ns_min": 251499,
+        "gpu_ns_median": 258291,
+        "gpu_ns_max": 276916,
+        "gpu_ns_reps": [
+          258291,
+          274624,
+          276125,
+          276916,
+          257000,
+          251499,
+          251499
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "biasprep": {
+        "role": "lever",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
+        "launches": 1,
+        "gpu_ns_min": 146250,
+        "gpu_ns_median": 146500,
+        "gpu_ns_max": 147500,
+        "gpu_ns_reps": [
+          147458,
+          146291,
+          147500,
+          146416,
+          146749,
+          146250,
+          146500
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "dropbias": {
+        "role": "deliberately_bad_control",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
+        "launches": 1,
+        "gpu_ns_min": 145124,
+        "gpu_ns_median": 145291,
+        "gpu_ns_max": 145666,
+        "gpu_ns_reps": [
+          145124,
+          145250,
+          145583,
+          145291,
+          145500,
+          145666,
+          145250
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "decode_probe": {
+        "role": "component_packed_decode",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_decode_probe_tpr64_tg128",
+        "launches": 1,
+        "gpu_ns_min": 47041,
+        "gpu_ns_median": 47125,
+        "gpu_ns_max": 49750,
+        "gpu_ns_reps": [
+          48208,
+          47166,
+          47083,
+          47125,
+          47125,
+          47041,
+          49750
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "addr_probe": {
+        "role": "component_load_only",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_addr_probe_tpr64_tg128",
+        "launches": 1,
+        "gpu_ns_min": 49124,
+        "gpu_ns_median": 51750,
+        "gpu_ns_max": 75499,
+        "gpu_ns_reps": [
+          49416,
+          51750,
+          49124,
+          53708,
+          51333,
+          51833,
+          75499
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "launch64": {
+        "role": "component_64_launches",
+        "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "launches": 64,
+        "gpu_ns_min": 9219625,
+        "gpu_ns_median": 9365541,
+        "gpu_ns_max": 9481499,
+        "gpu_ns_reps": [
+          9481499,
+          9270375,
+          9365541,
+          9388000,
+          9219625,
+          9414375,
+          9243083
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "xsum64": {
+        "role": "component_xsum",
+        "kernel": "affine2_xsum64",
+        "launches": 1,
+        "gpu_ns_min": 4624,
+        "gpu_ns_median": 5375,
+        "gpu_ns_max": 5791,
+        "gpu_ns_reps": [
+          5375,
+          5000,
+          5791,
+          4624,
+          5375,
+          4666,
+          5375
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      }
+    },
+    "non_load_profile": {
+      "packed_decode_gpu_ns_median": 47125.0,
+      "load_only_gpu_ns_median": 51750.0,
+      "accumulate_no_swiglu_gpu_ns_median": 258291.0,
+      "fused_swiglu_gpu_ns_median": 251833.0,
+      "swiglu_epilogue_ns_median": 0.0,
+      "swiglu_epilogue_note": "fused vs acc_only ranges overlap or acc_only is slower (two output writes); SwiGLU is not the organ wall",
+      "launch64_gpu_ns_median": 9365541.0,
+      "launch_overhead_ns_est": -107170.96825396825,
+      "launch64_note": "64 fused launches in one command buffer finish in less than 64\u00d7 a single-launch CB (GPU pipelines them). Launch ceremony is not the organ wall.",
+      "xsum64_gpu_ns_median": 5375.0,
+      "note": "Component ns are isolated GEMV, not production token ns. Packed decode and load-only are ~5x below fused, so most of the isolated fused time is scale+accumulate. SwiGLU and 64-launch ceremony are not the wall."
+    },
+    "separation": {
+      "biasprep_vs_tpr64": {
+        "separated": true,
+        "faster": true
+      }
+    },
+    "dense_w_materialized": 0,
+    "did_not_load_second_27b": true
+  },
+  "production_decode": {
+    "kind": "MEASURED",
+    "ranking_metric": "COMPLETE_TOKEN_NS",
+    "active_bytes_per_token": 9878901136,
+    "did_not_mutate_parent": true,
+    "did_not_load_second_27b": true,
+    "fusion": "580-dispatch graph (swiglu + gqa qkv + dn inproj + add_rmsnorm + ba_delta)",
+    "expected_dispatches": 580,
+    "arms": {
+      "tpr64": {
+        "role": "no_op_control",
+        "gpu_ns_min": 27282041,
+        "gpu_ns_median": 27290958,
+        "gpu_ns_max": 27365791,
+        "gpu_ns_reps": [
+          27295166.0,
+          27365791.0,
+          27282041.0,
+          27290958.0,
+          27283333.0,
+          27293000.0,
+          27284208.0
+        ],
+        "complete_token_ns_min": 28433716,
+        "complete_token_ns_median": 28521263,
+        "complete_token_ns_max": 28737577,
+        "complete_token_ns_reps": [
+          28737577.0,
+          28628336.0,
+          28585169.0,
+          28480302.0,
+          28521263.0,
+          28433716.0,
+          28441880.0
+        ],
+        "tok_s_reps": [
+          34.79764402133582,
+          34.93042681008808,
+          34.98317557635324,
+          35.11198623913507,
+          35.06155984793923,
+          35.169514127300744,
+          35.15941918214653
+        ],
+        "tok_s_median": 35.06155984793923,
+        "token_ids_unchanged_vs_tpr64": true,
+        "token_ids_stable_across_reps": true,
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "dispatches_last_step_reps": [
+          580,
+          580,
+          580,
+          580,
+          580,
+          580,
+          580
+        ],
+        "fallbacks_reps": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "biasprep": {
+        "role": "lever",
+        "gpu_ns_min": 27423124,
+        "gpu_ns_median": 27452416,
+        "gpu_ns_max": 27467375,
+        "gpu_ns_reps": [
+          27455250.0,
+          27423124.0,
+          27443124.0,
+          27452416.0,
+          27432000.0,
+          27465249.0,
+          27467375.0
+        ],
+        "complete_token_ns_min": 28526913,
+        "complete_token_ns_median": 28615908,
+        "complete_token_ns_max": 28633413,
+        "complete_token_ns_reps": [
+          28536697.0,
+          28526913.0,
+          28628605.0,
+          28633413.0,
+          28615908.0,
+          28567291.0,
+          28622419.0
+        ],
+        "tok_s_reps": [
+          35.04259771169313,
+          35.054615523325594,
+          34.93009810888845,
+          34.92423230873839,
+          34.94559698582577,
+          35.00506844220153,
+          34.937647432796105
+        ],
+        "tok_s_median": 34.94559698582577,
+        "token_ids_unchanged_vs_tpr64": true,
+        "token_ids_stable_across_reps": true,
+        "new_token_ids": [
+          248068,
+          198,
+          760,
+          1156,
+          6587,
+          264,
+          11346,
+          11,
+          18541,
+          9546,
+          323,
+          15673,
+          314,
+          1204,
+          264,
+          18826
+        ],
+        "dispatches_last_step_reps": [
+          580,
+          580,
+          580,
+          580,
+          580,
+          580,
+          580
+        ],
+        "fallbacks_reps": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      },
+      "biasprep_drop": {
+        "role": "deliberately_bad_control",
+        "gpu_ns_min": 27333874,
+        "gpu_ns_median": 27368874,
+        "gpu_ns_max": 27382500,
+        "gpu_ns_reps": [
+          27333874.0,
+          27357666.0,
+          27382500.0,
+          27368874.0,
+          27373333.0,
+          27370249.0,
+          27363791.0
+        ],
+        "complete_token_ns_min": 28476319,
+        "complete_token_ns_median": 28544694,
+        "complete_token_ns_max": 28608347,
+        "complete_token_ns_reps": [
+          28588477.0,
+          28476319.0,
+          28487413.0,
+          28608347.0,
+          28544694.0,
+          28481622.0,
+          28593333.0
+        ],
+        "tok_s_reps": [
+          34.97912715030949,
+          35.11689778486167,
+          35.103221455630006,
+          34.95483304257437,
+          35.032780032144956,
+          35.11035960793376,
+          34.97318722312893
+        ],
+        "tok_s_median": 35.032780032144956,
+        "token_ids_unchanged_vs_tpr64": false,
+        "token_ids_stable_across_reps": true,
+        "new_token_ids": [
+          13,
+          220,
+          163206,
+          13,
+          13,
+          25,
+          13,
+          220,
+          13,
+          220,
+          220,
+          220,
+          220,
+          220,
+          1076,
+          11
+        ],
+        "dispatches_last_step_reps": [
+          580,
+          580,
+          580,
+          580,
+          580,
+          580,
+          580
+        ],
+        "fallbacks_reps": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "n_reps": 7,
+        "dense_w_materialized": 0
+      }
+    },
+    "before": {
+      "id": "tpr64",
+      "role": "no_op_control",
+      "complete_token_ns_median": 28521263,
+      "gpu_ns_median": 27290958,
+      "tok_s_median": 35.06155984793923,
+      "token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826
+      ]
+    },
+    "after": {
+      "id": null,
+      "complete_token_ns_median": 28521263,
+      "kept_incumbent_tpr64": true,
+      "token_ids_unchanged": true,
+      "note": "NOT SEPARATED: complete_token_ns ranges overlap; do not quote a mean delta"
+    },
+    "deliberately_bad_control": {
+      "id": "biasprep_drop",
+      "token_ids_unchanged_vs_tpr64": false,
+      "rejected": true,
+      "complete_token_ns_median": 28544694
+    },
+    "separation": {
+      "biasprep_vs_tpr64": {
+        "separated": false,
+        "faster_complete_token_ns": false,
+        "note": "NOT SEPARATED: complete_token_ns ranges overlap; do not quote a mean delta"
+      }
+    },
+    "dense_w_materialized": 0
+  },
+  "before_complete_token_ns": 28521263,
+  "after_complete_token_ns": 28521263,
+  "reduced_complete_token_ns": false,
+  "dense_w_materialized": 0,
+  "answer": "N024 ruled out the MLP tile; this lane did not retune qmvfast/wide64/tgx. The attempted cut is S022 \u00a79 norm+projection: RMSNorm writes group-64 x-sums and fused gate_up_swiglu defers bias*sum(x) out of the inner loop. Ranking metric is COMPLETE_TOKEN_NS, not GB/s. Isolated fused gate_up_swiglu median 251833.0 ns; acc_only 258291.0 ns; decode_probe 47125.0 ns; addr_probe 51750.0 ns; launch64 9365541.0 ns; xsum64 5375.0 ns. Isolated biasprep is SEPARATED and faster than tpr64 (146500 vs 251833.0 ns median on the fused GEMV). Production tpr64 complete_token_ns median 28521263 (gpu_ns 27290958, tok/s 35.06155984793923). NOT SEPARATED: complete_token_ns ranges overlap; do not quote a mean delta. A measured reason none exists on COMPLETE_TOKEN_NS: the isolated GEMV cut did not transfer into the 580-dispatch token. Production GPU ns 27290958 vs biasprep 27452416 overlap. Residual blocker is still the dual packed-decode + scale + accumulate of the 64 fused gate_up_swiglu launches (35.6% of the 356.7\u2192778.8 gap per N025), not the SwiGLU epilogue and not the RMSNorm launch. dropbias bad control changed token ids (REJECTED)."
+}

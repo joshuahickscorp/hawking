@@ -1,0 +1,1580 @@
+{
+  "schema": "hawking.headless.noetic_native_operator.v1",
+  "generated_at": "2026-08-24T06:04:11Z",
+  "git_head": "1abd178a3c0eec8ec39731c171f4e220ff8749a4",
+  "elapsed_s": 0.071,
+  "question": "Does the compressed structure EXECUTE DIRECTLY, or does it decompress to dense and call an ordinary matmul?",
+  "answer": "The compressed structures that actually run EXECUTE DIRECTLY. Qwen3.8 uniform-q4 geo_tpr64 unpacks nibbles in registers and FMAs into y; peak temporary 3145728 B against parent lm_head 5085593600 B. Q80 HGRAVS01 is y=L@(R@x) with mid[160]. gravity_pq_matvec and binary_group likewise never write W. The reconstruct-then-matmul lowerings exist (decode_vector, L@R then gemv, UV f16 cache) and are labelled ORACLE: their peak temporary reaches parent-tensor shape. The 0.0485 bpw UV structure is 0.0485 active fused and 16.0 active if the dense form is cached \u2014 same structure, two regimes. Presenting the cache regime as native execution is the defect.",
+  "convention": {
+    "flop": "IEEE floating-point; FMA counted as 2",
+    "operation_count": "FLOPs plus integer unpack/index ALU where the kernel does it",
+    "dispatch_count": "Metal compute dispatches (or the equivalent CPU launches of the same graph)",
+    "dram_bytes": "bytes the path reads or writes for that step (weights + temps + x + y)",
+    "peak_temporary_materialization": "largest transient tensor the path allocates. Persistent packed weights are not temporary. A 2-D parent-shaped W write is. Rank-1 RMSNorm decode is not a GEMV oracle even when peak equals the vector parent.",
+    "SOURCE": "what the parent's ordinary dense forward costs for the same organ/token",
+    "EXECUTABLE": "what the compressed structure actually costs as run",
+    "ORACLE": "a path that materialises dense W of a 2-D parent weight and then runs an ordinary matmul/matvec. Allowed as a control. Must be labelled.",
+    "zero_policy": "0 means measured zero. Did-not-measure is ABSENT with a physical reason."
+  },
+  "columns": {
+    "flops": {
+      "SOURCE": {
+        "value": 51541222144,
+        "unit": "FLOP/token",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "GEMV MACs 51243909120 (2*elements of every dispatched matvec) + activation FLOPs 297313024 (RMSNorm/SwiGLU/DeltaNet/MHA/\u2026). Does NOT include G143's 2*embed_table."
+      },
+      "EXECUTABLE": {
+        "value": 77163181824,
+        "unit": "FLOP/token",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "same GEMV MACs 51243909120 + same activations 297313024 + one extra scale-mul FLOP per Q4 weight (25621959680). unpack8: acc += float(q)*scale*x[col]."
+      }
+    },
+    "operation_count": {
+      "SOURCE": {
+        "value": 51541222144,
+        "unit": "ops/token",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "equal to FLOPs: a dense f32 GEMV has no nibble unpack"
+      },
+      "EXECUTABLE": {
+        "value": 179651020544,
+        "unit": "ops/token",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "executable FLOPs 77163181824 + integer unpack 102487838720 (~4 ALU ops per Q4 weight)"
+      }
+    },
+    "dispatch_count": {
+      "SOURCE": {
+        "value": 964,
+        "unit": "dispatches/token",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "same control graph as the executable (one kernel per organ). A reconstruct-then-GEMM SOURCE lowering would add 401 qwen_uniform_q4_decode_vector dispatches and is tabulated under trap_reconstruct_then_gemm, not here."
+      },
+      "EXECUTABLE": {
+        "value": 964,
+        "unit": "dispatches/token",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs::production_dispatches_per_token and the unit test production_dispatch_count_is_964. Shape: 1 command buffer, 964 dispatches."
+      }
+    },
+    "dram_bytes": {
+      "SOURCE": {
+        "value": 102679468036,
+        "unit": "bytes/token",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "streaming every GEMV matrix as dense f32 (4 B/weight) or bf16 (2 B/weight), plus the same activation writes the executable already pays (f32 weight stream)"
+      },
+      "EXECUTABLE": {
+        "value": 13988022948,
+        "unit": "bytes/token",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "Q4 GEMV stream 13611663360 + embed row 2720 + f32 scales 11737088 + activation writes 191649796 + state/KV/GEMV-input reads"
+      }
+    },
+    "peak_temporary_materialization": {
+      "SOURCE": {
+        "value": 3145728,
+        "unit": "bytes",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "largest fused-path device tensor rec_state_per_layer_f32 = 3145728 B. Dense SOURCE stores W already unpacked, so the weight stream itself (5085593600 B for lm_head) is residency of parent, not a codec expansion. Peak TEMPORARY is the activation/state buffer, same graph as the executable."
+      },
+      "EXECUTABLE": {
+        "value": 3145728,
+        "unit": "bytes",
+        "kind": "measured_from_encoded_algorithm",
+        "absent_reason": null,
+        "trace": "rec_state_per_layer_f32 = 3145728 B. Packed Q4 codes stay packed. geo_tpr64 writes only y[row]. dense_w_materialized = 0. Parent max is lm_head 5085593600 B f32."
+      }
+    }
+  },
+  "production_path": "qwen38_uniform_q4_fused",
+  "production_label": "NATIVE",
+  "paths": [
+    {
+      "id": "qwen38_uniform_q4_fused",
+      "title": "Qwen3.8-27B uniform-q4 fused decode (production)",
+      "label": "NATIVE",
+      "structure": "grouped_absmax_q4 consumed in-register by qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "on_production_token": true,
+      "parent": {
+        "name": "every GEMV organ (max = lm_head)",
+        "shape": [
+          248320,
+          5120
+        ],
+        "rank": 2,
+        "bytes": 5085593600
+      },
+      "materializes_dense_w_then_ordinary_matmul": false,
+      "peak_temp_reaches_parent_tensor_shape": false,
+      "discriminator": "NATIVE: peak temporary stays below parent-tensor shape and W is never written",
+      "regime": {
+        "stored_bpw": 4.253,
+        "active_bpw_fused": 4.253,
+        "active_bpw_cached_dense": null,
+        "active_bpw_cached_dense_note": "no dense-W cache on this path; codes stay packed",
+        "which": "stored = active_fused = 4.253 Q4. Not the 0.0485/16.0 generated-cache regime."
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 51541222144,
+            "unit": "FLOP/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "GEMV MACs 51243909120 (2*elements of every dispatched matvec) + activation FLOPs 297313024 (RMSNorm/SwiGLU/DeltaNet/MHA/\u2026). Does NOT include G143's 2*embed_table."
+          },
+          "EXECUTABLE": {
+            "value": 77163181824,
+            "unit": "FLOP/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "same GEMV MACs 51243909120 + same activations 297313024 + one extra scale-mul FLOP per Q4 weight (25621959680). unpack8: acc += float(q)*scale*x[col]."
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 51541222144,
+            "unit": "ops/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "equal to FLOPs: a dense f32 GEMV has no nibble unpack"
+          },
+          "EXECUTABLE": {
+            "value": 179651020544,
+            "unit": "ops/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "executable FLOPs 77163181824 + integer unpack 102487838720 (~4 ALU ops per Q4 weight)"
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 964,
+            "unit": "dispatches/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "same control graph as the executable (one kernel per organ). A reconstruct-then-GEMM SOURCE lowering would add 401 qwen_uniform_q4_decode_vector dispatches and is tabulated under trap_reconstruct_then_gemm, not here."
+          },
+          "EXECUTABLE": {
+            "value": 964,
+            "unit": "dispatches/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs::production_dispatches_per_token and the unit test production_dispatch_count_is_964. Shape: 1 command buffer, 964 dispatches."
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 102679468036,
+            "unit": "bytes/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "streaming every GEMV matrix as dense f32 (4 B/weight) or bf16 (2 B/weight), plus the same activation writes the executable already pays (f32 weight stream)"
+          },
+          "EXECUTABLE": {
+            "value": 13988022948,
+            "unit": "bytes/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "Q4 GEMV stream 13611663360 + embed row 2720 + f32 scales 11737088 + activation writes 191649796 + state/KV/GEMV-input reads"
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 3145728,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "largest fused-path device tensor rec_state_per_layer_f32 = 3145728 B. Dense SOURCE stores W already unpacked, so the weight stream itself (5085593600 B for lm_head) is residency of parent, not a codec expansion. Peak TEMPORARY is the activation/state buffer, same graph as the executable."
+          },
+          "EXECUTABLE": {
+            "value": 3145728,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "rec_state_per_layer_f32 = 3145728 B. Packed Q4 codes stay packed. geo_tpr64 writes only y[row]. dense_w_materialized = 0. Parent max is lm_head 5085593600 B f32."
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope. Prior TPS 32.73 / 30.606 ms/token are anchors, not this run.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope. Prior TPS 32.73 / 30.606 ms/token are anchors, not this run.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Refused to load a second 27B. Live GPU decode of the resident model is out of scope. Prior TPS 32.73 / 30.606 ms/token are anchors, not this run.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "crates/hawking-core/shaders/qwen_uniform_q4.metal geo_tpr64: packed decode stays in registers, acc += unpack8, writes output[row] only",
+        "crates/hawking-core/src/model/qwen38_hybrid_decode.rs does not dispatch qwen_uniform_q4_decode_vector",
+        "dispatch formula 1 + 64*15 + 3 = 964 (sealed 964)",
+        "Q4 GEMV stream 13611663360 B vs dense f32 GEMV stream 102487818240 B"
+      ],
+      "notes": [
+        "Executable does NOT do less GEMV work: same 51.24 GFLOP of MACs plus dequant ALU.",
+        "It holds and streams fewer bytes. Arithmetic is not the win. W is not reconstructed."
+      ]
+    },
+    {
+      "id": "qwen38_q4_decode_vector_then_gemm",
+      "title": "ORACLE control: qwen_uniform_q4_decode_vector then gemv_simdgroup_f32",
+      "label": "ORACLE",
+      "structure": "packed Q4 \u2192 dense (rows\u00d7cols) f32 W \u2192 ordinary matvec",
+      "on_production_token": false,
+      "parent": {
+        "name": "lm_head",
+        "shape": [
+          248320,
+          5120
+        ],
+        "rank": 2,
+        "bytes": 5085593600
+      },
+      "materializes_dense_w_then_ordinary_matmul": true,
+      "peak_temp_reaches_parent_tensor_shape": true,
+      "discriminator": "ORACLE because peak temporary materialisation reaches parent-tensor shape",
+      "regime": {
+        "stored_bpw": 4.253,
+        "active_bpw_fused": 4.253,
+        "active_bpw_cached_dense": 32.0,
+        "which": "stored Q4 4.253; if the dense f32 form is cached, active is 32 bpw. Same structure, two regimes."
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 51541222144,
+            "unit": "FLOP/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "GEMV MACs 51243909120 (2*elements of every dispatched matvec) + activation FLOPs 297313024 (RMSNorm/SwiGLU/DeltaNet/MHA/\u2026). Does NOT include G143's 2*embed_table."
+          },
+          "EXECUTABLE": {
+            "value": 77163176704,
+            "unit": "FLOP/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "decode_vector: 1 scale-mul per weight (25621954560) then dense GEMV MACs 51243909120 plus activations 297313024. Same MACs as fused, plus the write of W."
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 51541222144,
+            "unit": "ops/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "equal to FLOPs: a dense f32 GEMV has no nibble unpack"
+          },
+          "EXECUTABLE": {
+            "value": 179650994944,
+            "unit": "ops/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "oracle FLOPs 77163176704 + nibble unpack ~4 per weight (102487818240)"
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 964,
+            "unit": "dispatches/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "same control graph as the executable (one kernel per organ). A reconstruct-then-GEMM SOURCE lowering would add 401 qwen_uniform_q4_decode_vector dispatches and is tabulated under trap_reconstruct_then_gemm, not here."
+          },
+          "EXECUTABLE": {
+            "value": 1365,
+            "unit": "dispatches/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "production 964 plus 401 qwen_uniform_q4_decode_vector launches (one per GEMV organ). Then gemv_simdgroup_f32 reads the f32 W."
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 102679468036,
+            "unit": "bytes/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "streaming every GEMV matrix as dense f32 (4 B/weight) or bf16 (2 B/weight), plus the same activation writes the executable already pays (f32 weight stream)"
+          },
+          "EXECUTABLE": {
+            "value": 218778949636,
+            "unit": "bytes/token",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "still reads Q4 codes, writes dense f32 W, rereads W for GEMM, plus activations. extra vs fused = 204975636480 B"
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 3145728,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "largest fused-path device tensor rec_state_per_layer_f32 = 3145728 B. Dense SOURCE stores W already unpacked, so the weight stream itself (5085593600 B for lm_head) is residency of parent, not a codec expansion. Peak TEMPORARY is the activation/state buffer, same graph as the executable."
+          },
+          "EXECUTABLE": {
+            "value": 5085593600,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "sequential lowering: largest parent GEMV is lm_head 5085593600 B f32. Simultaneous reconstruct of every GEMV would be 102487818240 B. Either reaches parent-tensor shape."
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "Counterfactual lowering; not dispatched on the sealed Qwen3.8 token. Not timed.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Counterfactual lowering; not dispatched on the sealed Qwen3.8 token. Not timed.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Counterfactual lowering; not dispatched on the sealed Qwen3.8 token. Not timed.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "qwen_uniform_q4.metal:627 qwen_uniform_q4_decode_vector writes output[id] = qwen_uniform_q4_value(...) for `elements` floats \u2014 a 2-D matrix bind sets elements = rows*cols",
+        "Comment on that kernel: 'Used for RMSNorm weights only; matrix bodies stay packed' on the production path. qwen30_complete_runtime.rs dispatches it for 1-D vectors.",
+        "matmul.metal gemv_simdgroup_f32 reads device const float* w (rows\u00d7cols f32)",
+        "crates/hawking-core/src/metal/mod.rs registers qwen_uniform_q4_decode_vector"
+      ],
+      "notes": [
+        "This lowering is not the Qwen3.8 production path. It is the control that would make BPW look cheap while moving parent-shaped bytes.",
+        "qwen30 uses decode_vector for RMSNorm VECTORS (rank-1). That use is not this oracle. See qwen30_rmsnorm_vector_decode."
+      ]
+    },
+    {
+      "id": "q80_hgravs01_two_stage",
+      "title": "Q80 HGRAVS01 down_proj y = L @ (R @ x) (NATIVE)",
+      "label": "NATIVE",
+      "structure": "activation_weighted_svd_low_rank r160 b3, two packed factors",
+      "on_production_token": true,
+      "parent": {
+        "name": "expert.down_proj",
+        "shape": [
+          2048,
+          512
+        ],
+        "rank": 2,
+        "bytes": 4194304
+      },
+      "materializes_dense_w_then_ordinary_matmul": false,
+      "peak_temp_reaches_parent_tensor_shape": false,
+      "discriminator": "NATIVE: peak temporary stays below parent-tensor shape and W is never written",
+      "regime": {
+        "stored_bpw": 1.26953125,
+        "active_bpw_fused": 1.26953125,
+        "active_bpw_cached_dense": 32.0,
+        "which": "fused active = stored (factors). Cached dense W would be 32 bpw f32 / 16 bpw f16."
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 2097152,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense down_proj 2*2048*512"
+          },
+          "EXECUTABLE": {
+            "value": 819200,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "y=L@(R@x): 2*(160*512 + 2048*160)"
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 2097152,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense f32, no dequant ALU"
+          },
+          "EXECUTABLE": {
+            "value": 2457600,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "two-stage MACs plus 3-bit unpack ALU on both factors"
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one dense gemv"
+          },
+          "EXECUTABLE": {
+            "value": 2,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "production mixed path: two q80_hgravs01_factor_matvec_* launches (R then L). q80_hgravs01_two_stage_matvec is REACHABLE as one dispatch."
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 4204544,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "stream f32 W + x + y"
+          },
+          "EXECUTABLE": {
+            "value": 177280,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "packed L and R + x + mid[rank] + y. Never parent W."
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 8192,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense SOURCE does not expand W; y is the output. W is parent residency."
+          },
+          "EXECUTABLE": {
+            "value": 8832,
+            "unit": "bytes",
+            "kind": "measured_cpu_microbench",
+            "absent_reason": null,
+            "trace": "numpy two-stage peak 8832 B (mid+y live). Shader two_stage uses threadgroup mid[160] = 640 B plus x_tg[512] = 2048 B. Neither reaches parent 4194304 B."
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "No Q80 mixed generate in this run (weights deleted; recipe retained). Dispatch-bound 0.79%/51%-idle is the sealed prior measurement.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "No Q80 mixed generate in this run (weights deleted; recipe retained). Dispatch-bound 0.79%/51%-idle is the sealed prior measurement.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "No Q80 mixed generate in this run (weights deleted; recipe retained). Dispatch-bound 0.79%/51%-idle is the sealed prior measurement.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "q80_mixed_decode.metal header: 'execute y = L @ (R @ x); mid[rank] is the only temporary'",
+        "q80_hgravs01_two_stage_matvec: threadgroup float mid[160]; x_tg[512]; '640 B, not dense W'",
+        "q80_mixed_decode.rs: 'Native two-stage y = L @ (R @ x) of packed factors. Never forms dense W.'",
+        "qwen80_mixed_hybrid_decode.rs dispatch_factor R then L into wave.mid[slot*rank]",
+        "Forbidden token path comment: packed \u2192 dense (rows\u00d7cols) temporary \u2192 matvec"
+      ],
+      "notes": [
+        "Per-token over 48 layers \u00d7 11 experts: 528 down_projs, 1056 factor dispatches (or 528 two_stage), 432537600 FLOP fused vs 1107296256 dense.",
+        "Q80 decode is DISPATCH-BOUND (anchor 0.79% of 700 GB/s, 51% GPU idle). Dispatch count is first-class, not a footnote."
+      ]
+    },
+    {
+      "id": "q80_hgravs01_reconstruct_then_gemm",
+      "title": "ORACLE control: form dense down_proj = L@R, then ordinary matvec",
+      "label": "ORACLE",
+      "structure": "same HGRAVS01 factors, executed as reconstruct-then-GEMM",
+      "on_production_token": false,
+      "parent": {
+        "name": "expert.down_proj",
+        "shape": [
+          2048,
+          512
+        ],
+        "rank": 2,
+        "bytes": 4194304
+      },
+      "materializes_dense_w_then_ordinary_matmul": true,
+      "peak_temp_reaches_parent_tensor_shape": true,
+      "discriminator": "ORACLE because peak temporary materialisation reaches parent-tensor shape",
+      "regime": {
+        "stored_bpw": 1.26953125,
+        "active_bpw_fused": 1.26953125,
+        "active_bpw_cached_dense": 32.0,
+        "which": "same structure. Fused  \u2248 stored. Cached dense = 32 bpw. Report both or neither."
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 2097152,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense down_proj 2*2048*512"
+          },
+          "EXECUTABLE": {
+            "value": 337641472,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "form W=L@R (2*2048*160*512 if naively outer) then dense gemv 2*2048*512. The GEMV after materialisation is ordinary matmul. That is the oracle."
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 2097152,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense f32, no dequant ALU"
+          },
+          "EXECUTABLE": {
+            "value": 339279872,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "reconstruct FLOPs plus factor unpack plus dense GEMV"
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one dense gemv"
+          },
+          "EXECUTABLE": {
+            "value": 2,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one reconstruct-to-dense write of W, one gemv_simdgroup_f32"
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 4204544,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "stream f32 W + x + y"
+          },
+          "EXECUTABLE": {
+            "value": 8565248,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "read factors, write W, reread W, plus x and y"
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 8192,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense SOURCE does not expand W; y is the output. W is parent residency."
+          },
+          "EXECUTABLE": {
+            "value": 4202496,
+            "unit": "bytes",
+            "kind": "measured_cpu_microbench",
+            "absent_reason": null,
+            "trace": "numpy L@R materialises W peak 4202496 B; parent f32 is 4194304 B. oracle_reaches_parent=True"
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "Forbidden path; not dispatched. Not timed.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Forbidden path; not dispatched. Not timed.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Forbidden path; not dispatched. Not timed.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "Not a dispatched production kernel. Explicitly forbidden by q80_mixed_decode.rs.",
+        "q80_mixed_decode.rs decode_vector_f32 refuses tensors > 65536 elements (dense W). down_proj is 1,048,576 elements.",
+        "gather_row on a routed mixed organ is refused as reconstructing a weight row."
+      ],
+      "notes": [
+        "Allowed as a control. Labelling it NATIVE would be the defect.",
+        "wave.mid residency on the native path is 6400 B for 10 experts, not 4194304 B."
+      ]
+    },
+    {
+      "id": "generated_uv_fused_bpw_0485",
+      "title": "Generated UV at 0.0485 bpw, fused two-stage (NATIVE operator)",
+      "label": "NATIVE",
+      "structure": "W \u2248 U V with U,V stored f16; execute y = U @ (V @ x)",
+      "on_production_token": false,
+      "parent": {
+        "name": "L31.mlp.gate_proj.weight",
+        "shape": [
+          17408,
+          5120
+        ],
+        "rank": 2,
+        "bytes": 178257920
+      },
+      "materializes_dense_w_then_ordinary_matmul": false,
+      "peak_temp_reaches_parent_tensor_shape": false,
+      "discriminator": "NATIVE: peak temporary stays below parent-tensor shape and W is never written",
+      "regime": {
+        "stored_bpw": 0.04853084788602941,
+        "active_bpw_fused": 0.04852941176470588,
+        "active_bpw_cached_dense": 16.0,
+        "which": "0.0485 stored, 0.0485 active fused. Same structure is 16.0 active if the dense form is cached.",
+        "anchor_receipt": "receipts/headless/GENERATED_WEIGHTS_RETEST.json",
+        "generator_bytes": 540672,
+        "cache_f16_bytes": 178257920
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 178257920,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense gate_proj 2*17408*5120"
+          },
+          "EXECUTABLE": {
+            "value": 540672,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "y=U@(V@x) rank 12: 2*(12*5120+17408*12)"
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 178257920,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense f32"
+          },
+          "EXECUTABLE": {
+            "value": 540672,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "two-stage MACs, factors already f16/f32 (no Q4 unpack in this probe)"
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one dense gemv of gate_proj"
+          },
+          "EXECUTABLE": {
+            "value": 2,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "V@x then U@mid. No reconstruct kernel."
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 356605952,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "stream f32 W + x + y"
+          },
+          "EXECUTABLE": {
+            "value": 630832,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "read U,V + x + mid + y"
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 69632,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense SOURCE: y only. W is parent residency."
+          },
+          "EXECUTABLE": {
+            "value": 69680,
+            "unit": "bytes",
+            "kind": "measured_cpu_microbench",
+            "absent_reason": null,
+            "trace": "numpy UV-fused peak 69680 B at rank 12. Parent f16 is 178257920 B. fused_reaches_parent_f16=False"
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "No Metal UV kernel on the Qwen3.8 production path. CPU microbench only.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "No Metal UV kernel on the Qwen3.8 production path. CPU microbench only.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "No Metal UV kernel on the Qwen3.8 production path. CPU microbench only.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "GENERATED_WEIGHTS_RETEST: storage_bpw=0.04853084788602941, active_bpw_fused=0.04852941176470588, active_bpw_cache_f16=16.0",
+        "No default-build kernel on Qwen3.8 runs this UV pair; the operator cost is measured here as the structure would run. Fidelity of r\u224812 on this organ is UNHEALTHY (that receipt). This lane measures execution, not quality."
+      ],
+      "notes": [
+        "Do not quote 0.0485 without the regime. Cached dense is 16.0 active \u2014 parent f16 shape."
+      ]
+    },
+    {
+      "id": "generated_uv_cache_f16_then_gemm",
+      "title": "ORACLE: same 0.0485-bpw UV, dense f16 cache then ordinary matvec",
+      "label": "ORACLE",
+      "structure": "identical U,V; W cached at 16 bpw; gemv on W",
+      "on_production_token": false,
+      "parent": {
+        "name": "L31.mlp.gate_proj.weight",
+        "shape": [
+          17408,
+          5120
+        ],
+        "rank": 2,
+        "bytes": 178257920
+      },
+      "materializes_dense_w_then_ordinary_matmul": true,
+      "peak_temp_reaches_parent_tensor_shape": true,
+      "discriminator": "ORACLE because peak temporary materialisation reaches parent-tensor shape",
+      "regime": {
+        "stored_bpw": 0.04853084788602941,
+        "active_bpw_fused": 0.04852941176470588,
+        "active_bpw_cached_dense": 16.0,
+        "which": "this is the 16.0-active regime of the same 0.0485 structure"
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 178257920,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense gate_proj 2*17408*5120"
+          },
+          "EXECUTABLE": {
+            "value": 2317352960,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "once: W=U@V; per token: dense gemv 2mn. Per-token EXECUTABLE after cache is ordinary matmul."
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 178257920,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense f32"
+          },
+          "EXECUTABLE": {
+            "value": 178257920,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "per-token ops after cache = dense GEMV. Reconstruct is a one-shot, not per token."
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one dense gemv of gate_proj"
+          },
+          "EXECUTABLE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one dense gemv of cached W (reconstruct is not per-token)"
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 356605952,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "stream f32 W + x + y"
+          },
+          "EXECUTABLE": {
+            "value": 178348032,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "stream cached f16 W + x + y. Active = parent f16."
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 69632,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense SOURCE: y only. W is parent residency."
+          },
+          "EXECUTABLE": {
+            "value": 178327552,
+            "unit": "bytes",
+            "kind": "measured_cpu_microbench",
+            "absent_reason": null,
+            "trace": "numpy cache-f16 peak 178327552 B. Parent f16 178257920. oracle_reaches_parent_f16=True"
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "CPU microbench of the cache path. No 27B load.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "CPU microbench of the cache path. No 27B load.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "CPU microbench of the cache path. No 27B load.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "GENERATED_WEIGHTS_RETEST candidates with active_bpw_cache_f16=16.0 and cache_f16_bytes=178257920",
+        "parent f16 bytes = 17408*5120*2 = 178257920 = 16 bpw"
+      ],
+      "notes": [
+        "Peak temp reaches parent-tensor shape. ORACLE regardless of stored 0.0485."
+      ]
+    },
+    {
+      "id": "q80_binary_group_fused",
+      "title": "Q80 binary_group gate_proj fused sign-scale matvec (NATIVE)",
+      "label": "NATIVE",
+      "structure": "HGRAVB01 binary_sign_scale group 128",
+      "on_production_token": true,
+      "parent": {
+        "name": "expert.gate_proj",
+        "shape": [
+          512,
+          2048
+        ],
+        "rank": 2,
+        "bytes": 4194304
+      },
+      "materializes_dense_w_then_ordinary_matmul": false,
+      "peak_temp_reaches_parent_tensor_shape": false,
+      "discriminator": "NATIVE: peak temporary stays below parent-tensor shape and W is never written",
+      "regime": {
+        "stored_bpw": 1.125,
+        "active_bpw_fused": 1.125,
+        "active_bpw_cached_dense": 32.0,
+        "which": "fused active = stored. Cached dense = 32 bpw."
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 2097152,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense 2*512*2048"
+          },
+          "EXECUTABLE": {
+            "value": 2097152,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "same MACs: sign*scale*x fused in-register. No extra GEMM."
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 2097152,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense f32"
+          },
+          "EXECUTABLE": {
+            "value": 5242880,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "MACs plus bit extract/mask/scale (~3 integer/logic per element)"
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one dense gemv"
+          },
+          "EXECUTABLE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "q80_binary_group_matvec / _tg256 / _simd_bytes"
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 4204544,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "f32 W + x + y"
+          },
+          "EXECUTABLE": {
+            "value": 157696,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "sign bits + fp16 group scales + x + y"
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 2048,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "y only"
+          },
+          "EXECUTABLE": {
+            "value": 2048,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "output[row] only. q80_mixed_decode.metal: 'Nothing writes a (rows \u00d7 cols) reconstruction.'"
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "Q80 mixed generate not run. Dispatch-bound anchors apply to the token, not this isolated organ.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Q80 mixed generate not run. Dispatch-bound anchors apply to the token, not this isolated organ.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Q80 mixed generate not run. Dispatch-bound anchors apply to the token, not this isolated organ.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "q80_mixed_decode.metal contract: packed bytes read directly; value decoded in registers and consumed in the same kernel",
+        "q80_binary_group_matvec writes output[row] = serial_row(...)"
+      ],
+      "notes": [
+        "Same MAC count as dense. The win is bytes and the absence of a W write, not fewer MACs."
+      ]
+    },
+    {
+      "id": "gravity_pq_matvec",
+      "title": "gravity_pq_matvec fused codebook accumulate (NATIVE, not on Qwen3.8 q4)",
+      "label": "NATIVE",
+      "structure": "PQ dictionary lookup fused with accumulate into y",
+      "on_production_token": false,
+      "parent": {
+        "name": "representative 512\u00d72048 (Q80 gate shape); not bound on Qwen3.8 uniform-q4",
+        "shape": [
+          512,
+          2048
+        ],
+        "rank": 2,
+        "bytes": 4194304
+      },
+      "materializes_dense_w_then_ordinary_matmul": false,
+      "peak_temp_reaches_parent_tensor_shape": false,
+      "discriminator": "NATIVE: peak temporary stays below parent-tensor shape and W is never written",
+      "regime": {
+        "stored_bpw": null,
+        "active_bpw_fused": null,
+        "active_bpw_cached_dense": 32.0,
+        "which": "BPW of a live PQ organ is ABSENT (artifact not opened). Cached dense would be 32 bpw."
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 2097152,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense 2*512*2048 on a representative 512\u00d72048 organ"
+          },
+          "EXECUTABLE": {
+            "value": 2097152,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "gravity_pq_matvec: fma(codebook[entry][j], x[...], acc) per subspace element; W never written"
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 2097152,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense f32"
+          },
+          "EXECUTABLE": {
+            "value": null,
+            "unit": "ops",
+            "kind": "ABSENT",
+            "absent_reason": "No PQ-packed Qwen3.8/Q80 organ is opened here (would be a second model load / 74k-tensor catalog). Kernel body is fused; integer index ops are not counted without the bound (nchunk, bits).",
+            "trace": "index extract ALU depends on bits/nchunk of a live PQ artifact"
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one dense gemv"
+          },
+          "EXECUTABLE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one gravity_pq_matvec"
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 4204544,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "stream f32 W + x + y"
+          },
+          "EXECUTABLE": {
+            "value": null,
+            "unit": "bytes",
+            "kind": "ABSENT",
+            "absent_reason": "codebook and code-stream bytes require the packed artifact; not opened",
+            "trace": "codebook + codes + x + y"
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 2048,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "y only; W is parent"
+          },
+          "EXECUTABLE": {
+            "value": 2048,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "kernel writes y[row] only. Comment: 'there is no decode-to-dense staging buffer.'"
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "Kernel is reachable; no PQ artifact opened; no GPU time.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Kernel is reachable; no PQ artifact opened; no GPU time.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Kernel is reachable; no PQ artifact opened; no GPU time.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "gravity_pq.metal:3 'The artifact never materializes a dense weight'",
+        "gravity_pq.metal:399 gravity_pq_matvec: pq_index \u2192 codebook entry, fma into acc, simd_sum to y[row]",
+        "NOETIC_KERNEL_CENSUS families.fused_dictionary_lookup_accumulate = EXISTS, class REACHABLE, not on uniform-q4"
+      ],
+      "notes": [
+        "Porting to Qwen3.8 is bind work. C4 already said do not port residual-PQ around a quality failure."
+      ]
+    },
+    {
+      "id": "qwen30_rmsnorm_vector_decode",
+      "title": "qwen30 decode_vector on RMSNorm (rank-1, required-by-math)",
+      "label": "NATIVE",
+      "structure": "packed 1-D scale vector \u2192 f32 control buffer; not a matrix",
+      "on_production_token": false,
+      "parent": {
+        "name": "input_layernorm.weight",
+        "shape": [
+          5120
+        ],
+        "rank": 1,
+        "bytes": 20480
+      },
+      "materializes_dense_w_then_ordinary_matmul": false,
+      "peak_temp_reaches_parent_tensor_shape": false,
+      "discriminator": "NATIVE: peak temporary stays below parent-tensor shape and W is never written",
+      "regime": {
+        "stored_bpw": 4.253,
+        "active_bpw_fused": 32.0,
+        "active_bpw_cached_dense": 32.0,
+        "which": "a vector organ's dense form IS the math; caching it is not a GEMV oracle"
+      },
+      "columns": {
+        "flops": {
+          "SOURCE": {
+            "value": 25600,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "RMSNorm ~5n on a dense f32 weight vector"
+          },
+          "EXECUTABLE": {
+            "value": 30720,
+            "unit": "FLOP",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "decode_vector: 1 scale-mul per element, then RMSNorm ~5n"
+          }
+        },
+        "operation_count": {
+          "SOURCE": {
+            "value": 25600,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "dense f32, no nibble unpack"
+          },
+          "EXECUTABLE": {
+            "value": 51200,
+            "unit": "ops",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "FLOPs plus nibble unpack on the packed vector"
+          }
+        },
+        "dispatch_count": {
+          "SOURCE": {
+            "value": 1,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "one rmsnorm kernel"
+          },
+          "EXECUTABLE": {
+            "value": 2,
+            "unit": "dispatches",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "qwen_uniform_q4_decode_vector (or binary/qn sibling) then rmsnorm"
+          }
+        },
+        "dram_bytes": {
+          "SOURCE": {
+            "value": 40960,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "read f32 weight + write normalized hidden"
+          },
+          "EXECUTABLE": {
+            "value": 43680,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "read packed vector, write dense f32 control buffer, rmsnorm reads it"
+          }
+        },
+        "peak_temporary_materialization": {
+          "SOURCE": {
+            "value": 20480,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "normalized hidden, same width as the rank-1 parent"
+          },
+          "EXECUTABLE": {
+            "value": 20480,
+            "unit": "bytes",
+            "kind": "measured_from_encoded_algorithm",
+            "absent_reason": null,
+            "trace": "decoded f32 control buffer equals the rank-1 parent. Rank-1 is not a GEMV oracle."
+          }
+        }
+      },
+      "gpu_live": {
+        "gpu_wall_ns_per_token": {
+          "value": null,
+          "unit": "ns",
+          "kind": "ABSENT",
+          "absent_reason": "Vector decode is not a GEMV path; not timed as a token.",
+          "trace": "not taken"
+        },
+        "gpu_idle_pct": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Vector decode is not a GEMV path; not timed as a token.",
+          "trace": "not taken"
+        },
+        "pct_of_bandwidth_ceiling": {
+          "value": null,
+          "unit": "percent",
+          "kind": "ABSENT",
+          "absent_reason": "Vector decode is not a GEMV path; not timed as a token.",
+          "trace": "not taken"
+        }
+      },
+      "evidence": [
+        "qwen_uniform_q4.metal:625-636 'Decode a checked compact Q4 vector into a persistent f32 control buffer. Used for RMSNorm weights only; matrix bodies stay packed.'",
+        "qwen30_complete_runtime.rs ensure_decoded_vector_on_tcb requires header.shape == [elements]"
+      ],
+      "notes": [
+        "Peak temp equals parent bytes because the parent is rank-1. The discriminator is defined on 2-D weight tensors. Label stays NATIVE."
+      ]
+    }
+  ],
+  "labels": {
+    "qwen38_uniform_q4_fused": "NATIVE",
+    "qwen38_q4_decode_vector_then_gemm": "ORACLE",
+    "q80_hgravs01_two_stage": "NATIVE",
+    "q80_hgravs01_reconstruct_then_gemm": "ORACLE",
+    "generated_uv_fused_bpw_0485": "NATIVE",
+    "generated_uv_cache_f16_then_gemm": "ORACLE",
+    "q80_binary_group_fused": "NATIVE",
+    "gravity_pq_matvec": "NATIVE",
+    "qwen30_rmsnorm_vector_decode": "NATIVE"
+  },
+  "oracle_path_ids": [
+    "qwen38_q4_decode_vector_then_gemm",
+    "q80_hgravs01_reconstruct_then_gemm",
+    "generated_uv_cache_f16_then_gemm"
+  ],
+  "native_path_ids": [
+    "qwen38_uniform_q4_fused",
+    "q80_hgravs01_two_stage",
+    "generated_uv_fused_bpw_0485",
+    "q80_binary_group_fused",
+    "gravity_pq_matvec",
+    "qwen30_rmsnorm_vector_decode"
+  ],
+  "every_oracle_path_labelled_ORACLE": true,
+  "discriminator_holds": true,
+  "regime_0485": {
+    "stored_bpw": 0.04853084788602941,
+    "active_bpw_fused": 0.04852941176470588,
+    "active_bpw_cached_dense": 16.0,
+    "fused_path_id": "generated_uv_fused_bpw_0485",
+    "cached_path_id": "generated_uv_cache_f16_then_gemm",
+    "fused_label": "NATIVE",
+    "cached_label": "ORACLE",
+    "source": "receipts/headless/GENERATED_WEIGHTS_RETEST.json (not re-derived)"
+  },
+  "anchors_not_rederived": {
+    "qwen38_tps": 32.73,
+    "qwen38_ms_per_token": 30.606,
+    "qwen38_dispatches_per_token": 964,
+    "qwen38_command_buffers_per_token": 1,
+    "qwen38_bpw": 4.253,
+    "qwen38_params": 26895998464,
+    "roof_gb_s_used_in_census": 778.8,
+    "q80_dispatch_bound_pct_of_700_GBs": 0.79,
+    "q80_gpu_idle_pct": 51.0,
+    "q80_ceiling_gb_s_named_in_seal": 700.0,
+    "q80_cb_before": 337,
+    "q80_cb_after": 49,
+    "q80_cb_collapse_receipt": "receipts/ascent-2026-08-16/G003_Q80_CB_COLLAPSE.json",
+    "q80_dispatch_bound_receipt": "receipts/ascent-2026-08-16/Q80_SEALED_LOSER_SCIENCE_RETAINED.json",
+    "q80_storage_complete_bpw_mixed_1p5": 1.4444457,
+    "q80_active_decode_bpw_mixed_1p5": 4.979465705545386,
+    "q80_shape_dispatches": 1155,
+    "q80_shape_cbs": 98,
+    "generated_uv_stored_bpw": 0.04853084788602941,
+    "generated_uv_active_fused_bpw": 0.04852941176470588,
+    "generated_uv_active_cache_f16_bpw": 16.0
+  },
+  "shader_evidence": {
+    "shaders": {
+      "qwen_uniform_q4.metal": {
+        "present": true,
+        "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "needles": {
+          "kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128": 7337,
+          "Packed decode stays in registers": 7279,
+          "kernel void qwen_uniform_q4_decode_vector": 26439
+        }
+      },
+      "q80_mixed_decode.metal": {
+        "present": true,
+        "path": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+        "needles": {
+          "These kernels must never": 174,
+          "kernel void q80_hgravs01_factor_matvec": 8083,
+          "kernel void q80_hgravs01_two_stage_matvec": 20399,
+          "threadgroup float mid[kRankCap]": 21554,
+          "execute y = L @ (R @ x); mid[rank] is the only temporary": 1103
+        }
+      },
+      "gravity_pq.metal": {
+        "present": true,
+        "path": "crates/hawking-core/shaders/gravity_pq.metal",
+        "needles": {
+          "kernel void gravity_pq_matvec": 16355,
+          "never materializes a dense weight": 84
+        }
+      },
+      "matmul.metal": {
+        "present": true,
+        "path": "crates/hawking-core/shaders/matmul.metal",
+        "needles": {
+          "kernel void gemv_simdgroup_f32": 1012
+        }
+      },
+      "qwen_complete_runtime.metal": {
+        "present": true,
+        "path": "crates/hawking-core/shaders/qwen_complete_runtime.metal",
+        "needles": {
+          "kernel void qwen_complete_binary_decode_vector": 1280
+        }
+      },
+      "qwen_uniform_qn.metal": {
+        "present": true,
+        "path": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+        "needles": {
+          "kernel void qwen_uniform_qn_decode_vector": 2262
+        }
+      }
+    },
+    "decode_vector_kernels": [
+      {
+        "file": "qwen_complete_runtime.metal",
+        "line": 31,
+        "name": "qwen_complete_binary_decode_vector"
+      },
+      {
+        "file": "qwen_uniform_q4.metal",
+        "line": 627,
+        "name": "qwen_uniform_q4_decode_vector"
+      },
+      {
+        "file": "qwen_uniform_qn.metal",
+        "line": 68,
+        "name": "qwen_uniform_qn_decode_vector"
+      }
+    ],
+    "q80_cpu_two_stage_named": true,
+    "q80_forbidden_token_path_comment": true,
+    "q80_decode_vector_refuses_dense_w": true,
+    "q80_gather_row_refuses_weight_row": true
+  },
+  "cpu_microbench": {
+    "numpy": "2.4.6",
+    "hgravs": {
+      "L_shape": [
+        2048,
+        160
+      ],
+      "R_shape": [
+        160,
+        512
+      ],
+      "fused_peak_bytes": 8832,
+      "oracle_peak_bytes": 4202496,
+      "fused_wall_s": 4.604199784807861e-05,
+      "oracle_wall_s": 0.0005315830057952553,
+      "y_match_max_abs": 0.0003509521484375,
+      "parent_f32_bytes": 4194304,
+      "threadgroup_mid_bytes": 640,
+      "oracle_reaches_parent": true,
+      "fused_reaches_parent": false,
+      "numpy": "2.4.6"
+    },
+    "generated_uv": {
+      "rank": 12,
+      "U_shape": [
+        17408,
+        12
+      ],
+      "V_shape": [
+        12,
+        5120
+      ],
+      "fused_peak_bytes": 69680,
+      "oracle_peak_bytes": 178327552,
+      "fused_wall_s": 8.058399544097483e-05,
+      "oracle_wall_s": 0.04103687500173692,
+      "y_match_max_abs": 0.2544708251953125,
+      "parent_f16_bytes": 178257920,
+      "parent_f32_bytes": 356515840,
+      "encoded_fused_peak_bytes": 69680,
+      "encoded_oracle_peak_bytes": 178327552,
+      "oracle_reaches_parent_f16": true,
+      "fused_reaches_parent_f16": false,
+      "numpy": "2.4.6"
+    },
+    "numpy_absent_reason": null
+  },
+  "gpu_live_this_run": {
+    "gpu_wall_ns_per_token": {
+      "value": null,
+      "unit": "ns",
+      "kind": "ABSENT",
+      "absent_reason": "This obligation forbids loading a second 27B; a resident 27B already constrains memory. A previous sandbox MetalContext::new died with 'no Metal-capable GPU' even though this host is an M3 Ultra (60 cores, Metal Supported). GPU wall, idle, and % of ceiling are therefore ABSENT for this run and cited as anchors where a prior receipt already measured them.",
+      "trace": "not taken"
+    },
+    "gpu_idle_pct": {
+      "value": null,
+      "unit": "percent",
+      "kind": "ABSENT",
+      "absent_reason": "This obligation forbids loading a second 27B; a resident 27B already constrains memory. A previous sandbox MetalContext::new died with 'no Metal-capable GPU' even though this host is an M3 Ultra (60 cores, Metal Supported). GPU wall, idle, and % of ceiling are therefore ABSENT for this run and cited as anchors where a prior receipt already measured them.",
+      "trace": "not taken"
+    },
+    "pct_of_bandwidth_ceiling": {
+      "value": null,
+      "unit": "percent",
+      "kind": "ABSENT",
+      "absent_reason": "This obligation forbids loading a second 27B; a resident 27B already constrains memory. A previous sandbox MetalContext::new died with 'no Metal-capable GPU' even though this host is an M3 Ultra (60 cores, Metal Supported). GPU wall, idle, and % of ceiling are therefore ABSENT for this run and cited as anchors where a prior receipt already measured them.",
+      "trace": "not taken"
+    }
+  },
+  "what_i_did_not_do": [
+    "Did not load a second 27B.",
+    "Did not open receipts/ascent-2026-08-16 or workspace/campaign for writing.",
+    "Did not present an estimate as a measurement.",
+    "Did not write 0 for a number that was not measured.",
+    "Did not call qwen30 rank-1 RMSNorm decode an ORACLE.",
+    "Did not treat CPU association oracles in q80_mixed_decode.rs (which never form W) as reconstruction oracles."
+  ],
+  "self_check": {
+    "production_is_NATIVE": true,
+    "decode_vector_gemm_is_ORACLE": true,
+    "hgravs_fused_is_NATIVE": true,
+    "hgravs_reconstruct_is_ORACLE": true,
+    "uv_fused_is_NATIVE": true,
+    "uv_cache_is_ORACLE": true,
+    "pq_is_NATIVE": true,
+    "binary_is_NATIVE": true,
+    "rmsnorm_vector_is_NATIVE": true,
+    "root_columns_are_side_by_side": true,
+    "every_path_has_side_by_side": true,
+    "no_absent_written_as_zero": true
+  },
+  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NATIVE_OPERATOR.json"
+}

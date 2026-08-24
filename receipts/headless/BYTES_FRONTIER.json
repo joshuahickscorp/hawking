@@ -1,0 +1,1075 @@
+{
+  "schema": "hawking.headless.bytes_frontier.v1",
+  "generated_at": "2026-08-24T17:51:16Z",
+  "git_head": "799b39cbd5b6596a1f29f8ba94bc4cd3910c0ecd",
+  "question": "Do representations with fewer ACTIVE_BYTES_PER_TOKEN than N021 q2_4level_fitted_g64 (2.25 bpw) move COMPLETE_TOKEN_NS toward the 729.7 model-reachable roof, when executed natively with dense_w=0?",
+  "answer": "binary_g64: fewer bytes DID move COMPLETE_TOKEN_NS toward 729.7 (delta 4116083 ns). ternary_5in8_g64: active_bpw 1.8500 < 2.25 but fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo) shared_binary_k2: active_bpw 0.5312 < 2.25 but fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo) binary_residual_sparse_2pct: active_bpw 2.2163 < 2.25 but fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)",
+  "n021_baseline": {
+    "codec": "q2_4level_fitted_g64",
+    "bpw": 2.25,
+    "complete_token_gpu_ns_median": 27547874,
+    "receipt": "receipts/headless/NATIVE_2BIT_MLP.json"
+  },
+  "roof_tok_s": 729.7,
+  "roof_ns": 1370426.2025489926,
+  "mlp_elements": 17112760320,
+  "parent_params": 26895998464,
+  "q4_attn_f32_bytes": 5206533080,
+  "did_not_load_second_27b": true,
+  "did_not_write_under_models": true,
+  "did_not_mutate_noetic_parent_a": true,
+  "dense_w_materialized": 0,
+  "dense_w_is_a_counter": true,
+  "timing_label": "DIRTY_ENGINEERING",
+  "measurement": {
+    "what": "64-layer unique-weight MLP token graph (gate+up+down = 192 GEMVs) on real Qwen3.8 shapes, plus N021 non-MLP residual (N021 complete GPU 27547874 ns minus measured q2f MLP graph).",
+    "not": "a 964-dispatch whole-model decode of a packed HQ38M20 mix",
+    "why_this_is_complete_token_ns": "Unique per-layer packed bytes so SLC cannot collapse 64 layers into one cached tensor. GPUStartTime/GPUEndTime, 7 reps min/median/max, serial or noop control. Attention/embed/head billed as N021's residual."
+  },
+  "kernel_competence": {
+    "ok": true,
+    "exit_code": 0,
+    "stdout": "files 44  kernels 666  {'DEFECTIVE': 89, 'SUSPECT': 494, 'CLEAR': 83}\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group32_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::q2f_group64_dequant  runtime_integer_divide -> cols\n  DEFECTIVE affine2_group32_matvec.metal::affine2_group64_matvec_geo_tpr64_tg128_runtime_div  runtime_integer_divide -> group_size\n  DEFECTIVE bandwidth_roof.metal::roof_seq_simd8x8  runtime_integer_divide -> tpg\n  DEFECTIVE common.metal::rope_q_f32_inplace  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_q_interleaved_concat  runtime_integer_divide -> pairs_per_head\n  DEFECTIVE common.metal::rope_f32_batched_multiseq  runtime_integer_divide -> per_slot\n  DEFECTIVE common.metal::rope_qk_f32_batched_multiseq  runtime_integer_divide -> q_per_slot\n  DEFECTIVE common.metal::embed_lookup_f32_batched  runtime_integer_divide -> hidden\n  DEFECTIVE common.metal::rope_qk_f32_b1_bias  runtime_integer_divide -> pairs_per_head\nreceipt: /Users/scammermike/.claude-grok/worktrees/n032bytes-20260824-132242/receipts/headless/KERNEL_COMPETENCE.json\n",
+    "bytes_frontier_kernels": {
+      "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = ternary_acc_c5120(codes"
+          }
+        ]
+      },
+      "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = ternary_acc_c17408(code"
+          }
+        ]
+      },
+      "ternary_5in8_g64_matvec_serial_c5120": {
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "BPR",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "const uint row_bytes = row * BPR;\n    for (uint b = 0u; b < BPR; ++b) {\n        ternary5_mac(codes[row_"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "024u;\n    constexpr uint GPR = 80u;\n    if (row >= rows) {\n        return;\n    }\n    float acc ="
+          }
+        ]
+      },
+      "ternary_5in8_g64_matvec_serial_c17408": {
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "BPR",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "const uint row_bytes = row * BPR;\n    for (uint b = 0u; b < BPR; ++b) {\n        ternary5_mac(codes[row_"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "82u;\n    constexpr uint GPR = 272u;\n    if (row >= rows) {\n        return;\n    }\n    float acc ="
+          }
+        ]
+      },
+      "binary_g64_matvec_geo_c5120_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = binary_acc_g64(signs, s"
+          }
+        ]
+      },
+      "binary_g64_matvec_geo_c17408_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = binary_acc_g64(signs, s"
+          }
+        ]
+      },
+      "binary_g64_matvec_serial_c5120": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "{\n    if (row >= rows) {\n        return;\n    }\n    output[row]"
+          }
+        ]
+      },
+      "binary_g64_matvec_serial_c17408": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "{\n    if (row >= rows) {\n        return;\n    }\n    output[row]"
+          }
+        ]
+      },
+      "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "GPR",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "const uint row_base = row * COLS;\n    for (uint g = 0u; g < GPR; ++g) {\n        float a0 = 0.0f;"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "0.0f;\n        float a1 = 0.0f;\n        if (row < rows) {\n            const uint col = g * 64u"
+          }
+        ]
+      },
+      "shared_binary_k2_group_dots_c17408_g64_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "GPR",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "const uint row_base = row * COLS;\n    for (uint g = 0u; g < GPR; ++g) {\n        float a0 = 0.0f;"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "0.0f;\n        float a1 = 0.0f;\n        if (row < rows) {\n            const uint col = g * 64u"
+          }
+        ]
+      },
+      "shared_binary_k2_scale_contract_gpr80": {
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "GPR",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "PR;\n    const uint k1 = rows * GPR;\n    for (uint g = 0u; g < GPR; ++g) {\n        acc += float(scales[off"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "{\n    constexpr uint GPR = 80u;\n    if (row >= rows) {\n        return;\n    }\n    float acc ="
+          }
+        ]
+      },
+      "shared_binary_k2_scale_contract_gpr272": {
+        "verdict": "SUSPECT",
+        "n_findings": 2,
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "GPR",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "PR;\n    const uint k1 = rows * GPR;\n    for (uint g = 0u; g < GPR; ++g) {\n        acc += float(scales[off"
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "{\n    constexpr uint GPR = 272u;\n    if (row >= rows) {\n        return;\n    }\n    float acc ="
+          }
+        ]
+      },
+      "shared_binary_k2_reload_every_layer_c5120": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = binary_acc_g64(signs0,"
+          }
+        ]
+      },
+      "binary_sparse_fused_geo_c5120_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = binary_acc_g64(signs, s"
+          }
+        ]
+      },
+      "binary_sparse_fused_geo_c17408_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = binary_acc_g64(signs, s"
+          }
+        ]
+      },
+      "binary_sparse_fused_serial_c5120": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "{\n    if (row >= rows) {\n        return;\n    }\n    output[row]"
+          }
+        ]
+      },
+      "q2f_g64_matvec_geo_c5120_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = q2f_acc_g64(codes, delt"
+          }
+        ]
+      },
+      "q2f_g64_matvec_geo_c17408_tpr64_tg128": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = q2f_acc_g64(codes, delt"
+          }
+        ]
+      },
+      "q2f_g64_matvec_serial_c5120": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "{\n    constexpr uint COLS = 5120u;\n    if (row >= rows) {\n        return;\n    }\n    const uint"
+          }
+        ]
+      },
+      "binary_sparse_noop_drop_csr_c5120": {
+        "verdict": "SUSPECT",
+        "n_findings": 1,
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "(void)corr;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = binary_acc_g64(signs, s"
+          }
+        ]
+      }
+    },
+    "any_geo_defective": false
+  },
+  "shader_evidence": {
+    "file": "crates/hawking-core/shaders/bytes_frontier.metal",
+    "kernels_present": {
+      "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128": true,
+      "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128": true,
+      "ternary_5in8_g64_matvec_serial_c5120": true,
+      "binary_g64_matvec_geo_c5120_tpr64_tg128": true,
+      "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128": true,
+      "shared_binary_k2_scale_contract_gpr80": true,
+      "binary_sparse_fused_geo_c5120_tpr64_tg128": true,
+      "q2f_g64_matvec_geo_c5120_tpr64_tg128": true
+    },
+    "all_present": true,
+    "no_bind_time_group_size_in_ternary_geo": true,
+    "uses_shift_not_div_for_group": true,
+    "q2f_reconstruction": true,
+    "ternary_map": true,
+    "dense_w_written": false
+  },
+  "build": {
+    "command": [
+      "skipped"
+    ],
+    "exit_code": 0,
+    "wall_s": 0.0,
+    "ok": true,
+    "stderr_tail": ""
+  },
+  "run": {
+    "ok": true,
+    "exit_code": 0,
+    "wall_s": 0.0,
+    "stderr_tail": "",
+    "raw_path": "/Users/scammermike/.claude-grok/worktrees/n032bytes-20260824-132242/receipts/headless/_BYTES_FRONTIER_raw.json"
+  },
+  "parity_ok": true,
+  "representations": [
+    {
+      "id": "q2_4level_fitted_g64",
+      "name": "N021 native 2-bit MLP (baseline)",
+      "active_bpw": 2.25,
+      "active_bytes_per_token": 4812963840.0,
+      "dram_bytes_per_token": 10019496920.0,
+      "lower_than_q2f_2_25": false,
+      "COMPLETE_TOKEN_NS": {
+        "mlp_graph_gpu_ns": {
+          "n": 7,
+          "min": 15705625,
+          "median": 15738249,
+          "max": 15763416,
+          "all": [
+            15738249,
+            15727624,
+            15749500,
+            15763416,
+            15755375,
+            15705625,
+            15725583
+          ]
+        },
+        "mlp_graph_wall_ns": {
+          "n": 7,
+          "min": 16083042,
+          "median": 16133375,
+          "max": 16169917,
+          "all": [
+            16133375,
+            16118917,
+            16169917,
+            16133041,
+            16165791,
+            16083042,
+            16149708
+          ]
+        },
+        "composed": {
+          "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+          "mlp_graph_gpu_ns": 15738249,
+          "q2f_mlp_graph_gpu_ns": 15738249,
+          "n021_complete_gpu_ns": 27547874,
+          "non_mlp_ns": 11809625,
+          "complete_token_ns": 27547874
+        },
+        "min": 15705625,
+        "median": 27547874,
+        "max": 15763416,
+        "reps": 7
+      },
+      "coherence": {
+        "rung": "coherent_generation",
+        "status": "UNTESTED_ABOVE",
+        "unreached_above": "capability",
+        "why": "N021 survived complete_token (argmax 9714=9714) and native generation.",
+        "source_receipt": "receipts/headless/NATIVE_2BIT_MLP.json"
+      },
+      "parity": {
+        "ok": true,
+        "rows": [
+          {
+            "dense_w_materialized": 0,
+            "id": "q2f_geo_c5120",
+            "kernel": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+            "max_abs_diff": 0.0,
+            "must_match": true,
+            "ok": true,
+            "tolerance": 0.019999999552965164
+          }
+        ]
+      },
+      "dense_w_materialized": 0,
+      "control": {
+        "serial_or_noop": null,
+        "overlap": null,
+        "label": null
+      },
+      "toward_roof_729_7": {
+        "moved": false,
+        "delta_ns": 0,
+        "baseline_ns": 27547874,
+        "candidate_ns": 27547874,
+        "roof_ns": 1370426.2025489926,
+        "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+      },
+      "notes": {
+        "billing": "2 bits + f16 delta / 64"
+      }
+    },
+    {
+      "id": "binary_g64",
+      "name": "binary sign + g64 scale (independent per tensor)",
+      "active_bpw": 1.25,
+      "active_bytes_per_token": 2673868800.0,
+      "dram_bytes_per_token": 7880401880.0,
+      "lower_than_q2f_2_25": true,
+      "COMPLETE_TOKEN_NS": {
+        "mlp_graph_gpu_ns": {
+          "n": 7,
+          "min": 11585833,
+          "median": 11622166,
+          "max": 11626499,
+          "all": [
+            11596124,
+            11626374,
+            11626499,
+            11622583,
+            11585833,
+            11599375,
+            11622166
+          ]
+        },
+        "mlp_graph_wall_ns": {
+          "n": 7,
+          "min": 11921500,
+          "median": 11983000,
+          "max": 12064250,
+          "all": [
+            11957375,
+            12022375,
+            12064250,
+            12000083,
+            11921500,
+            11970333,
+            11983000
+          ]
+        },
+        "composed": {
+          "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+          "mlp_graph_gpu_ns": 11622166,
+          "q2f_mlp_graph_gpu_ns": 15738249,
+          "n021_complete_gpu_ns": 27547874,
+          "non_mlp_ns": 11809625,
+          "complete_token_ns": 23431791
+        },
+        "min": 11585833,
+        "median": 23431791,
+        "max": 11626499,
+        "reps": 7
+      },
+      "coherence": {
+        "rung": "complete_token",
+        "status": "FAILED",
+        "died_at": "coherent_generation",
+        "why": "Native binary geo matches the CPU oracle. mix_c_all_mlp_binary_g64 already ran the whole-model token loop and degenerated (16 copies of token 271). Associativity: the cheaper kernel does not reopen that death. Speed is reported; the arm is DEAD for promotion (S022 \u00a738).",
+        "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json"
+      },
+      "parity": {
+        "ok": true,
+        "rows": [
+          {
+            "dense_w_materialized": 0,
+            "id": "binary_geo_c5120",
+            "kernel": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+            "max_abs_diff": 0.0,
+            "must_match": true,
+            "ok": true,
+            "tolerance": 0.019999999552965164
+          }
+        ]
+      },
+      "dense_w_materialized": 0,
+      "control": {
+        "serial_or_noop": {
+          "gpu_ns": {
+            "all": [
+              44652791,
+              44553750,
+              44505625,
+              44551375,
+              44393666,
+              44482500,
+              44429583
+            ],
+            "max": 44652791,
+            "median": 44505625,
+            "min": 44393666,
+            "n": 7
+          },
+          "overlap_with_geo": false,
+          "wall_ns": {
+            "all": [
+              45030750,
+              45015667,
+              44886208,
+              44913792,
+              44823334,
+              44849709,
+              44938042
+            ],
+            "max": 45030750,
+            "median": 44913792,
+            "min": 44823334,
+            "n": 7
+          }
+        },
+        "overlap": false,
+        "label": "SEPARATED"
+      },
+      "toward_roof_729_7": {
+        "moved": true,
+        "delta_ns": 4116083,
+        "baseline_ns": 27547874,
+        "candidate_ns": 23431791,
+        "roof_ns": 1370426.2025489926,
+        "gap_closed_frac": 0.15723775028980472
+      },
+      "notes": {
+        "billing": "1 sign bit + f16 mean-abs / 64 = 1.25 bpw",
+        "scales_counted": true
+      }
+    },
+    {
+      "id": "ternary_5in8_g64",
+      "name": "ternary {-1,0,+1} 5-in-8 + g64 scale",
+      "active_bpw": 1.85,
+      "active_bytes_per_token": 3957325824.0,
+      "dram_bytes_per_token": 9163858904.0,
+      "lower_than_q2f_2_25": true,
+      "COMPLETE_TOKEN_NS": {
+        "mlp_graph_gpu_ns": {
+          "n": 7,
+          "min": 47503708,
+          "median": 47607749,
+          "max": 47683375,
+          "all": [
+            47683375,
+            47595291,
+            47503708,
+            47585874,
+            47635666,
+            47607749,
+            47614416
+          ]
+        },
+        "mlp_graph_wall_ns": {
+          "n": 7,
+          "min": 47966917,
+          "median": 47978458,
+          "max": 48044708,
+          "all": [
+            48044708,
+            47966917,
+            47977834,
+            47970458,
+            48019166,
+            48009208,
+            47978458
+          ]
+        },
+        "composed": {
+          "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+          "mlp_graph_gpu_ns": 47607749,
+          "q2f_mlp_graph_gpu_ns": 15738249,
+          "n021_complete_gpu_ns": 27547874,
+          "non_mlp_ns": 11809625,
+          "complete_token_ns": 59417374
+        },
+        "min": 47503708,
+        "median": 59417374,
+        "max": 47683375,
+        "reps": 7
+      },
+      "coherence": {
+        "rung": "held_out_activation",
+        "status": "FAILED",
+        "died_at": "complete_token",
+        "why": "Organ-local CANON (rel_fro 0.321) flipped the whole-model argmax (10895 vs teacher 9714). Native 5-in-8 equals reconstruct-then-GEMV on the packed codes (parity), so the cheaper kernel does not reopen the fidelity death. S022 \u00a738: a cheaper representation that flips the argmax is DEAD.",
+        "source_receipt": "receipts/headless/FRACTIONAL_BIT_CANON.json + NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+      },
+      "parity": {
+        "ok": true,
+        "rows": [
+          {
+            "dense_w_materialized": 0,
+            "id": "ternary_geo_c5120",
+            "kernel": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+            "max_abs_diff": 0.0,
+            "must_match": true,
+            "ok": true,
+            "tolerance": 0.019999999552965164
+          }
+        ]
+      },
+      "dense_w_materialized": 0,
+      "control": {
+        "serial_or_noop": {
+          "gpu_ns": {
+            "all": [
+              209383166,
+              209261374,
+              209601624,
+              209209124,
+              209366791,
+              209180166,
+              209160541
+            ],
+            "max": 209601624,
+            "median": 209261374,
+            "min": 209160541,
+            "n": 7
+          },
+          "overlap_with_geo": false,
+          "wall_ns": {
+            "all": [
+              209785666,
+              209709625,
+              210035583,
+              209590333,
+              209734125,
+              209705625,
+              209724000
+            ],
+            "max": 210035583,
+            "median": 209724000,
+            "min": 209590333,
+            "n": 7
+          }
+        },
+        "overlap": false,
+        "label": "SEPARATED"
+      },
+      "toward_roof_729_7": {
+        "moved": false,
+        "delta_ns": -31869500,
+        "baseline_ns": 27547874,
+        "candidate_ns": 59417374,
+        "roof_ns": 1370426.2025489926,
+        "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+      },
+      "notes": {
+        "zero_macs_elided": true,
+        "zero_bytes_skipped": false,
+        "why_active_eq_stored": "5-in-8 still streams every packed byte; skipping a zero trit saves an FMA, not a DRAM load. Index-carrying sparsity was already the expensive topology (G070)."
+      }
+    },
+    {
+      "id": "shared_binary_k2",
+      "name": "K=2 shared binary bases + per-layer group scales",
+      "active_bpw": 0.53125,
+      "active_bytes_per_token": 1136394240.0,
+      "dram_bytes_per_token": 6342927320.0,
+      "lower_than_q2f_2_25": true,
+      "COMPLETE_TOKEN_NS": {
+        "mlp_graph_gpu_ns": {
+          "n": 7,
+          "min": 99564375,
+          "median": 99816541,
+          "max": 99861458,
+          "all": [
+            99816541,
+            99847375,
+            99741666,
+            99861458,
+            99671958,
+            99564375,
+            99829125
+          ]
+        },
+        "mlp_graph_wall_ns": {
+          "n": 7,
+          "min": 100004625,
+          "median": 100246625,
+          "max": 100334500,
+          "all": [
+            100246625,
+            100286250,
+            100176417,
+            100334500,
+            100124875,
+            100004625,
+            100266208
+          ]
+        },
+        "composed": {
+          "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+          "mlp_graph_gpu_ns": 99816541,
+          "q2f_mlp_graph_gpu_ns": 15738249,
+          "n021_complete_gpu_ns": 27547874,
+          "non_mlp_ns": 11809625,
+          "complete_token_ns": 111626166
+        },
+        "min": 99564375,
+        "median": 111626166,
+        "max": 99861458,
+        "reps": 7
+      },
+      "coherence": {
+        "rung": "local_functional_probe",
+        "status": "UNTESTED_ABOVE",
+        "unreached_above": "held_out_activation",
+        "why": "Native two-pass (group-dots then scale-contract) matches the CPU oracle on the packed codes. Whole-model argmax was not re-run: G035 column-share lost on fidelity and ONEBIT B4 is a matched-2.0 binary-share family, not this K=2 0.53-bpw operating point. May not be described above local_functional_probe.",
+        "source_receipt": "receipts/headless/C1SHAREDBASIS_DESIGN.json + ONEBIT_FAMILIES.json"
+      },
+      "parity": {
+        "ok": true,
+        "rows": [
+          {
+            "dense_w_materialized": 0,
+            "id": "shared_k2_two_pass_c5120",
+            "kernel": "shared_binary_k2_group_dots + scale_contract_gpr80",
+            "max_abs_diff": 0.0,
+            "must_match": true,
+            "ok": true,
+            "tolerance": 0.019999999552965164
+          }
+        ]
+      },
+      "dense_w_materialized": 0,
+      "control": {
+        "serial_or_noop": {
+          "gpu_ns": {
+            "all": [
+              76782749,
+              76754083,
+              76894291,
+              77084499,
+              77032625,
+              76749333,
+              76988874
+            ],
+            "max": 77084499,
+            "median": 76894291,
+            "min": 76749333,
+            "n": 7
+          },
+          "note": "reload control fuses K=2 on gate only; up/down stay two-pass",
+          "overlap_with_amortized": false,
+          "wall_ns": {
+            "all": [
+              77195125,
+              77181792,
+              77360083,
+              77492834,
+              77419166,
+              77208333,
+              77645875
+            ],
+            "max": 77645875,
+            "median": 77360083,
+            "min": 77181792,
+            "n": 7
+          }
+        },
+        "overlap": false,
+        "label": "SEPARATED"
+      },
+      "toward_roof_729_7": {
+        "moved": false,
+        "delta_ns": -84078292,
+        "baseline_ns": 27547874,
+        "candidate_ns": 111626166,
+        "roof_ns": 1370426.2025489926,
+        "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+      },
+      "notes": {
+        "basis_sign_bytes": 66846720.0,
+        "scale_bytes": 1069547520.0,
+        "active_bytes": 1136394240.0,
+        "active_bpw": 0.53125,
+        "storage_bpw_cold": 0.53125,
+        "k": 2,
+        "n_layers": 64
+      }
+    },
+    {
+      "id": "binary_residual_sparse_2pct",
+      "name": "binary plane + 2% CSR residual fused",
+      "active_bpw": 2.216250359030331,
+      "active_bytes_per_token": 4740770150.4,
+      "dram_bytes_per_token": 9947303230.4,
+      "lower_than_q2f_2_25": true,
+      "COMPLETE_TOKEN_NS": {
+        "mlp_graph_gpu_ns": {
+          "n": 7,
+          "min": 25244208,
+          "median": 25337750,
+          "max": 25555125,
+          "all": [
+            25253458,
+            25266875,
+            25244208,
+            25359958,
+            25389874,
+            25337750,
+            25555125
+          ]
+        },
+        "mlp_graph_wall_ns": {
+          "n": 7,
+          "min": 25655166,
+          "median": 25720959,
+          "max": 25946167,
+          "all": [
+            25655166,
+            25674333,
+            25695125,
+            25735250,
+            25788583,
+            25720959,
+            25946167
+          ]
+        },
+        "composed": {
+          "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+          "mlp_graph_gpu_ns": 25337750,
+          "q2f_mlp_graph_gpu_ns": 15738249,
+          "n021_complete_gpu_ns": 27547874,
+          "non_mlp_ns": 11809625,
+          "complete_token_ns": 37147375
+        },
+        "min": 25244208,
+        "median": 37147375,
+        "max": 25555125,
+        "reps": 7
+      },
+      "coherence": {
+        "rung": "local_functional_probe",
+        "status": "UNTESTED_ABOVE",
+        "unreached_above": "complete_token",
+        "why": "Fused kernel matches CPU binary+CSR. mix_c_all_mlp_binary_g64 already died at coherent_generation (16 copies of token 271). A 2% correction does not reopen that death without a new whole-model argmax. G070: index-carrying topologies lose on overhead; this pack bills the indices.",
+        "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json + C3LOWRANKSPARSE_DESIGN.json"
+      },
+      "parity": {
+        "ok": true,
+        "rows": [
+          {
+            "dense_w_materialized": 0,
+            "id": "residual_fused_c5120",
+            "kernel": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+            "max_abs_diff": 0.0,
+            "must_match": true,
+            "ok": true,
+            "tolerance": 0.019999999552965164
+          }
+        ]
+      },
+      "dense_w_materialized": 0,
+      "control": {
+        "serial_or_noop": {
+          "gpu_ns": {
+            "all": [
+              21289999,
+              21322958,
+              21327499,
+              21304916,
+              21287958,
+              21290541,
+              21175624
+            ],
+            "max": 21327499,
+            "median": 21290541,
+            "min": 21175624,
+            "n": 7
+          },
+          "overlap_with_fused": false,
+          "wall_ns": {
+            "all": [
+              21740875,
+              21691500,
+              21693125,
+              21699625,
+              21654334,
+              21704000,
+              21587500
+            ],
+            "max": 21740875,
+            "median": 21693125,
+            "min": 21587500,
+            "n": 7
+          }
+        },
+        "overlap": false,
+        "label": "SEPARATED"
+      },
+      "toward_roof_729_7": {
+        "moved": false,
+        "delta_ns": -9599501,
+        "baseline_ns": 27547874,
+        "candidate_ns": 37147375,
+        "roof_ns": 1370426.2025489926,
+        "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+      },
+      "notes": {
+        "binary_bytes": 2673868800.0,
+        "csr_bytes": 2066901350.4,
+        "nnz_frac": 0.02,
+        "active_bytes": 4740770150.4,
+        "active_bpw": 2.216250359030331
+      }
+    }
+  ],
+  "n_lower_than_2_25": 4,
+  "baseline": {
+    "id": "q2_4level_fitted_g64",
+    "name": "N021 native 2-bit MLP (baseline)",
+    "active_bpw": 2.25,
+    "active_bytes_per_token": 4812963840.0,
+    "dram_bytes_per_token": 10019496920.0,
+    "lower_than_q2f_2_25": false,
+    "COMPLETE_TOKEN_NS": {
+      "mlp_graph_gpu_ns": {
+        "n": 7,
+        "min": 15705625,
+        "median": 15738249,
+        "max": 15763416,
+        "all": [
+          15738249,
+          15727624,
+          15749500,
+          15763416,
+          15755375,
+          15705625,
+          15725583
+        ]
+      },
+      "mlp_graph_wall_ns": {
+        "n": 7,
+        "min": 16083042,
+        "median": 16133375,
+        "max": 16169917,
+        "all": [
+          16133375,
+          16118917,
+          16169917,
+          16133041,
+          16165791,
+          16083042,
+          16149708
+        ]
+      },
+      "composed": {
+        "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+        "mlp_graph_gpu_ns": 15738249,
+        "q2f_mlp_graph_gpu_ns": 15738249,
+        "n021_complete_gpu_ns": 27547874,
+        "non_mlp_ns": 11809625,
+        "complete_token_ns": 27547874
+      },
+      "min": 15705625,
+      "median": 27547874,
+      "max": 15763416,
+      "reps": 7
+    },
+    "coherence": {
+      "rung": "coherent_generation",
+      "status": "UNTESTED_ABOVE",
+      "unreached_above": "capability",
+      "why": "N021 survived complete_token (argmax 9714=9714) and native generation.",
+      "source_receipt": "receipts/headless/NATIVE_2BIT_MLP.json"
+    },
+    "parity": {
+      "ok": true,
+      "rows": [
+        {
+          "dense_w_materialized": 0,
+          "id": "q2f_geo_c5120",
+          "kernel": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+          "max_abs_diff": 0.0,
+          "must_match": true,
+          "ok": true,
+          "tolerance": 0.019999999552965164
+        }
+      ]
+    },
+    "dense_w_materialized": 0,
+    "control": {
+      "serial_or_noop": null,
+      "overlap": null,
+      "label": null
+    },
+    "toward_roof_729_7": {
+      "moved": false,
+      "delta_ns": 0,
+      "baseline_ns": 27547874,
+      "candidate_ns": 27547874,
+      "roof_ns": 1370426.2025489926,
+      "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+    },
+    "notes": {
+      "billing": "2 bits + f16 delta / 64"
+    }
+  },
+  "finding": {
+    "fewer_bytes_moved_token_ns_toward_729_7": true,
+    "per_representation": [
+      "binary_g64: fewer bytes DID move COMPLETE_TOKEN_NS toward 729.7 (delta 4116083 ns).",
+      "ternary_5in8_g64: active_bpw 1.8500 < 2.25 but fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)",
+      "shared_binary_k2: active_bpw 0.5312 < 2.25 but fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)",
+      "binary_residual_sparse_2pct: active_bpw 2.2163 < 2.25 but fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+    ],
+    "why_bytes_may_not_move_ns": "On a bandwidth-bound graph, token_ns tracks DRAM bytes only if the kernel is load-bound and competent. Same ns at fewer bytes means the extra arithmetic (trit unpack, two-pass dots+scale, CSR gather) ate the byte win \u2014 compute/dispatch bound, not a billing error."
+  },
+  "composition_ladder": {
+    "rule": "A cheaper representation that flips the argmax is DEAD (S022 \u00a738).",
+    "native_equals_reconstruct": true
+  },
+  "elapsed_s": 0.18724637501873076
+}

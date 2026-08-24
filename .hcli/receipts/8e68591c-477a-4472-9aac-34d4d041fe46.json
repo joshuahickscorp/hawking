@@ -1,0 +1,25 @@
+{
+  "evidence_files": [],
+  "goal": "Read README.md. Return only its first Markdown heading as a read-only answer. Do not modify project source.",
+  "goal_id": "8e68591c-477a-4472-9aac-34d4d041fe46",
+  "kind": "error",
+  "model": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+  "operations": [],
+  "rolled_back": false,
+  "runtime_count": 1,
+  "runtime_provenance": [
+    {
+      "active": true,
+      "index": 0,
+      "pid": 82616,
+      "port": 53350
+    }
+  ],
+  "status": "failed",
+  "tests": [],
+  "timestamps": {
+    "finished_at": "2026-08-21T19:16:43.658511+00:00",
+    "started_at": "2026-08-21T19:16:41.538976+00:00"
+  },
+  "validation": null
+}

@@ -1,0 +1,13 @@
+{
+  "complete_physical_bpw": 4.252735126866492,
+  "f32_tensors": 353,
+  "fused_in_proj_layers": 48,
+  "manifest_path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/manifest.json",
+  "min_q4_cosine": 1.0,
+  "q4_tensors": 402,
+  "skipped_vision_tensors": 333,
+  "source_weight_elements": 26895998464,
+  "status": "ok",
+  "tensor_count": 755,
+  "tensor_payload_bytes": 14297694680
+}

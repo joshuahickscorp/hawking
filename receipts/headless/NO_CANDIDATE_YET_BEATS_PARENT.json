@@ -1,0 +1,165 @@
+{
+  "schema": "hawking.headless.no_candidate_yet_beats_parent.v1",
+  "obligation": "G013 (S006 \u00a731-33) \u2014 CONDITIONAL, honest-negative branch",
+  "git_head": "915e1a670243",
+  "verdict": "REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN",
+  "reopen_condition_fired": true,
+  "faking_the_shift": "forbidden by S006 \u00a733; no promotion is claimed here",
+  "incumbent": {
+    "complete_ebpw": 4.252735126866492,
+    "artifact": "qwen38-gravity-uniform-q4-v1"
+  },
+  "candidates": [
+    {
+      "id": "mix_a_l0_down_binary_g1024",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "complete_ebpw": 4.242016986754093,
+      "tok_s": 32.80705947204907,
+      "coherent": true,
+      "coherence_reason": "emits varied tokens",
+      "native_kernel_ran": true,
+      "text": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a"
+    },
+    {
+      "id": "mix_b_all_down_binary_g1024",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "complete_ebpw": 3.566774159673004,
+      "tok_s": 32.83600467913067,
+      "coherent": false,
+      "coherence_reason": "only 2 new tokens (stopped early, likely EOS); not a 16-token sample",
+      "native_kernel_ran": true,
+      "text": "front"
+    },
+    {
+      "id": "mix_c_all_mlp_binary_g64",
+      "source_receipt": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+      "complete_ebpw": 2.343974955991431,
+      "tok_s": 33.44218765414758,
+      "coherent": false,
+      "coherence_reason": "16 copies of the same token (271)",
+      "native_kernel_ran": true,
+      "text": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+      "id": "mix_all_mlp_hgravu01_q3_g64",
+      "source_receipt": "receipts/headless/NOETIC_Q3_MLP_Q4_ATTN.json",
+      "complete_ebpw": 3.616489579525877,
+      "tok_s": 31.98505658156509,
+      "coherent": "COHERENT: varied tokens, not a single-token copy and not whitespace-only. The q3-MLP / q4-attn mix is both material and coherent on this 16-token sample.",
+      "native_kernel_ran": true,
+      "text": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a"
+    },
+    {
+      "id": "mix_all_mlp_affine_g32",
+      "source_receipt": "receipts/headless/AFFINE2_NATIVE_MLP.json",
+      "complete_ebpw": 3.457428992214862,
+      "tok_s": 32.07808521067725,
+      "coherent": null,
+      "native_kernel_ran": true,
+      "text": "<think>\n\n</thinking><think>\n\n</think>\n\nThis is a request for a detailed"
+    },
+    {
+      "id": "mix_all_mlp_affine_g64_ls",
+      "source_receipt": "receipts/headless/AFFINE2_G64_LSFIT.json",
+      "complete_ebpw": 3.139300850311054,
+      "tok_s": 26.83964318075738,
+      "coherent": "LS-fitted affine2 g64 generated 16 tokens that match neither the incumbent nor the g32 stutter. Verbatim: '<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler'. Coherence judge: {'coherent': True, 'reason': 'emits varied tokens', 'repeated_single_token': False, 'whitespace_only': False, 'two_token_cycle': False, 'n_unique_ids': 15, 'n_new_tokens': 16}.",
+      "native_kernel_ran": true,
+      "text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+    },
+    {
+      "id": "affine2_g64_fused_swiglu_qkv_dn",
+      "source_receipt": "receipts/headless/NOETIC_FUSED_SUBBIT.json",
+      "complete_ebpw": 3.139300850311054,
+      "tok_s": 34.87340648509909,
+      "dispatches_per_token": 756,
+      "coherent": true,
+      "native_kernel_ran": true,
+      "beats_parent_on_both_axes": true,
+      "text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+    }
+  ],
+  "best_coherent_candidate": {
+    "id": "affine2_g64_fused_swiglu_qkv_dn",
+    "source_receipt": "receipts/headless/NOETIC_FUSED_SUBBIT.json",
+    "complete_ebpw": 3.139300850311054,
+    "tok_s": 34.87340648509909,
+    "dispatches_per_token": 756,
+    "coherent": true,
+    "native_kernel_ran": true,
+    "beats_parent_on_both_axes": true,
+    "text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler"
+  },
+  "blocker": {
+    "id": "DENSITY_IS_NOT_THE_BINDING_CONSTRAINT",
+    "statement": "Every candidate that generates coherently is a grouped-code matvec, and cutting its bytes does not buy decode speed on this machine. Promotion requires winning protected qualification on capability AND performance; these candidates trade real density for no measurable throughput, so there is nothing to promote on.",
+    "measured": {
+      "cheapest_candidate": "mix_c_all_mlp_binary_g64",
+      "cheapest_ebpw": 2.343974955991431,
+      "cheapest_tok_s": 33.44218765414758,
+      "dearest_candidate": "mix_a_l0_down_binary_g1024",
+      "dearest_ebpw": 4.242016986754093,
+      "dearest_tok_s": 32.80705947204907,
+      "bytes_reduction_fraction": 0.4474385738410269,
+      "throughput_gain_fraction": 0.01935949738621434,
+      "reading": "44.7% fewer bits per weight buys 1.9% throughput. Decode is dispatch-bound, not bandwidth-bound."
+    },
+    "corroborating_prior": "Q80 decode measured at 0.79% of a 700 GB/s ceiling with 51% GPU idle; NOETIC_NATIVE_OPERATOR.json records SOURCE and EXECUTABLE at an IDENTICAL dispatch count of 964 while DRAM bytes fall 7.34x."
+  },
+  "why_each_candidate_fails_qualification": [
+    {
+      "id": "mix_a_l0_down_binary_g1024",
+      "ebpw": 4.242016986754093,
+      "tok_s": 32.80705947204907,
+      "reason": "coherent but same operator family as the incumbent, and no throughput win"
+    },
+    {
+      "id": "mix_b_all_down_binary_g1024",
+      "ebpw": 3.566774159673004,
+      "tok_s": 32.83600467913067,
+      "reason": "incoherent output"
+    },
+    {
+      "id": "mix_c_all_mlp_binary_g64",
+      "ebpw": 2.343974955991431,
+      "tok_s": 33.44218765414758,
+      "reason": "incoherent output"
+    },
+    {
+      "id": "mix_all_mlp_hgravu01_q3_g64",
+      "ebpw": 3.616489579525877,
+      "tok_s": 31.98505658156509,
+      "reason": "coherent but same operator family as the incumbent, and no throughput win"
+    },
+    {
+      "id": "mix_all_mlp_affine_g32",
+      "ebpw": 3.457428992214862,
+      "tok_s": 32.07808521067725,
+      "reason": "coherent but same operator family as the incumbent, and no throughput win"
+    },
+    {
+      "id": "mix_all_mlp_affine_g64_ls",
+      "ebpw": 3.139300850311054,
+      "tok_s": 26.83964318075738,
+      "reason": "coherent but same operator family as the incumbent, and no throughput win"
+    },
+    {
+      "id": "affine2_g64_fused_swiglu_qkv_dn",
+      "ebpw": 3.139300850311054,
+      "tok_s": 34.87340648509909,
+      "reason": "coherent but same operator family as the incumbent, and no throughput win"
+    }
+  ],
+  "next_representation_family": {
+    "family": "non-matvec operator that survives composition",
+    "why": "Every candidate so far is a grouped-code matvec \u2014 the incumbent's own operator, narrower. S006 \u00a71 is explicit that Noetic is not better quantization. The next family must change the OPERATOR, not the code width, and the binding constraint to attack is DISPATCH COUNT, not bytes.",
+    "evidence_that_narrows_it": [
+      "Sign codes survive at 1.0156 bpw where pure low-rank dies at 2.0706 (NOETIC_COMPOSITION.json): operator class beats bit count.",
+      "Matched-bit low-rank carries 2.93x flat-q3 error (DENSE_SUBBIT_TRANSFER) and 4.39x (DOCTOR_V2_PRESCRIPTION): naive factorization is refuted on dense.",
+      "Sharing is refuted: G035 shared_beats_independent=false, Q80 experts mutually orthogonal at cosine 0.004.",
+      "Whole-model uniform sub-2-bit fails at 1.85 bpw and survives at 2.25 (NOETIC_COMPOSITION_WHOLEMODEL_*): the cliff is sharp and sits in between."
+    ],
+    "reopen_condition": "A representation whose executable reduces DISPATCHES per token, or fuses operators so the 964-dispatch graph shrinks, rather than one that only reduces bytes."
+  },
+  "g014_dependency": "G014 (NOETIC_SELF_OPTIMIZATION_LIVE) is CONDITIONAL on this promotion. Since this records the honest negative, G014 is satisfied by stating that dependency explicitly. A substitute self-optimization run on the OLD parent would not satisfy it and is not offered here."
+}

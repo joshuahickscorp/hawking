@@ -1,0 +1,80 @@
+{
+ "schema": "hawking.headless.port_matrix.v1",
+ "obligation": "G032 (steer S006) -- read-only census of the actual Claude-side control plane, source functions read directly, not inferred from filenames",
+ "generated_at": "2026-08-23T00:40:00Z",
+ "method": "grep+read of the real files under ~/.claude, cross-checked against what has already been ported into tools/haider/hcli/{ledger,steering,verifier_pipeline}.py this session",
+ "note_on_scope": "This is a first substantive pass, not a claim of exhaustiveness. Rows are only entered where the actual source was read. Anything not listed has not yet been censused and must not be assumed absent or present.",
+ "real_finding": "There is no standalone base '/goal' command on the Claude side -- only ~/.claude/commands/ultragoal.md and ~/.claude/commands/steer.md exist. ultragoal.md's own text (already read earlier this session) explicitly documents that a v1 non-ultra ultragoal contract was replaced -- ULTRAGOAL IS the goal system; there is no separate weaker '/goal' underneath it to port as a distinct capability. This matters for G033: HCLI must not build a 'plain Goal' and a separate 'UltraGoal' as two things when the source of truth never had two things.",
+ "rows": [
+  {
+   "capability": "obligation ledger format + parsing",
+   "claude_source": "~/.claude/hooks/ultragoal-stop.mjs lines 42-46",
+   "exact_semantics": "OBLIGATION = /^[ \\t]*[-*][ \\t]+\\[([ xX])\\][ \\t]*(.*)$/ ; STATUS = /\\bstatus:[ \\t]*(PENDING|READY|ACTIVE|BLOCKED|FAILED|VERIFIED|STALE)\\b/i ; ID = /\\b(G\\d{1,6})\\b/ ; TERMINAL_BLOCKER = /^[ \\t]*terminal_blocker:[ \\t]*(.+)$/im",
+   "agentos_destination": "tools/haider/hcli/ledger.py :: Obligation dataclass + Ledger.parse()",
+   "status": "PORTED",
+   "evidence": "tools/haider/hcli/tests/test_ledger.py; independently re-verified this session (170 tests pass)"
+  },
+  {
+   "capability": "completion outcome taxonomy",
+   "claude_source": "~/.claude/hooks/ultragoal-stop.mjs lines 313-345 (GOAL_MET at 319, TERMINAL_BLOCKER at 327-335, SAFETY_DISARM at 337-350)",
+   "exact_semantics": "FIVE distinct outcomes: GOAL_MET (all obligations VERIFIED), GOAL_NOT_MET (fallthrough/block), TERMINAL_BLOCKER (a terminal_blocker: line present AND every unresolved obligation is status:BLOCKED -- explicitly 'this is NOT GOAL_MET'), SAFETY_DISARM (blocks>maxBlocks or wall-clock expiresAt -- explicitly not completion), ENFORCEMENT_FAILURE (missing/unreadable/empty ledger, malformed state).",
+   "agentos_destination": "tools/haider/hcli/ledger.py",
+   "status": "PARTIALLY PORTED",
+   "gap": "ledger.py has GOAL_MET, GOAL_NOT_MET (via is_goal_met()==False), and EMPTY_LEDGER (narrower than the full ENFORCEMENT_FAILURE class -- does not yet cover an unreadable file or malformed status disagreement as its own named outcome). TERMINAL_BLOCKER and SAFETY_DISARM as DISTINCT non-completion outcomes DO NOT YET EXIST in ledger.py -- a mission with every obligation legitimately BLOCKED currently has no way to say 'this is a deliberate stop, not success' distinctly from ordinary GOAL_NOT_MET, and there is no mission-level block-budget/wall-clock safety valve at all.",
+   "compat_test": "none yet -- follow-up obligation",
+   "engineering_reason_for_gap": "not intentional; simply not yet built. Flagged for the consolidation lane, not omitted by design."
+  },
+  {
+   "capability": "no-progress watchdog",
+   "claude_source": "~/.claude/hooks/ultragoal-stop.mjs lines 352-376",
+   "exact_semantics": "TWO separate hashes tracked: sha256(full ledger text) AND sha256(only the lines matching /evidence:/i). 'stalled' requires BOTH to match the previous block. Escalation ladder on the resulting noProgress count: 1=informal reconsider, 2=MANDATORY REPLAN, 3=CHANGE STRATEGY OR ESCALATE (and hydration auto-raises), 4+=ROOT CAUSE OR BLOCKER PROOF. State (hashes, counts) persisted before every response.",
+   "agentos_destination": "tools/haider/hcli/ledger.py :: consecutive_no_progress_count()",
+   "status": "PARTIALLY PORTED",
+   "gap": "ledger.py tracks a SINGLE fingerprint (whole-ledger hash) and a flat count, per the hcli-agentos-ledger lane's own report ('after_first=0 after_three=0 after_change=0'). The dual-hash design (ledger hash AND evidence-only hash, tracked separately so an unchanged ledger with genuinely new evidence still counts as progress) is NOT ported, and there is no escalation ladder -- only a raw count is exposed, with no defined response at counts 2/3/4.",
+   "compat_test": "none yet -- follow-up obligation",
+   "engineering_reason_for_gap": "not intentional; the original contract asked for 'a no-progress fingerprint counter... observable' but did not specify the dual-hash design or the ladder, because the real source had not been read yet at contract-writing time. This census is what closes that gap."
+  },
+  {
+   "capability": "steering: knowledge / correction / constraint",
+   "claude_source": "~/.claude/commands/steer.md (this session's own operating instructions, executed verbatim 6 times as of S006)",
+   "exact_semantics": "knowledge = default, never moves the bar. correction = a wrong belief the run acted on; dependent evidence marked STALE (not yet exercised this session -- no correction-kind steer has been issued yet, only knowledge and constraint). constraint = only kind that may amend an obligation; must cite the steer id; a steer NEVER marks anything VERIFIED.",
+   "agentos_destination": "tools/haider/hcli/steering.py :: SteerEvent.kind + ledger.py :: apply_constraint()",
+   "status": "PORTED",
+   "evidence": "tools/haider/hcli/tests/test_steer_constraint.py; independently verified this session (constraint amends and cites, knowledge/correction cannot amend, cannot forge VERIFIED)",
+   "gap_noted": "the CORRECTION kind's specific behavior (marking dependent evidence as STALE, and re-evaluating scheduler-ready work as a result) is implemented as a classification only -- nothing yet propagates a correction into invalidating specific prior evidence records or re-triggering scheduler readiness. Real gap, not yet exercised by any test because no correction steer has been issued to this ledger."
+  },
+  {
+   "capability": "superagent: Plan -> Execute -> Verify -> Synthesize",
+   "claude_source": "~/.claude/workflows/superagent.js (full 177 lines read this session)",
+   "exact_semantics": "obligations are propositions not task lists; execute() returns concrete refs, never a verdict; verify() finds the cheapest command/read that would differ if the claim were true, RUNS it, and an empty proposed command is UNVERIFIABLE never guessed; a failed pipeline slot is carried through as UNVERIFIABLE, never dropped (spec 90); synthesize() has no search/tool access and reasons only over the collected verdicts.",
+   "agentos_destination": "tools/haider/hcli/verifier_pipeline.py",
+   "status": "PORTED",
+   "evidence": "tools/haider/hcli/tests/test_verifier_pipeline.py + tools/headless/hcli_verifier_pipeline_test.py; independently re-verified this session (18 tests); the port's report quotes the exact source lines for each design decision",
+   "gap_noted": "superagent.js's PROFILES (FAST/BALANCED/DEEP: effort/fan/critic scheduling knobs) were explicitly and knowingly NOT ported -- the lane's own report states this belongs to a workflow orchestrator HCLI does not have. This is an INTENTIONALLY OMITTED item with a stated engineering reason, not a silent drop."
+  },
+  {
+   "capability": "superwave / parallel-lane dispatch from a goal's frontier",
+   "claude_source": "~/.claude/bin/goal-fan (69 lines) + ~/.claude/bin/swgrok (190 lines)",
+   "exact_semantics": "goal-fan reads GOAL.md, emits one Grok contract STUB per unblocked+unVERIFIED obligation (objective/acceptance/verify pulled from the ledger lines), with the write-scope field left EMPTY on purpose so grok-run's own linter refuses a scopeless contract -- 'a half-filled wave cannot launch by accident.' It does not launch; swgrok dispatches the filled contracts as parallel lanes.",
+   "agentos_destination": "none yet",
+   "status": "NOT YET PORTED",
+   "gap": "HCLI has GrokBridge (delegate/audit/consult against grok-run) and a resource-class scheduler, but nothing that automatically decomposes a Ledger's unblocked frontier into disjoint-write-scope delegation stubs the way goal-fan does. This is the literal 'superwave semantics where still useful' the steer names. Real, unaddressed gap -- not yet attempted by any lane.",
+   "compat_test": "none yet -- follow-up obligation",
+   "engineering_reason_for_gap": "not intentional; out of scope for every contract written so far. This census is what surfaces it."
+  },
+  {
+   "capability": "single-slot-per-session governor arming",
+   "claude_source": "~/.claude/hooks/ultragoal-stop.mjs lines 37-39, 134-135, 157",
+   "exact_semantics": "one JSON file per session under ~/.claude/ultragoal/active/<session-id>.json (not one global file) -- so a second concurrent goal cannot silently overwrite a first one's governor slot, and a session-id is validated against a strict charset before being used as a filename.",
+   "agentos_destination": "not directly applicable -- HCLI's mission.py is a single-process-per-workspace model, not a multi-session harness, so the 'many concurrent sessions, one governor slot each' problem this solves does not exist in the same shape for HCLI",
+   "status": "INTENTIONALLY OMITTED",
+   "engineering_reason_for_gap": "HCLI does not have Claude Code's multi-session-sharing-one-machine topology; a single mission.py instance owns one workspace. If HCLI later runs multiple concurrent missions against the same workspace, this pattern (one state file per mission id, validated id charset) should be revisited rather than reinvented."
+  }
+ ],
+ "unresolved_follow_ups": [
+  "close TERMINAL_BLOCKER and SAFETY_DISARM as distinct ledger outcomes",
+  "port the dual-hash (ledger+evidence) no-progress fingerprint and its 4-tier escalation ladder",
+  "decide whether CORRECTION-kind steers should invalidate specific evidence records (not yet exercised by any test)",
+  "build a goal-fan/swgrok-equivalent: decompose a Ledger's unblocked frontier into disjoint-write-scope GrokBridge delegations automatically"
+ ]
+}

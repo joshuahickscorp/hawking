@@ -1,0 +1,2307 @@
+{
+  "schema": "hawking.headless.startup_census.v1",
+  "gate": "STARTUP_CENSUS",
+  "generated_at": "2026-08-23T19:54:50Z",
+  "git_head": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
+  "repo": "/Users/scammermike/.claude-grok/worktrees/r10start-20260823-154312",
+  "sparse_checkout": {
+    "tools_haider_on_disk": false,
+    "hcli_source_mode": "git-archive-HEAD",
+    "hcli_pythonpath": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-startup-census-fye7iun3/tools/haider",
+    "hcli_package": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-startup-census-fye7iun3/tools/haider/hcli",
+    "reason": "sparse checkout: tools/haider not on disk; content is HEAD"
+  },
+  "python": {
+    "executable": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "version": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "path0": [
+      "/Users/scammermike/.claude-grok/worktrees/r10start-20260823-154312/tools/headless",
+      "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python314.zip",
+      "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14",
+      "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/lib-dynload",
+      "/Users/scammermike/Library/Python/3.14/lib/python/site-packages",
+      "/opt/homebrew/lib/python3.14/site-packages"
+    ]
+  },
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-m",
+    "hcli",
+    "--help"
+  ],
+  "method": {
+    "wall": "5 fresh processes, PYTHONDONTWRITEBYTECODE=1, time.perf_counter around subprocess",
+    "import_tree": "CPython -X importtime (self_us / cumulative_us)",
+    "sys_modules": "import hcli.cli.main(['--help']) catching SystemExit",
+    "counterfactual_D1": "temp copy of package with thin __init__.py; no source in the repo modified",
+    "isolated_modules": "temp copy with empty __init__.py so `import hcli.X` does not pay Controller",
+    "heavy_adversary": "repeat sys.modules dump under grok-vision python (torch/cv2/open3d) and hawking-aider python (numpy/PIL), with visionmcp src on PYTHONPATH when found",
+    "anti_goodhart": "Optimise verified --help cost. A 20% LOC cut that still imports Controller from __init__.py is a failure. D1 is a 4-line change."
+  },
+  "floor": {
+    "argparse_help_wall_s": 0.03602833399781957,
+    "python_pass_wall_s": 0.022314125002594665,
+    "returncode": 0
+  },
+  "baseline_help": {
+    "wall": {
+      "repeats": 5,
+      "samples_s": [
+        0.13629595800011884,
+        0.13835300000209827,
+        0.13724875000480097,
+        0.14080733300943393,
+        0.14092804200481623
+      ],
+      "median_s": 0.13835300000209827,
+      "min_s": 0.13629595800011884,
+      "max_s": 0.14092804200481623,
+      "returncodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "help_text_ok": true,
+      "stdout_preview": "usage: hcli [-h] [--task TASK] [--task-file TASK_FILE] [--model MODEL]\n            [--debug] [--max-turns MAX_TURNS] [--max-cycles MAX_CYCLES]\n            [--workspace WORKSPACE]\n            [n_or_prompt] [prompt]\n\nHCLI \u2014 autonomous local model engineering\n\npositional arguments:\n  n_or_prompt           Number of runtimes (1-8), 'max', or immediate mission\n                        prompt\n  prompt                Immediate mission prompt (when N is supplied\n                        positionally)\n\noptions:\n  -h, --help            show this help message and exit\n  --task TASK           (legacy) mission text\n  --task-file TASK_FILE\n                        (legacy) path to mission file\n  --model MODEL         Path to GGUF model\n  --debug               Enable debug output\n  --max-turns MAX_TURNS\n   "
+    },
+    "importtime_hcli_cumulative_us": 109854,
+    "importtime_controller_cumulative_us": 98771,
+    "hcli_modules": [
+      {
+        "self_us": 1240,
+        "cumulative_us": 9950,
+        "name": "hcli.cli",
+        "depth": 0
+      },
+      {
+        "self_us": 244,
+        "cumulative_us": 244,
+        "name": "hcli.workspace",
+        "depth": 0
+      },
+      {
+        "self_us": 3416,
+        "cumulative_us": 8410,
+        "name": "hcli.context_budget",
+        "depth": 0
+      },
+      {
+        "self_us": 957,
+        "cumulative_us": 9367,
+        "name": "hcli.config",
+        "depth": 0
+      },
+      {
+        "self_us": 4578,
+        "cumulative_us": 4578,
+        "name": "hcli.resources",
+        "depth": 0
+      },
+      {
+        "self_us": 6046,
+        "cumulative_us": 10623,
+        "name": "hcli.backends",
+        "depth": 0
+      },
+      {
+        "self_us": 927,
+        "cumulative_us": 927,
+        "name": "hcli.events",
+        "depth": 0
+      },
+      {
+        "self_us": 2760,
+        "cumulative_us": 2760,
+        "name": "hcli.workunit",
+        "depth": 0
+      },
+      {
+        "self_us": 5882,
+        "cumulative_us": 8641,
+        "name": "hcli.goal",
+        "depth": 0
+      },
+      {
+        "self_us": 4675,
+        "cumulative_us": 5107,
+        "name": "hcli.machine",
+        "depth": 0
+      },
+      {
+        "self_us": 5214,
+        "cumulative_us": 10368,
+        "name": "hcli.runtime",
+        "depth": 0
+      },
+      {
+        "self_us": 10594,
+        "cumulative_us": 49012,
+        "name": "hcli.engine",
+        "depth": 0
+      },
+      {
+        "self_us": 1815,
+        "cumulative_us": 1815,
+        "name": "hcli.dag_store",
+        "depth": 0
+      },
+      {
+        "self_us": 1816,
+        "cumulative_us": 3630,
+        "name": "hcli.max_policy",
+        "depth": 0
+      },
+      {
+        "self_us": 865,
+        "cumulative_us": 865,
+        "name": "hcli.report_compiler",
+        "depth": 0
+      },
+      {
+        "self_us": 1893,
+        "cumulative_us": 2757,
+        "name": "hcli.executors",
+        "depth": 0
+      },
+      {
+        "self_us": 1792,
+        "cumulative_us": 2616,
+        "name": "hcli.scheduler",
+        "depth": 0
+      },
+      {
+        "self_us": 4780,
+        "cumulative_us": 11847,
+        "name": "hcli.mission",
+        "depth": 0
+      },
+      {
+        "self_us": 1713,
+        "cumulative_us": 1713,
+        "name": "hcli.models",
+        "depth": 0
+      },
+      {
+        "self_us": 389,
+        "cumulative_us": 389,
+        "name": "hcli.session",
+        "depth": 0
+      },
+      {
+        "self_us": 1348,
+        "cumulative_us": 1348,
+        "name": "hcli.steering",
+        "depth": 0
+      },
+      {
+        "self_us": 3551,
+        "cumulative_us": 98771,
+        "name": "hcli.controller",
+        "depth": 0
+      },
+      {
+        "self_us": 891,
+        "cumulative_us": 109854,
+        "name": "hcli",
+        "depth": 0
+      }
+    ],
+    "top_cumulative": [
+      {
+        "self_us": 891,
+        "cumulative_us": 109854,
+        "name": "hcli",
+        "depth": 0
+      },
+      {
+        "self_us": 3551,
+        "cumulative_us": 98771,
+        "name": "hcli.controller",
+        "depth": 0
+      },
+      {
+        "self_us": 10594,
+        "cumulative_us": 49012,
+        "name": "hcli.engine",
+        "depth": 0
+      },
+      {
+        "self_us": 639,
+        "cumulative_us": 14348,
+        "name": "urllib.request",
+        "depth": 0
+      },
+      {
+        "self_us": 4780,
+        "cumulative_us": 11847,
+        "name": "hcli.mission",
+        "depth": 0
+      },
+      {
+        "self_us": 6046,
+        "cumulative_us": 10623,
+        "name": "hcli.backends",
+        "depth": 0
+      },
+      {
+        "self_us": 5214,
+        "cumulative_us": 10368,
+        "name": "hcli.runtime",
+        "depth": 0
+      },
+      {
+        "self_us": 1240,
+        "cumulative_us": 9950,
+        "name": "hcli.cli",
+        "depth": 0
+      },
+      {
+        "self_us": 957,
+        "cumulative_us": 9367,
+        "name": "hcli.config",
+        "depth": 0
+      },
+      {
+        "self_us": 5882,
+        "cumulative_us": 8641,
+        "name": "hcli.goal",
+        "depth": 0
+      },
+      {
+        "self_us": 3416,
+        "cumulative_us": 8410,
+        "name": "hcli.context_budget",
+        "depth": 0
+      },
+      {
+        "self_us": 534,
+        "cumulative_us": 8379,
+        "name": "http.client",
+        "depth": 0
+      },
+      {
+        "self_us": 278,
+        "cumulative_us": 5364,
+        "name": "site",
+        "depth": 0
+      },
+      {
+        "self_us": 4675,
+        "cumulative_us": 5107,
+        "name": "hcli.machine",
+        "depth": 0
+      },
+      {
+        "self_us": 376,
+        "cumulative_us": 4994,
+        "name": "dataclasses",
+        "depth": 0
+      },
+      {
+        "self_us": 4578,
+        "cumulative_us": 4578,
+        "name": "hcli.resources",
+        "depth": 0
+      },
+      {
+        "self_us": 2633,
+        "cumulative_us": 4499,
+        "name": "inspect",
+        "depth": 0
+      },
+      {
+        "self_us": 475,
+        "cumulative_us": 3761,
+        "name": "sitecustomize",
+        "depth": 0
+      },
+      {
+        "self_us": 1816,
+        "cumulative_us": 3630,
+        "name": "hcli.max_policy",
+        "depth": 0
+      },
+      {
+        "self_us": 263,
+        "cumulative_us": 3569,
+        "name": "urllib.error",
+        "depth": 0
+      },
+      {
+        "self_us": 163,
+        "cumulative_us": 3473,
+        "name": "hashlib",
+        "depth": 0
+      },
+      {
+        "self_us": 457,
+        "cumulative_us": 3381,
+        "name": "shutil",
+        "depth": 0
+      },
+      {
+        "self_us": 288,
+        "cumulative_us": 3286,
+        "name": "re",
+        "depth": 0
+      },
+      {
+        "self_us": 161,
+        "cumulative_us": 3260,
+        "name": "email.parser",
+        "depth": 0
+      },
+      {
+        "self_us": 396,
+        "cumulative_us": 3102,
+        "name": "subprocess",
+        "depth": 0
+      }
+    ],
+    "row_count": 202
+  },
+  "thin_init_help": {
+    "wall": {
+      "repeats": 5,
+      "samples_s": [
+        0.04435974999796599,
+        0.04147962499700952,
+        0.04370774999551941,
+        0.04342845900100656,
+        0.04387883300660178
+      ],
+      "median_s": 0.04370774999551941,
+      "min_s": 0.04147962499700952,
+      "max_s": 0.04435974999796599,
+      "returncodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "help_text_ok": true,
+      "stdout_preview": "usage: hcli [-h] [--task TASK] [--task-file TASK_FILE] [--model MODEL]\n            [--debug] [--max-turns MAX_TURNS] [--max-cycles MAX_CYCLES]\n            [--workspace WORKSPACE]\n            [n_or_prompt] [prompt]\n\nHCLI \u2014 autonomous local model engineering\n\npositional arguments:\n  n_or_prompt           Number of runtimes (1-8), 'max', or immediate mission\n                        prompt\n  prompt                Immediate mission prompt (when N is supplied\n                        positionally)\n\noptions:\n  -h, --help            show this help message and exit\n  --task TASK           (legacy) mission text\n  --task-file TASK_FILE\n                        (legacy) path to mission file\n  --model MODEL         Path to GGUF model\n  --debug               Enable debug output\n  --max-turns MAX_TURNS\n   "
+    },
+    "importtime_hcli_cumulative_us": 12205,
+    "hcli_modules": [
+      {
+        "self_us": 1352,
+        "cumulative_us": 11252,
+        "name": "hcli.cli",
+        "depth": 0
+      },
+      {
+        "self_us": 953,
+        "cumulative_us": 12205,
+        "name": "hcli",
+        "depth": 0
+      }
+    ],
+    "sys_modules_hcli": [
+      "hcli",
+      "hcli.cli"
+    ]
+  },
+  "sys_modules_help": {
+    "systemexit": 0,
+    "hcli": [
+      "hcli",
+      "hcli.backends",
+      "hcli.cli",
+      "hcli.config",
+      "hcli.context_budget",
+      "hcli.controller",
+      "hcli.dag_store",
+      "hcli.engine",
+      "hcli.events",
+      "hcli.executors",
+      "hcli.goal",
+      "hcli.machine",
+      "hcli.max_policy",
+      "hcli.mission",
+      "hcli.models",
+      "hcli.report_compiler",
+      "hcli.resources",
+      "hcli.runtime",
+      "hcli.scheduler",
+      "hcli.session",
+      "hcli.steering",
+      "hcli.workspace",
+      "hcli.workunit"
+    ],
+    "heavy_present": {
+      "mlx": false,
+      "mlx.core": false,
+      "mlx_lm": false,
+      "torch": false,
+      "cv2": false,
+      "open3d": false,
+      "visionmcp": false,
+      "numpy": false,
+      "PIL": false,
+      "prompt_toolkit": false
+    },
+    "heavy_file": {},
+    "module_count": 201,
+    "modules": [
+      "__future__",
+      "__main__",
+      "_abc",
+      "_ast",
+      "_bisect",
+      "_blake2",
+      "_bz2",
+      "_codecs",
+      "_collections",
+      "_collections_abc",
+      "_colorize",
+      "_contextvars",
+      "_datetime",
+      "_frozen_importlib",
+      "_frozen_importlib_external",
+      "_functools",
+      "_hashlib",
+      "_heapq",
+      "_imp",
+      "_io",
+      "_json",
+      "_locale",
+      "_lzma",
+      "_opcode",
+      "_opcode_metadata",
+      "_operator",
+      "_posixsubprocess",
+      "_py_warnings",
+      "_queue",
+      "_random",
+      "_scproxy",
+      "_signal",
+      "_sitebuiltins",
+      "_socket",
+      "_sre",
+      "_ssl",
+      "_stat",
+      "_string",
+      "_struct",
+      "_thread",
+      "_tokenize",
+      "_types",
+      "_typing",
+      "_uuid",
+      "_warnings",
+      "_weakref",
+      "_weakrefset",
+      "_zstd",
+      "abc",
+      "annotationlib",
+      "argparse",
+      "ast",
+      "atexit",
+      "base64",
+      "binascii",
+      "bisect",
+      "builtins",
+      "bz2",
+      "codecs",
+      "codeop",
+      "collections",
+      "collections.abc",
+      "compression",
+      "compression._common",
+      "compression._common._streams",
+      "compression.zstd",
+      "compression.zstd._zstdfile",
+      "contextlib",
+      "copy",
+      "copyreg",
+      "dataclasses",
+      "datetime",
+      "dis",
+      "email",
+      "email._encoded_words",
+      "email._parseaddr",
+      "email._policybase",
+      "email.base64mime",
+      "email.charset",
+      "email.encoders",
+      "email.errors",
+      "email.feedparser",
+      "email.header",
+      "email.iterators",
+      "email.message",
+      "email.parser",
+      "email.quoprimime",
+      "email.utils",
+      "encodings",
+      "encodings.aliases",
+      "encodings.utf_8",
+      "enum",
+      "errno",
+      "fcntl",
+      "fnmatch",
+      "functools",
+      "genericpath",
+      "gettext",
+      "glob",
+      "grp",
+      "hashlib",
+      "hcli",
+      "hcli.backends",
+      "hcli.cli",
+      "hcli.config",
+      "hcli.context_budget",
+      "hcli.controller",
+      "hcli.dag_store",
+      "hcli.engine",
+      "hcli.events",
+      "hcli.executors",
+      "hcli.goal",
+      "hcli.machine",
+      "hcli.max_policy",
+      "hcli.mission",
+      "hcli.models",
+      "hcli.report_compiler",
+      "hcli.resources",
+      "hcli.runtime",
+      "hcli.scheduler",
+      "hcli.session",
+      "hcli.steering",
+      "hcli.workspace",
+      "hcli.workunit",
+      "heapq",
+      "http",
+      "http.client",
+      "importlib",
+      "importlib._abc",
+      "importlib._bootstrap",
+      "importlib._bootstrap_external",
+      "importlib.machinery",
+      "importlib.util",
+      "inspect",
+      "io",
+      "ipaddress",
+      "itertools",
+      "json",
+      "json.decoder",
+      "json.encoder",
+      "json.scanner",
+      "keyword",
+      "linecache",
+      "locale",
+      "logging",
+      "lzma",
+      "marshal",
+      "math",
+      "ntpath",
+      "opcode",
+      "operator",
+      "os",
+      "os.path",
+      "pathlib",
+      "pathlib._os",
+      "platform",
+      "posix",
+      "posixpath",
+      "pwd",
+      "queue",
+      "quopri",
+      "random",
+      "re",
+      "re._casefix",
+      "re._compiler",
+      "re._constants",
+      "re._parser",
+      "reprlib",
+      "select",
+      "selectors",
+      "shlex",
+      "shutil",
+      "signal",
+      "site",
+      "sitecustomize",
+      "socket",
+      "ssl",
+      "stat",
+      "string",
+      "struct",
+      "subprocess",
+      "sys",
+      "tempfile",
+      "textwrap",
+      "threading",
+      "time",
+      "token",
+      "tokenize",
+      "traceback",
+      "types",
+      "typing",
+      "urllib",
+      "urllib.error",
+      "urllib.parse",
+      "urllib.request",
+      "urllib.response",
+      "uuid",
+      "warnings",
+      "weakref",
+      "zipimport",
+      "zlib"
+    ],
+    "ok": true
+  },
+  "reachable_from_entrypoint": [
+    {
+      "module": "hcli",
+      "loaded_on_help": true,
+      "needed_for_help": true,
+      "capability": "package init (currently pulls Controller)",
+      "self_us": 891,
+      "cumulative_us": 109854,
+      "deferrable_on_help": false,
+      "paid_only_because_controller_imported_at_package_init": false
+    },
+    {
+      "module": "hcli.backends",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "runtime: llama-server / mlx_lm.server subprocess backends",
+      "self_us": 6046,
+      "cumulative_us": 10623,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.cli",
+      "loaded_on_help": true,
+      "needed_for_help": true,
+      "capability": "help-path: argparse, shim install, main()",
+      "self_us": 1240,
+      "cumulative_us": 9950,
+      "deferrable_on_help": false,
+      "paid_only_because_controller_imported_at_package_init": false
+    },
+    {
+      "module": "hcli.config",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "runtime: Config / context budget wiring",
+      "self_us": 957,
+      "cumulative_us": 9367,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.context_budget",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "runtime: llama.cpp slot arithmetic and preflight",
+      "self_us": 3416,
+      "cumulative_us": 8410,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.controller",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "app: Controller (mission + runtime + commands)",
+      "self_us": 3551,
+      "cumulative_us": 98771,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.dag_store",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "mission: DAG persistence",
+      "self_us": 1815,
+      "cumulative_us": 1815,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.engine",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "runtime: model completions, mutations, tool loop",
+      "self_us": 10594,
+      "cumulative_us": 49012,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.events",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "app: EventBus",
+      "self_us": 927,
+      "cumulative_us": 927,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.executors",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "mission: WorkUnit executors",
+      "self_us": 1893,
+      "cumulative_us": 2757,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.goal",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "mission: GoalCompiler / WorkerPacket",
+      "self_us": 5882,
+      "cumulative_us": 8641,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.machine",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "runtime: MemGate / Metal working-set admission",
+      "self_us": 4675,
+      "cumulative_us": 5107,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.max_policy",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "runtime: grok-pool / worker-equilibrium policy",
+      "self_us": 1816,
+      "cumulative_us": 3630,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.mission",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "mission: Mission loop / DAG dispatch",
+      "self_us": 4780,
+      "cumulative_us": 11847,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.models",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "app: ModelRegistry",
+      "self_us": 1713,
+      "cumulative_us": 1713,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.report_compiler",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "grok: backend report compaction",
+      "self_us": 865,
+      "cumulative_us": 865,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.resources",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "runtime: MutationLock / occupancy",
+      "self_us": 4578,
+      "cumulative_us": 4578,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.runtime",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "runtime: RuntimePool admission and ownership",
+      "self_us": 5214,
+      "cumulative_us": 10368,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.scheduler",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "mission: Scheduler",
+      "self_us": 1792,
+      "cumulative_us": 2616,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.session",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "app: SessionStore",
+      "self_us": 389,
+      "cumulative_us": 389,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.steering",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "mission: SteeringQueue",
+      "self_us": 1348,
+      "cumulative_us": 1348,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.workspace",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "app: Workspace root on disk",
+      "self_us": 244,
+      "cumulative_us": 244,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    },
+    {
+      "module": "hcli.workunit",
+      "loaded_on_help": true,
+      "needed_for_help": false,
+      "capability": "mission: WorkUnit state machine",
+      "self_us": 2760,
+      "cumulative_us": 2760,
+      "deferrable_on_help": true,
+      "paid_only_because_controller_imported_at_package_init": true
+    }
+  ],
+  "paid_only_because_controller_imported_at_package_init": [
+    "hcli.workspace",
+    "urllib",
+    "_contextvars",
+    "_py_warnings",
+    "warnings",
+    "math",
+    "_bisect",
+    "bisect",
+    "_random",
+    "random",
+    "tempfile",
+    "urllib.response",
+    "urllib.error",
+    "_struct",
+    "struct",
+    "binascii",
+    "base64",
+    "email",
+    "_hashlib",
+    "_blake2",
+    "hashlib",
+    "http",
+    "email.errors",
+    "_string",
+    "string",
+    "email.quoprimime",
+    "email.base64mime",
+    "quopri",
+    "email.encoders",
+    "email.charset",
+    "email.header",
+    "ipaddress",
+    "urllib.parse",
+    "email._parseaddr",
+    "email.utils",
+    "email._policybase",
+    "email.feedparser",
+    "email.parser",
+    "email._encoded_words",
+    "email.iterators",
+    "email.message",
+    "_socket",
+    "socket",
+    "_ssl",
+    "ssl",
+    "http.client",
+    "_scproxy",
+    "urllib.request",
+    "hcli.context_budget",
+    "hcli.config",
+    "shlex",
+    "signal",
+    "threading",
+    "msvcrt",
+    "_posixsubprocess",
+    "select",
+    "selectors",
+    "subprocess",
+    "codeop",
+    "traceback",
+    "_uuid",
+    "uuid",
+    "hcli.resources",
+    "hcli.backends",
+    "hcli.events",
+    "hcli.workunit",
+    "hcli.goal",
+    "atexit",
+    "_wmi",
+    "platform",
+    "hcli.machine",
+    "hcli.runtime",
+    "hcli.engine",
+    "hcli.dag_store",
+    "hcli.max_policy",
+    "_heapq",
+    "heapq",
+    "_queue",
+    "queue",
+    "hcli.report_compiler",
+    "hcli.executors",
+    "logging",
+    "hcli.scheduler",
+    "hcli.mission",
+    "hcli.models",
+    "hcli.session",
+    "hcli.steering",
+    "hcli.controller"
+  ],
+  "hcli_paid_only_because_controller": [
+    "hcli.backends",
+    "hcli.config",
+    "hcli.context_budget",
+    "hcli.controller",
+    "hcli.dag_store",
+    "hcli.engine",
+    "hcli.events",
+    "hcli.executors",
+    "hcli.goal",
+    "hcli.machine",
+    "hcli.max_policy",
+    "hcli.mission",
+    "hcli.models",
+    "hcli.report_compiler",
+    "hcli.resources",
+    "hcli.runtime",
+    "hcli.scheduler",
+    "hcli.session",
+    "hcli.steering",
+    "hcli.workspace",
+    "hcli.workunit"
+  ],
+  "not_loaded_on_help": [
+    "hcli.__main__",
+    "hcli.app",
+    "hcli.commands",
+    "hcli.context",
+    "hcli.grok_bridge",
+    "hcli.index",
+    "hcli.ledger",
+    "hcli.mutation",
+    "hcli.tui",
+    "hcli.verifier_pipeline"
+  ],
+  "isolated_import_costs": {
+    "hcli.cli": {
+      "module": "hcli.cli",
+      "returncode": 0,
+      "wall_s": 0.037151042008190416,
+      "cumulative_us": 11295,
+      "self_us": 1254,
+      "stderr_tail": ""
+    },
+    "hcli.controller": {
+      "module": "hcli.controller",
+      "returncode": 0,
+      "wall_s": 0.14155729100457393,
+      "cumulative_us": 111258,
+      "self_us": 3921,
+      "stderr_tail": ""
+    },
+    "hcli.engine": {
+      "module": "hcli.engine",
+      "returncode": 0,
+      "wall_s": 0.11326212499989197,
+      "cumulative_us": 84068,
+      "self_us": 10653,
+      "stderr_tail": ""
+    },
+    "hcli.backends": {
+      "module": "hcli.backends",
+      "returncode": 0,
+      "wall_s": 0.08119125000666827,
+      "cumulative_us": 52312,
+      "self_us": 7037,
+      "stderr_tail": ""
+    },
+    "hcli.runtime": {
+      "module": "hcli.runtime",
+      "returncode": 0,
+      "wall_s": 0.09100916600436904,
+      "cumulative_us": 60655,
+      "self_us": 5258,
+      "stderr_tail": ""
+    },
+    "hcli.machine": {
+      "module": "hcli.machine",
+      "returncode": 0,
+      "wall_s": 0.04481691699766088,
+      "cumulative_us": 19301,
+      "self_us": 5327,
+      "stderr_tail": ""
+    },
+    "hcli.context_budget": {
+      "module": "hcli.context_budget",
+      "returncode": 0,
+      "wall_s": 0.06417254099505953,
+      "cumulative_us": 36606,
+      "self_us": 3511,
+      "stderr_tail": ""
+    },
+    "hcli.mission": {
+      "module": "hcli.mission",
+      "returncode": 0,
+      "wall_s": 0.14064275000419002,
+      "cumulative_us": 108421,
+      "self_us": 5442,
+      "stderr_tail": ""
+    },
+    "hcli.goal": {
+      "module": "hcli.goal",
+      "returncode": 0,
+      "wall_s": 0.08533891699335072,
+      "cumulative_us": 58060,
+      "self_us": 7260,
+      "stderr_tail": ""
+    },
+    "hcli.resources": {
+      "module": "hcli.resources",
+      "returncode": 0,
+      "wall_s": 0.04863183299312368,
+      "cumulative_us": 21574,
+      "self_us": 5976,
+      "stderr_tail": ""
+    }
+  },
+  "urllib_request_isolated": {
+    "module": "urllib.request",
+    "returncode": 0,
+    "wall_s": 0.05427745800989214,
+    "cumulative_us": 28137,
+    "self_us": 997
+  },
+  "deferrals": [
+    {
+      "id": "D1_package_init_controller",
+      "move": "Stop importing Controller, Workspace, Event, EventBus in tools/haider/hcli/__init__.py (lines 3-5). Keep `from .cli import parse_haider_args, main`. Expose the rest via PEP 562 __getattr__ so `from hcli import Controller` still works.",
+      "behind": "App construction / `from hcli import Controller` / tests that need Controller",
+      "why_help_does_not_need_it": "tools/haider/hcli/cli.py:242 imports App only after parse_haider_args(); argparse --help sys.exits first. tools/haider/hcli/__main__.py imports hcli.cli.main, but package __init__ currently still runs the Controller import.",
+      "measured_wall_saving_s": 0.09464525000657886,
+      "measured_importtime_saving_us": 97649,
+      "measured_how": "Copied the package, replaced __init__.py with a thin init that does not import Controller, re-ran python3 -m hcli --help. Saving is baseline median wall minus thin median wall, and hcli cumulative_us full minus thin. Not additive with D2/D3."
+    },
+    {
+      "id": "D2_controller_engine_runtime_mission",
+      "move": "In tools/haider/hcli/controller.py, move module-level `from .engine import Engine`, `from .runtime import RuntimePool`, `from .mission import Mission` (and the urllib.request import used by _http_json) into the methods that construct those objects.",
+      "behind": "Controller.__init__ / execute / mission start \u2014 not argparse",
+      "why_help_does_not_need_it": "Controller is not required to print --help at all (see D1).",
+      "measured_wall_saving_s": null,
+      "measured_importtime_saving_us": 98771,
+      "measured_how": "Once D1 lands, --help never imports Controller, so D2 does not change --help. The isolated `import hcli.engine` (empty package init) and the Controller cumulative_us on the current --help path are the cost D2 removes from `import hcli.controller` and from any entry that still imports Controller eagerly. Do not add D1+D2.",
+      "isolated_engine": {
+        "module": "hcli.engine",
+        "returncode": 0,
+        "wall_s": 0.11326212499989197,
+        "cumulative_us": 84068,
+        "self_us": 10653,
+        "stderr_tail": ""
+      },
+      "isolated_runtime": {
+        "module": "hcli.runtime",
+        "returncode": 0,
+        "wall_s": 0.09100916600436904,
+        "cumulative_us": 60655,
+        "self_us": 5258,
+        "stderr_tail": ""
+      },
+      "isolated_mission": {
+        "module": "hcli.mission",
+        "returncode": 0,
+        "wall_s": 0.14064275000419002,
+        "cumulative_us": 108421,
+        "self_us": 5442,
+        "stderr_tail": ""
+      },
+      "isolated_backends": {
+        "module": "hcli.backends",
+        "returncode": 0,
+        "wall_s": 0.08119125000666827,
+        "cumulative_us": 52312,
+        "self_us": 7037,
+        "stderr_tail": ""
+      }
+    },
+    {
+      "id": "D3_urllib_request",
+      "move": "Defer `import urllib.request` in controller.py, engine.py, runtime.py, context_budget.py, backends.py until the first HTTP call to a local runtime.",
+      "behind": "runtime HTTP (llama-server / mlx_lm.server /health, completions)",
+      "why_help_does_not_need_it": "--help does not talk to a backend.",
+      "measured_wall_saving_s": null,
+      "measured_importtime_saving_us": 28137,
+      "measured_how": "Cold `python3 -X importtime -c 'import urllib.request'` in a fresh process. The process wall includes interpreter startup and is NOT a --help saving; cumulative_us is the stdlib cost. Overlaps D1/D2: on the current --help path urllib.request is imported because Controller\u2192Engine/context_budget import it. After D1, --help no longer pays this.",
+      "isolated": {
+        "module": "urllib.request",
+        "returncode": 0,
+        "wall_s": 0.05427745800989214,
+        "cumulative_us": 28137,
+        "self_us": 997
+      }
+    },
+    {
+      "id": "D4_already_lazy_do_not_touch",
+      "move": "Nothing. These are already behind the capability that uses them.",
+      "behind": "already deferred",
+      "modules": [
+        "hcli.app (cli.main after argparse)",
+        "hcli.tui (App interactive; prompt_toolkit inside tui.py)",
+        "hcli.commands (Controller.handle_command)",
+        "hcli.grok_bridge (commands / executors / mission / scheduler)",
+        "hcli.ledger (controller mission path, TYPE_CHECKING in steering)",
+        "hcli.verifier_pipeline (executors / ledger)",
+        "tools/headless/metal_budget.py (machine._metal_budget_module via importlib)"
+      ],
+      "measured_wall_saving_s": 0.0,
+      "measured_importtime_saving_us": 0,
+      "measured_how": "Absent from --help importtime and from sys.modules after --help."
+    }
+  ],
+  "total_help_saving": {
+    "wall_s": 0.09464525000657886,
+    "importtime_us": 97649,
+    "rule": "Total --help saving is D1 only. D2 and D3 are subsets of the Controller graph D1 removes from this path. Adding them to D1 double-counts. D4 is already free."
+  },
+  "heavy_packages": {
+    "mlx": {
+      "eager_on_help": false,
+      "in_importtime": false,
+      "in_sys_modules_any_probe": false,
+      "ast_import_statements": [],
+      "import_chain": null,
+      "verdict": "NO",
+      "why": "no import statement in tools/haider/hcli/*.py (AST) and name absent from -X importtime and from sys.modules after --help"
+    },
+    "torch": {
+      "eager_on_help": false,
+      "in_importtime": false,
+      "in_sys_modules_any_probe": false,
+      "ast_import_statements": [],
+      "import_chain": null,
+      "verdict": "NO",
+      "why": "no import statement in tools/haider/hcli/*.py (AST) and name absent from -X importtime and from sys.modules after --help"
+    },
+    "cv2": {
+      "eager_on_help": false,
+      "in_importtime": false,
+      "in_sys_modules_any_probe": false,
+      "ast_import_statements": [],
+      "import_chain": null,
+      "verdict": "NO",
+      "why": "no import statement in tools/haider/hcli/*.py (AST) and name absent from -X importtime and from sys.modules after --help"
+    },
+    "open3d": {
+      "eager_on_help": false,
+      "in_importtime": false,
+      "in_sys_modules_any_probe": false,
+      "ast_import_statements": [],
+      "import_chain": null,
+      "verdict": "NO",
+      "why": "no import statement in tools/haider/hcli/*.py (AST) and name absent from -X importtime and from sys.modules after --help"
+    },
+    "visionmcp": {
+      "eager_on_help": false,
+      "in_importtime": false,
+      "in_sys_modules_any_probe": false,
+      "ast_import_statements": [],
+      "import_chain": null,
+      "verdict": "NO",
+      "why": "no import statement in tools/haider/hcli/*.py (AST) and name absent from -X importtime and from sys.modules after --help"
+    }
+  },
+  "mlx_subprocess_not_import": {
+    "imports_mlx": false,
+    "spawns_mlx_lm_server": true,
+    "cited": "tools/haider/hcli/backends.py:96",
+    "when": "MlxServerBackend.start / identity, not at import and not on --help"
+  },
+  "heavy_ast_imports": [
+    {
+      "module": "hcli.tui",
+      "file": "tools/haider/hcli/tui.py",
+      "kind": "lazy",
+      "imported": "prompt_toolkit"
+    },
+    {
+      "module": "hcli.tui",
+      "file": "tools/haider/hcli/tui.py",
+      "kind": "lazy",
+      "imported": "prompt_toolkit.history"
+    }
+  ],
+  "adversarial_heavy_probe": {
+    "visionmcp_src": "/Users/scammermike/Downloads/hawking/visionmcp/src",
+    "probes": [
+      {
+        "label": "sys.executable",
+        "python": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "ran": true,
+        "available": {
+          "mlx": {
+            "importable": false,
+            "origin": null
+          },
+          "mlx.core": {
+            "importable": false,
+            "origin": null
+          },
+          "mlx_lm": {
+            "importable": false,
+            "origin": null
+          },
+          "torch": {
+            "importable": false,
+            "origin": null
+          },
+          "cv2": {
+            "importable": false,
+            "origin": null
+          },
+          "open3d": {
+            "importable": false,
+            "origin": null
+          },
+          "visionmcp": {
+            "importable": true,
+            "origin": "/Users/scammermike/Downloads/hawking/visionmcp/src/visionmcp/__init__.py"
+          },
+          "numpy": {
+            "importable": true,
+            "origin": "/opt/homebrew/lib/python3.14/site-packages/numpy/__init__.py"
+          },
+          "PIL": {
+            "importable": true,
+            "origin": "/opt/homebrew/lib/python3.14/site-packages/PIL/__init__.py"
+          },
+          "prompt_toolkit": {
+            "importable": false,
+            "origin": null
+          }
+        },
+        "dump_ok": true,
+        "dump_error": null,
+        "heavy_in_sys_modules": {
+          "mlx": false,
+          "mlx.core": false,
+          "mlx_lm": false,
+          "torch": false,
+          "cv2": false,
+          "open3d": false,
+          "visionmcp": false,
+          "numpy": false,
+          "PIL": false,
+          "prompt_toolkit": false
+        },
+        "eager_heavy": {},
+        "hcli_modules": [
+          "hcli",
+          "hcli.backends",
+          "hcli.cli",
+          "hcli.config",
+          "hcli.context_budget",
+          "hcli.controller",
+          "hcli.dag_store",
+          "hcli.engine",
+          "hcli.events",
+          "hcli.executors",
+          "hcli.goal",
+          "hcli.machine",
+          "hcli.max_policy",
+          "hcli.mission",
+          "hcli.models",
+          "hcli.report_compiler",
+          "hcli.resources",
+          "hcli.runtime",
+          "hcli.scheduler",
+          "hcli.session",
+          "hcli.steering",
+          "hcli.workspace",
+          "hcli.workunit"
+        ],
+        "pythonpath_had_visionmcp": true
+      },
+      {
+        "label": "grok-vision (torch/cv2/open3d)",
+        "python": "/Users/scammermike/.grok-vision/bin/python",
+        "ran": true,
+        "available": {
+          "mlx": {
+            "importable": true,
+            "origin": null
+          },
+          "mlx.core": {
+            "importable": true,
+            "origin": "/Users/scammermike/.grok-vision/lib/python3.12/site-packages/mlx/core.cpython-312-darwin.so"
+          },
+          "mlx_lm": {
+            "importable": true,
+            "origin": "/Users/scammermike/.grok-vision/lib/python3.12/site-packages/mlx_lm/__init__.py"
+          },
+          "torch": {
+            "importable": true,
+            "origin": "/Users/scammermike/.grok-vision/lib/python3.12/site-packages/torch/__init__.py"
+          },
+          "cv2": {
+            "importable": true,
+            "origin": "/Users/scammermike/.grok-vision/lib/python3.12/site-packages/cv2/__init__.py"
+          },
+          "open3d": {
+            "importable": true,
+            "origin": "/Users/scammermike/.grok-vision/lib/python3.12/site-packages/open3d/__init__.py"
+          },
+          "visionmcp": {
+            "importable": true,
+            "origin": "/Users/scammermike/Downloads/hawking/visionmcp/src/visionmcp/__init__.py"
+          },
+          "numpy": {
+            "importable": true,
+            "origin": "/Users/scammermike/.grok-vision/lib/python3.12/site-packages/numpy/__init__.py"
+          },
+          "PIL": {
+            "importable": true,
+            "origin": "/Users/scammermike/.grok-vision/lib/python3.12/site-packages/PIL/__init__.py"
+          },
+          "prompt_toolkit": {
+            "importable": false,
+            "origin": null
+          }
+        },
+        "dump_ok": true,
+        "dump_error": null,
+        "heavy_in_sys_modules": {
+          "mlx": false,
+          "mlx.core": false,
+          "mlx_lm": false,
+          "torch": false,
+          "cv2": false,
+          "open3d": false,
+          "visionmcp": false,
+          "numpy": false,
+          "PIL": false,
+          "prompt_toolkit": false
+        },
+        "eager_heavy": {},
+        "hcli_modules": [
+          "hcli",
+          "hcli.backends",
+          "hcli.cli",
+          "hcli.config",
+          "hcli.context_budget",
+          "hcli.controller",
+          "hcli.dag_store",
+          "hcli.engine",
+          "hcli.events",
+          "hcli.executors",
+          "hcli.goal",
+          "hcli.machine",
+          "hcli.max_policy",
+          "hcli.mission",
+          "hcli.models",
+          "hcli.report_compiler",
+          "hcli.resources",
+          "hcli.runtime",
+          "hcli.scheduler",
+          "hcli.session",
+          "hcli.steering",
+          "hcli.workspace",
+          "hcli.workunit"
+        ],
+        "pythonpath_had_visionmcp": true
+      },
+      {
+        "label": "hawking-aider (numpy/PIL/prompt_toolkit)",
+        "python": "/Users/scammermike/.venvs/hawking-aider/bin/python3",
+        "ran": true,
+        "available": {
+          "mlx": {
+            "importable": false,
+            "origin": null
+          },
+          "mlx.core": {
+            "importable": false,
+            "origin": null
+          },
+          "mlx_lm": {
+            "importable": false,
+            "origin": null
+          },
+          "torch": {
+            "importable": false,
+            "origin": null
+          },
+          "cv2": {
+            "importable": false,
+            "origin": null
+          },
+          "open3d": {
+            "importable": false,
+            "origin": null
+          },
+          "visionmcp": {
+            "importable": true,
+            "origin": "/Users/scammermike/Downloads/hawking/visionmcp/src/visionmcp/__init__.py"
+          },
+          "numpy": {
+            "importable": true,
+            "origin": "/Users/scammermike/.venvs/hawking-aider/lib/python3.12/site-packages/numpy/__init__.py"
+          },
+          "PIL": {
+            "importable": true,
+            "origin": "/Users/scammermike/.venvs/hawking-aider/lib/python3.12/site-packages/PIL/__init__.py"
+          },
+          "prompt_toolkit": {
+            "importable": true,
+            "origin": "/Users/scammermike/.venvs/hawking-aider/lib/python3.12/site-packages/prompt_toolkit/__init__.py"
+          }
+        },
+        "dump_ok": true,
+        "dump_error": null,
+        "heavy_in_sys_modules": {
+          "mlx": false,
+          "mlx.core": false,
+          "mlx_lm": false,
+          "torch": false,
+          "cv2": false,
+          "open3d": false,
+          "visionmcp": false,
+          "numpy": false,
+          "PIL": false,
+          "prompt_toolkit": false
+        },
+        "eager_heavy": {},
+        "hcli_modules": [
+          "hcli",
+          "hcli.backends",
+          "hcli.cli",
+          "hcli.config",
+          "hcli.context_budget",
+          "hcli.controller",
+          "hcli.dag_store",
+          "hcli.engine",
+          "hcli.events",
+          "hcli.executors",
+          "hcli.goal",
+          "hcli.machine",
+          "hcli.max_policy",
+          "hcli.mission",
+          "hcli.models",
+          "hcli.report_compiler",
+          "hcli.resources",
+          "hcli.runtime",
+          "hcli.scheduler",
+          "hcli.session",
+          "hcli.steering",
+          "hcli.workspace",
+          "hcli.workunit"
+        ],
+        "pythonpath_had_visionmcp": true
+      }
+    ]
+  },
+  "ast": {
+    "module_count": 33,
+    "modules": {
+      "hcli": {
+        "file": "tools/haider/hcli/__init__.py",
+        "bytes": 262,
+        "sha256": "5b22e5de56aee137673ae164110fb687311428f66794d67b9ba5dfe8e42b466d",
+        "eager_imports": [
+          ".cli",
+          ".workspace",
+          ".controller",
+          ".events"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.__main__": {
+        "file": "tools/haider/hcli/__main__.py",
+        "bytes": 86,
+        "sha256": "5e6030836f3887617683db2e78ed3b28aed2f9a96f389b6bd9202e707ea538d6",
+        "eager_imports": [
+          "hcli.cli",
+          "sys"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.app": {
+        "file": "tools/haider/hcli/app.py",
+        "bytes": 4032,
+        "sha256": "d876c3d84e3a3a67cfb4160751bf45d4d87bf68518a0e3a7fa3d8c133bae9a5e",
+        "eager_imports": [
+          "__future__",
+          "os",
+          "sys",
+          "typing",
+          ".controller",
+          ".tui",
+          ".events",
+          ".workspace",
+          ".models"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.backends": {
+        "file": "tools/haider/hcli/backends.py",
+        "bytes": 54359,
+        "sha256": "ec89e893ef1a8f53d88e54a1fa47da9c2ac3936ca3985fc6fa1ad3d2039e7773",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "re",
+          "shutil",
+          "signal",
+          "subprocess",
+          "tempfile",
+          "time",
+          "urllib.error",
+          "urllib.request",
+          "abc",
+          "copy",
+          "dataclasses",
+          "typing",
+          ".context_budget",
+          ".resources"
+        ],
+        "lazy_imports": [
+          "socket"
+        ]
+      },
+      "hcli.cli": {
+        "file": "tools/haider/hcli/cli.py",
+        "bytes": 8569,
+        "sha256": "cbb5d535e1ba3d3bb057274c995e24397a70a17319907a552e0cf225556001b1",
+        "eager_imports": [
+          "__future__",
+          "argparse",
+          "json",
+          "os",
+          "shutil",
+          "sys",
+          "datetime",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": [
+          ".app"
+        ]
+      },
+      "hcli.commands": {
+        "file": "tools/haider/hcli/commands.py",
+        "bytes": 32399,
+        "sha256": "fb654b96aed96f43a15e30041032a00c01ca4e0eb0c18d677a89b2e95f9b55e6",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "time",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": [
+          ".grok_bridge",
+          "contextlib",
+          ".grok_bridge"
+        ]
+      },
+      "hcli.config": {
+        "file": "tools/haider/hcli/config.py",
+        "bytes": 4699,
+        "sha256": "aa1dcf02747150822aaeb793b5f5494d12ee81455e53e27c0c90b0e283544852",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "typing",
+          ".context_budget"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.context": {
+        "file": "tools/haider/hcli/context.py",
+        "bytes": 456,
+        "sha256": "16aa91fbfa3a3ae28e38195f9525f416aaf089fe6d823561b8fece1c44f2f27e",
+        "eager_imports": [
+          "__future__",
+          ".goal"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.context_budget": {
+        "file": "tools/haider/hcli/context_budget.py",
+        "bytes": 22610,
+        "sha256": "e908f29c4c7b511c489c3f59c0c837ae67d7839bea643350ac840827a6362f04",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "struct",
+          "urllib.error",
+          "urllib.request",
+          "dataclasses",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.controller": {
+        "file": "tools/haider/hcli/controller.py",
+        "bytes": 38455,
+        "sha256": "707d1417d3b611c7c7556cd40bba6cb1c04adc67d03458f10957b08fd9ee28e1",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "re",
+          "time",
+          "urllib.error",
+          "urllib.request",
+          "pathlib",
+          "typing",
+          ".config",
+          ".engine",
+          ".events",
+          ".max_policy",
+          ".mission",
+          ".models",
+          ".resources",
+          ".runtime",
+          ".session",
+          ".steering",
+          ".workunit",
+          ".workspace"
+        ],
+        "lazy_imports": [
+          ".commands",
+          ".max_policy",
+          ".goal",
+          ".ledger",
+          ".mission",
+          ".goal",
+          ".ledger",
+          ".mission",
+          ".mission",
+          ".ledger"
+        ]
+      },
+      "hcli.dag_store": {
+        "file": "tools/haider/hcli/dag_store.py",
+        "bytes": 14717,
+        "sha256": "89b8f562ec9e8540feaa62f13d7e490eb1e021deaefac9340768b4019c20f472",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "uuid",
+          "pathlib",
+          "typing",
+          ".workunit"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.engine": {
+        "file": "tools/haider/hcli/engine.py",
+        "bytes": 110540,
+        "sha256": "d40a4863aa5eb1db2dd262b1081f00c545ed2823a4f112a0907aef972e412966",
+        "eager_imports": [
+          "__future__",
+          "ast",
+          "hashlib",
+          "json",
+          "os",
+          "re",
+          "shlex",
+          "signal",
+          "subprocess",
+          "sys",
+          "threading",
+          "time",
+          "traceback",
+          "urllib.error",
+          "urllib.request",
+          "uuid",
+          "datetime",
+          "pathlib",
+          "typing",
+          ".backends",
+          ".config",
+          ".resources",
+          ".context_budget",
+          ".events",
+          ".goal",
+          ".runtime",
+          ".workspace"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.events": {
+        "file": "tools/haider/hcli/events.py",
+        "bytes": 3074,
+        "sha256": "cae1bccaa745ca866c752e5a043d53a39c5ec9110ec547a9ecced8615ff12ef6",
+        "eager_imports": [
+          "__future__",
+          "dataclasses",
+          "typing"
+        ],
+        "lazy_imports": [
+          "inspect",
+          "time"
+        ]
+      },
+      "hcli.executors": {
+        "file": "tools/haider/hcli/executors.py",
+        "bytes": 13726,
+        "sha256": "2b319013598ff613fdb5c68d8c3daa9f9bf524acc2487302a6dbad4ac6af1000",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "subprocess",
+          "sys",
+          "pathlib",
+          "typing",
+          ".report_compiler",
+          "inspect",
+          "threading",
+          "typing",
+          ".engine",
+          ".goal"
+        ],
+        "lazy_imports": [
+          ".grok_bridge",
+          ".verifier_pipeline"
+        ]
+      },
+      "hcli.goal": {
+        "file": "tools/haider/hcli/goal.py",
+        "bytes": 45222,
+        "sha256": "e792f945bc1817e33ee59c8cf26f1e12fad84dd1d59cef050a8dc6b97644aa22",
+        "eager_imports": [
+          "__future__",
+          "dataclasses",
+          "hashlib",
+          "json",
+          "re",
+          "pathlib",
+          "typing",
+          ".context_budget",
+          ".workunit"
+        ],
+        "lazy_imports": [
+          ".dag_store",
+          ".dag_store"
+        ]
+      },
+      "hcli.grok_bridge": {
+        "file": "tools/haider/hcli/grok_bridge.py",
+        "bytes": 52337,
+        "sha256": "4e73be6a669497c27fd30ac30c94cc674e23b550c28f43eed41824d0e9e23844",
+        "eager_imports": [
+          "__future__",
+          "itertools",
+          "json",
+          "logging",
+          "os",
+          "re",
+          "shutil",
+          "signal",
+          "subprocess",
+          "threading",
+          "time",
+          "contextlib",
+          "dataclasses",
+          "datetime",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": [
+          "ctypes",
+          "ctypes.util",
+          "ctypes",
+          "ctypes",
+          ".report_compiler"
+        ]
+      },
+      "hcli.index": {
+        "file": "tools/haider/hcli/index.py",
+        "bytes": 1713,
+        "sha256": "dbce195e73e4b4deb8fd57469d7e07e1748b4c9424a755e586cd56e2d0134485",
+        "eager_imports": [
+          "__future__",
+          "os",
+          "re",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.ledger": {
+        "file": "tools/haider/hcli/ledger.py",
+        "bytes": 35185,
+        "sha256": "2de8c1ab93247a97f396c16f476ef0bcffffaa09bd9611a12dc4da1171b3d4e9",
+        "eager_imports": [
+          "__future__",
+          "hashlib",
+          "json",
+          "os",
+          "re",
+          "subprocess",
+          "dataclasses",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": [
+          ".steering",
+          ".verifier_pipeline"
+        ]
+      },
+      "hcli.machine": {
+        "file": "tools/haider/hcli/machine.py",
+        "bytes": 34860,
+        "sha256": "606a0f981d53254af3befd6722ba8d7ae8306e182a46069946ad5819cc6a706f",
+        "eager_imports": [
+          "__future__",
+          "importlib.util",
+          "json",
+          "os",
+          "platform",
+          "re",
+          "subprocess",
+          "time",
+          "dataclasses",
+          "datetime",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.max_policy": {
+        "file": "tools/haider/hcli/max_policy.py",
+        "bytes": 12136,
+        "sha256": "543376a097d1320e3c3f4918492cfeaab29a95815c092333731025c18f747f69",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "re",
+          "subprocess",
+          "time",
+          "datetime",
+          "pathlib",
+          "typing",
+          ".dag_store"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.mission": {
+        "file": "tools/haider/hcli/mission.py",
+        "bytes": 46368,
+        "sha256": "b6a2761c89c2e161d91c3b2ad9ba1a0ccdd5904f6e453206b9da7603582f594a",
+        "eager_imports": [
+          "__future__",
+          "hashlib",
+          "json",
+          "os",
+          "queue",
+          "signal",
+          "sys",
+          "threading",
+          "time",
+          "uuid",
+          "pathlib",
+          "typing",
+          ".dag_store",
+          ".executors",
+          ".goal",
+          ".resources",
+          ".scheduler",
+          ".workunit"
+        ],
+        "lazy_imports": [
+          ".workspace",
+          ".grok_bridge",
+          ".grok_bridge",
+          ".steering",
+          ".executors",
+          ".executors",
+          ".grok_bridge",
+          ".grok_bridge",
+          ".backends",
+          ".machine"
+        ]
+      },
+      "hcli.models": {
+        "file": "tools/haider/hcli/models.py",
+        "bytes": 12992,
+        "sha256": "bc7cfc9dd9eabdaa79f6aa1b69ca26da2eb4184a8b81cffeb69e83548b7c8bb4",
+        "eager_imports": [
+          "__future__",
+          "os",
+          "re",
+          "struct",
+          "dataclasses",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.mutation": {
+        "file": "tools/haider/hcli/mutation.py",
+        "bytes": 7669,
+        "sha256": "3f151a2f0e1487aaad703a388396417dd2046c057d99443b95234d587e04696e",
+        "eager_imports": [
+          "__future__",
+          "hashlib",
+          "json",
+          "os",
+          "re",
+          "subprocess",
+          "sys",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.report_compiler": {
+        "file": "tools/haider/hcli/report_compiler.py",
+        "bytes": 5189,
+        "sha256": "5a85492d0f31e3899c6ca013eb2885dfcfa7f392f22f02037792f8303d3b2d94",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "re",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.resources": {
+        "file": "tools/haider/hcli/resources.py",
+        "bytes": 41346,
+        "sha256": "06d63ce45bf910535b41cf483e8efa067d086908d2cb7843de6748c1dc8beabc",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "re",
+          "subprocess",
+          "threading",
+          "time",
+          "uuid",
+          "collections",
+          "dataclasses",
+          "enum",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": [
+          ".max_policy",
+          "ctypes",
+          "ctypes.util"
+        ]
+      },
+      "hcli.runtime": {
+        "file": "tools/haider/hcli/runtime.py",
+        "bytes": 46061,
+        "sha256": "949b9e415e144bb4a48effa7c2da339225adfefd5319880f2c242b8e892c58d0",
+        "eager_imports": [
+          "__future__",
+          "atexit",
+          "json",
+          "os",
+          "shlex",
+          "signal",
+          "subprocess",
+          "threading",
+          "time",
+          "urllib.request",
+          "uuid",
+          "weakref",
+          "dataclasses",
+          "pathlib",
+          "typing",
+          ".backends",
+          ".context_budget",
+          ".machine",
+          ".resources"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.scheduler": {
+        "file": "tools/haider/hcli/scheduler.py",
+        "bytes": 19052,
+        "sha256": "9d35f6067467de53160a775eeb38f95322485ad21f82f226e41a87d9098984a4",
+        "eager_imports": [
+          "__future__",
+          "itertools",
+          "hashlib",
+          "json",
+          "logging",
+          "time",
+          "pathlib",
+          "typing",
+          ".dag_store",
+          ".resources",
+          ".workunit"
+        ],
+        "lazy_imports": [
+          ".grok_bridge"
+        ]
+      },
+      "hcli.session": {
+        "file": "tools/haider/hcli/session.py",
+        "bytes": 2139,
+        "sha256": "18da4c3596e06a4191a97b6f3830c501d01d00fdad3aab31f4d5aaad9e1d0511",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "uuid",
+          "datetime",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.steering": {
+        "file": "tools/haider/hcli/steering.py",
+        "bytes": 6276,
+        "sha256": "b2eb5cd431c4a369aa4667106bbdc478301b8491863f71135c10a6c02db7deec",
+        "eager_imports": [
+          "__future__",
+          "json",
+          "os",
+          "re",
+          "time",
+          "uuid",
+          "dataclasses",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.tui": {
+        "file": "tools/haider/hcli/tui.py",
+        "bytes": 5717,
+        "sha256": "d80da42edc5dd1a68df70bd33ec2cdd6759cdd24ea0f1bcfcc4e0d20f2d2e25b",
+        "eager_imports": [
+          "__future__",
+          "os",
+          "re",
+          "sys",
+          "typing",
+          ".events"
+        ],
+        "lazy_imports": [
+          "prompt_toolkit",
+          "prompt_toolkit.history"
+        ]
+      },
+      "hcli.verifier_pipeline": {
+        "file": "tools/haider/hcli/verifier_pipeline.py",
+        "bytes": 40198,
+        "sha256": "06103542cff5d2fb50c814bc26d14e51ee5fa05e21b8b632b7c8856f97cec8a1",
+        "eager_imports": [
+          "__future__",
+          "ast",
+          "json",
+          "re",
+          "shlex",
+          "subprocess",
+          "sys",
+          "dataclasses",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": []
+      },
+      "hcli.workspace": {
+        "file": "tools/haider/hcli/workspace.py",
+        "bytes": 863,
+        "sha256": "d6463563d516729490eb8d4aea3287edfe97adf1b7ee46039a569a39ffb43404",
+        "eager_imports": [
+          "__future__",
+          "os",
+          "pathlib",
+          "typing"
+        ],
+        "lazy_imports": [
+          "subprocess"
+        ]
+      },
+      "hcli.workunit": {
+        "file": "tools/haider/hcli/workunit.py",
+        "bytes": 20682,
+        "sha256": "4156ceb18327f8b95c51a035e8aae032e4e21089625b13a8648ca6a11161a8b7",
+        "eager_imports": [
+          "__future__",
+          "hashlib",
+          "json",
+          "time",
+          "dataclasses",
+          "typing",
+          ".resources"
+        ],
+        "lazy_imports": []
+      }
+    },
+    "production_importers": {
+      "hcli.index": [],
+      "hcli.mutation": []
+    }
+  },
+  "citations": [
+    {
+      "path": "tools/haider/hcli/__init__.py",
+      "line": 2,
+      "text": "from .cli import parse_haider_args, main",
+      "must_contain": "from .cli import parse_haider_args, main",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/__init__.py",
+      "line": 4,
+      "text": "from .controller import Controller",
+      "must_contain": "from .controller import Controller",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/__main__.py",
+      "line": 1,
+      "text": "from hcli.cli import main",
+      "must_contain": "from hcli.cli import main",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/cli.py",
+      "line": 242,
+      "text": "    from .app import App",
+      "must_contain": "from .app import App",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/controller.py",
+      "line": 13,
+      "text": "from .engine import Engine",
+      "must_contain": "from .engine import Engine",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/controller.py",
+      "line": 19,
+      "text": "from .runtime import RuntimePool, load_observed_overlap",
+      "must_contain": "from .runtime import RuntimePool",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/controller.py",
+      "line": 16,
+      "text": "from .mission import Mission",
+      "must_contain": "from .mission import Mission",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/backends.py",
+      "line": 92,
+      "text": "def mlx_server_binary() -> str:",
+      "must_contain": "def mlx_server_binary",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/backends.py",
+      "line": 96,
+      "text": "    binary = shutil.which(\"mlx_lm.server\")",
+      "must_contain": "mlx_lm.server",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/engine.py",
+      "line": 16,
+      "text": "import urllib.request",
+      "must_contain": "import urllib.request",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/controller.py",
+      "line": 8,
+      "text": "import urllib.request",
+      "must_contain": "import urllib.request",
+      "ok": true
+    },
+    {
+      "path": "tools/haider/hcli/machine.py",
+      "line": 146,
+      "text": "    spec = importlib.util.spec_from_file_location(\"hcli_metal_budget\", path)",
+      "must_contain": "spec_from_file_location",
+      "ok": true
+    }
+  ],
+  "shim_not_measured": {
+    "path": "/Users/scammermike/.local/bin/hcli",
+    "present": true,
+    "body": "#!/bin/sh\nBASE=\"$HOME/.local/share/hcli/current\"\nexport PYTHONPATH=\"$BASE${PYTHONPATH:+:$PYTHONPATH}\"\nexec \"/Users/scammermike/.venvs/hawking-aider/bin/python3\" -m hcli \"$@\"\n",
+    "current_symlink": "/Users/scammermike/.local/share/hcli/current",
+    "current_target": "/Users/scammermike/.local/share/hcli/build-20260823-043854",
+    "note": "PATH `hcli --help` is NOT this measurement. The shim execs a venv python with PYTHONPATH=~/.local/share/hcli/current, a different tree. This census measures `python3 -m hcli --help` against git HEAD."
+  },
+  "unknowns": [
+    {
+      "item": "visionmcp on PYTHONPATH during primary python3 measurement",
+      "status": "armed",
+      "reason": "armed with /Users/scammermike/Downloads/hawking/visionmcp/src"
+    },
+    {
+      "item": "hcli.index / hcli.mutation production callers",
+      "status": "no production importer in tools/haider/hcli/*.py (tests import mutation)",
+      "reason": "AST/text scan of production modules; tests/ excluded"
+    },
+    {
+      "item": "Downloads/hawking as live tree",
+      "status": "not used as measurement source",
+      "reason": "this worktree HEAD is cba2bb657f2c9153abcfc2e747feafe35aaffb0e; a sibling checkout may have moved. Measured git HEAD of this repo."
+    }
+  ],
+  "what_i_watched_fail": [
+    "tools/haider/hcli is not materialized in this sparse worktree; census extracted HEAD:tools/haider/hcli via git archive into a temp dir"
+  ],
+  "scope_guard": {
+    "wrote": [
+      "tools/headless/startup_census.py",
+      "receipts/headless/STARTUP_CENSUS.json"
+    ],
+    "did_not_modify": [
+      "tools/haider",
+      "workspace",
+      "crates",
+      "visionmcp",
+      "app",
+      "lab",
+      "ramanujan",
+      "receipts/ascent-2026-08-16",
+      "receipts/ascent-2026-08-18"
+    ],
+    "no_rm_git_mv_clean_checkout_restore_reset": true,
+    "temp_extract": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-startup-census-fye7iun3",
+    "temp_variants": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-startup-variants-jg8o3mz8"
+  }
+}

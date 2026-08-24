@@ -1,0 +1,649 @@
+{
+  "calibration": {
+    "activation_null_does_not_apply": {
+      "applies_to": "raw activation cosine on this family, not weight pairwise cosine",
+      "constant_mean_null_cosine": 0.898
+    },
+    "decision_threshold": {
+      "cosine_mean_materially_above": 0.05,
+      "q80_gate_mean_must_not_transfer": 0.004142791032791138,
+      "source": "NS-010 retry_when"
+    },
+    "identical": {
+      "cosine": 1.0000000000000002,
+      "norm_a": 90.01313541733623,
+      "norm_b": 90.01313541733623,
+      "rel_l2": 0.0,
+      "scale_aware_cosine": 1.0000000000000002,
+      "scale_ratio": 1.0
+    },
+    "law": "Cosine is scale-invariant. scale_aware_cosine = cosine * min(n,N)/max(n,N) scores ~0.01 on 0.01*W while cosine scores ~1.0. A fidelity campaign that used cosine alone called 0.01*W HEALTHY (gravity_doctor_gate._gain).",
+    "null_by_organ": {
+      "w1": {
+        "D": 8388608,
+        "analytic_p95_abs": 0.0005679136492561884,
+        "analytic_pairwise_cosine_mean": 0.0,
+        "analytic_pairwise_cosine_std": 0.00034526698300124393,
+        "empirical_cosine": {
+          "frac_gt_0.05": 0.0,
+          "frac_gt_0.10": 0.0,
+          "frac_gt_0.30": 0.0,
+          "frac_gt_0.50": 0.0,
+          "frac_gt_0.70": 0.0,
+          "max": 0.0009039507050340862,
+          "mean": -1.2187840668403692e-05,
+          "min": -0.0008776619204916128,
+          "n": 12,
+          "n_pairs": 132,
+          "p01": -0.0008505918316383263,
+          "p05": -0.0005736709551285599,
+          "p25": -0.00021246063690484766,
+          "p50": -6.504195686200263e-06,
+          "p75": 0.00019104268947687484,
+          "p95": 0.0004991956268590768,
+          "p99": 0.0008891386376639132,
+          "std": 0.0003334987218315346
+        },
+        "empirical_n_vectors": 12,
+        "empirical_scale_aware": {
+          "frac_gt_0.05": 0.0,
+          "frac_gt_0.10": 0.0,
+          "frac_gt_0.30": 0.0,
+          "frac_gt_0.50": 0.0,
+          "frac_gt_0.70": 0.0,
+          "max": 0.0009036390150505605,
+          "mean": -1.2181901757181719e-05,
+          "min": -0.0008773498425146209,
+          "n": 12,
+          "n_pairs": 132,
+          "p01": -0.0008503027547561128,
+          "p05": -0.0005735934247969656,
+          "p25": -0.00021240484026548465,
+          "p50": -6.501267936883032e-06,
+          "p75": 0.00019101572809164852,
+          "p95": 0.0004990219335070579,
+          "p99": 0.000888889868153681,
+          "std": 0.0003334003615751679
+        },
+        "note": "Weight pairwise cosine null is ~0 with std 1/sqrt(D), D=8.39e6. The raw-activation constant-mean null 0.898 does not apply here.",
+        "shape": [
+          2048,
+          4096
+        ]
+      },
+      "w2": {
+        "D": 8388608,
+        "analytic_p95_abs": 0.0005679136492561884,
+        "analytic_pairwise_cosine_mean": 0.0,
+        "analytic_pairwise_cosine_std": 0.00034526698300124393,
+        "empirical_cosine": {
+          "frac_gt_0.05": 0.0,
+          "frac_gt_0.10": 0.0,
+          "frac_gt_0.30": 0.0,
+          "frac_gt_0.50": 0.0,
+          "frac_gt_0.70": 0.0,
+          "max": 0.0007984853344364273,
+          "mean": 3.9347518524635855e-05,
+          "min": -0.0009088048201350897,
+          "n": 12,
+          "n_pairs": 132,
+          "p01": -0.0008399230736666195,
+          "p05": -0.000600041215543486,
+          "p25": -0.00016659802269242434,
+          "p50": 5.33787980933435e-05,
+          "p75": 0.0002689324933742187,
+          "p95": 0.0006480879709157171,
+          "p99": 0.0007891947420599185,
+          "std": 0.0003700356283060977
+        },
+        "empirical_n_vectors": 12,
+        "empirical_scale_aware": {
+          "frac_gt_0.05": 0.0,
+          "frac_gt_0.10": 0.0,
+          "frac_gt_0.30": 0.0,
+          "frac_gt_0.50": 0.0,
+          "frac_gt_0.70": 0.0,
+          "max": 0.0007982074520938685,
+          "mean": 3.9313712000594226e-05,
+          "min": -0.0009087330779824108,
+          "n": 12,
+          "n_pairs": 132,
+          "p01": -0.0008398660304271267,
+          "p05": -0.0005999385832534932,
+          "p25": -0.00016654867417847052,
+          "p50": 5.3323417713720795e-05,
+          "p75": 0.0002687739768762982,
+          "p95": 0.0006477516169057395,
+          "p99": 0.0007889583815348724,
+          "std": 0.00036993346577660573
+        },
+        "note": "Weight pairwise cosine null is ~0 with std 1/sqrt(D), D=8.39e6. The raw-activation constant-mean null 0.898 does not apply here.",
+        "shape": [
+          4096,
+          2048
+        ]
+      },
+      "w3": {
+        "D": 8388608,
+        "analytic_p95_abs": 0.0005679136492561884,
+        "analytic_pairwise_cosine_mean": 0.0,
+        "analytic_pairwise_cosine_std": 0.00034526698300124393,
+        "empirical_cosine": {
+          "frac_gt_0.05": 0.0,
+          "frac_gt_0.10": 0.0,
+          "frac_gt_0.30": 0.0,
+          "frac_gt_0.50": 0.0,
+          "frac_gt_0.70": 0.0,
+          "max": 0.0008627646727622758,
+          "mean": -1.9668972987393216e-06,
+          "min": -0.00077948416567883,
+          "n": 12,
+          "n_pairs": 132,
+          "p01": -0.0007564521948057239,
+          "p05": -0.0005741046106428387,
+          "p25": -0.00028609834169219796,
+          "p50": -1.0560208064958773e-05,
+          "p75": 0.00030695633021334147,
+          "p95": 0.0006050912576468261,
+          "p99": 0.0008277836636918702,
+          "std": 0.0003702712425309953
+        },
+        "empirical_n_vectors": 12,
+        "empirical_scale_aware": {
+          "frac_gt_0.05": 0.0,
+          "frac_gt_0.10": 0.0,
+          "frac_gt_0.30": 0.0,
+          "frac_gt_0.50": 0.0,
+          "frac_gt_0.70": 0.0,
+          "max": 0.0008624840005637526,
+          "mean": -1.978685562532361e-06,
+          "min": -0.0007793571238730905,
+          "n": 12,
+          "n_pairs": 132,
+          "p01": -0.0007563259270844053,
+          "p05": -0.0005740816098585337,
+          "p25": -0.00028600035484216456,
+          "p50": -1.055826969260306e-05,
+          "p75": 0.0003068981654551875,
+          "p95": 0.0006050195140663189,
+          "p99": 0.000827516251048448,
+          "std": 0.00037020774412170664
+        },
+        "note": "Weight pairwise cosine null is ~0 with std 1/sqrt(D), D=8.39e6. The raw-activation constant-mean null 0.898 does not apply here.",
+        "shape": [
+          2048,
+          4096
+        ]
+      }
+    },
+    "orthogonal_draw": {
+      "cosine": 0.0032531650561487464,
+      "rel_l2": 1.403380074103213,
+      "scale_aware_cosine": 0.003213730436944792
+    },
+    "rejects_deliberately_scaled_artifact": true,
+    "trap_0.01_W_expert_shaped_2048x4096": {
+      "cosine": 0.9999999999999357,
+      "norm_a": 2897.255281104089,
+      "norm_b": 28.972552163003122,
+      "rel_l2": 0.9900000002236329,
+      "scale_aware_cosine": 0.00999999977632636,
+      "scale_ratio": 0.009999999776327003
+    },
+    "trap_0.01_W_small": {
+      "cosine": 1.0,
+      "norm_a": 90.01313541733623,
+      "norm_b": 0.9001313333095624,
+      "rel_l2": 0.9900000002317864,
+      "scale_aware_cosine": 0.00999999976821383,
+      "scale_ratio": 0.00999999976821383
+    }
+  },
+  "did_not": [
+    "spawn a 27B model server",
+    "evaluate compression on synthetic activations",
+    "measure packed FP4 without UE8M0 decode",
+    "measure streamed-layer4-diagnostic.gravity",
+    "measure activation-x-capture-3k",
+    "transfer Q80 cosine 0.00414 onto DSV4F",
+    "treat stream-ranges line count as chunk count"
+  ],
+  "elapsed_s": 3.972896099090576,
+  "family": {
+    "base_weight_count_matches": true,
+    "expected_base_weight_tensors": 33024,
+    "index_omitted": "per-expert chunk index omitted because measurement did not run",
+    "n_lines": 139991,
+    "n_parse_fail": 0,
+    "scales": {
+      "layers_base": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "n_expert_ids_base": 256,
+      "n_layers_base": 43,
+      "n_mtp_layers": 1,
+      "n_unique": 33792,
+      "organs_base": {
+        "w1": {
+          "bytes": 2885681152,
+          "n": 11008,
+          "row_count": null
+        },
+        "w2": {
+          "bytes": 2885681152,
+          "n": 11008,
+          "row_count": null
+        },
+        "w3": {
+          "bytes": 2885681152,
+          "n": 11008,
+          "row_count": null
+        }
+      }
+    },
+    "shared_basis_target": {
+      "not": "shared_experts (n=1 per layer \u2014 no pairwise), MLA, indexer, activations, packed FP4 nibbles without UE8M0 decode.",
+      "what": "Within each layer, the 256 routed experts' same organ (w1 / w2 / w3) as flattened decoded-fp32 tensors. w1=SwiGLU gate 2048x4096, w3=up 2048x4096, w2=down 4096x2048. 94.35% of stored mass is routed experts."
+    },
+    "stream_ranges_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/stream-ranges.jsonl",
+    "weights": {
+      "layers_base": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "n_expert_ids_base": 256,
+      "n_layers_base": 43,
+      "n_mtp_layers": 1,
+      "n_unique": 33792,
+      "organs_base": {
+        "w1": {
+          "bytes": 46170898432,
+          "n": 11008,
+          "row_count": 2048
+        },
+        "w2": {
+          "bytes": 46170898432,
+          "n": 11008,
+          "row_count": 4096
+        },
+        "w3": {
+          "bytes": 46170898432,
+          "n": 11008,
+          "row_count": 2048
+        }
+      }
+    }
+  },
+  "generated_at": "2026-08-23T18:37:43Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "integrity": {
+    "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "body_root": null,
+    "chunk_search": [
+      {
+        "bytes": 0,
+        "exists": false,
+        "probe_chunk": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/chunks/17/177ac1285aea3d72fd7e83bbd103d701499001c8a2ecd8950cb51cf74c53b507",
+        "probe_exists": false,
+        "regular_files": 0,
+        "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/chunks"
+      },
+      {
+        "bytes": 0,
+        "exists": false,
+        "probe_chunk": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/chunks/17/177ac1285aea3d72fd7e83bbd103d701499001c8a2ecd8950cb51cf74c53b507",
+        "probe_exists": false,
+        "regular_files": 0,
+        "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/chunks"
+      },
+      {
+        "bytes": 0,
+        "exists": false,
+        "probe_chunk": "/Users/scammermike/.cache/hawking/dsv4f-chunks/17/177ac1285aea3d72fd7e83bbd103d701499001c8a2ecd8950cb51cf74c53b507",
+        "probe_exists": false,
+        "regular_files": 0,
+        "root": "/Users/scammermike/.cache/hawking/dsv4f-chunks"
+      },
+      {
+        "bytes": 0,
+        "exists": false,
+        "probe_chunk": "/Users/scammermike/.cache/hawking/dsv4f-admission/chunks/17/177ac1285aea3d72fd7e83bbd103d701499001c8a2ecd8950cb51cf74c53b507",
+        "probe_exists": false,
+        "regular_files": 0,
+        "root": "/Users/scammermike/.cache/hawking/dsv4f-admission/chunks"
+      }
+    ],
+    "chunks_bytes": 0,
+    "chunks_regular_files": 0,
+    "deletion_record": {
+      "authority": "user steer S003 section 1 - PRESERVE SCIENCE, DELETE WEIGHTS",
+      "bytes_freed_gib": 149,
+      "date": "2026-08-16",
+      "deleted": "workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/chunks/",
+      "rebuild": "tools/condense/.venv/bin/python tools/condense/deepseek_v4_gravity.py build-full --artifact-dir <ARTIFACT_DIR> --workspace-root /Users/scammermike/Downloads/hawking --xet-root <NEW_EMPTY_XET_ROOT>",
+      "receipt": "receipts/ascent-2026-08-16/DSV4F_SEALED_SCIENCE_WEIGHTS_DELETED.json"
+    },
+    "expected": {
+      "chunk_count": 69837,
+      "content_addressed_chunk_sha256": "15e00fb1b91ac074b7f24686de4e289f76d66eb1c3fb4ad643de027adc78ca13",
+      "manifest_seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+      "n_layers": 43,
+      "n_routed_experts": 256,
+      "repository": "deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+      "seal_sha256": "f9b928f1cbb96e8f7238a3983a3f68ef3dc2946cca66fdf3e098781a533a5b0d",
+      "tensor_count": 69187,
+      "total_tensor_bytes": 159609485896
+    },
+    "files": {
+      "chunks": {
+        "exists": false,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/chunks"
+      },
+      "manifest.json": {
+        "bytes": 150990326,
+        "exists": true,
+        "identity": "be1a7bad251675429992dec69504747cb4058bb5218ae5b3ca3689893148eb6e",
+        "identity_kind": "sha256_size_head_tail_8MiB",
+        "is_dir": false,
+        "mtime_utc": "2026-08-07T21:29:26Z",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/manifest.json"
+      },
+      "metadata": {
+        "bytes": 224,
+        "exists": true,
+        "is_dir": true,
+        "mtime_utc": "2026-08-07T21:12:06Z",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/metadata"
+      },
+      "restart-receipt.json": {
+        "bytes": 49662,
+        "exists": true,
+        "identity": "a236c0f8939253e8f52c5226e43ceee2ec2161a28b95a3b52920fbc830e0ae42",
+        "identity_kind": "sha256_size_head_tail_8MiB",
+        "is_dir": false,
+        "mtime_utc": "2026-08-07T21:29:25Z",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/restart-receipt.json"
+      },
+      "stream-journal.json": {
+        "bytes": 2334,
+        "exists": true,
+        "identity": "4ecc4c4afa47465c6ab9a99c9f64db20afbdbc791d8c4cbd46c5334b9c708fe5",
+        "identity_kind": "sha256_size_head_tail_8MiB",
+        "is_dir": false,
+        "mtime_utc": "2026-08-07T21:12:04Z",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/stream-journal.json"
+      },
+      "stream-ranges.jsonl": {
+        "bytes": 108442302,
+        "exists": true,
+        "identity": "9bbc64358b301f3d8572b3fe728ce6e4e865ac968b258f1b6c86c787cde66c9a",
+        "identity_kind": "sha256_size_head_tail_8MiB",
+        "is_dir": false,
+        "mtime_utc": "2026-08-16T23:42:50Z",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity/stream-ranges.jsonl"
+      }
+    },
+    "intact": false,
+    "journal_source": {
+      "repository": "deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+    },
+    "journal_status": "IN_PROGRESS",
+    "journal_storage_policy": {
+      "max_source_range_bytes": 8388608,
+      "one_active_source_range": true,
+      "one_bounded_next_range": true,
+      "protected_floor_bytes": 26843545600,
+      "source_parent_cache": "forbidden"
+    },
+    "manifest_head": {
+      "architecture": {
+        "dim": 4096,
+        "dtype": "fp8",
+        "expert_dtype": "fp4",
+        "layer_count": 43,
+        "model_type": "deepseek_v4",
+        "moe_inter_dim": 2048,
+        "n_activated_experts": 6,
+        "n_routed_experts": 256,
+        "n_shared_experts": 1,
+        "scale_fmt": "ue8m0",
+        "tensor_count": 69187
+      },
+      "artifact": {
+        "content_addressed_chunk_count": 69837,
+        "content_addressed_chunk_sha256": "15e00fb1b91ac074b7f24686de4e289f76d66eb1c3fb4ad643de027adc78ca13",
+        "format": "gravity.content_addressed.chunk_directory.v1",
+        "total_tensor_bytes": 159609485896
+      },
+      "schema": "hawking.gravity.deepseek_v4.full_stream.v1",
+      "seal_sha256": "ba9039bfe71328e2e47ced782bd1f931e2d412055382da0ea669092c1d90bfed",
+      "source_repository": "deepseek-ai/DeepSeek-V4-Flash",
+      "source_revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+      "status": "FULL_MODEL_STREAMED_SEALED_NOT_RUNTIME_READY"
+    },
+    "missing_body": true,
+    "probe_hits": [],
+    "reasons": [
+      "chunk body absent: 0 regular files under any search root (expected 69837 content-addressed chunks, 159609485896 tensor bytes, ~149 GiB). Cited: receipts/ascent-2026-08-16/DSV4F_SEALED_SCIENCE_WEIGHTS_DELETED.json status=SEALED_SCIENCE_RETAINED_WEIGHTS_DELETED, deleted path=.../full-43-layer-stream.gravity/chunks/, source_parent_retained=false so this was the only local copy."
+    ],
+    "restart_range_count": 69837,
+    "restart_source_parent_retained": false,
+    "status": "BODY_ABSENT",
+    "stop_measurement": true,
+    "stream_ranges_line_count_is_not_chunk_count": {
+      "lines": 139991,
+      "note": "Journal was appended (\u22482x). Admission uses a clone-view of the sealed prefix. Counting jsonl lines as chunks would double the body.",
+      "sealed_prefix": 69837
+    },
+    "stream_ranges_lines_on_disk": 139991,
+    "truncated": false
+  },
+  "locate": {
+    "chosen": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+    "searched": [
+      {
+        "exists": true,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+        "via": "default_search"
+      },
+      {
+        "exists": false,
+        "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+        "via": "default_search"
+      },
+      {
+        "exists": false,
+        "path": "/Users/scammermike/models/DeepSeek-V4-Flash",
+        "via": "default_search"
+      },
+      {
+        "exists": false,
+        "path": "/Users/scammermike/models/deepseek-v4-flash",
+        "via": "default_search"
+      },
+      {
+        "exists": false,
+        "path": "/Users/scammermike/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-V4-Flash",
+        "via": "default_search"
+      }
+    ]
+  },
+  "measurement": null,
+  "obligation": {
+    "id": "NNS-004",
+    "kind": "idea (scoped)",
+    "register": "NS-010",
+    "text": "Q80/F0/F1 shared-basis is dead. DSV4F pairwise cosine has never been measured \u2014 cheap check, not a Q80 retry."
+  },
+  "receipt_path": "/Users/scammermike/.claude-grok/worktrees/n17dsv-20260823-142511/receipts/headless/NOETIC_DSV4F_COSINE.json",
+  "refused_standins": [
+    {
+      "bytes": 704,
+      "chunks_bytes": 0,
+      "chunks_regular_files": 0,
+      "exists": true,
+      "is_dir": true,
+      "mtime_utc": "2026-08-04T16:59:14Z",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/streamed-layer4-diagnostic.gravity",
+      "refused_as_measurement_subject": true,
+      "why_refused": "Layer-4 diagnostic, not the 43-layer family. Chunk tree has 0 regular files / 0 bytes (empty prefixes are not a body). Acceptance forbids measuring a partial artifact."
+    },
+    {
+      "bytes": 224,
+      "exists": true,
+      "is_dir": true,
+      "mtime_utc": "2026-08-16T01:36:55Z",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/activation-x-capture-3k",
+      "refused_as_measurement_subject": true,
+      "why_refused": "Activation-X capture (hidden states), not expert weights. NS-009: never evaluate compression on (even real-captured) X as a stand-in for a weight pairwise-cosine measurement."
+    }
+  ],
+  "repo": "/Users/scammermike/.claude-grok/worktrees/n17dsv-20260823-142511",
+  "schema": "hawking.headless.noetic_dsv4f_cosine.v1",
+  "storage_vs_active_reminder": {
+    "applies_even_if_cosine_is_high": true,
+    "factor": 3.9,
+    "q80_active_bpw": 2.518,
+    "q80_stored_bpw": 0.6462
+  },
+  "verdict": {
+    "deciding_number": {
+      "chunks_bytes": 0,
+      "chunks_regular_files": 0,
+      "expected_chunk_count": 69837,
+      "expected_tensor_bytes": 159609485896
+    },
+    "q80_number_must_not_transfer": 0.004142791032791138,
+    "threshold": 0.05,
+    "verdict": "BODY_ABSENT_UNMEASURED",
+    "why_not_dead": "Issuing DEAD without a DSV4F cosine would transfer Q80's 0.00414. That transfer is the NNS-004 fallacy this lane exists to refuse. Shared-basis on DSV4F is unmeasured, not refuted.",
+    "worth_testing_or_dead": null
+  },
+  "watched_fail": [
+    {
+      "what": "Transfer Q80 pairwise cosine 0.00414 onto DSV4F and call shared-basis dead",
+      "why": "NS-010 listed wording was 'DSV4F experts are mutually orthogonal (cos 0.004)'. The number is Q80 L10, 96 of 512 experts, receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json. Independently dead on foundry F0 (1e-4) and F1 (0.00166). DSV4F was not_measured_on."
+    },
+    {
+      "what": "Measure the gravity directory without checking the chunk body",
+      "why": "Metadata is present (manifest 150,990,326 B, ranges 139991 lines) and looks like a sealed artifact. chunks/ is gone. receipts/ascent-2026-08-16/DSV4F_SEALED_SCIENCE_WEIGHTS_DELETED.json deleted the only local copy (source_parent_retained=false)."
+    },
+    {
+      "what": "Treat streamed-layer4-diagnostic.gravity as a stand-in",
+      "why": "It has a chunks/ directory with 256 prefix folders and 0 regular files / 0 bytes. Even a full layer-4 body would be a partial family. Acceptance: STOP."
+    },
+    {
+      "what": "Score pairwise cosine on packed FP4 nibbles, skipping UE8M0 scales",
+      "why": "Direction in codebook space is not direction in the decoded GEMM."
+    },
+    {
+      "what": "Use cosine alone as a fidelity number (0.01*W \u2192 1.000000)",
+      "why": "Calibration: small trap cosine=1.000000 scale_aware=0.010000; expert-shaped trap cosine=1.000000 scale_aware=0.010000. The scale-aware product is what rejects the scaled artifact."
+    },
+    {
+      "what": "Quote a mean without a null, or against the activation null 0.898",
+      "why": "Weight pairwise Gaussian null std is 1/sqrt(D)=3.452670e-04 on 2048x4096. 0.898 is the constant-mean null for raw activations."
+    },
+    {
+      "what": "Report only a global mean and miss a strongly-aligned subset",
+      "why": "A subset of (layer, organ) with mean > 0.05 is enough to justify a scoped shared structure."
+    },
+    {
+      "what": "Count stream-ranges.jsonl lines as the chunk count",
+      "why": "139991 lines vs sealed prefix 69837. Appended journal. Double-count is an artifact of method."
+    },
+    {
+      "what": "Evaluate compression on the 930 MiB activation-X capture",
+      "why": "NS-009 / standing discipline: every prior sub-bit negative here was a Gaussian-proxy artifact. This check is weight pairwise cosine, not X."
+    },
+    {
+      "what": "Jump from a positive cosine to a storage-BPW win",
+      "why": "Q80 mixed pack: 0.6462 stored vs 2.518 active (~3.9x). Shared basis that saves storage and costs reconstruction per token can lose."
+    }
+  ]
+}

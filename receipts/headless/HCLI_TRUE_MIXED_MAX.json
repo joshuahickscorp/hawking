@@ -1,0 +1,133 @@
+{
+  "gate": "HCLI_TRUE_MIXED_MAX",
+  "generated_at": "2026-08-23T08:28:13Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "llama_port": 52484,
+  "what_makes_this_mixed": "All three backend classes dispatched in ONE mission. The earlier campaign ran 23 real CPU units against a NullEngine, which satisfied MAX_NO_ARTIFICIAL_WORK and nothing else.",
+  "how_qwen_units_are_accepted": "By a DETERMINISTIC verifier that re-derives the answer from the repository. The model never grades itself; a unit whose answer is wrong fails.",
+  "wall_s": 176.24,
+  "peak_concurrent": 6,
+  "by_backend": {
+    "cpu": {
+      "verified": 4,
+      "failed": 0,
+      "units": [
+        {
+          "id": "cpu.suite",
+          "status": "completed",
+          "verification": {
+            "ok": true,
+            "exit_code": 0,
+            "command": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/tests -q",
+            "output": "........................................................................ [ 17%]\n........................................................................ [ 35%]\n.........................s.............................................. [ 53%]\n........................................................................ [ 71%]\n........................................................................ [ 89%]\n.........................................                                [100%]\n400 passed, 1 skipped in 129.91s (0:02:09)\n",
+            "acceptance_source": "backend_executor_verdict"
+          }
+        },
+        {
+          "id": "cpu.ctxauth",
+          "status": "completed",
+          "verification": {
+            "ok": true,
+            "exit_code": 0,
+            "command": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 -c \"import sys; sys.path.insert(0, 'tools/haider'); from hcli.context_budget import per_seq_context; assert per_seq_context(32768, 3) == 11008, per_seq_context(32768, 3)\"",
+            "output": "",
+            "acceptance_source": "backend_executor_verdict"
+          }
+        },
+        {
+          "id": "cpu.vmcp",
+          "status": "completed",
+          "verification": {
+            "ok": true,
+            "exit_code": 0,
+            "command": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 tools/headless/hcli_vmcp_integration.py",
+            "output": "ok   VMCP capture completed and is content-addressed: capture_id=58e1f64520fc0fe0 status=COMPLETE authority=OBSERVED\nok   VMCP verifies its own capture against the artifact store: valid=True\nok   capture is reused rather than duplicated for an unchanged file: second observe of the same unchanged file returned reused=True\nok   a WorkUnit is ACCEPTED on VMCP evidence: {'claim.file_unchanged': 'completed'}\nok   NEGATIVE CONTROL: the same WorkUnit is REFUSED once the evidence is stale: {'claim.file_unchanged': 'failed', 'claim.file_unchanged.repair.1': 'failed', 'claim.file_unchanged.repair.1.repair.1': 'failed'}\nok   REPLAY CONTROL: evidence about one file cannot support a claim about another with identical bytes: exit=6 SUBJECT_MISMATCH: evidence is about /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-integration-7ags24_e/t\nok   the core VMCP profile exposes no scheduler, queue or promotion: 15 core tools, none of them a queue: ['project.create', 'project.status', 'system.doctor', 'vision.capabilities', 'vision.close_project', 'vision.compare', 'vision.explain_region', 'vision.get_artifact', 'vision.list_artifacts', 'vision.observe', 'vision.open_project', 'vision.progress', 'vision.query', 'vision.review_queue', 'vision.verify']\nok   the acquire capability the integration depends on is actually exposed: vision.observe and vision.verify present among 15 tools\n\n8/8 checks passed\nreceipt: /Users/scammermike/Downloads/hawking-copy/receipts/headless/VMCP_AGENTOS_INTEGRATION.json\nrepair cycle detected: root=claim.file_unchanged signature=38aa67bcbcfdb854\nrepair cycle detected: root=claim.file_unchanged signature=7d70a339d9003a1d\nrepair cycle detected: root=claim.file_unchanged signature=38aa67bcbcfdb854\n",
+            "acceptance_source": "backend_executor_verdict"
+          }
+        },
+        {
+          "id": "cpu.repair",
+          "status": "completed",
+          "verification": {
+            "ok": true,
+            "exit_code": 0,
+            "command": "cd /Users/scammermike/Downloads/hawking-copy && /opt/homebrew/opt/python@3.14/bin/python3.14 tools/headless/hcli_repair_homeostasis_test.py",
+            "output": ": root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\nrepair budget exhausted by count: root=dead emitted=500\n",
+            "acceptance_source": "backend_executor_verdict"
+          }
+        }
+      ]
+    },
+    "qwen": {
+      "verified": 1,
+      "failed": 4,
+      "units": [
+        {
+          "id": "qwen.equilibrium",
+          "status": "failed",
+          "verification": null
+        },
+        {
+          "id": "qwen.scheduler_cap",
+          "status": "completed",
+          "verification": {
+            "ok": true,
+            "acceptance_source": "independent_rederivation",
+            "model_answer": "3",
+            "rederived": "3",
+            "reason": null
+          }
+        },
+        {
+          "id": "qwen.equilibrium.repair.1",
+          "status": "failed",
+          "verification": null
+        },
+        {
+          "id": "qwen.equilibrium.repair.1.repair.1",
+          "status": "failed",
+          "verification": null
+        },
+        {
+          "id": "qwen.equilibrium.repair.2",
+          "status": "failed",
+          "verification": null
+        }
+      ]
+    },
+    "grok": {
+      "verified": 1,
+      "failed": 0,
+      "units": [
+        {
+          "id": "grok.audit_status",
+          "status": "completed",
+          "verification": {
+            "ok": true,
+            "exit_code": 0,
+            "command": "python3 -c \"import sys,pathlib;p=pathlib.Path.home()/'.claude-grok/tasks/consult-20260823-042517';r=[f for f in p.glob('grok-report*.md') if f.stat().st_size>200];print('report bytes:', [f.stat().st_size for f in r]);sys.exit(0 if r else 1)\"",
+            "output": "report bytes: [15103]\n",
+            "acceptance_source": "backend_executor_verdict"
+          }
+        }
+      ]
+    }
+  },
+  "all_three_verified": true,
+  "result": "PASS",
+  "the_qwen_failure_is_the_evidence": {
+    "unit": "qwen.equilibrium",
+    "asked": "read receipts/headless/GROK_MAX_EQUILIBRIUM.json and report useful_equilibrium",
+    "model_answered": "1",
+    "truth_rederived": "12",
+    "why_it_matters": "The model was WRONG and the unit was REFUSED. That is what makes the one accepted Qwen unit meaningful: acceptance rests on a command that recomputes the answer from the repository, so a wrong answer fails. A campaign where every cognition unit passed would be indistinguishable from one that never checked.",
+    "ruled_out": "Not evidence truncation. The file is 18086 bytes against a 24000-char cap and the field sits at offset 5130, so the model saw it and still got it wrong.",
+    "repairs": "Its 4 failures are the root plus repair attempts, all terminated by failure-signature cycle detection rather than running unbounded."
+  },
+  "an_earlier_run_of_this_harness_was_wrong": {
+    "symptom": "cpu verified=0 failed=4, grok verified=0 failed=2, qwen verified=1",
+    "cause_1": "Engine.workspace is a Workspace object and WorkUnitExecutor takes a path. validate_workunit raised, _route_validation caught the exception, and EVERY CPU unit failed for a reason unrelated to what it checks -- the exact defect class this campaign exists to catch, produced by me.",
+    "cause_2": "GrokBridge resolves grok-run through PATH and REFUSED when absent: 'Refusing to invent a task id or pretend a Grok session ran.' That refusal is correct and is the only reason an empty Grok arm was diagnosable instead of silently green.",
+    "cause_3": "One Qwen unit asked the model to count files in a directory, which it has no way to observe. An unfair unit measures the harness, not the backend; it was replaced with a value recoverable from file evidence."
+  }
+}

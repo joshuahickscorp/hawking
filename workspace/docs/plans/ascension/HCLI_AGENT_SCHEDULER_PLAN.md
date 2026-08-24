@@ -132,7 +132,7 @@ Reuses `hide_fleet::PriorityClass` and `ConcurrencyClass` (Model vs CpuOnly). Cp
 ## 5. Explicit non-goals (this pass)
 
 - No Qwen / Gravity / model download or inference.
-- No modification of `lab/operators/frankenstein_*`, Frankenstein evidence trees, or DSV4F/GLM capture paths.
+- No modification of `hawking-experiments/frankenstein/operators/frankenstein_*`, Frankenstein evidence trees, or DSV4F/GLM capture paths.
 - No push / PR / remote.
 - No claim that multi-agent generation is “implemented” end-to-end — only the **scheduler policy layer** is real and tested.
 - No new weight-copy-per-agent design (forbidden by bible).

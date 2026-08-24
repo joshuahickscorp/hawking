@@ -1,0 +1,552 @@
+{
+  "schema": "hawking.headless.noetic_gate_adversary.v1",
+  "generated_at": "2026-08-23T18:27:23Z",
+  "started_at": "2026-08-23T18:27:18Z",
+  "lane": "/Users/scammermike/.claude-grok/worktrees/n9adv-20260823-141647",
+  "receipts_root": "/Users/scammermike/Downloads/hawking-copy/receipts/headless",
+  "attacks": [
+    {
+      "claim": "HCLI_TRUE_MIXED_MAX",
+      "receipt": "/Users/scammermike/Downloads/hawking-copy/receipts/headless/HCLI_TRUE_MIXED_MAX.json",
+      "attack": "Re-derive MAX_REPAIR_DEPTH from scheduler.py without consulting the model; check grok verifier command binds grok-run's task id and whether the predicate would accept harness-written bytes.",
+      "commands": [
+        "grep -m1 '^MAX_REPAIR_DEPTH' tools/haider/hcli/scheduler.py | sed 's/[^0-9]//g'",
+        "python3 -c \"import json;print(json.load(open('receipts/headless/GROK_MAX_EQUILIBRIUM.json'))['useful_equilibrium'])\"",
+        "ls -la /Users/scammermike/.claude-grok/tasks/consult-20260823-042517"
+      ],
+      "independent_max_repair_depth": "3",
+      "assignment_line": "3",
+      "useful_equilibrium": 12,
+      "qwen_acceptance_source": "independent_rederivation",
+      "qwen_model_answer": "3",
+      "qwen_rederived": "3",
+      "grok_task_id": "consult-20260823-042517",
+      "grok_metadata_task_id": "consult-20260823-042517",
+      "grok_report_bytes": [
+        15103
+      ],
+      "verifier_is_size_only": true,
+      "dummy_201_byte_file_would_pass": true,
+      "findings": [
+        "Accepted Qwen unit qwen.scheduler_cap: independent grep of /Users/scammermike/Downloads/hawking-copy/tools/haider/hcli/scheduler.py yields MAX_REPAIR_DEPTH=3, matching model_answer='3' / rederived='3'. acceptance_source=independent_rederivation. The refused qwen.equilibrium unit (model 1 vs truth 12) is real independent checking.",
+        "Grok verifier interpolates the real grok-run id consult-20260823-042517 (metadata.task_id matches; report bytes=[15103]). BUT the predicate is only grok-report*.md size>200 \u2014 a 201-byte file the harness wrote into that directory would be accepted. The gate does not read the report."
+      ],
+      "verdict": "WEAKENED"
+    },
+    {
+      "claim": "HCLI_SELF_OPT_ITERATION_1/2",
+      "receipts": [
+        "/Users/scammermike/Downloads/hawking-copy/receipts/headless/HCLI_SELF_OPT_ITERATION_1.json",
+        "/Users/scammermike/Downloads/hawking-copy/receipts/headless/HCLI_SELF_OPT_ITERATION_2.json"
+      ],
+      "attack": "Check decide's refuse predicate was executed (not just written); whether the perf number has a stated spread; whether mutate went through Engine.execute; whether iteration 2's tps delta is caused by the mutation or by a hardcoded width.",
+      "iteration_1": {
+        "mutate": {
+          "applied": true,
+          "path": "Engine.execute mutation path",
+          "kind": "mutation",
+          "status": "unverified",
+          "validation_ok": false,
+          "validation_reason": "NO_EVIDENCE",
+          "files_changed": [
+            "tools/haider/hcli/engine.py",
+            "tools/haider/hcli/executors.py"
+          ]
+        },
+        "decide": {
+          "decision": "promote",
+          "would_refuse_on_failing_gate": true,
+          "predicate": "promote IFF mutation.applied AND gate.correctness.passed_gate AND gate.perf.overlap_improved; else reject",
+          "refuse_if": {
+            "correctness_failed": {
+              "triggered": false,
+              "effect": "REFUSED"
+            },
+            "overlap_did_not_improve": {
+              "triggered": false,
+              "effect": "REFUSED"
+            },
+            "mutation_not_applied": {
+              "triggered": false,
+              "effect": "REFUSED"
+            }
+          }
+        },
+        "perf": {
+          "spread": 0,
+          "spread_mutated": 0,
+          "spread_original": 0,
+          "n_mutated": 2,
+          "n_original": 2,
+          "mutated_median": 2,
+          "original_median": 1,
+          "metric_values_mutated": [
+            2,
+            2
+          ],
+          "metric_values_original": [
+            1,
+            1
+          ],
+          "order": [
+            "mutated",
+            "original",
+            "mutated",
+            "original"
+          ],
+          "trials": [
+            {
+              "i": 0,
+              "condition": "mutated",
+              "width": null,
+              "mode": null,
+              "admitted_n": null,
+              "aggregate_tps": null,
+              "max_concurrent_model_calls": 2
+            },
+            {
+              "i": 1,
+              "condition": "original",
+              "width": null,
+              "mode": null,
+              "admitted_n": null,
+              "aggregate_tps": null,
+              "max_concurrent_model_calls": 1
+            },
+            {
+              "i": 2,
+              "condition": "mutated",
+              "width": null,
+              "mode": null,
+              "admitted_n": null,
+              "aggregate_tps": null,
+              "max_concurrent_model_calls": 2
+            },
+            {
+              "i": 3,
+              "condition": "original",
+              "width": null,
+              "mode": null,
+              "admitted_n": null,
+              "aggregate_tps": null,
+              "max_concurrent_model_calls": 1
+            }
+          ]
+        }
+      },
+      "iteration_2": {
+        "mutate": {
+          "applied": true,
+          "path": "Engine.execute mutation path",
+          "kind": "mutation",
+          "status": "unverified",
+          "validation_ok": false,
+          "validation_reason": "NO_EVIDENCE",
+          "files_changed": [
+            "tools/haider/hcli/controller.py"
+          ]
+        },
+        "decide": {
+          "decision": "promote",
+          "would_refuse_on_failing_gate": true,
+          "predicate": "promote IFF mutation.applied AND gate.correctness.passed_gate AND gate.perf.throughput_improved (mutated.median > original.median + spread); else reject",
+          "refuse_if": {
+            "correctness_failed": {
+              "triggered": false,
+              "effect": "REFUSED"
+            },
+            "throughput_did_not_improve_beyond_spread": {
+              "triggered": false,
+              "effect": "REFUSED"
+            },
+            "mutation_not_applied": {
+              "triggered": false,
+              "effect": "REFUSED"
+            }
+          }
+        },
+        "perf": {
+          "spread": 0.012938974250577218,
+          "spread_mutated": 0.012938974250577218,
+          "spread_original": 0.0026692213131482845,
+          "n_mutated": 2,
+          "n_original": 2,
+          "mutated_median": 25.3131986445145,
+          "original_median": 22.57524202591853,
+          "metric_values_mutated": [
+            25.300259670263923,
+            25.3131986445145
+          ],
+          "metric_values_original": [
+            22.572572804605382,
+            22.57524202591853
+          ],
+          "order": [
+            "mutated",
+            "original",
+            "mutated",
+            "original"
+          ],
+          "trials": [
+            {
+              "i": 0,
+              "condition": "mutated",
+              "width": 2,
+              "mode": "parallel_two_sequences",
+              "admitted_n": 2,
+              "aggregate_tps": 25.300259670263923,
+              "max_concurrent_model_calls": null
+            },
+            {
+              "i": 1,
+              "condition": "original",
+              "width": 1,
+              "mode": "serial_two_sequences",
+              "admitted_n": 1,
+              "aggregate_tps": 22.572572804605382,
+              "max_concurrent_model_calls": null
+            },
+            {
+              "i": 2,
+              "condition": "mutated",
+              "width": 2,
+              "mode": "parallel_two_sequences",
+              "admitted_n": 2,
+              "aggregate_tps": 25.3131986445145,
+              "max_concurrent_model_calls": null
+            },
+            {
+              "i": 3,
+              "condition": "original",
+              "width": 1,
+              "mode": "serial_two_sequences",
+              "admitted_n": 1,
+              "aggregate_tps": 22.57524202591853,
+              "max_concurrent_model_calls": null
+            }
+          ]
+        }
+      },
+      "iter2_width_hardcoded_in_source": true,
+      "iter2_width_snippet": null,
+      "findings": [
+        "Both iterations applied via Engine.execute (kind=mutation, files ['tools/haider/hcli/engine.py', 'tools/haider/hcli/executors.py'] / ['tools/haider/hcli/controller.py']).",
+        "Iteration 1 mutation receipt status=unverified validation.ok=false reason=NO_EVIDENCE; the mutation path's own validator did not accept, and the loop still promoted.",
+        "Iteration 2 mutation receipt also validation.ok=false reason=NO_EVIDENCE, then promoted.",
+        "Iteration 1 decide.would_refuse_on_failing_gate is hardcoded True on a PROMOTE receipt \u2014 it documents the predicate, it is not a run of a failing gate. refuse_if.*.triggered are all false. No negative control exists.",
+        "Iteration 1 states spread_mutated=0 with n=2 on a binary peak-concurrency metric {1,2}. Both mutated trials are exactly [2, 2]. That is a stated spread, but it is degenerate \u2014 not a measured dispersion.",
+        "Iteration 2 pairs the tps claim with spread=0.012938974250577218 (mutated median 25.3131986445145 vs original 22.57524202591853, n=2).",
+        "REFUTE iteration 2's promoted improvement as a measurement of the mutation: hcli_self_optimize_2.py assigns width=2 when cond=='mutated' and width=1 when cond=='original', then fans that many completions at the live llama-server. Completions do not go through the mutated RuntimePool. A no-op mutation would produce the same tps gap. admitted_n is recorded from a FakeBackend side probe, not from the completions."
+      ],
+      "verdict": "REFUTED"
+    },
+    {
+      "claim": "VMCP_FORGERY_CANARY",
+      "receipt": "/Users/scammermike/Downloads/hawking-copy/receipts/headless/VMCP_FORGERY_CANARY.json",
+      "attack": "Observe file A; overwrite A on disk with different bytes; CaptureBus.verify the original capture_id; then observe A again. Distinct from replay (same bytes, different path) and from tampered_artifact (CAS bytes). This forges a live world that the capture no longer describes.",
+      "canary_detected": [
+        "tampered_artifact",
+        "tampered_record",
+        "truncated_receipt",
+        "self_report"
+      ],
+      "canary_undetected": [
+        "replay"
+      ],
+      "sixth": {
+        "id": "stale_capture_after_subject_mutation",
+        "attack": "Observe file A; overwrite A on disk with different bytes; CaptureBus.verify the original capture_id; then observe A again. Distinct from replay (same bytes, different path) and from tampered_artifact (CAS bytes). This forges a live world that the capture no longer describes.",
+        "capture_id": "f3bc5511bf5adcca2b78bf71f841a04eb5f08182f942bfa54336e6bd522c6781",
+        "original_sha256": "d383d0f142e773fee54ee452566c62310130ee3553e2948de544a336bf4d236f",
+        "live_sha256_after_mutation": "b5adc2a70343e42262087342d6473b2717027b8b5498baf8d14c1f3438d1ab9f",
+        "verify_before": {
+          "raised": false,
+          "valid": true
+        },
+        "verify_after_live_mutation": {
+          "raised": false,
+          "valid": true,
+          "failures": []
+        },
+        "reobserve": {
+          "reused": true,
+          "same_capture_id": true,
+          "summary_sha256": "d383d0f142e773fee54ee452566c62310130ee3553e2948de544a336bf4d236f",
+          "status": "COMPLETE"
+        },
+        "verdict": "UNDETECTED"
+      },
+      "visionmcp_src": "/Users/scammermike/Downloads/hawking-copy/visionmcp/src",
+      "findings": [
+        "Canary attempted ['tampered_artifact', 'tampered_record', 'truncated_receipt', 'self_report', 'replay']; detected ['tampered_artifact', 'tampered_record', 'truncated_receipt', 'self_report']; undetected ['replay'].",
+        "Replay was already UNDETECTED (digest-only subject binding).",
+        "Sixth attack stale_capture_after_subject_mutation: UNDETECTED. verify stayed valid=True after the live file changed (d383d0f142e7 \u2192 b5adc2a70343); re-observe reused=True same id=True.",
+        "The canary's 4/5 DETECTED does not cover content-blind capture ids. observe() reuses a COMPLETE capture whose request hash matches, and verify() never re-reads the live subject."
+      ],
+      "verdict": "REFUTED"
+    },
+    {
+      "claim": "DIRTY_TREE_PRESERVATION",
+      "receipt": "/Users/scammermike/Downloads/hawking-copy/receipts/headless/DIRTY_TREE_PRESERVATION.json",
+      "attack": "Do not trust the receipt. Re-run git status --porcelain=v1 -uno and git hash-object vs HEAD:PATH for each of the 72 tracked-dirty paths on the preservation target.",
+      "commands": [
+        "git -C /Users/scammermike/Downloads/hawking-copy -c core.quotePath=false status --porcelain=v1 -uno",
+        "git -C /Users/scammermike/Downloads/hawking-copy hash-object -- <path>   vs   git rev-parse HEAD:<path>"
+      ],
+      "preservation_target": "/Users/scammermike/Downloads/hawking-copy",
+      "receipt_tracked": 72,
+      "still_differs_now": 72,
+      "now_matches_head": [],
+      "missing_on_disk": [],
+      "hash_changed_since_receipt_n": 14,
+      "hash_changed_since_receipt": [
+        {
+          "path": "tools/haider/hcli/backends.py",
+          "receipt_sha1": "d6fca8d6bac7e4f32ff3a783404921893eadd540",
+          "now_sha1": "fad4dc908136efc2e261939b16ba31a5852989cf",
+          "receipt_bytes": 51822,
+          "now_bytes": 54359
+        },
+        {
+          "path": "tools/haider/hcli/commands.py",
+          "receipt_sha1": "cb3b1f0336ad89d773807a19d6ca02c361639343",
+          "now_sha1": "2f61002366ce6654980814c3a7bbb19d484dd51c",
+          "receipt_bytes": 22788,
+          "now_bytes": 32399
+        },
+        {
+          "path": "tools/haider/hcli/controller.py",
+          "receipt_sha1": "783ca99cff95dba357ae2ae1a199ec356b370514",
+          "now_sha1": "3b7e971e89147194fb70fe7b83f60a3d58312df4",
+          "receipt_bytes": 32292,
+          "now_bytes": 38455
+        },
+        {
+          "path": "tools/haider/hcli/dag_store.py",
+          "receipt_sha1": "4c17d933728f5dc7f0c892be7b312ee9db58150d",
+          "now_sha1": "a9bb4feedb870f03b2d09255b1a282071d6993e1",
+          "receipt_bytes": 8069,
+          "now_bytes": 14717
+        },
+        {
+          "path": "tools/haider/hcli/engine.py",
+          "receipt_sha1": "d67c32e2607a65d705d97b67eba8bdfdc4142d40",
+          "now_sha1": "090311c80268ca69c2103dcf636f04fec6f9e129",
+          "receipt_bytes": 92294,
+          "now_bytes": 110540
+        },
+        {
+          "path": "tools/haider/hcli/goal.py",
+          "receipt_sha1": "1fe5958de5313c0e5fc104052201ac93e83b24a0",
+          "now_sha1": "b72a5feb9513d3765a7e6f2d8acdd271abb645e4",
+          "receipt_bytes": 34544,
+          "now_bytes": 45222
+        },
+        {
+          "path": "tools/haider/hcli/grok_bridge.py",
+          "receipt_sha1": "12ed2d850581b7c50e75630b10a5d58b76837a23",
+          "now_sha1": "e0cbd99c614ea53a52c332da84ecad22826e08f7",
+          "receipt_bytes": 42580,
+          "now_bytes": 52337
+        },
+        {
+          "path": "tools/haider/hcli/ledger.py",
+          "receipt_sha1": "26202ba824d5a4695647367c1e9d03d17c2fd5a3",
+          "now_sha1": "93c4eacd3cef97938a7d048420f59fb117554c55",
+          "receipt_bytes": 33088,
+          "now_bytes": 35185
+        },
+        {
+          "path": "tools/haider/hcli/mission.py",
+          "receipt_sha1": "f39a971b9c8c146451d3700166618370f3d40791",
+          "now_sha1": "c911b3ff349b8f671ca596faaecac0ed3b683cfb",
+          "receipt_bytes": 38811,
+          "now_bytes": 46368
+        },
+        {
+          "path": "tools/haider/hcli/runtime.py",
+          "receipt_sha1": "b70cfcc6e9e4e86da447edb896ee08629c078f98",
+          "now_sha1": "36e6963acb3338199b2e88c458b8c50bdc8c2e74",
+          "receipt_bytes": 41287,
+          "now_bytes": 46061
+        },
+        {
+          "path": "tools/haider/hcli/scheduler.py",
+          "receipt_sha1": "5ea4ee5c3de3b1d5f016baf23e24a3ee6733514f",
+          "now_sha1": "e2bfc5b990df18f46d0ccb6b223629719f25b8ee",
+          "receipt_bytes": 15354,
+          "now_bytes": 19052
+        },
+        {
+          "path": "tools/haider/hcli/tests/test_dag_store.py",
+          "receipt_sha1": "094eea03522d6ca5a6db753284fe10484d0c3152",
+          "now_sha1": "84ec8228a967f92ebc3e027bc87cf7e1a8cdcc19",
+          "receipt_bytes": 8199,
+          "now_bytes": 8796
+        },
+        {
+          "path": "tools/haider/hcli/tests/test_runtime_pool.py",
+          "receipt_sha1": "a43987d3b29c6320e9362dd6587b360295c34101",
+          "now_sha1": "90e5b47ce25f32e5373f9f92fcf8398d605aa02c",
+          "receipt_bytes": 20780,
+          "now_bytes": 22663
+        },
+        {
+          "path": "tools/haider/hcli/workunit.py",
+          "receipt_sha1": "2b9c0338746feca365c0dd7444b2f8a789a10225",
+          "now_sha1": "de2184ef2bb9dfcce47018fa6abe6b282994292f",
+          "receipt_bytes": 8895,
+          "now_bytes": 20682
+        }
+      ],
+      "truncated_now": [
+        "receipts/ascent-2026-08-16/matvec-occupancy-230x.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE.json",
+        "tools/haider/hcli/context.py",
+        "tools/haider/hcli/tests/test_commands_grok.py"
+      ],
+      "receipt_truncation": [
+        "receipts/ascent-2026-08-16/matvec-occupancy-230x.json",
+        "receipts/headless/QWEN38_GRAVITY_NATIVE.json",
+        "tools/haider/hcli/context.py",
+        "tools/haider/hcli/tests/test_commands_grok.py"
+      ],
+      "current_status_tracked_n": 72,
+      "findings": [
+        "Independent re-hash: all 72 tracked-dirty paths still differ from HEAD at /Users/scammermike/Downloads/hawking-copy (command: git hash-object vs git rev-parse HEAD:PATH). None match HEAD. None missing.",
+        "PRESERVED means 'still differs from HEAD', not 'content kept'. Pre-existing truncated vs HEAD: [{'path': 'receipts/ascent-2026-08-16/matvec-occupancy-230x.json', 'xy': ' M', 'classification': 'pre-existing', 'disk_bytes': 25394, 'head_bytes': 28625}]. truncation list=['receipts/ascent-2026-08-16/matvec-occupancy-230x.json', 'receipts/headless/QWEN38_GRAVITY_NATIVE.json', 'tools/haider/hcli/context.py', 'tools/haider/hcli/tests/test_commands_grok.py'].",
+        "14 of the 72 have been edited further since the snapshot (still dirty, not reverted). The receipt is a stale byte inventory, not a freeze.",
+        "git status --porcelain=v1 -uno now reports 72 tracked-dirty paths (receipt: 72). in-receipt-not-in-status=[] new-since-receipt=[]"
+      ],
+      "verdict": "WEAKENED"
+    },
+    {
+      "claim": "NOETIC_METRICS / accounting",
+      "attack": "Look for NOETIC_METRICS; for any reported byte figure, check whether a path list or a real measurement sits behind it.",
+      "details": {
+        "noetic_metrics_receipts": [],
+        "disk_truth": {
+          "path": "/Users/scammermike/.claude-grok/worktrees/n9adv-20260823-141647/receipts/headless/DISK_TRUTH.json",
+          "dirty_entries": 373,
+          "has_path_list": false,
+          "primary_head": "4d373884bed950382bf429bbf1dc023e3f1c63cd"
+        },
+        "artifact_ledger": {
+          "path": "/Users/scammermike/.claude-grok/worktrees/n9adv-20260823-141647/receipts/headless/ARTIFACT_LEDGER.json",
+          "artifact_count": 110,
+          "n_listed": 110,
+          "reported_total_gib": 458.364,
+          "summed_size_bytes": 492164071507,
+          "summed_gib": 458.3635102091357,
+          "identity_kinds": [
+            "sha256_size_head_tail_8MiB"
+          ],
+          "identity_caveat": "head/tail+size identity: detects truncation and corruption, NOT a full content hash. Do not cite as a content SHA."
+        }
+      },
+      "findings": [
+        "NOETIC_METRICS receipt is absent. Attacking the accounting receipts that are present: DISK_TRUTH and ARTIFACT_LEDGER.",
+        "DISK_TRUTH dirty_entries=373 with no path list. A silent revert cannot be named against this baseline. That is a count with no measurement of *which* bytes. DIRTY_TREE_PRESERVATION exists specifically because of this hole.",
+        "ARTIFACT_LEDGER total_gib=458.364 equals the sum of listed size_bytes (492164071507 B = 458.363510 GiB). That byte figure is measured.",
+        "WEAKEN: identity is sha256(size + head 8MiB + tail 8MiB), explicitly not a content SHA. A middle-of-file corruption keeps the same identity. The byte count is real; the identity is not a full measurement of those bytes."
+      ],
+      "verdict": "REFUTED"
+    },
+    {
+      "claim": "RUNTIME_CORRECTNESS",
+      "receipts": [
+        "/Users/scammermike/Downloads/hawking-copy/receipts/headless/RUNTIME_CORRECTNESS.json",
+        "/Users/scammermike/Downloads/hawking-copy/receipts/headless/RUNTIME_CORRECTNESS_DAMAGED.json"
+      ],
+      "attack": "Check whether 'ONE corrupted tensor out of 14 GB changed nothing' is a measured result, and which tensor the gate actually picks.",
+      "commands": [
+        "python3 -c \"from pathlib import Path; a=Path('/Users/scammermike/models/qwen38-gravity-uniform-q4-v1'); vs=sorted(p for p in a.rglob('*') if p.is_file() and p.stat().st_size>1_000_000); print(vs[0], vs[0].stat().st_size)\"",
+        "python3 -c \"import json; m=json.load(open('/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/manifest.json')); print([t for t in m['tensors'] if t['artifact'].startswith('0087624e')])\""
+      ],
+      "live_verdict_by_arm": {
+        "native_gravity_q4": "PASS",
+        "llama_cpp_q5k": "PASS"
+      },
+      "damaged_verdict_by_arm": {
+        "native_gravity_q4": "FAIL"
+      },
+      "damaged_receipt_records_victim": false,
+      "one_tensor_claim_is_source_comment": true,
+      "default_damage_frac": 0.25,
+      "files_gt_1mb": 354,
+      "chosen_at_default_frac": 89,
+      "victims0": {
+        "rel": "tensors/0087624ec92c8ab3c751d3bbfe0aeeb6fd629c22f52506a0d9200af1c04070e1.hq30uq4",
+        "bytes": 44564520
+      },
+      "victims0_tensor": {
+        "artifact": "0087624ec92c8ab3c751d3bbfe0aeeb6fd629c22f52506a0d9200af1c04070e1.hq30uq4",
+        "bytes": 44564520,
+        "cosine": null,
+        "elements": 83886080,
+        "kind": "q4",
+        "name": "language_model.model.layers.38.linear_attn.in_proj_qkvz.weight",
+        "shape": [
+          16384,
+          5120
+        ]
+      },
+      "embed_tokens": {
+        "artifact": "7cf1b122be1f8265ad64c83b9a9f1c065e1e780bea0fd1c74ac4598596cb3c69.hq30uq4",
+        "bytes": 675430440
+      },
+      "findings": [
+        "Live receipt: both arms PASS on \\bparis\\b / \\b323\\b. Damaged receipt: native_gravity_q4 FAIL (zbazbaz\u2026).",
+        "RUNTIME_CORRECTNESS_DAMAGED.json does not record which tensor(s) were corrupted, how many, or the damage-frac. The one-tensor sensitivity claim is not in the receipt.",
+        "The 'ONE 16 MB tensor out of a 14 GB catalog changed nothing' sentence is a source comment in runtime_correctness_gate.py, not a measured field.",
+        "Current gate code: victims = sorted(files > 1 MB); victims[0] is tensors/0087624ec92c8ab3c751d3bbfe0aeeb6fd629c22f52506a0d9200af1c04070e1.hq30uq4 (44564520 bytes) = language_model.model.layers.38.linear_attn.in_proj_qkvz.weight. That is 44.5 MB, not 16 MB, and it is layer 38 in_proj_qkvz \u2014 a residual block, not embed/lm_head. embed_tokens is 675430440 bytes at artifact 7cf1b122be1f8265\u2026 which sorts near the end of the content-addressed names and is never victims[0].",
+        "Default --damage-frac=0.25 selects every 4th of 354 files >1MB \u2192 89 tensors, not one. The published FAIL is a ~25% catalog smash, which is why output collapsed to 'zbazbaz'. Surviving a mid-network in_proj is not evidence the gate is insensitive; it is evidence the wrong tensor class was chosen for the one-tensor trial."
+      ],
+      "verdict": "REFUTED"
+    }
+  ],
+  "what_i_watched_fail": [
+    {
+      "title": "tree-state.patch could not apply in this sparse worktree",
+      "detail": "git apply failed: tools/haider/hcli/* is not materialized (sparse checkout). untracked.tar is also tools/haider only. Receipts were read from /Users/scammermike/Downloads/hawking-copy. git sparse-checkout add is denied in this sandbox."
+    },
+    {
+      "title": "Baseline pytest was 463 passed, 2 skipped, not 464/1",
+      "detail": "HCLI_SWAP_CEILING_GIB=64 python3.14 -m pytest tools/haider/hcli/tests -q at hawking-copy: 463 passed, 2 skipped in 142.69s. 465 collected. The extra skip is unittest skipTest on mlx_lm.server --help (test_mlx_backend.py); the other is the always-skipped live grok-run audit. Same extra-skip class iterations 1/2 already treated as suite_green.",
+      "command": "cd /Users/scammermike/Downloads/hawking-copy && HCLI_SWAP_CEILING_GIB=64 /opt/homebrew/opt/python@3.14/bin/python3.14 -m pytest tools/haider/hcli/tests -q --tb=no"
+    },
+    {
+      "title": "Qwen digit-stripping verifier",
+      "detail": "VerifyingEngine keeps only digits from the model answer. A wrong answer with extra numbers would fail closed; a bare '3' passes. Independent grep confirms 3."
+    },
+    {
+      "title": "Grok verifier is size>200",
+      "detail": "Real grok-run id consult-20260823-042517, real 15103-byte report that actually answers format_status. The gate would also accept a 201-byte dummy in that directory."
+    },
+    {
+      "title": "Self-opt iteration 2 width is the trial label",
+      "detail": "hcli_self_optimize_2.py: cond=='mutated' \u2192 width=2, cond=='original' \u2192 width=1, then fan_completions(width) against the live server. Completions never enter RuntimePool."
+    },
+    {
+      "title": "One 16 MB tensor claim is a comment about the wrong file",
+      "detail": "victims[0] under the published gate is language_model.model.layers.38.linear_attn.in_proj_qkvz.weight (44 564 520 bytes), not a 16 MB out_proj, not embed_tokens. The published FAIL smashed ~25% of files >1MB."
+    },
+    {
+      "title": "Capture id is a hash of the request, not the bytes",
+      "detail": "Sixth attack: mutate the live subject after a valid capture; verify stays valid; re-observe reuses the stale capture. UNDETECTED. The canary never tried this."
+    },
+    {
+      "title": "DISK_TRUTH is a count with no path list",
+      "detail": "dirty_entries=373, no inventory. Silent reverts cannot be named."
+    },
+    {
+      "title": "14 of 72 dirty paths mutated further since the snapshot",
+      "detail": "All 72 still differ from HEAD (the PRESERVED literal). 14 campaign files have new sha1s \u2014 still dirty, not frozen."
+    }
+  ],
+  "summary": {
+    "WEAKENED": 2,
+    "REFUTED": 4
+  },
+  "rule": "Default REFUTED when uncertain. A finding you cannot break is worth more after you tried."
+}

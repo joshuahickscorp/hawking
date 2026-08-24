@@ -1,0 +1,467 @@
+{
+ "schema": "hawking.headless.decode_topology.v1",
+ "generated_at": "2026-08-22T23:19:43Z",
+ "question": "Is the ~1.21x aggregate ceiling at 2 concurrent decoders a hardware bandwidth limit, or an artefact of running N separate processes?",
+ "reprofile_command": "python3 tools/headless/decode_topology_probe.py --per-slot-ctx 4096 --n-predict 128 --reps 3 --streams 1,2,4,6,8",
+ "model": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+ "model_bytes": 19535701280,
+ "llama_version": "version: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64",
+ "params": {
+  "per_slot_ctx": 4096,
+  "n_predict": 128,
+  "reps": 3,
+  "streams": [
+   1,
+   2,
+   4,
+   6,
+   8
+  ],
+  "decode_flags": "temperature=0 ignore_eos=true cache_prompt=false",
+  "design": "identical total work per arm; per-slot context held equal"
+ },
+ "gpu_gate": {
+  "device": "Apple M3 Ultra",
+  "source": "MTLDevice.recommendedMaxWorkingSetSize (measured)",
+  "recommendedMaxWorkingSetSize_gib": 77.76,
+  "per_process_gpu_gib": 19.79,
+  "headroom_frac": 0.1,
+  "process_arm_ceiling": 3,
+  "slot_arm_not_capped_because": "one process charges the weights against the device budget once; extra slots add only KV, so the slot arm is not bounded by the same ceiling",
+  "process_counts_measured": [
+   1,
+   2
+  ],
+  "process_counts_skipped": [
+   4,
+   6,
+   8
+  ]
+ },
+ "foreign_load_at_start": {
+  "count": 0,
+  "processes": [],
+  "any_actively_decoding": false
+ },
+ "foreign_load_at_end": {
+  "count": 0,
+  "processes": [],
+  "any_actively_decoding": false
+ },
+ "measurement_is_clean_room": true,
+ "clean_room_caveat": null,
+ "summary": {
+  "process": {
+   "1": {
+    "aggregate_tps_median": 22.813,
+    "scaling_vs_1": 1.0,
+    "spread_pct": 0.3
+   },
+   "2": {
+    "aggregate_tps_median": 27.546,
+    "scaling_vs_1": 1.2075,
+    "spread_pct": 0.1
+   }
+  },
+  "slot": {
+   "1": {
+    "aggregate_tps_median": 22.818,
+    "scaling_vs_1": 1.0,
+    "spread_pct": 0.3
+   },
+   "2": {
+    "aggregate_tps_median": 25.345,
+    "scaling_vs_1": 1.1107,
+    "spread_pct": 0.1
+   },
+   "4": {
+    "aggregate_tps_median": 27.749,
+    "scaling_vs_1": 1.2161,
+    "spread_pct": 0.1
+   },
+   "6": {
+    "aggregate_tps_median": 31.541,
+    "scaling_vs_1": 1.3823,
+    "spread_pct": 0.7
+   },
+   "8": {
+    "aggregate_tps_median": 28.429,
+    "scaling_vs_1": 1.2459,
+    "spread_pct": 0.8
+   }
+  }
+ },
+ "bandwidth_accounting": {
+  "model_bytes": 19535701280,
+  "single_decoder_tps": 22.813,
+  "implied_weight_stream_GB_per_s": 445.7,
+  "m3_ultra_peak_GB_per_s": 819,
+  "single_decoder_pct_of_peak": 54.4,
+  "note": "PROCESS topology multiplies this traffic by k because each process streams the full weight set per token. SLOT topology does not: one pass over the weights serves every slot in the step."
+ },
+ "raw": {
+  "process": {
+   "1": [
+    {
+     "n_streams": 1,
+     "batch_wall_s": 5.607,
+     "ok": 1,
+     "tokens": 128,
+     "aggregate_tps": 22.827,
+     "per_stream_tps": [
+      24.183595813517268
+     ],
+     "failures": [],
+     "rep": 0,
+     "free_gib": 44.96,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 1,
+     "batch_wall_s": 5.626,
+     "ok": 1,
+     "tokens": 128,
+     "aggregate_tps": 22.753,
+     "per_stream_tps": [
+      24.19820751777812
+     ],
+     "failures": [],
+     "rep": 1,
+     "free_gib": 44.34,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 1,
+     "batch_wall_s": 5.611,
+     "ok": 1,
+     "tokens": 128,
+     "aggregate_tps": 22.813,
+     "per_stream_tps": [
+      24.16519174041298
+     ],
+     "failures": [],
+     "rep": 2,
+     "free_gib": 44.47,
+     "swap_gib": 0.0
+    }
+   ],
+   "2": [
+    {
+     "n_streams": 2,
+     "batch_wall_s": 9.293,
+     "ok": 2,
+     "tokens": 256,
+     "aggregate_tps": 27.546,
+     "per_stream_tps": [
+      14.577221292354942,
+      14.570243828477269
+     ],
+     "failures": [],
+     "rep": 0,
+     "free_gib": 44.54,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 2,
+     "batch_wall_s": 9.294,
+     "ok": 2,
+     "tokens": 256,
+     "aggregate_tps": 27.546,
+     "per_stream_tps": [
+      14.576268445669863,
+      14.586661865223803
+     ],
+     "failures": [],
+     "rep": 1,
+     "free_gib": 44.15,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 2,
+     "batch_wall_s": 9.299,
+     "ok": 2,
+     "tokens": 256,
+     "aggregate_tps": 27.529,
+     "per_stream_tps": [
+      14.562923434064771,
+      14.567035277148658
+     ],
+     "failures": [],
+     "rep": 2,
+     "free_gib": 43.91,
+     "swap_gib": 0.0
+    }
+   ]
+  },
+  "slot": {
+   "1": [
+    {
+     "n_streams": 1,
+     "batch_wall_s": 5.609,
+     "ok": 1,
+     "tokens": 128,
+     "aggregate_tps": 22.82,
+     "per_stream_tps": [
+      24.17322837619738
+     ],
+     "failures": [],
+     "rep": 0,
+     "free_gib": 43.45,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 1,
+     "batch_wall_s": 5.626,
+     "ok": 1,
+     "tokens": 128,
+     "aggregate_tps": 22.753,
+     "per_stream_tps": [
+      24.18887886058286
+     ],
+     "failures": [],
+     "rep": 1,
+     "free_gib": 43.26,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 1,
+     "batch_wall_s": 5.61,
+     "ok": 1,
+     "tokens": 128,
+     "aggregate_tps": 22.818,
+     "per_stream_tps": [
+      24.17706374849507
+     ],
+     "failures": [],
+     "rep": 2,
+     "free_gib": 43.0,
+     "swap_gib": 0.0
+    }
+   ],
+   "2": [
+    {
+     "n_streams": 2,
+     "batch_wall_s": 10.103,
+     "ok": 2,
+     "tokens": 256,
+     "aggregate_tps": 25.34,
+     "per_stream_tps": [
+      13.412673488478147,
+      13.41251748342611
+     ],
+     "failures": [],
+     "rep": 0,
+     "free_gib": 42.94,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 2,
+     "batch_wall_s": 10.095,
+     "ok": 2,
+     "tokens": 256,
+     "aggregate_tps": 25.36,
+     "per_stream_tps": [
+      13.413941339786557,
+      13.413901979378432
+     ],
+     "failures": [],
+     "rep": 1,
+     "free_gib": 42.77,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 2,
+     "batch_wall_s": 10.101,
+     "ok": 2,
+     "tokens": 256,
+     "aggregate_tps": 25.345,
+     "per_stream_tps": [
+      13.40933633423106,
+      13.40929278656523
+     ],
+     "failures": [],
+     "rep": 2,
+     "free_gib": 43.09,
+     "swap_gib": 0.0
+    }
+   ],
+   "4": [
+    {
+     "n_streams": 4,
+     "batch_wall_s": 18.473,
+     "ok": 4,
+     "tokens": 512,
+     "aggregate_tps": 27.717,
+     "per_stream_tps": [
+      7.196693389263635,
+      7.196605181420794,
+      7.196650094318284,
+      7.196618129225623
+     ],
+     "failures": [],
+     "rep": 0,
+     "free_gib": 42.89,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 4,
+     "batch_wall_s": 18.449,
+     "ok": 4,
+     "tokens": 512,
+     "aggregate_tps": 27.752,
+     "per_stream_tps": [
+      7.198363676966907,
+      7.198335744775808,
+      7.198321171544767,
+      7.198307003182271
+     ],
+     "failures": [],
+     "rep": 1,
+     "free_gib": 42.88,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 4,
+     "batch_wall_s": 18.451,
+     "ok": 4,
+     "tokens": 512,
+     "aggregate_tps": 27.749,
+     "per_stream_tps": [
+      7.1980394340091625,
+      7.19802567153362,
+      7.198054815661753,
+      7.198069792597179
+     ],
+     "failures": [],
+     "rep": 2,
+     "free_gib": 42.62,
+     "swap_gib": 0.0
+    }
+   ],
+   "6": [
+    {
+     "n_streams": 6,
+     "batch_wall_s": 24.496,
+     "ok": 6,
+     "tokens": 768,
+     "aggregate_tps": 31.352,
+     "per_stream_tps": [
+      5.454170015512853,
+      5.454142591740382,
+      5.454148401838644,
+      5.454198601603134,
+      5.454158395236611,
+      5.454167459047831
+     ],
+     "failures": [],
+     "rep": 0,
+     "free_gib": 42.52,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 6,
+     "batch_wall_s": 24.331,
+     "ok": 6,
+     "tokens": 768,
+     "aggregate_tps": 31.565,
+     "per_stream_tps": [
+      5.4669153600632185,
+      5.466907421296927,
+      5.4669006500144866,
+      5.466891310342095,
+      5.466879869286902,
+      5.466871930623687
+     ],
+     "failures": [],
+     "rep": 1,
+     "free_gib": 42.51,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 6,
+     "batch_wall_s": 24.349,
+     "ok": 6,
+     "tokens": 768,
+     "aggregate_tps": 31.541,
+     "per_stream_tps": [
+      5.46385060944558,
+      5.463843379271023,
+      5.463835216193715,
+      5.463827752830092,
+      5.46382098917442,
+      5.4638132926210945
+     ],
+     "failures": [],
+     "rep": 2,
+     "free_gib": 42.12,
+     "swap_gib": 0.0
+    }
+   ],
+   "8": [
+    {
+     "n_streams": 8,
+     "batch_wall_s": 36.247,
+     "ok": 8,
+     "tokens": 1024,
+     "aggregate_tps": 28.251,
+     "per_stream_tps": [
+      3.6881059821050215,
+      3.733025669801047,
+      3.73302969803027,
+      3.7330480973499616,
+      3.733022621417144,
+      3.7330350327255934,
+      3.733010210191223,
+      3.7330052021760616
+     ],
+     "failures": [],
+     "rep": 0,
+     "free_gib": 42.24,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 8,
+     "batch_wall_s": 35.942,
+     "ok": 8,
+     "tokens": 1024,
+     "aggregate_tps": 28.49,
+     "per_stream_tps": [
+      3.7049632411203683,
+      3.737927479826508,
+      3.7379357757803895,
+      3.7379255150007182,
+      3.737931082012486,
+      3.737923441020182,
+      3.737923113549782,
+      3.7379222402956604
+     ],
+     "failures": [],
+     "rep": 1,
+     "free_gib": 42.24,
+     "swap_gib": 0.0
+    },
+    {
+     "n_streams": 8,
+     "batch_wall_s": 36.02,
+     "ok": 8,
+     "tokens": 1024,
+     "aggregate_tps": 28.429,
+     "per_stream_tps": [
+      3.6884217272244997,
+      3.7228053793258016,
+      3.6884168381300237,
+      3.7227922780213847,
+      3.7227691073451163,
+      3.7227579552065553,
+      3.7227805843730115,
+      3.7227488603080663
+     ],
+     "failures": [],
+     "rep": 2,
+     "free_gib": 41.74,
+     "swap_gib": 0.0
+    }
+   ]
+  }
+ }
+}

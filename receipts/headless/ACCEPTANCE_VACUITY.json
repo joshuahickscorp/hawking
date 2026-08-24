@@ -1,0 +1,81 @@
+{
+ "schema": "hawking.headless.acceptance_vacuity.v1",
+ "obligation": "G011 \u2014 anti-vacuity (directive \u00a718): acceptance must rest on protected tests actually executing, never on model text or a check that cannot fail.",
+ "generated_at": "2026-08-22T22:44:04Z",
+ "engine_under_test": {
+  "path": "tools/haider/hcli/engine.py",
+  "pinned_commit": "d1efc693fe6aa96d0a67b1942d8444738d3fea50",
+  "functions": [
+   "_validate (line ~1603)",
+   "_safe_test_argv (line ~1555)",
+   "_apply_operations (line ~1406)"
+  ]
+ },
+ "findings": [
+  {
+   "id": "V1",
+   "severity": "critical",
+   "title": "Test files are executed as plain scripts, so the standard pytest idiom never runs",
+   "detail": "_safe_test_argv returns [sys.executable, <path>] and _validate runs that directly. A file containing only `def test_x(): assert ...` and no __main__ block imports cleanly, defines the function, and exits 0 WITHOUT EXECUTING ANY ASSERTION. _validate records admitted:true exit_code:0 and returns ok:true.",
+   "proof": {
+    "calc.py": "def add(a, b):\n    return a * b - 999   # deliberately wrong",
+    "add(2,3)": -993,
+    "expected_by_test": 5,
+    "hcli_validator_command": "python3 test_calc.py",
+    "hcli_validator_exit_code": 0,
+    "real_runner_command": "python3 -m pytest -q test_calc.py",
+    "real_runner_result": "FAILED test_calc.py::test_add - assert -993 == 5",
+    "repro_dir": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/d8349186-aebc-459a-9484-b28447f02851/scratchpad/vacuity"
+   },
+   "consequence": "Every HCLI mutation validated this way is accepted on a check that cannot fail. The one completed receipt observed in a scratch repo (.hcli/receipts/78035b7b-...json, validation.ok=true, tests=['test_calc.py']) was graded by a test that never executed. The fix happened to be right; the gate proved nothing."
+  },
+  {
+   "id": "V2",
+   "severity": "critical",
+   "title": "A test that is refused admission does not fail validation",
+   "detail": "In _validate, when _safe_test_argv returns None the loop appends {'admitted': False, 'exit_code': None} and CONTINUES without setting ok=False. _safe_test_argv returns None for anything that is not a bare .py path or `python <file>.py` \u2014 so `pytest tests/`, `pytest -q`, `make test`, or any argument-bearing command is silently discarded and the mutation is still accepted.",
+   "consequence": "A model can name any test it likes; refusal is indistinguishable from success."
+  },
+  {
+   "id": "V3",
+   "severity": "high",
+   "title": "Zero tests validates as ok",
+   "detail": "If the model returns tests:[] the loop body never runs and ok stays True. A mutation with no test at all passes validation.",
+   "consequence": "Acceptance does not require evidence to exist."
+  },
+  {
+   "id": "V4",
+   "severity": "high",
+   "title": "No no-op detection on mutation",
+   "detail": "_apply_operations never compares file bytes before and after. `replace` with old_text == new_text, `append` with an empty new_text, or `replace_file` with identical content all write the same bytes back and report success. There is no pre-hash / changed-hash check anywhere in the mutation path.",
+   "consequence": "NO_OP_MUTATION is counted as progress, which is how a stage hash cycles forever."
+  },
+  {
+   "id": "V5",
+   "severity": "medium",
+   "title": "No red/green ordering",
+   "detail": "Tests run only AFTER the mutation. Nothing establishes the test was failing beforehand, so a mutation that changes something irrelevant, against an already-green test, is graded as a fix.",
+   "consequence": "Acceptance cannot distinguish a repair from a coincidence."
+  },
+  {
+   "id": "V6",
+   "severity": "low",
+   "title": "Non-Python paths are skipped silently",
+   "detail": "_validate's py_compile loop does `if path.suffix != '.py': continue` and records nothing, so a mutation to a non-Python file has no check and no trace of having none.",
+   "consequence": "Silent absence of a check reads identically to a passed check."
+  }
+ ],
+ "what_holds": [
+  "_single_anchor DOES enforce that a replace/insert anchor occurs exactly once, raising otherwise. That is a real guard and must be preserved.",
+  "_snapshot/_restore exist and rolled_back is recorded on the receipt.",
+  "_safe_path constrains mutation targets to the workspace."
+ ],
+ "required_fix_shape": [
+  "run tests through a real runner (pytest) when the file uses the pytest idiom, and prove the runner actually collected and executed at least one test",
+  "a refused test must FAIL validation, never be skipped silently",
+  "a mutation with no executable evidence must not be accepted",
+  "hash every mutated file before and after; identical bytes = NO_OP_MUTATION",
+  "establish red before green: the named test must be observed FAILING pre-mutation, or the acceptance must be explicitly labelled as unproven"
+ ],
+ "meta": "This is the same failure class as the prior campaign note 'FIVE systems in one day reported success while checking nothing'. Never trust a check you have not watched FAIL."
+}

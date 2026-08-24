@@ -1,0 +1,1580 @@
+{
+ "schema": "hawking.headless.organ_library.v1",
+ "generated_at": "2026-08-24T18:31:28Z",
+ "git_head": "bab8f140631fb7463f4cdb548eebbeb9bac0b54f",
+ "generated_by": "tools/headless/genome_libraries.py",
+ "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
+ "hand_authored": false,
+ "did_not_load_a_model": true,
+ "did_not_touch_gpu": true,
+ "did_not_run_cargo_or_metal_benchmarks": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_modify_odyssey_state": true,
+ "unmeasured_is_absent": true,
+ "s023": [
+  "\u00a712",
+  "\u00a770"
+ ],
+ "one_line": "Seven Qwen3.8 OrganGenomes seeded from ORGAN_BANDWIDTH, ORGAN_ROOF_LEDGER, DELTANET_ORGAN, MLP_GATE_UP, MLP_DOWN, ORGAN_FRONTIERS. Unmeasured capability is ABSENT.",
+ "organs": [
+  {
+   "organ": "embed",
+   "alias_in_bandwidth_receipts": "embedding",
+   "semantic_function": "Token-id gather into the hidden vector. Occupancy-starved; not a GEMV. ORGAN_BANDWIDTH bills 1 dispatch (embed_lookup), 2720 weight-read bytes.",
+   "source_architecture": "Qwen3.8-27B hybrid",
+   "dimensions": {
+    "layers": {
+     "value": 64,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "hidden": {
+     "value": 5120,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.hidden",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "source_architecture": {
+     "value": "Qwen3.8-27B hybrid (GQA every 4th layer, DeltaNet otherwise)",
+     "kind": "CITED",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "command": "geometry.gqa_layers/dn_layers",
+     "gqa_layers": 16,
+     "dn_layers": 48
+    },
+    "vocab": {
+     "value": 248320,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.vocab",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "shape": "vocab x hidden"
+   },
+   "best_representation_family": {
+    "family": "q4_control",
+    "codec": "HQ30UQ4 / f32v2 (hardlinked incumbent)",
+    "floor_storage_bpw": {
+     "value": 4.125,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "ORGAN_FRONTIERS.organs.embedding_output.embed_floor.storage_bpw",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null
+    },
+    "source": "receipts/headless/ORGAN_FRONTIERS.json"
+   },
+   "best_complete_ebpw": {
+    "value": 4.125,
+    "kind": "CITED",
+    "unit": "EBPW",
+    "command": "ORGAN_FRONTIERS.organs.embedding_output.embed_floor.storage_bpw",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "absent_reason": null
+   },
+   "best_active_ebpw": {
+    "kind": "ABSENT",
+    "value": null,
+    "unit": "EBPW/token",
+    "command": "ORGAN_FRONTIERS.verdict.floors_active.embedding_output",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "absent_reason": "Embed gather vs lm_head stream \u2014 ORGAN_FRONTIERS forbids quoting one active EBPW. Bytes/token is cited instead.",
+    "embed_active_bytes_per_token": {
+     "value": 2640.0,
+     "kind": "CITED",
+     "unit": "bytes/token",
+     "command": "ORGAN_FRONTIERS.verdict.floors_active.embedding_output.embed_active_bytes_per_token",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null
+    }
+   },
+   "kernel_id": {
+    "production": [
+     "qwen_uniform_q4_embedding_lookup"
+    ],
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "measured_bandwidth_gb_s": {
+    "value": 0.3065143937443467,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.embedding.achieved_gb_s",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "token_ns_contribution": {
+    "value": 8873.971518181492,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.embedding.scaled_gpu_ns",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "recoverable_token_ns": {
+    "value": 8516.498482742354,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8.",
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "flops": {
+    "value": 5120.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "dispatches": {
+    "value": 1,
+    "kind": "CITED",
+    "unit": "dispatches/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.embedding.dispatches",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "capability_sensitivity": {
+    "function_space_floor": {
+     "status": "MEASURED",
+     "organ": "embedding_output",
+     "bar": "q4_equivalent_on_rare_or_unseen",
+     "storage_bpw": 4.125,
+     "active_fused_bpw": 4.125,
+     "active_cached_f16_bpw": 16.0,
+     "scales_counted": true,
+     "method": "embed_ws_rtn_q4_g128_slice",
+     "family": "grouped_absmax_table",
+     "healthy": true,
+     "function": {
+      "cosine": 0.9922110438346863,
+      "gain": 0.9702293872833252,
+      "rel_fro": 0.1262839436531067,
+      "null": 0.15165649354457855,
+      "surplus_over_null": 0.8405545502901077,
+      "q4_equivalent": true,
+      "q4_reason": "Q4-equivalent: cosine>=0.990, gain>=0.50, surplus>=0.02"
+     },
+     "candidate": {
+      "name": "embed_ws_rtn_q4_g128_slice",
+      "family": "grouped_absmax_table",
+      "storage_bpw": 4.125,
+      "active_fused_bpw": 4.125
+     },
+     "note": "embed table floor; active is one gathered row",
+     "null": 0.15165649354457855,
+     "active_bytes_per_token": 2640.0,
+     "table_not_streamed": true
+    },
+    "function_space_source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "live_capability": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "doctor_pass_rate",
+     "command": "NOETIC_PARENT_A.capability_evidence",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
+    }
+   },
+   "negative_science": [
+    {
+     "id": "NNS-003",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
+     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    }
+   ],
+   "citations": [
+    "receipts/headless/ORGAN_BANDWIDTH.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/ORGAN_FRONTIERS.json"
+   ]
+  },
+  {
+   "organ": "gqa_attention",
+   "alias_in_bandwidth_receipts": "gqa_attention",
+   "semantic_function": "Grouped-query attention mixer on the 16 GQA layers: input RMSNorm, QKV concat, QK-norm/RoPE/cache, MHA decode, sigmoid gate, mixer residual. o_proj is billed to q4_remainder, not this organ.",
+   "source_architecture": "Qwen3.8-27B hybrid",
+   "dimensions": {
+    "layers": {
+     "value": 64,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "hidden": {
+     "value": 5120,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.hidden",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "source_architecture": {
+     "value": "Qwen3.8-27B hybrid (GQA every 4th layer, DeltaNet otherwise)",
+     "kind": "CITED",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "command": "geometry.gqa_layers/dn_layers",
+     "gqa_layers": 16,
+     "dn_layers": 48
+    },
+    "gqa_layers": {
+     "value": 16,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.gqa_layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "gqa_heads": {
+     "value": 24,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.gqa_heads",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "gqa_kv_heads": {
+     "value": 4,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.gqa_kv_heads",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "gqa_head_dim": {
+     "value": 256,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.gqa_head_dim",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "q_proj_rows": {
+     "value": 12288,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.q_proj_rows",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "kv_proj_rows": {
+     "value": 1024,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.kv_proj_rows",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    }
+   },
+   "best_representation_family": {
+    "family": "q4_control",
+    "codec": "HQ30UQ4 g64 (hardlinked incumbent)",
+    "floor_storage_bpw": {
+     "value": 4.25,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "ORGAN_FRONTIERS.organs.gqa.floor.storage_bpw",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null
+    },
+    "source": "receipts/headless/ORGAN_FRONTIERS.json"
+   },
+   "best_complete_ebpw": {
+    "value": 4.25,
+    "kind": "CITED",
+    "unit": "EBPW",
+    "command": "ORGAN_FRONTIERS.organs.gqa.floor.storage_bpw",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "absent_reason": null
+   },
+   "best_active_ebpw": {
+    "value": 4.25,
+    "kind": "CITED",
+    "unit": "EBPW/token",
+    "command": "ORGAN_FRONTIERS.verdict.floors_active.gqa.fused_bpw",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "absent_reason": null
+   },
+   "kernel_id": {
+    "production": [
+     "qwen80_residual_rmsnorm_tg",
+     "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+     "qwen38_gqa_qk_norm_rope_cache_tg",
+     "mha_decode_f32",
+     "qwen38_attention_apply_sigmoid_gate",
+     "qwen_next_add_residual"
+    ],
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "measured_bandwidth_gb_s": {
+    "value": 349.88890792970267,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.gqa_attention.achieved_gb_s",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "token_ns_contribution": {
+    "value": 1784175.3592412332,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.gqa_attention.scaled_gpu_ns",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "recoverable_token_ns": {
+    "value": 954503.6464293868,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8.",
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "flops": {
+    "value": 2367126272.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "dispatches": {
+    "value": 96,
+    "kind": "CITED",
+    "unit": "dispatches/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.gqa_attention.dispatches",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "capability_sensitivity": {
+    "function_space_floor": {
+     "status": "MEASURED",
+     "organ": "gqa",
+     "bar": "q4_equivalent",
+     "storage_bpw": 4.25,
+     "active_fused_bpw": 4.25,
+     "active_cached_f16_bpw": 16.0,
+     "scales_counted": true,
+     "method": "ws_rtn_q4_g64",
+     "family": "grouped_absmax",
+     "healthy": true,
+     "function": {
+      "cosine": 0.9917783737182617,
+      "gain": 0.8760872483253479,
+      "rel_fro": 0.12561747431755066,
+      "null": 0.6293257474899292,
+      "surplus_over_null": 0.3624526262283325,
+      "q4_equivalent": true,
+      "q4_reason": "Q4-equivalent: cosine>=0.990, gain>=0.50, surplus>=0.02"
+     },
+     "candidate": {
+      "name": "ws_rtn_q4_g64",
+      "family": "grouped_absmax",
+      "storage_bpw": 4.25,
+      "active_fused_bpw": 4.25
+     },
+     "note": "Organ floor is MAX over q/k/v/o of each projection's cheapest Q4-equivalent candidate.",
+     "null": 0.6293257474899292,
+     "active_bytes_per_token": 891289600.0,
+     "active_bytes_note": "shipping organ streams 891289600 B/token at q4_g64=4.25; scaled by floor_storage/4.25. Table organs differ (see embedding).",
+     "shipping_active_bytes_per_token": 891289600,
+     "shipping_storage_bytes": 891652992,
+     "gated_by": "L63.k_proj",
+     "this_lane_rtn_diagH_floor_storage_bpw": 4.25,
+     "cited_hessian_grouped_absmax_floor_storage_bpw": 4.125
+    },
+    "function_space_source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "live_capability": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "doctor_pass_rate",
+     "command": "NOETIC_PARENT_A.capability_evidence",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
+    }
+   },
+   "negative_science": [
+    {
+     "id": "NNS-002",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That complete (or active) BPW predicts coherence: denser is worse, cheaper is worse, the number is the capability.",
+     "scope_organ": "whole artifact (attention-dominated on Qwen3.8)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-003",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
+     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-009",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That organ cosine ~0.86\u20130.90, or the D23 0.8604 residual-identity bar, is a capability certificate / hard GO-NO-GO.",
+     "scope_organ": "expert organs; not attention (attention uses 0.99)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-019",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "scope_organ": "Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-020",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That storage / complete_physical BPW is the BPW decode moves (active BPW), and that crushing routed experts is therefore the velocity lever.",
+     "scope_organ": "attention + lm_head vs routed experts",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    }
+   ],
+   "citations": [
+    "receipts/headless/ORGAN_BANDWIDTH.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/ORGAN_FRONTIERS.json"
+   ]
+  },
+  {
+   "organ": "deltanet",
+   "alias_in_bandwidth_receipts": "deltanet",
+   "semantic_function": "Gated-delta linear-attention mixer on the 48 DeltaNet layers: input RMSNorm, qkvz+ba concat, rearrange/conv/L2, ba_to_decay, gated-delta recurrent state, gated RMSNorm, mixer residual. Recurrent state is a summary, not a prefix-shareable cache. out_proj is q4_remainder.",
+   "source_architecture": "Qwen3.8-27B hybrid",
+   "dimensions": {
+    "layers": {
+     "value": 64,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "hidden": {
+     "value": 5120,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.hidden",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "source_architecture": {
+     "value": "Qwen3.8-27B hybrid (GQA every 4th layer, DeltaNet otherwise)",
+     "kind": "CITED",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "command": "geometry.gqa_layers/dn_layers",
+     "gqa_layers": 16,
+     "dn_layers": 48
+    },
+    "dn_layers": {
+     "value": 48,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.dn_layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "lin_key_heads": {
+     "value": 16,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.lin_key_heads",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "lin_value_heads": {
+     "value": 48,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.lin_value_heads",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "lin_key_dim": {
+     "value": 128,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.lin_key_dim",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "lin_value_dim": {
+     "value": 128,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.lin_value_dim",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "qkvz_rows": {
+     "value": 16384,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.qkvz_rows",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "rec_state_elements": {
+     "value": 786432,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.rec_state_elements",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    }
+   },
+   "best_representation_family": {
+    "family": "q4_control",
+    "floor_storage_bpw": {
+     "value": 4.125,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "ORGAN_FRONTIERS.organs.deltanet.floor.storage_bpw",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null
+    },
+    "source": "receipts/headless/ORGAN_FRONTIERS.json"
+   },
+   "best_complete_ebpw": {
+    "value": 4.125,
+    "kind": "CITED",
+    "unit": "EBPW",
+    "command": "ORGAN_FRONTIERS.organs.deltanet.floor.storage_bpw",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "absent_reason": null
+   },
+   "best_active_ebpw": {
+    "value": 4.125,
+    "kind": "CITED",
+    "unit": "EBPW/token",
+    "command": "ORGAN_FRONTIERS.verdict.floors_active.deltanet.fused_bpw",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "absent_reason": null
+   },
+   "kernel_id": {
+    "production": [
+     "qwen80_residual_rmsnorm_tg",
+     "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+     "qwen38_qkvz_rearrange_conv_l2_f32",
+     "qwen80_ba_to_decay_beta_f32",
+     "qwen38_gated_delta_decode_vi_simd",
+     "qwen80_deltanet_gated_rmsnorm_tg",
+     "qwen_next_add_residual"
+    ],
+    "best_measured_change": {
+     "change": "widen_f4",
+     "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+     "source": "receipts/headless/DELTANET_ORGAN.json"
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "measured_bandwidth_gb_s": {
+    "value": 325.5340876311656,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.deltanet.achieved_gb_s",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "token_ns_contribution": {
+    "value": 6640392.887055211,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.deltanet.scaled_gpu_ns",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "recoverable_token_ns": {
+    "value": 3385151.580319722,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8.",
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "flops": {
+    "value": 8374840320.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "dispatches": {
+    "value": 336,
+    "kind": "CITED",
+    "unit": "dispatches/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.deltanet.dispatches",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "capability_sensitivity": {
+    "function_space_floor": {
+     "status": "MEASURED",
+     "organ": "deltanet",
+     "bar": "q4_equivalent",
+     "storage_bpw": 4.125,
+     "active_fused_bpw": 4.125,
+     "active_cached_f16_bpw": 16.0,
+     "scales_counted": true,
+     "method": "ws_rtn_q4_g128",
+     "family": "grouped_absmax",
+     "healthy": true,
+     "function": {
+      "cosine": 0.9947348833084106,
+      "gain": 0.9485820531845093,
+      "rel_fro": 0.10448289662599564,
+      "null": 0.3188946843147278,
+      "surplus_over_null": 0.6758401989936829,
+      "q4_equivalent": true,
+      "q4_reason": "Q4-equivalent: cosine>=0.990, gain>=0.50, surplus>=0.02"
+     },
+     "candidate": {
+      "name": "ws_rtn_q4_g128",
+      "family": "grouped_absmax",
+      "storage_bpw": 4.125,
+      "active_fused_bpw": 4.125
+     },
+     "note": "Organ floor is MAX over required tensors of each tensor's cheapest Q4-equivalent candidate (gated by the worst projection).",
+     "null": 0.3188946843147278,
+     "active_bytes_per_token": 2866913280.0,
+     "active_bytes_note": "shipping organ streams 2953789440 B/token at q4_g64=4.25; scaled by floor_storage/4.25. Table organs differ (see embedding).",
+     "shipping_active_bytes_per_token": 2953789440,
+     "shipping_storage_bytes": 2962687488,
+     "gated_by": "in_proj_qkv / out_proj / organ_vsiluz at q4_g128"
+    },
+    "function_space_source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "live_capability": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "doctor_pass_rate",
+     "command": "NOETIC_PARENT_A.capability_evidence",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
+    }
+   },
+   "negative_science": [
+    {
+     "id": "NNS-019",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "scope_organ": "Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    }
+   ],
+   "citations": [
+    "receipts/headless/ORGAN_BANDWIDTH.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/DELTANET_ORGAN.json"
+   ],
+   "deltanet_organ": {
+    "one_line": "N025 DeltaNet 25.9% of the 356.7\u2192778.8 gap (6.55 ms isolated, 325.5 GB/s). Re-measured baseline 6.36 ms, 339.9 GB/s. widen_f4: 5.52 ms / 391.4 GB/s (separated, recovered 21.6% of the 25.9% share; token ids unchanged). coalesce_tg32: 5.64 ms / 382.9 GB/s (separated, recovered 18.5% of the 25.9% share; token ids unchanged). dense_w_materialized=0.",
+    "changes": [
+     {
+      "change": "widen_f4",
+      "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "recovered_isolated_ns": 836125.0,
+      "token_ids_unchanged": true,
+      "parity_rec_out": 0.0
+     },
+     {
+      "change": "coalesce_tg32",
+      "kernel": "qwen38_gated_delta_decode_vi_simd_ba_tg32",
+      "recovered_isolated_ns": 714250.0,
+      "token_ids_unchanged": true,
+      "parity_rec_out": 0.0
+     }
+    ],
+    "source": "receipts/headless/DELTANET_ORGAN.json"
+   }
+  },
+  {
+   "organ": "mlp_gate_up",
+   "alias_in_bandwidth_receipts": "mlp_gate_up",
+   "semantic_function": "Post-attention RMSNorm + fused gate+up+SwiGLU. Largest recoverable token_ns holder on the parent token graph.",
+   "source_architecture": "Qwen3.8-27B hybrid",
+   "dimensions": {
+    "layers": {
+     "value": 64,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "hidden": {
+     "value": 5120,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.hidden",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "source_architecture": {
+     "value": "Qwen3.8-27B hybrid (GQA every 4th layer, DeltaNet otherwise)",
+     "kind": "CITED",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "command": "geometry.gqa_layers/dn_layers",
+     "gqa_layers": 16,
+     "dn_layers": 48
+    },
+    "intermediate": {
+     "value": 17408,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.intermediate",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "shape_note": "fused gate+up against hidden; rows = 2 * intermediate on the concat path"
+   },
+   "best_representation_family": {
+    "family": "q2_affine",
+    "codec": "HGRAVF01 affine_q2_group64 LS (w = q * scale + bias, q in {0,1,2,3})",
+    "group": 64,
+    "affine_tensor_storage_bpw": {
+     "value": 2.5,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "NOETIC_PARENT_A.RepresentationGenome.affine_tensor_storage_bpw",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": null
+    },
+    "lowest_coherent_native_mlp_bpw": {
+     "value": 2.25,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": "N021 / BYTES_FRONTIER q2f g64 baseline. Ternary 1.85 failed whole-model composition."
+    },
+    "source": "receipts/headless/NOETIC_PARENT_A.json"
+   },
+   "best_complete_ebpw": {
+    "value": 2.25,
+    "kind": "CITED",
+    "unit": "EBPW",
+    "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "Lowest coherent native MLP in the N021/BYTES_FRONTIER harness. Parent affine tensors store 2.5 bpw (scale+bias). Whole-model complete EBPW 3.1393 is NOT this organ's number."
+   },
+   "best_active_ebpw": {
+    "value": 2.25,
+    "kind": "CITED",
+    "unit": "EBPW/token",
+    "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "For packed q2f, stored = active (BYTES_FRONTIER)."
+   },
+   "kernel_id": {
+    "production": [
+     "qwen80_residual_rmsnorm_tg",
+     "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+    ],
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "measured_bandwidth_gb_s": {
+    "value": 360.70618245384145,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.mlp_gate_up.achieved_gb_s",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "token_ns_contribution": {
+    "value": 9887463.24151622,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.mlp_gate_up.scaled_gpu_ns",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "recoverable_token_ns": {
+    "value": 5292216.967877891,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8.",
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "flops": {
+    "value": 22824222720.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "dispatches": {
+    "value": 128,
+    "kind": "CITED",
+    "unit": "dispatches/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.mlp_gate_up.dispatches",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "capability_sensitivity": {
+    "function_space_floor": {
+     "mlp_fail_bpw": {
+      "value": 1.85,
+      "status": "CITED",
+      "null": "not a floor for DeltaNet/GQA/embed",
+      "unit": "bpw",
+      "source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+      "note": "whole-model uniform ternary; argmax flipped (9714 vs 10895)"
+     },
+     "mlp_survive_bpw": {
+      "value": 2.25,
+      "status": "CITED",
+      "null": "not a floor for DeltaNet/GQA/embed",
+      "unit": "bpw",
+      "source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+      "note": "whole-model uniform q2 g64; argmax agreed"
+     },
+     "note": "These are MLP/whole-model uniform mix figures, not GQA/DeltaNet floors."
+    },
+    "function_space_source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "live_capability": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "doctor_pass_rate",
+     "command": "NOETIC_PARENT_A.capability_evidence",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
+    }
+   },
+   "negative_science": [
+    {
+     "id": "NNS-003",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
+     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-004",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That routed experts share a basis / codebook / template, so a shared subspace, joint codebook, or same-index cross-layer tying compresses them together.",
+     "scope_organ": "gate_proj / up_proj (and F1 all three)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-005",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That a fit-quality gate of observed/probed/worst_unit cosine can certify an artifact, including that 1.000000 means the weights were preserved.",
+     "scope_organ": "any matrix scored by cosine-only doctor axes",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-007",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That a rank-r or full-dim codec scored on fewer captured rows than the fitted dimension is a score of the codec.",
+     "scope_organ": "routed expert gate/up/down",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-010",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That matching the Gaussian rate-distortion function sqrt(2^-2R) proves a post-hoc codec is at the true Shannon floor.",
+     "scope_organ": "gate/down; layer 0 is a different source",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-011",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8.",
+     "scope_organ": "MLP GEMV",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-012",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
+     "scope_organ": "all 64 MLPs as one shared operator + FiLM",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-013",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
+     "scope_organ": "MLP (67\u201368% of GEMV bytes)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-014",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out.",
+     "scope_organ": "down_proj L31/L15 (and G034 gate/down L0/L31/L63)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-016",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
+     "scope_organ": "gate/down; L0 is the exception",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-017",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That PQ/VQ coding of the RAW frozen weights is a route to one bit or below that preserves capability.",
+     "scope_organ": "whole model; dominant_failure_organ = gate",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-018",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a single codec family (all-binary, or all low-rank) wins on every Q80 expert organ inside the 1.5 budget.",
+     "scope_organ": "routed gate / up / down separately",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-025",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate.",
+     "scope_organ": "expert gate/up/down",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-029",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+     "scope_organ": "MLP (sparsity); whole artifact (bit-descent)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    }
+   ],
+   "citations": [
+    "receipts/headless/ORGAN_BANDWIDTH.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/MLP_GATE_UP.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ],
+   "mlp_gate_up": {
+    "answer": "N024 ruled out the MLP tile; this lane did not retune qmvfast/wide64/tgx. The attempted cut is S022 \u00a79 norm+projection: RMSNorm writes group-64 x-sums and fused gate_up_swiglu defers bias*sum(x) out of the inner loop. Ranking metric is COMPLETE_TOKEN_NS, not GB/s. Isolated fused gate_up_swiglu median 251833.0 ns; acc_only 258291.0 ns; decode_probe 47125.0 ns; addr_probe 51750.0 ns; launch64 9365541.0 ns; xsum64 5375.0 ns. Isolated biasprep is SEPARATED and faster than tpr64 (146500 vs 251833.0 ns median on the fused GEMV). Production tpr64 complete_token_ns median 28521263 (gpu_ns 27290958, tok/s 35.06155984793923). NOT SEPARATED: complete_token_ns ranges overlap; do not quote a mean delta. A measured reason none exists on COMPLETE_TOKEN_NS: the isolated GEMV cut did not transfer into the 580-dispatch token. Production GPU ns 27290958 vs biasprep 27452416 overlap. Residual blocker is still the dual packed-decode + scale + accumulate of the 64 fused gate_up_swiglu launches (35.6% of the 356.7\u2192778.8 gap per N025), not the SwiGLU epilogue and not the RMSNorm launch. dropbias bad control changed token ids (REJECTED).",
+    "ranking_metric": "COMPLETE_TOKEN_NS",
+    "n025_gap_share": 0.356,
+    "reduced_complete_token_ns": false,
+    "source": "receipts/headless/MLP_GATE_UP.json"
+   }
+  },
+  {
+   "organ": "mlp_down",
+   "alias_in_bandwidth_receipts": "mlp_down",
+   "semantic_function": "MLP down-projection (affine2 g64 / q2) plus MLP residual. Independent of gate_up; MLP_DOWN forbids transferring gate_up conclusions.",
+   "source_architecture": "Qwen3.8-27B hybrid",
+   "dimensions": {
+    "layers": {
+     "value": 64,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "hidden": {
+     "value": 5120,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.hidden",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "source_architecture": {
+     "value": "Qwen3.8-27B hybrid (GQA every 4th layer, DeltaNet otherwise)",
+     "kind": "CITED",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "command": "geometry.gqa_layers/dn_layers",
+     "gqa_layers": 16,
+     "dn_layers": 48
+    },
+    "intermediate": {
+     "value": 17408,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.intermediate",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "shape": "hidden x intermediate"
+   },
+   "best_representation_family": {
+    "family": "q2_affine",
+    "codec": "HGRAVF01 affine_q2_group64 LS (w = q * scale + bias, q in {0,1,2,3})",
+    "group": 64,
+    "affine_tensor_storage_bpw": {
+     "value": 2.5,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "NOETIC_PARENT_A.RepresentationGenome.affine_tensor_storage_bpw",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": null
+    },
+    "lowest_coherent_native_mlp_bpw": {
+     "value": 2.25,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": "N021 / BYTES_FRONTIER q2f g64 baseline. Ternary 1.85 failed whole-model composition."
+    },
+    "source": "receipts/headless/NOETIC_PARENT_A.json"
+   },
+   "best_complete_ebpw": {
+    "value": 2.25,
+    "kind": "CITED",
+    "unit": "EBPW",
+    "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "Lowest coherent native MLP in the N021/BYTES_FRONTIER harness. Parent affine tensors store 2.5 bpw (scale+bias). Whole-model complete EBPW 3.1393 is NOT this organ's number."
+   },
+   "best_active_ebpw": {
+    "value": 2.25,
+    "kind": "CITED",
+    "unit": "EBPW/token",
+    "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "For packed q2f, stored = active (BYTES_FRONTIER)."
+   },
+   "kernel_id": {
+    "production": [
+     "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "qwen_next_add_residual"
+    ],
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "measured_bandwidth_gb_s": {
+    "value": 309.5045692889859,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.mlp_down.achieved_gb_s",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "token_ns_contribution": {
+    "value": 5759460.043174991,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.mlp_down.scaled_gpu_ns",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "recoverable_token_ns": {
+    "value": 3453488.9701968655,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8.",
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "flops": {
+    "value": 11408834560.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "dispatches": {
+    "value": 128,
+    "kind": "CITED",
+    "unit": "dispatches/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.mlp_down.dispatches",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "capability_sensitivity": {
+    "function_space_floor": {
+     "mlp_fail_bpw": {
+      "value": 1.85,
+      "status": "CITED",
+      "null": "not a floor for DeltaNet/GQA/embed",
+      "unit": "bpw",
+      "source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+      "note": "whole-model uniform ternary; argmax flipped (9714 vs 10895)"
+     },
+     "mlp_survive_bpw": {
+      "value": 2.25,
+      "status": "CITED",
+      "null": "not a floor for DeltaNet/GQA/embed",
+      "unit": "bpw",
+      "source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+      "note": "whole-model uniform q2 g64; argmax agreed"
+     },
+     "note": "These are MLP/whole-model uniform mix figures, not GQA/DeltaNet floors."
+    },
+    "function_space_source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "live_capability": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "doctor_pass_rate",
+     "command": "NOETIC_PARENT_A.capability_evidence",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
+    }
+   },
+   "negative_science": [
+    {
+     "id": "NNS-003",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
+     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-007",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That a rank-r or full-dim codec scored on fewer captured rows than the fitted dimension is a score of the codec.",
+     "scope_organ": "routed expert gate/up/down",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-010",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That matching the Gaussian rate-distortion function sqrt(2^-2R) proves a post-hoc codec is at the true Shannon floor.",
+     "scope_organ": "gate/down; layer 0 is a different source",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-011",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8.",
+     "scope_organ": "MLP GEMV",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-012",
+     "kind": "ARTIFACT_OF_METHOD",
+     "claim_refuted": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
+     "scope_organ": "all 64 MLPs as one shared operator + FiLM",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-013",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
+     "scope_organ": "MLP (67\u201368% of GEMV bytes)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-014",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out.",
+     "scope_organ": "down_proj L31/L15 (and G034 gate/down L0/L31/L63)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-015",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
+     "scope_organ": "down_proj L31, real post_swiglu X",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-016",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
+     "scope_organ": "gate/down; L0 is the exception",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-018",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a single codec family (all-binary, or all low-rank) wins on every Q80 expert organ inside the 1.5 budget.",
+     "scope_organ": "routed gate / up / down separately",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-025",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate.",
+     "scope_organ": "expert gate/up/down",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-029",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+     "scope_organ": "MLP (sparsity); whole artifact (bit-descent)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    }
+   ],
+   "citations": [
+    "receipts/headless/ORGAN_BANDWIDTH.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/MLP_DOWN.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ],
+   "mlp_down": {
+    "one_line": "mlp_down [5120\u00d717408] affine2 g64: accumulate 5510000 ns vs load 3286916 ns; residual 117666 ns; no COMPLETE_TOKEN_NS win. Gate/up conclusions not transferred. dense_w_materialized=0.",
+    "reductions_kind": "measured_no_win",
+    "source": "receipts/headless/MLP_DOWN.json"
+   }
+  },
+  {
+   "organ": "lm_head",
+   "alias_in_bandwidth_receipts": "lm_head",
+   "semantic_function": "Terminal RMSNorm + vocabulary projection (Q4 GEMV) onto 248320 logits.",
+   "source_architecture": "Qwen3.8-27B hybrid",
+   "dimensions": {
+    "layers": {
+     "value": 64,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "hidden": {
+     "value": 5120,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.hidden",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "source_architecture": {
+     "value": "Qwen3.8-27B hybrid (GQA every 4th layer, DeltaNet otherwise)",
+     "kind": "CITED",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "command": "geometry.gqa_layers/dn_layers",
+     "gqa_layers": 16,
+     "dn_layers": 48
+    },
+    "vocab": {
+     "value": 248320,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.vocab",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "shape": "vocab x hidden"
+   },
+   "best_representation_family": {
+    "family": "q4_control",
+    "codec": "HQ30UQ4 / f32v2 (hardlinked incumbent)",
+    "floor_storage_bpw": {
+     "value": 3.25,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "ORGAN_FRONTIERS.organs.embedding_output.lm_head_floor.storage_bpw",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null,
+     "note": "lm_head mix survives q3 (3.25) on observed+cold columns; embed rare-token floor is 4.125."
+    },
+    "source": "receipts/headless/ORGAN_FRONTIERS.json"
+   },
+   "best_complete_ebpw": {
+    "value": 3.25,
+    "kind": "CITED",
+    "unit": "EBPW",
+    "command": "ORGAN_FRONTIERS.organs.embedding_output.lm_head_floor.storage_bpw",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "absent_reason": null
+   },
+   "best_active_ebpw": {
+    "value": 516505600.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "ORGAN_FRONTIERS.verdict.floors_active.embedding_output.lm_head_active_bytes_per_token",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "absent_reason": null,
+    "note": "Active billed as bytes/token, not a single EBPW (embed gather vs lm_head stream)."
+   },
+   "kernel_id": {
+    "production": [
+     "qwen80_residual_rmsnorm_tg",
+     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128"
+    ],
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "measured_bandwidth_gb_s": {
+    "value": 652.9293122699839,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.lm_head.achieved_gb_s",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "token_ns_contribution": {
+    "value": 1034493.1178716992,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.lm_head.scaled_gpu_ns",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "recoverable_token_ns": {
+    "value": 165763.29052956146,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8.",
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "flops": {
+    "value": 2542822400.0,
+    "kind": "DERIVED",
+    "unit": "FLOP/token",
+    "command": "sum(DISPATCH_LEDGER.dispatches.flops) grouped by organ",
+    "absent_reason": null,
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "dispatches": {
+    "value": 2,
+    "kind": "CITED",
+    "unit": "dispatches/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.lm_head.dispatches",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "capability_sensitivity": {
+    "function_space_floor": {
+     "status": "MEASURED",
+     "organ": "embedding_output",
+     "bar": "q4_equivalent",
+     "storage_bpw": 3.25,
+     "active_fused_bpw": 3.25,
+     "active_cached_f16_bpw": 16.0,
+     "scales_counted": true,
+     "method": "lm_head_ws_rtn_q3_g64_mix",
+     "family": "grouped_absmax",
+     "healthy": true,
+     "function": {
+      "cosine": 0.9917678833007812,
+      "gain": 0.8330069184303284,
+      "rel_fro": 0.12657898664474487,
+      "null": 0.7747039198875427,
+      "surplus_over_null": 0.21706396341323853,
+      "q4_equivalent": true,
+      "q4_reason": null
+     },
+     "candidate": {
+      "name": "lm_head_ws_rtn_q3_g64_mix",
+      "family": "grouped_absmax",
+      "storage_bpw": 3.25,
+      "active_fused_bpw": 3.25
+     },
+     "note": "lm_head GEMV floor on hold X vs observed+cold mix",
+     "null": 0.7747039198875427,
+     "active_bytes_per_token": 516505600.0,
+     "table_streamed_every_token": true
+    },
+    "function_space_source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "live_capability": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "doctor_pass_rate",
+     "command": "NOETIC_PARENT_A.capability_evidence",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
+    }
+   },
+   "negative_science": [
+    {
+     "id": "NNS-003",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
+     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-019",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "scope_organ": "Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    },
+    {
+     "id": "NNS-020",
+     "kind": "PROPERTY_OF_IDEA",
+     "claim_refuted": "That storage / complete_physical BPW is the BPW decode moves (active BPW), and that crushing routed experts is therefore the velocity lever.",
+     "scope_organ": "attention + lm_head vs routed experts",
+     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    }
+   ],
+   "citations": [
+    "receipts/headless/ORGAN_BANDWIDTH.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/ORGAN_FRONTIERS.json"
+   ]
+  },
+  {
+   "organ": "sampling",
+   "alias_in_bandwidth_receipts": "sampling",
+   "semantic_function": "Argmax over logits. No weight stream. Occupancy-starved launch class.",
+   "source_architecture": "Qwen3.8-27B hybrid",
+   "dimensions": {
+    "layers": {
+     "value": 64,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.layers",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "hidden": {
+     "value": 5120,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.hidden",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "source_architecture": {
+     "value": "Qwen3.8-27B hybrid (GQA every 4th layer, DeltaNet otherwise)",
+     "kind": "CITED",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "command": "geometry.gqa_layers/dn_layers",
+     "gqa_layers": 16,
+     "dn_layers": 48
+    },
+    "vocab": {
+     "value": 248320,
+     "kind": "CITED",
+     "unit": "1",
+     "command": "NOETIC_OPERATION_CENSUS.geometry.vocab",
+     "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+     "absent_reason": null
+    },
+    "weight_bytes": 0
+   },
+   "best_representation_family": {
+    "family": null,
+    "kind": "ABSENT",
+    "absent_reason": "sampling stores no organ weights",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+   },
+   "best_complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "EBPW",
+    "command": "best_complete_ebpw",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": "sampling has no stored weights; EBPW is not defined for this organ"
+   },
+   "best_active_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "EBPW/token",
+    "command": "best_active_ebpw",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": "sampling has no stored weights"
+   },
+   "kernel_id": {
+    "production": [
+     "sample_argmax_f32"
+    ],
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "measured_bandwidth_gb_s": {
+    "value": 0.0,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.sampling.achieved_gb_s",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "token_ns_contribution": {
+    "value": 339492.7960812862,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.sampling.scaled_gpu_ns",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "recoverable_token_ns": {
+    "value": 33396.03182858974,
+    "kind": "DERIVED",
+    "unit": "ns/token",
+    "command": "max(0, scaled_gpu_ns \u2212 organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Ranking quantity (S022 \u00a711). Not %BW, not fraction of 778.8.",
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   },
+   "flops": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "FLOP/token",
+    "command": "DISPATCH_LEDGER.dispatches.flops",
+    "absent_reason": "sampling records 0 FLOPs in DISPATCH_LEDGER (argmax comparison count was not inventoried). AI and compute-limited BW are therefore launch-class, not a fake zero GFLOP/s.",
+    "source": "receipts/headless/DISPATCH_LEDGER.json"
+   },
+   "dispatches": {
+    "value": 1,
+    "kind": "CITED",
+    "unit": "dispatches/token",
+    "command": "ORGAN_BANDWIDTH.organ_attribution.organs.sampling.dispatches",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+    "absent_reason": null
+   },
+   "capability_sensitivity": {
+    "function_space_floor": null,
+    "function_space_source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "live_capability": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "doctor_pass_rate",
+     "command": "NOETIC_PARENT_A.capability_evidence",
+     "source": "receipts/headless/NOETIC_PARENT_A.json",
+     "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
+    }
+   },
+   "negative_science": [],
+   "citations": [
+    "receipts/headless/ORGAN_BANDWIDTH.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/NOETIC_PARENT_A.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+   ]
+  }
+ ],
+ "n_organs": 7,
+ "q4_remainder_not_a_contract_organ": {
+  "note": "ORGAN_BANDWIDTH also names q4_remainder (unfused o_proj + out_proj). N034's organ list does not include it; it remains on ORGAN_BANDWIDTH / ORGAN_ROOF_LEDGER.",
+  "source": "receipts/headless/ORGAN_BANDWIDTH.json"
+ }
+}

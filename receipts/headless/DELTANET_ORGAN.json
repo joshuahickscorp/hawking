@@ -1,0 +1,820 @@
+{
+ "schema": "hawking.headless.deltanet_organ.v1",
+ "generated_at": "2026-08-24T16:40:33Z",
+ "git_head": "b9db37d617e0e2d3664d8e83289127f307aa00f7",
+ "obligation": "N026 \u2014 DELTANET ORGAN: attack the largest un-optimized share of the 356.7\u2192778.8 bandwidth gap",
+ "one_line": "N025 DeltaNet 25.9% of the 356.7\u2192778.8 gap (6.55 ms isolated, 325.5 GB/s). Re-measured baseline 6.36 ms, 339.9 GB/s. widen_f4: 5.52 ms / 391.4 GB/s (separated, recovered 21.6% of the 25.9% share; token ids unchanged). coalesce_tg32: 5.64 ms / 382.9 GB/s (separated, recovered 18.5% of the 25.9% share; token ids unchanged). dense_w_materialized=0.",
+ "question": "Why is DeltaNet at 325.5 GB/s, and how much of its 25.9% share of the 356.7\u2192778.8 gap do two recurrent-kernel changes recover?",
+ "answer": "N025 DeltaNet 25.9% of the 356.7\u2192778.8 gap (6.55 ms isolated, 325.5 GB/s). Re-measured baseline 6.36 ms, 339.9 GB/s. widen_f4: 5.52 ms / 391.4 GB/s (separated, recovered 21.6% of the 25.9% share; token ids unchanged). coalesce_tg32: 5.64 ms / 382.9 GB/s (separated, recovered 18.5% of the 25.9% share; token ids unchanged). dense_w_materialized=0.",
+ "reading": "dn_inproj (qkvz+ba GEMV) is 3.59 ms of the 6.36 ms isolated organ; gated-delta state update is 1.59 ms; widen_f4 recovered 21.6% of DeltaNet's 25.9% share; 78.4% of that share remains, held by in_proj_qkvz addressing plus leftover recurrent work.",
+ "roof_gb_s": 778.8,
+ "n018_production_gb_s": 356.7,
+ "gap_gb_s": 422.09999999999997,
+ "deltanet_25p9_share": 0.25949282064400503,
+ "prior_not_rederived": {
+  "n017_dram_roof_gb_s": 778.8,
+  "n018_production_decode_gb_s": 356.7,
+  "n025_deltanet_share": 0.25949282064400503,
+  "n025_deltanet_gb_s": 325.5340876311656,
+  "n025_deltanet_scaled_gpu_ns": 6640392.887055211,
+  "n025_deltanet_gap_ns": 3864745.429428092,
+  "did_not_retry_mlp_tile": true
+ },
+ "did_not_load_second_27b": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "occupancy": {
+  "ps_matches": [
+   "12402  21824 /Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python /Users/scammermike/.local/bin/mlx_lm.server --model /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp9wq3pmxx/4bit --host 127.0.0.1 --port 9999 --max-tokens 8192 --decode-concurrency 1 --prompt-concurrency 1 --prompt-cache-size 10 --chat-template-args {\"enable_thinking\":false}"
+  ],
+  "loaded_a_second_27b": false,
+  "note": "A second Qwen3.8-27B would show RSS in the 10+ GiB class and is refused."
+ },
+ "parent_immutable": {
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "outside_worktree": true,
+  "catalog_present": true
+ },
+ "n025_organ_row": {
+  "status": "MEASURED",
+  "gpu_ns_reps": [
+   6782791.0,
+   6546374.0,
+   6542624.0,
+   6542250.0,
+   6734791.0,
+   6657291.0,
+   6547625.0
+  ],
+  "gpu_ns_min": 6542250,
+  "gpu_ns_median_isolated": 6547625,
+  "gpu_ns_max": 6782791,
+  "n_reps": 7,
+  "dispatches": 336,
+  "weight_read_bytes": 2161674240,
+  "traffic_bytes": 2499520512,
+  "scaled_gpu_ns": 6640392.887055211,
+  "roof_ns_at_778p8": 2775647.4576271186,
+  "gap_ns_vs_roof": 3864745.429428092,
+  "achieved_gb_s": 325.5340876311656,
+  "roof_gb_s": 778.8,
+  "operators": [
+   "input_rmsnorm",
+   "dn_qkvz_ba_concat",
+   "qkvz_rearrange_conv_l2",
+   "ba_to_decay_beta",
+   "gated_delta",
+   "gated_rmsnorm",
+   "mixer_residual"
+  ],
+  "dense_w_materialized": 0,
+  "fraction_of_roof_gap": 0.25949282064400503
+ },
+ "kernel_autopsy": {
+  "ok": true,
+  "any_new_kernel_defective": false,
+  "new_kernels": [
+   {
+    "file": "qwen38_device_activations.metal",
+    "kernel": "qwen38_gated_delta_decode_vi_simd_ba",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "tid",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "arrier(mem_flags::mem_threadgroup);\n    if (tid == 0u) {\n        output[value_base + vi] = scr"
+     }
+    ]
+   },
+   {
+    "file": "qwen38_device_activations.metal",
+    "kernel": "qwen38_gated_delta_decode_vi_simd_ba_plain",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "tid",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "arrier(mem_flags::mem_threadgroup);\n    if (tid == 0u) {\n        output[value_base + vi] = scr"
+     }
+    ]
+   },
+   {
+    "file": "qwen38_device_activations.metal",
+    "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "tid",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "arrier(mem_flags::mem_threadgroup);\n    if (tid == 0u) {\n        *((device float4*)(output + v"
+     }
+    ]
+   },
+   {
+    "file": "qwen38_device_activations.metal",
+    "kernel": "qwen38_gated_delta_decode_vi_simd_ba_tg32",
+    "verdict": "SUSPECT",
+    "n_findings": 1,
+    "findings": [
+     {
+      "check": "dynamic_branch_in_loop",
+      "severity": "med",
+      "token": "tid",
+      "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+      "snippet": "er(mem_flags::mem_threadgroup);\n        if (tid == 0u) {\n            *((device float4*)(output"
+     }
+    ]
+   }
+  ],
+  "missing": [],
+  "note": "Screened in-process against kernel_competence.py CHECKS. Did not rewrite KERNEL_COMPETENCE.json.",
+  "why_325p5": {
+   "state_layout": "[head][ki][vi], vi innermost",
+   "launch": "dispatch_threads grid (128,48,128) tg (128,1,1) = 6144 TGs of 128 ki-threads",
+   "uncoalesced": "Adjacent ki-threads load state[ki][vi] 512 bytes apart. Apple SIMD 32 therefore touches 32 cache lines per vi-column.",
+   "traffic": "recurrent state R+W 301989888 B/token across 48 layers; in_proj_qkvz Q4 is 2161674240 B of the organ's weight stream.",
+   "not_an_mlp": "DeltaNet is recurrent/stateful (S020 \u00a723). The 128\u00d7128 per-head state cannot be tiled like affine2 GEMV."
+  }
+ },
+ "shader_evidence": {
+  "shader_present": true,
+  "shader_path": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+  "kernel_needles": {
+   "qwen38_gated_delta_decode_vi_simd_ba": 20075,
+   "qwen38_gated_delta_decode_vi_simd_ba_f4": 26381,
+   "qwen38_gated_delta_decode_vi_simd_ba_tg32": 30172,
+   "qwen38_gated_delta_decode_vi_simd_ba_plain": 22943
+  },
+  "all_kernels_declared": true,
+  "wired": true,
+  "default_off": true,
+  "does_not_write_dense_w": true,
+  "widen_f4_present": true,
+  "tg32_present": true,
+  "coalesced_load": true,
+  "float4_load": true,
+  "autopsy_stride": "index = state_base + ki * value_dim + vi is a 128-float (512-byte) stride across SIMD lanes of a vi-TG"
+ },
+ "structure": {
+  "kind": "MEASURED",
+  "separated_from_gqa_and_mlp": true,
+  "gqa_is_a_different_mixer": true,
+  "mlp_is_a_different_organ": true,
+  "state_cannot_replace_in_proj_wholesale": true,
+  "prior_capacity_ratio_0p015": {
+   "value": 0.0140625,
+   "formula": "state_update_flops / in_proj_qkvz_mac",
+   "matches_prior": true
+  },
+  "byte_ratio_rec_over_qkvz_q4": 0.07058823529411765,
+  "largest_deltanet_specific_information_consumer": "linear_attn.in_proj_qkvz",
+  "why": "in_proj_qkvz is the static projection of the current hidden into (q,k,v,z). rec_state stores the decayed image of past rank-1 updates, not W. Capacity: rec_state 150994944 B vs q4 in_proj_qkvz 2139095040 B (ratio 0.0706); FLOP ratio 0.0141 (prior 0.015). out_proj is larger than rec_state but is billed to the q4_remainder organ, not DeltaNet.",
+  "consumers": [
+   {
+    "name": "linear_attn.in_proj_qkvz",
+    "role": "static map hidden \u2192 (q,k,v,z) of THIS token",
+    "q4_bytes": 2139095040,
+    "mac_flops": 8053063680,
+    "duplicates_state": false,
+    "organ": "deltanet"
+   },
+   {
+    "name": "linear_attn.out_proj",
+    "role": "static map rec_out \u2192 hidden; billed to q4_remainder not deltanet",
+    "q4_bytes": 802160640,
+    "mac_flops": 3019898880,
+    "duplicates_state": false,
+    "organ": "q4_remainder"
+   },
+   {
+    "name": "rec_state",
+    "role": "decayed sum of past k v^T; re-read every token",
+    "resident_bytes": 150994944,
+    "rw_bytes": 301989888,
+    "update_flops": 113246208.0,
+    "duplicates_in_proj": false,
+    "organ": "deltanet"
+   },
+   {
+    "name": "linear_attn.in_proj_ba",
+    "role": "static map hidden \u2192 (beta, a) for THIS token's decay",
+    "q4_bytes": 12533760,
+    "mac_flops": 47185920,
+    "duplicates_state": false,
+    "organ": "deltanet"
+   }
+  ],
+  "dense_w_materialized": 0
+ },
+ "measurement": {
+  "kind": "MEASURED",
+  "n025_prior": {
+   "share_of_roof_gap": 0.25949282064400503,
+   "scaled_gpu_ns": 6640392.887055211,
+   "isolated_gpu_ns": 6547625.0,
+   "achieved_gb_s": 325.5340876311656,
+   "gap_ns_vs_roof": 3864745.429428092
+  },
+  "organ": {
+   "before": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     6401666.0,
+     6359083.0,
+     6368625.0,
+     6345000.0,
+     6333249.0,
+     6382916.0,
+     6332625.0
+    ],
+    "gpu_ns_min": 6332625.0,
+    "gpu_ns_median": 6359083,
+    "gpu_ns_max": 6401666.0,
+    "n_reps": 7,
+    "dispatches": 288,
+    "weight_read_bytes": 2161674240,
+    "achieved_gb_s": 339.93489941867404,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 2775647.4576271186,
+    "dense_w_materialized": 0
+   },
+   "after_widen_f4": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     5511249.0,
+     5537083.0,
+     5506624.0,
+     5522958.0,
+     5540750.0,
+     5511124.0,
+     5526916.0
+    ],
+    "gpu_ns_min": 5506624.0,
+    "gpu_ns_median": 5522958,
+    "gpu_ns_max": 5540750.0,
+    "n_reps": 7,
+    "dispatches": 288,
+    "weight_read_bytes": 2161674240,
+    "achieved_gb_s": 391.3979139439409,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 2775647.4576271186,
+    "dense_w_materialized": 0
+   },
+   "after_coalesce_tg32": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     5670958.0,
+     5656749.0,
+     5644833.0,
+     5663374.0,
+     5636791.0,
+     5641041.0,
+     5631208.0
+    ],
+    "gpu_ns_min": 5631208.0,
+    "gpu_ns_median": 5644833,
+    "gpu_ns_max": 5670958.0,
+    "n_reps": 7,
+    "dispatches": 288,
+    "weight_read_bytes": 2161674240,
+    "achieved_gb_s": 382.9474211194556,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 2775647.4576271186,
+    "dense_w_materialized": 0
+   }
+  },
+  "gated_delta": {
+   "before": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     1608458.0,
+     1587249.0,
+     1586500.0,
+     1590750.0,
+     1588083.0,
+     1590625.0,
+     1595041.0
+    ],
+    "gpu_ns_min": 1586500.0,
+    "gpu_ns_median": 1590625,
+    "gpu_ns_max": 1608458.0,
+    "n_reps": 7,
+    "dispatches": 48,
+    "weight_read_bytes": 301989888,
+    "achieved_gb_s": 189.85611819253438,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 387763.0816640986,
+    "dense_w_materialized": 0
+   },
+   "after_widen_f4": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     892333.0,
+     889999.0,
+     887083.0,
+     882416.0,
+     883625.0,
+     888791.0,
+     890249.0
+    ],
+    "gpu_ns_min": 882416.0,
+    "gpu_ns_median": 888791,
+    "gpu_ns_max": 892333.0,
+    "n_reps": 7,
+    "dispatches": 48,
+    "weight_read_bytes": 301989888,
+    "achieved_gb_s": 339.77604183660725,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 387763.0816640986,
+    "dense_w_materialized": 0
+   },
+   "after_coalesce_tg32": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     1024333.0,
+     1021500.0,
+     1014458.0,
+     1017041.0,
+     1017166.0,
+     1017874.0,
+     1020499.0
+    ],
+    "gpu_ns_min": 1014458.0,
+    "gpu_ns_median": 1017874,
+    "gpu_ns_max": 1024333.0,
+    "n_reps": 7,
+    "dispatches": 48,
+    "weight_read_bytes": 301989888,
+    "achieved_gb_s": 296.6869062379037,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 387763.0816640986,
+    "dense_w_materialized": 0
+   }
+  },
+  "components": {
+   "dn_inproj": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     6061208.0,
+     3597750.0,
+     3586833.0,
+     3583375.0,
+     3594124.0,
+     3611333.0,
+     3586250.0
+    ],
+    "gpu_ns_min": 3583375.0,
+    "gpu_ns_median": 3594124,
+    "gpu_ns_max": 6061208.0,
+    "n_reps": 7,
+    "dispatches": 48,
+    "weight_read_bytes": 2161674240,
+    "achieved_gb_s": 601.4467614361664,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 2775647.4576271186,
+    "dense_w_materialized": 0
+   },
+   "rearrange_48": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     365749.0,
+     345458.0,
+     328750.0,
+     340291.0,
+     328499.0,
+     337500.0,
+     329583.0
+    ],
+    "gpu_ns_min": 328499.0,
+    "gpu_ns_median": 337500,
+    "gpu_ns_max": 365749.0,
+    "n_reps": 7,
+    "dispatches": 48,
+    "weight_read_bytes": 0,
+    "achieved_gb_s": 0.0,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 0.0,
+    "dense_w_materialized": 0
+   },
+   "gated_rmsnorm_48": {
+    "status": "MEASURED",
+    "gpu_ns_reps": [
+     190999.0,
+     188749.0,
+     188416.0,
+     188916.0,
+     188875.0,
+     188500.0,
+     188500.0
+    ],
+    "gpu_ns_min": 188416.0,
+    "gpu_ns_median": 188749,
+    "gpu_ns_max": 190999.0,
+    "n_reps": 7,
+    "dispatches": 48,
+    "weight_read_bytes": 0,
+    "achieved_gb_s": 0.0,
+    "roof_gb_s": 778.8,
+    "roof_ns_at_778p8": 0.0,
+    "dense_w_materialized": 0
+   }
+  },
+  "changes": [
+   {
+    "change": "widen_f4",
+    "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+    "gpu_ns_separated": true,
+    "recovered_isolated_ns": 836125.0,
+    "recovered_fraction_of_deltanet_25p9_share": 0.21634672070075528,
+    "recovered_fraction_of_roof_gap": 0.056140420791719735,
+    "token_ids_unchanged": true,
+    "token_ids_before": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "token_ids_after": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "parity_rec_out": 0.0,
+    "parity_rec_state": 0.0,
+    "note": null
+   },
+   {
+    "change": "coalesce_tg32",
+    "kernel": "qwen38_gated_delta_decode_vi_simd_ba_tg32",
+    "gpu_ns_separated": true,
+    "recovered_isolated_ns": 714250.0,
+    "recovered_fraction_of_deltanet_25p9_share": 0.18481165526747131,
+    "recovered_fraction_of_roof_gap": 0.04795729771324362,
+    "token_ids_unchanged": true,
+    "token_ids_before": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "token_ids_after": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "parity_rec_out": 0.0,
+    "parity_rec_state": 0.0,
+    "note": null
+   }
+  ],
+  "noop_empty": {
+   "role": "no_op_control",
+   "gpu_ns_reps": [
+    41.0,
+    125.0,
+    0.0,
+    41.0,
+    41.0,
+    0.0,
+    41.0
+   ],
+   "gpu_ns_median": 41,
+   "must_not_score_as_an_organ": true,
+   "did_not_score": true
+  },
+  "bad_control": {
+   "id": "ba_delta_identity",
+   "kernel": "qwen38_gated_delta_decode_vi_simd_ba_plain",
+   "must_be_rejected": true,
+   "rejected": true,
+   "max_abs_diff_rec_out": 0.01594470627605915,
+   "max_abs_diff_rec_state": 0.05446557700634003,
+   "token_ids": [
+    248068,
+    198,
+    760,
+    1156,
+    6587,
+    728,
+    310,
+    10033,
+    1204,
+    264,
+    364,
+    58621,
+    1083,
+    6557,
+    9714,
+    321
+   ]
+  },
+  "decode": {
+   "baseline": {
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "gpu_ns_reps": [
+     26935500.0,
+     26897250.0,
+     26902541.0,
+     26930041.0,
+     26880749.0,
+     26876374.0,
+     26921041.0
+    ],
+    "gpu_ns_min": 26876374,
+    "gpu_ns_median": 26902541,
+    "gpu_ns_max": 26935500,
+    "tok_s_min": 35.6837633524182,
+    "tok_s_median": 35.73990646189804,
+    "tok_s_max": 35.80980692481309,
+    "n_reps": 7,
+    "dispatched_kernels_rep0": [
+     "mha_decode_f32",
+     "qwen38_attention_apply_sigmoid_gate",
+     "qwen38_gated_delta_decode_vi_simd_ba",
+     "qwen38_gqa_qk_norm_rope_cache_tg",
+     "qwen38_qkvz_rearrange_conv_l2_f32",
+     "qwen80_add_residual_rmsnorm_tg",
+     "qwen80_deltanet_gated_rmsnorm_tg",
+     "qwen80_residual_rmsnorm_tg",
+     "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "qwen_uniform_q4_embedding_lookup",
+     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+     "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+     "sample_argmax_f32"
+    ]
+   },
+   "widen_f4": {
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "gpu_ns_reps": [
+     26096083.0,
+     26059875.0,
+     26078625.0,
+     26126250.0,
+     26095500.0,
+     26070458.0,
+     26052041.0
+    ],
+    "gpu_ns_min": 26052041,
+    "gpu_ns_median": 26078625,
+    "gpu_ns_max": 26126250,
+    "tok_s_min": 36.719960899998114,
+    "tok_s_median": 36.83483579845479,
+    "tok_s_max": 36.860429345661174,
+    "n_reps": 7,
+    "dispatched_kernels_rep0": [
+     "mha_decode_f32",
+     "qwen38_attention_apply_sigmoid_gate",
+     "qwen38_gated_delta_decode_vi_simd_ba_f4",
+     "qwen38_gqa_qk_norm_rope_cache_tg",
+     "qwen38_qkvz_rearrange_conv_l2_f32",
+     "qwen80_add_residual_rmsnorm_tg",
+     "qwen80_deltanet_gated_rmsnorm_tg",
+     "qwen80_residual_rmsnorm_tg",
+     "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "qwen_uniform_q4_embedding_lookup",
+     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+     "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+     "sample_argmax_f32"
+    ]
+   },
+   "coalesce_tg32": {
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     264,
+     11346,
+     11,
+     18541,
+     9546,
+     323,
+     15673,
+     314,
+     1204,
+     264,
+     18826
+    ],
+    "gpu_ns_reps": [
+     26172916.0,
+     26178208.0,
+     26156958.0,
+     26227166.0,
+     26192624.0,
+     26175000.0,
+     26164416.0
+    ],
+    "gpu_ns_min": 26156958,
+    "gpu_ns_median": 26175000,
+    "gpu_ns_max": 26227166,
+    "tok_s_min": 35.86989984456783,
+    "tok_s_median": 36.59673904903091,
+    "tok_s_max": 36.70368295080698,
+    "n_reps": 7,
+    "dispatched_kernels_rep0": [
+     "mha_decode_f32",
+     "qwen38_attention_apply_sigmoid_gate",
+     "qwen38_gated_delta_decode_vi_simd_ba_tg32",
+     "qwen38_gqa_qk_norm_rope_cache_tg",
+     "qwen38_qkvz_rearrange_conv_l2_f32",
+     "qwen80_add_residual_rmsnorm_tg",
+     "qwen80_deltanet_gated_rmsnorm_tg",
+     "qwen80_residual_rmsnorm_tg",
+     "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "qwen_uniform_q4_embedding_lookup",
+     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+     "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+     "sample_argmax_f32"
+    ]
+   },
+   "bad_identity": {
+    "new_token_ids": [
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     728,
+     310,
+     10033,
+     1204,
+     264,
+     364,
+     58621,
+     1083,
+     6557,
+     9714,
+     321
+    ],
+    "gpu_ns_reps": [
+     26887124.0
+    ],
+    "gpu_ns_min": 26887124,
+    "gpu_ns_median": 26887124,
+    "gpu_ns_max": 26887124,
+    "tok_s_min": 35.70611717485089,
+    "tok_s_median": 35.70611717485089,
+    "tok_s_max": 35.70611717485089,
+    "n_reps": 1,
+    "dispatched_kernels_rep0": [
+     "mha_decode_f32",
+     "qwen38_attention_apply_sigmoid_gate",
+     "qwen38_gated_delta_decode_vi_simd_ba_plain",
+     "qwen38_gqa_qk_norm_rope_cache_tg",
+     "qwen38_qkvz_rearrange_conv_l2_f32",
+     "qwen80_add_residual_rmsnorm_tg",
+     "qwen80_deltanet_gated_rmsnorm_tg",
+     "qwen80_residual_rmsnorm_tg",
+     "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "qwen_uniform_q4_embedding_lookup",
+     "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+     "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+     "sample_argmax_f32"
+    ]
+   }
+  },
+  "dense_w_materialized": 0,
+  "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy"
+ },
+ "residual_blocker": "dn_inproj (qkvz+ba GEMV) is 3.59 ms of the 6.36 ms isolated organ; gated-delta state update is 1.59 ms; widen_f4 recovered 21.6% of DeltaNet's 25.9% share; 78.4% of that share remains, held by in_proj_qkvz addressing plus leftover recurrent work.",
+ "compile": {
+  "cmd": [
+   "cargo",
+   "build",
+   "--profile",
+   "release-fast",
+   "-p",
+   "hawking-core",
+   "--example",
+   "ascension_qwen38_deltanet_organ"
+  ],
+  "returncode": 0,
+  "elapsed_s": 0.09650166702340357,
+  "stdout_tail": "",
+  "stderr_tail": "awking-core/src/model/qwen30_complete_runtime.rs:5962:32\n     |\n5962 |         let mut ended_on_eog = false;\n     |                                ^^^^^\n     |\n     = help: maybe it is overwritten before being read?\n     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused variable: `groups`\n    --> crates/hawking-core/src/model/qwen_complete_binary/q80_mixed_decode.rs:1466:17\n     |\n1466 |             let groups = header_usize(&header, \"groups\", \"HGRAVB01\")?;\n     |                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_groups`\n     |\n     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: type `qwen30_source_bf16_layer_major::TensorLoc` is more private than the item `qwen30_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1304:5\n     |\n1304 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen30_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen30_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1218:1\n     |\n1218 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n     = note: `#[warn(private_interfaces)]` on by default\n\nwarning: type `qwen80_source_bf16_layer_major::TensorLoc` is more private than the item `qwen80_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1371:5\n     |\n1371 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen80_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen80_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1276:1\n     |\n1276 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n\nwarning: field `name` is never read\n   --> crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs:147:5\n    |\n146 | struct VerifiedTensor {\n    |        -------------- field in this struct\n147 |     name: String,\n    |     ^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: associated function `debug_slice` is never used\n   --> crates/hawking-core/src/model/mixtral.rs:963:8\n    |\n893 | impl MixtralEngine {\n    | ------------------ associated function in this implementation\n...\n963 |     fn debug_slice(label: &str, xs: &[f32], first: usize) {\n    |        ^^^^^^^^^^^\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1224:5\n     |\n1218 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1224 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1281:5\n     |\n1276 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1281 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: function `median_snap` is never used\n   --> crates/hawking-core/src/model/qwen80_mixed_token_ns_ledger.rs:206:4\n    |\n206 | fn median_snap(snaps: &[MixedExclusiveSnap]) -> MixedExclusiveSnap {\n    |    ^^^^^^^^^^^\n\nwarning: `hawking-core` (lib) generated 9 warnings (run `cargo fix --lib -p hawking-core` to apply 1 suggestion)\n    Finished `release-fast` profile [optimized] target(s) in 0.07s\n",
+  "bin": "/Users/scammermike/.claude-grok/worktrees/n026deltanet-20260824-121847/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_deltanet_organ",
+  "bin_present": true
+ },
+ "run": {
+  "returncode": 0,
+  "elapsed_s": 32.50972649999312,
+  "stdout_tail": "\n        6368625,\n        6345000,\n        6333249,\n        6382916,\n        6332625\n      ],\n      \"gpu_timestamp_authority\": \"completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy\",\n      \"n_reps\": 7,\n      \"name\": \"organ_baseline\",\n      \"wait_ns_median\": 6635041\n    },\n    \"coalesce_tg32\": {\n      \"dense_w_materialized\": 0,\n      \"dispatches\": 288,\n      \"gpu_ns_max\": 5670958,\n      \"gpu_ns_median\": 5644833,\n      \"gpu_ns_min\": 5631208,\n      \"gpu_ns_reps\": [\n        5670958,\n        5656749,\n        5644833,\n        5663374,\n        5636791,\n        5641041,\n        5631208\n      ],\n      \"gpu_timestamp_authority\": \"completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy\",\n      \"n_reps\": 7,\n      \"name\": \"organ_coalesce_tg32\",\n      \"wait_ns_median\": 5904167\n    },\n    \"widen_f4\": {\n      \"dense_w_materialized\": 0,\n      \"dispatches\": 288,\n      \"gpu_ns_max\": 5540750,\n      \"gpu_ns_median\": 5522958,\n      \"gpu_ns_min\": 5506624,\n      \"gpu_ns_reps\": [\n        5511249,\n        5537083,\n        5506624,\n        5522958,\n        5540750,\n        5511124,\n        5526916\n      ],\n      \"gpu_timestamp_authority\": \"completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy\",\n      \"n_reps\": 7,\n      \"name\": \"organ_widen_f4\",\n      \"wait_ns_median\": 5804459\n    }\n  },\n  \"kernels\": [\n    \"qwen38_gated_delta_decode_vi_simd_ba\",\n    \"qwen38_gated_delta_decode_vi_simd_ba_plain\",\n    \"qwen38_gated_delta_decode_vi_simd_ba_f4\",\n    \"qwen38_gated_delta_decode_vi_simd_ba_tg32\"\n  ],\n  \"max_new_tokens\": 16,\n  \"noop_empty\": {\n    \"dense_w_materialized\": 0,\n    \"dispatches\": 0,\n    \"gpu_ns_max\": 125,\n    \"gpu_ns_median\": 41,\n    \"gpu_ns_min\": 0,\n    \"gpu_ns_reps\": [\n      41,\n      125,\n      0,\n      41,\n      41,\n      0,\n      41\n    ],\n    \"gpu_timestamp_authority\": \"completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy\",\n    \"n_reps\": 7,\n    \"name\": \"noop_empty\",\n    \"wait_ns_median\": 15416\n  },\n  \"parity\": {\n    \"bad_identity\": {\n      \"baseline_dispatches\": 1,\n      \"baseline_gpu_ns\": 55000,\n      \"candidate_dispatches\": 1,\n      \"candidate_gpu_ns\": 54250,\n      \"dense_w_materialized\": 0,\n      \"kernel\": \"qwen38_gated_delta_decode_vi_simd_ba_plain\",\n      \"layer\": 0,\n      \"max_abs_diff_rec_out\": 0.01594470627605915,\n      \"max_abs_diff_rec_state\": 0.05446557700634003\n    },\n    \"coalesce_tg32\": {\n      \"baseline_dispatches\": 1,\n      \"baseline_gpu_ns\": 55625,\n      \"candidate_dispatches\": 1,\n      \"candidate_gpu_ns\": 33124,\n      \"dense_w_materialized\": 0,\n      \"kernel\": \"qwen38_gated_delta_decode_vi_simd_ba_tg32\",\n      \"layer\": 0,\n      \"max_abs_diff_rec_out\": 0.0,\n      \"max_abs_diff_rec_state\": 0.0\n    },\n    \"widen_f4\": {\n      \"baseline_dispatches\": 1,\n      \"baseline_gpu_ns\": 60375,\n      \"candidate_dispatches\": 1,\n      \"candidate_gpu_ns\": 29499,\n      \"dense_w_materialized\": 0,\n      \"kernel\": \"qwen38_gated_delta_decode_vi_simd_ba_f4\",\n      \"layer\": 0,\n      \"max_abs_diff_rec_out\": 0.0,\n      \"max_abs_diff_rec_state\": 0.0\n    }\n  },\n  \"prompt\": \"Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.\",\n  \"prompt_ids\": [\n    248045,\n    846,\n    198,\n    814,\n    20139,\n    11,\n    303,\n    18541,\n    58655,\n    321,\n    506,\n    2984,\n    11,\n    1204,\n    264,\n    18826,\n    10263,\n    264,\n    364,\n    58621,\n    1083,\n    6557,\n    9714,\n    321,\n    1179,\n    1083,\n    5484,\n    1970,\n    13,\n    248046,\n    198,\n    248045,\n    74455,\n    198\n  ],\n  \"rendered_prompt\": \"<|im_start|>user\\nExplain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.<|im_end|>\\n<|im_start|>assistant\\n\",\n  \"schema\": \"hawking.headless.deltanet_organ.raw.v1\",\n  \"session_open_s\": 2.20339525,\n  \"skip_decode\": false,\n  \"tokenizer\": \"/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json\"\n}\n",
+  "stderr_tail": "qwen38 deltanet organ: open /Users/scammermike/noetic/NOETIC_PARENT_A max_seq=128\nqwen38-decode opening mixed HQ38M20 + 755 catalog tensors (no reconstruct-to-Q4)\nqwen38-decode mixed upload 0/755\nqwen38-decode mixed upload 50/755\nqwen38-decode mixed upload 100/755\nqwen38-decode mixed upload 150/755\nqwen38-decode mixed upload 200/755\nqwen38-decode mixed upload 250/755\nqwen38-decode mixed upload 300/755\nqwen38-decode mixed upload 350/755\nqwen38-decode mixed upload 400/755\nqwen38-decode mixed upload 450/755\nqwen38-decode mixed upload 500/755\nqwen38-decode mixed upload 550/755\nqwen38-decode mixed upload 600/755\nqwen38-decode mixed upload 650/755\nqwen38-decode mixed upload 700/755\nqwen38-decode mixed upload 750/755\nqwen38-decode mixed census: tensors=755 binary=0 residual=0 hgravs=0 uniform=0 affine=192 q4=210 f32=353 refused=0 expanded_to_q4=0 expanded_to_float_gemv=0 dense_w_materialized=0\nqwen38-decode mixed bind: K-complete; recon_fuse=ON uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes when cols>2048 (256-col tiles; this model K in {5120,6144}); cols<=2048 stay on tg256; recon_fuse=0 walks every column via gk_matvec_binary\nqwen38-decode mixed bind: HGRAVF01 affine2 qwen_affine_q2_group32_matvec_geo_tpr64_tg128 group=64 (scale+bias, 4 codes/byte)\nsession open 2.203s dense_w=0\nparity: widen_f4 vs baseline rec_out+rec_state\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\n  f4 rec_out=0 rec_state=0\nparity: coalesce_tg32 vs baseline rec_out+rec_state\n  tg32 rec_out=0 rec_state=0\nparity: BAD identity decay/beta\n  bad rec_out=0.015944706 rec_state=0.054465577\n  noop_empty reps=7\n    rep0 gpu=41 wait=16500 disp=0\n    rep1 gpu=125 wait=20166 disp=0\n    rep2 gpu=0 wait=13375 disp=0\n    rep3 gpu=41 wait=15416 disp=0\n    rep4 gpu=41 wait=16583 disp=0\n    rep5 gpu=0 wait=13583 disp=0\n    rep6 gpu=41 wait=13625 disp=0\nisolated components (autopsy: why 325.5 GB/s)\n  dn_inproj reps=7\n    rep0 gpu=6061208 wait=6368375 disp=48\n    rep1 gpu=3597750 wait=4095834 disp=48\n    rep2 gpu=3586833 wait=3804208 disp=48\n    rep3 gpu=3583375 wait=3802125 disp=48\n    rep4 gpu=3594124 wait=3806833 disp=48\n    rep5 gpu=3611333 wait=3836208 disp=48\n    rep6 gpu=3586250 wait=3806084 disp=48\n  rearrange_48 reps=7\n    rep0 gpu=365749 wait=658167 disp=48\n    rep1 gpu=345458 wait=684292 disp=48\n    rep2 gpu=328750 wait=534542 disp=48\n    rep3 gpu=340291 wait=531792 disp=48\n    rep4 gpu=328499 wait=531583 disp=48\n    rep5 gpu=337500 wait=546250 disp=48\n    rep6 gpu=329583 wait=527042 disp=48\n  gated_rmsnorm_48 reps=7\n    rep0 gpu=190999 wait=403791 disp=48\n    rep1 gpu=188749 wait=385834 disp=48\n    rep2 gpu=188416 wait=392834 disp=48\n    rep3 gpu=188916 wait=380583 disp=48\n    rep4 gpu=188875 wait=382334 disp=48\n    rep5 gpu=188500 wait=402292 disp=48\n    rep6 gpu=188500 wait=385875 disp=48\nisolated gated-delta state update (fused ba)\n  gated_delta_baseline reps=7\n    rep0 gpu=1608458 wait=1836542 disp=48\n    rep1 gpu=1587249 wait=2016084 disp=48\n    rep2 gpu=1586500 wait=1810500 disp=48\n    rep3 gpu=1590750 wait=1814708 disp=48\n    rep4 gpu=1588083 wait=1804625 disp=48\n    rep5 gpu=1590625 wait=1861791 disp=48\n    rep6 gpu=1595041 wait=1862917 disp=48\n  gated_delta_widen_f4 reps=7\n    rep0 gpu=892333 wait=1163000 disp=48\n    rep1 gpu=889999 wait=1160750 disp=48\n    rep2 gpu=887083 wait=1106875 disp=48\n    rep3 gpu=882416 wait=1129167 disp=48\n    rep4 gpu=883625 wait=1116042 disp=48\n    rep5 gpu=888791 wait=1129459 disp=48\n    rep6 gpu=890249 wait=1150625 disp=48\n  gated_delta_coalesce_tg32 reps=7\n    rep0 gpu=1024333 wait=1249834 disp=48\n    rep1 gpu=1021500 wait=1239625 disp=48\n    rep2 gpu=1014458 wait=1234958 disp=48\n    rep3 gpu=1017041 wait=1273833 disp=48\n    rep4 gpu=1017166 wait=1424792 disp=48\n    rep5 gpu=1017874 wait=1240458 disp=48\n    rep6 gpu=1020499 wait=1271875 disp=48\nisolated DeltaNet organ (48 layers, fused ba, 580 graph)\n  organ_baseline reps=7\n    rep0 gpu=6401666 wait=6700417 disp=288\n    rep1 gpu=6359083 wait=6624000 disp=288\n    rep2 gpu=6368625 wait=6615875 disp=288\n    rep3 gpu=6345000 wait=6677041 disp=288\n    rep4 gpu=6333249 wait=6635041 disp=288\n    rep5 gpu=6382916 wait=6660333 disp=288\n    rep6 gpu=6332625 wait=6577250 disp=288\n  organ_widen_f4 reps=7\n    rep0 gpu=5511249 wait=5993583 disp=288\n    rep1 gpu=5537083 wait=5808208 disp=288\n    rep2 gpu=5506624 wait=5757292 disp=288\n    rep3 gpu=5522958 wait=5791875 disp=288\n    rep4 gpu=5540750 wait=5786875 disp=288\n    rep5 gpu=5511124 wait=5818042 disp=288\n    rep6 gpu=5526916 wait=5804459 disp=288\n  organ_coalesce_tg32 reps=7\n    rep0 gpu=5670958 wait=5962375 disp=288\n    rep1 gpu=5656749 wait=5904167 disp=288\n    rep2 gpu=5644833 wait=5893916 disp=288\n    rep3 gpu=5663374 wait=5898125 disp=288\n    rep4 gpu=5636791 wait=5934000 disp=288\n    rep5 gpu=5641041 wait=5893167 disp=288\n    rep6 gpu=5631208 wait=5953000 disp=288\ndecode BASELINE vi_simd_ba reps=7\n  rep 0: tok/s=Some(35.76614662689471) dispatches=Some(580) new=16 kernels=15\n  rep 1: tok/s=Some(35.803435501467895) dispatches=Some(580) new=16 kernels=15\n  rep 2: tok/s=Some(35.73990646189804) dispatches=Some(580) new=16 kernels=15\n  rep 3: tok/s=Some(35.80980692481309) dispatches=Some(580) new=16 kernels=15\n  rep 4: tok/s=Some(35.6837633524182) dispatches=Some(580) new=16 kernels=15\n  rep 5: tok/s=Some(35.69843390970438) dispatches=Some(580) new=16 kernels=15\n  rep 6: tok/s=Some(35.70166611035934) dispatches=Some(580) new=16 kernels=15\ndecode CHANGE1 widen_f4 reps=7\n  rep 0: tok/s=Some(36.860429345661174) dispatches=Some(580) new=16 kernels=15\n  rep 1: tok/s=Some(36.859142347665966) dispatches=Some(580) new=16 kernels=15\n  rep 2: tok/s=Some(36.719960899998114) dispatches=Some(580) new=16 kernels=15\n  rep 3: tok/s=Some(36.83682208735852) dispatches=Some(580) new=16 kernels=15\n  rep 4: tok/s=Some(36.83483579845479) dispatches=Some(580) new=16 kernels=15\n  rep 5: tok/s=Some(36.75174593763045) dispatches=Some(580) new=16 kernels=15\n  rep 6: tok/s=Some(36.83408197295287) dispatches=Some(580) new=16 kernels=15\ndecode CHANGE2 coalesce_tg32 reps=7\n  rep 0: tok/s=Some(36.70368295080698) dispatches=Some(580) new=16 kernels=15\n  rep 1: tok/s=Some(36.66769305243384) dispatches=Some(580) new=16 kernels=15\n  rep 2: tok/s=Some(36.2203246125859) dispatches=Some(580) new=16 kernels=15\n  rep 3: tok/s=Some(36.592803385572026) dispatches=Some(580) new=16 kernels=15\n  rep 4: tok/s=Some(36.59673904903091) dispatches=Some(580) new=16 kernels=15\n  rep 5: tok/s=Some(35.86989984456783) dispatches=Some(580) new=16 kernels=15\n  rep 6: tok/s=Some(36.621682414934135) dispatches=Some(580) new=16 kernels=15\ndecode BAD identity reps=1\n  rep 0: tok/s=Some(35.70611717485089) dispatches=Some(580) new=16 kernels=15\nwrote /Users/scammermike/.claude-grok/worktrees/n026deltanet-20260824-121847/receipts/headless/_DELTANET_ORGAN_raw.json\n",
+  "absent_reason": null
+ },
+ "dense_w_materialized": 0,
+ "causal_benchmark_law": {
+  "kernel_identity": "qwen38_gated_delta_decode_vi_simd_ba",
+  "changes": [
+   "qwen38_gated_delta_decode_vi_simd_ba_f4",
+   "qwen38_gated_delta_decode_vi_simd_ba_tg32"
+  ],
+  "dispatch_count": "580 fused-ba graph (N025 continuation); identity bad control",
+  "sentinel": "rec_out + rec_state parity vs vi_simd_ba; greedy token ids",
+  "noop_control": "empty CB (must not score as an organ)",
+  "bad_control": "qwen38_gated_delta_decode_vi_simd_ba_plain"
+ },
+ "elapsed_s": 32.66010641597677
+}

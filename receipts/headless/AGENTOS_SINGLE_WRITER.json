@@ -1,0 +1,31 @@
+{
+  "gate": "AGENTOS_SINGLE_WRITER",
+  "result": "PASS",
+  "generated_at": "2026-08-23T04:30:05Z",
+  "git_head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+  "defect": "resources.py MutationLock was an advisory JSON record written with os.replace -- check-then-replace, which two processes can both complete.",
+  "test_design_correction": "My first race harness had every winner exit immediately after acquiring, which made the lock GENUINELY stale for the rival, so both acquired and the measurement said nothing about mutual exclusion. The corrected harness barrier-syncs the contenders and has the winner HOLD for 0.4s while the rival evaluates staleness. Every number below is from the corrected harness. The audit's original 79/80 figure has the same flaw and should not be cited.",
+  "measured": {
+    "old_lock_HEAD": {
+      "trials": 80,
+      "shape": "2-way, winner holds",
+      "double_acquire": 80,
+      "pass_rate": "0/80"
+    },
+    "new_lock_merged_2way": {
+      "trials": 120,
+      "double_acquire": 0,
+      "zero_acquire": 0,
+      "winners_per_trial": "1 every time"
+    },
+    "new_lock_merged_4way": {
+      "trials": 60,
+      "more_than_one_winner": 0,
+      "zero_acquire": 0,
+      "winners_per_trial": "1 every time"
+    }
+  },
+  "why_O_EXCL_alone_was_not_enough": "The lane's first fix used os.open(O_CREAT|O_EXCL) and THEN wrote the payload. A rival arriving inside that window sees a zero-byte lock file, which is indistinguishable from a holder that crashed mid-write, so stale-breaking clears it and both processes hold the lock. Measured 130/200 double-acquire on that version. Replaced with os.link from a fully-written temp file: the lock file is never observable in a partial state, so 'empty means stale' is no longer needed and no longer reintroduces the race. An empty file can now only come from corruption or a pre-upgrade lock, and is broken only after a 5s grace.",
+  "replay_after_restart": "test_mixed_backend.py::test_restart_keeps_ids_and_does_not_replay passes: mission id and WorkUnit ids survive, the completed unit is not re-run, the dependent unit runs.",
+  "test_suite": "python3 -m pytest tools/haider/hcli/tests -q -> 308 passed, 1 skipped"
+}

@@ -1,0 +1,17 @@
+{
+ "schema": "hawking.headless.qwen_tune_skipped.v1",
+ "obligation": "G019 -- QWEN_SMALL_TUNE=SKIPPED_WITH_EVIDENCE",
+ "decision": "SKIPPED_WITH_EVIDENCE",
+ "generated_at": "2026-08-23T00:43:22Z",
+ "steer": "S007 -- 'the goal is first to get the model coherent, the noetic executable stuff and changing the representation stuff will be done later'",
+ "why": [
+  "The native Gravity artifact intended as the eventual production parent does not currently produce coherent output at all (receipts/headless/QWEN38_GRAVITY_NATIVE.json: argmax collapse to a single repeated token). Any fine-tune built now would either target the wrong (bootstrap llama.cpp) runtime or be evaluated against a broken one.",
+  "Directive section 12's own data-source requirement -- 'accepted tool trajectories, accepted mutations, rejected/no-op examples, serialization failures, repair trajectories, deterministic validator feedback' -- is best sourced from a HEALTHY HCLI producing real accepted work. This session's HCLI runs are still bootstrap-era (the reasoning-budget runaway G003 and the vacuous acceptance gate G011 were both fixed only hours ago), so the corpus of 'accepted' trajectories available right now is thin and freshly-changed, not yet representative.",
+  "The two capability gaps a small tune would most plausibly target -- strict structured output, and respecting deterministic validator feedback -- were ALREADY closed this session at the engine level (G003: reasoning-budget + response_format; G011: real test execution, red-before-green, no-op detection) rather than needing to be trained in. Training a fix for a bug that was already fixed in code would be redundant and would risk the exact failure mode section 12 warns against: 'a tune that makes reasoning worse for cleaner JSON is a rejection.'"
+ ],
+ "revisit_when": [
+  "G017's coherence bug is fixed and the native Gravity runtime produces real text",
+  "a meaningful volume of ACCEPTED trajectories exists from the now-fixed HCLI (post G003/G011) to build a clean training corpus"
+ ],
+ "what_was_not_done": "no training run was attempted, no data was collected beyond what already exists in this session's receipts"
+}

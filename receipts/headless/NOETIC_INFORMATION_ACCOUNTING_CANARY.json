@@ -1,0 +1,304 @@
+{
+  "schema": "hawking.headless.noetic_information_accounting_canary.v1",
+  "generated_at": "2026-08-24T06:56:20Z",
+  "commit": "7703d50237aacee45fb1643da5e40d3ac255a588",
+  "why": "S020 \u00a740 / canon law 2: EBPW is measured from the full executable closure. A representation that reports 1 EBPW must not secretly carry 3 EBPW in shader constants, generated source, caches, route tables, runtime/MLX blobs, or an alignment-prefixed compiled blob. This canary plants known bytes in each channel and asserts the existing accountant counts them. It does not invent a second system.",
+  "accountant": {
+    "module": "tools/headless/noetic_information_accounting.py",
+    "closure_walk": "account_tree(mode='content')",
+    "detector": "embedded_weightlike_bytes",
+    "invented_second_system": false
+  },
+  "did_not_load_model": true,
+  "did_not_mutate_parent_a": true,
+  "did_not_touch_crates": true,
+  "channels": {
+    "shader_constants": {
+      "channel": "shader_constants",
+      "hide": "large constant float[] baked into a .metal that path_role books SHARED_RUNTIME",
+      "where": "runtime/learned_scale.metal",
+      "planted_bytes": 1024,
+      "counted_bytes": 1024,
+      "caught": true,
+      "delta": {
+        "MODEL_SPECIFIC_BYTES": 1024,
+        "SHARED_RUNTIME_BYTES": 2241,
+        "MACHINE_SPECIFIC_BYTES": 0,
+        "GENERATED_CACHE_BYTES": 0,
+        "TEMPORARY_BYTES": 0,
+        "RESIDENT_BYTES": 3265,
+        "ACTIVE_BYTES": 1024
+      },
+      "before_model_specific": 492,
+      "after_model_specific": 1516,
+      "embedded_weightlike_bytes": {
+        "kind": "ABSENT",
+        "value": null,
+        "reason": "payload is decimal text (source/JSON), not a binary f32 run; counted via account_tree text scanners (scan_metal_constants / scan_python_literals / scan_bracket_numeric_arrays / scan_json_payloads)"
+      },
+      "evidence_events": [
+        "reclassified_hidden_literals"
+      ],
+      "n": 256,
+      "accountant": {
+        "closure_walk": "noetic_information_accounting.account_tree(mode='content')",
+        "detector": "noetic_information_accounting.embedded_weightlike_bytes"
+      }
+    },
+    "generated_source": {
+      "channel": "generated_source",
+      "hide": "learned weights emitted as a Python list and a Rust [f32; N] literal",
+      "where": "runtime/baked_bias.py + runtime/baked_bias.rs",
+      "planted_bytes": 512,
+      "counted_bytes": 512,
+      "caught": true,
+      "delta": {
+        "MODEL_SPECIFIC_BYTES": 512,
+        "SHARED_RUNTIME_BYTES": 1090,
+        "MACHINE_SPECIFIC_BYTES": 0,
+        "GENERATED_CACHE_BYTES": 0,
+        "TEMPORARY_BYTES": 0,
+        "RESIDENT_BYTES": 1602,
+        "ACTIVE_BYTES": 512
+      },
+      "before_model_specific": 492,
+      "after_model_specific": 1004,
+      "embedded_weightlike_bytes": {
+        "kind": "ABSENT",
+        "value": null,
+        "reason": "payload is decimal text (source/JSON), not a binary f32 run; counted via account_tree text scanners (scan_metal_constants / scan_python_literals / scan_bracket_numeric_arrays / scan_json_payloads)"
+      },
+      "evidence_events": [
+        "reclassified_hidden_literals",
+        "reclassified_hidden_literals"
+      ],
+      "n": 128,
+      "accountant": {
+        "closure_walk": "noetic_information_accounting.account_tree(mode='content')",
+        "detector": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "parts": {
+        "python": 256,
+        "rust": 256
+      }
+    },
+    "cache_sidecar": {
+      "channel": "cache_sidecar",
+      "hide": ".bin sitting next to the host executable (runtime/host.py); path_role books SHARED_RUNTIME",
+      "where": "runtime/sidecar.bin",
+      "planted_bytes": 2048,
+      "counted_bytes": 2048,
+      "caught": true,
+      "delta": {
+        "MODEL_SPECIFIC_BYTES": 2048,
+        "SHARED_RUNTIME_BYTES": 0,
+        "MACHINE_SPECIFIC_BYTES": 0,
+        "GENERATED_CACHE_BYTES": 0,
+        "TEMPORARY_BYTES": 0,
+        "RESIDENT_BYTES": 2048,
+        "ACTIVE_BYTES": 2048
+      },
+      "before_model_specific": 492,
+      "after_model_specific": 2540,
+      "embedded_weightlike_bytes": {
+        "kind": "MEASURED",
+        "value": 2048,
+        "command": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "evidence_events": [
+        "non-text file contains a contiguous run parsing as plausible f32 weights; directory/suffix is not provenance"
+      ],
+      "n": 512,
+      "accountant": {
+        "closure_walk": "noetic_information_accounting.account_tree(mode='content')",
+        "detector": "noetic_information_accounting.embedded_weightlike_bytes"
+      }
+    },
+    "route_tables": {
+      "channel": "route_tables",
+      "hide": "oversized routing table masquerading as NX metadata (MACHINE_SPECIFIC)",
+      "where": "nx/machine_genome.json#route_table.routes",
+      "planted_bytes": 512,
+      "counted_bytes": 512,
+      "caught": true,
+      "delta": {
+        "MODEL_SPECIFIC_BYTES": 512,
+        "SHARED_RUNTIME_BYTES": 0,
+        "MACHINE_SPECIFIC_BYTES": 3054,
+        "GENERATED_CACHE_BYTES": 0,
+        "TEMPORARY_BYTES": 0,
+        "RESIDENT_BYTES": 3566,
+        "ACTIVE_BYTES": 512
+      },
+      "before_model_specific": 492,
+      "after_model_specific": 1004,
+      "embedded_weightlike_bytes": {
+        "kind": "ABSENT",
+        "value": null,
+        "reason": "payload is decimal text (source/JSON), not a binary f32 run; counted via account_tree text scanners (scan_metal_constants / scan_python_literals / scan_bracket_numeric_arrays / scan_json_payloads)"
+      },
+      "evidence_events": [
+        "reclassified_hidden_literals"
+      ],
+      "n": 128,
+      "accountant": {
+        "closure_walk": "noetic_information_accounting.account_tree(mode='content')",
+        "detector": "noetic_information_accounting.embedded_weightlike_bytes"
+      }
+    },
+    "runtime_mlx_blobs": {
+      "channel": "runtime_mlx_blobs",
+      "hide": "MLX-style .npy (numpy v1 f32) parked under runtime/ as a 'runtime blob'",
+      "where": "runtime/hidden_weights.npy",
+      "planted_bytes": 1024,
+      "counted_bytes": 1024,
+      "caught": true,
+      "delta": {
+        "MODEL_SPECIFIC_BYTES": 1024,
+        "SHARED_RUNTIME_BYTES": 80,
+        "MACHINE_SPECIFIC_BYTES": 0,
+        "GENERATED_CACHE_BYTES": 0,
+        "TEMPORARY_BYTES": 0,
+        "RESIDENT_BYTES": 1104,
+        "ACTIVE_BYTES": 1024
+      },
+      "before_model_specific": 492,
+      "after_model_specific": 1516,
+      "embedded_weightlike_bytes": {
+        "kind": "MEASURED",
+        "value": 1024,
+        "command": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "evidence_events": [
+        "non-text file contains a contiguous run parsing as plausible f32 weights; directory/suffix is not provenance"
+      ],
+      "n": 256,
+      "accountant": {
+        "closure_walk": "noetic_information_accounting.account_tree(mode='content')",
+        "detector": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "file_bytes": 1104
+    },
+    "header18_alignment": {
+      "channel": "header18_alignment",
+      "hide": "18-byte MTLB header + f32 payload; v1 of the accountant scanned only offset 0",
+      "where": "nx/qwen_uniform_q4_group64.metallib",
+      "planted_bytes": 512,
+      "counted_bytes": 512,
+      "caught": true,
+      "delta": {
+        "MODEL_SPECIFIC_BYTES": 512,
+        "SHARED_RUNTIME_BYTES": 0,
+        "MACHINE_SPECIFIC_BYTES": 18,
+        "GENERATED_CACHE_BYTES": 0,
+        "TEMPORARY_BYTES": 0,
+        "RESIDENT_BYTES": 530,
+        "ACTIVE_BYTES": 512
+      },
+      "before_model_specific": 492,
+      "after_model_specific": 1004,
+      "embedded_weightlike_bytes": {
+        "kind": "MEASURED",
+        "value": 512,
+        "command": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "evidence_events": [
+        "compiled GPU blob contains a contiguous run parsing as plausible f32 weights; suffix is not provenance"
+      ],
+      "n": 128,
+      "accountant": {
+        "closure_walk": "noetic_information_accounting.account_tree(mode='content')",
+        "detector": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "file_bytes": 530
+    }
+  },
+  "controls": {
+    "negative_random_non_weightlike": {
+      "channel": "negative_random_non_weightlike",
+      "hide": "high-entropy non-weight-like bytes next to the host; must NOT flag as weights",
+      "where": "runtime/rand.bin",
+      "planted_bytes": 4096,
+      "counted_bytes": 0,
+      "caught": false,
+      "delta": {
+        "MODEL_SPECIFIC_BYTES": 0,
+        "SHARED_RUNTIME_BYTES": 4096,
+        "MACHINE_SPECIFIC_BYTES": 0,
+        "GENERATED_CACHE_BYTES": 0,
+        "TEMPORARY_BYTES": 0,
+        "RESIDENT_BYTES": 4096,
+        "ACTIVE_BYTES": 0
+      },
+      "before_model_specific": 492,
+      "after_model_specific": 492,
+      "embedded_weightlike_bytes": {
+        "kind": "MEASURED",
+        "value": 0,
+        "command": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "evidence_events": [],
+      "n": 4096,
+      "accountant": {
+        "closure_walk": "noetic_information_accounting.account_tree(mode='content')",
+        "detector": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "ok": true,
+      "expected": "NOT flagged as weights (canary is not 'flags everything')"
+    },
+    "noop_zero_plant": {
+      "channel": "noop_zero_plant",
+      "hide": "no-op: zero planted bytes must produce zero extra MODEL_SPECIFIC",
+      "where": null,
+      "planted_bytes": 0,
+      "counted_bytes": 0,
+      "caught": false,
+      "delta": {
+        "MODEL_SPECIFIC_BYTES": 0,
+        "SHARED_RUNTIME_BYTES": 0,
+        "MACHINE_SPECIFIC_BYTES": 0,
+        "GENERATED_CACHE_BYTES": 0,
+        "TEMPORARY_BYTES": 0,
+        "RESIDENT_BYTES": 0,
+        "ACTIVE_BYTES": 0
+      },
+      "before_model_specific": 492,
+      "after_model_specific": 492,
+      "embedded_weightlike_bytes": {
+        "kind": "ABSENT",
+        "value": null,
+        "reason": "no blob planted (noop control)"
+      },
+      "evidence_events": [],
+      "n": 0,
+      "accountant": {
+        "closure_walk": "noetic_information_accounting.account_tree(mode='content')",
+        "detector": "noetic_information_accounting.embedded_weightlike_bytes"
+      },
+      "ok": true,
+      "expected": "zero extra MODEL_SPECIFIC"
+    }
+  },
+  "holes": [],
+  "unmeasured": {
+    "integer_coded_weights": {
+      "kind": "ABSENT",
+      "reason": "named remaining gap of the f32-run detector (N014 integer-coded .metallib / packed 2-bit affine codes). This canary plants f32 hiding channels, not integer codes. Papering over that hole by counting every byte would make the negative control fail."
+    },
+    "live_artifact_ebpw": {
+      "kind": "ABSENT",
+      "reason": "this canary does not load a model. Live seven-bucket accounting of uniform-q4-v1 lives in NOETIC_INFORMATION_ACCOUNTING.json."
+    },
+    "geometry_shaped_u8_codebook_n_le_64": {
+      "kind": "ABSENT",
+      "reason": "JSON walker deliberately allows short power-of-two integer lists as threadgroup geometry (cap 64). The route_tables channel plants an OVERSIZED non-geometry table, which is the hide S020 \u00a740 names. The short geometry codebook remains the completeness gap recorded by the parent accountant."
+    }
+  },
+  "NOETIC_INFORMATION_ACCOUNTING": "PASS",
+  "tally": {
+    "real_channels": 6,
+    "real_caught": 6,
+    "real_missed": 0,
+    "controls_ok": true
+  }
+}
